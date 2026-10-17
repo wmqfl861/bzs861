@@ -1,0 +1,44 @@
+FAIL json_roundtrip: Invalid JSON string
+PASS json_duplicate_keys
+FAIL json_malformed: check failed: error line 25
+PASS json_strict_types
+PASS json_depth_limit
+PASS utf8_boundaries
+PASS hash_and_random
+PASS metadata_urls
+PASS query_symbols
+PASS query_boolean
+PASS query_phrases
+PASS query_fields
+PASS query_ast
+PASS query_errors
+PASS query_chinese
+PASS html_main_code
+PASS html_noindex
+PASS html_guards
+PASS document_limits
+PASS store_snapshots
+PASS store_owner_isolation
+PASS store_search
+PASS store_updates_index
+PASS store_noindex
+PASS session_stable
+PASS session_cursor_isolation
+PASS delete_revokes_paths
+PASS evidence_boundaries
+PASS search_budget_partial
+PASS reopen_data
+PASS job_idempotency
+PASS job_controls
+PASS job_lease_fencing
+PASS job_pause_fencing
+PASS job_budgets
+PASS job_auth_epoch
+PASS job_restart
+PASS job_concurrent_claim
+PASS backup_quarantine
+FAIL fixture_source_boundary: Invalid JSON string
+FAIL service_capabilities: Invalid JSON string
+FAIL admin_backup: Invalid JSON string
+PASS auth_validation
+{"tests":43,"passed":38,"assertions":142}

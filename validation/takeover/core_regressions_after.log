@@ -1,0 +1,11 @@
+quoted-word-substring matches=1 frozen_count=1 partial=0 fts=null ast={"original":"\"app\"","ast":{"op":"phrase","field":"any","value":"app"},"hosts":[],"filetypes":[]}
+mixed-ascii-cjk matches=1 frozen_count=1 partial=0 fts="test" ast={"original":"test","ast":{"op":"term","field":"any","value":"test"},"hosts":[],"filetypes":[]}
+mixed-ascii-combining matches=1 frozen_count=1 partial=0 fts="test" ast={"original":"test","ast":{"op":"term","field":"any","value":"test"},"hosts":[],"filetypes":[]}
+underscore-only matches=1 frozen_count=1 partial=0 fts="_" ast={"original":"_","ast":{"op":"term","field":"any","value":"_"},"hosts":[],"filetypes":[]}
+literal-site-quoted matches=1 frozen_count=1 partial=0 fts=null ast={"original":"\"site:example.com\"","ast":{"op":"phrase","field":"any","value":"site:example.com"},"hosts":[],"filetypes":[]}
+literal-field-quoted matches=1 frozen_count=1 partial=0 fts=null ast={"original":"\"intitle:guide\"","ast":{"op":"phrase","field":"any","value":"intitle:guide"},"hosts":[],"filetypes":[]}
+HTML text=only-main index_allowed=1
+HTML text=visible index_allowed=1
+HTML text=private-text index_allowed=0
+HTML text=private-text index_allowed=0
+hidden-body error=E_PARSE_FAILED

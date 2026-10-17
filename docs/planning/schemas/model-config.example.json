@@ -1,0 +1,54 @@
+{
+  "policy": {
+    "allow_reference_backends": false,
+    "external_nonmodel_services": "reviewed_free_only",
+    "allow_provider_hosted_search": false,
+    "allow_unconfigured_fallback": false
+  },
+  "default_text_profile": "primary_text",
+  "profiles": {
+    "primary_text": {
+      "kind": "generation",
+      "protocol_adapter": "openai_chat",
+      "base_url": "https://model-provider.invalid/v1",
+      "model": "USER_CONFIGURED_MODEL",
+      "credential_ref": "env:USER_MODEL_API_KEY",
+      "reasoning": {
+        "mode": "provider_default"
+      },
+      "capabilities": [
+        "text",
+        "stream"
+      ],
+      "limits": {
+        "timeout_ms": 90000,
+        "max_concurrency": 2,
+        "max_output_tokens": 4096,
+        "retry_limit": 1
+      }
+    }
+  },
+  "roles": {
+    "planner": {
+      "profile": "primary_text",
+      "overrides": {
+        "max_concurrency": 2,
+        "retry_limit": 1
+      }
+    },
+    "extractor": {
+      "profile": "primary_text"
+    },
+    "verifier": {
+      "profile": "primary_text"
+    },
+    "writer": {
+      "profile": "primary_text"
+    },
+    "embedder": null,
+    "reranker": null,
+    "vision": null,
+    "asr": null
+  },
+  "text_fallback_profiles": []
+}

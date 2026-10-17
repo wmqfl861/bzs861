@@ -1,0 +1,121 @@
+[
+  {
+    "case": "model-url:https://example.com/[x]",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "URI path/query/fragment contains an unescaped reserved character"
+  },
+  {
+    "case": "model-url:https://example.com/?x[]=1",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "URI path/query/fragment contains an unescaped reserved character"
+  },
+  {
+    "case": "model-url:https://example.com../v1",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Invalid endpoint/filter host"
+  },
+  {
+    "case": "model-url:https://example.com./v1",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "model-url:https://[::1]/v1",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "model-url:https://example.com/a%5Bb%5D?x%5B%5D=1",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "terms-url:https://example.com/a#x#y",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Invalid URI fragment delimiter"
+  },
+  {
+    "case": "terms-url:https://example.com/a#[x]",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "URI path/query/fragment contains an unescaped reserved character"
+  },
+  {
+    "case": "terms-url:https://example.com/a#x",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "terms-url:https://example.com/a#x?y/z",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "date-equivalent-timezones",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "date-fraction-conflict",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Conflicting date equalities"
+  },
+  {
+    "case": "date-open-bound",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Date equality violates a conjunctive bound"
+  },
+  {
+    "case": "date-earlier-after",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Empty conjunctive date range"
+  },
+  {
+    "case": "date-later-before",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Empty conjunctive date range"
+  },
+  {
+    "case": "date-separate-fields",
+    "cpp_valid": true,
+    "expected": true,
+    "passed": true,
+    "cpp_error": null
+  },
+  {
+    "case": "date-invalid-leap",
+    "cpp_valid": false,
+    "expected": false,
+    "passed": true,
+    "cpp_error": "Invalid calendar date"
+  }
+]

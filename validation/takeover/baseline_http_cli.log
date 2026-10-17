@@ -1,0 +1,47 @@
+Internal ctest changing into directory: /workspace/scratch/80f41eb198a3/build-baseline
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Test project /workspace/scratch/80f41eb198a3/build-baseline
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 2
+    Start 2: http_cli
+
+2: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py" "--server" "/workspace/scratch/80f41eb198a3/build-baseline/searchd" "--cli" "/workspace/scratch/80f41eb198a3/build-baseline/searchctl" "--fixtures" "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/fixtures"
+2: Working Directory: /workspace/scratch/80f41eb198a3/build-baseline
+2: Test timeout computed to be: 90
+2: test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+2: test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+2: test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+2: test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+2: test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+2: test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+2: test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+2: test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+2: test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+2: test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+2: test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+2: test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+2: test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+2: test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+2: test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+2: test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+2: 
+2: ----------------------------------------------------------------------
+2: Ran 16 tests in 5.781s
+2: 
+2: OK
+1/1 Test #2: http_cli .........................   Passed    6.05 sec
+
+The following tests passed:
+	http_cli
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   6.05 sec

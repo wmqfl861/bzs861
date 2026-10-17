@@ -1,0 +1,88 @@
+{
+  "recorded_at": "2026-10-17T00:34:30.095498+00:00",
+  "status": "passed_for_documented_slice",
+  "build": {
+    "command": "cmake --preset dev && cmake --build --preset dev -j 2",
+    "platform": "Linux",
+    "executed": true
+  },
+  "core": {
+    "tests": 45,
+    "passed": 45,
+    "assertions": 174,
+    "log": "unit.log"
+  },
+  "http_cli": {
+    "tests": 16,
+    "passed": 16,
+    "log": "http_cli.log",
+    "real_loopback_processes": true
+  },
+  "ctest": {
+    "suites": 2,
+    "passed": 2,
+    "log": "ctest.log"
+  },
+  "sanitizers": {
+    "scope": "core_only",
+    "address": true,
+    "undefined_behavior": true,
+    "detect_leaks": true,
+    "reported_errors": 0,
+    "result": {
+      "tests": 45,
+      "passed": 45,
+      "assertions": 174
+    },
+    "log": "asan_core.log"
+  },
+  "design_contracts": {
+    "count": 34,
+    "passed": 34,
+    "scope": "original_python_design_validator_not_native_feature_completion",
+    "log": "design_contracts.json"
+  },
+  "not_tested": [
+    "Windows",
+    "GitHub CI",
+    "live sources",
+    "external fetching",
+    "browser isolation",
+    "model endpoints",
+    "MCP",
+    "multimedia",
+    "independent review",
+    "full 161 acceptance items",
+    "power-loss durability"
+  ],
+  "development_failures_fixed": [
+    "Initial JSON parser rejected valid Chinese and accepted nonstandard number forms; strict prevalidation implemented.",
+    "Backup response renamed includes_secrets to includes_credentials and explicitly exposes contains_private_content; integration contract updated."
+  ],
+  "source_sha256": {
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/html.hpp": "1d285c587c922cff0459df21ec0219aac81923ad067cda9f68251389a9125d85",
+    "include/bzs/json.hpp": "c2fdb54d4b7cb88c3033d6a7872641f2b103181d740b351fbd440f97adc46e67",
+    "include/bzs/query.hpp": "7dc6ec2b116ea3062fbdd70f36798066fdc49a726e0df1be85cb116d2d3441f4",
+    "include/bzs/service.hpp": "d3662ef3ec23c79903c6144fe50710998f2f9a344ba70ef0101a02fe233492fa",
+    "include/bzs/store.hpp": "b65fa471e2c5a86fbd2efee537bf37378b21f98c13ca3088357177e322d1c89d",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "src/html.cpp": "26ba6639614d26219799558a8978d85491c076fac53c6fae35dbc2e894648d13",
+    "src/json.cpp": "1248f0a4809ed9f6933bad1ddfaba42be19f678963d10b43a78fee1b6a56c975",
+    "src/query.cpp": "23501ce15e9e35791c4c5a20cf01db61c3b8dc4b93e647ba82c9828c5831a4de",
+    "src/service.cpp": "ca6fd8ef232f65accd817799390141141717d73c1332b1ad8cca082404a6cd7d",
+    "src/store.cpp": "473cc8b9c0c6bfce42a5b51e5a914ced1d640ba8f3edafad3a8211c4fca0f9b8",
+    "src/util.cpp": "f6fd383896cf43b024dfe41f43f8a6a196f4910eb9979b741ae6251ac6c994f4",
+    "apps/searchctl/main.cpp": "33c4c6da2088cf94ad2a49adaaa725939b7480306930d264745870ae95ab791d",
+    "apps/searchd/main.cpp": "1948398ca877d2274cf0643625a19f4480fb27d3a1db537b8712b8af870487cb",
+    "tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
+    "tests/integration.py": "03d90f1446cb9c3b93347f90fe17337c0120a25738fcfb5701e24763f1e8625c",
+    "tests/unit.cpp": "e92524ba2ca417e9d55b4e574cc2a7f15febaf1d70fa8d52e377449dd5e6523b",
+    "tools/create_auth.py": "34e0ac2e3b281e238ff2dd18a3f973143fead32a9c6014b1ef016e23221e6033",
+    "tools/requirements-test.txt": "546538625977c689facc21eb60f13adc0916ceb18eea6f917f84aba74ed74077"
+  }
+}

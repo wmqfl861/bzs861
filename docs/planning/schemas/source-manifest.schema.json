@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://search-platform.invalid/schemas/1.1/source-manifest.json",
+  "title": "来源清单合同 v1.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "provider_id",
+    "index_family",
+    "capability",
+    "endpoint",
+    "adapter_id",
+    "review",
+    "limits",
+    "enabled"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"
+    },
+    "provider_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "index_family": {
+      "type": "string",
+      "minLength": 1
+    },
+    "capability": {
+      "enum": [
+        "web",
+        "news",
+        "code",
+        "scholar",
+        "image",
+        "reverse_image",
+        "video",
+        "audio",
+        "catalogue"
+      ]
+    },
+    "endpoint": {
+      "type": "string",
+      "format": "uri"
+    },
+    "adapter_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "credential_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "payment_scheme",
+        "automated_access",
+        "checked_at",
+        "terms_url"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "candidate",
+            "approved",
+            "rejected",
+            "expired"
+          ]
+        },
+        "payment_scheme": {
+          "enum": [
+            "unverified",
+            "no_payment",
+            "paid_or_trial"
+          ]
+        },
+        "automated_access": {
+          "enum": [
+            "unverified",
+            "approved",
+            "restricted",
+            "denied"
+          ]
+        },
+        "checked_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "terms_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        },
+        "cache_policy": {
+          "enum": [
+            "unverified",
+            "disallow",
+            "allowed_with_limits"
+          ]
+        },
+        "redistribution_policy": {
+          "enum": [
+            "unverified",
+            "links_only",
+            "allowed_with_limits"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "approved_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "native_filters": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_concurrency",
+        "min_interval_ms",
+        "shared_budget_key"
+      ],
+      "properties": {
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "min_interval_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "shared_budget_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_quota": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "quota_window_seconds": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "logical_service_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "enabled": {
+            "const": true
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "status": {
+                "const": "approved"
+              },
+              "payment_scheme": {
+                "const": "no_payment"
+              },
+              "automated_access": {
+                "const": "approved"
+              },
+              "checked_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "terms_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "approved_by": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "expires_at",
+              "approved_by"
+            ]
+          }
+        },
+        "required": [
+          "logical_service_id"
+        ]
+      }
+    }
+  ],
+  "description": "候选配置不授权访问。真正启用须可信审核记录、日期有效、服务身份/配额明确，并由运行时检查网络/权限；此Schema无法证明审查真实性。"
+}

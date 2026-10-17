@@ -1,0 +1,57 @@
+{
+  "query": {
+    "op": "and",
+    "children": [
+      {
+        "op": "literal",
+        "field": "code",
+        "value": "std::expected"
+      },
+      {
+        "op": "term",
+        "value": "Linux"
+      }
+    ]
+  },
+  "scope": {
+    "corpus": "both",
+    "source_ids": [],
+    "collection_ids": [
+      "my_docs"
+    ],
+    "languages": [
+      "zh",
+      "en"
+    ],
+    "category": "code"
+  },
+  "hard_filters": [
+    {
+      "field": "host",
+      "operator": "eq",
+      "value": "example.org",
+      "match": "exact_host"
+    }
+  ],
+  "protected_literals": [
+    "std::expected"
+  ],
+  "mode": "balanced",
+  "constraint_mode": "strict",
+  "allow_unverified": false,
+  "budget": {
+    "max_source_requests": 8,
+    "max_reads": 6,
+    "max_browser_seconds": 60,
+    "max_model_calls": 4,
+    "timeout_ms": 60000,
+    "max_bytes": 50000000
+  },
+  "network_mode": "normal",
+  "stream": true,
+  "privacy": {
+    "save_history": false,
+    "allow_external_suggestions": false,
+    "allow_private_query_egress": false
+  }
+}

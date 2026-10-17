@@ -1,0 +1,238 @@
+{
+  "version": "0.0.2",
+  "recorded_at": "2026-10-17T03:00:33.844018+00:00",
+  "scope": "local_offline_takeover_slice_only",
+  "source_binding": {
+    "algorithm": "sha256",
+    "files": {
+      ".github/workflows/ci.yml": "2f2b3c650dfb7eb287000656e80c8ad97648f0c92e1c2a039d42510166a8553a",
+      "CMakeLists.txt": "687c16d088a1b90ebcd6cb979de31f8871f6f49bbf24ee80ff8f98d7d997b7d0",
+      "CMakePresets.json": "1e6f7c2edfa872920777e3f29d91db7eca067a8eb71868c3ede0eb161a9fd4b4",
+      "apps/searchctl/main.cpp": "c32435840fb24e966d09061055c831acc6c290110ccd4e38dbcff58c6d15f4e6",
+      "apps/searchd/main.cpp": "1948398ca877d2274cf0643625a19f4480fb27d3a1db537b8712b8af870487cb",
+      "docs/planning/schemas/model-config.example.json": "cb2a8886320b518514abe62c13ce07a27d512e5c01f04d442f9c188d5a609666",
+      "docs/planning/schemas/model-config.no-model.example.json": "56edea0339c5dbb965ac85005fb18b7cc7a9183d18ef99e20d7e2711abb05456",
+      "docs/planning/schemas/model-config.schema.json": "3c782449b5d594de679be4ed08e4c24b37338eca5c15d8943c170d2be5911fb4",
+      "docs/planning/schemas/search-request.example.json": "200628749a6b2e548a2d683ef4490f96bc0664bab9321010257f71a33f75e6d3",
+      "docs/planning/schemas/search-request.schema.json": "58e129488f0753295b2655d7011b8efeaf35b54b4acf8a788a4102cfebac0c73",
+      "docs/planning/schemas/source-manifest.example.json": "6a112583ca4507235a045dba2bd430c9cbfd8b129b1e4421b1134fd20ecd9e90",
+      "docs/planning/schemas/source-manifest.schema.json": "1a1e89fb585318323af3b149f855fe57a2deefbe297048a65fb1068d0a45cae6",
+      "docs/planning/tools/validate_contracts.py": "9d74459f74f7fd8607351e23be2e0a7cee1e2e8757098592ec7ac8da1522cfe5",
+      "docs/planning/validation/contract_cases.json": "365a5cc305f646e00dcca343e406bf0f497c7411e608d3cf20cea6810ef33c18",
+      "include/bzs/contracts.hpp": "d40ebe571e96e674835cba29fab74052e07f21aaa242975122db63a3231083ce",
+      "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+      "include/bzs/html.hpp": "e0de0c4f9b17a5bbdb00b759019fc529298d4e230f7d0aa88e1fbf395cc9898d",
+      "include/bzs/json.hpp": "c2fdb54d4b7cb88c3033d6a7872641f2b103181d740b351fbd440f97adc46e67",
+      "include/bzs/query.hpp": "b51eaf71d82a108f465fa61aac7522287a8f473a85b9e1a628a3071467379ff4",
+      "include/bzs/service.hpp": "d3662ef3ec23c79903c6144fe50710998f2f9a344ba70ef0101a02fe233492fa",
+      "include/bzs/store.hpp": "b65fa471e2c5a86fbd2efee537bf37378b21f98c13ca3088357177e322d1c89d",
+      "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+      "src/contracts.cpp": "babf373ba12a48cfa4629a96288fcd697e585a217c28b47979052a192edf4e11",
+      "src/html.cpp": "7c395703e30e0c391fa45e8190971795240169bf2c1090d0fe1d5e4d7c3eb235",
+      "src/json.cpp": "1248f0a4809ed9f6933bad1ddfaba42be19f678963d10b43a78fee1b6a56c975",
+      "src/query.cpp": "e66924744c83fcd309894f7176ba2a27534ff4fda5ce0dd51e3364ae7590c65c",
+      "src/service.cpp": "0d74ba384d8a3dad1ba7eca5eca1403bd6e923ef5eecdef4fe3d53e1fc43f6bb",
+      "src/store.cpp": "09a927db3b8789990499eaf91e02f72f635f18fc7020d74c276343c5e8a1c0cf",
+      "src/util.cpp": "f6fd383896cf43b024dfe41f43f8a6a196f4910eb9979b741ae6251ac6c994f4",
+      "tests/contracts.cpp": "b6fc128347d5bf479e86490483416657a6accc221649bd1b5931e76ced0e8f99",
+      "tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+      "tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+      "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+      "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+      "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
+      "tests/integration.py": "7ff28fac5a23d1be7b05d7b3d7aae824a9e270b6ba302903317cefa8688ac2a6",
+      "tests/unit.cpp": "0d73f82bcb86a3cd7a5fbe776f8c54e27e164368600486b827559a79dfd07965",
+      "tools/requirements-test.txt": "546538625977c689facc21eb60f13adc0916ceb18eea6f917f84aba74ed74077"
+    },
+    "note": "Source, fixtures, schemas, test and build inputs bind these local results. GitHub commit identity and remote CI must be checked independently."
+  },
+  "provenance": {
+    "target_repository": "https://github.com/wmqfl861/bzs861",
+    "handoff_zip_sha256": "14cb4f0cd86e8ea8950667ed711a075405ee0253e0c8722c8f91ea98cb666ed3",
+    "manifest_files_verified": 147,
+    "original_commits": [
+      "7266ce42c64c0e5d273448d6fa49274ac02e5359",
+      "b801b08db7b9d56108d8ea516923075007ab99f2"
+    ],
+    "remote_history": "GitHub connector publication creates a new root history; the original bundle history remains in the supplied archive and local handoff branch."
+  },
+  "environment_file": "validation/takeover/environment.json",
+  "build": {
+    "configuration": "Debug",
+    "result": "passed",
+    "local_parallelism": 1,
+    "final_incremental_verification": [
+      {
+        "command": [
+          "cmake",
+          "--preset",
+          "dev"
+        ],
+        "exit_code": 0,
+        "seconds": 0.51,
+        "log": "validation/takeover/configure.log"
+      },
+      {
+        "command": [
+          "cmake",
+          "--build",
+          "--preset",
+          "dev",
+          "-j",
+          "1"
+        ],
+        "exit_code": 0,
+        "seconds": 0.05,
+        "log": "validation/takeover/build.log"
+      }
+    ],
+    "note": "Full normal builds and tests completed before this final no-op/incremental build verification. Sanitizer build log records the full sanitizer build."
+  },
+  "baseline_reproduction": {
+    "version": "0.0.1",
+    "core": {
+      "passed": 45,
+      "total": 45,
+      "assertions": 174,
+      "log": "validation/takeover/baseline_ctest_sandbox.log"
+    },
+    "http_cli": {
+      "passed": 16,
+      "total": 16,
+      "log": "validation/takeover/baseline_http_cli.log"
+    },
+    "python_design_contracts": {
+      "passed": 34,
+      "total": 34,
+      "log": "validation/takeover/python_design_contracts.json"
+    },
+    "note": "Baseline core log also records HTTP setup blocked by the initial socket sandbox; authorized HTTP rerun is the separate 16-test result."
+  },
+  "ctest": {
+    "command": "ctest --preset dev -V",
+    "result": "passed",
+    "suites_passed": 3,
+    "suites_total": 3,
+    "seconds": 7.0,
+    "log": "validation/takeover/ctest.log",
+    "suites": {
+      "core": {
+        "passed": 52,
+        "total": 52,
+        "assertions": 289
+      },
+      "contracts": {
+        "passed": 55,
+        "total": 55,
+        "assertions": 261,
+        "original_design_fixtures": 34,
+        "additional_native_tests": 21
+      },
+      "http_cli": {
+        "passed": 20,
+        "total": 20,
+        "real_loopback_http": true
+      }
+    }
+  },
+  "python_design_contracts": {
+    "command": "/usr/bin/python3 docs/planning/tools/validate_contracts.py",
+    "passed": 34,
+    "total": 34,
+    "jsonschema_version": "4.10.3",
+    "log": "validation/takeover/python_design_contracts.json",
+    "note": "Archived Python reference suite, reported separately; native C++ contract implementation is tested by the contracts suite."
+  },
+  "sanitizers": {
+    "result": "passed",
+    "kinds": [
+      "AddressSanitizer",
+      "UndefinedBehaviorSanitizer",
+      "LeakSanitizer"
+    ],
+    "build_commands": [
+      "cmake --preset asan",
+      "cmake --build --preset asan-core -j 1"
+    ],
+    "build_log": "validation/takeover/asan_build.log",
+    "execution": {
+      "env": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1"
+      },
+      "results": [
+        {
+          "name": "asan_core",
+          "command": [
+            "./build-asan/bzs_tests"
+          ],
+          "exit_code": 0,
+          "seconds": 2.09
+        },
+        {
+          "name": "asan_contracts",
+          "command": [
+            "./build-asan/bzs_contract_tests",
+            "docs/planning/validation/contract_cases.json"
+          ],
+          "exit_code": 0,
+          "seconds": 1.56
+        }
+      ]
+    },
+    "scope": "bzs_tests and bzs_contract_tests only; HTTP/CLI executables are not part of this sanitizer result."
+  },
+  "independent_review": {
+    "scope": "takeover_slice_only",
+    "reviewers": {
+      "core": "Core search/extraction/storage review, baseline regression probes, and separate review of native contracts",
+      "service": "Service/session review, HTTP/CLI contract route and boundary tests, workflow review",
+      "requirements_contracts": "Handoff requirements and native configuration-contract implementation",
+      "root": "Integration review, failure disposition, final source/log inspection, build/CTest/sanitizer execution and publication verification"
+    },
+    "core_regression_probe_source": "validation/takeover/core_regression_probe.cpp",
+    "core_regression_logs": [
+      "validation/takeover/core_regressions_before.log",
+      "validation/takeover/core_regressions_after.log"
+    ],
+    "contract_ad_hoc_probe": {
+      "passed": 17,
+      "total": 17,
+      "log": "validation/takeover/independent_contract_probe.json",
+      "note": "Supplemental ad hoc URI/date review probes, not additional formal product acceptance tests. Durable regression coverage is in tests/contracts.cpp."
+    }
+  },
+  "environment_attempts": [
+    {
+      "stage": "initial_baseline_build",
+      "outcome": "Incomplete object files observed in the initial parallel build attempt; fresh single-job build succeeded. No root cause inferred from this observation.",
+      "log": "validation/takeover/baseline_initial_build.log"
+    },
+    {
+      "stage": "initial_http_tests",
+      "outcome": "Default sandbox prohibited socket setup; zero HTTP tests executed in that attempt. Rerun with approved loopback access passed."
+    },
+    {
+      "stage": "initial_sanitizer_execution",
+      "outcome": "LeakSanitizer refused the default ptrace-restricted environment. Both native binaries then passed with process inspection permitted and leak detection still enabled.",
+      "log": "validation/takeover/asan_core_sandbox.log"
+    }
+  ],
+  "limitations": {
+    "full_work_packages_accepted": 0,
+    "partial_work_packages": 21,
+    "not_started_work_packages": 62,
+    "planned_product_acceptance_items": 161,
+    "planned_product_acceptance_suite_executed": false,
+    "full_product_independent_review": "not_performed",
+    "external_search_fetch_model_execution": "not_implemented",
+    "configuration_validation_applies_configuration": false,
+    "integer_compatibility": "Native Json integers require integer representation; 1.0 and 1e0 are rejected. No claim of full JSON Schema acceptance-set equivalence.",
+    "database_migration": "Schema 2 rebuilds FTS; immutable snapshots/evidence and frozen sessions are retained. Old HTML needs explicit re-ingestion for bootstrap-html/2. Version 0.0.1 rejects schema 2."
+  },
+  "github_ci": {
+    "evidence_source": "https://github.com/wmqfl861/bzs861/actions",
+    "status": "consult_workflow_for_exact_commit",
+    "note": "This file records local tests only. Linux/Windows remote results must be evaluated from the workflow associated with the delivered GitHub SHA."
+  }
+}

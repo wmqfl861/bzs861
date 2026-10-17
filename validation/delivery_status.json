@@ -1,0 +1,29 @@
+{
+  "recorded_at": "2026-10-17T00:35:28.945550+00:00",
+  "target_repository": "https://github.com/luisE798/bzs861",
+  "remote_inspected": false,
+  "remote_failure": "Could not resolve host: github.com",
+  "github_plugin_installed": false,
+  "branch": "agent/bootstrap-m0-20261017",
+  "local_commit_created": true,
+  "attempted_commit": "7266ce42c64c0e5d273448d6fa49274ac02e5359",
+  "push_status": "failed",
+  "command": [
+    "git",
+    "push",
+    "--porcelain",
+    "origin",
+    "HEAD:refs/heads/agent/bootstrap-m0-20261017"
+  ],
+  "result": {
+    "returncode": 128,
+    "stdout": "",
+    "stderr": "fatal: unable to access 'https://github.com/luisE798/bzs861.git/': Could not resolve host: github.com\n",
+    "timeout": false
+  },
+  "independent_source_tree": true,
+  "force_push": false,
+  "remote_files_overwritten": false,
+  "credentials_embedded": false,
+  "note": "A local commit is not a successful push. Remote contents have not been inspected; integrate onto the real remote branch only after access is restored."
+}

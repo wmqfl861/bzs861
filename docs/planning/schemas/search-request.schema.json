@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://search-platform.invalid/schemas/1.1/search-request.json",
+  "title": "搜索请求合同 v1.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query",
+    "scope",
+    "mode",
+    "constraint_mode",
+    "budget"
+  ],
+  "properties": {
+    "query": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        {
+          "$ref": "#/$defs/ast"
+        }
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "corpus"
+      ],
+      "properties": {
+        "corpus": {
+          "enum": [
+            "external",
+            "local",
+            "both"
+          ]
+        },
+        "source_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "collection_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "languages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "enum": [
+            "web",
+            "news",
+            "code",
+            "scholar",
+            "image",
+            "video",
+            "audio",
+            "mixed"
+          ]
+        }
+      }
+    },
+    "hard_filters": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "operator",
+          "value"
+        ],
+        "properties": {
+          "field": {
+            "enum": [
+              "host",
+              "path",
+              "content_type",
+              "language",
+              "published_at",
+              "updated_at",
+              "title",
+              "body",
+              "code",
+              "identifier"
+            ]
+          },
+          "operator": {
+            "enum": [
+              "eq",
+              "neq",
+              "contains",
+              "not_contains",
+              "before",
+              "after",
+              "in"
+            ]
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "match": {
+            "enum": [
+              "literal",
+              "normalized",
+              "exact_host",
+              "host_and_subdomains"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "operator": {
+                  "const": "in"
+                }
+              },
+              "required": [
+                "operator"
+              ]
+            },
+            "then": {
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 128,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "operator": {
+                  "enum": [
+                    "before",
+                    "after"
+                  ]
+                }
+              },
+              "required": [
+                "operator"
+              ]
+            },
+            "then": {
+              "properties": {
+                "field": {
+                  "enum": [
+                    "published_at",
+                    "updated_at"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "match": {
+                  "enum": [
+                    "exact_host",
+                    "host_and_subdomains"
+                  ]
+                }
+              },
+              "required": [
+                "match"
+              ]
+            },
+            "then": {
+              "properties": {
+                "field": {
+                  "const": "host"
+                },
+                "operator": {
+                  "enum": [
+                    "eq",
+                    "neq",
+                    "in"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "protected_literals": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "mode": {
+      "enum": [
+        "fast",
+        "balanced",
+        "deep"
+      ]
+    },
+    "constraint_mode": {
+      "enum": [
+        "strict",
+        "exploratory"
+      ]
+    },
+    "allow_unverified": {
+      "type": "boolean",
+      "default": false
+    },
+    "budget": {
+      "$ref": "#/$defs/budget"
+    },
+    "model_profile_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "network_mode": {
+      "enum": [
+        "normal",
+        "offline"
+      ]
+    },
+    "stream": {
+      "type": "boolean"
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "save_history": {
+          "type": "boolean"
+        },
+        "allow_external_suggestions": {
+          "type": "boolean"
+        },
+        "allow_private_query_egress": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ast": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "term",
+                "phrase",
+                "literal"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            "field": {
+              "enum": [
+                "any",
+                "title",
+                "body",
+                "code",
+                "url",
+                "author",
+                "identifier"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "children"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "and",
+                "or"
+              ]
+            },
+            "children": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/ast"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "child"
+          ],
+          "properties": {
+            "op": {
+              "const": "not"
+            },
+            "child": {
+              "$ref": "#/$defs/ast"
+            }
+          }
+        }
+      ]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_source_requests",
+        "max_reads",
+        "max_model_calls",
+        "timeout_ms"
+      ],
+      "properties": {
+        "max_source_requests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "max_reads": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "max_browser_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "max_model_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 86400000
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_tokens_estimated": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "description": "query是唯一主体，可为string或AST；hard_filters额外AND。结构前先限制请求字节/AST节点深度；语义层补字段、时间、离线与预算冲突。所有运行权限/网络准入另验。"
+}

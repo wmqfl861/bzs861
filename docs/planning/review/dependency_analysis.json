@@ -1,0 +1,1051 @@
+{
+  "acyclic": true,
+  "topological_order": [
+    "GOV-01",
+    "CORE-01",
+    "CONTRACT-01",
+    "SEC-01",
+    "STORE-01",
+    "QA-01",
+    "QRY-01",
+    "AUTH-01",
+    "SPIKE-01",
+    "CONTRACT-02",
+    "QRY-02",
+    "JOB-01",
+    "EVID-02",
+    "SRC-01",
+    "API-00",
+    "OPS-00",
+    "BACKUP-00",
+    "SRC-02",
+    "SRC-03",
+    "ROBOTS-01",
+    "READ-01",
+    "MODEL-01",
+    "SRC-04",
+    "READ-02",
+    "READ-03",
+    "SEARCH-01",
+    "READ-05",
+    "DOC-01",
+    "MAP-01",
+    "CRAWL-03",
+    "INDEX-01",
+    "SEARCH-03",
+    "MODE-01",
+    "BATCH-01",
+    "INDEX-03",
+    "QRY-03",
+    "EVID-01",
+    "SESSION-01",
+    "RANK-01",
+    "CRAWL-01",
+    "CACHE-01",
+    "QRY-04",
+    "PRIVATE-01",
+    "QRY-05",
+    "SESSION-02",
+    "RANK-02",
+    "MODEL-02",
+    "SEARCH-05",
+    "FACET-01",
+    "QRY-06",
+    "UI-01",
+    "SEARCH-02",
+    "INDEX-02",
+    "EXTRACT-01",
+    "DOC-02",
+    "SRC-05",
+    "QA-02",
+    "WORKSPACE-01",
+    "CRAWL-02",
+    "SEARCH-04",
+    "CODE-01",
+    "ANSWER-01",
+    "READ-04",
+    "UPDATE-01",
+    "PREF-01",
+    "RESEARCH-01",
+    "WATCH-01",
+    "DATASET-01",
+    "OPS-02",
+    "SCHOLAR-01",
+    "EXPORT-01",
+    "SRC-06",
+    "WEBHOOK-01",
+    "IMAGE-01",
+    "AV-01",
+    "IMAGE-02",
+    "AV-02",
+    "API-01",
+    "UI-02",
+    "OPS-01",
+    "SCALE-01",
+    "QA-03",
+    "RELEASE-01"
+  ],
+  "initial_ready": [
+    "GOV-01"
+  ],
+  "basis": "依赖链串行工作量，仅用于识别结构；未配置人力和子任务时不是日历关键路径。",
+  "tasks": [
+    {
+      "feature": "GOV-01",
+      "task": "DEV-001",
+      "phase": "M0",
+      "depends": [],
+      "chain_low_person_days": 3,
+      "chain_high_person_days": 5
+    },
+    {
+      "feature": "CORE-01",
+      "task": "DEV-002",
+      "phase": "M0",
+      "depends": [
+        "GOV-01"
+      ],
+      "chain_low_person_days": 8,
+      "chain_high_person_days": 14
+    },
+    {
+      "feature": "CONTRACT-01",
+      "task": "DEV-003",
+      "phase": "M0",
+      "depends": [
+        "CORE-01"
+      ],
+      "chain_low_person_days": 12,
+      "chain_high_person_days": 21
+    },
+    {
+      "feature": "SEC-01",
+      "task": "DEV-004",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "chain_low_person_days": 19,
+      "chain_high_person_days": 33
+    },
+    {
+      "feature": "STORE-01",
+      "task": "DEV-006",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "chain_low_person_days": 19,
+      "chain_high_person_days": 33
+    },
+    {
+      "feature": "QA-01",
+      "task": "DEV-008",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "chain_low_person_days": 17,
+      "chain_high_person_days": 29
+    },
+    {
+      "feature": "QRY-01",
+      "task": "DEV-013",
+      "phase": "M1",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "chain_low_person_days": 17,
+      "chain_high_person_days": 30
+    },
+    {
+      "feature": "AUTH-01",
+      "task": "DEV-007",
+      "phase": "M0",
+      "depends": [
+        "STORE-01"
+      ],
+      "chain_low_person_days": 25,
+      "chain_high_person_days": 43
+    },
+    {
+      "feature": "SPIKE-01",
+      "task": "DEV-082",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "SEC-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 24,
+      "chain_high_person_days": 41
+    },
+    {
+      "feature": "CONTRACT-02",
+      "task": "DEV-083",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 20,
+      "chain_high_person_days": 34
+    },
+    {
+      "feature": "QRY-02",
+      "task": "DEV-014",
+      "phase": "M1",
+      "depends": [
+        "QRY-01"
+      ],
+      "chain_low_person_days": 21,
+      "chain_high_person_days": 37
+    },
+    {
+      "feature": "JOB-01",
+      "task": "DEV-005",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "STORE-01",
+        "AUTH-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 34,
+      "chain_high_person_days": 59
+    },
+    {
+      "feature": "EVID-02",
+      "task": "DEV-048",
+      "phase": "M4",
+      "depends": [
+        "STORE-01",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 28,
+      "chain_high_person_days": 48
+    },
+    {
+      "feature": "SRC-01",
+      "task": "DEV-009",
+      "phase": "M1",
+      "depends": [
+        "GOV-01",
+        "CONTRACT-02"
+      ],
+      "chain_low_person_days": 25,
+      "chain_high_person_days": 43
+    },
+    {
+      "feature": "API-00",
+      "task": "DEV-078",
+      "phase": "M1",
+      "depends": [
+        "CONTRACT-02",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 38,
+      "chain_high_person_days": 66
+    },
+    {
+      "feature": "OPS-00",
+      "task": "DEV-079",
+      "phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "JOB-01",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 37,
+      "chain_high_person_days": 64
+    },
+    {
+      "feature": "BACKUP-00",
+      "task": "DEV-080",
+      "phase": "M0",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 38,
+      "chain_high_person_days": 66
+    },
+    {
+      "feature": "SRC-02",
+      "task": "DEV-010",
+      "phase": "M1",
+      "depends": [
+        "SRC-01",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 38,
+      "chain_high_person_days": 66
+    },
+    {
+      "feature": "SRC-03",
+      "task": "DEV-011",
+      "phase": "M1",
+      "depends": [
+        "SRC-01",
+        "CONTRACT-01"
+      ],
+      "chain_low_person_days": 29,
+      "chain_high_person_days": 50
+    },
+    {
+      "feature": "ROBOTS-01",
+      "task": "DEV-081",
+      "phase": "M1",
+      "depends": [
+        "SEC-01",
+        "JOB-01",
+        "SRC-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 37,
+      "chain_high_person_days": 64
+    },
+    {
+      "feature": "READ-01",
+      "task": "DEV-021",
+      "phase": "M2",
+      "depends": [
+        "SEC-01",
+        "JOB-01",
+        "STORE-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "chain_low_person_days": 43,
+      "chain_high_person_days": 74
+    },
+    {
+      "feature": "MODEL-01",
+      "task": "DEV-043",
+      "phase": "M4",
+      "depends": [
+        "CONTRACT-02",
+        "SEC-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "chain_low_person_days": 43,
+      "chain_high_person_days": 74
+    },
+    {
+      "feature": "SRC-04",
+      "task": "DEV-012",
+      "phase": "M1",
+      "depends": [
+        "SRC-02",
+        "SRC-03",
+        "SEC-01",
+        "QA-01",
+        "QRY-01"
+      ],
+      "chain_low_person_days": 49,
+      "chain_high_person_days": 86
+    },
+    {
+      "feature": "READ-02",
+      "task": "DEV-022",
+      "phase": "M2",
+      "depends": [
+        "READ-01",
+        "SEC-01",
+        "SPIKE-01"
+      ],
+      "chain_low_person_days": 52,
+      "chain_high_person_days": 90
+    },
+    {
+      "feature": "READ-03",
+      "task": "DEV-023",
+      "phase": "M2",
+      "depends": [
+        "READ-01",
+        "STORE-01"
+      ],
+      "chain_low_person_days": 51,
+      "chain_high_person_days": 88
+    },
+    {
+      "feature": "SEARCH-01",
+      "task": "DEV-015",
+      "phase": "M1",
+      "depends": [
+        "SRC-04",
+        "QRY-01",
+        "QRY-02",
+        "JOB-01",
+        "AUTH-01",
+        "CONTRACT-02"
+      ],
+      "chain_low_person_days": 55,
+      "chain_high_person_days": 96
+    },
+    {
+      "feature": "READ-05",
+      "task": "DEV-024",
+      "phase": "M2",
+      "depends": [
+        "READ-02",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 56,
+      "chain_high_person_days": 97
+    },
+    {
+      "feature": "DOC-01",
+      "task": "DEV-025",
+      "phase": "M2",
+      "depends": [
+        "READ-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "chain_low_person_days": 59,
+      "chain_high_person_days": 102
+    },
+    {
+      "feature": "MAP-01",
+      "task": "DEV-027",
+      "phase": "M2",
+      "depends": [
+        "READ-03",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 56,
+      "chain_high_person_days": 97
+    },
+    {
+      "feature": "CRAWL-03",
+      "task": "DEV-029",
+      "phase": "M2",
+      "depends": [
+        "ROBOTS-01",
+        "READ-03"
+      ],
+      "chain_low_person_days": 54,
+      "chain_high_person_days": 93
+    },
+    {
+      "feature": "INDEX-01",
+      "task": "DEV-030",
+      "phase": "M2",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "chain_low_person_days": 58,
+      "chain_high_person_days": 100
+    },
+    {
+      "feature": "SEARCH-03",
+      "task": "DEV-016",
+      "phase": "M1",
+      "depends": [
+        "SEARCH-01"
+      ],
+      "chain_low_person_days": 60,
+      "chain_high_person_days": 105
+    },
+    {
+      "feature": "MODE-01",
+      "task": "DEV-019",
+      "phase": "M1",
+      "depends": [
+        "SEARCH-01",
+        "SRC-02"
+      ],
+      "chain_low_person_days": 58,
+      "chain_high_person_days": 101
+    },
+    {
+      "feature": "BATCH-01",
+      "task": "DEV-026",
+      "phase": "M2",
+      "depends": [
+        "READ-02",
+        "DOC-01",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 62,
+      "chain_high_person_days": 107
+    },
+    {
+      "feature": "INDEX-03",
+      "task": "DEV-031",
+      "phase": "M2",
+      "depends": [
+        "INDEX-01",
+        "CRAWL-03"
+      ],
+      "chain_low_person_days": 64,
+      "chain_high_person_days": 110
+    },
+    {
+      "feature": "QRY-03",
+      "task": "DEV-033",
+      "phase": "M3",
+      "depends": [
+        "QRY-02",
+        "INDEX-01"
+      ],
+      "chain_low_person_days": 64,
+      "chain_high_person_days": 110
+    },
+    {
+      "feature": "EVID-01",
+      "task": "DEV-047",
+      "phase": "M4",
+      "depends": [
+        "READ-03",
+        "INDEX-01",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 63,
+      "chain_high_person_days": 108
+    },
+    {
+      "feature": "SESSION-01",
+      "task": "DEV-017",
+      "phase": "M1",
+      "depends": [
+        "SEARCH-03",
+        "AUTH-01",
+        "STORE-01"
+      ],
+      "chain_low_person_days": 66,
+      "chain_high_person_days": 115
+    },
+    {
+      "feature": "RANK-01",
+      "task": "DEV-037",
+      "phase": "M3",
+      "depends": [
+        "SEARCH-03",
+        "READ-03"
+      ],
+      "chain_low_person_days": 66,
+      "chain_high_person_days": 115
+    },
+    {
+      "feature": "CRAWL-01",
+      "task": "DEV-028",
+      "phase": "M2",
+      "depends": [
+        "MAP-01",
+        "BATCH-01",
+        "SRC-02",
+        "ROBOTS-01"
+      ],
+      "chain_low_person_days": 70,
+      "chain_high_person_days": 121
+    },
+    {
+      "feature": "CACHE-01",
+      "task": "DEV-032",
+      "phase": "M2",
+      "depends": [
+        "READ-01",
+        "INDEX-03"
+      ],
+      "chain_low_person_days": 70,
+      "chain_high_person_days": 120
+    },
+    {
+      "feature": "QRY-04",
+      "task": "DEV-034",
+      "phase": "M3",
+      "depends": [
+        "SRC-03",
+        "READ-03",
+        "INDEX-03"
+      ],
+      "chain_low_person_days": 70,
+      "chain_high_person_days": 120
+    },
+    {
+      "feature": "PRIVATE-01",
+      "task": "DEV-058",
+      "phase": "M5",
+      "depends": [
+        "DOC-01",
+        "INDEX-03",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 71,
+      "chain_high_person_days": 122
+    },
+    {
+      "feature": "QRY-05",
+      "task": "DEV-035",
+      "phase": "M3",
+      "depends": [
+        "QRY-03"
+      ],
+      "chain_low_person_days": 68,
+      "chain_high_person_days": 117
+    },
+    {
+      "feature": "SESSION-02",
+      "task": "DEV-018",
+      "phase": "M1",
+      "depends": [
+        "SESSION-01",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 70,
+      "chain_high_person_days": 122
+    },
+    {
+      "feature": "RANK-02",
+      "task": "DEV-038",
+      "phase": "M3",
+      "depends": [
+        "RANK-01",
+        "MODE-01"
+      ],
+      "chain_low_person_days": 70,
+      "chain_high_person_days": 122
+    },
+    {
+      "feature": "MODEL-02",
+      "task": "DEV-044",
+      "phase": "M4",
+      "depends": [
+        "MODEL-01",
+        "CACHE-01",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 76,
+      "chain_high_person_days": 130
+    },
+    {
+      "feature": "SEARCH-05",
+      "task": "DEV-039",
+      "phase": "M3",
+      "depends": [
+        "QRY-04",
+        "MODE-01"
+      ],
+      "chain_low_person_days": 73,
+      "chain_high_person_days": 125
+    },
+    {
+      "feature": "FACET-01",
+      "task": "DEV-040",
+      "phase": "M3",
+      "depends": [
+        "SESSION-01",
+        "QRY-04"
+      ],
+      "chain_low_person_days": 75,
+      "chain_high_person_days": 128
+    },
+    {
+      "feature": "QRY-06",
+      "task": "DEV-036",
+      "phase": "M3",
+      "depends": [
+        "QRY-05",
+        "AUTH-01"
+      ],
+      "chain_low_person_days": 72,
+      "chain_high_person_days": 124
+    },
+    {
+      "feature": "UI-01",
+      "task": "DEV-020",
+      "phase": "M1",
+      "depends": [
+        "SESSION-02",
+        "CORE-01",
+        "API-00"
+      ],
+      "chain_low_person_days": 76,
+      "chain_high_person_days": 132
+    },
+    {
+      "feature": "SEARCH-02",
+      "task": "DEV-045",
+      "phase": "M4",
+      "depends": [
+        "MODEL-02",
+        "QRY-04"
+      ],
+      "chain_low_person_days": 81,
+      "chain_high_person_days": 138
+    },
+    {
+      "feature": "INDEX-02",
+      "task": "DEV-046",
+      "phase": "M4",
+      "depends": [
+        "MODEL-02",
+        "INDEX-03",
+        "QRY-03"
+      ],
+      "chain_low_person_days": 86,
+      "chain_high_person_days": 147
+    },
+    {
+      "feature": "EXTRACT-01",
+      "task": "DEV-049",
+      "phase": "M4",
+      "depends": [
+        "EVID-01",
+        "MODEL-02"
+      ],
+      "chain_low_person_days": 82,
+      "chain_high_person_days": 140
+    },
+    {
+      "feature": "DOC-02",
+      "task": "DEV-060",
+      "phase": "M6",
+      "depends": [
+        "DOC-01",
+        "MODEL-02",
+        "EVID-01"
+      ],
+      "chain_low_person_days": 84,
+      "chain_high_person_days": 144
+    },
+    {
+      "feature": "SRC-05",
+      "task": "DEV-041",
+      "phase": "M3",
+      "depends": [
+        "RANK-02",
+        "SEARCH-05"
+      ],
+      "chain_low_person_days": 77,
+      "chain_high_person_days": 132
+    },
+    {
+      "feature": "QA-02",
+      "task": "DEV-042",
+      "phase": "M3",
+      "depends": [
+        "QRY-04",
+        "RANK-01",
+        "FACET-01",
+        "QA-01"
+      ],
+      "chain_low_person_days": 81,
+      "chain_high_person_days": 139
+    },
+    {
+      "feature": "WORKSPACE-01",
+      "task": "DEV-066",
+      "phase": "M7",
+      "depends": [
+        "FACET-01",
+        "AUTH-01",
+        "EVID-02"
+      ],
+      "chain_low_person_days": 81,
+      "chain_high_person_days": 138
+    },
+    {
+      "feature": "CRAWL-02",
+      "task": "DEV-055",
+      "phase": "M5",
+      "depends": [
+        "CRAWL-01",
+        "SEARCH-02"
+      ],
+      "chain_low_person_days": 86,
+      "chain_high_person_days": 147
+    },
+    {
+      "feature": "SEARCH-04",
+      "task": "DEV-052",
+      "phase": "M4",
+      "depends": [
+        "INDEX-02",
+        "EVID-01"
+      ],
+      "chain_low_person_days": 91,
+      "chain_high_person_days": 155
+    },
+    {
+      "feature": "CODE-01",
+      "task": "DEV-056",
+      "phase": "M5",
+      "depends": [
+        "INDEX-02",
+        "QRY-02",
+        "DOC-01"
+      ],
+      "chain_low_person_days": 93,
+      "chain_high_person_days": 159
+    },
+    {
+      "feature": "ANSWER-01",
+      "task": "DEV-050",
+      "phase": "M4",
+      "depends": [
+        "EXTRACT-01",
+        "EVID-02"
+      ],
+      "chain_low_person_days": 87,
+      "chain_high_person_days": 149
+    },
+    {
+      "feature": "READ-04",
+      "task": "DEV-054",
+      "phase": "M5",
+      "depends": [
+        "READ-03",
+        "EXTRACT-01"
+      ],
+      "chain_low_person_days": 88,
+      "chain_high_person_days": 151
+    },
+    {
+      "feature": "UPDATE-01",
+      "task": "DEV-065",
+      "phase": "M7",
+      "depends": [
+        "INDEX-03",
+        "CACHE-01",
+        "EXTRACT-01"
+      ],
+      "chain_low_person_days": 87,
+      "chain_high_person_days": 149
+    },
+    {
+      "feature": "PREF-01",
+      "task": "DEV-067",
+      "phase": "M7",
+      "depends": [
+        "RANK-02",
+        "WORKSPACE-01"
+      ],
+      "chain_low_person_days": 85,
+      "chain_high_person_days": 145
+    },
+    {
+      "feature": "RESEARCH-01",
+      "task": "DEV-051",
+      "phase": "M4",
+      "depends": [
+        "ANSWER-01",
+        "SEARCH-02",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 95,
+      "chain_high_person_days": 163
+    },
+    {
+      "feature": "WATCH-01",
+      "task": "DEV-068",
+      "phase": "M7",
+      "depends": [
+        "UPDATE-01",
+        "WORKSPACE-01",
+        "JOB-01"
+      ],
+      "chain_low_person_days": 95,
+      "chain_high_person_days": 163
+    },
+    {
+      "feature": "DATASET-01",
+      "task": "DEV-053",
+      "phase": "M5",
+      "depends": [
+        "EXTRACT-01",
+        "RESEARCH-01"
+      ],
+      "chain_low_person_days": 101,
+      "chain_high_person_days": 173
+    },
+    {
+      "feature": "OPS-02",
+      "task": "DEV-074",
+      "phase": "M8",
+      "depends": [
+        "BACKUP-00",
+        "INDEX-03",
+        "WATCH-01"
+      ],
+      "chain_low_person_days": 99,
+      "chain_high_person_days": 169
+    },
+    {
+      "feature": "SCHOLAR-01",
+      "task": "DEV-057",
+      "phase": "M5",
+      "depends": [
+        "DATASET-01",
+        "SRC-04",
+        "DOC-01"
+      ],
+      "chain_low_person_days": 107,
+      "chain_high_person_days": 183
+    },
+    {
+      "feature": "EXPORT-01",
+      "task": "DEV-069",
+      "phase": "M7",
+      "depends": [
+        "WORKSPACE-01",
+        "DATASET-01"
+      ],
+      "chain_low_person_days": 106,
+      "chain_high_person_days": 181
+    },
+    {
+      "feature": "SRC-06",
+      "task": "DEV-059",
+      "phase": "M5",
+      "depends": [
+        "SRC-05",
+        "SCHOLAR-01"
+      ],
+      "chain_low_person_days": 115,
+      "chain_high_person_days": 199
+    },
+    {
+      "feature": "WEBHOOK-01",
+      "task": "DEV-070",
+      "phase": "M7",
+      "depends": [
+        "WATCH-01",
+        "EXPORT-01",
+        "SEC-01"
+      ],
+      "chain_low_person_days": 110,
+      "chain_high_person_days": 188
+    },
+    {
+      "feature": "IMAGE-01",
+      "task": "DEV-061",
+      "phase": "M6",
+      "depends": [
+        "INDEX-02",
+        "SRC-06"
+      ],
+      "chain_low_person_days": 121,
+      "chain_high_person_days": 209
+    },
+    {
+      "feature": "AV-01",
+      "task": "DEV-063",
+      "phase": "M6",
+      "depends": [
+        "SRC-06",
+        "EVID-01",
+        "INDEX-02"
+      ],
+      "chain_low_person_days": 123,
+      "chain_high_person_days": 212
+    },
+    {
+      "feature": "IMAGE-02",
+      "task": "DEV-062",
+      "phase": "M6",
+      "depends": [
+        "IMAGE-01",
+        "DOC-02"
+      ],
+      "chain_low_person_days": 129,
+      "chain_high_person_days": 223
+    },
+    {
+      "feature": "AV-02",
+      "task": "DEV-064",
+      "phase": "M6",
+      "depends": [
+        "AV-01",
+        "MODEL-02",
+        "DOC-02"
+      ],
+      "chain_low_person_days": 133,
+      "chain_high_person_days": 230
+    },
+    {
+      "feature": "API-01",
+      "task": "DEV-071",
+      "phase": "M7",
+      "depends": [
+        "API-00",
+        "RESEARCH-01",
+        "IMAGE-02",
+        "AV-02",
+        "EXPORT-01"
+      ],
+      "chain_low_person_days": 137,
+      "chain_high_person_days": 237
+    },
+    {
+      "feature": "UI-02",
+      "task": "DEV-072",
+      "phase": "M7",
+      "depends": [
+        "API-01",
+        "PREF-01",
+        "WEBHOOK-01"
+      ],
+      "chain_low_person_days": 145,
+      "chain_high_person_days": 251
+    },
+    {
+      "feature": "OPS-01",
+      "task": "DEV-073",
+      "phase": "M8",
+      "depends": [
+        "OPS-00",
+        "QA-02",
+        "UI-02"
+      ],
+      "chain_low_person_days": 148,
+      "chain_high_person_days": 256
+    },
+    {
+      "feature": "SCALE-01",
+      "task": "DEV-075",
+      "phase": "M8",
+      "depends": [
+        "OPS-01",
+        "JOB-01",
+        "OPS-02",
+        "API-00"
+      ],
+      "chain_low_person_days": 158,
+      "chain_high_person_days": 274
+    },
+    {
+      "feature": "QA-03",
+      "task": "DEV-076",
+      "phase": "M8",
+      "depends": [
+        "OPS-01",
+        "OPS-02",
+        "SCALE-01"
+      ],
+      "chain_low_person_days": 166,
+      "chain_high_person_days": 288
+    },
+    {
+      "feature": "RELEASE-01",
+      "task": "DEV-077",
+      "phase": "M8",
+      "depends": [
+        "QA-03",
+        "GOV-01"
+      ],
+      "chain_low_person_days": 172,
+      "chain_high_person_days": 298
+    }
+  ]
+}

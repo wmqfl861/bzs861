@@ -1,0 +1,15 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 25, "patch": 0},
+  "configurePresets": [
+    {"name": "dev", "generator": "Ninja", "binaryDir": "${sourceDir}/build", "cacheVariables": {"CMAKE_BUILD_TYPE":"Debug", "BZS_BUILD_TESTS":"ON"}},
+    {"name": "release", "inherits":"dev", "binaryDir":"${sourceDir}/build-release", "cacheVariables":{"CMAKE_BUILD_TYPE":"Release"}},
+    {"name": "asan", "inherits":"dev", "binaryDir":"${sourceDir}/build-asan", "cacheVariables":{"BZS_SANITIZERS":"ON"}}
+  ],
+  "buildPresets": [
+    {"name":"dev", "configurePreset":"dev"},
+    {"name":"release", "configurePreset":"release"},
+    {"name":"asan-core", "configurePreset":"asan", "targets":["bzs_tests","bzs_contract_tests"]}
+  ],
+  "testPresets": [{"name":"dev", "configurePreset":"dev", "output":{"outputOnFailure":true}}]
+}

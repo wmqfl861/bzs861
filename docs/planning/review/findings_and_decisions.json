@@ -1,0 +1,284 @@
+[
+  {
+    "id": "RV-01",
+    "severity": "P1",
+    "title": "早期协议集成没有独立交付包",
+    "origin": "author_self_review",
+    "evidence": "API-01在M7依赖RESEARCH/IMAGE/AV/EXPORT；CORE仅有空壳，M1跨协议一致性无独立验收。",
+    "location": "蓝图§9/13；DEV-071依赖",
+    "decision": "采纳",
+    "decision_reason": "新增API-00，API-01减量改为全覆盖收尾。",
+    "features": [
+      "API-00",
+      "API-01",
+      "UI-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-02",
+    "severity": "P0",
+    "title": "robots在依赖图中晚于递归爬虫",
+    "origin": "author_self_review",
+    "evidence": "CRAWL-03负责robots但依赖CRAWL-01，递归请求准入与交付顺序倒置。",
+    "location": "DEV-028/029",
+    "decision": "采纳",
+    "decision_reason": "拆出ROBOTS-01作为CRAWL-01前置；noindex/nosnippet继续在CRAWL-03。",
+    "features": [
+      "ROBOTS-01",
+      "CRAWL-01",
+      "CRAWL-03"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-03",
+    "severity": "P1",
+    "title": "观测和备份排到M8才交付",
+    "origin": "author_self_review",
+    "evidence": "OPS-01依赖完整UI，OPS-02依赖订阅；基础恢复和容量诊断需要更早。",
+    "location": "DEV-073/074",
+    "decision": "采纳",
+    "decision_reason": "新增OPS-00/BACKUP-00，原包减量保留最终演练。",
+    "features": [
+      "OPS-00",
+      "BACKUP-00",
+      "OPS-01",
+      "OPS-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-04",
+    "severity": "P1",
+    "title": "无模型配置与基础运行承诺矛盾",
+    "origin": "author_self_review",
+    "evidence": "model-config要求非空default_text_profile、至少一个profile与四个角色；无模型部署被Schema拒绝。",
+    "location": "schemas/model-config.schema.json；A-21",
+    "decision": "采纳",
+    "decision_reason": "允许空profile集合/null默认；模型增强能力单独禁用。",
+    "features": [
+      "MODEL-01",
+      "CONTRACT-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-05",
+    "severity": "P1",
+    "title": "请求语义校验仍只有文字约定",
+    "origin": "author_self_review",
+    "evidence": "host+after等结构可过Schema；文档已说明需要程序检查，但交付无可执行合同向量。",
+    "location": "schemas/search-request.schema.json",
+    "decision": "采纳",
+    "decision_reason": "加强字段/操作符/时间结构，补复杂度/离线冲突语义验证器与负例。",
+    "features": [
+      "QRY-01",
+      "CONTRACT-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-06",
+    "severity": "P1",
+    "title": "角色继承、并发与默认值未闭合",
+    "origin": "author_self_review",
+    "evidence": "角色覆盖只含部分字段，profile必填；default注解不能自动生成实际配置；来源审核日期未限定格式。",
+    "location": "三份Schema",
+    "decision": "采纳",
+    "decision_reason": "统一角色覆盖对象、明确缺省/null、格式校验与source审核到期语义。",
+    "features": [
+      "MODEL-01",
+      "MODEL-02",
+      "SRC-01",
+      "CONTRACT-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-07",
+    "severity": "P1",
+    "title": "unknown来源桶与证据独立性容易混用",
+    "origin": "author_self_review",
+    "evidence": "索引族允许unknown；RRF说明没有给未知服务稳定的分组身份。",
+    "location": "蓝图§4.2/来源Schema",
+    "decision": "部分采纳",
+    "decision_reason": "保留RRF，补稳定服务贡献桶；不把所有unknown合并，也不声明未知来源独立。",
+    "features": [
+      "SEARCH-03",
+      "RANK-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-08",
+    "severity": "P0",
+    "title": "向量索引在线更新缺少并发合同",
+    "origin": "author_self_review",
+    "evidence": "计划有异步写入/查询/重建，但未约束同一HNSW实例并发访问与发布切换。",
+    "location": "蓝图§7.2/7.3；上游并发说明",
+    "decision": "部分采纳",
+    "decision_reason": "保留hnswlib候选；应用锁/单writer/代际切换/水位与版本准入；不立即改成重型数据库。",
+    "features": [
+      "INDEX-02",
+      "INDEX-03"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-09",
+    "severity": "P1",
+    "title": "高风险技术验证没有可交付工作包",
+    "origin": "author_self_review",
+    "evidence": "CDP跨平台隔离、中文FTS映射、PDF构建仅在文字里提到spike。",
+    "location": "蓝图§2/13.4",
+    "decision": "采纳",
+    "decision_reason": "新增SPIKE-01并设前置依赖与ADR退出条件。",
+    "features": [
+      "SPIKE-01",
+      "READ-02",
+      "DOC-01",
+      "INDEX-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-10",
+    "severity": "P0",
+    "title": "来源数量门禁不能证明通用网页能力",
+    "origin": "author_self_review",
+    "evidence": "M1只要求3–5来源，可被全是学术/馆藏的来源满足。",
+    "location": "蓝图§5/13.1",
+    "decision": "采纳",
+    "decision_reason": "web上线必须至少一个真实审核web来源和固定查询报告；不足不签web Alpha。",
+    "features": [
+      "SRC-04"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-11",
+    "severity": "P0",
+    "title": "从旧备份恢复的撤销水位来源不完整",
+    "origin": "author_self_review",
+    "evidence": "要求重放最新tombstone，但若日志和DB一起回滚则无法证明最新性。",
+    "location": "蓝图§7.4/备份清单",
+    "decision": "采纳",
+    "decision_reason": "独立保护的撤销journal+水位；恢复隔离，不能验证则fail-closed。",
+    "features": [
+      "BACKUP-00",
+      "AUTH-01",
+      "OPS-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-12",
+    "severity": "P1",
+    "title": "多来源订阅需要分源推进与交付事务",
+    "origin": "author_self_review",
+    "evidence": "当前成功水位没有足够明确地拆source；一次部分失败可能阻塞或漏扫。",
+    "location": "蓝图§10/DEV-068",
+    "decision": "采纳",
+    "decision_reason": "分源checkpoint、重叠扫描、outbox、event_id去重和交付状态。",
+    "features": [
+      "WATCH-01",
+      "WEBHOOK-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-13",
+    "severity": "P1",
+    "title": "依赖无环不等于依赖完整",
+    "origin": "author_self_review",
+    "evidence": "JOB仅依赖CONTRACT，持久化/授权并未成为前置；基础Highlights不必被模型阻塞。",
+    "location": "requirements_and_backlog.json",
+    "decision": "采纳",
+    "decision_reason": "补STORE/AUTH/QA依赖；移除EVID基础对MODEL的硬依赖，增强路径仍单验。",
+    "features": [
+      "JOB-01",
+      "EVID-01",
+      "SEARCH-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-14",
+    "severity": "P1",
+    "title": "质量门禁需要冻结过程而非待定承诺",
+    "origin": "author_self_review",
+    "evidence": "计划列指标但环境、阈值和留出集冻结的责任/阻断规则不够明确。",
+    "location": "蓝图§12",
+    "decision": "采纳",
+    "decision_reason": "设G0基线与逐阶段门禁文件；未知阈值不得标通过，保留覆盖率与弃答率。",
+    "features": [
+      "QA-02",
+      "SPIKE-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-15",
+    "severity": "P1",
+    "title": "任务预算不能代替总存储与回压",
+    "origin": "author_self_review",
+    "evidence": "单任务bytes已有约束，但blob、媒体、事件、导出与GC的累计容量未闭合。",
+    "location": "蓝图§6/7/16",
+    "decision": "采纳",
+    "decision_reason": "分类配额、高低水位、并发预留、GC引用pin和磁盘满恢复用例。",
+    "features": [
+      "STORE-01",
+      "JOB-01",
+      "CACHE-01"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  },
+  {
+    "id": "RV-16",
+    "severity": "P1",
+    "title": "独立review需要可验证执行与版本绑定",
+    "origin": "author_self_review",
+    "evidence": "工作包要求独立review，但没有reviewer/run/input-hash输出合同，容易与作者自审混同。",
+    "location": "蓝图§13.3/13.4",
+    "decision": "采纳",
+    "decision_reason": "新增handoff模板和review状态/输入哈希；本轮明确未执行独立子Agent审核。",
+    "features": [
+      "GOV-01",
+      "CONTRACT-02"
+    ],
+    "document_status": "已修订",
+    "implementation_status": "未实现",
+    "independent_review_status": "未执行"
+  }
+]

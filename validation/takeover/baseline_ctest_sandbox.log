@@ -1,0 +1,121 @@
+Internal ctest changing into directory: /workspace/scratch/80f41eb198a3/build-baseline
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-baseline/DartConfiguration.tcl
+Test project /workspace/scratch/80f41eb198a3/build-baseline
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: core
+
+1: Test command: /workspace/scratch/80f41eb198a3/build-baseline/bzs_tests
+1: Working Directory: /workspace/scratch/80f41eb198a3/build-baseline
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_auth_epoch
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: {"tests":45,"passed":45,"assertions":174}
+1/2 Test #1: core .............................   Passed    0.52 sec
+test 2
+    Start 2: http_cli
+
+2: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py" "--server" "/workspace/scratch/80f41eb198a3/build-baseline/searchd" "--cli" "/workspace/scratch/80f41eb198a3/build-baseline/searchctl" "--fixtures" "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/fixtures"
+2: Working Directory: /workspace/scratch/80f41eb198a3/build-baseline
+2: Test timeout computed to be: 90
+2: setUpClass (__main__.Integration) ... ERROR
+2: 
+2: ======================================================================
+2: ERROR: setUpClass (__main__.Integration)
+2: ----------------------------------------------------------------------
+2: Traceback (most recent call last):
+2:   File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 91, in setUpClass
+2:     cls.server = RunningServer(Path(cls.tmp.name))
+2:                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2:   File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 36, in __init__
+2:     self.start()
+2:   File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 50, in start
+2:     raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+2: RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::open(implementation_type&, const protocol_type&, boost::system::error_code&)']
+2: 
+2: 
+2: ----------------------------------------------------------------------
+2: Ran 0 tests in 0.039s
+2: 
+2: FAILED (errors=1)
+2/2 Test #2: http_cli .........................***Failed    0.27 sec
+setUpClass (__main__.Integration) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.Integration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 91, in setUpClass
+    cls.server = RunningServer(Path(cls.tmp.name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/80f41eb198a3/handoff/bzs861_handoff_20261017/01_repo_upload/bzs861/tests/integration.py", line 50, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::open(implementation_type&, const protocol_type&, boost::system::error_code&)']
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.039s
+
+FAILED (errors=1)
+
+
+50% tests passed, 1 tests failed out of 2
+
+Total Test time (real) =   0.81 sec
+
+The following tests FAILED:
+	  2 - http_cli (Failed)
+Errors while running CTest

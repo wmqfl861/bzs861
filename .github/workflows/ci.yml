@@ -1,0 +1,65 @@
+name: bootstrap-checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev python3-venv
+      - name: Build and run offline tests
+        run: |
+          cmake --preset dev
+          cmake --build --preset dev -j 2
+          ctest --preset dev
+      - name: Address and undefined-behavior checks (core and contracts)
+        run: |
+          cmake --preset asan
+          cmake --build --preset asan-core -j 2
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_tests
+          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json
+      - name: Original design-contract fixtures
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r tools/requirements-test.txt
+          .venv/bin/python docs/planning/tools/validate_contracts.py
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Check out the pinned vcpkg baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: microsoft/vcpkg
+          ref: 6719fd4d4cd3b2d4575f6164da4a02f757b3b067
+          path: .build-tools/vcpkg
+          persist-credentials: false
+      - name: Install C++ dependencies
+        shell: pwsh
+        run: |
+          & ./.build-tools/vcpkg/bootstrap-vcpkg.bat -disableMetrics
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./.build-tools/vcpkg/vcpkg.exe install "sqlite3[fts5]:x64-windows" libxml2:x64-windows json-c:x64-windows openssl:x64-windows boost-beast:x64-windows
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake -S . -B build-win -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/.build-tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build-win --config Debug --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Offline tests
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
+          ctest --test-dir build-win -C Debug --output-on-failure

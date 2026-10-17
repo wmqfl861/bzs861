@@ -1,0 +1,812 @@
+{
+  "version": "0.0.2",
+  "baseline": "development_blueprint_v1.1 / functional_spec_v0.3",
+  "recorded_at": "2026-10-17T03:00:33.844018+00:00",
+  "scope": "offline_takeover_slice_with_native_contract_validation",
+  "milestones_accepted": [],
+  "full_work_packages_accepted": 0,
+  "partial_work_packages": 21,
+  "not_started": 62,
+  "planned_acceptance_items": 161,
+  "planned_acceptance_suite_executed": false,
+  "independent_review": "performed_for_takeover_slice_only",
+  "github_ci": "consult_workflow_for_exact_commit",
+  "features": [
+    {
+      "feature_id": "GOV-01",
+      "task_id": "DEV-001",
+      "name": "需求边界、能力目录与许可证清单",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "真实能力目录、免费服务/用户模型边界、依赖记录和ADR",
+      "remaining": "依赖完整许可审查、SBOM和独立review未完成"
+    },
+    {
+      "feature_id": "CORE-01",
+      "task_id": "DEV-002",
+      "name": "C++工程骨架与跨平台构建",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "Linux C++20构建、searchd/searchctl、3组CTest及固定checkout/vcpkg来源的跨平台CI",
+      "remaining": "以对应提交的CI核验Windows；完整版本依赖锁、Windows ACL/Unicode路径与发布验收仍未完成"
+    },
+    {
+      "feature_id": "CONTRACT-01",
+      "task_id": "DEV-003",
+      "name": "数据合同与错误/取消协议",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "运行时JSON、QueryAST、快照/证据/任务/会话错误合同",
+      "remaining": "/api/v0仅启动子集；正式v1合同、MCP和工作进程RPC未实现"
+    },
+    {
+      "feature_id": "SEC-01",
+      "task_id": "DEV-004",
+      "name": "网络与执行隔离",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "离线能力白名单、loopback/Host/Origin/鉴权/请求大小与超时限制",
+      "remaining": "无公网URL读取，未实现DNS/重定向/浏览器和解析worker沙箱"
+    },
+    {
+      "feature_id": "JOB-01",
+      "task_id": "DEV-005",
+      "name": "持久任务、预算与恢复",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "固定页面任务持久化、幂等、暂停/取消、lease epoch、过期恢复和原子提交",
+      "remaining": "不是递归爬虫/模型作业调度；无远程worker与完整多维预算"
+    },
+    {
+      "feature_id": "STORE-01",
+      "task_id": "DEV-006",
+      "name": "内容快照、结构块与证据基础存储",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "SQLite原始内容/快照/提取/证据的不可变版本关系",
+      "remaining": "尚无独立blob存储、结构化块索引与通用GC"
+    },
+    {
+      "feature_id": "AUTH-01",
+      "task_id": "DEV-007",
+      "name": "认证、授权、私有内容与删除策略",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "令牌摘要、用户隔离、删除与auth_epoch撤销",
+      "remaining": "无组织/RBAC细粒度共享；无独立长期撤销日志及安全恢复"
+    },
+    {
+      "feature_id": "QA-01",
+      "task_id": "DEV-008",
+      "name": "固定样本、模拟来源与回放测试底座",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "固定HTML/TXT与来源样例；52核心测试、55原生配置合同测试、20HTTP/CLI测试；另保留34组Python设计基线",
+      "remaining": "完整161条产品门禁未执行，网络/多媒体/全平台基准未建立"
+    },
+    {
+      "feature_id": "SRC-01",
+      "task_id": "DEV-009",
+      "name": "免费入口审核与来源注册",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SRC-02",
+      "task_id": "DEV-010",
+      "name": "健康检查、限流、退避与共享配额",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SRC-03",
+      "task_id": "DEV-011",
+      "name": "来源能力协商与参数翻译",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SRC-04",
+      "task_id": "DEV-012",
+      "name": "免费底层来源并集清点与首批适配",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QRY-01",
+      "task_id": "DEV-013",
+      "name": "统一查询语法与AST",
+      "phase": "M1",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "AND/OR/NOT/短语/字段/精确符号，正向全局site/filetype子集",
+      "remaining": "未支持完整硬过滤、多语言分析和全部统一v1 AST节点"
+    },
+    {
+      "feature_id": "QRY-02",
+      "task_id": "DEV-014",
+      "name": "精确字面与标识符匹配",
+      "phase": "M1",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "C++、C#、std::expected及原文字面回归测试",
+      "remaining": "没有完整代码索引、错误码语料及分析器质量验收"
+    },
+    {
+      "feature_id": "SEARCH-01",
+      "task_id": "DEV-015",
+      "name": "多源并发搜索与部分结果",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SEARCH-03",
+      "task_id": "DEV-016",
+      "name": "来源去重、内容身份与基础融合",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SESSION-01",
+      "task_id": "DEV-017",
+      "name": "搜索会话、冻结结果与稳定游标",
+      "phase": "M1",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "本地结果物化、稳定游标、TTL、跨用户拒绝与撤权失效",
+      "remaining": "没有外部来源分页位置、流式事件、断线续传和细化查询工作流"
+    },
+    {
+      "feature_id": "SESSION-02",
+      "task_id": "DEV-018",
+      "name": "流式结果、断线续传与取消",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "MODE-01",
+      "task_id": "DEV-019",
+      "name": "快速/均衡/深入执行预设",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "UI-01",
+      "task_id": "DEV-020",
+      "name": "最小搜索、读取与任务界面",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "READ-01",
+      "task_id": "DEV-021",
+      "name": "HTTP读取与质量状态",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "READ-02",
+      "task_id": "DEV-022",
+      "name": "动态网页与受控浏览器动作",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "READ-03",
+      "task_id": "DEV-023",
+      "name": "正文、代码、表格与元数据提取",
+      "phase": "M2",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "HTML主子树选择、隐藏祖先过滤、标题/链接/代码与基础表格；robots独立指令解析；bootstrap-html/2",
+      "remaining": "缺少独立解析沙箱、文档块schema和复杂站点质量基准"
+    },
+    {
+      "feature_id": "READ-05",
+      "task_id": "DEV-024",
+      "name": "授权会话与站点读取配置",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "DOC-01",
+      "task_id": "DEV-025",
+      "name": "PDF/文本及Office开放格式解析",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "BATCH-01",
+      "task_id": "DEV-026",
+      "name": "批量网页/文档读取",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "MAP-01",
+      "task_id": "DEV-027",
+      "name": "Sitemap/Feed/链接发现",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "CRAWL-01",
+      "task_id": "DEV-028",
+      "name": "有界递归爬虫与抓取前沿",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "CRAWL-03",
+      "task_id": "DEV-029",
+      "name": "公开索引与摘要发布规则",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "INDEX-01",
+      "task_id": "DEV-030",
+      "name": "字段化全文检索与索引服务",
+      "phase": "M2",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "FTS5 ASCII规范化候选副本与精确谓词一致；短语/中文/符号有界扫描；schema1到2原子索引迁移",
+      "remaining": "无完整中文tokenizer/混合检索/高质量BM25排序验收"
+    },
+    {
+      "feature_id": "INDEX-03",
+      "task_id": "DEV-031",
+      "name": "索引增删改、可见性与版本切换",
+      "phase": "M2",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "内容事务内新增更新删除同步到FTS，冻结结果撤销",
+      "remaining": "向量/多模态/远程节点一致性未实现"
+    },
+    {
+      "feature_id": "CACHE-01",
+      "task_id": "DEV-032",
+      "name": "多级缓存与在途请求复用",
+      "phase": "M2",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QRY-03",
+      "task_id": "DEV-033",
+      "name": "中文简繁、混合语言与原文映射",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QRY-04",
+      "task_id": "DEV-034",
+      "name": "硬条件核验与预算内补召回",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QRY-05",
+      "task_id": "DEV-035",
+      "name": "纠错、别名与可控模糊匹配",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QRY-06",
+      "task_id": "DEV-036",
+      "name": "联想补全与相关查询",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "RANK-01",
+      "task_id": "DEV-037",
+      "name": "多样性、转载聚类与质量过滤",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "RANK-02",
+      "task_id": "DEV-038",
+      "name": "排序解释与来源增量价值",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SEARCH-05",
+      "task_id": "DEV-039",
+      "name": "空结果诊断与安全放宽建议",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "FACET-01",
+      "task_id": "DEV-040",
+      "name": "分面筛选与连续细化",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SRC-05",
+      "task_id": "DEV-041",
+      "name": "自适应来源选择与后续批次扩展",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QA-02",
+      "task_id": "DEV-042",
+      "name": "检索相关性与约束基准",
+      "phase": "M3",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "MODEL-01",
+      "task_id": "DEV-043",
+      "name": "模型端点、角色配置与能力验证",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "MODEL-02",
+      "task_id": "DEV-044",
+      "name": "模型预算、结构输出、缓存与数据出站",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SEARCH-02",
+      "task_id": "DEV-045",
+      "name": "自然语言规划与跨语言扩展",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "INDEX-02",
+      "task_id": "DEV-046",
+      "name": "语义向量与混合检索",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "EVID-01",
+      "task_id": "DEV-047",
+      "name": "原文Highlights与证据定位",
+      "phase": "M4",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "字节原文定位及不可变快照、引用保存读取",
+      "remaining": "未实现查询相关Highlights排名和语义支持核验"
+    },
+    {
+      "feature_id": "EVID-02",
+      "task_id": "DEV-048",
+      "name": "页内查找、定位与分段阅读",
+      "phase": "M4",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "固定快照按UTF-8字节读取、原文查找与上下文",
+      "remaining": "尚无PDF页码/DOM坐标/结构块的统一定位"
+    },
+    {
+      "feature_id": "EXTRACT-01",
+      "task_id": "DEV-049",
+      "name": "规则/模型字段提取与证据核验",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "ANSWER-01",
+      "task_id": "DEV-050",
+      "name": "证据回答与冲突呈现",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "RESEARCH-01",
+      "task_id": "DEV-051",
+      "name": "有界多轮研究",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SEARCH-04",
+      "task_id": "DEV-052",
+      "name": "相似网页与示例驱动检索",
+      "phase": "M4",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "DATASET-01",
+      "task_id": "DEV-053",
+      "name": "实体资料集与逐项条件核验",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "READ-04",
+      "task_id": "DEV-054",
+      "name": "自适应定位与规则修复",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "CRAWL-02",
+      "task_id": "DEV-055",
+      "name": "主题定向采集与列表分页策略",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "CODE-01",
+      "task_id": "DEV-056",
+      "name": "代码与技术文档专门检索",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SCHOLAR-01",
+      "task_id": "DEV-057",
+      "name": "论文/数据集检索与标识消歧",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "PRIVATE-01",
+      "task_id": "DEV-058",
+      "name": "本地文件与授权私人资料导入",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SRC-06",
+      "task_id": "DEV-059",
+      "name": "免费来源扩充与维护工作台",
+      "phase": "M5",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "DOC-02",
+      "task_id": "DEV-060",
+      "name": "OCR、复杂版面与视觉辅助读取",
+      "phase": "M6",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "IMAGE-01",
+      "task_id": "DEV-061",
+      "name": "图片检索与图片资产索引",
+      "phase": "M6",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "IMAGE-02",
+      "task_id": "DEV-062",
+      "name": "以图搜图、近重复与文本搜图",
+      "phase": "M6",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "AV-01",
+      "task_id": "DEV-063",
+      "name": "视频音频搜索与字幕时间戳检索",
+      "phase": "M6",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "AV-02",
+      "task_id": "DEV-064",
+      "name": "转写、关键帧与视频内容理解",
+      "phase": "M6",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "UPDATE-01",
+      "task_id": "DEV-065",
+      "name": "网页快照变化与增量刷新",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "WORKSPACE-01",
+      "task_id": "DEV-066",
+      "name": "历史、收藏、标签与搜索工作区",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "PREF-01",
+      "task_id": "DEV-067",
+      "name": "排序偏好、站点屏蔽与隐私开关",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "WATCH-01",
+      "task_id": "DEV-068",
+      "name": "保存查询、订阅新增与更新监控",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "EXPORT-01",
+      "task_id": "DEV-069",
+      "name": "搜索结果、证据与资料集导出",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "WEBHOOK-01",
+      "task_id": "DEV-070",
+      "name": "通知出口与Webhook",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "API-01",
+      "task_id": "DEV-071",
+      "name": "完整协议覆盖、版本迁移与扩展接口收尾",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "UI-02",
+      "task_id": "DEV-072",
+      "name": "完整搜索/资料/爬虫/研究操作台",
+      "phase": "M7",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "OPS-01",
+      "task_id": "DEV-073",
+      "name": "观测、诊断与资源容量基线",
+      "phase": "M8",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "OPS-02",
+      "task_id": "DEV-074",
+      "name": "备份恢复、迁移与内容保留",
+      "phase": "M8",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SCALE-01",
+      "task_id": "DEV-075",
+      "name": "多工作节点与公平调度",
+      "phase": "M8",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "QA-03",
+      "task_id": "DEV-076",
+      "name": "安全/故障/多模态/端到端发布门禁",
+      "phase": "M8",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "RELEASE-01",
+      "task_id": "DEV-077",
+      "name": "可复现打包、升级与运维手册",
+      "phase": "M8",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "API-00",
+      "task_id": "DEV-078",
+      "name": "基础HTTP/CLI/MCP合同与早期集成",
+      "phase": "M1",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "真实loopback HTTP和C++ CLI共享Service逻辑",
+      "remaining": "MCP未实现；HTTP是明确标注的v0启动合同"
+    },
+    {
+      "feature_id": "OPS-00",
+      "task_id": "DEV-079",
+      "name": "早期追踪、资源账本与诊断底座",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "请求ID/状态/时长日志、stats、尝试/内容/会话/备份硬限制",
+      "remaining": "不是全阶段指标、模型账本或容量基准"
+    },
+    {
+      "feature_id": "BACKUP-00",
+      "task_id": "DEV-080",
+      "name": "早期一致备份、恢复隔离与撤销水位",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "在线SQLite备份、隔离标记、失败临时文件清理和原子不覆盖发布",
+      "remaining": "恢复撤销对账未实现；备份不能直接启动服务，断电耐久未验收"
+    },
+    {
+      "feature_id": "ROBOTS-01",
+      "task_id": "DEV-081",
+      "name": "爬虫准入与robots前置策略",
+      "phase": "M1",
+      "status": "not_started",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed"
+    },
+    {
+      "feature_id": "SPIKE-01",
+      "task_id": "DEV-082",
+      "name": "关键技术可行性与版本冻结验证",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "当前Linux工具链、SQLite FTS5/JSON/HTML/加密依赖实际构建",
+      "remaining": "浏览器、Windows、ANN、媒体等技术验证待执行"
+    },
+    {
+      "feature_id": "CONTRACT-02",
+      "task_id": "DEV-083",
+      "name": "可执行配置合同、默认值与负例校验",
+      "phase": "M0",
+      "status": "partial_implementation",
+      "full_work_package_accepted": false,
+      "independent_review": "not_performed",
+      "implemented_slice": "C++固定v1.1模型/来源/搜索配置校验和规范化；可信限额/时钟；34原fixture与21附加原生测试；HTTP/CLI纯校验入口",
+      "remaining": "配置注册与跨配置身份、审核真实性、运行时权限和能力、v1查询编译、精确十进制整数兼容等仍未完成；不签署全工作包验收"
+    }
+  ],
+  "takeover_report": "docs/handoff/TAKEOVER_20261017.md",
+  "current_test_report": "validation/takeover/test_report.json",
+  "full_product_independent_review": "not_performed",
+  "takeover_compatibility_notes": [
+    "Native contract integers require integer representation: 1.0 and 1e0 are rejected.",
+    "Schema 2 rebuilds FTS only and preserves snapshots/evidence; old HTML requires explicit re-ingest for parser version 2."
+  ]
+}

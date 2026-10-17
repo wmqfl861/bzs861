@@ -1,0 +1,29 @@
+{
+  "id": "candidate.example",
+  "provider_id": "candidate",
+  "index_family": "unknown",
+  "capability": "web",
+  "endpoint": "https://candidate.invalid/search",
+  "adapter_id": "example_adapter_v1",
+  "credential_ref": null,
+  "review": {
+    "status": "candidate",
+    "payment_scheme": "unverified",
+    "automated_access": "unverified",
+    "checked_at": null,
+    "terms_url": null,
+    "cache_policy": "unverified",
+    "redistribution_policy": "unverified",
+    "expires_at": null,
+    "approved_by": null
+  },
+  "native_filters": [],
+  "limits": {
+    "max_concurrency": 1,
+    "min_interval_ms": 2000,
+    "shared_budget_key": "candidate",
+    "request_quota": null
+  },
+  "enabled": false,
+  "logical_service_id": "example-logical-service"
+}

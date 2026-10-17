@@ -1,0 +1,25 @@
+{
+  "env": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1"
+  },
+  "results": [
+    {
+      "name": "asan_core",
+      "command": [
+        "./build-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "seconds": 2.09
+    },
+    {
+      "name": "asan_contracts",
+      "command": [
+        "./build-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "exit_code": 0,
+      "seconds": 1.56
+    }
+  ]
+}

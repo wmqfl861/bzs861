@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://search-platform.invalid/schemas/1.1/model-config.json",
+  "title": "用户模型配置合同 v1.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policy",
+    "default_text_profile",
+    "profiles",
+    "roles"
+  ],
+  "properties": {
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allow_reference_backends",
+        "external_nonmodel_services",
+        "allow_provider_hosted_search",
+        "allow_unconfigured_fallback"
+      ],
+      "properties": {
+        "allow_reference_backends": {
+          "const": false
+        },
+        "external_nonmodel_services": {
+          "const": "reviewed_free_only"
+        },
+        "allow_provider_hosted_search": {
+          "const": false
+        },
+        "allow_unconfigured_fallback": {
+          "const": false
+        }
+      }
+    },
+    "default_text_profile": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/profile"
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "planner": {
+          "$ref": "#/$defs/role"
+        },
+        "extractor": {
+          "$ref": "#/$defs/role"
+        },
+        "verifier": {
+          "$ref": "#/$defs/role"
+        },
+        "writer": {
+          "$ref": "#/$defs/role"
+        },
+        "embedder": {
+          "$ref": "#/$defs/role"
+        },
+        "reranker": {
+          "$ref": "#/$defs/role"
+        },
+        "vision": {
+          "$ref": "#/$defs/role"
+        },
+        "asr": {
+          "$ref": "#/$defs/role"
+        }
+      }
+    },
+    "text_fallback_profiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "protocol_adapter",
+        "base_url",
+        "model",
+        "credential_ref",
+        "capabilities"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "generation",
+            "embedding",
+            "reranking",
+            "vision",
+            "asr",
+            "multimodal"
+          ]
+        },
+        "protocol_adapter": {
+          "enum": [
+            "openai_chat",
+            "openai_responses",
+            "anthropic_messages",
+            "gemini_generate_content",
+            "custom"
+          ]
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "credential_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reasoning": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "provider_default",
+                "explicit"
+              ]
+            },
+            "provider_parameters": {
+              "type": "object"
+            }
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "text",
+              "image_input",
+              "audio_input",
+              "asr",
+              "embeddings",
+              "reranking",
+              "stream",
+              "json_schema",
+              "tool_call"
+            ]
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "timeout_ms": {
+              "type": "integer",
+              "minimum": 100
+            },
+            "max_concurrency": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_output_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "retry_limit": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            }
+          }
+        }
+      }
+    },
+    "role": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "profile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "overrides": {
+              "$ref": "#/$defs/overrides"
+            }
+          }
+        }
+      ]
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reasoning": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "provider_default",
+                "explicit"
+              ]
+            },
+            "provider_parameters": {
+              "type": "object"
+            }
+          }
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 86400000
+        },
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000
+        },
+        "retry_limit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    }
+  },
+  "description": "无模型部署允许null默认与空profiles/roles。文本角色缺省或{}继承，null禁用；专门能力缺省禁用。规范化、profile引用/能力与运行授权另行校验；default仅为注解。"
+}

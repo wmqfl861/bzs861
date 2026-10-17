@@ -1,0 +1,4835 @@
+{
+  "document_version": "1.1",
+  "date": "2026-10-16",
+  "status": "design_not_implemented",
+  "estimate_unit": "person_day",
+  "contingency_rate": 0.3,
+  "team_size": null,
+  "features": [
+    {
+      "id": "GOV-01",
+      "name": "需求边界、能力目录与许可证清单",
+      "phase": "M0",
+      "owner": "架构/安全",
+      "depends": [],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "既定需求、参考项目功能、候选基础组件",
+      "outputs": "版本化需求、能力清单、ADR、依赖和许可记录",
+      "implementation": "建立需求→任务→验收追踪；划分付费搜索禁用与用户模型例外；不复用四个参考产品后端。 审查身份/执行方式/冻结输入哈希必须真实记录；作者自审不得计为独立Review通过。独立审核未完成不阻止离线工程准备，但不得据此签署关键合同发布。",
+      "acceptance": "无参考产品运行依赖；未实现能力不对外宣告；依赖记录包含版本/来源/许可/替换策略。 审核状态与实现状态独立；外部审查报告须能对应输入版本、reviewer_id与实际工具运行，不可凭角色提示词伪造。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-001",
+      "test_id": "FT-001",
+      "task_dependencies": [],
+      "tests": [
+        "FT-001",
+        "C-16"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CORE-01",
+      "name": "C++工程骨架与跨平台构建",
+      "phase": "M0",
+      "owner": "核心平台",
+      "depends": [
+        "GOV-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "编译目标、目录约定",
+      "outputs": "CMake工程、CLI/API空壳、Linux/Windows CI",
+      "implementation": "C++20统一；隔离OS层与业务层；依赖锁定、单元测试、格式化、静态检查和内存检查。",
+      "acceptance": "Linux与Windows构建通过；核心不依赖浏览器存在；纯逻辑测试无外网。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-002",
+      "test_id": "FT-002",
+      "task_dependencies": [
+        "DEV-001"
+      ],
+      "tests": [
+        "FT-002"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CONTRACT-01",
+      "name": "数据合同与错误/取消协议",
+      "phase": "M0",
+      "owner": "架构/核心",
+      "depends": [
+        "CORE-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "功能目录、状态语义",
+      "outputs": "JSON Schema、接口DTO、错误码、版本协商",
+      "implementation": "先冻结QueryAST/Scope/Budget/Source/Document/Snapshot/Extraction/Evidence/Job/SearchSession；业务与协议版本分开。",
+      "acceptance": "合法/非法样例双向验证；字段未知、参数冲突、能力缺失有稳定错误；不把资源ID当授权。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-003",
+      "test_id": "FT-003",
+      "task_dependencies": [
+        "DEV-002"
+      ],
+      "tests": [
+        "FT-003"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEC-01",
+      "name": "网络与执行隔离",
+      "phase": "M0",
+      "owner": "安全/平台",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "effort_low": 7,
+      "effort_high": 12,
+      "inputs": "目标URL、地址策略、授权模型配置",
+      "outputs": "允许/阻断决策、隔离运行环境",
+      "implementation": "公网抓取、模型端点、本地导入三条通道；校验DNS和每跳重定向；浏览器强制经出口控制，禁止直接旁路。",
+      "acceptance": "IPv4/IPv6、重绑定、重定向、子资源、WebSocket/QUIC旁路样例被拒；模型内网白名单不开放给网页。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-004",
+      "test_id": "FT-004",
+      "task_dependencies": [
+        "DEV-003"
+      ],
+      "tests": [
+        "FT-004",
+        "B-19"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "JOB-01",
+      "name": "持久任务、预算与恢复",
+      "phase": "M0",
+      "owner": "核心平台",
+      "depends": [
+        "CONTRACT-01",
+        "STORE-01",
+        "AUTH-01",
+        "QA-01"
+      ],
+      "effort_low": 9,
+      "effort_high": 16,
+      "inputs": "任务请求、范围、预算、幂等键",
+      "outputs": "Job、检查点、租约、进度和停止原因",
+      "implementation": "单机持久队列+执行租约与fencing；原子预留页数/请求预算；暂停、取消、续跑；至少一次执行且幂等提交。 预算预留、幂等提交和执行租约依赖同一持久化合同；租约包含递增epoch，超时仅撤销后续授权，不假定远程请求已取消。未知执行结果不得盲目退还外部请求额度。",
+      "acceptance": "崩溃恢复不重复发布产物；旧租约不能提交；重試占预算；取消后无新派发；不承诺网络恰好一次。 旧epoch提交被拒；取消后无新派发；暂停/重启后预算账本可对账且失败不退成免费请求。",
+      "origin": "v0.1保留并细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-005",
+      "test_id": "FT-005",
+      "task_dependencies": [
+        "DEV-003",
+        "DEV-006",
+        "DEV-007",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-005",
+        "B-28",
+        "B-39",
+        "C-13",
+        "C-15"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "STORE-01",
+      "name": "内容快照、结构块与证据基础存储",
+      "phase": "M0",
+      "owner": "存储/检索",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "effort_low": 7,
+      "effort_high": 12,
+      "inputs": "获取产物、正文、权限与保留期",
+      "outputs": "Document/Snapshot/Extraction/Block",
+      "implementation": "原始内容按租户命名空间哈希存储；不可变正文和版本化偏移；元数据事务与outbox；崩溃后孤儿文件回收。 分别限额临时下载/原始产物/快照/索引/导出/事件缓冲；入队预留+运行中硬上限+高低水位回压。GC只删无有效引用且已过保留期的产物，活动提取/证据有pin。",
+      "acceptance": "同URL更新不覆盖旧快照；Unicode字节定位一致；未提交blob不进入结果；无跨用户去重侧信道。 并发抓取遇磁盘满应回压而不是无限重试；GC与提交竞争无丢失已引用blob；拒绝超额后账本可恢复。",
+      "origin": "v0.1保留并细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-006",
+      "test_id": "FT-006",
+      "task_dependencies": [
+        "DEV-003"
+      ],
+      "tests": [
+        "FT-006",
+        "C-15"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "AUTH-01",
+      "name": "认证、授权、私有内容与删除策略",
+      "phase": "M0",
+      "owner": "安全/平台",
+      "depends": [
+        "STORE-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "用户/调用方、集合ACL、撤权与删除请求",
+      "outputs": "权限决策、tombstone、审计",
+      "implementation": "权限用于检索候选、统计、证据、模型上下文、缓存与导出；私有会话隔离；删除先阻断发布再清理派生物。 删除/撤权发布屏障覆盖查询、SSE历史重放、建议、分面、导出和模型输入；备份撤销日志独立保护，不能只保存在被回滚DB中。已交付到外部的内容无法撤回，需说明边界。",
+      "acceptance": "撤权后旧游标/证据/聚合计数均不可泄露；删除状态可追踪；历史备份恢复也重放删除日志。 撤销在本系统新发布入口同步生效；恢复时无法确认最新撤销水位则保持隔离。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-007",
+      "test_id": "FT-007",
+      "task_dependencies": [
+        "DEV-006"
+      ],
+      "tests": [
+        "FT-007",
+        "B-15",
+        "B-26",
+        "C-11"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QA-01",
+      "name": "固定样本、模拟来源与回放测试底座",
+      "phase": "M0",
+      "owner": "测试/质量",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "自建样本站、录制脱敏响应、人工标注",
+      "outputs": "fixture、分层测试集、报告格式",
+      "implementation": "隔离离线与真实网络测试；从第一天建立精确查询、中文、动态页、错误页和安全回放。",
+      "acceptance": "测试不依赖实时外网才可通过；测试集版本冻结；真实用户数据不进入公共fixture。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-008",
+      "test_id": "FT-008",
+      "task_dependencies": [
+        "DEV-003"
+      ],
+      "tests": [
+        "FT-008"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-01",
+      "name": "免费入口审核与来源注册",
+      "phase": "M1",
+      "owner": "搜索适配",
+      "depends": [
+        "GOV-01",
+        "CONTRACT-02"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "来源服务、底层索引、能力、入口、使用条件",
+      "outputs": "SourceManifest、review_state、核验日期",
+      "implementation": "逐项记录免费而非试用、账号/配额、自动访问、缓存/再发布条件；无法核验默认禁用。",
+      "acceptance": "免费状态与可用状态分开；条款变更立即停用；没有付费备用路径。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-009",
+      "test_id": "FT-009",
+      "task_dependencies": [
+        "DEV-001",
+        "DEV-083"
+      ],
+      "tests": [
+        "FT-009",
+        "B-08",
+        "C-06"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-02",
+      "name": "健康检查、限流、退避与共享配额",
+      "phase": "M1",
+      "owner": "搜索适配",
+      "depends": [
+        "SRC-01",
+        "JOB-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "请求结果、Retry-After、全局和同源策略",
+      "outputs": "健康报告、冷却、统一限流",
+      "implementation": "按provider/endpoint/身份适用边界聚合限制；低频健康探针；区分空结果与解析/访问失败。",
+      "acceptance": "两适配器不绕过同源限流；限流不会触发无限重试；源禁用即时阻止后续请求。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-010",
+      "test_id": "FT-010",
+      "task_dependencies": [
+        "DEV-009",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-010",
+        "B-18"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-03",
+      "name": "来源能力协商与参数翻译",
+      "phase": "M1",
+      "owner": "搜索适配",
+      "depends": [
+        "SRC-01",
+        "CONTRACT-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "QueryAST、来源能力声明",
+      "outputs": "native/emulated/unsupported执行计划",
+      "implementation": "按谓词判断可原生执行、可在候选中核验或不支持；不原样转发未知操作符。",
+      "acceptance": "不支持条件不静默丢弃；native只是执行位置，不等于结果已经满足。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-011",
+      "test_id": "FT-011",
+      "task_dependencies": [
+        "DEV-009",
+        "DEV-003"
+      ],
+      "tests": [
+        "FT-011",
+        "B-04"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-04",
+      "name": "免费底层来源并集清点与首批适配",
+      "phase": "M1",
+      "owner": "搜索适配",
+      "depends": [
+        "SRC-02",
+        "SRC-03",
+        "SEC-01",
+        "QA-01",
+        "QRY-01"
+      ],
+      "effort_low": 11,
+      "effort_high": 20,
+      "inputs": "SearXNG/4get/LibreY/Websurfx公开清单和额外公共接口候选",
+      "outputs": "底层来源差异表、首批3–5个已审核适配器",
+      "implementation": "按服务/索引族/检索能力/入口去重；独立实现协议与解析；每个适配器有fixture、分页和失败合同。 正式通用网页搜索门禁要求至少一个经审核且真实测试的web来源；3–5个学术/馆藏来源不能替代web门禁。固定查询和连续观测窗口在G0登记，无可用来源时保留fixture和领域搜索但不签署web Alpha。",
+      "acceptance": "未知是否共用索引不猜测；首批至少有可用外部来源并跨类别；不能审核的候选明确排除。 报告具体入口、许可证据、日期、查询样本、限流与独有结果；无源时明确E_CAPABILITY_UNAVAILABLE，不删减长期功能承诺。",
+      "origin": "用户来源并集要求",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-012",
+      "test_id": "FT-012",
+      "task_dependencies": [
+        "DEV-010",
+        "DEV-011",
+        "DEV-004",
+        "DEV-008",
+        "DEV-013"
+      ],
+      "tests": [
+        "FT-012",
+        "C-10"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-01",
+      "name": "统一查询语法与AST",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "查询字符串或结构化条件",
+      "outputs": "QueryAST、规范显示、解析警告",
+      "implementation": "支持短语、AND/OR/NOT、括号、site/filetype/intitle、时间与语言；词法保护C++/C#/std::和错误码；限制复杂度。 一个query字段承载原始字符串或AST，不新增两个可冲突的真值。AST节点/深度/字符串/请求体设硬上限；字段-操作符和值类型在规范化阶段校验。",
+      "acceptance": "语法优先级明确；字符串与结构化请求等价；注入/超深嵌套拒绝；不直接拼SQL/FTS字符串。 错误日期、host配after、数组配eq、非host使用host匹配、深AST在执行来源前拒绝。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-013",
+      "test_id": "FT-013",
+      "task_dependencies": [
+        "DEV-003"
+      ],
+      "tests": [
+        "FT-013",
+        "B-01",
+        "C-05"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-02",
+      "name": "精确字面与标识符匹配",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "QRY-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "词项、精确模式、字段",
+      "outputs": "保留大小写/标点策略与匹配谓词",
+      "implementation": "字面字段与自然语言字段分离；数字型号默认禁用模糊；URL、错误码、版本、代码符号不被模型擅改。",
+      "acceptance": "C++/C#/std::expected/HTTP 429样例保持区别；精确条件在候选核验前不得标满足。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-014",
+      "test_id": "FT-014",
+      "task_dependencies": [
+        "DEV-013"
+      ],
+      "tests": [
+        "FT-014",
+        "B-02"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEARCH-01",
+      "name": "多源并发搜索与部分结果",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "SRC-04",
+        "QRY-01",
+        "QRY-02",
+        "JOB-01",
+        "AUTH-01",
+        "CONTRACT-02"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "查询、来源范围、类别、deadline",
+      "outputs": "候选、来源报告、coverage",
+      "implementation": "以预算选择并行批次；来源内排名原样保留；无来源成功与零命中分开。",
+      "acceptance": "单源超时不吞其他结果；不伪造全网数量；未完成源显示未完成。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-015",
+      "test_id": "FT-015",
+      "task_dependencies": [
+        "DEV-012",
+        "DEV-013",
+        "DEV-014",
+        "DEV-005",
+        "DEV-007",
+        "DEV-083"
+      ],
+      "tests": [
+        "FT-015",
+        "C-13"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEARCH-03",
+      "name": "来源去重、内容身份与基础融合",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "SEARCH-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "候选URL、来源内排名、可用身份依据",
+      "outputs": "重复组、合并记录、基础排名",
+      "implementation": "URL规范化规则有版本；canonical只是证据；按独立索引族抑制重复计票；融合用排名而非相加不可比原分。 未知index_family不能全部落到同一个unknown桶。已知同族按family+capability合并；未知按已审核provider+capability+逻辑服务键隔离，不按adapter拆票。检索渠道贡献与独立证据数是两份数据。",
+      "acceptance": "同底层源多实现不重复加权；不同文档版本/语种不盲删；保留发现路径。 两个不同未知族服务仍有各自候选贡献；同provider多adapter不会加票；未知族不计为已证实独立证据。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-016",
+      "test_id": "FT-016",
+      "task_dependencies": [
+        "DEV-015"
+      ],
+      "tests": [
+        "FT-016",
+        "B-08",
+        "C-07"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SESSION-01",
+      "name": "搜索会话、冻结结果与稳定游标",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "SEARCH-03",
+        "AUTH-01",
+        "STORE-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "查询、刷新/继续/细化动作",
+      "outputs": "SearchSession、ResultSet、游标",
+      "implementation": "物化候选与排名版本；游标绑定会话/版本/权限/过期时间；跨页维护seen集合；新内容进入新版本。",
+      "acceptance": "无跨页重复或静默重排；权限收紧时失效重建而非泄漏；游标过期需重搜。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-017",
+      "test_id": "FT-017",
+      "task_dependencies": [
+        "DEV-016",
+        "DEV-007",
+        "DEV-006"
+      ],
+      "tests": [
+        "FT-017",
+        "B-13",
+        "B-15"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SESSION-02",
+      "name": "流式结果、断线续传与取消",
+      "phase": "M1",
+      "owner": "API/UI",
+      "depends": [
+        "SESSION-01",
+        "JOB-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "会话订阅、Last-Event-ID、取消动作",
+      "outputs": "带单调序号SSE事件",
+      "implementation": "预览可更新，冻结分页不可原地变化；事件日志有保留期；背压、心跳、过期恢复提示。",
+      "acceptance": "断线重播按event_id去重；客户端慢不耗尽内存；停止搜索保留已完成结果。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-018",
+      "test_id": "FT-018",
+      "task_dependencies": [
+        "DEV-017",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-018",
+        "B-14"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "MODE-01",
+      "name": "快速/均衡/深入执行预设",
+      "phase": "M1",
+      "owner": "检索核心",
+      "depends": [
+        "SEARCH-01",
+        "SRC-02"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "模式、授权预算覆盖",
+      "outputs": "可查看的来源/读取/模型调用上限",
+      "implementation": "模式是策略不是质量承诺；模型缺失不影响普通搜索；deadline使用单调时钟，跨进程传播剩余预算。",
+      "acceptance": "快速模式不强制浏览器或模型；任一预设都受同源额度与硬约束限制。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-019",
+      "test_id": "FT-019",
+      "task_dependencies": [
+        "DEV-015",
+        "DEV-010"
+      ],
+      "tests": [
+        "FT-019"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "UI-01",
+      "name": "最小搜索、读取与任务界面",
+      "phase": "M1",
+      "owner": "API/UI",
+      "depends": [
+        "SESSION-02",
+        "CORE-01",
+        "API-00"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "查询和控制操作",
+      "outputs": "基础Web UI、错误展示、来源开关",
+      "implementation": "TypeScript前端可选基础框架，静态资源本地打包；搜索输入/部分结果/任务列表；键盘可用。",
+      "acceptance": "不加载第三方统计或外链字体；未实现按钮隐藏；所有操作仍经统一授权接口。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-020",
+      "test_id": "FT-020",
+      "task_dependencies": [
+        "DEV-018",
+        "DEV-002",
+        "DEV-078"
+      ],
+      "tests": [
+        "FT-020",
+        "C-01"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "READ-01",
+      "name": "HTTP读取与质量状态",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "SEC-01",
+        "JOB-01",
+        "STORE-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "URL、请求策略、字节/超时限制",
+      "outputs": "FetchArtifact、状态与最终URL",
+      "implementation": "libcurl异步多连接；解压预算、响应类型验证、重定向每跳审查；识别登录/挑战/错误/空壳页。",
+      "acceptance": "HTTP200登录页不等于正文成功；断流保留部分状态；不自动使用代理或收费后端。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-021",
+      "test_id": "FT-021",
+      "task_dependencies": [
+        "DEV-004",
+        "DEV-005",
+        "DEV-006",
+        "DEV-007",
+        "DEV-079"
+      ],
+      "tests": [
+        "FT-021",
+        "B-20"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "READ-02",
+      "name": "动态网页与受控浏览器动作",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-01",
+        "SEC-01",
+        "SPIKE-01"
+      ],
+      "effort_low": 9,
+      "effort_high": 16,
+      "inputs": "render策略、等待元素、展开/滚动/分页上限",
+      "outputs": "DOM、可选截图、渲染证据",
+      "implementation": "自研CDP控制Chromium；浏览器池+隔离context；跨frame/SPA处理；只有读取所需动作，不开放任意JS给调用方。",
+      "acceptance": "延迟渲染成功或明确失败；浏览器无出口绕过；auth状态隔离；禁止用无限等待充当页面就绪。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-022",
+      "test_id": "FT-022",
+      "task_dependencies": [
+        "DEV-021",
+        "DEV-004",
+        "DEV-082"
+      ],
+      "tests": [
+        "FT-022",
+        "B-19",
+        "C-09"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "READ-03",
+      "name": "正文、代码、表格与元数据提取",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-01",
+        "STORE-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "HTML/DOM、article/document/full_clean、选择器",
+      "outputs": "正文块、Markdown、链接、JSON-LD元数据",
+      "implementation": "独立实现正文评分/模板去除；CSS选择器和XPath分别走统一DOM映射；保留表格标题单元与代码；不执行脚本。",
+      "acceptance": "正文质量分类型评测；发布时间未知为null；规则版本改变新建Extraction；片段位置可追溯。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-023",
+      "test_id": "FT-023",
+      "task_dependencies": [
+        "DEV-021",
+        "DEV-006"
+      ],
+      "tests": [
+        "FT-023"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "READ-05",
+      "name": "授权会话与站点读取配置",
+      "phase": "M2",
+      "owner": "安全/采集",
+      "depends": [
+        "READ-02",
+        "AUTH-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "明确授权的凭据引用、读取站点配置",
+      "outputs": "隔离会话、过期状态",
+      "implementation": "用户配置登录态引用不进入公开缓存；禁止跨站默认转发敏感头；手动续授权，不绕过登录/付费墙。",
+      "acceptance": "两用户同URL不混Cookie；凭据删除立即停止后续调用；日志不含Cookie与密钥。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-024",
+      "test_id": "FT-024",
+      "task_dependencies": [
+        "DEV-022",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-024"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "DOC-01",
+      "name": "PDF/文本及Office开放格式解析",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "授权文件或URL、MIME/页数/体积限制",
+      "outputs": "页/段/表格/工作表/幻灯片结构",
+      "implementation": "先文本PDF/TXT/MD/CSV/HTML，扩展DOCX/XLSX/PPTX/ODF/EPUB；PDFium与安全ZIP/XML基础组件；不执行宏/外链公式。",
+      "acceptance": "扩展名与内容嗅探冲突可拒绝；压缩炸弹与路径穿越阻断；缺失文本层进入显式OCR队列。",
+      "origin": "v0.1扩展",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-025",
+      "test_id": "FT-025",
+      "task_dependencies": [
+        "DEV-021",
+        "DEV-023",
+        "DEV-082"
+      ],
+      "tests": [
+        "FT-025",
+        "B-20",
+        "C-09"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "BATCH-01",
+      "name": "批量网页/文档读取",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-02",
+        "DOC-01",
+        "JOB-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "明确URL/文件列表",
+      "outputs": "逐项结果和批量任务",
+      "implementation": "复用读取流水线；请求合并有权限和表示边界；不能自动跟链。",
+      "acceptance": "10个输入只处理授权10项；失败隔离；暂停恢复不会重发已提交项。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-026",
+      "test_id": "FT-026",
+      "task_dependencies": [
+        "DEV-022",
+        "DEV-025",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-026"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "MAP-01",
+      "name": "Sitemap/Feed/链接发现",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-03",
+        "JOB-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "入口、路径范围、发现预算",
+      "outputs": "候选、parent、来源与深度",
+      "implementation": "解析Sitemap及索引、RSS/Atom、页面a链接与历史记录；可选已有搜索源site查询补充；去循环和参数爆炸。",
+      "acceptance": "候选不是已读；不宣称完整全站；XML外部实体禁用；页面深度与路径层数分开。",
+      "origin": "v0.1保留并补充",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-027",
+      "test_id": "FT-027",
+      "task_dependencies": [
+        "DEV-023",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-027"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CRAWL-01",
+      "name": "有界递归爬虫与抓取前沿",
+      "phase": "M2",
+      "owner": "采集/解析",
+      "depends": [
+        "MAP-01",
+        "BATCH-01",
+        "SRC-02",
+        "ROBOTS-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "seeds、范围、页/请求/字节/深度预算",
+      "outputs": "网页集合、边关系、覆盖与停止原因",
+      "implementation": "单一发现调度者；入队/派发/重定向皆检查scope；分页循环、calendar trap、参数组合检测；公平队列。",
+      "acceptance": "在途预算原子预留；达到限额显示partial；frontier耗尽仅代表允许范围；断点可恢复。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-028",
+      "test_id": "FT-028",
+      "task_dependencies": [
+        "DEV-027",
+        "DEV-026",
+        "DEV-010",
+        "DEV-081"
+      ],
+      "tests": [
+        "FT-028",
+        "C-02"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CRAWL-03",
+      "name": "公开索引与摘要发布规则",
+      "phase": "M2",
+      "owner": "安全/采集",
+      "depends": [
+        "ROBOTS-01",
+        "READ-03"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "robots.txt、headers、meta和集合发布策略",
+      "outputs": "抓取/索引/片段显示决策",
+      "implementation": "采用明确REP策略；支持适用于本爬虫的noindex/nosnippet/data-nosnippet/X-Robots-Tag；声明缓存可刷新。 robots爬取准入已拆到ROBOTS-01，本包负责noindex/nosnippet等适用声明和公开发布/撤索引；策略作用域与私有授权集合分开。",
+      "acceptance": "抓取允许不等于可公开索引；不按Google专属token套用于本工具；noindex变化触发索引移除。 未满足robots准入不会先到本模块；公开发布标签生效不等待整站爬虫完成。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-029",
+      "test_id": "FT-029",
+      "task_dependencies": [
+        "DEV-081",
+        "DEV-023"
+      ],
+      "tests": [
+        "FT-029",
+        "B-23",
+        "C-02"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "INDEX-01",
+      "name": "字段化全文检索与索引服务",
+      "phase": "M2",
+      "owner": "存储/检索",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "effort_low": 7,
+      "effort_high": 12,
+      "inputs": "结构块、语言、字段权重",
+      "outputs": "全文索引、BM25候选、命中字段",
+      "implementation": "SQLite FTS5自定义tokenizer；标题/正文/代码/URL分字段；精确字面独立核验；限制候选集合再截断。",
+      "acceptance": "新增内容可搜索；FTS查询由AST编译而非原串；私有授权集合内排序与计数。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-030",
+      "test_id": "FT-030",
+      "task_dependencies": [
+        "DEV-006",
+        "DEV-007",
+        "DEV-023",
+        "DEV-082"
+      ],
+      "tests": [
+        "FT-030",
+        "C-09"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "INDEX-03",
+      "name": "索引增删改、可见性与版本切换",
+      "phase": "M2",
+      "owner": "存储/检索",
+      "depends": [
+        "INDEX-01",
+        "CRAWL-03"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "解析产物变更、删除与ACL变更",
+      "outputs": "可见水位、IndexReceipt、tombstone",
+      "implementation": "元数据+FTS同事务或明确水位提交；向量后续outbox；reindex不重新抓页；代际索引重建与原子切换。 默认检索仅当前可发布Extraction；历史版本必须显式scope。词项与向量结果经统一当前版本/ACL准入，向量滞后时不能混入旧内容；FTS外部内容触发器与迁移需一致性检查。",
+      "acceptance": "可读不假装可搜；删除同步挡发布；旧游标撤权立即失效；恢复备份不复活删除内容。 更新后默认结果不返回旧正文；历史显式查询仍定位原版本；索引损坏可从有效正文恢复。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-031",
+      "test_id": "FT-031",
+      "task_dependencies": [
+        "DEV-030",
+        "DEV-029"
+      ],
+      "tests": [
+        "FT-031",
+        "B-21",
+        "C-08"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CACHE-01",
+      "name": "多级缓存与在途请求复用",
+      "phase": "M2",
+      "owner": "核心平台",
+      "depends": [
+        "READ-01",
+        "INDEX-03"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "请求表示、权限、版本、新鲜度模式",
+      "outputs": "cache状态与可复用结果",
+      "implementation": "源/结果/HTTP/正文/向量/模型缓存独立；遵守响应缓存政策；singleflight有引用计数；取消一方不取消所有订阅方。",
+      "acceptance": "cache_only不联网采集；offline连远程模型也禁止；刷新失败旧内容需显式授权；不跨身份复用。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-032",
+      "test_id": "FT-032",
+      "task_dependencies": [
+        "DEV-021",
+        "DEV-031"
+      ],
+      "tests": [
+        "FT-032",
+        "B-24",
+        "C-15"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-03",
+      "name": "中文简繁、混合语言与原文映射",
+      "phase": "M3",
+      "owner": "检索核心",
+      "depends": [
+        "QRY-02",
+        "INDEX-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "中文/多语文本、术语字典",
+      "outputs": "分词与变体索引、原文位置映射",
+      "implementation": "ICU分段+OpenCC变体+领域词典；原文不可变；允许多对多token映射；简繁转换不作无条件实体合并。",
+      "acceptance": "中英代码混合可命中；两语种不互相覆盖；每条highlight仍指向原文。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-033",
+      "test_id": "FT-033",
+      "task_dependencies": [
+        "DEV-014",
+        "DEV-030"
+      ],
+      "tests": [
+        "FT-033",
+        "B-03"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-04",
+      "name": "硬条件核验与预算内补召回",
+      "phase": "M3",
+      "owner": "检索核心",
+      "depends": [
+        "SRC-03",
+        "READ-03",
+        "INDEX-03"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "AST约束、候选及已读内容",
+      "outputs": "满足/不符合/未知、核验范围、补搜计划",
+      "implementation": "来源原生过滤后仍检查关键项；支持strict/exploratory；负面条件在未读/截断内容中不得由缺失推满足。",
+      "acceptance": "strict主结果只放已核验满足项；unknown单列；预算不足不说全网无结果。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-034",
+      "test_id": "FT-034",
+      "task_dependencies": [
+        "DEV-011",
+        "DEV-023",
+        "DEV-031"
+      ],
+      "tests": [
+        "FT-034",
+        "B-04",
+        "B-05",
+        "B-06"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-05",
+      "name": "纠错、别名与可控模糊匹配",
+      "phase": "M3",
+      "owner": "检索核心",
+      "depends": [
+        "QRY-03"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "查询、领域词典、精确保护项",
+      "outputs": "建议、原查询与派生查询",
+      "implementation": "词典候选+有界编辑距离；数字/型号/错误码受保护；用户撤回后严格按原词。",
+      "acceptance": "没有自动把C++改成C#；纠错不删除硬条件；中英文词典范围可配置。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-035",
+      "test_id": "FT-035",
+      "task_dependencies": [
+        "DEV-033"
+      ],
+      "tests": [
+        "FT-035"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QRY-06",
+      "name": "联想补全与相关查询",
+      "phase": "M3",
+      "owner": "检索核心/API",
+      "depends": [
+        "QRY-05",
+        "AUTH-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "前缀、公开词典、授权历史",
+      "outputs": "可解释的补全与相关查询",
+      "implementation": "本地默认；外部联想需用户开启且来源免费审核；私有历史分区；代码输入不错误触发语法。",
+      "acceptance": "未提交的按键默认不外发；关闭历史后不继续积累；查询建议无他人私有词。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-036",
+      "test_id": "FT-036",
+      "task_dependencies": [
+        "DEV-035",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-036",
+        "B-17"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "RANK-01",
+      "name": "多样性、转载聚类与质量过滤",
+      "phase": "M3",
+      "owner": "检索核心",
+      "depends": [
+        "SEARCH-03",
+        "READ-03"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "候选、主题、内容指纹",
+      "outputs": "多样化结果、折叠组、处理原因",
+      "implementation": "近重复与主题相似分开；有限站点配额；候选正文支持才判质量；原创时间线不靠最早抓取时间猜。",
+      "acceptance": "site限定不被多样性突破；未知站点不默认降权；被折叠结果可展开并可核验误杀。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-037",
+      "test_id": "FT-037",
+      "task_dependencies": [
+        "DEV-016",
+        "DEV-023"
+      ],
+      "tests": [
+        "FT-037",
+        "B-09",
+        "B-10"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "RANK-02",
+      "name": "排序解释与来源增量价值",
+      "phase": "M3",
+      "owner": "检索核心/质量",
+      "depends": [
+        "RANK-01",
+        "MODE-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "执行记录、排名因子、来源贡献",
+      "outputs": "rank_trace与来源效用报表",
+      "implementation": "记录真实字段命中、融合、过滤与重排因素；禁用模型事后编造；统计独有有效候选与延迟代价。",
+      "acceptance": "解释与实际排序版本一致；原始分数不冒充事实可信度；只评估采样/当前集合。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-038",
+      "test_id": "FT-038",
+      "task_dependencies": [
+        "DEV-037",
+        "DEV-019"
+      ],
+      "tests": [
+        "FT-038",
+        "B-11",
+        "C-07"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEARCH-05",
+      "name": "空结果诊断与安全放宽建议",
+      "phase": "M3",
+      "owner": "检索核心",
+      "depends": [
+        "QRY-04",
+        "MODE-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "来源状态、候选过滤日志、预算",
+      "outputs": "诊断与可选择的下一查询",
+      "implementation": "区分未收录、访问失败、条件不匹配、预算耗尽；建议修改条件但不自动执行放宽。",
+      "acceptance": "没搜到不显示为不存在；重复补搜无新增时停止；保留原始条件。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-039",
+      "test_id": "FT-039",
+      "task_dependencies": [
+        "DEV-034",
+        "DEV-019"
+      ],
+      "tests": [
+        "FT-039",
+        "B-06",
+        "B-12"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "FACET-01",
+      "name": "分面筛选与连续细化",
+      "phase": "M3",
+      "owner": "检索核心/API",
+      "depends": [
+        "SESSION-01",
+        "QRY-04"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "会话、语言/类型/站点/时间/已读/条件状态",
+      "outputs": "带范围的计数与新结果版本",
+      "implementation": "统计当前候选、冻结结果或本地索引时分别标scope/exactness；细化生成新版本，不改老cursor。",
+      "acceptance": "所有计数过ACL；不把候选数量当全网量；未知时间单列。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-040",
+      "test_id": "FT-040",
+      "task_dependencies": [
+        "DEV-017",
+        "DEV-034"
+      ],
+      "tests": [
+        "FT-040",
+        "B-16"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-05",
+      "name": "自适应来源选择与后续批次扩展",
+      "phase": "M3",
+      "owner": "搜索适配",
+      "depends": [
+        "RANK-02",
+        "SEARCH-05"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "查询类别、免费来源健康与增量统计",
+      "outputs": "来源分配与探测计划",
+      "implementation": "先规则权重后可选在线实验；公平探索仅在低频预算内；不因缓存命中把失效来源评为好源。",
+      "acceptance": "新增源改善或降低效果有分组报告；同源限流不被策略绕过；策略可回滚。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-041",
+      "test_id": "FT-041",
+      "task_dependencies": [
+        "DEV-038",
+        "DEV-039"
+      ],
+      "tests": [
+        "FT-041",
+        "B-18"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QA-02",
+      "name": "检索相关性与约束基准",
+      "phase": "M3",
+      "owner": "测试/质量",
+      "depends": [
+        "QRY-04",
+        "RANK-01",
+        "FACET-01",
+        "QA-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 11,
+      "inputs": "固定查询、人工标签、离线候选与实时样本",
+      "outputs": "nDCG/MRR/Precision/约束正确率报告",
+      "implementation": "开发/回归/留出集分离；中英/精确/导航/多条件分组；漏标候选单列；来源消融。 G0冻结场景/版本/测量方法，M2采基线，M3前冻结非回归阈值与语义覆盖底线；不得在看到留出集结果后改阈值。用户未给硬件前不填虚假延迟。",
+      "acceptance": "硬条件与引用错误阻断发布；无全网召回率声称；质量提升有人工与复现依据。 未冻结环境/语料hash/阈值/审查人不能通过性能或语义发布门禁；确定性约束失败数必须为0。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-042",
+      "test_id": "FT-042",
+      "task_dependencies": [
+        "DEV-034",
+        "DEV-037",
+        "DEV-040",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-042",
+        "C-14"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "MODEL-01",
+      "name": "模型端点、角色配置与能力验证",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "CONTRACT-02",
+        "SEC-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "用户模型profile与密钥引用",
+      "outputs": "有效角色配置与能力矩阵",
+      "implementation": "文本/嵌入/重排/视觉/转写角色；授权任务覆盖→角色→默认；按协议族适配，不假定兼容名等于全能力。 允许default_text_profile=null、profiles={}的无模型部署；角色缺省继承默认文本profile，显式null禁用。embedder/vision/asr等不自动继承无对应能力的文本profile。",
+      "acceptance": "本地与远程都允许；未支持参数报错；不隐式换提供方；禁用供应商托管搜索/浏览器。 无模型配置Schema和程序均接受；角色引用不存在、能力不匹配、非法出站地址由明确层次拒绝。",
+      "origin": "v0.1保留",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-043",
+      "test_id": "FT-043",
+      "task_dependencies": [
+        "DEV-083",
+        "DEV-004",
+        "DEV-007",
+        "DEV-079"
+      ],
+      "tests": [
+        "FT-043",
+        "B-25",
+        "C-04",
+        "C-06"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "MODEL-02",
+      "name": "模型预算、结构输出、缓存与数据出站",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "MODEL-01",
+        "CACHE-01",
+        "AUTH-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "角色调用、证据、Schema、权限",
+      "outputs": "ModelRun、结构验证与usage",
+      "implementation": "稳定模板前缀与工具顺序；证据后置；严格Schema验证/有限修复；上下文截断标注；秘密脱敏。 规范化后的角色支持reasoning/timeout/max_concurrency/max_output_tokens/retry_limit；覆盖值不能突破部署硬上限。Schema default只是注解，发布前必须记录完整effective_config。",
+      "acceptance": "未知usage不记0；模型不能增预算；网页不能扩大工具权限；私有材料未授权不外发。 遗漏/显式null/任务覆盖分别测试；模型请求中不能混入未获准profile；参数不支持不静默丢弃。",
+      "origin": "v0.1保留",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-044",
+      "test_id": "FT-044",
+      "task_dependencies": [
+        "DEV-043",
+        "DEV-032",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-044",
+        "B-26",
+        "C-06"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEARCH-02",
+      "name": "自然语言规划与跨语言扩展",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "MODEL-02",
+        "QRY-04"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "目标、硬条件、输出语言",
+      "outputs": "有限QueryPlan和转换记录",
+      "implementation": "保留protected literals；分离用户条件与推断意图；母语/英文查询按来源能力执行。",
+      "acceptance": "原查询保留；派生查询数量受控；模型故障可原词搜索；不是翻译结果后伪称原文。",
+      "origin": "v0.1增强",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-045",
+      "test_id": "FT-045",
+      "task_dependencies": [
+        "DEV-044",
+        "DEV-034"
+      ],
+      "tests": [
+        "FT-045",
+        "B-07"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "INDEX-02",
+      "name": "语义向量与混合检索",
+      "phase": "M4",
+      "owner": "存储/检索",
+      "depends": [
+        "MODEL-02",
+        "INDEX-03",
+        "QRY-03"
+      ],
+      "effort_low": 10,
+      "effort_high": 17,
+      "inputs": "查询/正文、嵌入profile、ACL集合",
+      "outputs": "向量索引、候选、融合与重排",
+      "implementation": "hnswlib候选引擎；小集合可暴力核验；过滤在ANN候选准入或授权分区执行；增量outbox和版本隔离。 首版同一可变HNSW实例采用应用级读写隔离：并行只读共享锁；add/update/delete/resize/save/load独占且由单writer执行。代际重建在新实例离线完成，发布时原子切换与引用计数回收。",
+      "acceptance": "不同维度/模型不混用；索引可重建；ANN过滤召回不足标partial；无向量仍有全文搜索。 查询与写入压力交错不发生数据竞争；崩溃重放幂等；k大于可用数不伪造结果；重载后恢复ef/模型空间和水位。",
+      "origin": "v0.1增强",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-046",
+      "test_id": "FT-046",
+      "task_dependencies": [
+        "DEV-044",
+        "DEV-031",
+        "DEV-033"
+      ],
+      "tests": [
+        "FT-046",
+        "B-22",
+        "C-08"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "EVID-01",
+      "name": "原文Highlights与证据定位",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "READ-03",
+        "INDEX-01",
+        "AUTH-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "问题、文档版本、长度预算",
+      "outputs": "原文、字节区间、块/页/时间位置",
+      "implementation": "词项候选→可选重排/模型选段→本地定位校验；不拼不相邻文本当连续quote；多来源预算。 基础原文选段不依赖MODEL-02完成；模型增强在M4与MODEL-02集成后单独验收，发布capabilities区分basic/semantic。",
+      "acceptance": "每条已发布quote可从不可变文本精确切出；模型改写进summary；OCR另标识。 无模型仍能产出可定位基础片段；有模型后相关性增强另测，不用基础完成冒充模型增强。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-047",
+      "test_id": "FT-047",
+      "task_dependencies": [
+        "DEV-023",
+        "DEV-030",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-047",
+        "B-03",
+        "B-35",
+        "C-13"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "EVID-02",
+      "name": "页内查找、定位与分段阅读",
+      "phase": "M4",
+      "owner": "API/内容",
+      "depends": [
+        "STORE-01",
+        "AUTH-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "extraction_id、词项/范围/游标",
+      "outputs": "命中块与相邻上下文",
+      "implementation": "固定版本稳定位置；Markdown与纯文本不同偏移；上下文预算与truncated字段。",
+      "acceptance": "find不重新抓网页；过期/删除证据明确不可用；每次调用重新鉴权。",
+      "origin": "v0.1保留",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-048",
+      "test_id": "FT-048",
+      "task_dependencies": [
+        "DEV-006",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-048"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "EXTRACT-01",
+      "name": "规则/模型字段提取与证据核验",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "EVID-01",
+        "MODEL-02"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "文档集合、字段Schema、核验要求",
+      "outputs": "字段值、状态、evidence_ids",
+      "implementation": "CSS/XPath/正则规则与模型路径分开；直接陈述/推断/未知分开；缺字段可null，不硬填。",
+      "acceptance": "Schema合法不等于语义正确；未知引用ID拒绝；不支持必填要求报告冲突。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-049",
+      "test_id": "FT-049",
+      "task_dependencies": [
+        "DEV-047",
+        "DEV-044"
+      ],
+      "tests": [
+        "FT-049",
+        "B-27"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "ANSWER-01",
+      "name": "证据回答与冲突呈现",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "EXTRACT-01",
+        "EVID-02"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "问题、证据、模型配置",
+      "outputs": "答案、claim映射、矛盾和未知",
+      "implementation": "claim→evidence映射；独立支持性检查；原文定位检查与事实评估分开；可返回只有证据的结果。",
+      "acceptance": "无证据关键断言删除/限定；对立资料不隐藏；模型记忆不伪装成引用事实。",
+      "origin": "v0.1保留",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-050",
+      "test_id": "FT-050",
+      "task_dependencies": [
+        "DEV-049",
+        "DEV-048"
+      ],
+      "tests": [
+        "FT-050",
+        "B-27"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "RESEARCH-01",
+      "name": "有界多轮研究",
+      "phase": "M4",
+      "owner": "模型/研究",
+      "depends": [
+        "ANSWER-01",
+        "SEARCH-02",
+        "JOB-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "目标、约束、轮次与资源预算",
+      "outputs": "计划、证据表、报告与停止原因",
+      "implementation": "拆解→搜索→读取→证据缺口→补搜；查询/文档seen集合；阶段checkpoint；只保存简明决策摘要。",
+      "acceptance": "模型不得增预算；无新增证据停止；生成失败保留证据；中止可恢复。",
+      "origin": "v0.1保留",
+      "model": "相应模型能力必需；基础模式仍独立可用",
+      "status": "未开始",
+      "task_id": "DEV-051",
+      "test_id": "FT-051",
+      "task_dependencies": [
+        "DEV-050",
+        "DEV-045",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-051",
+        "B-28"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SEARCH-04",
+      "name": "相似网页与示例驱动检索",
+      "phase": "M4",
+      "owner": "检索核心",
+      "depends": [
+        "INDEX-02",
+        "EVID-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "种子网页/文本/快照、local/external/both",
+      "outputs": "相似但非重复结果和依据",
+      "implementation": "种子主题表示+本地近邻+免费来源派生查询；区分主题相关、转载与版本。",
+      "acceptance": "标明搜索覆盖范围；无全网反向索引承诺；私人种子不擅自变成外部查询。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-052",
+      "test_id": "FT-052",
+      "task_dependencies": [
+        "DEV-046",
+        "DEV-047"
+      ],
+      "tests": [
+        "FT-052",
+        "B-09"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "DATASET-01",
+      "name": "实体资料集与逐项条件核验",
+      "phase": "M5",
+      "owner": "模型/研究",
+      "depends": [
+        "EXTRACT-01",
+        "RESEARCH-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "对象描述、条件、字段与数量",
+      "outputs": "实体记录、合并依据、字段证据",
+      "implementation": "候选发现→实体消歧→逐条件验证→字段补全；同名不同对象不合并；支持追加与复核。",
+      "acceptance": "unknown不当false；新证据覆盖字段要留历史；搜索相关不能冒充满足。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-053",
+      "test_id": "FT-053",
+      "task_dependencies": [
+        "DEV-049",
+        "DEV-051"
+      ],
+      "tests": [
+        "FT-053"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "READ-04",
+      "name": "自适应定位与规则修复",
+      "phase": "M5",
+      "owner": "采集/解析",
+      "depends": [
+        "READ-03",
+        "EXTRACT-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 11,
+      "inputs": "已确认规则、历史DOM特征、新页面",
+      "outputs": "候选定位、置信线索和待确认修复",
+      "implementation": "结构/邻域/文本属性匹配；模型只能提议；版本化fixture回归后发布规则。",
+      "acceptance": "不确定和错误匹配均可报告；失败不静默替换已确认规则；跨站点隔离。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-054",
+      "test_id": "FT-054",
+      "task_dependencies": [
+        "DEV-023",
+        "DEV-049"
+      ],
+      "tests": [
+        "FT-054"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CRAWL-02",
+      "name": "主题定向采集与列表分页策略",
+      "phase": "M5",
+      "owner": "采集/解析",
+      "depends": [
+        "CRAWL-01",
+        "SEARCH-02"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "主题、字段目标、候选链接",
+      "outputs": "优先队列与覆盖诊断",
+      "implementation": "启发式+模型排序待抓页面；受控分页/无限滚动；抽样检查漏掉相关页面。",
+      "acceptance": "优先级不能突破scope/robots/预算；停止条件可解释；不自发整网遍历。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-055",
+      "test_id": "FT-055",
+      "task_dependencies": [
+        "DEV-028",
+        "DEV-045"
+      ],
+      "tests": [
+        "FT-055"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CODE-01",
+      "name": "代码与技术文档专门检索",
+      "phase": "M5",
+      "owner": "垂直检索",
+      "depends": [
+        "INDEX-02",
+        "QRY-02",
+        "DOC-01"
+      ],
+      "effort_low": 7,
+      "effort_high": 12,
+      "inputs": "授权仓库/源码/技术文档",
+      "outputs": "repo/path/lang/commit/line/symbol字段",
+      "implementation": "文本精确搜索+可选Tree-sitter结构提取；不执行仓库代码或构建脚本；版本化行号与证据。",
+      "acceptance": "函数符号/错误码/版本号可检索；同文件不同commit分开；无通用编译级语义保证。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-056",
+      "test_id": "FT-056",
+      "task_dependencies": [
+        "DEV-046",
+        "DEV-014",
+        "DEV-025"
+      ],
+      "tests": [
+        "FT-056",
+        "B-29"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SCHOLAR-01",
+      "name": "论文/数据集检索与标识消歧",
+      "phase": "M5",
+      "owner": "垂直检索",
+      "depends": [
+        "DATASET-01",
+        "SRC-04",
+        "DOC-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "已审核科研接口、DOI/arXiv标识",
+      "outputs": "作者/年份/版本/引用关系和可读状态",
+      "implementation": "元数据与全文分离；论文版本/撤稿状态只有来源证据时标注；数据集与软件关联可追踪。",
+      "acceptance": "元数据免费不伪称正文可读；DOI归一不混版本；没有来源支持时状态unknown。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-057",
+      "test_id": "FT-057",
+      "task_dependencies": [
+        "DEV-053",
+        "DEV-012",
+        "DEV-025"
+      ],
+      "tests": [
+        "FT-057",
+        "B-30"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "PRIVATE-01",
+      "name": "本地文件与授权私人资料导入",
+      "phase": "M5",
+      "owner": "内容/安全",
+      "depends": [
+        "DOC-01",
+        "INDEX-03",
+        "AUTH-01"
+      ],
+      "effort_low": 7,
+      "effort_high": 12,
+      "inputs": "授权文件/目录/连接器profile",
+      "outputs": "导入任务、增量状态与私有索引",
+      "implementation": "本地导入走专用通道；路径/符号链接/文件大小校验；连接器先接口与用户选择的一种，不承诺接遍所有App。",
+      "acceptance": "网页不能调用任意file://；文件移走/撤权触发删除；私有查询不自动外发。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-058",
+      "test_id": "FT-058",
+      "task_dependencies": [
+        "DEV-025",
+        "DEV-031",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-058",
+        "B-31"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SRC-06",
+      "name": "免费来源扩充与维护工作台",
+      "phase": "M5",
+      "owner": "搜索适配",
+      "depends": [
+        "SRC-05",
+        "SCHOLAR-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 16,
+      "inputs": "剩余去重候选、失败报告、审核记录",
+      "outputs": "扩展适配包、回归状态和停用清单",
+      "implementation": "本期预算示例新增5–10源，逐个合同测试与可用性复核；并集是审计范围不是全部启用承诺。",
+      "acceptance": "新增源有可测增量或明确垂直价值；数量不替代质量；超出数量按单位适配工量另排。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-059",
+      "test_id": "FT-059",
+      "task_dependencies": [
+        "DEV-041",
+        "DEV-057"
+      ],
+      "tests": [
+        "FT-059"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "DOC-02",
+      "name": "OCR、复杂版面与视觉辅助读取",
+      "phase": "M6",
+      "owner": "多模态/解析",
+      "depends": [
+        "DOC-01",
+        "MODEL-02",
+        "EVID-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "无文字层/低质量页面、视觉或OCR配置",
+      "outputs": "识别正文、页/区域坐标、质量状态",
+      "implementation": "先原生文字；必要时本地OCR或用户视觉模型；图文/表格与阅读顺序分开；降质显式。",
+      "acceptance": "OCR文本不冒充原生文字；定位回页面而非声称识别绝对正确；无收费OCR回退。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-060",
+      "test_id": "FT-060",
+      "task_dependencies": [
+        "DEV-025",
+        "DEV-044",
+        "DEV-047"
+      ],
+      "tests": [
+        "FT-060",
+        "B-35"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "IMAGE-01",
+      "name": "图片检索与图片资产索引",
+      "phase": "M6",
+      "owner": "多模态/检索",
+      "depends": [
+        "INDEX-02",
+        "SRC-06"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "免费图片来源/授权采集、查询",
+      "outputs": "image_url、landing_url、尺寸、文本、权利信息",
+      "implementation": "图片与落地页分开建模；alt/caption与来源元数据索引；可选图像嵌入；缺权利声明为unknown。",
+      "acceptance": "缩略图不冒充原图；公开可见不等于可再分发；图片维度与类型校验。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-061",
+      "test_id": "FT-061",
+      "task_dependencies": [
+        "DEV-046",
+        "DEV-059"
+      ],
+      "tests": [
+        "FT-061",
+        "B-33"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "IMAGE-02",
+      "name": "以图搜图、近重复与文本搜图",
+      "phase": "M6",
+      "owner": "多模态/检索",
+      "depends": [
+        "IMAGE-01",
+        "DOC-02"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "授权图片/URL/文本、local/external/both",
+      "outputs": "重复组、视觉/语义近邻、证据",
+      "implementation": "感知哈希查近重复，图像/跨模态向量查相似；外部反向接口仅经免费审核；私图外发需单独允许。",
+      "acceptance": "没有外部反向源时明确只搜自有图库；不把相似视为同一；不得暗传图片。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-062",
+      "test_id": "FT-062",
+      "task_dependencies": [
+        "DEV-061",
+        "DEV-060"
+      ],
+      "tests": [
+        "FT-062",
+        "B-32"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "AV-01",
+      "name": "视频音频搜索与字幕时间戳检索",
+      "phase": "M6",
+      "owner": "多模态/检索",
+      "depends": [
+        "SRC-06",
+        "EVID-01",
+        "INDEX-02"
+      ],
+      "effort_low": 8,
+      "effort_high": 13,
+      "inputs": "媒体来源、字幕、授权媒体文件",
+      "outputs": "资产、时间段、字幕命中与播放定位",
+      "implementation": "链接发现、已有字幕、转写分别记录；毫秒时间轴与文本块绑定；不绕过DRM/平台限制。",
+      "acceptance": "找到视频不冒充已理解；时间戳命中可回放验证；无法获取媒体仍可返回链接元数据。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-063",
+      "test_id": "FT-063",
+      "task_dependencies": [
+        "DEV-059",
+        "DEV-047",
+        "DEV-046"
+      ],
+      "tests": [
+        "FT-063",
+        "B-34"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "AV-02",
+      "name": "转写、关键帧与视频内容理解",
+      "phase": "M6",
+      "owner": "多模态/解析",
+      "depends": [
+        "AV-01",
+        "MODEL-02",
+        "DOC-02"
+      ],
+      "effort_low": 10,
+      "effort_high": 18,
+      "inputs": "授权媒体、ASR/vision配置和时长预算",
+      "outputs": "转写、关键帧描述、片段级证据",
+      "implementation": "本地whisper.cpp或用户ASR端点；安全解码/按需采样关键帧；组合字幕/画面/声音证据但注明采样。",
+      "acceptance": "转写与原字幕分开；视频采样不能声称每帧检查；长媒体有时长/显存/资源限额；无模型则能力缺失。",
+      "origin": "新增/细化",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-064",
+      "test_id": "FT-064",
+      "task_dependencies": [
+        "DEV-063",
+        "DEV-044",
+        "DEV-060"
+      ],
+      "tests": [
+        "FT-064",
+        "B-34"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "UPDATE-01",
+      "name": "网页快照变化与增量刷新",
+      "phase": "M7",
+      "owner": "采集/内容",
+      "depends": [
+        "INDEX-03",
+        "CACHE-01",
+        "EXTRACT-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 9,
+      "inputs": "已保存集合、刷新条件",
+      "outputs": "版本差异与字段变更",
+      "implementation": "ETag/Last-Modified验证；正文指纹与解析版本分别比较；生成模型可评估重要性但不改原始差异。",
+      "acceptance": "超时/403不当删除；304仅更新checked_at；改变解析器不伪称网页改动。",
+      "origin": "v0.1保留",
+      "model": "可选或按子能力启用",
+      "status": "未开始",
+      "task_id": "DEV-065",
+      "test_id": "FT-065",
+      "task_dependencies": [
+        "DEV-031",
+        "DEV-032",
+        "DEV-049"
+      ],
+      "tests": [
+        "FT-065"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "WORKSPACE-01",
+      "name": "历史、收藏、标签与搜索工作区",
+      "phase": "M7",
+      "owner": "API/UI",
+      "depends": [
+        "FACET-01",
+        "AUTH-01",
+        "EVID-02"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "搜索会话、选中结果、备注",
+      "outputs": "可继续的工作区与收藏",
+      "implementation": "历史默认可关闭、TTL与删除；收藏记录URL及可选快照引用；共享仍逐项权限。",
+      "acceptance": "收藏不自动授权永久保存正文；删除历史不删用户另存集合；共享不越权。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-066",
+      "test_id": "FT-066",
+      "task_dependencies": [
+        "DEV-040",
+        "DEV-007",
+        "DEV-048"
+      ],
+      "tests": [
+        "FT-066"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "PREF-01",
+      "name": "排序偏好、站点屏蔽与隐私开关",
+      "phase": "M7",
+      "owner": "API/UI",
+      "depends": [
+        "RANK-02",
+        "WORKSPACE-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "显式站点/语言/时间偏好",
+      "outputs": "版本化偏好与可撤回排序",
+      "implementation": "偏好只改变软排序；屏蔽结果可解释；不暗建敏感画像；遥测默认关闭/脱敏。",
+      "acceptance": "硬条件优先；切换偏好形成新结果版本；关闭个性化恢复基线。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-067",
+      "test_id": "FT-067",
+      "task_dependencies": [
+        "DEV-038",
+        "DEV-066"
+      ],
+      "tests": [
+        "FT-067",
+        "B-17"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "WATCH-01",
+      "name": "保存查询、订阅新增与更新监控",
+      "phase": "M7",
+      "owner": "工作流",
+      "depends": [
+        "UPDATE-01",
+        "WORKSPACE-01",
+        "JOB-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "查询/集合、时区、周期、变化条件",
+      "outputs": "订阅、运行记录、去重通知",
+      "implementation": "发现新对象与刷新旧页两种任务；保存query版本与seen记录；失败不推进成功水位；默认无外部推送。 每个订阅按source保存成功checkpoint、扫描区间、覆盖不足和去重集合；一个来源失败不推进其水位，也不阻止其他成功源形成可重放结果。交付事件与扫描提交分两份事务outbox。",
+      "acceptance": "停机补跑有catch-up上限；时区/DST行为明确；只通知新增或新满足条件；不借监控绕过上游限流。 两源一成一败后恢复不漏失败源内容；重试通知沿用event_id；不保证外部收件方恰好一次。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-068",
+      "test_id": "FT-068",
+      "task_dependencies": [
+        "DEV-065",
+        "DEV-066",
+        "DEV-005"
+      ],
+      "tests": [
+        "FT-068",
+        "B-36",
+        "C-12"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "EXPORT-01",
+      "name": "搜索结果、证据与资料集导出",
+      "phase": "M7",
+      "owner": "API/UI",
+      "depends": [
+        "WORKSPACE-01",
+        "DATASET-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "结果/集合、格式、授权范围",
+      "outputs": "JSON/JSONL/CSV/Markdown/引用格式",
+      "implementation": "保留来源和版本；BibTeX等按类型；全文包需存储授权；CSV公式注入防护；大导出异步与可取消。",
+      "acceptance": "导出时再次鉴权；不泄露Cookie/密钥；导出引用可定位；删除撤权后的旧导出按保留策略失效。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-069",
+      "test_id": "FT-069",
+      "task_dependencies": [
+        "DEV-066",
+        "DEV-053"
+      ],
+      "tests": [
+        "FT-069",
+        "B-37"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "WEBHOOK-01",
+      "name": "通知出口与Webhook",
+      "phase": "M7",
+      "owner": "工作流/安全",
+      "depends": [
+        "WATCH-01",
+        "EXPORT-01",
+        "SEC-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "管理员批准的通知目标",
+      "outputs": "签名事件、重试与死信",
+      "implementation": "内部通知优先；Webhook签名/重放保护/重试上限/出口限制；不内置收费通知平台。",
+      "acceptance": "DNS变化与重定向同样检查；payload不包含未授权正文；失败不重复计一次新事件。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-070",
+      "test_id": "FT-070",
+      "task_dependencies": [
+        "DEV-068",
+        "DEV-069",
+        "DEV-004"
+      ],
+      "tests": [
+        "FT-070",
+        "B-37",
+        "C-12"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "API-01",
+      "name": "完整协议覆盖、版本迁移与扩展接口收尾",
+      "phase": "M7",
+      "owner": "API/核心",
+      "depends": [
+        "API-00",
+        "RESEARCH-01",
+        "IMAGE-02",
+        "AV-02",
+        "EXPORT-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "统一业务合同、客户端能力",
+      "outputs": "版本化API、MCP工具、CLI、Skills说明",
+      "implementation": "薄协议层共用授权/预算；MCP能力协商、取消映射；只发布实现工具；插件进程握手与schema版本。 本任务仅补全API-00之后的业务映射、兼容与扩展，不能成为M1/M2的反向依赖。",
+      "acceptance": "CLI/HTTP/MCP同请求结果语义一致；原生插件视为可信代码；不为每个协议实现一套逻辑。 跨协议完成矩阵逐项对照已实现功能；旧版本兼容与故意非法请求有回归。",
+      "origin": "v0.1保留并细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-071",
+      "test_id": "FT-071",
+      "task_dependencies": [
+        "DEV-078",
+        "DEV-051",
+        "DEV-062",
+        "DEV-064",
+        "DEV-069"
+      ],
+      "tests": [
+        "FT-071",
+        "B-40",
+        "C-01"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "UI-02",
+      "name": "完整搜索/资料/爬虫/研究操作台",
+      "phase": "M7",
+      "owner": "API/UI",
+      "depends": [
+        "API-01",
+        "PREF-01",
+        "WEBHOOK-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "全部已实现业务能力",
+      "outputs": "多类型结果页、资料阅读器、任务与模型配置台",
+      "implementation": "分面、预览、来源解释、证据跳转、订阅、媒体时间轴、未知状态、键盘导航与可访问标签。",
+      "acceptance": "在慢源/错误/部分结果下仍可操作；所有功能有空态与错误态；无只好看不可用入口。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-072",
+      "test_id": "FT-072",
+      "task_dependencies": [
+        "DEV-071",
+        "DEV-067",
+        "DEV-070"
+      ],
+      "tests": [
+        "FT-072",
+        "B-40"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "OPS-01",
+      "name": "观测、诊断与资源容量基线",
+      "phase": "M8",
+      "owner": "平台/测试",
+      "depends": [
+        "OPS-00",
+        "QA-02",
+        "UI-02"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "事件/指标/机器基线",
+      "outputs": "来源、读取、索引、模型、会话指标",
+      "implementation": "分阶段P50/P95、TTFR、缓存、索引滞后、浏览器占比、usage未知率；无用户原文默认日志。 以OPS-00已经采集的事件和指标完成容量测量与诊断界面，不推迟基础日志到M8。",
+      "acceptance": "性能分冷热缓存/页面类别/模型条件；不以框架宣传QPS当产品指标。 原始测量绑定commit/机器/负载/模型配置；无URL或query高基数标签。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-073",
+      "test_id": "FT-073",
+      "task_dependencies": [
+        "DEV-079",
+        "DEV-042",
+        "DEV-072"
+      ],
+      "tests": [
+        "FT-073",
+        "C-03"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "OPS-02",
+      "name": "备份恢复、迁移与内容保留",
+      "phase": "M8",
+      "owner": "存储/平台",
+      "depends": [
+        "BACKUP-00",
+        "INDEX-03",
+        "WATCH-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 6,
+      "inputs": "元数据/快照/索引/删除日志",
+      "outputs": "一致性备份、恢复演练和迁移脚本",
+      "implementation": "在线备份接口与blob水位manifest；索引可重建；加密密钥不进普通备份；旧版本读写兼容窗口。 以BACKUP-00底座完成长期保留、密钥轮换、升级/回滚与删除日志异地/离线保护演练；不承诺已交付外部副本可撤销。",
+      "acceptance": "不是直接复制运行中的DB文件；恢复后权限/删除仍有效；坏索引可独立重建。 恢复副本验证最新撤销水位后才能退出隔离；测试新旧Schema/FTS/向量重建。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-074",
+      "test_id": "FT-074",
+      "task_dependencies": [
+        "DEV-080",
+        "DEV-031",
+        "DEV-068"
+      ],
+      "tests": [
+        "FT-074",
+        "B-38",
+        "C-03",
+        "C-11"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SCALE-01",
+      "name": "多工作节点与公平调度",
+      "phase": "M8",
+      "owner": "核心平台",
+      "depends": [
+        "OPS-01",
+        "JOB-01",
+        "OPS-02",
+        "API-00"
+      ],
+      "effort_low": 10,
+      "effort_high": 18,
+      "inputs": "多节点、租户配额、共享任务协调",
+      "outputs": "远程worker、fencing、背压与全局限流",
+      "implementation": "worker走核心RPC不共享SQLite文件；核心单写瓶颈实测后迁移事务存储；自研索引分片后端按接口替换。",
+      "acceptance": "失联节点不可继续提交；跨节点同源配额有效；多租户公平；不得把WAL放网络盘。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-075",
+      "test_id": "FT-075",
+      "task_dependencies": [
+        "DEV-073",
+        "DEV-005",
+        "DEV-074",
+        "DEV-078"
+      ],
+      "tests": [
+        "FT-075",
+        "B-39"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "QA-03",
+      "name": "安全/故障/多模态/端到端发布门禁",
+      "phase": "M8",
+      "owner": "测试/安全",
+      "depends": [
+        "OPS-01",
+        "OPS-02",
+        "SCALE-01"
+      ],
+      "effort_low": 8,
+      "effort_high": 14,
+      "inputs": "完整功能样例、基准、安全与混沌用例",
+      "outputs": "签字验收包与可复现报告",
+      "implementation": "扩展原A-01…A-22；新增B系列；模糊测试URL/查询/解析器；模型失败/磁盘满/重启/取消故障注入。",
+      "acceptance": "安全/权限/约束/quote错误为阻断；多媒体和Windows不只跑空壳构建；报告风险与覆盖缺口。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-076",
+      "test_id": "FT-076",
+      "task_dependencies": [
+        "DEV-073",
+        "DEV-074",
+        "DEV-075"
+      ],
+      "tests": [
+        "FT-076",
+        "B-40"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "RELEASE-01",
+      "name": "可复现打包、升级与运维手册",
+      "phase": "M8",
+      "owner": "平台/交付",
+      "depends": [
+        "QA-03",
+        "GOV-01"
+      ],
+      "effort_low": 6,
+      "effort_high": 10,
+      "inputs": "构建产物、锁文件、SBOM、配置模板",
+      "outputs": "Linux/Windows包、升级回滚与开发文档",
+      "implementation": "原生服务包优先；容器可选而非强制付费桌面依赖；基础组件/浏览器/模型权重分开授权与安装；无内置密钥。",
+      "acceptance": "干净环境能按文档启动；旧数据升级/回滚演练；全部能力有任务映射及已实现清单。",
+      "origin": "新增/细化",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-077",
+      "test_id": "FT-077",
+      "task_dependencies": [
+        "DEV-076",
+        "DEV-001"
+      ],
+      "tests": [
+        "FT-077",
+        "B-40"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "API-00",
+      "name": "基础HTTP/CLI/MCP合同与早期集成",
+      "phase": "M1",
+      "owner": "API/核心",
+      "depends": [
+        "CONTRACT-02",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "核心合同、假来源和任务fixture",
+      "outputs": "可测试的search/read/jobs端口、CLI/MCP最小适配、协议一致性样例",
+      "implementation": "M1先实现已可用search/jobs，M2接read；未实现端口不公布。API-01保留全能力覆盖/版本迁移/扩展握手收尾，不再是第一份协议实现。",
+      "acceptance": "同一授权请求在HTTP/CLI/MCP经过同一核心；无媒体验收依赖；能力未实现或禁用时明确返回不可用。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-078",
+      "test_id": "FT-078",
+      "task_dependencies": [
+        "DEV-083",
+        "DEV-007",
+        "DEV-005",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-078",
+        "C-01"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "OPS-00",
+      "name": "早期追踪、资源账本与诊断底座",
+      "phase": "M0",
+      "owner": "观测/核心",
+      "depends": [
+        "CONTRACT-01",
+        "JOB-01",
+        "AUTH-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "任务、请求、worker与权限合同",
+      "outputs": "关联ID、阶段事件、来源/读取/模型资源指标及脱敏日志",
+      "implementation": "M0建立可诊断底座；metrics不以URL或原始query作高基数标签。OPS-01只做全链容量报告与运营面板收尾。",
+      "acceptance": "单请求可串联授权/调度/获取/提交；超时和重试可解释；日志无密钥；指标样例的资源计数一致。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-079",
+      "test_id": "FT-079",
+      "task_dependencies": [
+        "DEV-003",
+        "DEV-005",
+        "DEV-007"
+      ],
+      "tests": [
+        "FT-079",
+        "C-03"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "BACKUP-00",
+      "name": "早期一致备份、恢复隔离与撤销水位",
+      "phase": "M0",
+      "owner": "存储/安全",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "effort_low": 4,
+      "effort_high": 7,
+      "inputs": "元数据库、不可变blob、撤销日志",
+      "outputs": "可恢复备份清单、独立撤销日志保护策略、隔离恢复工具",
+      "implementation": "使用一致快照API或停写流程；不可只复制活跃DB主文件。恢复先隔离，校验blob清单与撤销水位，水位缺失不得对外发布；OPS-02负责长期归档与升级演练。",
+      "acceptance": "M0恢复固定资料与任务；M2补FTS回放；M4补向量重建。删除前备份恢复后不能复活删除内容；撤销日志不可验证时保持隔离。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-080",
+      "test_id": "FT-080",
+      "task_dependencies": [
+        "DEV-006",
+        "DEV-007",
+        "DEV-005",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-080",
+        "C-03",
+        "C-11"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "ROBOTS-01",
+      "name": "爬虫准入与robots前置策略",
+      "phase": "M1",
+      "owner": "采集/安全",
+      "depends": [
+        "SEC-01",
+        "JOB-01",
+        "SRC-01",
+        "QA-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "已审核站点、爬虫标识、robots响应fixture",
+      "outputs": "版本化robots决策、缓存和请求准入token",
+      "implementation": "与HTML跟链调度解耦；策略检查先于递归请求。成功/重定向/4xx/5xx/网络失败/缓存过期分别处理；429执行限流退避。CRAWL-03只负责页面索引/摘要发布规则。",
+      "acceptance": "未取得有效准入前不得发爬虫内容请求；robots访问本身受网络/总预算控制；网络或服务器不可达且无适用缓存时不放行。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-081",
+      "test_id": "FT-081",
+      "task_dependencies": [
+        "DEV-004",
+        "DEV-005",
+        "DEV-009",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-081",
+        "C-02"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "SPIKE-01",
+      "name": "关键技术可行性与版本冻结验证",
+      "phase": "M0",
+      "owner": "架构/平台",
+      "depends": [
+        "CONTRACT-01",
+        "SEC-01",
+        "QA-01"
+      ],
+      "effort_low": 5,
+      "effort_high": 8,
+      "inputs": "候选浏览器/FTS/中文/PDF组件与目标平台",
+      "outputs": "ADR、可复现实验、版本/构建选项/许可证锁与能力缺口",
+      "implementation": "先验证浏览器出口约束、C++构建、中文/符号FTS回映、PDF基础提取，再投入大规模实现；未通过的平台能力fail-closed，不换成四个成品后端。",
+      "acceptance": "记录输入/环境/版本/步骤/失败；浏览器Windows隔离若未通过可继续无网与其他已验证能力，不得宣布Windows全功能通过。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-082",
+      "test_id": "FT-082",
+      "task_dependencies": [
+        "DEV-003",
+        "DEV-004",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-082",
+        "C-09",
+        "C-14"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    },
+    {
+      "id": "CONTRACT-02",
+      "name": "可执行配置合同、默认值与负例校验",
+      "phase": "M0",
+      "owner": "合同/测试",
+      "depends": [
+        "CONTRACT-01",
+        "QA-01"
+      ],
+      "effort_low": 3,
+      "effort_high": 5,
+      "inputs": "查询、来源、模型Schema及部署策略",
+      "outputs": "规范化器、结构/语义/授权分层校验合同、跨语言测试向量",
+      "implementation": "Schema只做结构；程序补复杂度、引用、时间、权限和能力校验。无模型部署合法；默认值由规范化器生成；角色覆盖与明确禁用不混淆。",
+      "acceptance": "Python合同样例只作fixture；正式C++实现要通过同一测试向量。无模型配置、角色并发、无效日期、坏profile、深AST均有正负例。",
+      "origin": "v1.1自审拆分/补强",
+      "model": "不需要模型",
+      "status": "未开始",
+      "task_id": "DEV-083",
+      "test_id": "FT-083",
+      "task_dependencies": [
+        "DEV-003",
+        "DEV-008"
+      ],
+      "tests": [
+        "FT-083",
+        "C-04",
+        "C-05",
+        "C-06",
+        "C-16"
+      ],
+      "review_status": "待独立审核",
+      "reviewer_id": null
+    }
+  ],
+  "phases": [
+    {
+      "phase": "M0",
+      "name": "工程与安全底座",
+      "count": 12,
+      "low": 61,
+      "high": 104,
+      "gate": "合同校验、Linux/Windows核心构建、隔离策略、持久任务恢复与版本快照样例通过；A类测试开始运行。 OPS-00/BACKUP-00/SPIKE-01/CONTRACT-02通过；独立审查状态不得用作者自审代替。",
+      "release": "内部构建"
+    },
+    {
+      "phase": "M1",
+      "name": "多源搜索与会话",
+      "count": 14,
+      "low": 70,
+      "high": 122,
+      "gate": "已审核3–5源可查；冻结分页无重复；部分结果/SSE/取消可用；所有非实测源仍禁用。 API-00和ROBOTS-01完成；web Alpha至少1个审核web来源，领域源数量不能替代。",
+      "release": "搜索Alpha"
+    },
+    {
+      "phase": "M2",
+      "name": "网页采集与全文索引",
+      "count": 12,
+      "low": 73,
+      "high": 126,
+      "gate": "搜索→读取/限定爬取→快照→全文检索闭环；基础新增/更新/删除/撤权生效；公开索引规则通过。",
+      "release": "采集Alpha"
+    },
+    {
+      "phase": "M3",
+      "name": "搜索正确性与体验",
+      "count": 10,
+      "low": 48,
+      "high": 82,
+      "gate": "精确/中文/硬条件/分面/排序解释测试通过；相关性基准建立；strict不存在伪满足。 固定语料/环境/阈值/留出集已冻结，不能空值放行。",
+      "release": "搜索Beta"
+    },
+    {
+      "phase": "M4",
+      "name": "模型、证据与研究",
+      "count": 10,
+      "low": 59,
+      "high": 99,
+      "gate": "用户文本模型驱动有界研究与引用；嵌入配置存在时语义检索可用；无模型基础模式仍通过。",
+      "release": "R0.1基本完整版本"
+    },
+    {
+      "phase": "M5",
+      "name": "垂直搜索与私人资料",
+      "count": 7,
+      "low": 45,
+      "high": 80,
+      "gate": "代码行号绑定版本、论文元数据/全文边界、私人资料权限及资料集核验通过；适配器扩充有审计。",
+      "release": "R0.2垂直版本"
+    },
+    {
+      "phase": "M6",
+      "name": "图片与音视频",
+      "count": 5,
+      "low": 40,
+      "high": 69,
+      "gate": "以图搜图覆盖范围明确；转写/字幕/关键帧有时间位置；模型缺失与素材无权限时正确降级。",
+      "release": "R0.3多模态版本"
+    },
+    {
+      "phase": "M7",
+      "name": "工作区、订阅与完整接口",
+      "count": 8,
+      "low": 44,
+      "high": 76,
+      "gate": "收藏工作区、订阅、导出、通知、HTTP/CLI/MCP和完整UI全部可用且共享权限逻辑。",
+      "release": "R1.0候选版本"
+    },
+    {
+      "phase": "M8",
+      "name": "规模、加固与正式交付",
+      "count": 5,
+      "low": 31,
+      "high": 53,
+      "gate": "全功能回归、跨平台包、备份恢复、多worker公平调度和安全门禁通过；性能结果绑定实测环境。",
+      "release": "R1.0完整交付"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "A-01",
+      "name": "禁用或故障所有参考产品服务",
+      "acceptance": "自研基础流程仍可执行；无 SearXNG/Scrapling/Firecrawl/Exa 产品后端依赖",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-02",
+      "name": "搜索/读取失败时观察所有出站请求",
+      "acceptance": "不出现收费服务或未配置回退；模型请求仅发往已授权配置",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-03",
+      "name": "同一来源以两个适配器登记",
+      "acceptance": "不重复查询或重复计票；共享适用限流状态",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-04",
+      "name": "一个搜索源超时，另一个成功",
+      "acceptance": "返回成功来源结果与失败报告；不把部分结果当作完整结果",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-05",
+      "name": "目标页面实际返回登录/挑战/404页面",
+      "acceptance": "HTTP 状态与内容状态正确；不将提示页当目标正文",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-06",
+      "name": "静态与JS延迟页面",
+      "acceptance": "静态页不无故启动浏览器；动态读取在预算内获得正文或明确失败",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-07",
+      "name": "指定10个URL批量读取",
+      "acceptance": "不扩展到页面内其他URL；逐项状态和结果可查",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-08",
+      "name": "含循环、分页陷阱和跨域链接的测试站",
+      "acceptance": "不突破scope和原子预算；停止原因明确；符合robots策略",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-09",
+      "name": "页面采集中强制退出工作进程",
+      "acceptance": "重启恢复；不产生重复已提交产物；可能重请求有审计",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-10",
+      "name": "暂停、恢复、取消任务",
+      "acceptance": "状态转换正确；终态后无新派发；保留已完成内容",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-11",
+      "name": "快照中给定中英混合quote",
+      "acceptance": "100%的输出原文引文通过UTF-8边界与文本一致性校验，否则不发布该引文",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-12",
+      "name": "修改网页后读取旧证据",
+      "acceptance": "旧引用仍指向旧快照；删除/过期后明确不可用，不悄悄替换",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-13",
+      "name": "文档不包含某必填语义字段",
+      "acceptance": "返回unknown/缺失说明；Schema要求与证据要求冲突时报告，不能造值",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-14",
+      "name": "模型返回错误Schema或未知引用ID",
+      "acceptance": "受限修复或失败；不发布未验证字段；已取证据保留",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-15",
+      "name": "模型端点不支持视觉/嵌入/思考参数",
+      "acceptance": "能力报错或显式已允许降级；不偷偷更换提供方",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-16",
+      "name": "研究达到轮次、调用或时间预算",
+      "acceptance": "停止并返回partial/原因和已有证据，不自加额度",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-17",
+      "name": "提示注入要求外传密钥或访问内网",
+      "acceptance": "工具及网络层阻止越权，不依赖模型自我拒绝",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-18",
+      "name": "私网地址、DNS变化、重定向与浏览器子请求攻击样本",
+      "acceptance": "所有已收录攻击样本被安全策略阻止；无法保证未测试攻击不存在",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-19",
+      "name": "不同用户读取同URL的私有内容",
+      "acceptance": "内容/缓存/向量/模型结果不跨授权泄漏",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-20",
+      "name": "cache-only与全局offline",
+      "acceptance": "前者不发采集请求；后者连远程模型请求也不发",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-21",
+      "name": "模型端点不可用或配置移除",
+      "acceptance": "普通搜索/读取/爬虫/全文检索仍可用；模型功能明确失败",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "A-22",
+      "name": "同一任务输入与幂等键重复提交",
+      "acceptance": "复用或拒绝重复job，参数不同则冲突，不能默默改旧任务",
+      "kind": "保留基线",
+      "features": "跨模块",
+      "phase": "按关联模块",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-01",
+      "name": "统一查询语法与注入",
+      "features": "QRY-01",
+      "scenario": "同语义的字符串/AST，含引号括号和恶意SQL片段",
+      "acceptance": "解析得到相同语义或明确拒绝；不执行注入；深度/节点数量受限",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-02",
+      "name": "精确符号保护",
+      "features": "QRY-02",
+      "scenario": "C++、C#、std::expected、v1.2.3、不同HTTP错误码",
+      "acceptance": "不能被相互替换；精确条件返回完整字面核验范围",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-03",
+      "name": "中文简繁原文映射",
+      "features": "QRY-03 EVID-01",
+      "scenario": "简繁转换改变长度、含emoji/组合字符和代码的文档",
+      "acceptance": "检索变体可命中；quote仍准确切自原文UTF-8边界",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-04",
+      "name": "硬条件不支持",
+      "features": "SRC-03 QRY-04",
+      "scenario": "上游忽略site/filetype/日期条件",
+      "acceptance": "native状态不冒充verified；strict未知项不进满足列表",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-05",
+      "name": "否定条件证据不足",
+      "features": "QRY-04",
+      "scenario": "只取得摘要或截断正文，却要求不包含某词",
+      "acceptance": "返回unknown而非因未看到词就判满足",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-06",
+      "name": "筛选后补候选",
+      "features": "QRY-04 SEARCH-05",
+      "scenario": "前20条仅2条通过，但后续有合格结果",
+      "acceptance": "预算内补取；不足则报告当前核验范围，不能断言仅2个结果",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-07",
+      "name": "模型改写保留硬条件",
+      "features": "SEARCH-02",
+      "scenario": "模型建议移除离线/Linux/版本要求以增加结果",
+      "acceptance": "程序拒绝放宽；派生查询仍绑定原硬条件",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-08",
+      "name": "多来源重复计票",
+      "features": "SRC-01 SEARCH-03",
+      "scenario": "同一索引族经两个适配器返回同一页面",
+      "acceptance": "分组控制贡献；未知独立性不自行拆分为独立索引",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-09",
+      "name": "近重复与主题相关分离",
+      "features": "RANK-01 SEARCH-04",
+      "scenario": "转载、改写、同主题原创、不同版本混合",
+      "acceptance": "转载折叠可撤回；相关原创不按重复删除；版本有标记",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-10",
+      "name": "域名多样性边界",
+      "features": "RANK-01",
+      "scenario": "明确site限定和无site探索两种查询",
+      "acceptance": "前者不跨网站；后者在候选允许时改善覆盖且不填无关结果",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-11",
+      "name": "解释忠实性",
+      "features": "RANK-02",
+      "scenario": "实际排序因子与故意编造模型解释",
+      "acceptance": "只显示执行日志中的原因和版本；不生成假理由",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-12",
+      "name": "零结果诊断",
+      "features": "SEARCH-05",
+      "scenario": "源全失败/候选均不符/本地空/预算截止",
+      "acceptance": "状态分别可辨；所有情况都不能等同全网不存在",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-13",
+      "name": "分页稳定性",
+      "features": "SESSION-01",
+      "scenario": "翻页间加入高分结果或修改排序",
+      "acceptance": "旧版本不悄悄重排；新结果为新版本；无跨页重复",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-14",
+      "name": "SSE重播与背压",
+      "features": "SESSION-02",
+      "scenario": "断线重连、慢客户端、事件保留期过期",
+      "acceptance": "按ID去重；过期提示重取；服务器有内存与排队上限",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-15",
+      "name": "游标撤权与失效",
+      "features": "SESSION-01 AUTH-01",
+      "scenario": "游标绑定资料被撤权/删除/保留期到期",
+      "acceptance": "重新鉴权；敏感结果和计数不可见；明确失效而非继续泄露",
+      "phase": "M1",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-16",
+      "name": "分面范围",
+      "features": "FACET-01",
+      "scenario": "只收集100候选但上游宣称大量总结果",
+      "acceptance": "计数标当前候选；不显示成全网精确数量；未知值单列",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-17",
+      "name": "隐私联想",
+      "features": "QRY-06 PREF-01",
+      "scenario": "输入未提交的私有项目名并关闭历史",
+      "acceptance": "无自动外发和历史写入；他人补全不能看到该词",
+      "phase": "M7",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-18",
+      "name": "来源动态停用",
+      "features": "SRC-02 SRC-05",
+      "scenario": "运行任务时撤销免费审核或修改条款策略",
+      "acceptance": "后续请求停止；缓存复用按新政策重新检查；无收费回退",
+      "phase": "M3",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-19",
+      "name": "浏览器出口旁路",
+      "features": "SEC-01 READ-02",
+      "scenario": "iframe、重定向、WebSocket、服务工作者和非代理直连",
+      "acceptance": "隔离层阻断非法出口；CDP监控不是唯一网络安全边界",
+      "phase": "M2",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-20",
+      "name": "内容类型与压缩炸弹",
+      "features": "DOC-01 READ-01",
+      "scenario": "伪PDF/畸形ZIP/XML实体/超大解压内容",
+      "acceptance": "按安全策略拒绝；解析进程受限；无宏与外链执行",
+      "phase": "M2",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-21",
+      "name": "索引增删改与可见水位",
+      "features": "INDEX-03",
+      "scenario": "抓取成功后FTS提交失败、删除、重建和重启",
+      "acceptance": "状态区分；索引可重试不重抓；撤权立即阻断展示；重建可回滚",
+      "phase": "M2",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-22",
+      "name": "向量过滤与版本",
+      "features": "INDEX-02",
+      "scenario": "新嵌入维度、受限候选、删除向量、近邻漏召回",
+      "acceptance": "禁止混维度；只返回授权项；报告近似性/不足；小集可精确比对",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-23",
+      "name": "公开索引和摘要控制",
+      "features": "CRAWL-03",
+      "scenario": "robots许可但页面noindex/nosnippet及定向Google专属规则",
+      "acceptance": "执行本产品明确策略；不盲从非本爬虫专属规则；撤索引不靠轮到重排",
+      "phase": "M2",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-24",
+      "name": "共享请求取消",
+      "features": "CACHE-01",
+      "scenario": "同权限两任务共享请求，取消其中之一",
+      "acceptance": "不错误取消另一任务；未共享权限不得合并；预算归属可追踪",
+      "phase": "M2",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-25",
+      "name": "模型能力差异",
+      "features": "MODEL-01",
+      "scenario": "聊天端点不支持向量/视觉/思考参数",
+      "acceptance": "明确能力错误或获准降级；不假装已使用所需能力",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-26",
+      "name": "模型注入与出站",
+      "features": "MODEL-02 AUTH-01",
+      "scenario": "页面要求把密钥或私人集合发到新网址",
+      "acceptance": "模型输出不能扩大白名单；执行层拒绝；密钥不进入提示",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-27",
+      "name": "证据与字段冲突",
+      "features": "EXTRACT-01 ANSWER-01",
+      "scenario": "来源互相冲突、未知字段、伪造evidence_id",
+      "acceptance": "原文定位与语义核验分别进行；矛盾/未知不隐藏",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-28",
+      "name": "研究预算与故障",
+      "features": "RESEARCH-01 JOB-01",
+      "scenario": "重复补搜、模型超时、用户取消、重启恢复",
+      "acceptance": "有界停止；已得证据保留；旧租约无效；不自行加额度",
+      "phase": "M4",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-29",
+      "name": "代码版本和行号",
+      "features": "CODE-01",
+      "scenario": "相同路径不同commit/文件有恶意构建脚本",
+      "acceptance": "行号绑定commit和blob；检索不执行项目脚本",
+      "phase": "M5",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-30",
+      "name": "科研标识与全文边界",
+      "features": "SCHOLAR-01",
+      "scenario": "同名论文、预印本/发表版、只能取得元数据",
+      "acceptance": "实体与版本有证据；不把摘要当已读全文；未核验撤稿状态unknown",
+      "phase": "M5",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-31",
+      "name": "本地路径与连接器撤权",
+      "features": "PRIVATE-01",
+      "scenario": "符号链接跳出授权目录、连接器授权撤销",
+      "acceptance": "拒绝越界；索引/片段/模型上下文同步阻断；无任意file://",
+      "phase": "M5",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-32",
+      "name": "反向图片覆盖与隐私",
+      "features": "IMAGE-02",
+      "scenario": "只有本地图库、用户私图和不可用外部源",
+      "acceptance": "明确仅自有图库；不暗传私图；不声称全网以图搜图成功",
+      "phase": "M6",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-33",
+      "name": "图片权利与资产身份",
+      "features": "IMAGE-01",
+      "scenario": "原图/缩略图/落地页和无许可说明图片",
+      "acceptance": "分别记录；权利unknown，不默认可再分发",
+      "phase": "M6",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-34",
+      "name": "音视频时间轴与采样",
+      "features": "AV-01 AV-02",
+      "scenario": "偏移字幕、机器转写、关键帧遗漏重要画面",
+      "acceptance": "毫秒定位可核验；字幕来源可辨；有限采样如实标注",
+      "phase": "M6",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-35",
+      "name": "OCR证据与质量",
+      "features": "DOC-02 EVID-01",
+      "scenario": "文字层不足且识别出错的扫描页",
+      "acceptance": "按需OCR；保留页/区域；一致性校验不冒充识别正确率",
+      "phase": "M6",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-36",
+      "name": "订阅失败与时区",
+      "features": "WATCH-01",
+      "scenario": "源失败、停机跨时区变化、同一新增反复发现",
+      "acceptance": "失败不推进水位；补跑有上限；同一事件去重；可暂停删除",
+      "phase": "M7",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-37",
+      "name": "导出与Webhook风险",
+      "features": "EXPORT-01 WEBHOOK-01",
+      "scenario": "CSV含公式、目标重定向内网、导出中撤权",
+      "acceptance": "公式注入防护；出口校验；逐项权限检查；无密钥原文外泄",
+      "phase": "M7",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-38",
+      "name": "备份恢复与删除日志",
+      "features": "OPS-02",
+      "scenario": "恢复删除前备份、丢失向量文件、DB正在WAL写入",
+      "acceptance": "一致备份；重放tombstone；索引重建；不复活被删除内容",
+      "phase": "M8",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-39",
+      "name": "多节点租约与限流",
+      "features": "SCALE-01 JOB-01",
+      "scenario": "网络分区双执行、worker租约过期、同源跨节点请求",
+      "acceptance": "旧fence不能提交；配额全局生效；终态不新增派发",
+      "phase": "M8",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "B-40",
+      "name": "完整能力发布检查",
+      "features": "RELEASE-01 API-01 UI-02 QA-03",
+      "scenario": "干净Linux/Windows环境、未配置嵌入/视觉/ASR",
+      "acceptance": "能力目录真实；基础功能可用；缺模型能力如实报告；无参考产品或付费隐藏依赖",
+      "phase": "M8",
+      "kind": "新增专项",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-001",
+      "name": "需求边界、能力目录与许可证清单",
+      "features": "GOV-01",
+      "scenario": "既定需求、参考项目功能、候选基础组件",
+      "acceptance": "无参考产品运行依赖；未实现能力不对外宣告；依赖记录包含版本/来源/许可/替换策略。 审核状态与实现状态独立；外部审查报告须能对应输入版本、reviewer_id与实际工具运行，不可凭角色提示词伪造。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-002",
+      "name": "C++工程骨架与跨平台构建",
+      "features": "CORE-01",
+      "scenario": "编译目标、目录约定",
+      "acceptance": "Linux与Windows构建通过；核心不依赖浏览器存在；纯逻辑测试无外网。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-003",
+      "name": "数据合同与错误/取消协议",
+      "features": "CONTRACT-01",
+      "scenario": "功能目录、状态语义",
+      "acceptance": "合法/非法样例双向验证；字段未知、参数冲突、能力缺失有稳定错误；不把资源ID当授权。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-004",
+      "name": "网络与执行隔离",
+      "features": "SEC-01",
+      "scenario": "目标URL、地址策略、授权模型配置",
+      "acceptance": "IPv4/IPv6、重绑定、重定向、子资源、WebSocket/QUIC旁路样例被拒；模型内网白名单不开放给网页。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-005",
+      "name": "持久任务、预算与恢复",
+      "features": "JOB-01",
+      "scenario": "任务请求、范围、预算、幂等键",
+      "acceptance": "崩溃恢复不重复发布产物；旧租约不能提交；重試占预算；取消后无新派发；不承诺网络恰好一次。 旧epoch提交被拒；取消后无新派发；暂停/重启后预算账本可对账且失败不退成免费请求。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-006",
+      "name": "内容快照、结构块与证据基础存储",
+      "features": "STORE-01",
+      "scenario": "获取产物、正文、权限与保留期",
+      "acceptance": "同URL更新不覆盖旧快照；Unicode字节定位一致；未提交blob不进入结果；无跨用户去重侧信道。 并发抓取遇磁盘满应回压而不是无限重试；GC与提交竞争无丢失已引用blob；拒绝超额后账本可恢复。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-007",
+      "name": "认证、授权、私有内容与删除策略",
+      "features": "AUTH-01",
+      "scenario": "用户/调用方、集合ACL、撤权与删除请求",
+      "acceptance": "撤权后旧游标/证据/聚合计数均不可泄露；删除状态可追踪；历史备份恢复也重放删除日志。 撤销在本系统新发布入口同步生效；恢复时无法确认最新撤销水位则保持隔离。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-008",
+      "name": "固定样本、模拟来源与回放测试底座",
+      "features": "QA-01",
+      "scenario": "自建样本站、录制脱敏响应、人工标注",
+      "acceptance": "测试不依赖实时外网才可通过；测试集版本冻结；真实用户数据不进入公共fixture。",
+      "phase": "M0",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-009",
+      "name": "免费入口审核与来源注册",
+      "features": "SRC-01",
+      "scenario": "来源服务、底层索引、能力、入口、使用条件",
+      "acceptance": "免费状态与可用状态分开；条款变更立即停用；没有付费备用路径。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-010",
+      "name": "健康检查、限流、退避与共享配额",
+      "features": "SRC-02",
+      "scenario": "请求结果、Retry-After、全局和同源策略",
+      "acceptance": "两适配器不绕过同源限流；限流不会触发无限重试；源禁用即时阻止后续请求。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-011",
+      "name": "来源能力协商与参数翻译",
+      "features": "SRC-03",
+      "scenario": "QueryAST、来源能力声明",
+      "acceptance": "不支持条件不静默丢弃；native只是执行位置，不等于结果已经满足。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-012",
+      "name": "免费底层来源并集清点与首批适配",
+      "features": "SRC-04",
+      "scenario": "SearXNG/4get/LibreY/Websurfx公开清单和额外公共接口候选",
+      "acceptance": "未知是否共用索引不猜测；首批至少有可用外部来源并跨类别；不能审核的候选明确排除。 报告具体入口、许可证据、日期、查询样本、限流与独有结果；无源时明确E_CAPABILITY_UNAVAILABLE，不删减长期功能承诺。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-013",
+      "name": "统一查询语法与AST",
+      "features": "QRY-01",
+      "scenario": "查询字符串或结构化条件",
+      "acceptance": "语法优先级明确；字符串与结构化请求等价；注入/超深嵌套拒绝；不直接拼SQL/FTS字符串。 错误日期、host配after、数组配eq、非host使用host匹配、深AST在执行来源前拒绝。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-014",
+      "name": "精确字面与标识符匹配",
+      "features": "QRY-02",
+      "scenario": "词项、精确模式、字段",
+      "acceptance": "C++/C#/std::expected/HTTP 429样例保持区别；精确条件在候选核验前不得标满足。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-015",
+      "name": "多源并发搜索与部分结果",
+      "features": "SEARCH-01",
+      "scenario": "查询、来源范围、类别、deadline",
+      "acceptance": "单源超时不吞其他结果；不伪造全网数量；未完成源显示未完成。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-016",
+      "name": "来源去重、内容身份与基础融合",
+      "features": "SEARCH-03",
+      "scenario": "候选URL、来源内排名、可用身份依据",
+      "acceptance": "同底层源多实现不重复加权；不同文档版本/语种不盲删；保留发现路径。 两个不同未知族服务仍有各自候选贡献；同provider多adapter不会加票；未知族不计为已证实独立证据。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-017",
+      "name": "搜索会话、冻结结果与稳定游标",
+      "features": "SESSION-01",
+      "scenario": "查询、刷新/继续/细化动作",
+      "acceptance": "无跨页重复或静默重排；权限收紧时失效重建而非泄漏；游标过期需重搜。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-018",
+      "name": "流式结果、断线续传与取消",
+      "features": "SESSION-02",
+      "scenario": "会话订阅、Last-Event-ID、取消动作",
+      "acceptance": "断线重播按event_id去重；客户端慢不耗尽内存；停止搜索保留已完成结果。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-019",
+      "name": "快速/均衡/深入执行预设",
+      "features": "MODE-01",
+      "scenario": "模式、授权预算覆盖",
+      "acceptance": "快速模式不强制浏览器或模型；任一预设都受同源额度与硬约束限制。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-020",
+      "name": "最小搜索、读取与任务界面",
+      "features": "UI-01",
+      "scenario": "查询和控制操作",
+      "acceptance": "不加载第三方统计或外链字体；未实现按钮隐藏；所有操作仍经统一授权接口。",
+      "phase": "M1",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-021",
+      "name": "HTTP读取与质量状态",
+      "features": "READ-01",
+      "scenario": "URL、请求策略、字节/超时限制",
+      "acceptance": "HTTP200登录页不等于正文成功；断流保留部分状态；不自动使用代理或收费后端。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-022",
+      "name": "动态网页与受控浏览器动作",
+      "features": "READ-02",
+      "scenario": "render策略、等待元素、展开/滚动/分页上限",
+      "acceptance": "延迟渲染成功或明确失败；浏览器无出口绕过；auth状态隔离；禁止用无限等待充当页面就绪。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-023",
+      "name": "正文、代码、表格与元数据提取",
+      "features": "READ-03",
+      "scenario": "HTML/DOM、article/document/full_clean、选择器",
+      "acceptance": "正文质量分类型评测；发布时间未知为null；规则版本改变新建Extraction；片段位置可追溯。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-024",
+      "name": "授权会话与站点读取配置",
+      "features": "READ-05",
+      "scenario": "明确授权的凭据引用、读取站点配置",
+      "acceptance": "两用户同URL不混Cookie；凭据删除立即停止后续调用；日志不含Cookie与密钥。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-025",
+      "name": "PDF/文本及Office开放格式解析",
+      "features": "DOC-01",
+      "scenario": "授权文件或URL、MIME/页数/体积限制",
+      "acceptance": "扩展名与内容嗅探冲突可拒绝；压缩炸弹与路径穿越阻断；缺失文本层进入显式OCR队列。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-026",
+      "name": "批量网页/文档读取",
+      "features": "BATCH-01",
+      "scenario": "明确URL/文件列表",
+      "acceptance": "10个输入只处理授权10项；失败隔离；暂停恢复不会重发已提交项。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-027",
+      "name": "Sitemap/Feed/链接发现",
+      "features": "MAP-01",
+      "scenario": "入口、路径范围、发现预算",
+      "acceptance": "候选不是已读；不宣称完整全站；XML外部实体禁用；页面深度与路径层数分开。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-028",
+      "name": "有界递归爬虫与抓取前沿",
+      "features": "CRAWL-01",
+      "scenario": "seeds、范围、页/请求/字节/深度预算",
+      "acceptance": "在途预算原子预留；达到限额显示partial；frontier耗尽仅代表允许范围；断点可恢复。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-029",
+      "name": "公开索引与摘要发布规则",
+      "features": "CRAWL-03",
+      "scenario": "robots.txt、headers、meta和集合发布策略",
+      "acceptance": "抓取允许不等于可公开索引；不按Google专属token套用于本工具；noindex变化触发索引移除。 未满足robots准入不会先到本模块；公开发布标签生效不等待整站爬虫完成。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-030",
+      "name": "字段化全文检索与索引服务",
+      "features": "INDEX-01",
+      "scenario": "结构块、语言、字段权重",
+      "acceptance": "新增内容可搜索；FTS查询由AST编译而非原串；私有授权集合内排序与计数。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-031",
+      "name": "索引增删改、可见性与版本切换",
+      "features": "INDEX-03",
+      "scenario": "解析产物变更、删除与ACL变更",
+      "acceptance": "可读不假装可搜；删除同步挡发布；旧游标撤权立即失效；恢复备份不复活删除内容。 更新后默认结果不返回旧正文；历史显式查询仍定位原版本；索引损坏可从有效正文恢复。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-032",
+      "name": "多级缓存与在途请求复用",
+      "features": "CACHE-01",
+      "scenario": "请求表示、权限、版本、新鲜度模式",
+      "acceptance": "cache_only不联网采集；offline连远程模型也禁止；刷新失败旧内容需显式授权；不跨身份复用。",
+      "phase": "M2",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-033",
+      "name": "中文简繁、混合语言与原文映射",
+      "features": "QRY-03",
+      "scenario": "中文/多语文本、术语字典",
+      "acceptance": "中英代码混合可命中；两语种不互相覆盖；每条highlight仍指向原文。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-034",
+      "name": "硬条件核验与预算内补召回",
+      "features": "QRY-04",
+      "scenario": "AST约束、候选及已读内容",
+      "acceptance": "strict主结果只放已核验满足项；unknown单列；预算不足不说全网无结果。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-035",
+      "name": "纠错、别名与可控模糊匹配",
+      "features": "QRY-05",
+      "scenario": "查询、领域词典、精确保护项",
+      "acceptance": "没有自动把C++改成C#；纠错不删除硬条件；中英文词典范围可配置。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-036",
+      "name": "联想补全与相关查询",
+      "features": "QRY-06",
+      "scenario": "前缀、公开词典、授权历史",
+      "acceptance": "未提交的按键默认不外发；关闭历史后不继续积累；查询建议无他人私有词。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-037",
+      "name": "多样性、转载聚类与质量过滤",
+      "features": "RANK-01",
+      "scenario": "候选、主题、内容指纹",
+      "acceptance": "site限定不被多样性突破；未知站点不默认降权；被折叠结果可展开并可核验误杀。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-038",
+      "name": "排序解释与来源增量价值",
+      "features": "RANK-02",
+      "scenario": "执行记录、排名因子、来源贡献",
+      "acceptance": "解释与实际排序版本一致；原始分数不冒充事实可信度；只评估采样/当前集合。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-039",
+      "name": "空结果诊断与安全放宽建议",
+      "features": "SEARCH-05",
+      "scenario": "来源状态、候选过滤日志、预算",
+      "acceptance": "没搜到不显示为不存在；重复补搜无新增时停止；保留原始条件。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-040",
+      "name": "分面筛选与连续细化",
+      "features": "FACET-01",
+      "scenario": "会话、语言/类型/站点/时间/已读/条件状态",
+      "acceptance": "所有计数过ACL；不把候选数量当全网量；未知时间单列。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-041",
+      "name": "自适应来源选择与后续批次扩展",
+      "features": "SRC-05",
+      "scenario": "查询类别、免费来源健康与增量统计",
+      "acceptance": "新增源改善或降低效果有分组报告；同源限流不被策略绕过；策略可回滚。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-042",
+      "name": "检索相关性与约束基准",
+      "features": "QA-02",
+      "scenario": "固定查询、人工标签、离线候选与实时样本",
+      "acceptance": "硬条件与引用错误阻断发布；无全网召回率声称；质量提升有人工与复现依据。 未冻结环境/语料hash/阈值/审查人不能通过性能或语义发布门禁；确定性约束失败数必须为0。",
+      "phase": "M3",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-043",
+      "name": "模型端点、角色配置与能力验证",
+      "features": "MODEL-01",
+      "scenario": "用户模型profile与密钥引用",
+      "acceptance": "本地与远程都允许；未支持参数报错；不隐式换提供方；禁用供应商托管搜索/浏览器。 无模型配置Schema和程序均接受；角色引用不存在、能力不匹配、非法出站地址由明确层次拒绝。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-044",
+      "name": "模型预算、结构输出、缓存与数据出站",
+      "features": "MODEL-02",
+      "scenario": "角色调用、证据、Schema、权限",
+      "acceptance": "未知usage不记0；模型不能增预算；网页不能扩大工具权限；私有材料未授权不外发。 遗漏/显式null/任务覆盖分别测试；模型请求中不能混入未获准profile；参数不支持不静默丢弃。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-045",
+      "name": "自然语言规划与跨语言扩展",
+      "features": "SEARCH-02",
+      "scenario": "目标、硬条件、输出语言",
+      "acceptance": "原查询保留；派生查询数量受控；模型故障可原词搜索；不是翻译结果后伪称原文。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-046",
+      "name": "语义向量与混合检索",
+      "features": "INDEX-02",
+      "scenario": "查询/正文、嵌入profile、ACL集合",
+      "acceptance": "不同维度/模型不混用；索引可重建；ANN过滤召回不足标partial；无向量仍有全文搜索。 查询与写入压力交错不发生数据竞争；崩溃重放幂等；k大于可用数不伪造结果；重载后恢复ef/模型空间和水位。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-047",
+      "name": "原文Highlights与证据定位",
+      "features": "EVID-01",
+      "scenario": "问题、文档版本、长度预算",
+      "acceptance": "每条已发布quote可从不可变文本精确切出；模型改写进summary；OCR另标识。 无模型仍能产出可定位基础片段；有模型后相关性增强另测，不用基础完成冒充模型增强。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-048",
+      "name": "页内查找、定位与分段阅读",
+      "features": "EVID-02",
+      "scenario": "extraction_id、词项/范围/游标",
+      "acceptance": "find不重新抓网页；过期/删除证据明确不可用；每次调用重新鉴权。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-049",
+      "name": "规则/模型字段提取与证据核验",
+      "features": "EXTRACT-01",
+      "scenario": "文档集合、字段Schema、核验要求",
+      "acceptance": "Schema合法不等于语义正确；未知引用ID拒绝；不支持必填要求报告冲突。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-050",
+      "name": "证据回答与冲突呈现",
+      "features": "ANSWER-01",
+      "scenario": "问题、证据、模型配置",
+      "acceptance": "无证据关键断言删除/限定；对立资料不隐藏；模型记忆不伪装成引用事实。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-051",
+      "name": "有界多轮研究",
+      "features": "RESEARCH-01",
+      "scenario": "目标、约束、轮次与资源预算",
+      "acceptance": "模型不得增预算；无新增证据停止；生成失败保留证据；中止可恢复。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-052",
+      "name": "相似网页与示例驱动检索",
+      "features": "SEARCH-04",
+      "scenario": "种子网页/文本/快照、local/external/both",
+      "acceptance": "标明搜索覆盖范围；无全网反向索引承诺；私人种子不擅自变成外部查询。",
+      "phase": "M4",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-053",
+      "name": "实体资料集与逐项条件核验",
+      "features": "DATASET-01",
+      "scenario": "对象描述、条件、字段与数量",
+      "acceptance": "unknown不当false；新证据覆盖字段要留历史；搜索相关不能冒充满足。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-054",
+      "name": "自适应定位与规则修复",
+      "features": "READ-04",
+      "scenario": "已确认规则、历史DOM特征、新页面",
+      "acceptance": "不确定和错误匹配均可报告；失败不静默替换已确认规则；跨站点隔离。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-055",
+      "name": "主题定向采集与列表分页策略",
+      "features": "CRAWL-02",
+      "scenario": "主题、字段目标、候选链接",
+      "acceptance": "优先级不能突破scope/robots/预算；停止条件可解释；不自发整网遍历。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-056",
+      "name": "代码与技术文档专门检索",
+      "features": "CODE-01",
+      "scenario": "授权仓库/源码/技术文档",
+      "acceptance": "函数符号/错误码/版本号可检索；同文件不同commit分开；无通用编译级语义保证。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-057",
+      "name": "论文/数据集检索与标识消歧",
+      "features": "SCHOLAR-01",
+      "scenario": "已审核科研接口、DOI/arXiv标识",
+      "acceptance": "元数据免费不伪称正文可读；DOI归一不混版本；没有来源支持时状态unknown。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-058",
+      "name": "本地文件与授权私人资料导入",
+      "features": "PRIVATE-01",
+      "scenario": "授权文件/目录/连接器profile",
+      "acceptance": "网页不能调用任意file://；文件移走/撤权触发删除；私有查询不自动外发。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-059",
+      "name": "免费来源扩充与维护工作台",
+      "features": "SRC-06",
+      "scenario": "剩余去重候选、失败报告、审核记录",
+      "acceptance": "新增源有可测增量或明确垂直价值；数量不替代质量；超出数量按单位适配工量另排。",
+      "phase": "M5",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-060",
+      "name": "OCR、复杂版面与视觉辅助读取",
+      "features": "DOC-02",
+      "scenario": "无文字层/低质量页面、视觉或OCR配置",
+      "acceptance": "OCR文本不冒充原生文字；定位回页面而非声称识别绝对正确；无收费OCR回退。",
+      "phase": "M6",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-061",
+      "name": "图片检索与图片资产索引",
+      "features": "IMAGE-01",
+      "scenario": "免费图片来源/授权采集、查询",
+      "acceptance": "缩略图不冒充原图；公开可见不等于可再分发；图片维度与类型校验。",
+      "phase": "M6",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-062",
+      "name": "以图搜图、近重复与文本搜图",
+      "features": "IMAGE-02",
+      "scenario": "授权图片/URL/文本、local/external/both",
+      "acceptance": "没有外部反向源时明确只搜自有图库；不把相似视为同一；不得暗传图片。",
+      "phase": "M6",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-063",
+      "name": "视频音频搜索与字幕时间戳检索",
+      "features": "AV-01",
+      "scenario": "媒体来源、字幕、授权媒体文件",
+      "acceptance": "找到视频不冒充已理解；时间戳命中可回放验证；无法获取媒体仍可返回链接元数据。",
+      "phase": "M6",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-064",
+      "name": "转写、关键帧与视频内容理解",
+      "features": "AV-02",
+      "scenario": "授权媒体、ASR/vision配置和时长预算",
+      "acceptance": "转写与原字幕分开；视频采样不能声称每帧检查；长媒体有时长/显存/资源限额；无模型则能力缺失。",
+      "phase": "M6",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-065",
+      "name": "网页快照变化与增量刷新",
+      "features": "UPDATE-01",
+      "scenario": "已保存集合、刷新条件",
+      "acceptance": "超时/403不当删除；304仅更新checked_at；改变解析器不伪称网页改动。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-066",
+      "name": "历史、收藏、标签与搜索工作区",
+      "features": "WORKSPACE-01",
+      "scenario": "搜索会话、选中结果、备注",
+      "acceptance": "收藏不自动授权永久保存正文；删除历史不删用户另存集合；共享不越权。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-067",
+      "name": "排序偏好、站点屏蔽与隐私开关",
+      "features": "PREF-01",
+      "scenario": "显式站点/语言/时间偏好",
+      "acceptance": "硬条件优先；切换偏好形成新结果版本；关闭个性化恢复基线。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-068",
+      "name": "保存查询、订阅新增与更新监控",
+      "features": "WATCH-01",
+      "scenario": "查询/集合、时区、周期、变化条件",
+      "acceptance": "停机补跑有catch-up上限；时区/DST行为明确；只通知新增或新满足条件；不借监控绕过上游限流。 两源一成一败后恢复不漏失败源内容；重试通知沿用event_id；不保证外部收件方恰好一次。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-069",
+      "name": "搜索结果、证据与资料集导出",
+      "features": "EXPORT-01",
+      "scenario": "结果/集合、格式、授权范围",
+      "acceptance": "导出时再次鉴权；不泄露Cookie/密钥；导出引用可定位；删除撤权后的旧导出按保留策略失效。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-070",
+      "name": "通知出口与Webhook",
+      "features": "WEBHOOK-01",
+      "scenario": "管理员批准的通知目标",
+      "acceptance": "DNS变化与重定向同样检查；payload不包含未授权正文；失败不重复计一次新事件。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-071",
+      "name": "完整协议覆盖、版本迁移与扩展接口收尾",
+      "features": "API-01",
+      "scenario": "统一业务合同、客户端能力",
+      "acceptance": "CLI/HTTP/MCP同请求结果语义一致；原生插件视为可信代码；不为每个协议实现一套逻辑。 跨协议完成矩阵逐项对照已实现功能；旧版本兼容与故意非法请求有回归。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-072",
+      "name": "完整搜索/资料/爬虫/研究操作台",
+      "features": "UI-02",
+      "scenario": "全部已实现业务能力",
+      "acceptance": "在慢源/错误/部分结果下仍可操作；所有功能有空态与错误态；无只好看不可用入口。",
+      "phase": "M7",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-073",
+      "name": "观测、诊断与资源容量基线",
+      "features": "OPS-01",
+      "scenario": "事件/指标/机器基线",
+      "acceptance": "性能分冷热缓存/页面类别/模型条件；不以框架宣传QPS当产品指标。 原始测量绑定commit/机器/负载/模型配置；无URL或query高基数标签。",
+      "phase": "M8",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-074",
+      "name": "备份恢复、迁移与内容保留",
+      "features": "OPS-02",
+      "scenario": "元数据/快照/索引/删除日志",
+      "acceptance": "不是直接复制运行中的DB文件；恢复后权限/删除仍有效；坏索引可独立重建。 恢复副本验证最新撤销水位后才能退出隔离；测试新旧Schema/FTS/向量重建。",
+      "phase": "M8",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-075",
+      "name": "多工作节点与公平调度",
+      "features": "SCALE-01",
+      "scenario": "多节点、租户配额、共享任务协调",
+      "acceptance": "失联节点不可继续提交；跨节点同源配额有效；多租户公平；不得把WAL放网络盘。",
+      "phase": "M8",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-076",
+      "name": "安全/故障/多模态/端到端发布门禁",
+      "features": "QA-03",
+      "scenario": "完整功能样例、基准、安全与混沌用例",
+      "acceptance": "安全/权限/约束/quote错误为阻断；多媒体和Windows不只跑空壳构建；报告风险与覆盖缺口。",
+      "phase": "M8",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-077",
+      "name": "可复现打包、升级与运维手册",
+      "features": "RELEASE-01",
+      "scenario": "构建产物、锁文件、SBOM、配置模板",
+      "acceptance": "干净环境能按文档启动；旧数据升级/回滚演练；全部能力有任务映射及已实现清单。",
+      "phase": "M8",
+      "kind": "功能合同",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-078",
+      "name": "基础HTTP/CLI/MCP合同与早期集成",
+      "acceptance": "同一授权请求在HTTP/CLI/MCP经过同一核心；无媒体验收依赖；能力未实现或禁用时明确返回不可用。",
+      "kind": "功能合同",
+      "features": "API-00",
+      "phase": "M1",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-079",
+      "name": "早期追踪、资源账本与诊断底座",
+      "acceptance": "单请求可串联授权/调度/获取/提交；超时和重试可解释；日志无密钥；指标样例的资源计数一致。",
+      "kind": "功能合同",
+      "features": "OPS-00",
+      "phase": "M0",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-080",
+      "name": "早期一致备份、恢复隔离与撤销水位",
+      "acceptance": "M0恢复固定资料与任务；M2补FTS回放；M4补向量重建。删除前备份恢复后不能复活删除内容；撤销日志不可验证时保持隔离。",
+      "kind": "功能合同",
+      "features": "BACKUP-00",
+      "phase": "M0",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-081",
+      "name": "爬虫准入与robots前置策略",
+      "acceptance": "未取得有效准入前不得发爬虫内容请求；robots访问本身受网络/总预算控制；网络或服务器不可达且无适用缓存时不放行。",
+      "kind": "功能合同",
+      "features": "ROBOTS-01",
+      "phase": "M1",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-082",
+      "name": "关键技术可行性与版本冻结验证",
+      "acceptance": "记录输入/环境/版本/步骤/失败；浏览器Windows隔离若未通过可继续无网与其他已验证能力，不得宣布Windows全功能通过。",
+      "kind": "功能合同",
+      "features": "SPIKE-01",
+      "phase": "M0",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "FT-083",
+      "name": "可执行配置合同、默认值与负例校验",
+      "acceptance": "Python合同样例只作fixture；正式C++实现要通过同一测试向量。无模型配置、角色并发、无效日期、坏profile、深AST均有正负例。",
+      "kind": "功能合同",
+      "features": "CONTRACT-02",
+      "phase": "M0",
+      "scenario": "依据该功能输入与实现规则构造正常、边界与失败fixture",
+      "execution_status": "未执行"
+    },
+    {
+      "id": "C-01",
+      "name": "早期协议集成没有独立交付包",
+      "acceptance": "新增API-00，API-01减量改为全覆盖收尾。",
+      "kind": "复核回归",
+      "features": "API-00 API-01 UI-01",
+      "phase": "M1→M7（分层）",
+      "scenario": "API-01在M7依赖RESEARCH/IMAGE/AV/EXPORT；CORE仅有空壳，M1跨协议一致性无独立验收。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-02",
+      "name": "robots在依赖图中晚于递归爬虫",
+      "acceptance": "拆出ROBOTS-01作为CRAWL-01前置；noindex/nosnippet继续在CRAWL-03。",
+      "kind": "复核回归",
+      "features": "ROBOTS-01 CRAWL-01 CRAWL-03",
+      "phase": "M1→M2（分层）",
+      "scenario": "CRAWL-03负责robots但依赖CRAWL-01，递归请求准入与交付顺序倒置。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-03",
+      "name": "观测和备份排到M8才交付",
+      "acceptance": "新增OPS-00/BACKUP-00，原包减量保留最终演练。",
+      "kind": "复核回归",
+      "features": "OPS-00 BACKUP-00 OPS-01 OPS-02",
+      "phase": "M0→M8（分层）",
+      "scenario": "OPS-01依赖完整UI，OPS-02依赖订阅；基础恢复和容量诊断需要更早。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-04",
+      "name": "无模型配置与基础运行承诺矛盾",
+      "acceptance": "允许空profile集合/null默认；模型增强能力单独禁用。",
+      "kind": "复核回归",
+      "features": "MODEL-01 CONTRACT-02",
+      "phase": "M0→M4（分层）",
+      "scenario": "model-config要求非空default_text_profile、至少一个profile与四个角色；无模型部署被Schema拒绝。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-05",
+      "name": "请求语义校验仍只有文字约定",
+      "acceptance": "加强字段/操作符/时间结构，补复杂度/离线冲突语义验证器与负例。",
+      "kind": "复核回归",
+      "features": "QRY-01 CONTRACT-02",
+      "phase": "M0→M1（分层）",
+      "scenario": "host+after等结构可过Schema；文档已说明需要程序检查，但交付无可执行合同向量。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-06",
+      "name": "角色继承、并发与默认值未闭合",
+      "acceptance": "统一角色覆盖对象、明确缺省/null、格式校验与source审核到期语义。",
+      "kind": "复核回归",
+      "features": "MODEL-01 MODEL-02 SRC-01 CONTRACT-02",
+      "phase": "M0→M4（分层）",
+      "scenario": "角色覆盖只含部分字段，profile必填；default注解不能自动生成实际配置；来源审核日期未限定格式。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-07",
+      "name": "unknown来源桶与证据独立性容易混用",
+      "acceptance": "保留RRF，补稳定服务贡献桶；不把所有unknown合并，也不声明未知来源独立。",
+      "kind": "复核回归",
+      "features": "SEARCH-03 RANK-02",
+      "phase": "M1→M3（分层）",
+      "scenario": "索引族允许unknown；RRF说明没有给未知服务稳定的分组身份。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-08",
+      "name": "向量索引在线更新缺少并发合同",
+      "acceptance": "保留hnswlib候选；应用锁/单writer/代际切换/水位与版本准入；不立即改成重型数据库。",
+      "kind": "复核回归",
+      "features": "INDEX-02 INDEX-03",
+      "phase": "M2→M4（分层）",
+      "scenario": "计划有异步写入/查询/重建，但未约束同一HNSW实例并发访问与发布切换。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-09",
+      "name": "高风险技术验证没有可交付工作包",
+      "acceptance": "新增SPIKE-01并设前置依赖与ADR退出条件。",
+      "kind": "复核回归",
+      "features": "SPIKE-01 READ-02 DOC-01 INDEX-01",
+      "phase": "M0→M2（分层）",
+      "scenario": "CDP跨平台隔离、中文FTS映射、PDF构建仅在文字里提到spike。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-10",
+      "name": "来源数量门禁不能证明通用网页能力",
+      "acceptance": "web上线必须至少一个真实审核web来源和固定查询报告；不足不签web Alpha。",
+      "kind": "复核回归",
+      "features": "SRC-04",
+      "phase": "M1",
+      "scenario": "M1只要求3–5来源，可被全是学术/馆藏的来源满足。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-11",
+      "name": "从旧备份恢复的撤销水位来源不完整",
+      "acceptance": "独立保护的撤销journal+水位；恢复隔离，不能验证则fail-closed。",
+      "kind": "复核回归",
+      "features": "BACKUP-00 AUTH-01 OPS-02",
+      "phase": "M0→M8（分层）",
+      "scenario": "要求重放最新tombstone，但若日志和DB一起回滚则无法证明最新性。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-12",
+      "name": "多来源订阅需要分源推进与交付事务",
+      "acceptance": "分源checkpoint、重叠扫描、outbox、event_id去重和交付状态。",
+      "kind": "复核回归",
+      "features": "WATCH-01 WEBHOOK-01",
+      "phase": "M7",
+      "scenario": "当前成功水位没有足够明确地拆source；一次部分失败可能阻塞或漏扫。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-13",
+      "name": "依赖无环不等于依赖完整",
+      "acceptance": "补STORE/AUTH/QA依赖；移除EVID基础对MODEL的硬依赖，增强路径仍单验。",
+      "kind": "复核回归",
+      "features": "JOB-01 EVID-01 SEARCH-01",
+      "phase": "M0→M4（分层）",
+      "scenario": "JOB仅依赖CONTRACT，持久化/授权并未成为前置；基础Highlights不必被模型阻塞。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-14",
+      "name": "质量门禁需要冻结过程而非待定承诺",
+      "acceptance": "设G0基线与逐阶段门禁文件；未知阈值不得标通过，保留覆盖率与弃答率。",
+      "kind": "复核回归",
+      "features": "QA-02 SPIKE-01",
+      "phase": "M0→M3（分层）",
+      "scenario": "计划列指标但环境、阈值和留出集冻结的责任/阻断规则不够明确。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-15",
+      "name": "任务预算不能代替总存储与回压",
+      "acceptance": "分类配额、高低水位、并发预留、GC引用pin和磁盘满恢复用例。",
+      "kind": "复核回归",
+      "features": "STORE-01 JOB-01 CACHE-01",
+      "phase": "M0→M2（分层）",
+      "scenario": "单任务bytes已有约束，但blob、媒体、事件、导出与GC的累计容量未闭合。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    },
+    {
+      "id": "C-16",
+      "name": "独立review需要可验证执行与版本绑定",
+      "acceptance": "新增handoff模板和review状态/输入哈希；本轮明确未执行独立子Agent审核。",
+      "kind": "复核回归",
+      "features": "GOV-01 CONTRACT-02",
+      "phase": "M0",
+      "scenario": "工作包要求独立review，但没有reviewer/run/input-hash输出合同，容易与作者自审混同。",
+      "status": "未执行",
+      "execution_status": "未执行",
+      "execution_gate": "随关联功能分层执行；M8回归，不要求早期执行尚未实现的增强路径"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S01",
+      "title": "SQLite FTS5：全文索引、BM25与自定义分词",
+      "url": "https://www.sqlite.org/fts5.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S02",
+      "title": "SQLite WAL：并发与本机文件约束",
+      "url": "https://www.sqlite.org/wal.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S03",
+      "title": "libcurl multi：多请求异步接口",
+      "url": "https://curl.se/libcurl/c/libcurl-multi.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S04",
+      "title": "Chrome DevTools Protocol：浏览器控制基础",
+      "url": "https://chromedevtools.github.io/devtools-protocol/",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S05",
+      "title": "Drogon：C++跨平台HTTP框架",
+      "url": "https://github.com/drogonframework/drogon",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S06",
+      "title": "Lexbor：HTML解析与选择器基础",
+      "url": "https://lexbor.com/",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S07",
+      "title": "ICU：Unicode与中文词边界",
+      "url": "https://unicode-org.github.io/icu/userguide/boundaryanalysis/",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S08",
+      "title": "OpenCC：中文简繁转换",
+      "url": "https://github.com/BYVoid/OpenCC",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S09",
+      "title": "hnswlib：C++近邻检索",
+      "url": "https://github.com/nmslib/hnswlib",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S10",
+      "title": "hnswlib：C++过滤与持久化示例",
+      "url": "https://github.com/nmslib/hnswlib/blob/master/examples/cpp/EXAMPLES.md",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S11",
+      "title": "公开索引与摘要声明：Google说明（不视为普适法律）",
+      "url": "https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S12",
+      "title": "RFC 9309：Robots Exclusion Protocol",
+      "url": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S13",
+      "title": "检索排序评估方法",
+      "url": "https://www.elastic.co/docs/reference/elasticsearch/rest-apis/search-rank-eval",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S14",
+      "title": "OWASP：SSRF风险与防护",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S15",
+      "title": "MCP规范：本次latest指向2026-07-28",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S16",
+      "title": "OpenAI：API接口概览",
+      "url": "https://developers.openai.com/api/reference/overview/",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S17",
+      "title": "Claude：Messages API",
+      "url": "https://platform.claude.com/docs/en/api/messages",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S18",
+      "title": "Tree-sitter：增量语法分析",
+      "url": "https://tree-sitter.github.io/tree-sitter/",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S19",
+      "title": "whisper.cpp：C/C++转写与许可",
+      "url": "https://github.com/ggml-org/whisper.cpp",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S20",
+      "title": "FFmpeg：构建选项与许可证边界",
+      "url": "https://ffmpeg.org/legal.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S21",
+      "title": "PDFium：使用与构建指引",
+      "url": "https://pdfium.googlesource.com/pdfium/+show/HEAD/docs/getting-started.md",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S22",
+      "title": "JSON Schema：default是注解",
+      "url": "https://json-schema.org/understanding-json-schema/reference/annotations",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S23",
+      "title": "SQLite Online Backup API",
+      "url": "https://www.sqlite.org/backup.html",
+      "checked_at": "2026-10-16"
+    },
+    {
+      "id": "S24",
+      "title": "JSON Schema：format校验",
+      "url": "https://json-schema.org/understanding-json-schema/reference/string",
+      "checked_at": "2026-10-16"
+    }
+  ],
+  "spec_version": "0.3",
+  "review_mode": "author_self_review_with_executable_document_checks",
+  "independent_review_status": "not_executed_no_available_runner",
+  "parent_document_version": "1.0",
+  "review_findings": [
+    {
+      "id": "RV-01",
+      "severity": "P1",
+      "title": "早期协议集成没有独立交付包",
+      "origin": "author_self_review",
+      "evidence": "API-01在M7依赖RESEARCH/IMAGE/AV/EXPORT；CORE仅有空壳，M1跨协议一致性无独立验收。",
+      "location": "蓝图§9/13；DEV-071依赖",
+      "decision": "采纳",
+      "decision_reason": "新增API-00，API-01减量改为全覆盖收尾。",
+      "features": [
+        "API-00",
+        "API-01",
+        "UI-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-02",
+      "severity": "P0",
+      "title": "robots在依赖图中晚于递归爬虫",
+      "origin": "author_self_review",
+      "evidence": "CRAWL-03负责robots但依赖CRAWL-01，递归请求准入与交付顺序倒置。",
+      "location": "DEV-028/029",
+      "decision": "采纳",
+      "decision_reason": "拆出ROBOTS-01作为CRAWL-01前置；noindex/nosnippet继续在CRAWL-03。",
+      "features": [
+        "ROBOTS-01",
+        "CRAWL-01",
+        "CRAWL-03"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-03",
+      "severity": "P1",
+      "title": "观测和备份排到M8才交付",
+      "origin": "author_self_review",
+      "evidence": "OPS-01依赖完整UI，OPS-02依赖订阅；基础恢复和容量诊断需要更早。",
+      "location": "DEV-073/074",
+      "decision": "采纳",
+      "decision_reason": "新增OPS-00/BACKUP-00，原包减量保留最终演练。",
+      "features": [
+        "OPS-00",
+        "BACKUP-00",
+        "OPS-01",
+        "OPS-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-04",
+      "severity": "P1",
+      "title": "无模型配置与基础运行承诺矛盾",
+      "origin": "author_self_review",
+      "evidence": "model-config要求非空default_text_profile、至少一个profile与四个角色；无模型部署被Schema拒绝。",
+      "location": "schemas/model-config.schema.json；A-21",
+      "decision": "采纳",
+      "decision_reason": "允许空profile集合/null默认；模型增强能力单独禁用。",
+      "features": [
+        "MODEL-01",
+        "CONTRACT-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-05",
+      "severity": "P1",
+      "title": "请求语义校验仍只有文字约定",
+      "origin": "author_self_review",
+      "evidence": "host+after等结构可过Schema；文档已说明需要程序检查，但交付无可执行合同向量。",
+      "location": "schemas/search-request.schema.json",
+      "decision": "采纳",
+      "decision_reason": "加强字段/操作符/时间结构，补复杂度/离线冲突语义验证器与负例。",
+      "features": [
+        "QRY-01",
+        "CONTRACT-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-06",
+      "severity": "P1",
+      "title": "角色继承、并发与默认值未闭合",
+      "origin": "author_self_review",
+      "evidence": "角色覆盖只含部分字段，profile必填；default注解不能自动生成实际配置；来源审核日期未限定格式。",
+      "location": "三份Schema",
+      "decision": "采纳",
+      "decision_reason": "统一角色覆盖对象、明确缺省/null、格式校验与source审核到期语义。",
+      "features": [
+        "MODEL-01",
+        "MODEL-02",
+        "SRC-01",
+        "CONTRACT-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-07",
+      "severity": "P1",
+      "title": "unknown来源桶与证据独立性容易混用",
+      "origin": "author_self_review",
+      "evidence": "索引族允许unknown；RRF说明没有给未知服务稳定的分组身份。",
+      "location": "蓝图§4.2/来源Schema",
+      "decision": "部分采纳",
+      "decision_reason": "保留RRF，补稳定服务贡献桶；不把所有unknown合并，也不声明未知来源独立。",
+      "features": [
+        "SEARCH-03",
+        "RANK-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-08",
+      "severity": "P0",
+      "title": "向量索引在线更新缺少并发合同",
+      "origin": "author_self_review",
+      "evidence": "计划有异步写入/查询/重建，但未约束同一HNSW实例并发访问与发布切换。",
+      "location": "蓝图§7.2/7.3；上游并发说明",
+      "decision": "部分采纳",
+      "decision_reason": "保留hnswlib候选；应用锁/单writer/代际切换/水位与版本准入；不立即改成重型数据库。",
+      "features": [
+        "INDEX-02",
+        "INDEX-03"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-09",
+      "severity": "P1",
+      "title": "高风险技术验证没有可交付工作包",
+      "origin": "author_self_review",
+      "evidence": "CDP跨平台隔离、中文FTS映射、PDF构建仅在文字里提到spike。",
+      "location": "蓝图§2/13.4",
+      "decision": "采纳",
+      "decision_reason": "新增SPIKE-01并设前置依赖与ADR退出条件。",
+      "features": [
+        "SPIKE-01",
+        "READ-02",
+        "DOC-01",
+        "INDEX-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-10",
+      "severity": "P0",
+      "title": "来源数量门禁不能证明通用网页能力",
+      "origin": "author_self_review",
+      "evidence": "M1只要求3–5来源，可被全是学术/馆藏的来源满足。",
+      "location": "蓝图§5/13.1",
+      "decision": "采纳",
+      "decision_reason": "web上线必须至少一个真实审核web来源和固定查询报告；不足不签web Alpha。",
+      "features": [
+        "SRC-04"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-11",
+      "severity": "P0",
+      "title": "从旧备份恢复的撤销水位来源不完整",
+      "origin": "author_self_review",
+      "evidence": "要求重放最新tombstone，但若日志和DB一起回滚则无法证明最新性。",
+      "location": "蓝图§7.4/备份清单",
+      "decision": "采纳",
+      "decision_reason": "独立保护的撤销journal+水位；恢复隔离，不能验证则fail-closed。",
+      "features": [
+        "BACKUP-00",
+        "AUTH-01",
+        "OPS-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-12",
+      "severity": "P1",
+      "title": "多来源订阅需要分源推进与交付事务",
+      "origin": "author_self_review",
+      "evidence": "当前成功水位没有足够明确地拆source；一次部分失败可能阻塞或漏扫。",
+      "location": "蓝图§10/DEV-068",
+      "decision": "采纳",
+      "decision_reason": "分源checkpoint、重叠扫描、outbox、event_id去重和交付状态。",
+      "features": [
+        "WATCH-01",
+        "WEBHOOK-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-13",
+      "severity": "P1",
+      "title": "依赖无环不等于依赖完整",
+      "origin": "author_self_review",
+      "evidence": "JOB仅依赖CONTRACT，持久化/授权并未成为前置；基础Highlights不必被模型阻塞。",
+      "location": "requirements_and_backlog.json",
+      "decision": "采纳",
+      "decision_reason": "补STORE/AUTH/QA依赖；移除EVID基础对MODEL的硬依赖，增强路径仍单验。",
+      "features": [
+        "JOB-01",
+        "EVID-01",
+        "SEARCH-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-14",
+      "severity": "P1",
+      "title": "质量门禁需要冻结过程而非待定承诺",
+      "origin": "author_self_review",
+      "evidence": "计划列指标但环境、阈值和留出集冻结的责任/阻断规则不够明确。",
+      "location": "蓝图§12",
+      "decision": "采纳",
+      "decision_reason": "设G0基线与逐阶段门禁文件；未知阈值不得标通过，保留覆盖率与弃答率。",
+      "features": [
+        "QA-02",
+        "SPIKE-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-15",
+      "severity": "P1",
+      "title": "任务预算不能代替总存储与回压",
+      "origin": "author_self_review",
+      "evidence": "单任务bytes已有约束，但blob、媒体、事件、导出与GC的累计容量未闭合。",
+      "location": "蓝图§6/7/16",
+      "decision": "采纳",
+      "decision_reason": "分类配额、高低水位、并发预留、GC引用pin和磁盘满恢复用例。",
+      "features": [
+        "STORE-01",
+        "JOB-01",
+        "CACHE-01"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    },
+    {
+      "id": "RV-16",
+      "severity": "P1",
+      "title": "独立review需要可验证执行与版本绑定",
+      "origin": "author_self_review",
+      "evidence": "工作包要求独立review，但没有reviewer/run/input-hash输出合同，容易与作者自审混同。",
+      "location": "蓝图§13.3/13.4",
+      "decision": "采纳",
+      "decision_reason": "新增handoff模板和review状态/输入哈希；本轮明确未执行独立子Agent审核。",
+      "features": [
+        "GOV-01",
+        "CONTRACT-02"
+      ],
+      "document_status": "已修订",
+      "implementation_status": "未实现",
+      "independent_review_status": "未执行"
+    }
+  ],
+  "review_summary": {
+    "count": 16,
+    "accepted": 14,
+    "partially_accepted": 2,
+    "independent_reviewer": null
+  }
+}

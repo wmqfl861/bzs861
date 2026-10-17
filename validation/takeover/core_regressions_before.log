@@ -1,0 +1,12 @@
+quoted-word-substring matches=1 frozen_count=0 partial=0 fts="app" ast={"original":"\"app\"","ast":{"op":"phrase","field":"any","value":"app"},"hosts":[],"filetypes":[]}
+mixed-ascii-cjk matches=1 frozen_count=0 partial=0 fts="test" ast={"original":"test","ast":{"op":"term","field":"any","value":"test"},"hosts":[],"filetypes":[]}
+mixed-ascii-combining matches=1 frozen_count=0 partial=0 fts="test" ast={"original":"test","ast":{"op":"term","field":"any","value":"test"},"hosts":[],"filetypes":[]}
+underscore-only matches=1 frozen_count=0 partial=0 fts="_" ast={"original":"_","ast":{"op":"term","field":"any","value":"_"},"hosts":[],"filetypes":[]}
+literal-site-quoted error=E_QUERY_SYNTAX:A text expression is required in addition to filters
+literal-field-quoted matches=0 frozen_count=0 partial=0 fts=title : "guide" ast={"original":"\"intitle:guide\"","ast":{"op":"phrase","field":"title","value":"guide"},"hosts":[],"filetypes":[]}
+HTML text=only-main
+after-noise index_allowed=1
+HTML text=hidden-canary index_allowed=1
+HTML text=private-text index_allowed=1
+HTML text=private-text index_allowed=1
+hidden-body error=E_PARSE_FAILED
