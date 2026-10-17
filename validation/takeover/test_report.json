@@ -1,6 +1,6 @@
 {
   "version": "0.0.2",
-  "recorded_at": "2026-10-17T03:28:33.486042+00:00",
+  "recorded_at": "2026-10-17T03:47:36.744216+00:00",
   "scope": "local_offline_takeover_slice_only",
   "source_binding": {
     "algorithm": "sha256",
@@ -40,7 +40,7 @@
       "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
       "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
       "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
-      "tests/integration.py": "7ff28fac5a23d1be7b05d7b3d7aae824a9e270b6ba302903317cefa8688ac2a6",
+      "tests/integration.py": "e9bbec654064a5a71c498d1fe2ddd5f2eb9e46877addf0b726749c8459905298",
       "tests/unit.cpp": "1969ba03634ec430334174eff8dc30a4692e7f659fc746938c1a79112392f2ef",
       "tools/requirements-test.txt": "546538625977c689facc21eb60f13adc0916ceb18eea6f917f84aba74ed74077"
     },
@@ -104,7 +104,7 @@
     "result": "passed",
     "suites_passed": 3,
     "suites_total": 3,
-    "seconds": 7.08,
+    "seconds": 7.44,
     "log": "validation/takeover/ctest.log",
     "suites": {
       "core": {
@@ -178,7 +178,7 @@
     "scope": "takeover_slice_only",
     "reviewers": {
       "core": "Core search/extraction/storage review, baseline regression probes, and separate review of native contracts; MSVC chrono integer-width audit and independent review of the widening/date-boundary patch",
-      "service": "Service/session review, HTTP/CLI contract route and boundary tests, workflow review",
+      "service": "Service/session review, HTTP/CLI contract route and boundary tests, workflow review; actual Windows logs and review of narrow reset handling, preserved receive timeout and minimum deadline wait",
       "requirements_contracts": "Handoff requirements and native configuration-contract implementation",
       "root": "Integration review, failure disposition, final source/log inspection, build/CTest/sanitizer execution and publication verification"
     },
@@ -254,5 +254,16 @@
     ],
     "local_validation": "validation/takeover/portability_final_validation.json",
     "initial_date_run_history": "validation/takeover/date_portability_validation.json"
+  },
+  "transport_followup": {
+    "preceding_commit": "708e7d2a054ac5199d3935fb1b1d4eda3f00a38b",
+    "windows_evidence": "validation/takeover/windows_ci_transport.json",
+    "local_ctest": "validation/takeover/transport_validation.json",
+    "changes": [
+      "Accept EOF or ConnectionResetError for the configured header-deadline close; preserve the 8-second receive timeout and add a >=4-second wait assertion.",
+      "Close handled HTTPError responses explicitly after reading their body."
+    ],
+    "native_source_and_test_hashes_changed": false,
+    "sanitizer_evidence": "Native sources, native tests and build inputs are unchanged; the existing core/contract sanitizer results apply to their exact recorded hashes. HTTP/CLI sanitizer coverage is still not claimed."
   }
 }

@@ -77,7 +77,8 @@ class RunningServer:
             with self.opener.open(req, timeout=15) as response:
                 return response.status, json.load(response)
         except urllib.error.HTTPError as response:
-            return response.code, json.load(response)
+            with response:
+                return response.code, json.load(response)
 
     def cli(self, *args, token=None):
         env = dict(os.environ, SEARCH_API_TOKEN=token or self.alice)
@@ -218,10 +219,17 @@ class Integration(unittest.TestCase):
         self.assertEqual(body['errors'][0]['code'], 'E_SCHEMA')
 
     def test_13_slow_header_deadline(self):
+        started = time.monotonic()
         with socket.create_connection(('127.0.0.1', self.server.port), timeout=3) as sock:
             sock.settimeout(8)
             sock.sendall(f'GET /healthz HTTP/1.1\r\nHost: 127.0.0.1:{self.server.port}\r\n'.encode())
-            self.assertEqual(sock.recv(1), b'')
+            try:
+                received = sock.recv(1)
+            except ConnectionResetError:
+                # Windows can report the server's deadline close as TCP reset.
+                received = b''
+            self.assertEqual(received, b'')
+            self.assertGreaterEqual(time.monotonic() - started, 4)
 
     def test_14_backup_admin_and_quarantine(self):
         status, _ = self.server.call('backup.create', token=self.server.bob)
