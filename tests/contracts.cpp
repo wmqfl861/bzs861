@@ -218,6 +218,10 @@ namespace {
       input=source(true);input.at("review").set("checked_at",value);bad("source-manifest",input);
     }
     input=source(true);input.at("review").set("expires_at","2026-10-16T09:00:00Z");input.set("enabled",false);bad("source-manifest",input);
+    input=source(true);input.at("review").set("expires_at","2038-01-20T00:00:00Z");
+    CHECK(validate("source-manifest",input).at("enabled").flag());
+    input=source(true);input.at("review").set("checked_at","1901-12-13T00:00:00Z");
+    CHECK(validate("source-manifest",input).at("enabled").flag());
   }
   TEST(search_defaults_preserve_query_and_filters) {
     auto input=request();input.set("hard_filters",Json::parse(R"([{"field":"identifier","operator":"eq","value":"std::expected","match":"literal"}])"));
@@ -279,6 +283,19 @@ namespace {
     }
     input=request();values=Json::array();values.push(date_filter("after","2026-11-01"));values.push(date_filter("before","2026-01-01","updated_at"));
     input.set("hard_filters",values);CHECK(validate("search-request",input).at("hard_filters").size()==2);
+    for(const auto& [lower,upper]:std::vector<std::pair<const char*,const char*>>{
+        {"1901-12-13","1901-12-14"},{"2038-01-19","2038-01-20"}}) {
+      input=request();values=Json::array();values.push(date_filter("after",lower));values.push(date_filter("before",upper));
+      input.set("hard_filters",values);CHECK(validate("search-request",input).at("hard_filters").size()==2);
+      values=Json::array();values.push(date_filter("after",upper));values.push(date_filter("before",lower));
+      input.set("hard_filters",values);bad("search-request",input,"E_CONTRACT");
+    }
+    input=request();values=Json::array();values.push(date_filter("after","0001-01-01"));values.push(date_filter("before","9999-12-31"));
+    values.push(date_filter("eq","2026-10-16"));input.set("hard_filters",values);
+    CHECK(validate("search-request",input).at("hard_filters").size()==3);
+    input=request();values=Json::array();values.push(date_filter("eq","2038-01-19T23:59:59Z"));
+    values.push(date_filter("eq","2038-01-20T00:59:59+01:00"));input.set("hard_filters",values);
+    CHECK(validate("search-request",input).at("hard_filters").size()==2);
   }
   TEST(filter_field_operator_value_and_match_must_agree) {
     for(const auto* json:{R"([{"field":"host","operator":"after","value":"2026-10-01"}])",

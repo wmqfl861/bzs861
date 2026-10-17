@@ -1,0 +1,21 @@
+{
+  "repository": "wmqfl861/bzs861",
+  "head_sha": "98de6adc5def69c5ba8feedf96b61ab79fb7f7e4",
+  "run_id": 38997980830,
+  "job_id": 117294642573,
+  "run_url": "https://github.com/wmqfl861/bzs861/actions/runs/38997980830",
+  "conclusion": "failure",
+  "stage": "Build",
+  "cause": "MSVC traditional preprocessor stringification of the raw surrogate-pair JSON literal inside CHECK produces C3850 in tests/unit.cpp.",
+  "fix": "Parse the same surrogate-pair JSON before invoking CHECK; retain the supplementary-character equality assertion.",
+  "dependency_installation": "passed",
+  "production_and_contract_targets": "built successfully",
+  "snippets": [
+    "2026-10-17T03:23:51.3596082Z Total install time: 9.5 min",
+    "2026-10-17T03:24:17.2070111Z D:\\a\\bzs861\\bzs861\\tests\\unit.cpp(151,5): error C3850: '\\uD83D': a universal-character-name specifies an invalid character [D:\\a\\bzs861\\bzs861\\build-win\\bzs_tests.vcxproj]",
+    "2026-10-17T03:24:17.2071310Z D:\\a\\bzs861\\bzs861\\tests\\unit.cpp(151,5): error C3850: '\\uDE00': a universal-character-name specifies an invalid character [D:\\a\\bzs861\\bzs861\\build-win\\bzs_tests.vcxproj]",
+    "2026-10-17T03:24:17.2732775Z   bzs_contract_tests.vcxproj -> D:\\a\\bzs861\\bzs861\\build-win\\Debug\\bzs_contract_tests.exe",
+    "2026-10-17T03:24:22.0780130Z   searchd.vcxproj -> D:\\a\\bzs861\\bzs861\\build-win\\Debug\\searchd.exe",
+    "2026-10-17T03:24:23.3439428Z   searchctl.vcxproj -> D:\\a\\bzs861\\bzs861\\build-win\\Debug\\searchctl.exe"
+  ]
+}

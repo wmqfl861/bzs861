@@ -1,6 +1,6 @@
 {
   "version": "0.0.2",
-  "recorded_at": "2026-10-17T03:00:33.844018+00:00",
+  "recorded_at": "2026-10-17T03:28:33.486042+00:00",
   "scope": "local_offline_takeover_slice_only",
   "source_binding": {
     "algorithm": "sha256",
@@ -27,21 +27,21 @@
       "include/bzs/service.hpp": "d3662ef3ec23c79903c6144fe50710998f2f9a344ba70ef0101a02fe233492fa",
       "include/bzs/store.hpp": "b65fa471e2c5a86fbd2efee537bf37378b21f98c13ca3088357177e322d1c89d",
       "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
-      "src/contracts.cpp": "babf373ba12a48cfa4629a96288fcd697e585a217c28b47979052a192edf4e11",
+      "src/contracts.cpp": "a39b27b52d95b7c55cd21175efd197e1a37ba259e9902f2087614a15c07d3a9b",
       "src/html.cpp": "7c395703e30e0c391fa45e8190971795240169bf2c1090d0fe1d5e4d7c3eb235",
       "src/json.cpp": "1248f0a4809ed9f6933bad1ddfaba42be19f678963d10b43a78fee1b6a56c975",
       "src/query.cpp": "e66924744c83fcd309894f7176ba2a27534ff4fda5ce0dd51e3364ae7590c65c",
       "src/service.cpp": "0d74ba384d8a3dad1ba7eca5eca1403bd6e923ef5eecdef4fe3d53e1fc43f6bb",
       "src/store.cpp": "09a927db3b8789990499eaf91e02f72f635f18fc7020d74c276343c5e8a1c0cf",
       "src/util.cpp": "f6fd383896cf43b024dfe41f43f8a6a196f4910eb9979b741ae6251ac6c994f4",
-      "tests/contracts.cpp": "b6fc128347d5bf479e86490483416657a6accc221649bd1b5931e76ced0e8f99",
+      "tests/contracts.cpp": "53773849e5e31be2a57a20d908e8bf66c0a09d6d9f72b6d200b1bbc00aa390a4",
       "tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
       "tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
       "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
       "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
       "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
       "tests/integration.py": "7ff28fac5a23d1be7b05d7b3d7aae824a9e270b6ba302903317cefa8688ac2a6",
-      "tests/unit.cpp": "0d73f82bcb86a3cd7a5fbe776f8c54e27e164368600486b827559a79dfd07965",
+      "tests/unit.cpp": "1969ba03634ec430334174eff8dc30a4692e7f659fc746938c1a79112392f2ef",
       "tools/requirements-test.txt": "546538625977c689facc21eb60f13adc0916ceb18eea6f917f84aba74ed74077"
     },
     "note": "Source, fixtures, schemas, test and build inputs bind these local results. GitHub commit identity and remote CI must be checked independently."
@@ -63,16 +63,7 @@
     "local_parallelism": 1,
     "final_incremental_verification": [
       {
-        "command": [
-          "cmake",
-          "--preset",
-          "dev"
-        ],
-        "exit_code": 0,
-        "seconds": 0.51,
-        "log": "validation/takeover/configure.log"
-      },
-      {
+        "name": "build",
         "command": [
           "cmake",
           "--build",
@@ -82,11 +73,11 @@
           "1"
         ],
         "exit_code": 0,
-        "seconds": 0.05,
+        "seconds": 8.23,
         "log": "validation/takeover/build.log"
       }
     ],
-    "note": "Full normal builds and tests completed before this final no-op/incremental build verification. Sanitizer build log records the full sanitizer build."
+    "note": "Initial full builds and subsequent portability rebuilds passed. asan_build_initial.log records the initial full sanitizer build; asan_build.log is the final incremental rebuild."
   },
   "baseline_reproduction": {
     "version": "0.0.1",
@@ -113,7 +104,7 @@
     "result": "passed",
     "suites_passed": 3,
     "suites_total": 3,
-    "seconds": 7.0,
+    "seconds": 7.08,
     "log": "validation/takeover/ctest.log",
     "suites": {
       "core": {
@@ -124,7 +115,7 @@
       "contracts": {
         "passed": 55,
         "total": 55,
-        "assertions": 261,
+        "assertions": 269,
         "original_design_fixtures": 34,
         "additional_native_tests": 21
       },
@@ -167,7 +158,7 @@
             "./build-asan/bzs_tests"
           ],
           "exit_code": 0,
-          "seconds": 2.09
+          "seconds": 1.39
         },
         {
           "name": "asan_contracts",
@@ -176,16 +167,17 @@
             "docs/planning/validation/contract_cases.json"
           ],
           "exit_code": 0,
-          "seconds": 1.56
+          "seconds": 2.13
         }
       ]
     },
-    "scope": "bzs_tests and bzs_contract_tests only; HTTP/CLI executables are not part of this sanitizer result."
+    "scope": "bzs_tests and bzs_contract_tests only; HTTP/CLI executables are not part of this sanitizer result.",
+    "initial_build_log": "validation/takeover/asan_build_initial.log"
   },
   "independent_review": {
     "scope": "takeover_slice_only",
     "reviewers": {
-      "core": "Core search/extraction/storage review, baseline regression probes, and separate review of native contracts",
+      "core": "Core search/extraction/storage review, baseline regression probes, and separate review of native contracts; MSVC chrono integer-width audit and independent review of the widening/date-boundary patch",
       "service": "Service/session review, HTTP/CLI contract route and boundary tests, workflow review",
       "requirements_contracts": "Handoff requirements and native configuration-contract implementation",
       "root": "Integration review, failure disposition, final source/log inspection, build/CTest/sanitizer execution and publication verification"
@@ -199,7 +191,8 @@
       "passed": 17,
       "total": 17,
       "log": "validation/takeover/independent_contract_probe.json",
-      "note": "Supplemental ad hoc URI/date review probes, not additional formal product acceptance tests. Durable regression coverage is in tests/contracts.cpp."
+      "note": "Supplemental URI/date probes recorded before the integer-width-only follow-up; not additional formal acceptance tests. Durable cases plus 8 portability assertions are in tests/contracts.cpp.",
+      "source_commit": "98de6adc5def69c5ba8feedf96b61ab79fb7f7e4"
     }
   },
   "environment_attempts": [
@@ -216,6 +209,13 @@
       "stage": "initial_sanitizer_execution",
       "outcome": "LeakSanitizer refused the default ptrace-restricted environment. Both native binaries then passed with process inspection permitted and leak detection still enabled.",
       "log": "validation/takeover/asan_core_sandbox.log"
+    },
+    {
+      "stage": "portability_http_retest",
+      "outcome": "searchctl was a complete ELF but had mode 0644 after a local incremental build, causing 4 CLI launch errors. Relinking recreated it with mode 0755 and all 20 HTTP/CLI tests passed; no source or test weakening was used. Final full CTest and sanitizer rerun also passed.",
+      "failure_log": "validation/takeover/ctest_cli_mode_failure.log",
+      "diagnostic": "validation/takeover/cli_mode_diagnostic.json",
+      "relink_log": "validation/takeover/cli_relink.log"
     }
   ],
   "limitations": {
@@ -234,5 +234,25 @@
     "evidence_source": "https://github.com/wmqfl861/bzs861/actions",
     "status": "consult_workflow_for_exact_commit",
     "note": "This file records local tests only. Linux/Windows remote results must be evaluated from the workflow associated with the delivered GitHub SHA."
+  },
+  "portability_followup": {
+    "initial_publication_sha": "98de6adc5def69c5ba8feedf96b61ab79fb7f7e4",
+    "fixes": [
+      {
+        "component": "native timestamp conversion",
+        "finding": "MSVC chrono::days uses int; multiplication by 86400 could overflow before assignment to int64_t.",
+        "fix": "Convert count to int64_t before multiplication.",
+        "regression_assertions_added": 8,
+        "coverage": "1901/2038 forward and reverse bounds, 0001..9999 range, equivalent time zones across the boundary, source review dates."
+      },
+      {
+        "component": "Unicode unit test macro",
+        "finding": "Actual initial Windows job failed with C3850 while stringifying raw surrogate-pair JSON inside CHECK.",
+        "fix": "Parse the unchanged JSON before CHECK; retain the Unicode equality assertion.",
+        "initial_ci_evidence": "validation/takeover/windows_ci_initial.json"
+      }
+    ],
+    "local_validation": "validation/takeover/portability_final_validation.json",
+    "initial_date_run_history": "validation/takeover/date_portability_validation.json"
   }
 }

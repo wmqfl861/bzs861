@@ -70,6 +70,8 @@ CLI 读取最多 65,536 字节的本地 JSON 文件，通过真实回环 HTTP �
 
 硬过滤始终是额外 AND。同一日期字段出现多个 `after` 时取最晚下界，多个 `before` 时取最早上界；`eq` 必须彼此相同且落在所有开区间边界内。不同字段分别计算，条件顺序不改变结论。`network_mode=offline` 只允许 `scope.corpus=local`。
 
+日期换算在天数乘秒数之前使用 64 位整数，支持四位年份 `0001..9999`；回归覆盖 Windows 的 1901/2038 整数边界和跨日时区等价性。
+
 校验会补齐 `allow_unverified=false`。没有注册模型或来源配置，因此不会解析 `model_profile_ref`、`source_ids` 或 collection 的跨配置身份；权限、私有数据外发和实际预算消耗仍需执行层检查。
 
 当前 `/api/v0` 的 `search` 仍是已文档化的离线子集。正式 `search-request` 通过校验，不代表可以把整个规范化对象直接传给 v0 `search` 执行，也不代表 `code`、`author` 等未索引字段可用。

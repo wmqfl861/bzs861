@@ -148,7 +148,9 @@ namespace {
   }
   TEST(json_scalar_unicode_and_ranges) {
     CHECK(Json::parse(R"("\u4e2d\u6587")").str()=="中文");
-    CHECK(Json::parse(R"("\ud83d\ude00")").str()=="😀");
+    // Keep surrogate escapes outside CHECK's stringification on MSVC's preprocessor.
+    auto supplementary=Json::parse(R"("\ud83d\ude00")");
+    CHECK(supplementary.str()=="😀");
     rejects([] {
       Json::parse(R"("\ud800")");
     }, "E_JSON");

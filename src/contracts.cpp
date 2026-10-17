@@ -245,7 +245,8 @@ namespace bzs {
       auto day=std::chrono::year{y}/std::chrono::month{static_cast<unsigned>(m)}/std::chrono::day{static_cast<unsigned>(d)};
       require(y>=1&&day.ok(), "E_CONTRACT", "Invalid calendar date");
       Timestamp result;
-      result.seconds=std::chrono::sys_days{day}.time_since_epoch().count()*86400;
+      // chrono::days::rep is 32-bit on MSVC; widen before converting days to seconds.
+      result.seconds=static_cast<std::int64_t>(std::chrono::sys_days{day}.time_since_epoch().count())*86400;
       if(s.size()==10) {
         require(allow_date, "E_CONTRACT", "Timestamp needs time and timezone");
         return result;

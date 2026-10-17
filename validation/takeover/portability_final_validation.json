@@ -1,0 +1,59 @@
+{
+  "scope": "int64_date_and_msvc_macro_portability_followup",
+  "results": [
+    {
+      "name": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "--preset",
+        "dev",
+        "-j",
+        "1"
+      ],
+      "exit_code": 0,
+      "seconds": 8.23
+    },
+    {
+      "name": "asan_build",
+      "command": [
+        "cmake",
+        "--build",
+        "--preset",
+        "asan-core",
+        "-j",
+        "1"
+      ],
+      "exit_code": 0,
+      "seconds": 10.94
+    },
+    {
+      "name": "ctest",
+      "command": [
+        "ctest",
+        "--preset",
+        "dev",
+        "-V"
+      ],
+      "exit_code": 0,
+      "seconds": 7.15
+    },
+    {
+      "name": "asan_core",
+      "command": [
+        "./build-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "seconds": 1.39
+    },
+    {
+      "name": "asan_contracts",
+      "command": [
+        "./build-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "exit_code": 0,
+      "seconds": 2.13
+    }
+  ]
+}

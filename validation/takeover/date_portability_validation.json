@@ -1,0 +1,44 @@
+{
+  "scope": "int64_date_conversion_followup",
+  "results": [
+    {
+      "name": "ctest",
+      "command": [
+        "ctest",
+        "--preset",
+        "dev",
+        "-V"
+      ],
+      "exit_code": 8,
+      "seconds": 7.18
+    },
+    {
+      "name": "asan_core",
+      "command": [
+        "./build-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "seconds": 1.91
+    },
+    {
+      "name": "asan_contracts",
+      "command": [
+        "./build-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "exit_code": 0,
+      "seconds": 2.01
+    },
+    {
+      "name": "ctest_after_relink",
+      "command": [
+        "ctest",
+        "--preset",
+        "dev",
+        "-V"
+      ],
+      "exit_code": 0,
+      "seconds": 8.09
+    }
+  ]
+}
