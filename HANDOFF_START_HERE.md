@@ -8,8 +8,8 @@
 
 | 先看什么 | 路径 |
 |---|---|
-| 上传到 GitHub 的步骤 | [手动上传指南](docs/handoff/MANUAL_UPLOAD.md) |
-| 接手开发所需的当前状态 | [开发交接书](docs/handoff/HANDOFF.md) |
+| 原始手动上传参考 | [手动上传指南](docs/handoff/MANUAL_UPLOAD.md) |
+| 原始交接背景 | [开发交接书](docs/handoff/HANDOFF.md) |
 | 可给下一位开发者／Agent 的任务书 | [接续开发指令](docs/handoff/NEXT_AGENT.md) |
 | 最终需求与已废止建议 | [决策与纠正记录](docs/handoff/DECISIONS.md) |
 | 编译、运行和测试 | [README](README.md) |

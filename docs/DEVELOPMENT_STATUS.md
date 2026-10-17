@@ -33,12 +33,12 @@
 | API-00 / DEV-078 | 真实loopback HTTP和C++ CLI共享Service逻辑 | MCP未实现；HTTP是明确标注的v0启动合同 |
 | OPS-00 / DEV-079 | 请求ID/状态/时长日志、stats、尝试/内容/会话/备份硬限制 | 不是全阶段指标、模型账本或容量基准 |
 | BACKUP-00 / DEV-080 | 在线SQLite备份、隔离标记、失败临时文件清理和原子不覆盖发布 | 恢复撤销对账未实现；备份不能直接启动服务，断电耐久未验收 |
-| SPIKE-01 / DEV-082 | 当前Linux工具链、SQLite FTS5/JSON/HTML/加密依赖实际构建 | 浏览器、Windows、ANN、媒体等技术验证待执行 |
+| SPIKE-01 / DEV-082 | 当前Linux工具链、SQLite FTS5/JSON/HTML/加密依赖实际构建；Windows启动构建与离线测试按对应提交Actions核验 | Windows完整平台验收及浏览器、ANN、媒体等专项验证未完成 |
 | CONTRACT-02 / DEV-083 | C++三类配置合同/角色继承/部署上限；HTTP/CLI纯校验；34原fixture+21原生回归 | 配置注册、跨配置身份、审核真实性、v1执行、精确十进制兼容等仍待实现 |
 
 ## 实测与未实测
 
-当前 Linux 构建通过 3 组 CTest：52 项核心测试（289 断言）、55 项原生合同测试（原 34 fixture + 21 组补充测试，261 断言）、20 项真实回环 HTTP/CLI 集成。原 Python 34 组设计测试另行复现通过。ASan/UBSan 和环境记录见 [本轮报告](../validation/takeover/test_report.json)。
+当前 Linux 构建通过 3 组 CTest：52 项核心测试（289 断言）、55 项原生合同测试（原 34 fixture + 21 组补充测试，269 断言）、20 项真实回环 HTTP/CLI 集成。原 Python 34 组设计测试另行复现通过。ASan/UBSan 和环境记录见 [本轮报告](../validation/takeover/test_report.json)。
 
 原 0.0.1 的 45 核心/16 HTTP/45 核心 sanitizer/34 Python 记录继续保留在 `validation/` 原文件中；不会改写成当前源码的成绩。本轮三名独立子 Agent 分别核对需求、核心、服务与合同；发现及裁决见 [接手记录](handoff/TAKEOVER_20261017.md)。
 
