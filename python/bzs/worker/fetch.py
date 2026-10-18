@@ -6,9 +6,11 @@ import codecs
 import re
 import time
 from dataclasses import dataclass, field
+from typing import Callable
 from urllib.parse import urljoin, urlsplit
 
 import aiohttp
+from yarl import URL
 
 from .netguard import GuardedResolver, NetPolicy, PolicyError
 
@@ -20,6 +22,14 @@ _CROSS_ORIGIN_HEADERS = frozenset(("user-agent", "accept", "accept-language"))
 
 
 class FetchStopped(Exception):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+
+
+class FetchAdmissionDenied(Exception):
+    """A synchronous, connection-adjacent admission check refused dispatch."""
+
     def __init__(self, code: str, message: str):
         super().__init__(message)
         self.code = code
@@ -140,25 +150,36 @@ class Fetcher:
             self._host_locks[host] = asyncio.Semaphore(self.per_host)
         return self._host_locks[host]
 
-    async def fetch(self, url: str, *, timeout_s: float = 20.0, method: str = "GET",
+    async def fetch(self, url: str | URL, *, timeout_s: float = 20.0, method: str = "GET",
                     params: dict | None = None, data: dict | None = None, headers: dict | None = None,
                     max_bytes: int | None = None, accept: str | None = None,
-                    budget: FetchBudget | None = None) -> FetchResult:
+                    budget: FetchBudget | None = None, follow_redirects: bool = True,
+                    before_dispatch: Callable[[URL], None] | None = None) -> FetchResult:
         assert self._session is not None, "Fetcher.start() not called"
         started = time.monotonic()
         deadline = started + timeout_s
         limit = min(max_bytes or self.max_bytes, self.max_bytes)
-        result = FetchResult(status="network_error", url=url)
+        result = FetchResult(status="network_error", url=str(url))
         current = url
         req_headers = {"User-Agent": self.user_agent, "Accept-Language": self.accept_language,
                        "Accept": accept or "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
         if headers:
             req_headers.update(headers)
         try:
-            for hop in range(self.max_redirects + 1):
+            for hop in range((self.max_redirects if follow_redirects else 0) + 1):
                 if budget:
                     budget.check()
-                target = self.policy.prepare_url(current)
+                checked = self.policy.prepare_url(str(current))
+                # The map scheduler supplies an encoded URL only after checking
+                # raw path scope. Validate its entire URI again, pin the same
+                # public authority, then keep its exact path/query octets in the
+                # object passed to aiohttp. Ordinary reads retain normalization.
+                if not follow_redirects and isinstance(current, URL):
+                    if (current.scheme, current.raw_host, current.port) != (checked.scheme, checked.raw_host, checked.port):
+                        raise PolicyError("prepared URL differs from its validated authority")
+                    target = current
+                else:
+                    target = checked
                 current = str(target)
                 host = target.raw_host
                 assert host is not None
@@ -174,6 +195,14 @@ class Fetcher:
                         raise asyncio.TimeoutError()
                     timeout = aiohttp.ClientTimeout(total=remaining, sock_connect=min(10.0, remaining))
                     if budget:
+                        budget.check()
+                    # This callback is deliberately synchronous: an admission
+                    # refresh must happen outside the host slot, and must use its
+                    # own durable single-hop grant. Recheck after waiting so an
+                    # expired policy record can never authorize a later request.
+                    if before_dispatch is not None:
+                        before_dispatch(target)
+                    if budget:
                         budget.dispatch()
                     result.external_requests += 1
                     async with self._session.request(method, target, params=params if hop == 0 else None,
@@ -186,6 +215,17 @@ class Fetcher:
                         robots = resp.headers.getall("X-Robots-Tag", ())
                         if robots:
                             result.headers["x-robots-tag"] = "\n".join(robots)
+                        if not follow_redirects:
+                            cache_control = resp.headers.getall("Cache-Control", ())
+                            if cache_control:
+                                result.headers["cache-control"] = ",".join(cache_control)
+                            retry_after = resp.headers.getall("Retry-After", ())
+                            if retry_after:
+                                result.headers["retry-after"] = "\n".join(retry_after)
+                            for name in ("Age", "Date", "Expires", "Vary"):
+                                fields = resp.headers.getall(name, ())
+                                if fields:
+                                    result.headers[name.lower()] = ("," if name == "Vary" else "\n").join(fields)
                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
                         chunks: list[bytes] = []
                         size = 0
@@ -234,6 +274,10 @@ class Fetcher:
                         if redirect:
                             nxt = self.policy.prepare_url(urljoin(str(resp.url), result.headers["location"]))
                             result.redirects.append(str(nxt))
+                            if not follow_redirects:
+                                result.final_url = str(resp.url)
+                                result.status = "redirect"
+                                return result
                             if target.origin() != nxt.origin():
                                 # Manual redirects must not forward API keys, bearer tokens, cookies, or
                                 # future custom credential headers to another origin or a downgraded URL.
@@ -252,6 +296,9 @@ class Fetcher:
             result.error = "too many redirects"
         except PolicyError as exc:
             result.status, result.error = "blocked_by_policy", str(exc)
+        except FetchAdmissionDenied as exc:
+            result.status, result.error = "blocked_by_policy", str(exc)
+            result.error_code = exc.code
         except FetchStopped as exc:
             result.status = "cancelled" if exc.code == "E_CANCELLED" else "budget_exhausted"
             result.error_code, result.error = exc.code, str(exc)

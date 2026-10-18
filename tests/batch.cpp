@@ -301,11 +301,11 @@ namespace {
       // A non-default rowid proves that schema 3's derived index is not rebuilt.
       sql(store.raw_handle(),"UPDATE content_fts SET rowid=731;");
       index_rowid=scalar(store.raw_handle(),"SELECT rowid FROM content_fts");
-      sql(store.raw_handle(),"DROP TABLE read_job_items; DROP TABLE read_job_budgets; ALTER TABLE jobs DROP COLUMN kind; PRAGMA user_version=3;");
+      sql(store.raw_handle(),"DROP TABLE map_hops; DROP TABLE map_candidates; DROP TABLE map_resources; DROP TABLE map_jobs; DROP TABLE robots_cache; DROP TABLE site_request_state; DROP TABLE read_job_items; DROP TABLE read_job_budgets; ALTER TABLE jobs DROP COLUMN kind; PRAGMA user_version=3;");
     }
     {
       Store store(t.path/"db");
-      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==4);
+      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==5);
       CHECK(scalar(store.raw_handle(),"SELECT rowid FROM content_fts")==index_rowid);
       CHECK(store.snapshot("alice",historic.at("snapshot_id").str()).canonical()==historic.canonical());
       CHECK(store.snapshot("alice",current.at("snapshot_id").str()).canonical()==current.canonical());
@@ -320,7 +320,7 @@ namespace {
     Temp t;
     {
       Store store(t.path/"db");
-      sql(store.raw_handle(),"DROP TABLE read_job_items; DROP TABLE read_job_budgets; ALTER TABLE jobs DROP COLUMN kind; PRAGMA user_version=3; UPDATE settings SET value='1' WHERE key='restore_quarantine';");
+      sql(store.raw_handle(),"DROP TABLE map_hops; DROP TABLE map_candidates; DROP TABLE map_resources; DROP TABLE map_jobs; DROP TABLE robots_cache; DROP TABLE site_request_state; DROP TABLE read_job_items; DROP TABLE read_job_budgets; ALTER TABLE jobs DROP COLUMN kind; PRAGMA user_version=3; UPDATE settings SET value='1' WHERE key='restore_quarantine';");
     }
     rejects([&]{Store blocked(t.path/"db");},"E_RESTORE_QUARANTINED");
     sqlite3* raw=nullptr;CHECK(sqlite3_open((t.path/"db").string().c_str(),&raw)==SQLITE_OK);

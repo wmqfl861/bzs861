@@ -1,25 +1,24 @@
 # bzs861 · 当前开发入口
 
-**更新：2026-10-18｜阶段：0.1.2 S0/S2 development candidate｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
+**更新：2026-10-18｜阶段：0.1.3 S2 discovery development candidate｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
 
-本轮基于已交付的 0.1.1，推进可恢复来源探测、黄金查询冻结、离线回放和显式 URL 批量读取。保留原生配置合同、用户隔离、不可变快照、证据和隔离备份。实际执行记录与完整工作包验收分别保存；S0、S1、S2 尚未签署完成。
+本批从已交付 0.1.2 接续，增加 robots 实际请求准入和持久有界站点发现。保留黄金查询/探测回放、静态批量读取、原生配置合同、owner 隔离、不可变快照、证据和隔离备份。蓝图、计划、实现状态与当前交接已同步；S0/S1/S2 仍未完整签收。
 
 | 先看什么 | 路径 |
 |---|---|
-| 本批功能和验证边界 | [S0/S2 验证说明](validation/s0_s2_progress/README.md)、[黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) |
-| 上一轮 Claude 输入及整合 | [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) |
+| 本批功能、修复和限制 | [S2 交接](docs/handoff/S2_DISCOVERY_20261018.md)、[验证说明](validation/s2_discovery/README.md) |
+| 站点登记、robots 和发现使用 | [SITE_DISCOVERY](docs/SITE_DISCOVERY.md)、[API](docs/API.md) |
 | 安装、运行与 MCP | [README](README.md) |
-| 实际状态与本轮验证 | [开发进度](docs/DEVELOPMENT_STATUS.md)、[机器可读状态](docs/implementation_status.json)、[本轮报告](validation/s0_s2_progress/test_report.json) |
-| API 与保留的原生配置合同 | [API](docs/API.md)、[配置合同](docs/CONFIGURATION.md) |
-| 显式候选来源探测 | [S0 来源实测](docs/S0_PROBE.md)、[有限云端观察](validation/s0_s2_progress/cloud_probe_summary.json) |
-| 切片顺序与验收映射 | [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md)、[切片数据](docs/planning/slices_v1.2.json) |
-| 下一批任务与有效决策 | [NEXT_AGENT](docs/handoff/NEXT_AGENT.md)、[DECISIONS](docs/handoff/DECISIONS.md) |
-| 已交付的 0.0.2 历史 | [2026-10-17 接手记录](docs/handoff/TAKEOVER_20261017.md) |
-| 原始 0.0.1 交接与上传背景 | [原交接书](docs/handoff/HANDOFF.md)、[原上传指南](docs/handoff/MANUAL_UPLOAD.md) |
-| 远端与两条开发历史 | [GitHub 说明](docs/GITHUB_HANDOFF.md) |
+| 当前进度与实际执行 | [开发进度](docs/DEVELOPMENT_STATUS.md)、[机器状态](docs/implementation_status.json)、[本批报告](validation/s2_discovery/test_report.json) |
+| 蓝图和开发计划 | [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md)、[83 包 / 161 验收映射](docs/planning/slices_v1.2.json)、[规划说明](docs/planning/README.md) |
+| 下一批任务与决策 | [NEXT_AGENT](docs/handoff/NEXT_AGENT.md)、[DECISIONS](docs/handoff/DECISIONS.md) |
+| 0.1.2 黄金集、探测与批量读取历史 | [S0_GOLDEN](docs/handoff/S0_GOLDEN_20261018.md)、[0.1.2 报告](validation/s0_s2_progress/test_report.json) |
+| Claude S1 更新的接收与整合 | [0.1.1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) |
+| 原生合同与安全边界 | [CONFIGURATION](docs/CONFIGURATION.md)、[SECURITY](docs/SECURITY.md) |
+| 原始交接与 Git 历史 | [GitHub 说明](docs/GITHUB_HANDOFF.md)、[2026-10-17 接手](docs/handoff/TAKEOVER_20261017.md)、[原交接书](docs/handoff/HANDOFF.md) |
 
-83 个工作包和 161 项验收 ID 全部保留。v1.2 采用 C++ 核心、Python worker、stdio MCP 优先、单用户先行的排序；权限、删除、恢复、断线重取和来源审核语义继续有效。使用其他库或传输机制需要等效验证，不能只保留工作包名称。
+当前 **32 项部分实现、51 项未开始、0 项完整签收**。本批新增部分实现的是 ROBOTS-01 / MAP-01，完整正文爬取、公开索引声明、人工相关性、断线重取及隔离恢复继续按原要求推进。不要用合成站点或测试总数推导产品验收。
 
-只有经过审核并显式启用的来源可以进入正常搜索。随包 13 个未核验适配器默认禁用，S0 候选探测必须显式选择；成功率不代替审核。不使用 SearXNG、Scrapling、Firecrawl、Exa 成品后端，不设付费搜索或抓取回退；用户配置的模型执行属于后续功能。
+站点登记默认空，17 条搜索来源默认禁用。查看登记不批准访问；robots 允许也不能替代有效站点审核。没有付费搜索或抓取回退。外层私人聊天、凭据、数据库、未审探测原始内容和原始 bundle 不属于公开交付。
 
-当前远端状态须重新读取，不能把 2026-10-17 的空仓库观察当作现状。外层私人聊天、凭据、数据库和原始 bundle 不属于公开源码交付。历史日志不能代替当前提交的测试和 GitHub Actions。
+每次接手重新读取远端 main 与当前工作区，不能把历史输入 SHA 当作最新 HEAD。交付核对精确提交及其 Linux/Windows CI，历史日志仅证明它们绑定的旧版本。

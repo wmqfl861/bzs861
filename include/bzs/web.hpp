@@ -1,6 +1,7 @@
 #pragma once
 #include "bzs/json.hpp"
 #include "bzs/store.hpp"
+#include "bzs/sites.hpp"
 #include <filesystem>
 #include <map>
 #include <mutex>
@@ -57,6 +58,7 @@ namespace bzs {
     Store& store_;
     WorkerPort& worker_;
     SourceRegistry registry_;
+    SiteRegistry sites_;
     // Short-lived cache of identical searches (ADR-0003): spares scraped engines repeated agent queries.
     struct CachedSearch {
       std::int64_t stored_at=0, ttl_ms=0;
@@ -73,7 +75,7 @@ namespace bzs {
     };
     ReadArtifact decode_read(const std::string& url, const Json& response);
     Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
-    public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry);
+    public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
     Json search(const std::string& owner, const Json& args);
     Json read(const std::string& owner, const Json& args);
     Json submit_reads(const std::string& owner, const Json& args);
@@ -81,6 +83,10 @@ namespace bzs {
     // publishes the artifact, receipt and reconciled usage in one transaction.
     void execute_read(const ReadLease& lease);
     void cancel_read_attempt(const std::string& attempt_id) noexcept;
+    Json submit_map(const std::string& owner,const Json& args);
+    Json sites();
+    std::optional<MapLease> lease_map();
+    void execute_map(const MapLease& lease);
     Json sources();
     std::size_t enabled_sources() const;
   };

@@ -7,6 +7,7 @@
 #include <optional>
 struct sqlite3;
 namespace bzs {
+  class SiteRegistry;
   struct Lease {
     std::string id, owner, fixture_id;
     std::int64_t epoch=0;
@@ -28,6 +29,12 @@ namespace bzs {
     std::string job_id, owner, url, attempt_id;
     std::int64_t epoch=0, input_index=0, deletion_generation=0;
     std::int64_t request_grant=0, byte_grant=0, timeout_ms=0, deadline_ms=0;
+  };
+  struct MapLease {
+    std::string job_id,owner,site_id,manifest_sha256,origin,url,logical_url,kind,attempt_id;
+    std::int64_t epoch=0,position=0,resource_position=0,depth=0,redirect_hop=0,deletion_generation=0;
+    std::int64_t request_grant=1,byte_grant=0,timeout_ms=0,deadline_ms=0;
+    Json robots_record;
   };
   class Store {
     sqlite3* db_=nullptr;
@@ -51,6 +58,18 @@ namespace bzs {
     bool owns_read_lease_locked(const ReadLease& lease);
     bool live_read_lease_locked(const ReadLease& lease);
     void reconcile_read_usage_locked(const ReadLease& lease, std::int64_t requests, std::int64_t bytes);
+    Json map_job_locked(const std::string& owner,const std::string& id);
+    Json map_results_locked(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit);
+    Json control_map_locked(const std::string& owner,const std::string& id,const std::string& action);
+    void settle_map_jobs_locked();
+    void settle_map_job_locked(const std::string& id);
+    bool owns_map_lease_locked(const MapLease& lease);
+    bool live_map_lease_locked(const MapLease& lease);
+    void reconcile_map_usage_locked(const MapLease& lease,std::int64_t requests,std::int64_t bytes);
+    void map_partial_locked(const std::string& id,const std::string& reason);
+    bool map_candidate_locked(const std::string& id,const std::string& owner,const Json& candidate);
+    bool map_resource_locked(const std::string& id,const std::string& owner,const std::string& url,
+                             const std::string& kind,std::int64_t depth);
     bool live_lease_locked(const Lease& lease);
     void settle_interruptions_locked();
     void usage_add_locked(const std::string& owner, std::int64_t bytes, std::int64_t snapshots);
@@ -96,6 +115,14 @@ namespace bzs {
     // Negative usage means an unknown outcome. Its entire durable grant stays charged.
     void fail_read(const ReadLease& lease, const std::string& error_code,
                    std::int64_t external_requests=-1, std::int64_t content_bytes=-1);
+    Json map_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
+    std::optional<MapLease> lease_next_map(const SiteRegistry& sites);
+    bool map_lease_live(const MapLease& lease);
+    bool complete_map(const MapLease& lease,const Json& response,const SiteRegistry& sites,
+                      std::int64_t external_requests,std::int64_t content_bytes);
+    void fail_map(const MapLease& lease,const std::string& error_code,
+                  std::int64_t external_requests=-1,std::int64_t content_bytes=-1);
+    std::string active_map_attempt(const std::string& owner,const std::string& job_id);
     std::optional<Lease> lease_next(std::int64_t lease_ms=10000);
     bool complete(const Lease& lease, const SourceDocument& input, const ParsedDocument& parsed);
     void fail(const Lease& lease, const std::string& error_code);

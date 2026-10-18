@@ -1,6 +1,6 @@
-# searchd API（0.1.2 S0/S2 development candidate）
+# searchd API（0.1.3 S2 discovery development candidate）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s0_s2_progress/test_report.json)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_discovery/test_report.json)。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -50,7 +50,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 ## 持久批量网页读取
 
-`read_many.submit` 只处理调用方列出的 URL。它不从页面发现链接，不递归遍历网站。完整爬虫仍需独立完成 ROBOTS-01、MAP-01 和爬取准入验收。
+`read_many.submit` 只处理调用方列出的 URL。它不从页面发现链接，不递归遍历网站。有界发现由下节的 `map.submit` 提供；完整工作包与递归正文爬取仍须分别验收。
 
 ```json
 {"operation":"read_many.submit","params":{"urls":["https://example.com/a","https://example.com/b"],"idempotency_key":"research_batch_1","max_requests":12,"max_bytes":16777216,"max_attempts":1}}
@@ -84,6 +84,32 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。它们转发同一核心操作，不自行扩张预算。结果里的网页内容继续按不可信外部数据处理。
 
+## 有界站点发现
+
+`map.sites` 列出核心实际加载的站点审核登记及其 `manifest_sha256`。`map.submit` 创建 `kind=web.map` 的持久任务，解析 Sitemap/index、RSS、Atom、HTML/XHTML 并合入当前 owner 的可见历史候选。仅 Sitemap index 和 robots 声明可以扩张后续发现文档；普通链接只产出候选，不自动读取正文、建立快照、生成证据或索引。
+
+```json
+{"operation":"map.submit","params":{"site_id":"operator-reviewed-site","seeds":["https://reviewed.example/docs/sitemap.xml"],"scope_path":"/docs/","idempotency_key":"docs_map_1","max_requests":30,"max_bytes":16777216,"max_urls":200,"max_depth":3}}
+```
+
+示例的站点和 URL 是占位值。正常执行需要部署方在独立的 `sites.json` 中登记并启用审核有效的站点；随包文件为空。核心和 Worker 必须加载同一精确文件身份。站点审核、robots 允许和实际网络目标校验分别执行，普通调用不能注入审核结论、可信时钟或更宽配额。
+
+| 参数 | 默认值 | 允许范围和含义 |
+|---|---|---|
+| `site_id` / `seeds` / `idempotency_key` | 必填 | 登记 ID、1–20 个明确发现入口、同一 owner 的幂等键 |
+| `scope_path` | 站点登记范围 | 只能缩窄已审核路径，所有入口与后续 HTTP 跳都复核 |
+| `timeout_ms` / `per_request_timeout_ms` | 600000 / 20000 | 分别为 1–3600000 / 1–55000 毫秒，暂停不延长任务总期限 |
+| `max_requests` / `max_bytes` | 100 / 16777216 | 分别为 1–1000 次请求尝试 / 1–67108864 个解压后响应体字节 |
+| `max_urls` / `max_depth` | 1000 / 3 | 分别为 1–1000 个去重 URL / 0–8 层发现深度；不是正文数量或路径层数 |
+
+查询使用同一个 `job.get` / `job.results`；map 结果项包含 `type=candidate`、`url`、`parent`、`source`、`depth`、`path_depth` 和 `body_read=false`。`source` 可以是 `sitemap`、`sitemap_index`、`rss`、`atom`、`html` 或 `history`。历史项保留原文档身份和删除代数，URL 规范化后也不能绕过删除。历史正文可能已有其他读取收据，`body_read=false` 只描述本次发现行为。
+
+map 分页每页最多 1000 项，`offset` 是候选位置，`next_offset=null` 表示当前没有下一页。已删除项会被隐藏，所以页内位置不必连续。`job.control` 支持 `pause`、`resume`、`cancel`；map 不接受批量读取专用的 `retry_failed`。已失败或结果未知的跳不自动重发。
+
+核心在每个物理 HTTP 跳前持久预留一次请求和有界字节额度，robots 元数据、跳转和失败尝试均计入。可信已知用量只退还未用预留，未知结果按全份预留计费；`usage.scope=job_lifetime` 的累计数字不能按轮询次数相加。站点同源串行、最小间隔、24 小时窗口配额及冷却跨任务持久生效。完成当前队列不表示全站覆盖；范围、容量、深度和预算停止原因会保留。
+
+MCP 对应 `list_sites` / `map_site`，并复用三个 job 查询/控制工具；C++ CLI 可以用 `searchctl call request.json` 调用同一操作。robots 缓存规则、URI 合同、存储上限和部署配置见 [SITE_DISCOVERY](SITE_DISCOVERY.md)。
+
 ## 本地操作
 
 | 操作 | 说明 |
@@ -96,12 +122,14 @@ MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。�
 | `capabilities` / `stats` | 当前运行能力与用量，不发布尚未实现能力 |
 | `fixtures.*` / `fixture.ingest` / `backup.create` | 保留离线 fixture 和任务路径；备份强制隔离，没有安全恢复发布流程 |
 
-核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为本轮增量，实际召回路径及不完整结果必须明确标注。
+核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 4 保留对两种历史 schema 2 的迁移；具体覆盖见本轮报告。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 5 在 schema 4 上增加 map 队列、HTTP 跳账本、候选、robots 缓存与同源配额；保留 schema 1、两种历史 schema 2、schema 3/4 的迁移，具体覆盖见本轮报告。
 
 ## worker RPC 与错误
 
 核心经独立令牌的回环 `POST /rpc` 调用 `health`、`search.multi`、`fetch.extract`、`fetch.cancel` 等内部操作。批量读取的 `fetch.extract` 携带唯一 `attempt_id`、`max_requests` 和 `max_content_bytes`，响应带 `usage.external_requests` / `content_bytes`。worker 再次校验来源与网络目标，不写数据库，也不提供公开的代理/网段放行接口。生产代理、远程 DNS 放宽、非空 allow_cidrs、无鉴权 MCP HTTP 被拒绝。
 
-合同错误保持 `E_SCHEMA`、`E_CONTRACT`、`E_CONTRACT_LIMIT`。来源错误为 `E_SOURCE_CONFIG` / `E_SOURCE_REVIEW`；其余网页、权限、游标、证据、任务和隔离错误通过统一信封报告。每个新增错误的具体状态码与行为以本轮 API 回归绑定，不将候选实现视为冻结的完整 v1 合同。
+内部 `map.fetch` 每次最多执行一个 HTTP 请求，不自动跟随重定向或软跳转。参数绑定 `attempt_id`、站点清单哈希、目标、种类、期限和单跳预算；内容请求还必须带有效 robots 记录。Worker 在真正派发前再次核验审核和 robots，响应带实际用量及准入决策；核心严格验证回执并负责持久化、下一跳和删除/权限屏障。没有 HTTP 响应的明确拒绝允许 `http_status=null`，不能因此丢弃原拒绝错误或误报已经收到响应。
+
+合同错误保持 `E_SCHEMA`、`E_CONTRACT`、`E_CONTRACT_LIMIT`。来源错误为 `E_SOURCE_CONFIG` / `E_SOURCE_REVIEW`；发现路径另报告站点审核、清单不一致、范围或 robots 拒绝等独立原因。其余网页、权限、游标、证据、任务和隔离错误通过统一信封报告。每个新增错误的具体状态码与行为以本轮 API 回归绑定，不将候选实现视为冻结的完整 v1 合同。

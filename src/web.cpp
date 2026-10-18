@@ -309,7 +309,7 @@ namespace bzs {
     }
     return out;
   }
-  WebService::WebService(Store& store, WorkerPort& worker, SourceRegistry registry):store_(store), worker_(worker), registry_(std::move(registry)) {
+  WebService::WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites):store_(store), worker_(worker), registry_(std::move(registry)), sites_(std::move(sites)) {
   }
   namespace {
     constexpr std::int64_t search_cache_ttl_ms=10*60*1000, partial_cache_ttl_ms=2*60*1000;

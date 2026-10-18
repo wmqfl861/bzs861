@@ -142,7 +142,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=4,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=5,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -246,6 +246,40 @@ namespace bzs {
  CREATE UNIQUE INDEX read_job_one_running ON read_job_items(job_id) WHERE state='running';
  CREATE INDEX read_job_snapshot ON read_job_items(snapshot_id);
  PRAGMA user_version=4;
+ )SQL");
+    }
+    if(version<5) {
+      exec(db_,R"SQL(
+ CREATE TABLE map_jobs(job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+   site_id TEXT NOT NULL,manifest_sha256 TEXT NOT NULL,origin TEXT NOT NULL,scope_path TEXT NOT NULL,
+   max_urls INTEGER NOT NULL,max_depth INTEGER NOT NULL,max_requests INTEGER NOT NULL,max_bytes INTEGER NOT NULL,
+   per_request_timeout_ms INTEGER NOT NULL,charged_requests INTEGER NOT NULL DEFAULT 0,charged_bytes INTEGER NOT NULL DEFAULT 0,
+   external_requests INTEGER NOT NULL DEFAULT 0,content_bytes INTEGER NOT NULL DEFAULT 0,
+   unknown_requests INTEGER NOT NULL DEFAULT 0,unknown_bytes INTEGER NOT NULL DEFAULT 0,
+   partial INTEGER NOT NULL DEFAULT 0,stop_reason TEXT NOT NULL DEFAULT '',filtered_urls INTEGER NOT NULL DEFAULT 0);
+ CREATE TABLE map_resources(job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,position INTEGER NOT NULL,
+   url TEXT NOT NULL,fetch_url TEXT NOT NULL,kind TEXT NOT NULL,depth INTEGER NOT NULL,
+   redirect_hop INTEGER NOT NULL DEFAULT 0,deletion_generation INTEGER NOT NULL,state TEXT NOT NULL DEFAULT 'pending',
+   error_code TEXT NOT NULL DEFAULT '',PRIMARY KEY(job_id,position),UNIQUE(job_id,url));
+ CREATE INDEX map_resources_state ON map_resources(job_id,state,position);
+ CREATE TABLE map_hops(job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,position INTEGER NOT NULL,
+   resource_position INTEGER NOT NULL,url TEXT NOT NULL,kind TEXT NOT NULL,attempt_id TEXT NOT NULL UNIQUE,
+   lease_epoch INTEGER NOT NULL,state TEXT NOT NULL,byte_grant INTEGER NOT NULL,request_grant INTEGER NOT NULL,
+   external_requests INTEGER NOT NULL DEFAULT 0,content_bytes INTEGER NOT NULL DEFAULT 0,usage_unknown INTEGER NOT NULL DEFAULT 0,
+   admission_json TEXT NOT NULL,response_json TEXT,error_code TEXT NOT NULL DEFAULT '',PRIMARY KEY(job_id,position),
+   FOREIGN KEY(job_id,resource_position) REFERENCES map_resources(job_id,position));
+ CREATE UNIQUE INDEX map_one_running ON map_hops(job_id) WHERE state='running';
+ CREATE TABLE map_candidates(job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,position INTEGER NOT NULL,
+   url TEXT NOT NULL,parent TEXT NOT NULL,source TEXT NOT NULL,depth INTEGER NOT NULL,path_depth INTEGER NOT NULL,
+   deletion_generation INTEGER NOT NULL,history_document_id TEXT NOT NULL DEFAULT '',history_generation INTEGER NOT NULL DEFAULT 0,
+   PRIMARY KEY(job_id,position),UNIQUE(job_id,url));
+ CREATE TABLE robots_cache(id TEXT PRIMARY KEY,owner TEXT NOT NULL,origin TEXT NOT NULL,manifest_sha256 TEXT NOT NULL,
+   record_json TEXT NOT NULL,fetched_at INTEGER NOT NULL,expires_at INTEGER NOT NULL);
+ CREATE INDEX robots_cache_lookup ON robots_cache(owner,origin,manifest_sha256,expires_at);
+ CREATE TABLE site_request_state(origin TEXT PRIMARY KEY,window_started INTEGER NOT NULL DEFAULT 0,
+   requests INTEGER NOT NULL DEFAULT 0,next_start INTEGER NOT NULL DEFAULT 0,cooldown_until INTEGER NOT NULL DEFAULT 0,
+   active_attempt TEXT NOT NULL DEFAULT '',active_until INTEGER NOT NULL DEFAULT 0);
+ PRAGMA user_version=5;
  )SQL");
     }
     tx.commit();
@@ -816,6 +850,7 @@ namespace bzs {
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Job not found", 404);
     if(s.text(11)=="web.read_many")return read_job_locked(owner,id);
+    if(s.text(11)=="web.map")return map_job_locked(owner,id);
     Json j=Json::object();
     j.set("job_id", s.text(0));
     j.set("kind", "fixture.ingest");
@@ -890,6 +925,9 @@ namespace bzs {
       tx.commit();
       return out;
     }
+    if(old.at("kind").str()=="web.map") {
+      auto out=control_map_locked(owner,id,action);tx.commit();return out;
+    }
     auto state=old.at("state").str();
     std::string next;
     if(action=="pause") {
@@ -924,6 +962,7 @@ namespace bzs {
     Tx tx(db_);
     settle_interruptions_locked();
     settle_read_jobs_locked();
+    settle_map_jobs_locked();
     tx.commit();
   }
   std::optional<Lease> Store::lease_next(std::int64_t lease_ms) {

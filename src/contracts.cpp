@@ -414,28 +414,8 @@ namespace bzs {
       if(out.has("native_filters"))strings(out.at("native_filters"));
       if(out.has("logical_service_id"))(void)string(out.at("logical_service_id"),1,128);
       const bool enabled=out.at("enabled").flag();
-      auto review=out.at("review");
-      object(review,{"status","payment_scheme","automated_access","checked_at","terms_url","cache_policy","redistribution_policy","expires_at","approved_by"},
-                    {"status","payment_scheme","automated_access","checked_at","terms_url"});
-      auto status=choice(review.at("status"),{"candidate","approved","rejected","expired"});
-      auto payment=choice(review.at("payment_scheme"),{"unverified","no_payment","paid_or_trial"});
-      auto access=choice(review.at("automated_access"),{"unverified","approved","restricted","denied"});
-      if(review.has("cache_policy"))(void)choice(review.at("cache_policy"),{"unverified","disallow","allowed_with_limits"});
-      if(review.has("redistribution_policy"))(void)choice(review.at("redistribution_policy"),{"unverified","links_only","allowed_with_limits"});
-      if(review.has("approved_by"))nullable_string(review.at("approved_by"),1);
-      std::optional<Timestamp> checked,expires;
-      if(!review.at("checked_at").is_null())checked=timestamp(review.at("checked_at"));
-      if(review.has("expires_at")&&!review.at("expires_at").is_null())expires=timestamp(review.at("expires_at"));
-      if(!review.at("terms_url").is_null())http_url(review.at("terms_url"),true);
-      if(checked&&expires)require(compare(*expires,*checked)>0, "E_CONTRACT", "Review expiry must follow its check time");
-      if(enabled) {
-        require(status=="approved"&&payment=="no_payment"&&access=="approved", "E_CONTRACT", "Enabled source requires approved free automated access metadata");
-        require(out.has("logical_service_id")&&checked&&expires&&!review.at("terms_url").is_null()&&
-                review.has("approved_by")&&!review.at("approved_by").is_null(),
-                "E_CONTRACT", "Enabled source lacks required review/service metadata");
-        const auto current=from_ms(now);
-        require(compare(*checked,current)<=0&&compare(*expires,current)>0, "E_CONTRACT", "Source review is from the future or expired");
-      }
+      validate_access_review(out.at("review"),enabled,now);
+      if(enabled)require(out.has("logical_service_id"),"E_CONTRACT","Enabled source lacks required service metadata");
       auto configured=out.at("limits");
       object(configured,{"max_concurrency","min_interval_ms","shared_budget_key","request_quota","quota_window_seconds"},
                         {"max_concurrency","min_interval_ms","shared_budget_key"});
@@ -557,6 +537,30 @@ namespace bzs {
       if(budget.has("max_tokens_estimated"))ceiling(integer(budget.at("max_tokens_estimated"),0),limits.search_tokens_estimated);
       return out;
     }
+  }
+
+  void validate_access_review(const Json& review,bool require_approved,std::int64_t now) {
+      object(review,{"status","payment_scheme","automated_access","checked_at","terms_url","cache_policy","redistribution_policy","expires_at","approved_by"},
+                    {"status","payment_scheme","automated_access","checked_at","terms_url"});
+      auto status=choice(review.at("status"),{"candidate","approved","rejected","expired"});
+      auto payment=choice(review.at("payment_scheme"),{"unverified","no_payment","paid_or_trial"});
+      auto access=choice(review.at("automated_access"),{"unverified","approved","restricted","denied"});
+      if(review.has("cache_policy"))(void)choice(review.at("cache_policy"),{"unverified","disallow","allowed_with_limits"});
+      if(review.has("redistribution_policy"))(void)choice(review.at("redistribution_policy"),{"unverified","links_only","allowed_with_limits"});
+      if(review.has("approved_by"))nullable_string(review.at("approved_by"),1);
+      std::optional<Timestamp> checked,expires;
+      if(!review.at("checked_at").is_null())checked=timestamp(review.at("checked_at"));
+      if(review.has("expires_at")&&!review.at("expires_at").is_null())expires=timestamp(review.at("expires_at"));
+      if(!review.at("terms_url").is_null())http_url(review.at("terms_url"),true);
+      if(checked&&expires)require(compare(*expires,*checked)>0, "E_CONTRACT", "Review expiry must follow its check time");
+      if(require_approved) {
+        require(status=="approved"&&payment=="no_payment"&&access=="approved", "E_CONTRACT", "Enabled source requires approved free automated access metadata");
+        require(checked&&expires&&!review.at("terms_url").is_null()&&
+                review.has("approved_by")&&!review.at("approved_by").is_null(),
+                "E_CONTRACT", "Enabled source lacks required review/service metadata");
+        const auto current=from_ms(now);
+        require(compare(*checked,current)<=0&&compare(*expires,current)>0, "E_CONTRACT", "Source review is from the future or expired");
+      }
   }
 
   Json validate_contract(std::string_view kind,const Json& input,std::int64_t validation_now_ms,const ContractLimits& limits) {

@@ -35,6 +35,7 @@ jobs:
           cmake --build --preset asan-core -j 2
           ./build-asan/bzs_tests
           ./build-asan/bzs_batch_tests
+          ./build-asan/bzs_map_tests
           ./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json
       - name: Original contracts and planning safeguards
         run: |
@@ -74,5 +75,5 @@ jobs:
         shell: pwsh
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
-          ctest --test-dir build-win -C Debug -R "^(core|batch|contracts|http_cli)$" --output-on-failure
+          ctest --test-dir build-win -C Debug -R "^(core|batch|map|contracts|http_cli)$" --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -1,0 +1,182 @@
+{
+  "started_at_utc": "2026-10-18T10:17:03.401562+00:00",
+  "commands": [
+    {
+      "stage": "init",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "init"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 171
+    },
+    {
+      "stage": "start",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "start"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 429
+    },
+    {
+      "stage": "status",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "status"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 173
+    },
+    {
+      "stage": "map_sites",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "map.sites"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 136
+    },
+    {
+      "stage": "capabilities",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "capabilities"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 161
+    },
+    {
+      "stage": "sources",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "web.sources"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 156
+    },
+    {
+      "stage": "stop",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "stop"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 10167
+    }
+  ],
+  "assertions": [
+    {
+      "name": "harness_adopts_only_its_orphaned_launcher_children",
+      "passed": true
+    },
+    {
+      "name": "selected_binary_exists",
+      "passed": true
+    },
+    {
+      "name": "new_config_binds_its_own_empty_site_file",
+      "passed": true
+    },
+    {
+      "name": "empty_site_manifest_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "all_default_search_sources_remain_disabled",
+      "passed": true
+    },
+    {
+      "name": "searchd_uses_exact_site_file",
+      "passed": true
+    },
+    {
+      "name": "searchd_belongs_to_temporary_installation",
+      "passed": true
+    },
+    {
+      "name": "worker_uses_exact_site_file",
+      "passed": true
+    },
+    {
+      "name": "worker_belongs_to_temporary_installation",
+      "passed": true
+    },
+    {
+      "name": "status_reports_running_core",
+      "passed": true
+    },
+    {
+      "name": "core_loaded_empty_exact_site_manifest",
+      "passed": true
+    },
+    {
+      "name": "core_reports_version_and_discovery_api",
+      "passed": true
+    },
+    {
+      "name": "no_source_enabled_or_dispatched",
+      "passed": true
+    },
+    {
+      "name": "worker_reports_same_site_manifest_and_version",
+      "passed": true
+    },
+    {
+      "name": "worker_has_no_adapters_or_proxy",
+      "passed": true
+    },
+    {
+      "name": "both_owned_processes_exited_and_reaped",
+      "passed": true
+    },
+    {
+      "name": "both_temporary_ports_are_closed",
+      "passed": true
+    }
+  ],
+  "scope": "Real isolated launcher lifecycle; loopback control/health only; no source, site or model requests.",
+  "python_version": "3.12.14",
+  "searchd_binary": "build-s1-review/searchd",
+  "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+  "result": "passed",
+  "cleanup": {
+    "only_owned_processes_targeted": true,
+    "reaped": {
+      "searchd": {
+        "pid": 25254,
+        "exit_code": 0
+      },
+      "worker": {
+        "pid": 25252,
+        "exit_code": -15
+      }
+    }
+  },
+  "elapsed_ms": 11402,
+  "finished_at_utc": "2026-10-18T10:17:14.803763+00:00"
+}

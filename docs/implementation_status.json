@@ -1,17 +1,17 @@
 {
-  "version": "0.1.2",
-  "stage": "S0/S2 development candidate",
+  "version": "0.1.3",
+  "stage": "S2 discovery development candidate",
   "recorded_at": "2026-10-18",
-  "baseline": "426c431fd3b39390564045e31316e79ca3f27483",
+  "baseline": "434a9dfa8ce26b86bf765c9d863c8607c3dabae0",
   "integration_inputs": {
-    "main": "426c431fd3b39390564045e31316e79ca3f27483",
+    "main": "434a9dfa8ce26b86bf765c9d863c8607c3dabae0",
     "historical_pre_s1_main": "95710ba30d9495645de0e0966746446c0e70cdc9",
     "claude_bundle_tip": "2b121fcc6bb47973a4315b6684d429651626025c",
-    "scope": "Continue the published 0.1.1 integration; the pre-S1 main and Claude tip preserve historical provenance, not a new bundle replacement."
+    "scope": "Continue published 0.1.2 on integrated main. Earlier Claude and pre-S1 commits preserve historical provenance, not a new bundle replacement."
   },
   "status_counts": {
-    "partial": 30,
-    "not_started": 53,
+    "partial": 32,
+    "not_started": 51,
     "accepted": 0
   },
   "status_legend": {
@@ -19,12 +19,14 @@
     "not_started": "该工作包尚未实现；其他工作包提供的前置产物不算本包开工",
     "received_candidate_status": "仅保存Claude随包子范围标签，不是当前整包验收",
     "accepted": "完整工作包验收已签署；本批为0，不能由套件测试数量推导",
-    "baseline_main_status": "保留历史整合前 main 95710ba 的工作包状态，不是本批426c431基线状态",
+    "baseline_main_status": "历史整合前main 95710ba的状态；不是当前434a9df输入基线。",
     "retained_main_slice": "继承历史 main 的内容；其中原测试数量仅为历史来源",
-    "baseline_0_1_1_status": "本批开始时已交付0.1.1的状态"
+    "baseline_0_1_1_status": "保留0.1.1已交付状态；当前输入基线另见baseline_0_1_2_status。",
+    "baseline_0_1_2_status": "本批开始时已交付0.1.2的整包状态。",
+    "historical_candidate_increment_0_1_2": "原0.1.2增量说明，保留为历史，不代表0.1.3新增或重跑。"
   },
-  "partial_work_packages": 30,
-  "not_started": 53,
+  "partial_work_packages": 32,
+  "not_started": 51,
   "full_work_packages_accepted": 0,
   "milestones_accepted": [],
   "slices_accepted": [],
@@ -32,18 +34,19 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s0_s2_progress/test_report.json",
-  "current_verification": "passed_local_offline_suites_and_native_sanitizers",
-  "upstream_baseline_reproduction": "Historical 0.1.1 intake reproduced the original Claude S1 Debug offline suites; see validation/s1_review/test_report.json. This is not a new 0.1.2 reproduction; original Claude ASan was not rerun.",
+  "current_test_report": "validation/s2_discovery/test_report.json",
+  "current_verification": "passed_local_offline_suites_native_sanitizers_and_launcher",
+  "upstream_baseline_reproduction": "Original Claude S1 reproduction belongs to validation/s1_review/test_report.json; neither 0.1.2 nor 0.1.3 repeats that intake. Current integrated tree is validated separately.",
   "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-  "independent_review": "scope_limited_cross_review; six concrete replay/source/budget findings fixed and rechecked; not_full_product_signoff",
+  "independent_review": "scope_limited_cross_review; seven grouped integration findings fixed and rechecked; not_full_product_signoff",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s0_s2_progress/independent_review.json",
+  "review_record": "validation/s2_discovery/independent_review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
     "validation/s1_test_report.json",
-    "validation/s1_review/test_report.json"
+    "validation/s1_review/test_report.json",
+    "validation/s0_s2_progress/test_report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -59,8 +62,8 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "真实能力目录、免费服务/用户模型边界、依赖记录和ADR",
-      "candidate_increment": "保留v1.2 ADR、范围/许可证边界与来源审核要求；本批记录黄金冻结、云端失败证据、独立复核与测试来源，产品签收仍独立。",
-      "remaining": "完整依赖/SBOM/许可证核对与全产品独立签收尚未完成。",
+      "candidate_increment": "记录0.1.3源码/命令/环境绑定、分工和七组跨模块复核修复；规划/状态/交接同步且保留原83包/161验收。",
+      "remaining": "完整依赖SBOM/许可证核对与全产品独立签收仍未完成。",
       "baseline_test_ids": [
         "FT-001",
         "C-16"
@@ -80,7 +83,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮输入、源码和执行证据已绑定，三项分工复核范围有记录。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留v1.2 ADR、范围/许可证边界与来源审核要求；本批记录黄金冻结、云端失败证据、独立复核与测试来源，产品签收仍独立。"
     },
     {
       "feature_id": "SRC-01",
@@ -94,8 +99,8 @@
       "received_candidate_status": "tooling_ready",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "17条运行来源登记全部默认禁用，13条已有适配器；显式候选probe与正常contract准入分离。schema2绑定清单/查询/解析器身份并保存审核元数据；本批云端对Marginalia与Wikipedia英文各尝试1次，均DNS失败，0 HTTP响应。",
-      "remaining": "目标部署环境S0、真实HTTP来源样本及完整免费/自动访问/缓存再发布/有效期审核；当前0已批准、0已启用，云端DNS失败不推断用户网络可用性，probe不自动批准。",
+      "candidate_increment": "继承0.1.2来源登记、probe/replay证据；17条默认来源仍禁用，本批未运行真实来源探测。站点发现采用独立空登记，不借搜索审核批准结果网站。",
+      "remaining": "目标部署环境S0、真实HTTP来源样本及免费/自动访问/缓存再发布审核仍未完成；历史两次DNS失败仅属于0.1.2云端观察。",
       "baseline_test_ids": [
         "FT-009",
         "B-08",
@@ -111,7 +116,9 @@
           "S1"
         ]
       },
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "17条运行来源登记全部默认禁用，13条已有适配器；显式候选probe与正常contract准入分离。schema2绑定清单/查询/解析器身份并保存审核元数据；本批云端对Marginalia与Wikipedia英文各尝试1次，均DNS失败，0 HTTP响应。"
     },
     {
       "feature_id": "QA-01",
@@ -125,8 +132,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定HTML/TXT与来源样例；52核心测试、55原生配置合同测试、20HTTP/CLI测试；另保留34组Python设计基线",
-      "candidate_increment": "保留合成来源/假网站与跨语言回归；原40条查询新增20 development/15 regression/5 holdout及冻结manifest，严格加载/重复键和ID拒绝、capability/category确定性选题、默认排除留出且不跨能力fallback；probe schema2保存完整有限结果和证据，离线replay严格身份和响应体校验。",
-      "remaining": "当前云端只有DNS失败元数据，没有真实HTTP结果页或来源解析样本；QA-02人工qrels、评分runner、冻结阈值与留出质量评测未实现；完整161验收仍按切片执行。",
+      "candidate_increment": "继承40条冻结黄金输入与probe/replay；新增受控站点发现格式、robots/缓存、预算、重启、历史删除、CLI/MCP与launcher回归。",
+      "remaining": "QA-02人工qrels、质量评分runner、冻结阈值和留出评测仍未开始；合成站点不代替真实来源S0或完整161验收。",
       "baseline_test_ids": [
         "FT-008"
       ],
@@ -134,7 +141,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮离线回归、原生sanitizer及源码/日志绑定已完成。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留合成来源/假网站与跨语言回归；原40条查询新增20 development/15 regression/5 holdout及冻结manifest，严格加载/重复键和ID拒绝、capability/category确定性选题、默认排除留出且不跨能力fallback；probe schema2保存完整有限结果和证据，离线replay严格身份和响应体校验。"
     },
     {
       "feature_id": "SPIKE-01",
@@ -148,7 +157,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "当前Linux工具链、SQLite FTS5/JSON/HTML/加密依赖实际构建",
-      "candidate_increment": "候选中文FTS5 tokenizer、Python解析与MCP依赖；本轮版本和平台验证需绑定实际环境。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "最终提交对应Windows结果；浏览器/向量/媒体专项后续验证。",
       "baseline_test_ids": [
         "FT-082",
@@ -159,7 +168,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮Linux依赖已安装并记录，Python依赖一致性检查通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "候选中文FTS5 tokenizer、Python解析与MCP依赖；本轮版本和平台验证需绑定实际环境。"
     },
     {
       "feature_id": "CORE-01",
@@ -173,8 +184,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "Linux C++20构建、searchd/searchctl、3组CTest及固定checkout/vcpkg来源的跨平台CI",
-      "candidate_increment": "保留C++20核心、worker/MCP和原生合同；本批接入独立batch原生用例、六套CTest与三套原生sanitizer，固定Linux/Windows门槛保留。",
-      "remaining": "最终提交对应Linux/Windows验证；完整平台打包和发布验收。",
+      "candidate_increment": "接入原生map与进程e2e_map套件，当前八套CTest、四套native sanitizer；Windows新增map到既有阻塞核心/合同/HTTP门槛。",
+      "remaining": "最终发布提交的Linux/Windows结果仍需发布后核对；完整Windows Worker安装包与全平台发布属于S9。",
       "baseline_test_ids": [
         "FT-002"
       ],
@@ -192,7 +203,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮Linux构建、五套离线回归、原生sanitizer和Python依赖锁已通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留C++20核心、worker/MCP和原生合同；本批接入独立batch原生用例、六套CTest与三套原生sanitizer，固定Linux/Windows门槛保留。"
     },
     {
       "feature_id": "CONTRACT-01",
@@ -206,8 +219,8 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "运行时JSON、QueryAST、快照/证据/任务/会话错误合同",
-      "candidate_increment": "保留/api/v0联网读取/搜索与worker RPC；新增read_many.submit、job.results及batch任务get/control语义，MCP映射同一核心；probe/replay schema与状态显式区分结果、失败和未知执行。",
-      "remaining": "完整v1执行/取消/版本协议冻结，后续新增接口继续做边界回归。",
+      "candidate_increment": "新增map.sites/map.submit及web.map任务get/results/control；内部map.fetch逐跳回执绑定审核/robots/预算，MCP和CLI复用同一核心。",
+      "remaining": "完整v1执行/取消/版本合同仍未冻结；未来新入口继续维持严格字段、身份和边界回归。",
       "baseline_test_ids": [
         "FT-003"
       ],
@@ -215,7 +228,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮worker与新增API边界通过本地HTTP、E2E和Python回归。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留/api/v0联网读取/搜索与worker RPC；新增read_many.submit、job.results及batch任务get/control语义，MCP映射同一核心；probe/replay schema与状态显式区分结果、失败和未知执行。"
     },
     {
       "feature_id": "CONTRACT-02",
@@ -229,8 +244,8 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "C++固定v1.1模型/来源/搜索配置校验和规范化；可信限额/时钟；34原fixture与21附加原生测试；HTTP/CLI纯校验入口",
-      "candidate_increment": "运行来源contract身份绑定和执行准入接入现有原生source-manifest校验，不能以候选来源解析器替代三类合同。",
-      "remaining": "配置持久注册、跨配置身份、审核真实性、运行权限、完整v1执行和精确十进制兼容；保留原生纯校验。",
+      "candidate_increment": "保留原生三类纯校验；共享审核验证逻辑用于独立站点登记，普通API不得注入审核/可信时钟/清单身份或扩大配额。",
+      "remaining": "配置持久注册、跨配置身份、审核真实性、运行权限、完整v1执行和精确十进制兼容继续保留。",
       "baseline_test_ids": [
         "FT-083",
         "C-04",
@@ -248,7 +263,9 @@
           "S4"
         ]
       },
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "运行来源contract身份绑定和执行准入接入现有原生source-manifest校验，不能以候选来源解析器替代三类合同。"
     },
     {
       "feature_id": "SEC-01",
@@ -262,8 +279,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "离线能力白名单、loopback/Host/Origin/鉴权/请求大小与超时限制",
-      "candidate_increment": "worker连接/来源双重准入、逐跳目标复核、跨origin凭据剥离；生产proxy/remote DNS/CIDR放宽拒绝。",
-      "remaining": "系统级解析沙箱、浏览器出口与完整发布安全验收。",
+      "candidate_increment": "自动发现两端复核审核与站点SHA，固定BzsBot逐跳检查robots/原样URI/真实连接；XML DTD/实体拒绝，坏候选逐项过滤，失败不回退交互读取。",
+      "remaining": "系统级解析沙箱、浏览器出口和完整安全发布验收仍待后续。",
       "baseline_test_ids": [
         "FT-004",
         "B-19"
@@ -283,7 +300,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮来源、连接、跳转和跨origin凭据反例通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "worker连接/来源双重准入、逐跳目标复核、跨origin凭据剥离；生产proxy/remote DNS/CIDR放宽拒绝。"
     },
     {
       "feature_id": "STORE-01",
@@ -297,8 +316,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "SQLite原始内容/快照/提取/证据的不可变版本关系",
-      "candidate_increment": "schema4在已兼容两种历史schema2的schema3上增加批量任务、条目和预算账本；保留schema1/两种schema2/schema3迁移，以及不可变快照/索引/收据/状态与预算确认的事务提交。",
-      "remaining": "通用GC、容量与断电验收尚未闭合；任务账本升级不替代独立撤销日志与隔离恢复。",
+      "candidate_increment": "schema5在schema4上增加map队列、候选、robots缓存、请求跳与同源配额；保留schema1/两种schema2/schema3/4迁移、隔离拒绝和原快照/证据/任务/索引。",
+      "remaining": "全局保留上限已实现；通用GC、容量/断电与完整恢复验收未闭合，队列不能替代独立撤销日志。",
       "baseline_test_ids": [
         "FT-006",
         "C-15"
@@ -319,7 +338,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "schema3对schema1和两类schema2的迁移，以及引用、删除、隔离与当前保留/额度回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "schema4在已兼容两种历史schema2的schema3上增加批量任务、条目和预算账本；保留schema1/两种schema2/schema3迁移，以及不可变快照/索引/收据/状态与预算确认的事务提交。"
     },
     {
       "feature_id": "AUTH-01",
@@ -333,8 +354,8 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "令牌摘要、用户隔离、删除与auth_epoch撤销",
-      "candidate_increment": "保留令牌、owner隔离和删除/撤权发布屏障；批量任务及逐项结果继续校验owner、权限代数、租约和删除代数，删除后不重新发布旧快照收据。",
-      "remaining": "独立撤销日志/隔离恢复、多主体开放前的完整权限验收。",
+      "candidate_increment": "新增发现任务owner/授权代际和逻辑+重定向目标删除屏障；历史候选绑定原document_id/删除代际，规范化别名也不能复活已删数据。",
+      "remaining": "完整远程多客户端权限与授权恢复继续按原工作包验收。",
       "baseline_test_ids": [
         "FT-007",
         "B-15",
@@ -357,7 +378,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮删除/在途发布屏障、重导入和MCP令牌即时吊销回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留令牌、owner隔离和删除/撤权发布屏障；批量任务及逐项结果继续校验owner、权限代数、租约和删除代数，删除后不重新发布旧快照收据。"
     },
     {
       "feature_id": "OPS-00",
@@ -371,13 +394,15 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "请求ID/状态/时长日志、stats、尝试/内容/会话/备份硬限制",
-      "candidate_increment": "保留请求/来源状态日志和stats；批量任务区分已知用量、未决预留与未知结果保守计费；probe记录运行身份、计划状态、预算与未执行原因，不冒称与部署账本合并。",
-      "remaining": "指标与容量基线（S5 OPS-01）",
+      "candidate_increment": "新增发现候选/文档/过滤/partial与停止原因，区分known/reserved/unknown累计账本；全局任务/资源/候选/hop/robots保留上限。",
+      "remaining": "完整指标、容量基线、可回收审计GC与S5 OPS-01尚未闭合。",
       "baseline_test_ids": [
         "FT-079",
         "C-03"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留请求/来源状态日志和stats；批量任务区分已知用量、未决预留与未知结果保守计费；probe记录运行身份、计划状态、预算与未执行原因，不冒称与部署账本合并。"
     },
     {
       "feature_id": "QRY-01",
@@ -391,14 +416,16 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "AND/OR/NOT/短语/字段/精确符号，正向全局site/filetype子集",
-      "candidate_increment": "AND/OR/NOT/短语/字段/site/filetype；联网结果的 site: 在主机名上复核",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "完整硬条件与多语言分析（S3 QRY-03/04）",
       "baseline_test_ids": [
         "FT-013",
         "B-01",
         "C-05"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "AND/OR/NOT/短语/字段/site/filetype；联网结果的 site: 在主机名上复核"
     },
     {
       "feature_id": "QRY-02",
@@ -412,13 +439,15 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "C++、C#、std::expected及原文字面回归测试",
-      "candidate_increment": "精确字面遵守标识符边界（B7）；c++/c# 独立词元",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "代码语料专项（S7 CODE-01）",
       "baseline_test_ids": [
         "FT-014",
         "B-02"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "精确字面遵守标识符边界（B7）；c++/c# 独立词元"
     },
     {
       "feature_id": "SRC-02",
@@ -432,7 +461,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "保留冷却、Retry-After和共享执行间隔；probe在请求前持久预留、保存uncertain并在同次恢复时不自动重发completed/uncertain，限流/阻断优先于历史成功。429截断保留限流信号，API错误backoff与Retry-After取较长等待；quota_scope仅this_probe_run。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "真实部署适用配额/并发和全部原验收；probe尚未合并跨次日额度或searchd部署共享账本。",
       "baseline_test_ids": [
         "FT-010",
@@ -453,7 +482,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮Retry-After、共享执行间隔、排队冷却、禁用与缓存审核过期回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留冷却、Retry-After和共享执行间隔；probe在请求前持久预留、保存uncertain并在同次恢复时不自动重发completed/uncertain，限流/阻断优先于历史成功。429截断保留限流信号，API错误backoff与Retry-After取较长等待；quota_scope仅this_probe_run。"
     },
     {
       "feature_id": "SRC-03",
@@ -467,13 +498,15 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "保留site:复核与语言/市场参数；S0黄金选题严格匹配capability并按category轮转，无合格查询不回退到无关能力。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "完整native/emulated/unsupported条件翻译与硬过滤，不能静默丢弃条件。",
       "baseline_test_ids": [
         "FT-011",
         "B-04"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留site:复核与语言/市场参数；S0黄金选题严格匹配capability并按category轮转，无合格查询不回退到无关能力。"
     },
     {
       "feature_id": "SRC-04",
@@ -487,7 +520,7 @@
       "received_candidate_status": "implemented_unverified",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "13条来源登记已有解析器：必应、DuckDuckGo、百度、搜狗、360、Mojeek、维基百科中英、arXiv、Stack Overflow、HN、GitHub、Marginalia；4条后续候选继续登记。API解析区分合法空集合、结构错误和HTTP200应用错误，拒绝重复键与非标准常量；回放身份包含ADAPTERS注册表。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "13条已有解析器登记仍须真实可用性和来源审核；本批2次云端尝试均DNS失败，不能签真实通用网页源标准；17条登记继续禁用。",
       "baseline_test_ids": [
         "FT-012",
@@ -502,7 +535,9 @@
           "S1"
         ]
       },
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "13条来源登记已有解析器：必应、DuckDuckGo、百度、搜狗、360、Mojeek、维基百科中英、arXiv、Stack Overflow、HN、GitHub、Marginalia；4条后续候选继续登记。API解析区分合法空集合、结构错误和HTTP200应用错误，拒绝重复键与非标准常量；回放身份包含ADAPTERS注册表。"
     },
     {
       "feature_id": "SEARCH-01",
@@ -516,13 +551,15 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "多来源并发、每来源状态与耗时、部分结果、单源失败隔离",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "实际来源、多源预算/失败隔离与全部原验收；假网站不能代替S0。",
       "baseline_test_ids": [
         "FT-015",
         "C-13"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "多来源并发、每来源状态与耗时、部分结果、单源失败隔离"
     },
     {
       "feature_id": "SEARCH-03",
@@ -536,7 +573,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "URL 规范化（跟踪参数、www、尾斜杠、默认端口）、按索引族的加权 RRF",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "真实来源贡献核实、近重复和内容身份增强后续验收。",
       "baseline_test_ids": [
         "FT-016",
@@ -557,7 +594,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮保守索引族、去重和排名边界回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "URL 规范化（跟踪参数、www、尾斜杠、默认端口）、按索引族的加权 RRF"
     },
     {
       "feature_id": "SESSION-01",
@@ -571,7 +610,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "本地结果物化、稳定游标、TTL、跨用户拒绝与撤权失效",
-      "candidate_increment": "本地检索的冻结结果与稳定游标",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "保留本地冻结分页；联网结果会话/后续页、权限与完整游标范围未完成。",
       "baseline_test_ids": [
         "FT-017",
@@ -588,7 +627,9 @@
           "S2"
         ]
       },
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "本地检索的冻结结果与稳定游标"
     },
     {
       "feature_id": "READ-01",
@@ -602,7 +643,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "保留公网连接、编码/内容类型、逐跳检查和IRI规范化；本批为静态批量读取传递请求/响应体字节预算与协作取消，HTTP及软跳转计入尝试预算，未知响应保守计费。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "真实网页质量和完整错误状态验收。",
       "baseline_test_ids": [
         "FT-021",
@@ -612,7 +653,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮连接、跳转、凭据、内容上限、worker协议与缓存回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留公网连接、编码/内容类型、逐跳检查和IRI规范化；本批为静态批量读取传递请求/响应体字节预算与协作取消，HTTP及软跳转计入尝试预算，未知响应保守计费。"
     },
     {
       "feature_id": "READ-03",
@@ -626,7 +669,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "HTML主子树选择、隐藏祖先过滤、标题/链接/代码与基础表格；robots独立指令解析；bootstrap-html/2",
-      "candidate_increment": "trafilatura 提取 Markdown（表格、代码）、删除隐藏元素、元数据、链接、noindex",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "独立解析沙箱、复杂页面质量验收。",
       "baseline_test_ids": [
         "FT-023"
@@ -635,7 +678,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮历史HTML缺陷、隐藏/robots规则与worker提取回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "trafilatura 提取 Markdown（表格、代码）、删除隐藏元素、元数据、链接、noindex"
     },
     {
       "feature_id": "INDEX-01",
@@ -649,7 +694,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "FTS5 ASCII规范化候选副本与精确谓词一致；短语/中文/符号有界扫描；schema1到2原子索引迁移",
-      "candidate_increment": "bzs 分词器（中日韩逐字+二元组）、BM25（标题加权）、精确语义复核",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "完整多语言与相关性质量验收。",
       "baseline_test_ids": [
         "FT-030",
@@ -659,7 +704,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮中文/BM25与原字面语义合并回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "bzs 分词器（中日韩逐字+二元组）、BM25（标题加权）、精确语义复核"
     },
     {
       "feature_id": "INDEX-03",
@@ -673,7 +720,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "内容事务内新增更新删除同步到FTS，冻结结果撤销",
-      "candidate_increment": "保留增删改与FTS同事务、noindex和历史迁移；批量读取的快照、索引、收据、条目状态和预算确认共同提交，旧租约或已删除对象不得重新发布。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "向量/多节点同步后续实现及完整断电一致性验收。",
       "baseline_test_ids": [
         "FT-031",
@@ -684,7 +731,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮两支结构迁移、事务可见性和删除回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留增删改与FTS同事务、noindex和历史迁移；批量读取的快照、索引、收据、条目状态和预算确认共同提交，旧租约或已删除对象不得重新发布。"
     },
     {
       "feature_id": "EVID-01",
@@ -698,7 +747,7 @@
       "received_candidate_status": "implemented_basic",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "字节原文定位及不可变快照、引用保存读取",
-      "candidate_increment": "与查询相关的原文段落，精确字节区间（无模型）",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "完整片段质量基线与后续模型语义支持。",
       "baseline_test_ids": [
         "FT-047",
@@ -710,7 +759,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮查询相关片段、字节证据与UTF-8范围回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "与查询相关的原文段落，精确字节区间（无模型）"
     },
     {
       "feature_id": "EVID-02",
@@ -724,7 +775,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定快照按UTF-8字节读取、原文查找与上下文",
-      "candidate_increment": "精确查找带前后文、按字节窗口续读",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "复杂文档定位质量及PDF/DOM等统一定位后续实现。",
       "baseline_test_ids": [
         "FT-048"
@@ -733,7 +784,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮原文窗口、查找与权限回归通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "精确查找带前后文、按字节窗口续读"
     },
     {
       "feature_id": "CACHE-01",
@@ -747,14 +800,16 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "读取缓存 cache_first/refresh/cache_only 与 max_age；搜索结果短时缓存",
-      "remaining": "在途请求合并、HTTP 缓存语义",
+      "candidate_increment": "继承读取/搜索缓存；新增按owner/origin/清单身份隔离的持久robots记录，Age/Date/Expires及禁止复用指令只能缩短允许期限。",
+      "remaining": "通用在途合并和完整HTTP缓存语义未完成；robots条件请求/304更新未实现，陈旧允许记录不能回退使用。",
       "baseline_test_ids": [
         "FT-032",
         "B-24",
         "C-15"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "读取缓存 cache_first/refresh/cache_only 与 max_age；搜索结果短时缓存"
     },
     {
       "feature_id": "API-00",
@@ -768,8 +823,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "真实loopback HTTP和C++ CLI共享Service逻辑",
-      "candidate_increment": "保留已有MCP、HTTP、C++ CLI与纯配置校验；新增read_urls/get_job/job_results/control_job映射持久批量核心；bzs probe/replay CLI支持schema2证据和恢复/回放，未复制业务或权限规则。",
-      "remaining": "后续功能继续映射共用核心；完整v1协议/远程传输验收与完整启动器生命周期本批重跑尚未完成。",
+      "candidate_increment": "新增MCP list_sites/map_site，复用get_job/job_results/control_job；CLI/HTTP复用核心，launcher创建空sites并在两进程前拒绝额外参数覆盖，真实生命周期已验证。",
+      "remaining": "完整v1与远程传输、流式断线重取及后续跨协议功能仍需逐项验收。",
       "baseline_test_ids": [
         "FT-078",
         "C-01"
@@ -788,7 +843,9 @@
       "historical_verification_0_1_1": {
         "report": "validation/s1_review/test_report.json",
         "statement": "本轮保留contract.validate，HTTP/CLI/MCP路径与独立启动器生命周期验证通过。"
-      }
+      },
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留已有MCP、HTTP、C++ CLI与纯配置校验；新增read_urls/get_job/job_results/control_job映射持久批量核心；bzs probe/replay CLI支持schema2证据和恢复/回放，未复制业务或权限规则。"
     },
     {
       "feature_id": "JOB-01",
@@ -802,8 +859,8 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定页面任务持久化、幂等、暂停/取消、lease epoch、过期恢复和原子提交",
-      "candidate_increment": "保留fixture任务；新增显式URL批量任务持久化、幂等、owner/权限/删除屏障、租约、暂停/恢复/取消、逐项结果与显式retry_failed。派发前持久预留请求和字节预算，未知结果保守计费，已提交项不自动重发。",
-      "remaining": "完整任务故障/断电/跨节点和公平调度验收；robots/发现/递归爬虫、SESSION-02断线重取、独立撤销日志与恢复仍未闭合；外部HTTP不承诺exactly-once。",
+      "candidate_increment": "在fixture/read_many基础上增加web.map持久任务、每HTTP跳唯一租约、请求/字节预留及未知用量保守计费；同源配额/冷却、暂停/恢复/取消和删除/授权屏障。",
+      "remaining": "完整任务故障/断电/跨节点、公平调度、正文frontier、SESSION-02及独立撤销恢复仍待验收；HTTP不承诺exactly-once。",
       "baseline_test_ids": [
         "FT-005",
         "B-28",
@@ -811,7 +868,9 @@
         "C-13",
         "C-15"
       ],
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留fixture任务；新增显式URL批量任务持久化、幂等、owner/权限/删除屏障、租约、暂停/恢复/取消、逐项结果与显式retry_failed。派发前持久预留请求和字节预算，未知结果保守计费，已提交项不自动重发。"
     },
     {
       "feature_id": "BATCH-01",
@@ -825,12 +884,14 @@
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "read_many.submit持久读取调用方显式给出的1至20个URL；逐项失败隔离和结果分页，get/control/results复用核心，已提交项恢复后不重发，失败重试须显式授权且保留原预算/期限/尝试上限。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "完整FT-026及系统故障验收尚未签收；本批只含静态网页列表，不含文档批量能力、链接发现、robots准入或递归爬取。",
       "baseline_test_ids": [
         "FT-026"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "read_many.submit持久读取调用方显式给出的1至20个URL；逐项失败隔离和结果分页，get/control/results复用核心，已提交项恢复后不重发，失败重试须显式授权且保留原预算/期限/尝试上限。"
     },
     {
       "feature_id": "MAP-01",
@@ -838,18 +899,19 @@
       "name": "Sitemap/Feed/链接发现",
       "slice": "S2",
       "v11_phase": "M2",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "see_current_report",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "candidate_increment": "实现持久有界Sitemap/index、RSS2/RSS1、Atom、HTML/XHTML及owner历史发现；保存parent/source/depth/path_depth和未读候选，index/robots声明有界入队，URL并集及每path查询变体限制。",
+      "remaining": "完整FT-027尚未签收；不宣称全站覆盖，gzip归档不自动展开；候选不是正文抓取或公开索引，CRAWL-01/03仍独立未开始。",
       "baseline_test_ids": [
         "FT-027"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "ROBOTS-01",
@@ -857,19 +919,20 @@
       "name": "爬虫准入与robots前置策略",
       "slice": "S2",
       "v11_phase": "M1",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "see_current_report",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "candidate_increment": "实现独立站点审核、固定BzsBot/RFC9309参考的版本化策略、持久robots缓存、实际请求前双端复核、同源逐跳、预算/配额/冷却和不可达/过期拒绝。",
+      "remaining": "完整FT-081/C-02尚未签收；后续自动正文抓取必须接入同等前置，策略保守边界与未实现条件304更新明确保留。",
       "baseline_test_ids": [
         "FT-081",
         "C-02"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "CRAWL-01",
@@ -889,7 +952,8 @@
         "FT-028",
         "C-02"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "CRAWL-03",
@@ -910,7 +974,8 @@
         "B-23",
         "C-02"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "MODE-01",
@@ -929,7 +994,8 @@
       "baseline_test_ids": [
         "FT-019"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "BACKUP-00",
@@ -943,7 +1009,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "在线SQLite备份、隔离标记、失败临时文件清理和原子不覆盖发布",
-      "candidate_increment": "保留既有一致性备份与强制隔离，不提供绕过撤销连续性的恢复发布。",
+      "candidate_increment": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "remaining": "独立撤销日志、可信水位和安全隔离恢复；当前备份不能直接启动服务。",
       "baseline_test_ids": [
         "FT-080",
@@ -960,7 +1026,9 @@
           "S9"
         ]
       },
-      "baseline_0_1_1_status": "partial"
+      "baseline_0_1_1_status": "partial",
+      "baseline_0_1_2_status": "partial",
+      "historical_candidate_increment_0_1_2": "保留既有一致性备份与强制隔离，不提供绕过撤销连续性的恢复发布。"
     },
     {
       "feature_id": "SESSION-02",
@@ -990,7 +1058,8 @@
           "S5"
         ]
       },
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QA-02",
@@ -1005,12 +1074,13 @@
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
       "candidate_increment": "",
-      "remaining": "尚未实现人工qrels、nDCG@10/MRR评分runner、来源独有贡献、冻结阈值及留出评测；本批QA-01的黄金输入/回放底座仅提供前置材料，不能算QA-02已开工。",
+      "remaining": "尚未实现人工qrels、nDCG/MRR等评分runner、来源消融、冻结阈值和留出评测；0.1.2黄金冻结及0.1.3解析/HTTP fixture都只是前置，不能算本包已开工。",
       "baseline_test_ids": [
         "FT-042",
         "C-14"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "READ-02",
@@ -1031,7 +1101,8 @@
         "B-19",
         "C-09"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "DOC-01",
@@ -1052,7 +1123,8 @@
         "B-20",
         "C-09"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "READ-05",
@@ -1071,7 +1143,8 @@
       "baseline_test_ids": [
         "FT-024"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QRY-03",
@@ -1091,7 +1164,8 @@
         "FT-033",
         "B-03"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QRY-04",
@@ -1113,7 +1187,8 @@
         "B-05",
         "B-06"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "UI-01",
@@ -1133,7 +1208,8 @@
         "FT-020",
         "C-01"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "MODEL-01",
@@ -1155,7 +1231,8 @@
         "C-04",
         "C-06"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "MODEL-02",
@@ -1176,7 +1253,8 @@
         "B-26",
         "C-06"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SEARCH-02",
@@ -1196,7 +1274,8 @@
         "FT-045",
         "B-07"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "INDEX-02",
@@ -1226,7 +1305,8 @@
           "S4"
         ]
       },
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "EXTRACT-01",
@@ -1246,7 +1326,8 @@
         "FT-049",
         "B-27"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "ANSWER-01",
@@ -1266,7 +1347,8 @@
         "FT-050",
         "B-27"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "RESEARCH-01",
@@ -1286,7 +1368,8 @@
         "FT-051",
         "B-28"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SEARCH-04",
@@ -1306,7 +1389,8 @@
         "FT-052",
         "B-09"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "API-01",
@@ -1340,7 +1424,8 @@
           "S9"
         ]
       },
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "OPS-01",
@@ -1360,7 +1445,8 @@
         "FT-073",
         "C-03"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QRY-05",
@@ -1379,7 +1465,8 @@
       "baseline_test_ids": [
         "FT-035"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QRY-06",
@@ -1399,7 +1486,8 @@
         "FT-036",
         "B-17"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "RANK-01",
@@ -1420,7 +1508,8 @@
         "B-09",
         "B-10"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "RANK-02",
@@ -1441,7 +1530,8 @@
         "B-11",
         "C-07"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SEARCH-05",
@@ -1462,7 +1552,8 @@
         "B-06",
         "B-12"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "FACET-01",
@@ -1482,7 +1573,8 @@
         "FT-040",
         "B-16"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SRC-05",
@@ -1502,7 +1594,8 @@
         "FT-041",
         "B-18"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "CODE-01",
@@ -1522,7 +1615,8 @@
         "FT-056",
         "B-29"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SCHOLAR-01",
@@ -1542,7 +1636,8 @@
         "FT-057",
         "B-30"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "PRIVATE-01",
@@ -1562,7 +1657,8 @@
         "FT-058",
         "B-31"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "DATASET-01",
@@ -1581,7 +1677,8 @@
       "baseline_test_ids": [
         "FT-053"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "READ-04",
@@ -1600,7 +1697,8 @@
       "baseline_test_ids": [
         "FT-054"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "CRAWL-02",
@@ -1619,7 +1717,8 @@
       "baseline_test_ids": [
         "FT-055"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SRC-06",
@@ -1638,7 +1737,8 @@
       "baseline_test_ids": [
         "FT-059"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "DOC-02",
@@ -1658,7 +1758,8 @@
         "FT-060",
         "B-35"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "IMAGE-01",
@@ -1678,7 +1779,8 @@
         "FT-061",
         "B-33"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "IMAGE-02",
@@ -1698,7 +1800,8 @@
         "FT-062",
         "B-32"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "AV-01",
@@ -1718,7 +1821,8 @@
         "FT-063",
         "B-34"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "AV-02",
@@ -1738,7 +1842,8 @@
         "FT-064",
         "B-34"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "UPDATE-01",
@@ -1757,7 +1862,8 @@
       "baseline_test_ids": [
         "FT-065"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "WORKSPACE-01",
@@ -1776,7 +1882,8 @@
       "baseline_test_ids": [
         "FT-066"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "PREF-01",
@@ -1796,7 +1903,8 @@
         "FT-067",
         "B-17"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "WATCH-01",
@@ -1817,7 +1925,8 @@
         "B-36",
         "C-12"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "EXPORT-01",
@@ -1837,7 +1946,8 @@
         "FT-069",
         "B-37"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "WEBHOOK-01",
@@ -1858,7 +1968,8 @@
         "B-37",
         "C-12"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "UI-02",
@@ -1878,7 +1989,8 @@
         "FT-072",
         "B-40"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "OPS-02",
@@ -1908,7 +2020,8 @@
           "S9"
         ]
       },
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "SCALE-01",
@@ -1928,7 +2041,8 @@
         "FT-075",
         "B-39"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "QA-03",
@@ -1948,7 +2062,8 @@
         "FT-076",
         "B-40"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     },
     {
       "feature_id": "RELEASE-01",
@@ -1968,17 +2083,18 @@
         "FT-077",
         "B-40"
       ],
-      "baseline_0_1_1_status": "not_started"
+      "baseline_0_1_1_status": "not_started",
+      "baseline_0_1_2_status": "not_started"
     }
   ],
   "current_results": {
     "ctest": {
       "status": "passed",
-      "passed": 6,
-      "total": 6,
-      "elapsed_seconds": 18.75,
-      "log": "validation/s0_s2_progress/ctest.log",
-      "command": "validation/s0_s2_progress/ctest-command.json"
+      "passed": 8,
+      "total": 8,
+      "elapsed_seconds": 24.53,
+      "log": "validation/s2_discovery/ctest-final.log",
+      "command": "validation/s2_discovery/ctest-final-command.json"
     },
     "core": {
       "status": "passed",
@@ -1989,6 +2105,11 @@
       "status": "passed",
       "passed": 18,
       "assertions": 439
+    },
+    "map": {
+      "status": "passed",
+      "passed": 24,
+      "assertions": 462
     },
     "native_contracts": {
       "status": "passed",
@@ -2003,14 +2124,18 @@
       "status": "passed",
       "passed": 13
     },
+    "e2e_map": {
+      "status": "passed",
+      "passed": 9
+    },
     "python_worker": {
       "status": "passed",
-      "passed": 302
+      "passed": 541
     },
     "design_contract_reference": {
       "status": "passed",
       "passed": 34,
-      "log": "validation/s0_s2_progress/design-contracts.log"
+      "log": "validation/s2_discovery/design-contracts.log"
     },
     "sanitizers": {
       "status": "passed",
@@ -2020,63 +2145,58 @@
       "scope": [
         "core",
         "batch",
+        "map",
         "native_contracts"
       ],
       "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
       "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
-      "scope_note": "Three native test executables only; this does not claim sanitized HTTP/E2E/Python coverage."
+      "scope_note": "Four native executables only; ordinary HTTP/E2E/Python tests are not sanitizer instrumented."
     },
-    "live_search_source_requests": 2,
-    "live_search_http_responses": 0,
-    "live_search_request_count_semantics": "Source adapter attempts including DNS failures, not completed HTTP transactions; see source_availability.cloud_probe.",
-    "cloud_replay": {
-      "status": "passed",
-      "matched": 2,
-      "mismatches": 0,
-      "network_requests": 0,
-      "scope": "recorded_network_failure_metadata_only",
-      "http_response_parser_exercised": false,
-      "report": "validation/s0_s2_progress/cloud_replay/replay_report.json"
-    },
-    "model_calls": 0,
     "launcher": {
-      "status": "not_run",
-      "passed_commands": null,
-      "passed_assertions": null,
+      "status": "passed",
+      "passed_commands": 7,
+      "passed_assertions": 17,
+      "report": "validation/s2_discovery/launcher_smoke.json",
       "configured_sources": 17,
       "enabled_sources": 0,
-      "scope_note": "The complete launcher lifecycle was not rerun for 0.1.2; historical 7 commands/16 assertions are not current results. Probe/replay CLI paths are covered by current Python tests; native CLI/MCP paths are covered by current HTTP/E2E tests."
+      "configured_sites": 0,
+      "enabled_sites": 0,
+      "scope_note": "Real isolated Linux init/start/status/map.sites/capabilities/web.sources/stop and private worker health; loopback control requests only."
     },
     "planning_tool": {
       "status": "passed",
       "passed": 13,
-      "scope": "planning_tool_regression_only",
       "product_acceptance_cases_executed": 0,
-      "report": "validation/s0_s2_progress/plan_guard.json"
+      "log": "validation/s2_discovery/plan-guard-final.log"
     },
     "planning_check": {
       "status": "passed",
       "work_packages": 83,
       "acceptance_items": 161,
       "slices": 10,
-      "log": "validation/s0_s2_progress/plan-check.log"
+      "log": "validation/s2_discovery/planning-final.log"
     },
     "pip_check": {
       "status": "passed",
-      "evidence": "validation/s0_s2_progress/environment.json"
+      "log": "validation/s2_discovery/dependencies-final.log"
     },
-    "counting_note": "CTest suites, Python submodules, sanitizer reruns and planning checks overlap or have different scopes; do not sum them as completed product acceptance cases."
+    "live_search_source_requests": 0,
+    "live_site_discovery_requests": 0,
+    "model_calls": 0,
+    "historical_source_observation": "0.1.2 DNS failures remain in validation/s0_s2_progress/cloud_probe_summary.json; not rerun or counted as this increment.",
+    "counting_note": "CTest, Python modules, sanitizer reruns and planning checks overlap or have different scopes. Do not add them as product acceptance cases."
   },
-  "baseline_version": "0.1.1",
+  "baseline_version": "0.1.2",
   "planned_work_packages": 83,
   "s2_acceptance": "not_completed",
   "historical_review_records": [
-    "docs/handoff/CLAUDE_S1_REVIEW_20261018.md"
+    "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
+    "validation/s0_s2_progress/independent_review.json"
   ],
   "verification_binding": {
     "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
-    "report": "validation/s0_s2_progress/test_report.json",
-    "source_manifest": "validation/s0_s2_progress/source_manifest.json",
+    "report": "validation/s2_discovery/test_report.json",
+    "source_manifest": "validation/s2_discovery/source_manifest.json",
     "remote_ci": "Query GitHub Actions for the exact containing commit after publication. This immutable pre-publication report does not claim future CI results or embed a self-referential commit SHA.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
@@ -2101,7 +2221,17 @@
       "quota_scope": "this_probe_run",
       "report": "validation/s0_s2_progress/cloud_probe_summary.json",
       "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
-      "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment."
-    }
+      "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment.",
+      "historical_version": "0.1.2",
+      "executed_for_current_increment": false
+    },
+    "current_increment_real_source_attempts": 0
+  },
+  "site_discovery_availability": {
+    "default_registered_sites": 0,
+    "default_enabled_sites": 0,
+    "real_site_requests_for_current_increment": 0,
+    "synthetic_fixture_review_is_production_approval": false,
+    "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
   }
 }

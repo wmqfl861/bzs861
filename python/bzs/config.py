@@ -25,6 +25,7 @@ class Config:
     threads: int = 8
     searchd: str = ""
     sources: str = ""
+    sites: str = ""
     fixtures: str = ""
     state_dir: str = ""
     # Reserved settings: production currently rejects proxies and private-address allowances.
@@ -80,7 +81,10 @@ def init(force: bool = False) -> Path:
     sources = h / "sources.json"
     if not sources.exists():
         shutil.copyfile(REPO_ROOT / "config" / "sources.json", sources)
-    cfg = Config(searchd=default_searchd(), sources=str(sources), fixtures=str(REPO_ROOT / "tests" / "fixtures"),
+    sites = h / "sites.json"
+    if not sites.exists():
+        shutil.copyfile(REPO_ROOT / "config" / "sites.json", sites)
+    cfg = Config(searchd=default_searchd(), sources=str(sources), sites=str(sites), fixtures=str(REPO_ROOT / "tests" / "fixtures"),
                  state_dir=str(h / "state"))
     cfg_path.write_text(json.dumps(asdict(cfg), indent=2), encoding="utf-8")
     return cfg_path

@@ -307,8 +307,10 @@ Json Store::control_read_locked(const std::string& owner,const std::string& id,c
 }
 
 Json Store::job_results(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit) {
-  require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");
   std::lock_guard lock(mutex_);
+  auto kind=job_locked(owner,id).at("kind").str();
+  if(kind=="web.map")return map_results_locked(owner,id,offset,limit);
+  require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");
   auto job=read_job_locked(owner,id);
   Sql rows(db_,"SELECT position,url,state,attempts,external_requests,content_bytes,unknown_requests,unknown_bytes,usage_unknown,snapshot_id,receipt_json,error_code FROM read_job_items WHERE job_id=? AND position>=? ORDER BY position LIMIT ?");
   rows.bind(1,id);rows.bind(2,offset);rows.bind(3,limit);

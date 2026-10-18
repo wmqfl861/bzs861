@@ -37,4 +37,7 @@ namespace bzs {
   Json validate_contract(std::string_view kind, const Json& input,
                          std::int64_t validation_now_ms,
                          const ContractLimits& limits = {});
+  // Shared review syntax/time checks only. Callers separately bind the reviewed
+  // resource, allowed purpose, enabled state, and cache/redistribution policy.
+  void validate_access_review(const Json& review,bool require_approved,std::int64_t now_ms);
 }

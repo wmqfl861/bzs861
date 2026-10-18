@@ -89,6 +89,7 @@ def cmd_init(args) -> int:
     print(f"config: {path}")
     print(f"searchd binary: {cfg.searchd} ({'found' if Path(cfg.searchd).exists() else 'NOT FOUND - build it first'})")
     print(f"sources manifest: {cfg.sources} (edit to enable/disable sources)")
+    print(f"site discovery policy: {cfg.sites} (empty by default; requires a reviewed site)")
     return 0
 
 
@@ -96,18 +97,25 @@ def start(cfg: config.Config) -> None:
     h = config.home()
     if cfg.proxy or cfg.proxy_remote_dns or cfg.allow_cidrs:
         raise SystemExit("E_CONFIG: production proxies, proxy_remote_dns and allow_cidrs are disabled")
+    for argument in cfg.worker_args:
+        option = argument.split("=", 1)[0]
+        if option.startswith("--") and len(option) > 2 and "--sites".startswith(option):
+            # argparse accepts unambiguous long-option prefixes as well as '='.
+            # The launcher must select this policy once for both processes.
+            raise SystemExit("E_CONFIG: set sites in config.json; worker_args cannot override the shared site policy")
     if not Path(cfg.searchd).exists():
         raise SystemExit(f"searchd not found at {cfg.searchd}; build with `cmake --preset release && cmake --build --preset release`")
+    site_args = ["--sites", cfg.sites] if cfg.sites else []
     if _read_pid("worker") is None:
         _spawn("worker", [sys.executable, "-m", "bzs.worker.server", "--port", str(cfg.worker_port),
-                          "--token-file", str(h / "worker.token"), "--sources", cfg.sources, *cfg.worker_args])
+                          "--token-file", str(h / "worker.token"), "--sources", cfg.sources, *site_args, *cfg.worker_args])
     else:
         print("worker already running")
     if _read_pid("searchd") is None:
         _spawn("searchd", [cfg.searchd, "--auth", str(h / "auth.json"), "--state", cfg.state_dir,
                            "--fixtures", cfg.fixtures, "--port", str(cfg.core_port), "--threads", str(cfg.threads),
                            "--worker", f"http://127.0.0.1:{cfg.worker_port}", "--worker-token-file", str(h / "worker.token"),
-                           "--sources", cfg.sources])
+                           "--sources", cfg.sources, *site_args])
     else:
         print("searchd already running")
 

@@ -242,7 +242,7 @@ namespace {
 }
 int main(int argc, char**argv) {
   try {
-    std::filesystem::path state=".local/state", fixtures="tests/fixtures", authfile, sources_file, worker_token_file;
+    std::filesystem::path state=".local/state", fixtures="tests/fixtures", authfile, sources_file, sites_file, worker_token_file;
     std::string worker_url;
     unsigned short port=8610;
     unsigned threads=8;
@@ -251,7 +251,7 @@ int main(int argc, char**argv) {
       std::string a=argv[i];
       if(a=="--help") {
         std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
-                   "        [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
+                   "        [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE [--sites FILE]]\n"
                    "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n";
         return 0;
       }
@@ -271,6 +271,7 @@ int main(int argc, char**argv) {
       else if(a=="--worker")worker_url=v;
       else if(a=="--worker-token-file")worker_token_file=v;
       else if(a=="--sources")sources_file=v;
+      else if(a=="--sites")sites_file=v;
       else if(a=="--threads") {
         unsigned n=0;
         auto[p, e]=std::from_chars(v.data(), v.data()+v.size(), n);
@@ -305,7 +306,7 @@ int main(int argc, char**argv) {
       while(!token.empty()&&(token.back()=='\n'||token.back()=='\r'||token.back()==' '))token.pop_back();
       require(token.size()>=32, "E_ARGUMENT", "Worker token file must contain a token of at least 32 characters");
       rpc=std::make_unique<HttpWorker>(host, wport, token);
-      web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file));
+      web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file),sites_file.empty()?SiteRegistry{}:SiteRegistry::load(sites_file));
     }
     Service service(store, catalog, state/"backups", web.get());
     net::io_context io;

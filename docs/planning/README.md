@@ -1,6 +1,6 @@
 # 当前规划与证据口径
 
-更新：2026-10-18。已交付基线为 0.1.1 S1 review candidate；本批目标为 0.1.2 的 S0 证据与 S2 静态批量读取切片。S0/S1/S2 均未签署完整验收；计划不代表实现或验收。
+更新：2026-10-18。已交付基线为 0.1.2（434a9df）；本批目标为 0.1.3 的 S2 robots 准入与有界站点发现实现候选。ROBOTS-01 / MAP-01 仅部分实现，完整工作包签收数仍为 0；S0/S1/S2 均未签署完整验收。计划不代表实现或验收。
 
 | 文件 | 作用 |
 |---|---|
@@ -17,6 +17,8 @@
 
 在仓库根目录执行 `python3 docs/planning/tools/plan_v1_2.py check`（不带参数也执行只读校验）。当前 `slices_v1.2.json` 和蓝图是规划权威；调整时显式编辑并审查差异，工具不会重建、规范化或保存它们。校验覆盖 83 包/161 验收与原始清单的 ID 一致性、验收原文保留、切片/依赖无环、估算汇总及显式审查字段；通过只表示结构有效，不证明等效语义充分或产品已验收。可用 `check --plan <副本路径> --backlog <原清单路径>` 检查临时副本。
 
-本批 QA-01 / FT-008 补黄金冻结、确定性分层选题与回放产物；C-14 仍要求完整质量冻结过程，QA-02 / FT-042 的人工标签、指标、阈值和留出评测保持未完成。S2 的显式静态列表读取按 JOB-01 / BATCH-01 的依赖推进，不能当成 robots、发现或递归爬虫已交付。
+0.1.2 已补 QA-01 / FT-008 的黄金冻结、确定性分层选题与回放产物，以及 JOB-01 / BATCH-01 的显式静态列表读取。本批 0.1.3 接续 ROBOTS-01 / FT-081 与 MAP-01 / FT-027：站点审核登记默认空，核心持久调度和预算预留，Worker 每跳复核 robots 准入；有界解析 Sitemap/index、RSS、Atom、HTML，并按 owner 可见性补充历史候选。具体策略、限制和结果字段见 [站点发现](../SITE_DISCOVERY.md)。候选不因发现而获得正文或索引；Sitemap index 的后续发现文档也不等于正文递归 frontier。
 
-实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[本批交接](../handoff/S0_GOLDEN_20261018.md) 和 [本批测试报告](../../validation/s0_s2_progress/test_report.json)。[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。
+CRAWL-01 / FT-028 的正文递归调度、公平队列与陷阱处理，CRAWL-03 / FT-029、B-23、C-02 的公开索引和摘要发布规则，以及 QA-02 / FT-042 的人工标签、指标、阈值和留出评测仍未开始。C-14 的完整质量冻结过程继续保留；冻结查询和合成站点测试不能代替相关性验收或真实来源 S0。当前 17 个搜索来源仍禁用，没有预先批准的真实发现站点。
+
+实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_discovery/test_report.json)。[0.1.2 S0/静态批量读取交接](../handoff/S0_GOLDEN_20261018.md) 与 [0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。

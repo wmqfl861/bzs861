@@ -1,64 +1,50 @@
-# 开发进度：0.1.2 S0/S2 development candidate
+# 开发进度：0.1.3 S2 discovery development candidate
 
-更新：2026-10-18。本批从已交付 0.1.1 的 `426c431` 接续，补 S0 黄金查询与可审计探测证据，以及 S2 显式静态列表读取的实现候选。`426c431` 是输入基线，不是后续发布 HEAD；最终源码、命令与结果以 [本批报告](../validation/s0_s2_progress/test_report.json) 为准。原 main 与 Claude S1 的来源关系继续保留在 [0.1.1 接收审查](handoff/CLAUDE_S1_REVIEW_20261018.md)。
+更新：2026-10-18。本批从已交付 0.1.2 的 `434a9dfa8ce26b86bf765c9d863c8607c3dabae0` 接续，推进 **ROBOTS-01 的实际请求准入与 MAP-01 的持久有界发现**。保留 0.1.2 的黄金查询、探测/回放及静态批量读取。输入基线不是后续发布 HEAD；本批源码、命令、测试和限制统一见 [本批报告](../validation/s2_discovery/test_report.json)。
 
-## 状态口径
+## 状态口径与规划
 
-v1.2 采用 C++ 核心 + Python worker、stdio MCP 优先、单用户先行。**83 个工作包、161 项验收 ID 全部保留，完整工作包验收签署仍为 0，S0、S1、S2 均未完成。** 原包的 `implemented` 仅表示其作者所称的 S1 子范围，不等于整包验收。
+v1.2 的 C++ 核心、Python Worker、stdio MCP 优先与单用户先行安排继续生效。**83 个工作包、161 项验收 ID 全部保留；32 项部分实现、51 项未开始、0 项完整签收。S0、S1、S2 均未签署完成。** 本批只把 ROBOTS-01 / MAP-01 从未开始推进为部分实现，测试数量不折算为工作包完成度。
 
-[机器可读状态](implementation_status.json) 记录 **30 项部分实现、53 项未开始、0 项完整签收**；本批仅将 BATCH-01 从未开始推进为部分实现，最终计数由逐包状态复核，不把新增测试折算成产品完成度。QA-02 和 SESSION-02 仍未开始。[切片计划](planning/slices_v1.2.json) 保留 161 项验收映射和等效语义。开始 S2 的可独立实测前置，不表示 S0 或 S1 的门槛已经通过。
+[蓝图](planning/development_blueprint_v1.2.md)、[切片计划](planning/slices_v1.2.json)、[规划说明](planning/README.md)、[机器可读状态](implementation_status.json) 与当前交接入口已同步到 0.1.3。原依赖、估算来源、验收原文和未签收属性保留；418–720 人日仍是待重估的历史规划数，不能用来承诺剩余时间。
 
-## 保留基础与本轮增量
+## 本批实现
 
-下表同时列出已保留基础与本批候选；已有基础在 0.1.1 的验证不替代本批重新运行，当前结果统一见新的源码绑定报告。
-
-| 范围 | 整合内容 | 尚未闭合 |
+| 范围 | 本批增加的实际行为 | 保留的验收边界 |
 |---|---|---|
-| CONTRACT-01 / CONTRACT-02 | 三类原生配置合同、继承/限额、HTTP/CLI 校验与 `applied=false`；并入 worker/web API | 配置注册、跨配置身份、精确十进制兼容、完整 v1 执行 |
-| QRY-01 / QRY-02 / INDEX-01 | 保留字面、引号与词边界回归；并入中文 tokenizer、BM25、高亮 | 完整多语言和相关性验收 |
-| STORE-01 / INDEX-03 | 不可变快照、证据、事务索引；并入抓取元数据和版本保留 | 通用 GC 与完整存储验收 |
-| AUTH-01 / SESSION-01 | owner 隔离、权限复核、冻结分页；按文档删除减少无关失效 | 联网结果完整会话化 |
-| SRC-01–04 / SEARCH-01 / SEARCH-03 | 来源适配、调度/冷却、去重和索引族融合；增加绑定输入的候选探测与离线回放 | 17 条来源登记默认禁用；真实审核、用户部署环境 S0、完整条件协商和共享配额 |
-| SEC-01 / READ-01 / READ-03 / CACHE-01 | worker 连接层检查、逐跳重定向、提取和缓存模式 | 系统级解析沙箱和浏览器出口 |
-| EVID-01 / EVID-02 | 原文片段、字节区间、查找与续读 | 质量基线、复杂文档定位和语义支持 |
-| API-00 / OPS-00 | 共用核心的 HTTP/CLI/MCP、启动器、状态和日志 | S5 的 TLS、客户端限流和审计 |
-| QA-01 | 原 40 条黄金查询新增冻结 manifest、明确 split、严格加载和确定性选题 | QA-02 仍未开始；人工相关性标签、nDCG@10/MRR、阈值与留出评测待开发，没有质量验收成绩 |
-| JOB-01 / BATCH-01 | 保留 fixture 任务；新增最多 20 个显式 URL 的持久读取候选、逐项结果和预算账本 | 完整任务/批量验收、发现/robots/递归爬取、会话断线重取和系统故障验收 |
-| BACKUP-00 | 保留隔离备份和不可信恢复状态 | 独立撤销日志、安全恢复、断电和连续性验收 |
+| ROBOTS-01 | 固定 BzsBot 策略；有效 robots 前置、持久缓存、每跳准入、过期/不可达/限流拒绝；Worker 在真正发送前复核 | 本项目版本化策略，包含明确的保守限制；未来自动正文抓取入口必须继续接入，没有完整搜索引擎扩展兼容或 304 更新实现 |
+| MAP-01 | Sitemap/index、RSS 2/1、Atom、HTML/XHTML、owner 历史候选；保存 parent/source/depth/path_depth；只有 index/robots 声明可递归发现文档 | 候选标记 `body_read=false`，不会生成本次正文快照或索引；不宣称全站覆盖，`.gz` 归档不自动展开 |
+| JOB-01 / STORE-01 | schema 5 持久队列、逐跳租约、先预留再请求、未知用量保守计费、同源配额与冷却；恢复不重发已完成/未知跳 | 跨节点、公平调度、断电与完整恢复验收未完成；HTTP 不承诺 exactly-once |
+| SEC-01 / AUTH-01 | 独立空站点登记、精确文件哈希、审核有效期、固定 origin/path；逻辑与重定向目标删除屏障、历史原文档 ID/代际绑定 | 不新增真实批准站点；系统级解析沙箱、独立撤销日志和安全恢复仍待后续 |
+| API-00 / OPS-00 | `map.sites` / `map.submit`；复用 `job.get/results/control`；MCP `list_sites` / `map_site`；启动器两端同文件并拒绝额外参数覆盖 | 完整 v1 执行合同、远程 MCP、流式事件与断线重取仍独立验收 |
+| QA-01 / CORE-01 | 受控站点的真实进程 HTTP/CLI/MCP、请求计数、重启与缓存场景；新增原生 map 套件及对应 Windows 和 sanitizer 门槛 | 合成站点不产生 S0 真实来源结论或 QA-02 人工相关性成绩 |
 
-## 本批证据与边界
+`map.submit` 与 `read_many.submit` 分别表示有界发现和显式 URL 正文读取。map 的 HTML/feed/urlset 链接只作为候选，不自行转入读取。部署 `sites.json` 默认为空，与 17 条默认禁用的搜索来源清单分别审核。接口、硬上限、robots 缓存及 URI 策略见 [SITE_DISCOVERY](SITE_DISCOVERY.md) 和 [API](API.md)。
 
-黄金集保持原 40 个 ID、查询文字、分类、语言和适用能力，新增 **20 development / 15 regression / 5 holdout**。manifest 固定输入与原内容指纹；默认按 capability 和 category 分层，不选 h* 留出，无匹配不回退。它补 QA-01 / FT-008 与 C-14 的冻结前置；不代替 QA-02 / FT-042 的人工判断和质量门槛。具体文件和哈希见 [本批交接](handoff/S0_GOLDEN_20261018.md)。
+## 复核中修复的问题
 
-探测 schema 2 绑定清单、查询、黄金 manifest、解析器代码及依赖，保留逐次预留、结果和不确定状态；恢复不自动重发 completed/uncertain 项。离线回放只解析已保存证据，默认拒绝解析器身份变化，无样本不算通过。探测预算只属于同一次 probe，不与 searchd 部署账本合并。使用方法见 [S0_PROBE](S0_PROBE.md)。
+本批实现作者与跨模块复核分工记录在 [independent_review.json](../validation/s2_discovery/independent_review.json)。修复包括：客户端重写百分号编码使 robots 判定目标与实际请求不同；坏链接导致整份有效发现文档失败；重定向当前目标遗漏删除检查；历史 URL 规范化丢失原文档删除关联；缓存忽略响应年龄或显式过期；跨进程回执字段不一致丢失明确拒绝原因；启动器额外参数覆盖站点文件。
 
-本批对 Marginalia 与 Wikipedia 英文入口各执行了 1 次有限云端请求，两次均为 DNS 解析失败，收到的 HTTP 响应、正文和结果均为 0；首次失败后，各来源剩余 1 题未发送。实际环境、完整错误元数据及离线状态回放见 [cloud_probe_summary.json](../validation/s0_s2_progress/cloud_probe_summary.json)。这不能判断上游服务在用户机器是否可达，也不自动批准条款、免费入口或自动化访问；17 条默认来源仍禁用。
+这些是有明确范围的代码交叉复核和回归，尚不是外部人工或全产品独立安全签收。已知非阻塞诊断限制也单独保留：重复提交退休的内部 attempt 时，原错误可能被核心归类为协议错误；历史用量仍收费、不会发布候选，当前核心不自动执行这种重放。
 
-`read_many.submit` 只读取调用方显式给出的 1–20 个 URL；`job.get`、`job.results`、`job.control` 复用核心的 owner、租约、权限和预算边界。没有链接发现或递归扩张。接口、保守未知用量计费、显式失败重试和删除后的收据行为见 [API](API.md)；这些实现候选不能替代 ROBOTS-01、MAP-01、CRAWL-01/03 或完整 S2 验收。
+## 当前验证
 
-## S1 完成标准
+当前命令、退出码、源码清单和环境均保存在独立的 [validation/s2_discovery](../validation/s2_discovery/README.md)。最终 8 套 CTest、四套原生 ASan/UBSan/泄漏检查、设计合同参考、规划防回退校验、依赖检查和实际启动器生命周期分别报告，不与原 161 项产品验收混合计数。最终数值以 [test_report.json](../validation/s2_discovery/test_report.json) 为准。
 
-| 标准 | 当前状态 |
-|---|---|
-| 至少 2 个真实可用来源，含经 S0 核验的通用网页源；合并去重、单源失败隔离 | **未验收。** 默认清单尚无已审核来源，假网站及有限云端样本不能替代完整 S0 和来源审核 |
-| 公开网页读取、连接层限制、正文/快照和三种新鲜度模式 | 0.1.1 离线假网站链路已有验证；本批重跑见报告，真实网站兼容性待 S0 |
-| 中文索引、BM25、查询相关且字节可校验的片段 | 0.1.1 已有回归；本批重跑见报告，完整相关性质量基线未签收 |
-| `find_in_page` / `read_range` | 保留核心与端到端范围/证据回归，本批执行结果见报告 |
-| 历史与 S1 缺陷修复、自动化和 ASan/UBSan | 0.1.1 历史回归保留；本批结果以新的源码绑定报告为准，不沿用旧计数 |
-| 启动器、MCP 配置 | stdio 与本机带令牌 HTTP 的端到端回归通过；新增任务工具及 probe/replay CLI 已实测，独立启动器完整生命周期本次未重跑 |
+本机假站点链路覆盖：发现文档格式、候选不读正文、Sitemap 循环去重、robots 拒绝/不可达/429、越界与私有地址重定向、持久缓存和幂等任务重启、历史删除及别名删除、XML 外部实体拒绝、真正的 CLI/MCP 调用、两个进程审核文件不一致时零外部请求。Worker 另以真实回环响应检验编码原样发送、已过期缓存导致零内容请求、单跳限额、取消和退役请求用量。
 
-## 数据与权限
+Linux/Windows CI 必须检查最终提交对应的 [Actions](https://github.com/wmqfl861/bzs861/actions)。Windows 当前保留并扩充的是原生 core/batch/map/contracts 与 HTTP/CLI 阻塞门槛；完整 Python Worker 的 Windows 安装包仍属于 S9。
 
-0.0.2 与原 Claude S1 都使用 schema 2，但结构不同；0.1.1 的 schema 3 识别两种来源并消除版本碰撞。本批 schema 4 在其上增加批量任务账本，继续保留 schema 1、两种 schema 2 和 schema 3 的迁移路径。不能直接把原 S1 二进制用于当前数据库。必须保留原始内容、快照/证据引用、删除状态、冻结会话边界和备份隔离；迁移结果由本批源码与报告确认。
+## 数据迁移与权限
 
-更新解析器不会自动清洗旧 HTML。按文档删除可以减少无关任务失效，但真实撤权和删除对象的发布屏障继续有效。没有可验证的撤销连续性，不允许把历史备份恢复为可服务状态。
+schema 5 在 0.1.2 schema 4 上增加 map 任务、资源、候选、HTTP 跳账本、robots 缓存与同源请求状态。schema 1、两种不同来源的 schema 2、schema 3 和 schema 4 的兼容路径继续保留。隔离状态先于新表迁移检查；快照、证据、索引、删除和原任务不因新队列丢失。禁止用原 Claude S1 二进制盲开当前数据库。
 
-## 验证与历史
+权限、租约和删除屏障覆盖每次候选发布，历史 URL 的大小写、默认端口或 fragment 规范化不能切断原文档删除身份。已交付到外部的结果无法收回。更新解析器不自动清洗旧内容；没有最新撤销连续性的历史备份仍不得恢复为可服务状态。
 
-C++、合同、HTTP/CLI、Python、假网站端到端、sanitizer 与依赖结果集中于 [本批报告](../validation/s0_s2_progress/test_report.json)，包含源码绑定、环境、命令、退出码和未执行项。本批本地 6 套 CTest 全部通过：81 核心、18 批量、55 合同、20 HTTP/CLI、13 E2E 和 302 Python；三套原生可执行文件的 ASan/UBSan/泄漏检查通过。设计合同参考 34 项与规划工具回归 13 项通过，不能与交叉覆盖的测试相加后替代产品验收。Linux/Windows CI 核对对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions)，工作流存在不等于通过。
+## 历史证据与未完成项
 
-[0.1.1 报告](../validation/s1_review/test_report.json) 的 81 项核心 / 55 项合同 / 20 项 HTTP / 12 项 E2E / 122 项 Python 及两套原生 sanitizer 是该版本的历史成绩。0.0.1 原报告、0.0.2 `validation/takeover/`、Claude 的 `validation/s1_test_report.json` 也保留为不同输入的历史。原 Claude S1 的复现实测仍绑定原 bundle，不自动成为当前版本成绩。完整 161 项验收、真实来源 S0、全产品独立安全发布审核、长时压力和断电验收尚未完成。
+0.1.2 的 [报告](../validation/s0_s2_progress/test_report.json)、40 条冻结黄金输入、probe schema 2 和离线 replay 保留不变。其云端记录只有 Marginalia 与 Wikipedia 英文各 1 次 DNS 失败，0 HTTP 响应；本批没有重复真实来源探测，也没有真实站点发现请求。该观察不能判断用户部署环境可用性或批准来源。0.1.1 的 [接收审查](handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [报告](../validation/s1_review/test_report.json) 继续作为历史。
 
-## 下一批
+S0 仍需目标部署环境的真实证据和独立来源审核；S1 至少两个可用来源、相关性及全部标准仍待逐项验收。CRAWL-01 的正文 frontier、公平调度与 trap 处理，CRAWL-03 的 noindex/nosnippet/data-nosnippet/X-Robots-Tag、声明刷新及公开索引移除，QA-02 的人工 qrels/评分/冻结阈值/留出评测，SESSION-02 的断线重取和 BACKUP-00 的独立撤销/隔离恢复都不能由本批发现通道代替。
 
-先核对本批最终源码绑定和对应 CI，保留 Windows 门槛；用冻结查询和真实保存样本完成用户部署环境的 S0，另完成来源审核与运行准入，再逐项评估全部 S1 标准。S2 继续 robots 前置、发现与爬取、人工质量基线、会话重取和隔离恢复。模型、文档、多媒体、私人资料、订阅等全部保留；替换机制必须通过等效验收。
+下一批按 [NEXT_AGENT](handoff/NEXT_AGENT.md) 接续，保留全部模型、文档、多媒体、私人资料、订阅和 Windows 交付范围。
