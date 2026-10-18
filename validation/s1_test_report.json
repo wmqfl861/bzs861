@@ -1,0 +1,58 @@
+{
+  "version": "0.1.0",
+  "slice": "S1",
+  "recorded_at": "2026-10-17T16:47:13+00:00",
+  "commit_base": "8f7791f",
+  "environment": {
+    "os": "Linux-6.18.44-fc-v139-x86_64-with-glibc2.39",
+    "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "cmake": "cmake version 3.28.3",
+    "sqlite": "3.45.1",
+    "python": "3.13.16",
+    "python_packages": {
+      "aiohttp": "3.14.5",
+      "lxml": "6.1.3",
+      "trafilatura": "2.3.1",
+      "mcp": "2.2.0",
+      "pytest": "9.1.1"
+    }
+  },
+  "results": {
+    "cpp_core_unit": {
+      "tests": 62,
+      "passed": 62,
+      "assertions": 307
+    },
+    "http_cli_integration": {
+      "tests": 16,
+      "passed": 16
+    },
+    "e2e_web": {
+      "tests": 11,
+      "passed": 11,
+      "scope": "fake web on 127.0.0.1 -> bzs-worker -> searchd -> HTTP API, MCP stdio and token-protected MCP HTTP"
+    },
+    "python_worker_pytest": {
+      "tests": 64,
+      "passed": 64
+    },
+    "asan_ubsan": {
+      "core_unit": "62/62",
+      "http_cli": "16/16",
+      "e2e_web": "11/11 (ASan searchd)",
+      "leaks": "none reported at exit"
+    },
+    "clean_venv_install": "pip install -e python[test] with mcp 2.3.0: pytest 64/64, e2e 11/11",
+    "design_contracts_python": {
+      "cases": 34,
+      "passed": 34
+    }
+  },
+  "not_executed": [
+    "live search sources (development environment cannot reach search engines; S0 runs on the user's machine)",
+    "Windows build/tests",
+    "GitHub Actions",
+    "long-running load / power-loss tests"
+  ],
+  "proxy_path_check": "aiohttp CONNECT through the environment's HTTPS proxy reached the proxy and received its policy response; search hosts are refused by that proxy's policy"
+}

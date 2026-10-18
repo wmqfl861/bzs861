@@ -1,4 +1,6 @@
 #include "bzs/service.hpp"
+#include "bzs/highlight.hpp"
+#include "bzs/tokenizer.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
@@ -64,6 +66,7 @@ namespace {
     auto rc=sqlite3_open_v2(path.string().c_str(), &raw, SQLITE_OPEN_READWRITE, nullptr);
     SqliteHandle db(raw, sqlite3_close);
     CHECK(rc==SQLITE_OK);
+    register_fts_tokenizer(raw);
     return db;
   }
   void database_exec(const std::filesystem::path&path, const char*sql) {
@@ -78,18 +81,80 @@ namespace {
     CHECK(sqlite3_step(stmt.get())==SQLITE_ROW);
     return sqlite3_column_int64(stmt.get(), 0);
   }
-  void restore_schema_one_index(const std::filesystem::path&path) {
-    // Reproduce the shipped v1 schema/index without using the new projection.
-    database_exec(path, R"SQL(
-      BEGIN IMMEDIATE;
-      DROP TABLE content_fts;
-      CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize='unicode61');
-      INSERT INTO content_fts(document_id,owner,title,body)
-        SELECT d.id,d.owner,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot
-        WHERE d.deleted=0 AND s.index_allowed=1;
-      PRAGMA user_version=1;
-      COMMIT;
-    )SQL");
+  void restore_legacy_schema(const std::filesystem::path& path,int version,bool claude_s1=false) {
+    auto db=open_database(path);
+    auto exec=[&](const std::string& sql) {
+      CHECK(sqlite3_exec(db.get(),sql.c_str(),nullptr,nullptr,nullptr)==SQLITE_OK);
+    };
+    exec("BEGIN IMMEDIATE;");
+    exec("DROP TABLE content_fts; ALTER TABLE documents DROP COLUMN delete_generation;"
+         "ALTER TABLE jobs DROP COLUMN created_delete_sequence;"
+         "DELETE FROM settings WHERE key IN ('deletion_sequence','fts_tokenizer_version');");
+    if(!claude_s1) {
+      exec("ALTER TABLE documents DROP COLUMN deleted_at; ALTER TABLE snapshots DROP COLUMN meta_json;"
+           "ALTER TABLE snapshots DROP COLUMN source_kind; DROP TABLE usage; DROP TABLE source_state;"
+           "DROP INDEX evidence_snapshot; DROP INDEX session_rows_snapshot;");
+    }
+    if(claude_s1)exec("CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize='bzs');");
+    else if(version==2)exec("CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize=\"unicode61 remove_diacritics 0 tokenchars '_'\");");
+    else exec("CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize='unicode61');");
+    sqlite3_stmt* rows=nullptr;
+    sqlite3_stmt* insert=nullptr;
+    CHECK(sqlite3_prepare_v2(db.get(),"SELECT d.id,d.owner,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.deleted=0 AND s.index_allowed=1",-1,&rows,nullptr)==SQLITE_OK);
+    CHECK(sqlite3_prepare_v2(db.get(),"INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)",-1,&insert,nullptr)==SQLITE_OK);
+    int rc=SQLITE_OK;
+    while((rc=sqlite3_step(rows))==SQLITE_ROW) {
+      for(int i=0;i<4;++i) {
+        auto raw=reinterpret_cast<const char*>(sqlite3_column_text(rows,i));
+        auto value=std::string(raw,static_cast<std::size_t>(sqlite3_column_bytes(rows,i)));
+        if(!claude_s1&&version==2&&i>=2)value=fts_index_text(value);
+        CHECK(sqlite3_bind_text(insert,i+1,value.data(),static_cast<int>(value.size()),SQLITE_TRANSIENT)==SQLITE_OK);
+      }
+      CHECK(sqlite3_step(insert)==SQLITE_DONE);
+      CHECK(sqlite3_reset(insert)==SQLITE_OK);
+    }
+    CHECK(rc==SQLITE_DONE);
+    sqlite3_finalize(insert);
+    sqlite3_finalize(rows);
+    exec("PRAGMA user_version="+std::to_string(version)+"; COMMIT;");
+  }
+  void restore_schema_one_index(const std::filesystem::path& path) { restore_legacy_schema(path,1); }
+  Json reviewed_sources(Json manifest) {
+    auto sources=manifest.at("sources");
+    for(std::size_t i=0;i<sources.size();++i) {
+      auto source=sources.at(i);
+      auto id=source.at("id").str();
+      if(!source.has("min_interval_ms"))source.set("min_interval_ms",static_cast<std::int64_t>(0));
+      if(!source.has("daily_cap"))source.set("daily_cap",static_cast<std::int64_t>(500));
+      Json params=source.has("params")?source.at("params"):Json::object();
+      params.set("adapter","offline_fixture");
+      params.set("base_url","https://example.com/search");
+      source.set("params",params);
+      Json contract=Json::object();
+      contract.set("id",id);
+      contract.set("provider_id",source.at("provider"));
+      contract.set("index_family",source.at("index_family"));
+      contract.set("adapter_id","offline_fixture");
+      contract.set("endpoint","https://example.com/search");
+      auto capability=source.at("capability").str();
+      if(capability=="encyclopedia")capability="web";
+      else if(capability=="papers")capability="scholar";
+      contract.set("capability",capability);
+      contract.set("enabled",source.has("enabled")&&source.at("enabled").flag());
+      contract.set("logical_service_id",id);
+      contract.set("review",Json::parse(R"({"status":"approved","payment_scheme":"no_payment","automated_access":"approved",
+        "checked_at":"1970-01-01T00:00:00Z","expires_at":"2999-01-01T00:00:00Z","terms_url":"https://example.com/terms",
+        "cache_policy":"allowed_with_limits","redistribution_policy":"links_only","approved_by":"offline-fixture"})"));
+      Json limits=Json::object();
+      limits.set("max_concurrency",static_cast<std::int64_t>(1));
+      limits.set("min_interval_ms",source.at("min_interval_ms"));
+      limits.set("shared_budget_key",id);
+      limits.set("request_quota",source.at("daily_cap"));
+      limits.set("quota_window_seconds",static_cast<std::int64_t>(86400));
+      contract.set("limits",limits);
+      source.set("contract",contract);
+    }
+    return manifest;
   }
   TEST(json_roundtrip) {
     auto a=Json::parse(R"({"b":2,"a":"中文😀","n":null,"f":false})");
@@ -181,17 +246,19 @@ namespace {
   TEST(metadata_urls) {
     CHECK(metadata_host("https://Docs.Example/path")=="docs.example");
     for(auto s: {
-      "file:///etc/passwd", "https://user:pass@example.com/", "https://example.com\\evil", "https://example..com/", "https://example.com:80/"
+      "file:///etc/passwd", "https://user:pass@example.com/", "https://example.com\\evil", "https://example..com/",
+      "https://example.com:0/", "https://example.com:99999/", "https://example.com:ab/", "https://[::1]/"
     })rejects([&] {
       metadata_host(s);
     }, "E_URL");
+    CHECK(metadata_host("https://example.com:8443/x")=="example.com");
   }
   TEST(query_symbols) {
     auto x=q("std::expected C++");
     CHECK(x.root.children.at(0).value=="std::expected");
     CHECK(matches(x, "", "use std::expected in C++", "", "", ""));
     CHECK(!matches(x, "", "use std::expected in C#", "", "", ""));
-    CHECK(!fts_candidates(x));
+    CHECK(!fts_candidates(x).has_value());
   }
   TEST(query_boolean) {
     auto x=q("alpha OR beta gamma");
@@ -255,7 +322,7 @@ namespace {
   }
   TEST(query_chinese) {
     auto x=q("搜索");
-    CHECK(!fts_candidates(x));
+    CHECK(fts_candidates(x).has_value());
     CHECK(matches(x, "", "中文搜索工具", "", "", ""));
   }
   TEST(query_flat_conjunction) {
@@ -283,7 +350,7 @@ namespace {
     auto p=parse_document("<body><aside>before-noise</aside><main>only-main<a href='/inside'>link</a></main><aside><a href='/outside'>after-noise</a></aside></body>", "text/html");
     CHECK(p.text=="only-mainlink");
     CHECK(p.links.size()==1&&p.links.at(0).str()=="/inside");
-    CHECK(p.parser_version=="bootstrap-html/2");
+    CHECK(p.parser_version=="bootstrap-html/3");
   }
   TEST(html_hidden_ancestors) {
     for(const auto&wrapper:std::vector<std::pair<std::string,std::string>> {
@@ -351,7 +418,7 @@ namespace {
     s.ingest("alice", text("https://x.example/b", "C# indexing"));
     auto a=s.search("alice", q("indexing"));
     CHECK(a.at("frozen_count").num()==2);
-    CHECK(a.at("retrieval").str()=="fts5_candidates_verified");
+    CHECK(a.at("retrieval").str()=="fts5_bm25_verified");
     CHECK(s.search("alice", q("C++")).at("frozen_count").num()==1);
     CHECK(s.search("alice", q("搜索")).at("frozen_count").num()==1);
   }
@@ -359,12 +426,12 @@ namespace {
     Temp t;
     Store s(t.path/"db");
     std::vector<SourceDocument> docs;
-    for(auto body: {"apple", "test中文", "中文test", "test\u0301x", "testé", "_", "foo_bar", "test_test"}) {
+    for(auto body: {"apple", "test中文", "中文test", "test\u0301x", "testé", "_", "foo_bar", "test_test", "café中", "prefix😀suffix", "ABC搜索引擎def", "alpha𠀀ending", "中文\u0301x", "한글검색", "検索エンジン"}) {
       docs.push_back(text("https://x.example/"+std::to_string(docs.size()), body, "neutral"));
     }
     docs.push_back(text("https://x.example/title", "body", "label\u0301suffix"));
     for(const auto&doc:docs)s.ingest("alice", doc);
-    for(auto expression: {"\"app\"", "test", "_", "foo_bar", "test_test", "intitle:label", "\"_\"", "test OR foo_bar"}) {
+    for(auto expression: {"\"app\"", "test", "_", "foo_bar", "test_test", "intitle:label", "\"_\"", "test OR foo_bar", "café", "fé", "😀", "中", "中文", "搜索引擎", "ABC搜索", "한글", "検索", "test OR \"app\"", "test AND \"test\""}) {
       auto query=q(expression);
       std::int64_t expected=0;
       for(const auto&doc:docs)if(matches(query, doc.title, doc.raw, doc.url, "x.example", doc.content_type))++expected;
@@ -374,10 +441,10 @@ namespace {
     }
     auto phrase=s.search("alice", q("\"app\""));
     CHECK(phrase.at("frozen_count").num()==1);
-    CHECK(phrase.at("retrieval").str()=="bounded_literal_scan");
+    CHECK(phrase.at("retrieval").str()=="bounded_scan_recent");
     auto mixed=s.search("alice", q("test"));
     CHECK(mixed.at("frozen_count").num()==4);
-    CHECK(mixed.at("retrieval").str()=="fts5_candidates_verified");
+    CHECK(mixed.at("retrieval").str()=="fts5_bm25_verified");
     CHECK(s.search("alice", q("_ ")).at("frozen_count").num()==1);
     auto partial=s.search("alice", q("test"), 1, 10);
     CHECK(partial.at("scanned_candidates").num()==1&&partial.at("partial").flag());
@@ -440,9 +507,8 @@ namespace {
     auto ev=s.evidence("a", sn, 0, 6);
     CHECK(ev.at("quote").str()=="中文");
     s.erase("a", a.at("document_id").str());
-    rejects([&] {
-      s.page("a", se, "", 10);
-    }, "E_SESSION_INVALIDATED");
+    // The frozen session stays usable but can no longer return the deleted document.
+    CHECK(s.page("a", se, "", 10).at("hits").size()==0);
     rejects([&] {
       s.snapshot("a", sn);
     }, "E_NOT_FOUND");
@@ -527,7 +593,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==2);
+    CHECK(database_scalar(path, "PRAGMA user_version")==3);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -550,11 +616,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=3;");
+    database_exec(future, "PRAGMA user_version=4;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==3);
+    CHECK(database_scalar(future, "PRAGMA user_version")==4);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -636,17 +702,22 @@ namespace {
     CHECK(!s.lease_next());
     CHECK(s.job_get("a", ex).at("error_code").str()=="E_DEADLINE");
   }
-  TEST(job_auth_epoch) {
+  TEST(job_target_tombstone) {
     Temp t;
-    Store s(t.path/"db");
+    std::int64_t now=10000;
+    Store s(t.path/"db", [&] {
+      return now;
+    });
     auto d=s.ingest("a", text("https://x.example/a", "delete me"));
+    now+=10;
     auto id=s.job_create("a", "developer", "key").at("job_id").str();
     auto l=s.lease_next();
+    now+=10;
     s.erase("a", d.at("document_id").str());
     auto doc=text("https://x.example/a", "do not resurrect");
     CHECK(!s.complete(*l, doc, parse_document(doc.raw, doc.content_type)));
-    s.lease_next();
-    CHECK(s.job_get("a", id).at("error_code").str()=="E_POLICY_CHANGED");
+    CHECK(s.job_get("a", id).at("error_code").str()=="E_TARGET_DELETED");
+    CHECK(s.stats("a").at("documents").num()==0);
   }
   TEST(job_restart) {
     Temp t;
@@ -738,8 +809,8 @@ namespace {
         "a", false
       }, req("web.search", Json::object()));
     }, "E_CAPABILITY_UNAVAILABLE");
-    CHECK(Service::capabilities().at("live_web_sources").num()==0);
-    CHECK(!Service::capabilities().at("production_ready").flag());
+    CHECK(svc.capabilities().at("live_web_sources").num()==0);
+    CHECK(!svc.capabilities().at("production_ready").flag());
   }
   TEST(admin_backup) {
     Temp t;
@@ -770,6 +841,698 @@ namespace {
       auth.authenticate("");
     }, "E_AUTH");
   }
+
+  // ---------------------------------------------------------------- S1 additions
+  std::vector<std::string> toks(Store& s, const std::string& text, bool query) {
+    return debug_tokenize(s.raw_handle(), text, query);
+  }
+  TEST(tokenizer_cjk_and_symbols) {
+    Temp t;
+    Store s(t.path/"db");
+    CHECK((toks(s, "搜索引擎", false)==std::vector<std::string> {"搜", "+搜索", "索", "+索引", "引", "+引擎", "擎"}));
+    CHECK((toks(s, "搜索引擎", true)==std::vector<std::string> {"搜索", "索引", "引擎", "擎"}));
+    CHECK((toks(s, "爬", true)==std::vector<std::string> {"爬"}));
+    CHECK((toks(s, "C++20 rocks", false)==std::vector<std::string> {"c", "+c++", "20", "rocks"}));
+    CHECK((toks(s, "C++", true)==std::vector<std::string> {"c++"}));
+    CHECK((toks(s, "C# guide", true)==std::vector<std::string> {"c#", "guide"}));
+    CHECK((toks(s, "ABC中文def", false)==std::vector<std::string> {"abc", "中", "+中文", "文", "def"}));
+  }
+  TEST(fts_chinese_uses_index) {
+    Temp t;
+    Store s(t.path/"db");
+    s.ingest("a", text("https://x.example/zh", "这是一个搜索引擎的开发文档，介绍断点续爬。", "中文资料"));
+    s.ingest("a", text("https://x.example/en", "An English page about engines.", "English"));
+    for(auto query: {"引擎", "擎", "断点续爬", "搜索引擎 开发", "\"开发文档\""}) {
+      auto r=s.search("a", q(query));
+      CHECK(r.at("retrieval").str()=="fts5_bm25_verified");
+      CHECK(r.at("frozen_count").num()==1);
+    }
+    CHECK(s.search("a", q("续爬虫")).at("frozen_count").num()==0);
+    CHECK(s.search("a", q("开发者")).at("frozen_count").num()==0);
+  }
+  TEST(bm25_ranks_relevance) {
+    Temp t;
+    Store s(t.path/"db");
+    std::string dense;
+    for(int i=0; i<40; ++i)dense+="sqlite fts5 sqlite index sqlite ";
+    s.ingest("a", text("https://c.example/mention-1", "A long cooking blog that mentions sqlite once among recipes and travel."));
+    s.ingest("a", text("https://c.example/relevant", dense, "SQLite FTS5 guide"));
+    s.ingest("a", text("https://c.example/mention-2", "Travel notes. My laptop runs sqlite somewhere. Anyway, Paris is lovely."));
+    auto r=s.search("a", q("sqlite"));
+    auto hits=s.page("a", r.at("session_id").str(), "").at("hits");
+    CHECK(hits.size()==3);
+    CHECK(hits.at(0).at("url").str()=="https://c.example/relevant");
+  }
+  TEST(literal_exactness) {
+    CHECK(!matches(q("v1.2"), "", "release v1.2.3 notes", "", "", ""));
+    CHECK(matches(q("v1.2"), "", "release v1.2, then v1.3", "", "", ""));
+    CHECK(matches(q("C++"), "", "modern C++20 coroutines", "", "", ""));
+    CHECK(!matches(q("C++"), "", "plain C and C# only", "", "", ""));
+    CHECK(!matches(q("std::expected"), "", "use std::expected_or here", "", "", ""));
+    CHECK(matches(q("std::expected"), "", "std::expected<int, E>", "", "", ""));
+    CHECK(matches(q("C#"), "", "C#12 features", "", "", ""));
+    CHECK(matches(q("\"sqlite fts\""), "", "sqlite fts5 tables", "", "", ""));
+  }
+  TEST(html_main_excludes_siblings) {
+    auto p=parse_document("<html><body><main><p>MAIN_CONTENT</p></main><aside>SIDEBAR</aside><div>COMMENTS</div></body></html>", "text/html");
+    CHECK(p.text=="MAIN_CONTENT");
+    auto a=parse_document("<html><body><article><p>ARTICLE</p><aside>NOTE</aside></article><div>FOOT</div></body></html>", "text/html");
+    CHECK(a.text=="ARTICLE");
+  }
+  TEST(delete_keeps_unrelated_jobs_and_sessions) {
+    Temp t;
+    Store s(t.path/"db");
+    s.ingest("a", text("https://a.example/keep", "sqlite keep"));
+    auto junk=s.ingest("a", text("https://a.example/junk", "sqlite junk"));
+    auto sess=s.search("a", q("sqlite")).at("session_id").str();
+    std::vector<std::string> jobs;
+    for(int i=0; i<3; ++i)jobs.push_back(s.job_create("a", "developer", "page-"+std::to_string(i)).at("job_id").str());
+    s.erase("a", junk.at("document_id").str());
+    auto lease=s.lease_next();
+    CHECK(lease.has_value());
+    for(const auto& id:jobs)CHECK(s.job_get("a", id).at("error_code").is_null());
+    auto page=s.page("a", sess, "", 10).at("hits");
+    CHECK(page.size()==1);
+    CHECK(page.at(0).at("url").str()=="https://a.example/keep");
+  }
+  TEST(highlights_are_query_relevant_and_exact) {
+    Temp t;
+    Store s(t.path/"db");
+    std::string filler;
+    for(int i=0; i<60; ++i)filler+="filler sentence number "+std::to_string(i)+".\n";
+    auto body=filler+"The answer: resumable crawling is supported via checkpoints.\nMore filler.";
+    auto snap=s.ingest("a", text("https://b.example/doc", body));
+    auto r=s.search("a", q("resumable checkpoints"));
+    auto hit=s.page("a", r.at("session_id").str(), "").at("hits").at(0);
+    CHECK(hit.at("snippet_kind").str()=="query_highlights");
+    CHECK(hit.at("snippet").str().find("resumable crawling")!=std::string::npos);
+    auto h=hit.at("highlights").at(0);
+    auto canonical=s.snapshot("a", snap.at("snapshot_id").str()).at("canonical_text").str();
+    auto start=static_cast<std::size_t>(h.at("start_byte").num()), end=static_cast<std::size_t>(h.at("end_byte").num());
+    CHECK(canonical.substr(start, end-start)==h.at("text").str());
+    CHECK(s.evidence("a", snap.at("snapshot_id").str(), h.at("start_byte").num(), h.at("end_byte").num()).at("quote").str()==h.at("text").str());
+    auto zh=highlight("第一段没有关键词。\n第二段讲断点续爬的实现细节。\n第三段无关。", q("断点续爬").root);
+    CHECK(zh.at("highlights").size()==1);
+    CHECK(zh.at("highlights").at(0).at("text").str()=="第二段讲断点续爬的实现细节。");
+  }
+  TEST(revisions_pruned_and_quota_counters) {
+    Temp t;
+    StoreOptions o;
+    o.max_revisions_per_document=3;
+    o.max_snapshots_per_owner=500;
+    Store s(t.path/"db", {}, o);
+    for(int rev=0; rev<20; ++rev)
+      for(int u=0; u<50; ++u)s.ingest("a", text("https://e.example/p"+std::to_string(u), "revision "+std::to_string(rev)));
+    auto st=s.stats("a");
+    CHECK(st.at("documents").num()==50);
+    CHECK(st.at("snapshots").num()==150);
+    // Evidence pins an old revision so it survives pruning.
+    Temp t2;
+    Store p(t2.path/"db", {}, o);
+    auto first=p.ingest("a", text("https://e.example/pinned", "original wording"));
+    p.evidence("a", first.at("snapshot_id").str(), 0, 8);
+    for(int rev=0; rev<6; ++rev)p.ingest("a", text("https://e.example/pinned", "changed "+std::to_string(rev)));
+    CHECK(p.snapshot("a", first.at("snapshot_id").str()).at("canonical_text").str()=="original wording");
+    StoreOptions tiny;
+    tiny.max_snapshots_per_owner=2;
+    Temp t3;
+    Store q3(t3.path/"db", {}, tiny);
+    q3.ingest("a", text("https://e.example/1", "one"));
+    q3.ingest("a", text("https://e.example/2", "two"));
+    rejects([&] {
+      q3.ingest("a", text("https://e.example/3", "three"));
+    }, "E_QUOTA");
+  }
+  TEST(range_windows_are_utf8_safe) {
+    Temp t;
+    Store s(t.path/"db");
+    auto snap=s.ingest("a", text("https://x.example/r", "中文abc中文"));
+    auto id=snap.at("snapshot_id").str();
+    auto w=s.range("a", id, 0, 4);
+    CHECK(w.at("text").str()=="中");
+    CHECK(w.at("next_start_byte").num()==3);
+    auto rest=s.range("a", id, 3, 100);
+    CHECK(rest.at("text").str()=="文abc中文");
+    CHECK(!rest.at("truncated").flag());
+    rejects([&] {
+      s.range("a", id, 1, 10);
+    }, "E_EVIDENCE_RANGE");
+  }
+  TEST(migration_from_v1) {
+    Temp t;
+    auto path=t.path/"db";
+    {
+      sqlite3* raw=nullptr;
+      sqlite3_open(path.string().c_str(), &raw);
+      auto ok=sqlite3_exec(raw, R"SQL(
+ CREATE TABLE settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+ INSERT INTO settings VALUES('restore_quarantine','0');
+ CREATE TABLE subjects(owner TEXT PRIMARY KEY,epoch INTEGER NOT NULL DEFAULT 0);
+ CREATE TABLE documents(id TEXT PRIMARY KEY,owner TEXT NOT NULL,url TEXT NOT NULL,host TEXT NOT NULL,
+     current_snapshot TEXT,revision INTEGER NOT NULL DEFAULT 0,deleted INTEGER NOT NULL DEFAULT 0,UNIQUE(owner,url));
+ CREATE TABLE snapshots(id TEXT PRIMARY KEY,extraction_id TEXT UNIQUE NOT NULL,document_id TEXT NOT NULL REFERENCES documents(id),
+     revision INTEGER NOT NULL,title TEXT NOT NULL,canonical_text TEXT NOT NULL,raw_content TEXT NOT NULL,raw_hash TEXT NOT NULL,
+     content_type TEXT NOT NULL,parser_version TEXT NOT NULL,created_at INTEGER NOT NULL,index_allowed INTEGER NOT NULL,
+     links_json TEXT NOT NULL,UNIQUE(document_id,revision));
+ CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize='unicode61');
+ CREATE TABLE evidence(id TEXT PRIMARY KEY,snapshot_id TEXT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
+     start_byte INTEGER NOT NULL,end_byte INTEGER NOT NULL,UNIQUE(snapshot_id,start_byte,end_byte));
+ CREATE TABLE sessions(id TEXT PRIMARY KEY,owner TEXT NOT NULL,auth_epoch INTEGER NOT NULL,query_json TEXT NOT NULL,
+     created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,scanned INTEGER NOT NULL,partial INTEGER NOT NULL,retrieval TEXT NOT NULL);
+ CREATE TABLE session_rows(session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,position INTEGER NOT NULL,
+     document_id TEXT NOT NULL,snapshot_id TEXT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,score INTEGER NOT NULL,PRIMARY KEY(session_id,position));
+ CREATE TABLE cursors(token TEXT PRIMARY KEY,session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,position INTEGER NOT NULL,UNIQUE(session_id,position));
+ CREATE TABLE jobs(id TEXT PRIMARY KEY,owner TEXT NOT NULL,fixture_id TEXT NOT NULL,idempotency_key TEXT NOT NULL,fingerprint TEXT NOT NULL,
+     state TEXT NOT NULL,epoch INTEGER NOT NULL DEFAULT 0,auth_epoch INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,max_attempts INTEGER NOT NULL,
+     lease_until INTEGER NOT NULL DEFAULT 0,deadline INTEGER NOT NULL,created_at INTEGER NOT NULL,used_pages INTEGER NOT NULL DEFAULT 0,
+     result_json TEXT,error_code TEXT,UNIQUE(owner,idempotency_key));
+ INSERT INTO subjects VALUES('a',0);
+ INSERT INTO documents VALUES('d1','a','https://old.example/zh','old.example','s1',1,0);
+ INSERT INTO snapshots VALUES('s1','e1','d1',1,'旧资料','旧版本的搜索引擎文档','raw','h','text/plain','bootstrap-text/1',1,1,'[]');
+ INSERT INTO content_fts VALUES('d1','a','旧资料','旧版本的搜索引擎文档');
+ PRAGMA user_version=1;
+ )SQL", nullptr, nullptr, nullptr);
+      sqlite3_close(raw);
+      CHECK(ok==SQLITE_OK);
+    }
+    Store s(path);
+    auto r=s.search("a", q("引擎"));
+    CHECK(r.at("retrieval").str()=="fts5_bm25_verified");
+    CHECK(r.at("frozen_count").num()==1);
+    CHECK(s.stats("a").at("snapshots").num()==1);
+    CHECK(s.snapshot("a", "s1").at("source_kind").str()=="import");
+  }
+  TEST(dedup_and_rrf_fusion) {
+    CHECK(dedup_key("https://www.Example.com/a/?utm_source=x&b=2&a=1#frag")==dedup_key("http://example.com:80/a?a=1&b=2"));
+    CHECK(dedup_key("https://example.com/a")!=dedup_key("https://example.com/b"));
+    CHECK(dedup_key("ftp://example.com/").empty());
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"bing","provider":"microsoft","index_family":"bing","capability":"web","kind":"scrape","enabled":true,"default":true},
+      {"id":"yahoo","provider":"yahoo","index_family":"bing","capability":"web","kind":"scrape","enabled":true},
+      {"id":"ddg","provider":"duckduckgo","index_family":"ddg","capability":"web","kind":"scrape","enabled":true,"default":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    std::vector<SourceHits> in= {
+      {"bing", {{"https://a.example/", "A", "from bing", 1}, {"https://b.example/", "B", "", 2}}},
+      {"yahoo", {{"http://a.example", "A", "", 1}, {"https://b.example/", "B", "", 1}}},
+      {"ddg", {{"https://b.example/", "B", "from ddg", 5}, {"https://c.example/", "C", "", 1}}}};
+    auto out=fuse(in, reg, 10);
+    CHECK(out.size()==3);
+    // b.example appears in two families (bing family counted once, ddg) and wins.
+    CHECK(out.at(0).at("url").str()=="https://b.example/");
+    CHECK(out.at(0).at("index_families").num()==2);
+    CHECK(out.at(0).at("snippet").str()=="from ddg");
+    CHECK(out.at(1).at("url").str()=="https://a.example/");
+    CHECK(out.at(1).at("sources").size()==2);
+  }
+  TEST(public_url_policy) {
+    for(auto u: {"http://localhost/", "http://127.0.0.1/", "http://10.1.2.3/", "http://169.254.169.254/latest/meta-data",
+                 "http://192.168.1.1/", "http://2130706433/", "http://0x7f000001/", "http://1.2.3/", "http://printer.local/", "http://012.0.0.1/"})
+      rejects([&] {
+        check_public_url(u);
+      }, "E_URL_BLOCKED");
+    check_public_url("https://example.com/");
+    check_public_url("http://8.8.8.8/");
+    check_public_url("https://1e100.net/");
+    rejects([&] {
+      check_public_url("file:///etc/passwd");
+    }, "E_URL");
+  }
+  struct FakeWorker final:WorkerPort {
+    std::vector<std::pair<std::string, Json>> calls;
+    std::function<Json(const std::string&, const Json&)> handler;
+    bool fill_fetch_defaults=true;
+    Json call(const std::string& m, const Json& p, int) override {
+      calls.emplace_back(m, p);
+      auto result=handler(m, p);
+      if(fill_fetch_defaults&&m=="fetch.extract"&&result.has("status")&&
+         result.at("status").is_string()&&result.at("status").str()=="ok") {
+        if(!result.has("html"))result.set("html", "");
+        if(!result.has("extractor"))result.set("extractor", "fakeweb/1");
+        if(!result.has("final_url"))result.set("final_url", p.at("url"));
+        if(!result.has("redirects"))result.set("redirects", Json::array());
+      }
+      return result;
+    }
+  };
+  Json obj(const std::string& s) {
+    return Json::parse(s);
+  }
+  SourceRegistry test_registry() {
+    return SourceRegistry(reviewed_sources(obj(R"({"version":1,"sources":[
+      {"id":"bing","provider":"microsoft","index_family":"bing","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"ddg","provider":"duckduckgo","index_family":"ddg","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"arxiv","provider":"arxiv","index_family":"arxiv","capability":"papers","kind":"api","enabled":true,"min_interval_ms":0},
+      {"id":"off","provider":"x","index_family":"x","capability":"web","kind":"api","enabled":false}]})")));
+  }
+  TEST(web_search_merges_and_cools_down) {
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string& m, const Json& p) {
+      CHECK(m=="search.multi");
+      CHECK(p.at("sources").size()==2);
+      return obj(R"({"results":{
+        "bing":{"status":"ok","elapsed_ms":120,"hits":[{"url":"https://docs.example.com/x","title":"X","snippet":"x doc","rank":1},
+                                                     {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}]},
+        "ddg":{"status":"blocked","error":"captcha page","hits":[]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto r=web.search("a", obj(R"({"query":"guide site:example.com"})"));
+    CHECK(r.at("partial").flag());
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    CHECK(r.at("filters").at("removed_unverified").num()==1);
+    CHECK(r.at("usage").at("external_requests").num()==2);
+    // ddg is now cooling down and is skipped without a request.
+    w.handler=[](const std::string&, const Json& p) {
+      CHECK(p.at("sources").size()==1);
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[]}}})");
+    };
+    auto r2=web.search("a", obj(R"({"query":"guide"})"));
+    bool skipped=false;
+    for(std::size_t i=0; i<r2.at("sources").size(); ++i) {
+      auto x=r2.at("sources").at(i);
+      if(x.at("source_id").str()=="ddg")skipped=x.at("status").str()=="skipped"&&x.at("reason").str()=="cooldown";
+    }
+    CHECK(skipped);
+    CHECK(web.sources().at("sources").size()==4);
+    rejects([&] {
+      web.search("a", obj(R"({"query":"x","sources":["off"]})"));
+    }, "E_SCHEMA");
+    w.handler=[](const std::string&, const Json& p) {
+      CHECK(p.at("sources").at(0).str()=="arxiv");
+      return obj(R"({"results":{"arxiv":{"status":"ok","hits":[{"url":"https://arxiv.org/abs/1","title":"Paper","snippet":"s","rank":1}]}}})");
+    };
+    CHECK(web.search("a", obj(R"({"query":"attention","category":"papers"})")).at("result_count").num()==1);
+  }
+  TEST(web_search_cache_spares_sources) {
+    Temp t;
+    std::int64_t now=1'000'000;
+    Store s(t.path/"db", [&] {
+      return now;
+    });
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[{"url":"https://a.example/1","title":"A","snippet":"","rank":1}]},
+                                "ddg":{"status":"ok","hits":[]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto first=web.search("a", obj(R"({"query":"cache me"})"));
+    CHECK(!first.at("from_cache").flag());
+    CHECK(w.calls.size()==1);
+    auto second=web.search("a", obj(R"({"query":"cache me"})"));
+    CHECK(second.at("from_cache").flag());
+    CHECK(second.at("usage").at("external_requests").num()==0);
+    CHECK(second.at("results").at(0).at("url").str()=="https://a.example/1");
+    CHECK(w.calls.size()==1);
+    // Different query / limit / explicit refresh all go upstream; the cache expires after 10 minutes.
+    web.search("a", obj(R"({"query":"cache me","limit":5})"));
+    web.search("a", obj(R"({"query":"cache me","refresh":true})"));
+    CHECK(w.calls.size()==3);
+    now+=10*60*1000+1;
+    CHECK(!web.search("a", obj(R"({"query":"cache me"})")).at("from_cache").flag());
+    CHECK(w.calls.size()==4);
+    // A search where every source failed is not cached.
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"timeout","hits":[]},"ddg":{"status":"network_error","hits":[]}}})");
+    };
+    web.search("a", obj(R"({"query":"all fail","sources":["bing"]})"));
+    now+=11*60*1000;  // past any cooldown
+    web.search("a", obj(R"({"query":"all fail","sources":["bing"]})"));
+    CHECK(w.calls.size()==6);
+  }
+  TEST(iri_urls_are_encoded_for_reading) {
+    CHECK(normalize_iri("https://zh.wikipedia.org/wiki/网络爬虫")=="https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E7%88%AC%E8%99%AB");
+    CHECK(normalize_iri("https://x.example/a b?q=中文#片段")=="https://x.example/a%20b?q=%E4%B8%AD%E6%96%87#%E7%89%87%E6%AE%B5");
+    CHECK(normalize_iri("https://x.example/already%20encoded")=="https://x.example/already%20encoded");
+    CHECK(normalize_iri("https://x.example")=="https://x.example");
+    rejects([] {
+      normalize_iri("https://例子.测试/");
+    }, "E_URL");
+    rejects([] {
+      normalize_iri("ftp-less-url");
+    }, "E_URL");
+  }
+  TEST(web_read_ingests_and_caches) {
+    Temp t;
+    std::int64_t now=1000000;
+    Store s(t.path/"db", [&] {
+      return now;
+    });
+    FakeWorker w;
+    int fetches=0;
+    w.handler=[&](const std::string& m, const Json& p) {
+      CHECK(m=="fetch.extract");
+      ++fetches;
+      auto url=p.at("url").str();
+      if(url.find("challenge")!=std::string::npos)return obj(R"({"status":"challenge","http_status":403,"error":"bot check"})");
+      return obj(R"({"status":"ok","http_status":200,"final_url":"https://site.example/final","content_type":"text/html",
+        "html":"<html><body><main>中文正文 resumable crawling</main></body></html>","title":"Page",
+        "text":"# Page\n\n中文正文 resumable crawling","links":["https://site.example/next"],"extractor":"trafilatura/2",
+        "extract_status":"ok","index_allowed":true,"metadata":{"sitename":"Site"}})");
+    };
+    WebService web(s, w, test_registry());
+    auto r=web.read("a", obj(R"({"url":"https://site.example/start"})"));
+    CHECK(!r.at("from_cache").flag());
+    CHECK(r.at("final_url").str()=="https://site.example/final");
+    CHECK(r.at("content").at("text").str().find("中文正文")!=std::string::npos);
+    CHECK(r.at("content_trust").str()=="untrusted_web_content");
+    auto again=web.read("a", obj(R"({"url":"https://site.example/start"})"));
+    CHECK(again.at("from_cache").flag());
+    CHECK(fetches==1);
+    now+=8LL*86400*1000;
+    web.read("a", obj(R"({"url":"https://site.example/start"})"));
+    CHECK(fetches==2);
+    auto local=s.search("a", q("中文正文"));
+    CHECK(local.at("frozen_count").num()==1);
+    CHECK(s.snapshot("a", r.at("snapshot_id").str()).at("content_origin").str()=="web_fetch_untrusted");
+    rejects([&] {
+      web.read("a", obj(R"({"url":"https://never.example/","freshness":"cache_only"})"));
+    }, "E_NOT_CACHED");
+    rejects([&] {
+      web.read("a", obj(R"({"url":"https://site.example/challenge"})"));
+    }, "E_ACCESS_RESTRICTED");
+    rejects([&] {
+      web.read("a", obj(R"({"url":"http://169.254.169.254/latest/meta-data"})"));
+    }, "E_URL_BLOCKED");
+    CHECK(fetches==3);
+  }
+  TEST(source_admission_limits) {
+    Temp t;
+    std::int64_t now=5000000;
+    Store s(t.path/"db", [&] {
+      return now;
+    });
+    CHECK(s.source_admit("x", 1000, 2)=="");
+    CHECK(s.source_admit("x", 1000, 2)=="min_interval");
+    now+=1001;
+    CHECK(s.source_admit("x", 1000, 2)=="");
+    now+=1001;
+    CHECK(s.source_admit("x", 1000, 2)=="daily_cap");
+    now+=86400000;
+    CHECK(s.source_admit("x", 1000, 2)=="");
+    s.source_report("x", "rate_limited", "429", 60000);
+    now+=2000;
+    CHECK(s.source_admit("x", 1000, 2)=="cooldown");
+    now+=60000;
+    CHECK(s.source_admit("x", 1000, 2)=="");
+  }
+  TEST(migrate_both_schema_two_layouts_preserves_records) {
+    for(bool claude_s1:{false,true}) {
+      Temp t;
+      auto path=t.path/"db";
+      Json old,current,evidence,page,job,stats;
+      std::string session;
+      {
+        Store store(path);
+        old=store.ingest("alice",text("https://x.example/a","historical wording","neutral"));
+        evidence=store.evidence("alice",old.at("snapshot_id").str(),0,10);
+        auto input=text("https://x.example/a","test\u0301x 中文 current","neutral");
+        if(claude_s1) {
+          auto parsed=parse_document(input.raw,input.content_type,input.title);
+          parsed.parser_version="worker-fixture/1";
+          auto meta=Json::parse(R"({"fetched_at_ms":123,"final_url":"https://x.example/final","metadata":{"author":"fixture"}})");
+          current=store.ingest_web("alice",input,parsed,meta,store.deletion_generation("alice",input.url));
+          CHECK(store.source_admit("preserved-source",0,50).empty());
+        } else current=store.ingest("alice",input);
+        store.ingest("alice",{"https://x.example/noindex","<head><meta name='robots' content='none, follow'></head><body>hidden-canary</body>","text/html","neutral"});
+        store.ingest("bob",text("https://x.example/b","test private-owner","neutral"));
+        auto gone=store.ingest("alice",text("https://x.example/gone","test deleted-canary","neutral"));
+        store.erase("alice",gone.at("document_id").str());
+        session=store.search("alice",q("current")).at("session_id").str();
+        page=store.page("alice",session,"",10);
+        job=store.job_create("alice","developer","legacy-pending");
+        job=store.job_get("alice",job.at("job_id").str());
+        old=store.snapshot("alice",old.at("snapshot_id").str());
+        current=store.snapshot("alice",current.at("snapshot_id").str());
+        stats=store.stats("alice");
+      }
+      restore_legacy_schema(path,2,claude_s1);
+      // Derived index contents are deliberately stale; migration must rebuild
+      // only current, publishable rows from the preserved canonical snapshots.
+      database_exec(path,"UPDATE content_fts SET title='stale-index',body='stale-index';");
+      {
+        Store store(path);
+        CHECK(store.snapshot("alice",old.at("snapshot_id").str()).canonical()==old.canonical());
+        CHECK(store.snapshot("alice",current.at("snapshot_id").str()).canonical()==current.canonical());
+        CHECK(store.evidence_get("alice",evidence.at("evidence_id").str()).canonical()==evidence.canonical());
+        CHECK(store.page("alice",session,"",10).canonical()==page.canonical());
+        CHECK(store.job_get("alice",job.at("job_id").str()).canonical()==job.canonical());
+        CHECK(store.stats("alice").canonical()==stats.canonical());
+        CHECK(store.search("alice",q("test")).at("frozen_count").num()==1);
+        CHECK(store.search("alice",q("中文")).at("frozen_count").num()==1);
+        CHECK(store.search("alice",q("historical OR hidden-canary OR deleted-canary OR private-owner OR stale-index")).at("frozen_count").num()==0);
+        CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
+        if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
+      }
+      CHECK(database_scalar(path,"PRAGMA user_version")==3);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
+    }
+  }
+  TEST(schema_two_quarantine_is_checked_before_migration) {
+    for(bool claude_s1:{false,true}) {
+      Temp t;
+      auto path=t.path/"db";
+      {
+        Store store(path);
+        store.ingest("alice",text("https://x.example/a","quarantine-canary"));
+      }
+      restore_legacy_schema(path,2,claude_s1);
+      database_exec(path,"UPDATE settings SET value='1' WHERE key='restore_quarantine';");
+      rejects([&]{Store blocked(path);},"E_RESTORE_QUARANTINED");
+      CHECK(database_scalar(path,"PRAGMA user_version")==2);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM snapshots")==1);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM pragma_table_info('documents') WHERE name='delete_generation'")==0);
+    }
+  }
+  TEST(deletion_fences_survive_reimport_restart_and_clock_ties) {
+    Temp t;
+    auto path=t.path/"db";
+    std::int64_t now=1000000,old_fence=0,current_fence=0;
+    auto input=text("https://x.example/target","fresh web body","neutral");
+    auto parsed=parse_document(input.raw,input.content_type,input.title);
+    {
+      Store store(path,[&]{return now;});
+      auto before=store.ingest("alice",text(input.url,"original body","neutral"));
+      old_fence=store.deletion_generation("alice",input.url);
+      auto old_job=store.job_create("alice","fixture","started-before-delete");
+      auto old_lease=store.lease_next();
+      CHECK(old_lease&&old_lease->id==old_job.at("job_id").str());
+      store.erase("alice",before.at("document_id").str());
+      current_fence=store.deletion_generation("alice",input.url);
+      CHECK(current_fence>old_fence);
+      auto replacement=store.ingest("alice",text(input.url,"explicit replacement","neutral"));
+      CHECK(store.deletion_generation("alice",input.url)==current_fence);
+      rejects([&]{store.ingest_web("alice",input,parsed,Json::object(),old_fence);},"E_TARGET_DELETED");
+      CHECK(!store.complete(*old_lease,input,parsed));
+      CHECK(store.job_get("alice",old_lease->id).at("error_code").str()=="E_TARGET_DELETED");
+      CHECK(store.cached("alice",input.url)->at("snapshot_id").str()==replacement.at("snapshot_id").str());
+      // A new task after deletion is authorized even in the same millisecond.
+      auto fresh_job=store.job_create("alice","fixture","started-after-delete");
+      auto fresh_lease=store.lease_next();
+      CHECK(fresh_lease&&fresh_lease->id==fresh_job.at("job_id").str());
+      CHECK(store.complete(*fresh_lease,input,parsed));
+      // Another owner's tombstone must not invalidate this document's fence.
+      auto other=store.ingest("bob",text(input.url,"other owner"));
+      store.erase("bob",other.at("document_id").str());
+      CHECK(store.deletion_generation("alice",input.url)==current_fence);
+      CHECK(store.ingest_web("alice",input,parsed,Json::object(),current_fence).at("canonical_text").str()==input.raw);
+    }
+    {
+      Store store(path,[&]{return now;});
+      CHECK(store.deletion_generation("alice",input.url)==current_fence);
+      rejects([&]{store.ingest_web("alice",input,parsed,Json::object(),old_fence);},"E_TARGET_DELETED");
+      auto current=store.cached("alice",input.url);
+      store.erase("alice",current->at("document_id").str());
+      CHECK(store.deletion_generation("alice",input.url)>current_fence);
+      rejects([&]{store.ingest_web("alice",input,parsed,Json::object(),current_fence);},"E_TARGET_DELETED");
+      auto allowed=store.deletion_generation("alice",input.url);
+      CHECK(store.ingest_web("alice",input,parsed,Json::object(),allowed).at("canonical_text").str()==input.raw);
+    }
+  }
+  TEST(web_noindex_change_is_not_hidden_by_content_reuse) {
+    Temp t;
+    Store store(t.path/"db");
+    SourceDocument input{"https://x.example/noindex-header","<body>header canary</body>","text/html","neutral"};
+    auto parsed=parse_document(input.raw,input.content_type,input.title);
+    auto fence=store.deletion_generation("alice",input.url);
+    auto first=store.ingest_web("alice",input,parsed,Json::object(),fence);
+    auto evidence=store.evidence("alice",first.at("snapshot_id").str(),0,6);
+    CHECK(store.search("alice",q("canary")).at("frozen_count").num()==1);
+    parsed.index_allowed=false; // Same HTTP body, changed X-Robots-Tag.
+    auto restricted=store.ingest_web("alice",input,parsed,Json::object(),fence);
+    CHECK(restricted.at("snapshot_id").str()!=first.at("snapshot_id").str());
+    CHECK(!restricted.at("indexed").flag());
+    CHECK(store.search("alice",q("canary")).at("frozen_count").num()==0);
+    CHECK(store.snapshot("alice",first.at("snapshot_id").str()).at("indexed").flag());
+    CHECK(store.evidence_get("alice",evidence.at("evidence_id").str()).canonical()==evidence.canonical());
+    parsed.index_allowed=true;
+    auto restored=store.ingest_web("alice",input,parsed,Json::object(),fence);
+    CHECK(restored.at("revision").num()==3);
+    CHECK(store.search("alice",q("canary")).at("frozen_count").num()==1);
+  }
+  TEST(retention_reclaims_before_quota_and_ignores_expired_pins) {
+    Temp t;
+    StoreOptions options;
+    options.max_revisions_per_document=1;
+    options.max_snapshots_per_owner=1;
+    options.max_bytes_per_owner=32;
+    std::int64_t now=1000000;
+    Store store(t.path/"db",[&]{return now;},options);
+    auto first=store.ingest("alice",text("https://x.example/a","first"));
+    rejects([&]{store.ingest("alice",text("https://x.example/a",std::string(40,'x')));},"E_QUOTA");
+    // Failed writes roll prospective pruning and counters back.
+    CHECK(store.snapshot("alice",first.at("snapshot_id").str()).at("canonical_text").str()=="first");
+    CHECK(store.stats("alice").at("content_bytes").num()==10);
+    auto second=store.ingest("alice",text("https://x.example/a","second"));
+    CHECK(store.stats("alice").at("snapshots").num()==1);
+    rejects([&]{store.snapshot("alice",first.at("snapshot_id").str());},"E_NOT_FOUND");
+    auto session=store.search("alice",q("second"));
+    rejects([&]{store.ingest("alice",text("https://x.example/a","third"));},"E_QUOTA");
+    now+=3600001;
+    auto third=store.ingest("alice",text("https://x.example/a","third"));
+    CHECK(store.stats("alice").at("snapshots").num()==1);
+    CHECK(store.stats("alice").at("content_bytes").num()==10);
+    rejects([&]{store.snapshot("alice",second.at("snapshot_id").str());},"E_NOT_FOUND");
+    rejects([&]{store.page("alice",session.at("session_id").str(),"");},"E_SESSION_EXPIRED");
+    store.evidence("alice",third.at("snapshot_id").str(),0,5);
+    rejects([&]{store.ingest("alice",text("https://x.example/a","fourth"));},"E_QUOTA");
+    CHECK(store.snapshot("alice",third.at("snapshot_id").str()).at("canonical_text").str()=="third");
+  }
+  TEST(highlight_clipping_reports_only_visible_terms) {
+    auto query=q("x y");
+    auto text=std::string("x ")+std::string(700,'z')+" y.";
+    auto h=highlight(text,query.root).at("highlights").at(0);
+    CHECK(h.at("terms").size()==1&&h.at("terms").at(0).str()=="x");
+    CHECK(h.at("text").str()==text.substr(static_cast<std::size_t>(h.at("start_byte").num()),static_cast<std::size_t>(h.at("end_byte").num()-h.at("start_byte").num())));
+    auto cross=highlight("head a\nb tail",q("\"a\nb\"").root);
+    CHECK(!cross.at("snippet").str().empty());
+    CHECK(cross.at("highlights").at(0).at("text").str()=="a\nb");
+    rejects([&]{highlight("中文",q("中").root,1,1);},"E_SCHEMA");
+    Temp t;
+    Store store(t.path/"db");
+    auto snapshot=store.ingest("alice",bzs::SourceDocument{"https://x.example/range","中文","text/plain","neutral"});
+    rejects([&]{store.range("alice",snapshot.at("snapshot_id").str(),0,1);},"E_EVIDENCE_RANGE");
+    rejects([&]{store.range("alice",snapshot.at("snapshot_id").str(),3,2);},"E_EVIDENCE_RANGE");
+    auto eof=store.range("alice",snapshot.at("snapshot_id").str(),6,1);
+    CHECK(eof.at("text").str().empty()&&!eof.at("truncated").flag());
+  }
+  TEST(web_read_does_not_publish_across_target_deletion) {
+    for(bool reimport:{false,true}) {
+      Temp t;
+      Store store(t.path/"db");
+      auto original=store.ingest("alice",text("https://example.com/document","original","neutral"));
+      FakeWorker worker;
+      worker.handler=[&](const std::string& method,const Json&) {
+        CHECK(method=="fetch.extract");
+        store.erase("alice",original.at("document_id").str());
+        if(reimport)store.ingest("alice",text("https://example.com/document","new explicit import","neutral"));
+        return obj(R"({"status":"ok","html":"<body>stale fetched body</body>","text":"stale fetched body",
+          "title":"neutral","content_type":"text/html","extractor":"offline-fixture/1","index_allowed":true})");
+      };
+      WebService web(store,worker,SourceRegistry{});
+      rejects([&]{web.read("alice",obj(R"({"url":"https://example.com/document","freshness":"refresh"})"));},"E_TARGET_DELETED");
+      auto current=store.cached("alice","https://example.com/document");
+      CHECK(current.has_value()==reimport);
+      if(current)CHECK(current->at("canonical_text").str()=="new explicit import");
+    }
+  }
+  TEST(late_success_does_not_cancel_source_cooldown) {
+    Temp t;
+    std::int64_t now=1000000;
+    Store store(t.path/"db",[&]{return now;});
+    CHECK(store.source_admit("fixture",0,50).empty());
+    store.source_report("fixture","blocked","captcha",1800000);
+    store.source_report("fixture","ok","",0); // Older in-flight response completed late.
+    CHECK(store.source_states().at("fixture").at("cooldown_remaining_ms").num()==1800000);
+    CHECK(store.source_admit("fixture",0,50)=="cooldown");
+    now+=1800001;
+    CHECK(store.source_admit("fixture",0,50).empty());
+    CHECK(store.source_states().at("fixture").at("cooldown_remaining_ms").num()==0);
+  }
+
+  TEST(web_cache_is_scoped_to_owner_and_review_validity) {
+    Temp t;
+    std::int64_t now=1000;
+    Store store(t.path/"db",[&]{return now;});
+    auto manifest=reviewed_sources(obj(R"({"version":1,"sources":[
+      {"id":"fixture","provider":"fixture","index_family":"fixture","capability":"web","kind":"api","enabled":true,"default":true}]})"));
+    manifest.at("sources").at(0).at("contract").at("review").set("expires_at","1970-01-01T00:00:02Z");
+    FakeWorker worker;
+    worker.handler=[](const std::string&,const Json&) {
+      return obj(R"({"results":{"fixture":{"status":"empty","hits":[]}}})");
+    };
+    WebService web(store,worker,SourceRegistry(manifest));
+    auto args=obj(R"({"query":"same"})");
+    CHECK(!web.search("alice",args).at("from_cache").flag());
+    CHECK(web.search("alice",args).at("from_cache").flag());
+    CHECK(!web.search("bob",args).at("from_cache").flag());
+    CHECK(worker.calls.size()==2);
+    now=2000;
+    rejects([&]{web.search("alice",args);},"E_SOURCE_REVIEW");
+    CHECK(worker.calls.size()==2);
+    CHECK(web.enabled_sources()==0);
+    auto inconsistent=Json::parse(manifest.dump());
+    inconsistent.at("sources").at(0).at("params").set("base_url","https://different.example/search");
+    rejects([&]{SourceRegistry invalid(inconsistent);},"E_SOURCE_CONFIG");
+  }
+  TEST(rrf_rejects_invalid_ranks_and_preserves_nondefault_ports) {
+    CHECK(dedup_key("http://example.com:443/x")!=dedup_key("http://example.com:80/x"));
+    CHECK(dedup_key("https://example.com:80/x")!=dedup_key("https://example.com:443/x"));
+    std::vector<SourceHits> hits={{"bing",{{"https://x.example/negative","bad","",-60},
+      {"https://x.example/zero","bad","",0},{"https://x.example/huge","bad","",1000001},
+      {"https://x.example/good","good","",1}}}};
+    auto registry=test_registry();
+    auto results=fuse(hits,registry,10);
+    CHECK(results.size()==1&&results.at(0).at("url").str()=="https://x.example/good");
+    rejects([&]{fuse(hits,registry,10,0);},"E_SCHEMA");
+  }
+  TEST(worker_success_schema_cannot_create_a_snapshot_by_default) {
+    Temp t;
+    Store store(t.path/"db");
+    FakeWorker worker;
+    worker.fill_fetch_defaults=false;
+    auto valid=obj(R"({"status":"ok","html":"","text":"safe body","content_type":"text/plain",
+      "title":"test","extractor":"fixture/1","final_url":"https://example.com/doc","redirects":[],"index_allowed":true})");
+    Json response;
+    worker.handler=[&](const std::string&,const Json&){return response;};
+    WebService web(store,worker,SourceRegistry{});
+    auto args=obj(R"({"url":"https://example.com/doc","freshness":"refresh"})");
+    response=obj(R"({"status":"ok","html":"","text":"safe body","content_type":"text/plain",
+      "title":"test","extractor":"fixture/1","final_url":"https://example.com/doc","redirects":[]})");
+    rejects([&]{web.read("alice",args);},"E_WORKER_PROTOCOL");
+    response=Json::parse(valid.dump());response.set("index_allowed","true");
+    rejects([&]{web.read("alice",args);},"E_WORKER_PROTOCOL");
+    response=Json::parse(valid.dump());response.set("final_url","http://127.0.0.1/private");
+    rejects([&]{web.read("alice",args);},"E_WORKER_PROTOCOL");
+    response=Json::parse(valid.dump());response.set("final_url","http://012.0.0.1/private");
+    rejects([&]{web.read("alice",args);},"E_WORKER_PROTOCOL");
+    response=Json::parse(valid.dump());response.set("redirects",obj(R"(["http://169.254.169.254/latest/meta-data"] )"));
+    rejects([&]{web.read("alice",args);},"E_WORKER_PROTOCOL");
+    CHECK(store.stats("alice").at("snapshots").num()==0);
+    response=Json::parse(valid.dump());response.set("index_allowed",false);
+    CHECK(!web.read("alice",args).at("indexed").flag());
+    CHECK(store.search("alice",q("body")).at("frozen_count").num()==0);
+  }
+  TEST(malformed_source_success_is_partial_and_not_cached) {
+    Temp t;
+    std::int64_t now=1000;
+    Store store(t.path/"db",[&]{return now;});
+    FakeWorker worker;
+    worker.handler=[](const std::string&,const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":{}}}})");
+    };
+    WebService web(store,worker,test_registry());
+    auto args=obj(R"({"query":"protocol","sources":["bing"]})");
+    auto first=web.search("alice",args);
+    CHECK(first.at("partial").flag());
+    CHECK(first.at("sources").at(0).at("status").str()=="error");
+    now+=6*60*1000;
+    CHECK(!web.search("alice",args).at("from_cache").flag());
+    CHECK(worker.calls.size()==2);
+  }
+
 }
 int main() {
   std::size_t passed=0;

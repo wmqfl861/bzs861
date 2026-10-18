@@ -1,144 +1,114 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.0.2 离线接手批次；联网搜索产品仍在开发中。**
+**状态：0.1.1 S1 review candidate。** 本轮整合 Claude S1 增量与已交付的 0.0.2 主分支，面向 Linux、本机使用和 AI Agent。S0 真实来源实测与 S1 全部标准尚未完成，当前不是正式联网搜索版本。
 
-目标仓库：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本轮保留交接来源与原始历史记录，完成交接复核、搜索与解析缺陷修复，并增加原生 C++ 配置合同。改动和实测范围见 [接手记录](docs/handoff/TAKEOVER_20261017.md)。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。输入来源、修复问题与验证边界见 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md)；实际结果见 [本轮报告](validation/s1_review/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。
 
-按开发蓝图 v1.1 的启动顺序，独立实现 C++20 核心与第一条可测试的数据链：
+项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
-```text
-固定来源发现 → 读取固定网页／显式导入本地内容 → 提取正文
-→ 不可变快照 → 本地全文搜索 → 稳定分页 → 原文定位
-```
+## 当前代码范围
 
-不安装、不调用 SearXNG、Scrapling、Firecrawl 或 Exa 后端。当前没有外部搜索、网页抓取或模型出站连接；用户配置的模型仍在后续产品范围内。
+| 能力 | 当前边界 |
+|---|---|
+| 本地导入、搜索与证据 | 保留显式 HTML/TXT 导入、不可变快照、冻结分页、UTF-8 字节定位、原文查找、用户隔离和权限复核 |
+| 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
+| 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
+| 网页读取候选实现 | worker 抓取与 Markdown 提取、快照、`cache_first / refresh / cache_only`；直接出站仅允许通过连接层检查的公网目标 |
+| 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
+| Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
+| 任务与备份 | 保留 fixture 任务和隔离备份；安全恢复未完成，备份不能直接启动服务 |
 
-## 已实现的切片
+尚未交付动态 JS 页面、PDF/Office、递归爬虫、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-- C++20 `searchd` 服务与真正通过 HTTP 调用它的 `searchctl` 客户端。
-- 严格 JSON、重复键/UTF-8/复杂度检查，查询 AST、AND/OR/NOT、短语和精确符号。
-- C++ 校验与规范化模型配置、来源清单和正式搜索请求；支持空模型、角色继承、可信部署上限及审核时效检查。
-- 按令牌确定身份，读取、搜索、证据、任务和分页按用户隔离。
-- 固定来源搜索与读取；显式导入 UTF-8 HTML/TXT，去除脚本/导航并保留代码文字。
-- SQLite 持久快照与 FTS5 索引；新增、更新和删除同步；旧版本证据不被新内容覆盖。
-- 中文及符号查询的有界字面检索备用路径，明确返回部分结果和扫描范围。
-- 冻结搜索会话、跨页去重、权限变化后旧会话失效。
-- 字节区间原文证据，拒绝切断 UTF-8 字符；不把位置正确当成事实真实。
-- 单页 fixture 任务的幂等提交、暂停/继续/取消、租约 epoch、重启恢复和尝试预算。
-- 一致性数据库备份；备份强制隔离，**恢复到可服务状态尚未实现**。
+## 架构
 
-本批未实现：真实网页搜索源、URL 获取、浏览器、递归爬虫、语义检索、模型调用、MCP、多媒体和界面。运行 `capabilities` 可以查看真实能力目录；未实现操作返回明确错误。
+Agent 经 `bzs-mcp` 调用回环 HTTP 上的 C++ `searchd`。核心负责授权、合同、预算、来源准入、调度、存储、检索与证据，通过独立令牌的回环 HTTP 调用 Python `bzs-worker`。worker 执行网络和解析，并再次检查来源准入与目标地址。
 
-## 构建（Linux）
+MCP 不复制业务规则，worker 不写数据库。进程分离不等于操作系统沙箱；限制见 [安全说明](docs/SECURITY.md)。
 
-需要 C++20 编译器、CMake >= 3.25、Ninja、SQLite >= 3.38 且启用 FTS5、libxml2、json-c、OpenSSL Crypto、Boost.Asio/Beast 头文件、Python >= 3.10。
+## 安装与启动（Linux）
 
-Debian/Ubuntu 依赖示例（安装时需要包仓库网络；程序测试本身不需要外网）：
+需要 C++20 编译器、CMake ≥ 3.25、Ninja、SQLite ≥ 3.38（含 FTS5）、libxml2、json-c、OpenSSL、Boost 头文件及 Python。支持范围和实际依赖版本以 [依赖说明](docs/DEPENDENCIES.md)、`python/pyproject.toml` 和本轮报告为准。
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y build-essential cmake ninja-build libsqlite3-dev \
-  libxml2-dev libjson-c-dev libssl-dev libboost-dev python3
-cmake --preset dev
+sudo apt-get install -y build-essential cmake ninja-build libsqlite3-dev libxml2-dev libjson-c-dev \
+  libssl-dev libboost-dev python3-venv
+
+cmake --preset release
+cmake --build --preset release -j 2
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r tools/requirements-s1-lock.txt
+pip install --no-deps --no-build-isolation -e "python[test]"
+bzs init
+bzs start
+bzs status
+```
+
+当前启动器按仓库的可编辑安装布局寻找配置与二进制。`bzs init` 创建本地令牌和来源配置；默认未审核来源保持禁用。既有用户配置不会因为源码清单改变而自动取得审核资格。
+
+可以先调用离线能力和纯配置校验：
+
+```bash
+bzs call capabilities '{}'
+bzs call contract.validate '{"kind":"model-config","config":{"policy":{"allow_reference_backends":false,"external_nonmodel_services":"reviewed_free_only","allow_provider_hosted_search":false,"allow_unconfigured_fallback":false},"default_text_profile":null,"profiles":{},"roles":{}}}'
+```
+
+正常联网搜索需完成来源审核、实测并显式启用。读取命令只接受符合出站策略的公开目标：
+
+```bash
+bzs search "断点续爬 实现"
+bzs read https://zh.wikipedia.org/wiki/网络爬虫
+bzs stop
+```
+
+没有合格来源时明确报告来源不可用，不自动使用未核验回退。S0 步骤见 [S0_PROBE](docs/S0_PROBE.md)；候选探测是显式联网动作，不自动批准或注册来源。
+
+## 接入 Agent
+
+优先用 `bzs mcp-config` 生成适合本机的 stdio 配置。配置形状如下，路径需替换：
+
+```json
+{"mcpServers":{"bzs861":{"command":"/path/to/bzs861/.venv/bin/python","args":["-m","bzs.cli","mcp"]}}}
+```
+
+MCP 工具为 `web_search`、`read_url`、`read_range`、`find_in_page`、`search_local`、`cite_evidence`、`list_sources`。运行能力与来源准入由核心决定；网页正文和搜索引擎摘要是外部数据，不赋予 Agent 新权限。
+
+本机 HTTP MCP 需要每客户端令牌：
+
+```bash
+bzs mcp-token add laptop
+bzs mcp --transport streamable-http
+```
+
+它只监听回环地址，完整 TLS、按客户端限流和审计验收仍属于 S5。无鉴权 HTTP 启动与生产代理放宽选项不属于本候选版允许配置。
+
+## 网络与来源配置
+
+本候选版拒绝生产使用 `proxy`、`proxy_remote_dns` 和非空 `allow_cidrs`，防止重新解析或网段放行绕过连接层检查。假网站回环映射仅用于受控 fixture，不是用户内网访问能力。网络不可达如实报错，不能靠放宽策略掩盖。
+
+适配器元数据、审核状态和启用状态分别保存。审核需覆盖免费条件、自动化访问、条款和复核日期；可用率不能证明这些条件。调用方不能选中未获准来源，不能从 worker RPC 绕过核心准入。详见 [API](docs/API.md) 与 [安全说明](docs/SECURITY.md)。
+
+## 验证
+
+```bash
+cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
 cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-当前构建与验证结果见 [本轮报告](validation/takeover/test_report.json)，GitHub CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 结果为准。`validation/environment.json`、`validation/test_report.json` 保留原 0.0.1 历史记录。
+本轮 Linux 离线 CTest **5/5 通过**：核心 **81 项 / 707 断言**、原生合同 **55 项 / 269 断言**、HTTP/CLI **20 项**、假网站端到端 **12 项**、Python worker/MCP **122 项**；另有 **34 项**保留的 Python 设计合同参考校验。核心与原生合同均通过 ASan/UBSan，开启泄漏检查。源码哈希、环境、命令与原日志见 [本轮报告](validation/s1_review/test_report.json)。这些套件存在交叉覆盖，不是 161 项完整产品验收；真实来源尚未探测。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
 
-## 启动与使用
+`validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明。它们不能代替本轮整合提交的验证。
 
-生成自己的本地凭据；脚本拒绝覆盖已有凭据，不打印令牌正文：
+## 已有数据与后续范围
 
-```bash
-python3 tools/create_auth.py --admin
-export SEARCH_API_TOKEN="$(cat .local/auth.token)"
-./build/searchd --auth .local/auth.json --state .local/state --fixtures tests/fixtures --port 8610
-```
+两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-在另一个终端：
+本候选版离线修复和回归已完成；下一步补来源审核和 S0 证据，再按 S2–S9 推进。单用户先行不删除恢复、撤权、会话重取和多客户端阶段的等效验收。
 
-```bash
-export SEARCH_API_TOKEN="$(cat .local/auth.token)"
-./build/searchctl health
-./build/searchctl capabilities
-./build/searchctl fixtures
-./build/searchctl fixture-search 'C++'
-./build/searchctl fixture-ingest developer
-./build/searchctl search 'std::expected'
-./build/searchctl search '搜索'
-```
+## 文档与许可
 
-使用上一条返回的标识：
+[API](docs/API.md) · [原生配置合同](docs/CONFIGURATION.md) · [安全](docs/SECURITY.md) · [依赖](docs/DEPENDENCIES.md) · [Windows](docs/WINDOWS.md) · [开发进度](docs/DEVELOPMENT_STATUS.md) · [接手入口](HANDOFF_START_HERE.md)
 
-```bash
-./build/searchctl read SNAPSHOT_ID
-./build/searchctl find SNAPSHOT_ID '断点恢复'
-./build/searchctl page SESSION_ID CURSOR
-./build/searchctl delete DOCUMENT_ID
-```
-
-显式导入你有权处理的本地 HTML/TXT：
-
-```bash
-./build/searchctl ingest ./page.html https://your-site.example/docs/page text/html
-```
-
-**这里的 URL 只是内容出处元数据，不会联网读取该地址。** CLI 读取指定本地文件后传给本地服务；HTTP API 不能借此读取服务器任意文件。
-
-任意已公布操作也可通过 JSON 调用：
-
-```json
-{"operation":"job.create","params":{"fixture_id":"developer","idempotency_key":"demo-job-1"}}
-```
-
-保存为文件后执行 `searchctl call request.json`。所有操作、错误与范围见 [API 合同](docs/API.md)。
-
-验证配置文件并查看规范化结果：
-
-```bash
-./build/searchctl validate model-config docs/planning/schemas/model-config.no-model.example.json
-```
-
-同一命令也支持 `source-manifest` 和 `search-request`。它通过本地 HTTP 服务执行 C++ 校验，返回 `applied=false`，不保存配置、不启用来源或调用模型。正式 v1 搜索请求通过校验，不代表当前 v0 搜索执行器支持其中所有字段。详见 [配置合同](docs/CONFIGURATION.md)。
-
-## 测试
-
-```bash
-ctest --test-dir build --output-on-failure
-cmake --preset asan
-cmake --build --preset asan-core -j 2
-ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_tests
-ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json
-```
-
-CTest 的 `contracts` 项直接运行 C++ 校验器，复用原 34 组设计 fixture 并增加边界回归。`docs/planning/tools/validate_contracts.py` 保留原 Python 设计基线，需要 `jsonschema`，可另行运行；它的结果与原生 C++ 测试分别记录：
-
-```bash
-python3 -m pip install -r tools/requirements-test.txt
-python3 docs/planning/tools/validate_contracts.py
-```
-
-## 安全与限制
-
-仅监听 `127.0.0.1`；拒绝浏览器 Origin；必须使用高熵 Bearer 令牌。不要暴露端口到公网，不要把原始 HTML 作为可信页面执行，不要把凭据或本地数据提交到 Git。
-
-普通网络读取尚未实现，当前用“不提供该能力”拒绝外部访问；**这不表示完整 DNS/重定向/浏览器隔离已经开发完成**。HTML 解析目前仍在核心进程内，只有大小和遍历限制，没有独立解析沙箱。因此只用于可信的自建样例或经授权、可控的输入。
-
-搜索采用早期基线排序；没有完成 BM25/中文分词/语义重排的完整质量验收。短中文、符号、NOT 等查询可能使用最多 2000 个候选的有界扫描，不能当作全量召回。
-
-详见 [安全边界](docs/SECURITY.md)、[架构决策](docs/adr/0001-offline-bootstrap.md) 与 [开发进度](docs/DEVELOPMENT_STATUS.md)。
-
-## 0.0.1 数据升级
-
-第一次用本版打开可服务的 schema 1 数据库时，会在事务中升级到 schema 2，重建与 ASCII 词边界一致的 FTS 候选副本。原始内容、快照、证据和已冻结分页保持不变；隔离备份仍不能启动。旧版程序无法直接打开 schema 2。
-
-HTML 解析版本为 `bootstrap-html/2`。旧 HTML 快照不会被自动改写；重新导入相同 HTML 才会生成采用新正文选择和 robots 解析规则的新快照，旧证据继续指向旧版本。
-
-## 与计划及目标仓库的关系
-
-`docs/planning/` 保留 v1.1 / v0.3 计划基线；`docs/implementation_status.json` 单独记录实现切片，不覆盖原计划，也不把整个工作包标为完成。
-
-本轮已核验 `wmqfl861/bzs861` 的远程基线，接手时仓库为空。当前交付见 [接手记录](docs/handoff/TAKEOVER_20261017.md)；`validation/delivery_status.json` 只描述上轮旧目标仓库的失败尝试。私有聊天和外层个人交接包未进入仓库。
-
-最终项目许可证待仓库所有者决定；本批没有替所有者选择开源许可证。基础依赖的许可证与来源见 `docs/DEPENDENCIES.md`。
+项目许可证由仓库所有者决定，目前未指定；依赖各自的许可继续适用。完整依赖与许可证发布审查尚未完成。

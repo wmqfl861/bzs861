@@ -1,4 +1,4 @@
-name: bootstrap-checks
+name: checks
 on:
   push:
   pull_request:
@@ -15,26 +15,37 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev python3-venv
-      - name: Build and run offline tests
-        run: |
-          cmake --preset dev
-          cmake --build --preset dev -j 2
-          ctest --preset dev
-      - name: Address and undefined-behavior checks (core and contracts)
-        run: |
-          cmake --preset asan
-          cmake --build --preset asan-core -j 2
-          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_tests
-          ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 ./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json
-      - name: Original design-contract fixtures
+      - name: Install the Python worker and pinned test dependencies
         run: |
           python3 -m venv .venv
-          .venv/bin/pip install -r tools/requirements-test.txt
+          .venv/bin/python -m pip install -r tools/requirements-s1-lock.txt
+          .venv/bin/python -m pip install --no-deps --no-build-isolation -e "python[test]"
+          .venv/bin/python -m pip check
+      - name: Build and test core, contracts, HTTP, worker and MCP
+        run: |
+          cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
+          cmake --build --preset dev -j 2
+          ctest --preset dev
+      - name: Address and undefined-behavior checks
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          cmake --preset asan -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
+          cmake --build --preset asan-core -j 2
+          ./build-asan/bzs_tests
+          ./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json
+      - name: Original contracts and planning safeguards
+        run: |
           .venv/bin/python docs/planning/tools/validate_contracts.py
+          .venv/bin/python docs/planning/tools/plan_v1_2.py check
+          .venv/bin/python tools/test_plan_guard.py
   windows:
+    # Full worker packaging remains in S9. Preserve the already established,
+    # blocking native core, contract and HTTP/CLI tests on Windows.
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
       - name: Check out the pinned vcpkg baseline
@@ -58,8 +69,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build-win --config Debug --parallel 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Offline tests
+      - name: Offline native and HTTP tests
         shell: pwsh
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
-          ctest --test-dir build-win -C Debug --output-on-failure
+          ctest --test-dir build-win -C Debug -R "^(core|contracts|http_cli)$" --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

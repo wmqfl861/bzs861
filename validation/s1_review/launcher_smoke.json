@@ -1,0 +1,257 @@
+{
+  "started_at_utc": "2026-10-18T01:07:12.892672+00:00",
+  "scope": "One isolated real launcher lifecycle; loopback control requests only; no source probe, fetch, search, MCP or model request.",
+  "python_version": "3.12.14",
+  "package_version": "0.1.1",
+  "searchd_binary": "build-s1-review/searchd",
+  "commands": [
+    {
+      "stage": "init",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "init"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 422,
+      "stderr_present": false
+    },
+    {
+      "stage": "start",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "start"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 505,
+      "stderr_present": false
+    },
+    {
+      "stage": "status",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "status"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 189,
+      "stderr_present": false
+    },
+    {
+      "stage": "call_capabilities",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "capabilities"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 184,
+      "stderr_present": false
+    },
+    {
+      "stage": "call_contract_validate",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "contract.validate",
+        "<kind=model-config; config from docs/planning/schemas/model-config.no-model.example.json>"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 194,
+      "stderr_present": false
+    },
+    {
+      "stage": "call_sources_read_only",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "call",
+        "web.sources"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 206,
+      "stderr_present": false
+    },
+    {
+      "stage": "stop",
+      "shape": [
+        "<venv-python>",
+        "-B",
+        "-m",
+        "bzs.cli",
+        "stop"
+      ],
+      "exit_code": 0,
+      "elapsed_ms": 10203,
+      "stderr_present": false
+    }
+  ],
+  "assertions": [
+    {
+      "name": "harness_adopts_only_its_orphaned_launcher_children",
+      "passed": true
+    },
+    {
+      "name": "selected_searchd_binary_exists",
+      "passed": true
+    },
+    {
+      "name": "only_temporary_home_configuration_used",
+      "passed": true
+    },
+    {
+      "name": "init_copies_disabled_default_manifest",
+      "passed": true,
+      "observed": {
+        "configured_sources": 17,
+        "enabled": 0
+      }
+    },
+    {
+      "name": "default_manifest_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "launcher_started_exactly_its_two_owned_processes",
+      "passed": true,
+      "observed": [
+        "searchd",
+        "worker"
+      ]
+    },
+    {
+      "name": "status_reports_core_and_worker_running",
+      "passed": true
+    },
+    {
+      "name": "core_and_python_versions_are_0_1_1",
+      "passed": true
+    },
+    {
+      "name": "default_live_web_sources_is_zero",
+      "passed": true,
+      "observed": 0
+    },
+    {
+      "name": "dry_run_contract_operation_is_available",
+      "passed": true
+    },
+    {
+      "name": "no_model_contract_validates_without_application",
+      "passed": true,
+      "observed": {
+        "validated": true,
+        "applied": false,
+        "profiles": {},
+        "default_text_profile": null
+      }
+    },
+    {
+      "name": "no_source_admission_or_request_recorded",
+      "passed": true,
+      "observed": {
+        "sources": 17,
+        "enabled": 0,
+        "nonempty_source_states": 0
+      }
+    },
+    {
+      "name": "default_worker_has_no_executable_source_adapter",
+      "passed": true,
+      "observed": []
+    },
+    {
+      "name": "worker_version_matches_and_proxy_is_disabled",
+      "passed": true
+    },
+    {
+      "name": "both_owned_processes_exited_and_reaped",
+      "passed": true
+    },
+    {
+      "name": "both_temporary_loopback_ports_closed",
+      "passed": true
+    }
+  ],
+  "result": "passed",
+  "cleanup": {
+    "processes": {
+      "worker": {
+        "pid": 7243,
+        "identity_checked_against_temporary_home": true,
+        "exited_and_reaped": true,
+        "exit_code": -15,
+        "fallback_signals": []
+      },
+      "searchd": {
+        "pid": 7244,
+        "identity_checked_against_temporary_home": true,
+        "exited_and_reaped": true,
+        "exit_code": 0,
+        "fallback_signals": []
+      }
+    },
+    "only_owned_process_ids_targeted": true,
+    "launcher_stop_exit_zero": true,
+    "no_fallback_signals_needed": true,
+    "temporary_directory_removed": true
+  },
+  "earlier_sandbox_attempt": {
+    "result": "failed",
+    "commands": [
+      {
+        "stage": "init",
+        "shape": [
+          "<venv-python>",
+          "-B",
+          "-m",
+          "bzs.cli",
+          "init"
+        ],
+        "exit_code": 0,
+        "elapsed_ms": 194,
+        "stderr_present": false
+      }
+    ],
+    "failure": {
+      "type": "PermissionError",
+      "stage_or_assertion": "[Errno 1] Operation not permitted"
+    },
+    "cleanup": {
+      "processes": {},
+      "only_owned_process_ids_targeted": true,
+      "launcher_stop_exit_zero": false,
+      "no_fallback_signals_needed": true,
+      "temporary_directory_removed": true
+    }
+  },
+  "ports": {
+    "core": 36403,
+    "worker": 40991,
+    "host": "127.0.0.1"
+  },
+  "core_version": "0.1.1",
+  "worker_health": {
+    "ok": true,
+    "version": "0.1.1",
+    "adapters": [],
+    "proxy": false
+  },
+  "elapsed_ms": 11913,
+  "finished_at_utc": "2026-10-18T01:07:24.805898+00:00"
+}

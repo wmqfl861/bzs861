@@ -128,21 +128,27 @@ namespace bzs {
     out.set("external_requests", static_cast<std::int64_t>(0));
     return out;
   }
-  Json Service::capabilities() {
+  Json Service::capabilities() const {
     Json j=Json::object();
     j.set("version", BZS_VERSION);
-    j.set("build_profile", "offline_bootstrap");
-    j.set("external_network", "disabled");
-    j.set("live_web_sources", static_cast<std::int64_t>(0));
+    j.set("build_profile", web_?"s1_web":"offline_bootstrap");
+    j.set("external_network", web_?"worker_mediated":"disabled");
+    j.set("live_web_sources", static_cast<std::int64_t>(web_?web_->enabled_sources():0));
     j.set("production_ready", false);
     Json a=Json::array();
     for(const auto*op: {
-      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "backup.create"
+      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "backup.create"
+    })a.push(Json::string(op));
+    if(web_)for(const auto*op: {
+      "web.search", "web.read", "web.sources"
     })a.push(Json::string(op));
     j.set("operations", a);
     Json missing=Json::array();
+    if(!web_)for(const auto*x: {
+      "live_web_search", "url_fetch"
+    })missing.push(Json::string(x));
     for(const auto*x: {
-      "live_web_search", "url_fetch", "browser", "recursive_crawl", "models", "semantic_search", "mcp", "media", "cross_platform_validation"
+      "browser", "recursive_crawl", "pdf", "models", "semantic_search", "remote_mcp", "media", "windows_validation"
     })missing.push(Json::string(x));
     j.set("not_implemented", missing);
     return j;
@@ -208,6 +214,19 @@ namespace bzs {
         "snapshot_id"
       });
       return store_.snapshot(p.subject, required_string(args, "snapshot_id", 64));
+    }
+    if(op=="document.range") {
+      args.allowed( {
+        "snapshot_id", "start_byte", "max_bytes"
+      });
+      return store_.range(p.subject, required_string(args, "snapshot_id", 64), int_option(args, "start_byte", 0, 0, 1LL<<40), int_option(args, "max_bytes", 20000, 1, 262144));
+    }
+    if(web_&&op=="web.search")return web_->search(p.subject, args);
+    if(web_&&op=="web.read")return web_->read(p.subject, args);
+    if(web_&&op=="web.sources") {
+      args.allowed( {
+      });
+      return web_->sources();
     }
     if(op=="document.delete") {
       args.allowed( {

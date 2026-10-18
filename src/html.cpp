@@ -29,7 +29,7 @@ namespace bzs {
     }
     bool skip_element(xmlNode*n) {
       static const std::set<std::string> skip= {
-        "head", "script", "style", "nav", "footer", "header", "noscript", "iframe", "object", "embed", "svg", "template"
+        "head", "script", "style", "nav", "footer", "header", "noscript", "iframe", "object", "embed", "svg", "template", "aside", "button", "select"
       };
       auto style=ascii_lower(prop(n, "style"));
       style.erase(std::remove(style.begin(), style.end(), ' '), style.end());
@@ -64,32 +64,35 @@ namespace bzs {
       }
       require(s.size()<=1024*1024, "E_CONTENT_TOO_LARGE", "Extracted content too large", 413);
     }
-    void walk(xmlNode*n, ParsedDocument& out, std::size_t& visited, int depth=0, bool pre=false, xmlNode* stop_before=nullptr) {
+    void walk_children(xmlNode* first, ParsedDocument& out, std::size_t& visited, int depth, bool pre);
+    // Visits exactly one chosen node and its descendants, never its siblings.
+    void walk_node(xmlNode* p, ParsedDocument& out, std::size_t& visited, int depth=0, bool pre=false) {
+      if(!p)return;
       require(depth<=128, "E_PARSE_LIMIT", "HTML nesting too deep", 413);
       static const std::set<std::string> blocks= {
         "p", "div", "section", "article", "main", "h1", "h2", "h3", "h4", "h5", "h6", "li", "tr", "ul", "ol", "pre", "blockquote", "br"
       };
-      for(auto*p=n; p&&p!=stop_before; p=p->next) {
-        require(++visited<=50000, "E_PARSE_LIMIT", "HTML node budget exceeded", 413);
-        if(p->type==XML_TEXT_NODE||p->type==XML_CDATA_SECTION_NODE) {
-          if(p->content)text_append(out.text, reinterpret_cast<const char*>(p->content), pre);
-          continue;
-        }
-        if(p->type!=XML_ELEMENT_NODE)continue;
-        auto name=tag(p);
-        if(skip_element(p))continue;
-        bool block=blocks.contains(name);
-        if(block)newline(out.text);
-        if(name=="a"&&out.links.size()<512) {
-          auto h=prop(p, "href");
-          if(!h.empty()&&h.size()<=4096&&h.find('\0')==std::string::npos)out.links.push(Json::string(h));
-        }
-        if(name=="td"||name=="th") {
-          if(!out.text.empty()&&out.text.back()!='\n')out.text+=" | ";
-        }
-        if(p->children)walk(p->children, out, visited, depth+1, pre||name=="pre"||name=="code");
-        if(block)newline(out.text);
+      require(++visited<=50000, "E_PARSE_LIMIT", "HTML node budget exceeded", 413);
+      if(p->type==XML_TEXT_NODE||p->type==XML_CDATA_SECTION_NODE) {
+        if(p->content)text_append(out.text, reinterpret_cast<const char*>(p->content), pre);
+        return;
       }
+      if(p->type!=XML_ELEMENT_NODE||skip_element(p))return;
+      auto name=tag(p);
+      bool block=blocks.contains(name);
+      if(block)newline(out.text);
+      if(name=="a"&&out.links.size()<512) {
+        auto h=prop(p, "href");
+        if(!h.empty()&&h.size()<=4096&&h.find('\0')==std::string::npos)out.links.push(Json::string(h));
+      }
+      if(name=="td"||name=="th") {
+        if(!out.text.empty()&&out.text.back()!='\n')out.text+=" | ";
+      }
+      if(p->children)walk_children(p->children, out, visited, depth+1, pre||name=="pre"||name=="code");
+      if(block)newline(out.text);
+    }
+    void walk_children(xmlNode* first, ParsedDocument& out, std::size_t& visited, int depth, bool pre) {
+      for(auto*p=first; p; p=p->next)walk_node(p, out, visited, depth, pre);
     }
     void scan_meta(xmlNode*n, ParsedDocument&out, std::size_t& visited, int depth=0) {
       require(depth<=128, "E_PARSE_LIMIT", "Metadata nesting too deep", 413);
@@ -150,8 +153,7 @@ namespace bzs {
       }
       if(!chosen)chosen=root;
       visited=0;
-      // Select one subtree; recursive child walks may still traverse siblings.
-      walk(chosen, out, visited, 0, false, chosen?chosen->next:nullptr);
+      walk_node(chosen, out, visited);
     }
     while(!out.text.empty()&&(out.text.back()=='\n'||out.text.back()==' '))out.text.pop_back();
     require(!out.text.empty(), "E_PARSE_FAILED", "No readable text", 422);

@@ -165,9 +165,11 @@ class Integration(unittest.TestCase):
         self.assertEqual(self.ok('search', {'query': 'BeforeUpdateCanary'})['frozen_count'], 0)
         session = self.ok('search', {'query': 'AfterUpdateCanary'})
         self.ok('document.delete', {'document_id': new['document_id']})
-        status, body = self.server.call('search.page', {'session_id': session['session_id']})
-        self.assertEqual(status, 409)
-        self.assertEqual(body['errors'][0]['code'], 'E_SESSION_INVALIDATED')
+        # Per-document tombstone: the old session stays valid but cannot return deleted content.
+        page = self.ok('search.page', {'session_id': session['session_id']})
+        self.assertEqual(page['hits'], [])
+        status, _ = self.server.call('document.read', {'snapshot_id': new['snapshot_id']})
+        self.assertEqual(status, 404)
 
     def test_09_fixture_search_and_ingest_cli(self):
         result = self.server.cli('fixture-search', 'C++')

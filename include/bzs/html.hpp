@@ -4,7 +4,7 @@
 #include <string_view>
 namespace bzs {
   struct ParsedDocument {
-    std::string title, text, content_type, parser_version="bootstrap-html/2";
+    std::string title, text, content_type, parser_version="bootstrap-html/3";
     Json links=Json::array();
     bool index_allowed=true;
   };

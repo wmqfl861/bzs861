@@ -1,0 +1,147 @@
+Internal ctest changing into directory: /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/DartConfiguration.tcl
+Test project /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: core
+
+1: Test command: /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/bzs_tests
+1: Working Directory: /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_target_tombstone
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: PASS tokenizer_cjk_and_symbols
+1: PASS fts_chinese_uses_index
+1: PASS bm25_ranks_relevance
+1: PASS literal_exactness
+1: PASS html_main_excludes_siblings
+1: PASS delete_keeps_unrelated_jobs_and_sessions
+1: PASS highlights_are_query_relevant_and_exact
+1: PASS revisions_pruned_and_quota_counters
+1: PASS range_windows_are_utf8_safe
+1: PASS migration_from_v1
+1: PASS dedup_and_rrf_fusion
+1: PASS public_url_policy
+1: PASS web_search_merges_and_cools_down
+1: PASS web_search_cache_spares_sources
+1: PASS iri_urls_are_encoded_for_reading
+1: PASS web_read_ingests_and_caches
+1: PASS source_admission_limits
+1: {"tests":62,"passed":62,"assertions":307}
+1/4 Test #1: core .............................   Passed    1.32 sec
+test 2
+    Start 2: http_cli
+
+2: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/80f41eb198a3/claude_s1_intake/source/bzs861/tests/integration.py" "--server" "/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/searchd" "--cli" "/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/searchctl" "--fixtures" "/workspace/scratch/80f41eb198a3/claude_s1_intake/source/bzs861/tests/fixtures"
+2: Working Directory: /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline
+2: Test timeout computed to be: 90
+2: test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+2: test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+2: test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+2: test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+2: test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+2: test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+2: test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+2: test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+2: test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+2: test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+2: test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+2: test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+2: test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+2: test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+2: test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+2: test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+2: 
+2: ----------------------------------------------------------------------
+2: Ran 16 tests in 5.689s
+2: 
+2: OK
+2/4 Test #2: http_cli .........................   Passed    5.88 sec
+test 3
+    Start 3: e2e_web
+
+3: Test command: /workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python "/workspace/scratch/80f41eb198a3/claude_s1_intake/source/bzs861/tests/e2e_web.py" "--server" "/workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline/searchd" "--python" "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python" "--repo" "/workspace/scratch/80f41eb198a3/claude_s1_intake/source/bzs861"
+3: Working Directory: /workspace/scratch/80f41eb198a3/claude_s1_intake/build-baseline
+3: Test timeout computed to be: 180
+3: test_01_capabilities (__main__.EndToEnd.test_01_capabilities) ... ok
+3: test_02_web_search_merges_sources (__main__.EndToEnd.test_02_web_search_merges_sources) ... ok
+3: test_03_blocked_source_cools_down_and_others_still_answer (__main__.EndToEnd.test_03_blocked_source_cools_down_and_others_still_answer) ... ok
+3: test_04_read_url_extracts_and_caches (__main__.EndToEnd.test_04_read_url_extracts_and_caches) ... ok
+3: test_05_ssrf_is_refused (__main__.EndToEnd.test_05_ssrf_is_refused) ... ok
+3: test_06_gbk_page_and_chinese_local_search (__main__.EndToEnd.test_06_gbk_page_and_chinese_local_search) ... ok
+3: test_07_find_range_and_evidence (__main__.EndToEnd.test_07_find_range_and_evidence) ... ok
+3: test_08_unreadable_pages_report_why (__main__.EndToEnd.test_08_unreadable_pages_report_why) ... ok
+3: test_09_mcp_stdio (__main__.EndToEnd.test_09_mcp_stdio) ... ok
+3: test_09b_mcp_http_requires_a_client_token (__main__.EndToEnd.test_09b_mcp_http_requires_a_client_token) ... ok
+3: test_10_worker_down_is_explicit_and_local_features_survive (__main__.EndToEnd.test_10_worker_down_is_explicit_and_local_features_survive) ... ok
+3: 
+3: ----------------------------------------------------------------------
+3: Ran 11 tests in 5.203s
+3: 
+3: OK
+3: {"e2e_tests": 11, "failures": 0, "errors": 0, "seconds": 5.2}
+3/4 Test #3: e2e_web ..........................   Passed    6.49 sec
+test 4
+    Start 4: python_worker
+
+4: Test command: /workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python "-m" "pytest" "-q" "-p" "no:cacheprovider" "tests"
+4: Working Directory: /workspace/scratch/80f41eb198a3/claude_s1_intake/source/bzs861/python
+4: Test timeout computed to be: 180
+4: ................................................................         [100%]
+4: 64 passed in 4.32s
+4/4 Test #4: python_worker ....................   Passed    5.00 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =  18.68 sec

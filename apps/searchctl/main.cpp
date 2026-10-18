@@ -34,7 +34,7 @@ namespace {
     beast::error_code error;
     unsigned status=0;
     std::string output;
-    stream.expires_after(std::chrono::seconds(10));
+    stream.expires_after(std::chrono::seconds(90));
     stream.async_connect(tcp::endpoint(net::ip::make_address("127.0.0.1"), port), [&](beast::error_code ec) {
       if(ec) {
         error=ec;
@@ -79,7 +79,7 @@ int main(int argc, char**argv) {
       i+=2;
     }
     if(i>=argc||std::string(argv[i])=="--help") {
-      std::cout<<"searchctl [--port 8610] COMMAND [ARGS]\n\nCommands:\n  health | capabilities | fixtures | stats | backup\n  fixture-search QUERY | fixture-ingest FIXTURE_ID\n  ingest FILE URL [text/html|text/plain]\n  query QUERY | search QUERY\n  read SNAPSHOT_ID | delete DOCUMENT_ID\n  find SNAPSHOT_ID TEXT\n  page SESSION_ID [CURSOR]\n  validate KIND CONFIG_JSON_FILE\n  call REQUEST_JSON_FILE\n\nValidation kinds: model-config | source-manifest | search-request.\nValidation checks configuration without applying it.\nSEARCH_API_TOKEN supplies the bearer token; only loopback connections are allowed.\n";
+      std::cout<<"searchctl [--port 8610] COMMAND [ARGS]\n\nCommands:\n  health | capabilities | fixtures | stats | backup\n  fixture-search QUERY | fixture-ingest FIXTURE_ID\n  ingest FILE URL [text/html|text/plain]\n  query QUERY | search QUERY\n  read SNAPSHOT_ID | delete DOCUMENT_ID\n  range SNAPSHOT_ID START_BYTE [MAX_BYTES]\n  find SNAPSHOT_ID TEXT\n  page SESSION_ID [CURSOR]\n  web-search QUERY | read-url URL | sources\n  validate KIND CONFIG_JSON_FILE\n  call REQUEST_JSON_FILE\n\nValidation kinds: model-config | source-manifest | search-request.\nValidation checks configuration without applying it.\nSEARCH_API_TOKEN supplies the bearer token; only loopback connections are allowed.\n";
       return 0;
     }
     auto command=std::string(argv[i++]);
@@ -103,6 +103,21 @@ int main(int argc, char**argv) {
     } else if(command=="read") {
       op="document.read";
       params.set("snapshot_id", arg());
+    } else if(command=="range") {
+      op="document.range";
+      params.set("snapshot_id", arg());
+      params.set("start_byte", static_cast<std::int64_t>(std::stoll(arg())));
+      if(i<argc)params.set("max_bytes", static_cast<std::int64_t>(std::stoll(arg())));
+    } else if(command=="web-search") {
+      op="web.search";
+      std::string q=arg();
+      while(i<argc)q+=" "+arg();
+      params.set("query", q);
+    } else if(command=="read-url") {
+      op="web.read";
+      params.set("url", arg());
+    } else if(command=="sources") {
+      op="web.sources";
     } else if(command=="delete") {
       op="document.delete";
       params.set("document_id", arg());

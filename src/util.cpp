@@ -2,6 +2,7 @@
 #include "bzs/error.hpp"
 #include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <fstream>
@@ -98,7 +99,17 @@ namespace bzs {
     else throw Error("E_URL", "Only http/https metadata URLs are accepted; no network fetch occurs");
     auto end=url.find_first_of("/?#", start);
     auto authority=url.substr(start, end==std::string_view::npos?url.size()-start:end-start);
-    require(!authority.empty()&&authority.find_first_of("@\\%[]:")==std::string_view::npos, "E_URL", "Credentials, encoded hosts, IPv6 and ports are not accepted by bootstrap metadata parser");
+    require(!authority.empty()&&authority.find_first_of("@\\%[]")==std::string_view::npos, "E_URL", "Credentials, encoded hosts and IPv6 literals are not accepted");
+    if(auto colon=authority.rfind(':'); colon!=std::string_view::npos) {
+      auto port=authority.substr(colon+1);
+      require(!port.empty()&&port.size()<=5&&std::all_of(port.begin(), port.end(), [](char c) {
+        return c>='0'&&c<='9';
+      }), "E_URL", "Invalid port");
+      auto n=std::stoi(std::string(port));
+      require(n>=1&&n<=65535, "E_URL", "Invalid port");
+      authority=authority.substr(0, colon);
+      require(!authority.empty()&&authority.find(':')==std::string_view::npos, "E_URL", "Invalid authority");
+    }
     auto host=ascii_lower(authority);
     require(host.size()<=253&&host.front()!='.'&&host.back()!='.', "E_URL", "Invalid hostname");
     std::size_t len=0;

@@ -21,7 +21,8 @@ namespace bzs {
     static Json string(std::string_view s);
     static Json integer(std::int64_t n);
     static Json boolean(bool b);
-    static Json parse(std::string_view text);
+    // max_bytes: 2 MiB for client requests; trusted internal channels may allow more.
+    static Json parse(std::string_view text, std::size_t max_bytes=2*1024*1024);
     std::string dump(bool pretty=false) const;
     std::string canonical() const;
     bool is_object() const;

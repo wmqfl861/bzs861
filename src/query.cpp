@@ -1,5 +1,6 @@
 #include "bzs/query.hpp"
 #include "bzs/error.hpp"
+#include "bzs/tokenizer.hpp"
 #include "bzs/util.hpp"
 #include <algorithm>
 #include <cctype>
@@ -199,20 +200,38 @@ namespace bzs {
     bool word_char(unsigned char c) {
       return (c>='a'&&c<='z')||(c>='0'&&c<='9')||c=='_';
     }
-    bool contains(std::string_view hay, const QueryNode& n) {
-      auto h=ascii_lower(hay), v=ascii_lower(n.value);
-      std::size_t pos=0;
-      bool word=n.op=="term"&&std::all_of(v.begin(), v.end(), [](unsigned char c) {
+    bool ascii_alpha(unsigned char c) {
+      return c>='a'&&c<='z';
+    }
+    bool all_word(std::string_view v) {
+      return !v.empty()&&std::all_of(v.begin(), v.end(), [](unsigned char c) {
         return word_char(c);
       });
-      while((pos=h.find(v, pos))!=std::string::npos) {
-        if(!word||(pos==0||!word_char(static_cast<unsigned char>(h[pos-1])))) {
-          auto e=pos+v.size();
-          if(!word||e==h.size()||!word_char(static_cast<unsigned char>(h[e])))return true;
-        }
-        ++pos;
+    }
+    // Boundary rules on the ASCII-lowered haystack. CJK text has no word delimiters,
+    // so boundaries are only enforced next to ASCII word characters.
+    bool boundary_ok(std::string_view h, std::size_t pos, std::size_t len, const QueryNode& n, std::string_view v) {
+      // Quoted phrases retain the published raw-substring semantics, including
+      // a one-word phrase inside a longer word. Only ASCII case is folded.
+      if(n.op=="phrase")return true;
+      auto e=pos+len;
+      unsigned char prev=pos>0?static_cast<unsigned char>(h[pos-1]):static_cast<unsigned char>(0);
+      unsigned char next=e<h.size()?static_cast<unsigned char>(h[e]):static_cast<unsigned char>(0);
+      auto first=static_cast<unsigned char>(v.front()), last=static_cast<unsigned char>(v.back());
+      if(n.op=="term") {
+        if(!all_word(v))return true;
+        return !(prev&&word_char(prev))&&!(next&&word_char(next));
       }
-      return false;
+      if(word_char(first)&&prev&&word_char(prev))return false;
+      // literal: exact identifiers, versions and language names (B7).
+      if(!next)return true;
+      if(word_char(last)) {
+        if(word_char(next))return false;
+        if((next=='.'||next==':')&&e+1<h.size()&&word_char(static_cast<unsigned char>(h[e+1])))return false;
+        return true;
+      }
+      if(last=='+'||last=='#')return !(ascii_alpha(next)||next=='_'||next=='+'||next=='#');
+      return true;
     }
     bool eval(const QueryNode& n, std::string_view title, std::string_view body, std::string_view url) {
       if(n.op=="and")return std::all_of(n.children.begin(), n.children.end(), [&](const auto& c) {
@@ -222,34 +241,79 @@ namespace bzs {
         return eval(c, title, body, url);
       });
       if(n.op=="not")return !eval(n.children.at(0), title, body, url);
-      if(n.field=="title")return contains(title, n);
-      if(n.field=="body")return contains(body, n);
-      if(n.field=="url")return contains(url, n);
-      return contains(title, n)||contains(body, n);
+      auto in=[&](std::string_view hay) {
+        return !leaf_matches(ascii_lower(hay), n, 1).empty();
+      };
+      if(n.field=="title")return in(title);
+      if(n.field=="body")return in(body);
+      if(n.field=="url")return in(url);
+      return in(title)||in(body);
     }
+    std::string fts_quote(std::string_view v) {
+      std::string s="\"";
+      for(char c:v) {
+        if(c=='"')s+="\"\"";
+        else s+=c;
+      }
+      return s+"\"";
+    }
+    // Returns an FTS5 expression whose matches are a superset of the exact matches,
+    // or nothing when that cannot be guaranteed. Exact semantics are re-checked later.
     std::optional<std::string> fts(const QueryNode& n) {
-      if(n.op=="not"||n.field=="url")return std::nullopt;
-      if(n.op=="and"||n.op=="or") {
-        std::string s="(";
-        bool first=true;
-        for(const auto& c:n.children) {
-          auto q=fts(c);
+      if(n.op=="not")return std::nullopt;
+      if(n.op=="and") {
+        std::vector<std::string> parts;
+        for(const auto& c:n.children)if(auto q=fts(c))parts.push_back("("+*q+")");
+        if(parts.empty())return std::nullopt;
+        std::string s;
+        for(std::size_t i=0; i<parts.size(); ++i)s+=(i?" AND ":"")+parts[i];
+        return s;
+      }
+      if(n.op=="or") {
+        std::string s;
+        for(std::size_t i=0; i<n.children.size(); ++i) {
+          auto q=fts(n.children[i]);
           if(!q)return std::nullopt;
-          if(!first)s+=n.op=="and"?" AND ":" OR ";
-          first=false;
-          s+=*q;
+          s+=(i?" OR ":"")+("("+*q+")");
         }
-        return s+")";
+        return s;
       }
       auto value=ascii_lower(n.value);
-      if(n.op!="term"||!std::all_of(value.begin(), value.end(), [](unsigned char c) {
-        return word_char(c);
-      }))return std::nullopt;
-      // Phrases use substring semantics even when they contain only one word.
-      // Term candidates require the matching ASCII-only index projection.
+      if(n.field=="url")return std::nullopt;
+      // The bzs/2 tokenizer splits ASCII words on every non-[a-z0-9_]
+      // character and gives every CJK character a position. These are the
+      // only leaf shapes whose exact matches are guaranteed FTS candidates.
+      // General Unicode substrings, phrases and symbol literals need a scan.
+      if(!(n.op=="term"&&all_word(value))&&!is_cjk_text(value))return std::nullopt;
       auto prefix=n.field=="title"?"title : ":(n.field=="body"?"body : ":"");
-      return std::string(prefix)+"\""+value+"\"";
+      return std::string(prefix)+fts_quote(value);
     }
+    void collect_leaves(const QueryNode& n, std::vector<const QueryNode*>& out) {
+      if(n.op=="not")return;
+      if(n.op=="and"||n.op=="or") {
+        for(const auto& c:n.children)collect_leaves(c, out);
+        return;
+      }
+      out.push_back(&n);
+    }
+  }
+  std::vector<std::pair<std::size_t, std::size_t>> leaf_matches(std::string_view hay_lower, const QueryNode& n, std::size_t limit) {
+    std::vector<std::pair<std::size_t, std::size_t>> out;
+    auto v=ascii_lower(n.value);
+    if(v.empty()||limit==0)return out;
+    std::size_t pos=0;
+    while(out.size()<limit&&(pos=hay_lower.find(v, pos))!=std::string_view::npos) {
+      if(boundary_ok(hay_lower, pos, v.size(), n, v)) {
+        out.emplace_back(pos, pos+v.size());
+        pos+=v.size();
+      } else ++pos;
+    }
+    return out;
+  }
+  std::vector<const QueryNode*> positive_leaves(const QueryNode& root) {
+    std::vector<const QueryNode*> out;
+    collect_leaves(root, out);
+    return out;
   }
   Query parse_query(const Json& input) {
     Query q;
@@ -302,12 +366,13 @@ namespace bzs {
     return out;
   }
   int score_match(const QueryNode& q, std::string_view title, std::string_view body) {
-    if(q.op=="not")return 0;
-    if(q.op=="and"||q.op=="or") {
-      int n=0;
-      for(const auto&c:q.children)n+=score_match(c, title, body);
-      return n;
+    // Used only by the bounded fallback scan: title hits weigh more, body hits are capped.
+    auto lt=ascii_lower(title), lb=ascii_lower(body);
+    int n=0;
+    for(const auto* leaf:positive_leaves(q)) {
+      n+=4*static_cast<int>(leaf_matches(lt, *leaf, 5).size());
+      n+=static_cast<int>(leaf_matches(lb, *leaf, 10).size());
     }
-    return (contains(title, q)?5:0)+(contains(body, q)?1:0);
+    return n;
   }
 }

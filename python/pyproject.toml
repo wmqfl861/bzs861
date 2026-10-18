@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bzs861"
+version = "0.1.1"
+description = "bzs861 network worker, MCP adapter and launcher (the search core is the C++ searchd)"
+requires-python = ">=3.10"
+dependencies = [
+  "aiohttp>=3.9,<4",
+  "lxml>=5",
+  "cssselect>=1.2",
+  "trafilatura>=2.0,<3",
+  "mcp>=2.2,<3",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+bzs = "bzs.cli:main"
+bzs-worker = "bzs.worker.server:main"
+bzs-mcp = "bzs.mcp_server:main"
+
+[tool.setuptools.packages.find]
+include = ["bzs*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

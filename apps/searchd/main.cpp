@@ -10,6 +10,8 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
+#include <vector>
 namespace net=boost::asio;
 namespace beast=boost::beast;
 namespace http=beast::http;
@@ -26,8 +28,87 @@ namespace {
     Json u=Json::object();
     u.set("external_requests", static_cast<std::int64_t>(0));
     u.set("model_calls", static_cast<std::int64_t>(0));
-    j.set("usage", u);
+    j.set("usage", result.has("usage")&&result.at("usage").is_object()?result.at("usage"):u);
     return j;
+  }
+  // Worker RPC over loopback HTTP. Each call owns a short-lived io_context so a slow
+  // worker only blocks the request thread that is waiting for it.
+  class HttpWorker final:public WorkerPort {
+    std::string host_;
+    unsigned short port_;
+    std::string token_;
+    public: HttpWorker(std::string host, unsigned short port, std::string token):host_(std::move(host)), port_(port), token_(std::move(token)) {
+    }
+    Json call(const std::string& method, const Json& params, int timeout_ms) override {
+      net::io_context io;
+      beast::tcp_stream stream(io);
+      beast::flat_buffer buffer;
+      http::response_parser<http::string_body> parser;
+      parser.body_limit(24*1024*1024);
+      Json body=Json::object();
+      body.set("method", method);
+      body.set("params", params);
+      http::request<http::string_body> request(http::verb::post, "/rpc", 11);
+      request.set(http::field::host, host_+":"+std::to_string(port_));
+      request.set(http::field::authorization, "Bearer "+token_);
+      request.set(http::field::content_type, "application/json");
+      request.keep_alive(false);
+      request.body()=body.dump();
+      request.prepare_payload();
+      beast::error_code error;
+      unsigned status=0;
+      std::string output;
+      stream.expires_after(std::chrono::milliseconds(timeout_ms));
+      stream.async_connect(tcp::endpoint(net::ip::make_address(host_), port_), [&](beast::error_code ec) {
+        if(ec) {
+          error=ec;
+          return;
+        }
+        http::async_write(stream, request, [&](beast::error_code ec2, std::size_t) {
+          if(ec2) {
+            error=ec2;
+            return;
+          }
+          http::async_read(stream, buffer, parser, [&](beast::error_code ec3, std::size_t) {
+            if(ec3) {
+              error=ec3;
+              return;
+            }
+            auto result=parser.release();
+            status=result.result_int();
+            output=std::move(result.body());
+          });
+        });
+      });
+      io.run();
+      if(error==beast::error::timeout)throw Error("E_WORKER_TIMEOUT", "Worker did not answer in time", 504);
+      require(!error, "E_WORKER_UNAVAILABLE", "Worker is not reachable; start it with `bzs start`", 503);
+      require(status==200, "E_WORKER", "Worker returned HTTP "+std::to_string(status), 502);
+      auto reply=Json::parse(output, 24*1024*1024);
+      if(reply.has("error")&&reply.at("error").is_object()) {
+        auto e=reply.at("error");
+        throw Error("E_WORKER", "Worker error: "+(e.has("message")&&e.at("message").is_string()?utf8_prefix(e.at("message").str(), 300):std::string("unknown")), 502);
+      }
+      return reply.at("result");
+    }
+  };
+  std::pair<std::string, unsigned short> loopback_url(const std::string& url) {
+    require(url.starts_with("http://"), "E_ARGUMENT", "--worker must be http://127.0.0.1:PORT");
+    auto rest=url.substr(7);
+    while(!rest.empty()&&rest.back()=='/')rest.pop_back();
+    auto colon=rest.rfind(':');
+    require(colon!=std::string::npos, "E_ARGUMENT", "--worker needs a port");
+    auto host=rest.substr(0, colon);
+    require(host=="127.0.0.1", "E_ARGUMENT", "--worker must use 127.0.0.1 (worker RPC is loopback-only)");
+    unsigned n=0;
+    auto port=rest.substr(colon+1);
+    auto [p, e]=std::from_chars(port.data(), port.data()+port.size(), n);
+    require(e==std::errc {
+    }
+    &&p==port.data()+port.size()&&n>=1&&n<=65535, "E_ARGUMENT", "Invalid worker port");
+    return {
+      host, static_cast<unsigned short>(n)
+    };
   }
   class Session:public std::enable_shared_from_this<Session> {
     beast::tcp_stream stream_;
@@ -161,13 +242,17 @@ namespace {
 }
 int main(int argc, char**argv) {
   try {
-    std::filesystem::path state=".local/state", fixtures="tests/fixtures", authfile;
+    std::filesystem::path state=".local/state", fixtures="tests/fixtures", authfile, sources_file, worker_token_file;
+    std::string worker_url;
     unsigned short port=8610;
+    unsigned threads=8;
     bool worker=true;
     for(int i=1; i<argc; ++i) {
       std::string a=argv[i];
       if(a=="--help") {
-        std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--no-worker]\nOnly 127.0.0.1 is supported. All external capabilities are disabled.\n";
+        std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
+                   "        [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
+                   "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n";
         return 0;
       }
       if(a=="--version") {
@@ -183,6 +268,17 @@ int main(int argc, char**argv) {
       if(a=="--state")state=v;
       else if(a=="--fixtures")fixtures=v;
       else if(a=="--auth")authfile=v;
+      else if(a=="--worker")worker_url=v;
+      else if(a=="--worker-token-file")worker_token_file=v;
+      else if(a=="--sources")sources_file=v;
+      else if(a=="--threads") {
+        unsigned n=0;
+        auto[p, e]=std::from_chars(v.data(), v.data()+v.size(), n);
+        require(e==std::errc {
+        }
+        &&p==v.data()+v.size()&&n>=1&&n<=64, "E_ARGUMENT", "Invalid thread count");
+        threads=n;
+      }
       else if(a=="--port") {
         unsigned n=0;
         auto[p, e]=std::from_chars(v.data(), v.data()+v.size(), n);
@@ -200,7 +296,18 @@ int main(int argc, char**argv) {
     Auth auth(authfile);
     FixtureCatalog catalog(fixtures);
     Store store(state/"metadata.sqlite");
-    Service service(store, catalog, state/"backups");
+    std::unique_ptr<HttpWorker> rpc;
+    std::unique_ptr<WebService> web;
+    if(!worker_url.empty()) {
+      require(!worker_token_file.empty()&&!sources_file.empty(), "E_ARGUMENT", "--worker requires --worker-token-file and --sources");
+      auto [host, wport]=loopback_url(worker_url);
+      auto token=read_file(worker_token_file, 4096);
+      while(!token.empty()&&(token.back()=='\n'||token.back()=='\r'||token.back()==' '))token.pop_back();
+      require(token.size()>=32, "E_ARGUMENT", "Worker token file must contain a token of at least 32 characters");
+      rpc=std::make_unique<HttpWorker>(host, wport, token);
+      web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file));
+    }
+    Service service(store, catalog, state/"backups", web.get());
     net::io_context io;
     Listener listener(io, port, service, auth);
     std::jthread worker_thread;
@@ -216,9 +323,15 @@ int main(int argc, char**argv) {
     ready.set("host", "127.0.0.1");
     ready.set("port", static_cast<std::int64_t>(listener.port()));
     ready.set("version", BZS_VERSION);
-    ready.set("network_mode", "offline");
+    ready.set("network_mode", web?"worker_mediated":"offline");
+    ready.set("threads", static_cast<std::int64_t>(threads));
     std::cout<<ready.dump()<<std::endl;
+    std::vector<std::thread> pool;
+    for(unsigned t=1; t<threads; ++t)pool.emplace_back([&io] {
+      io.run();
+    });
     io.run();
+    for(auto& t:pool)t.join();
     worker_thread.request_stop();
     return 0;
   }catch(const Error&e) {

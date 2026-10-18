@@ -1,0 +1,5113 @@
+{
+  "document_version": "1.2",
+  "base": "requirements_and_backlog.json v1.1: all 83 package IDs and 161 acceptance IDs retained",
+  "unit": "person_day_planning_estimate",
+  "slices": [
+    {
+      "slice": "S0",
+      "title": "来源实测与评测基线",
+      "count": 4,
+      "effort_low": 15,
+      "effort_high": 26
+    },
+    {
+      "slice": "S1",
+      "title": "Agent 可用的联网搜索与读取（MCP stdio）",
+      "count": 23,
+      "effort_low": 109,
+      "effort_high": 188
+    },
+    {
+      "slice": "S2",
+      "title": "爬虫、任务与质量基线",
+      "count": 10,
+      "effort_low": 41,
+      "effort_high": 71
+    },
+    {
+      "slice": "S3",
+      "title": "动态页面、文档与查询能力",
+      "count": 6,
+      "effort_low": 26,
+      "effort_high": 45
+    },
+    {
+      "slice": "S4",
+      "title": "模型与证据研究（Exa 式）",
+      "count": 8,
+      "effort_low": 45,
+      "effort_high": 76
+    },
+    {
+      "slice": "S5",
+      "title": "远程 MCP 与多客户端",
+      "count": 2,
+      "effort_low": 8,
+      "effort_high": 13
+    },
+    {
+      "slice": "S6",
+      "title": "搜索质量与体验",
+      "count": 7,
+      "effort_low": 30,
+      "effort_high": 51
+    },
+    {
+      "slice": "S7",
+      "title": "垂直搜索与私人资料",
+      "count": 7,
+      "effort_low": 45,
+      "effort_high": 80
+    },
+    {
+      "slice": "S8",
+      "title": "图片与音视频",
+      "count": 5,
+      "effort_low": 31,
+      "effort_high": 53
+    },
+    {
+      "slice": "S9",
+      "title": "工作区、订阅、规模化与 Windows 交付",
+      "count": 11,
+      "effort_low": 68,
+      "effort_high": 117
+    }
+  ],
+  "total_effort": [
+    418,
+    720
+  ],
+  "packages": [
+    {
+      "id": "GOV-01",
+      "name": "需求边界、能力目录与许可证清单",
+      "slice": "S0",
+      "v11_phase": "M0",
+      "depends": [],
+      "v11_depends": [],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "审核身份、输入哈希、实际运行和证据可追溯；作者实现/自测与他人复核分开",
+          "完整产品验收不由切片测试计数代替"
+        ],
+        "target_slices": [
+          "S0",
+          "S1",
+          "S9"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SRC-01",
+      "name": "免费入口审核与来源注册",
+      "slice": "S0",
+      "v11_phase": "M1",
+      "depends": [
+        "GOV-01"
+      ],
+      "v11_depends": [
+        "GOV-01",
+        "CONTRACT-02"
+      ],
+      "dependency_change": "来源审核是 S0 的实测输入，不必等配置合同",
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "可用性、审核和启用分开；未审核来源默认禁用",
+          "显式候选probe不自动批准；正常执行需完整有效source contract"
+        ],
+        "target_slices": [
+          "S0",
+          "S1"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "QA-01",
+      "name": "固定样本、模拟来源与回放测试底座",
+      "slice": "S0",
+      "v11_phase": "M0",
+      "depends": [
+        "GOV-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01"
+      ],
+      "dependency_change": "黄金查询集与录制样本在 S0 建立",
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SPIKE-01",
+      "name": "关键技术可行性与版本冻结验证",
+      "slice": "S0",
+      "v11_phase": "M0",
+      "depends": [
+        "GOV-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01",
+        "SEC-01",
+        "QA-01"
+      ],
+      "dependency_change": "技术验证提前到 S0，验证 Python worker 选型",
+      "effort_low": 2,
+      "effort_high": 4,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": "只验证 Python worker 选型与 sqlite-vec",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CORE-01",
+      "name": "C++工程骨架与跨平台构建",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "GOV-01"
+      ],
+      "v11_depends": [
+        "GOV-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "已有Windows核心/合同/HTTP门槛保留，CI失败不能非阻塞冒充成功",
+          "固定依赖与实际命令退出码核验，完整Windows安装包另在S9"
+        ],
+        "target_slices": [
+          "S1",
+          "S9"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "CONTRACT-01",
+      "name": "数据合同与错误/取消协议",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "CORE-01"
+      ],
+      "v11_depends": [
+        "CORE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CONTRACT-02",
+      "name": "可执行配置合同、默认值与负例校验",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "QA-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01",
+        "QA-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 2,
+      "effort_high": 3,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "保留已交付三类原生配置合同、HTTP/CLI纯校验、角色继承、可信时钟/上限、日期/URI/AST与整数边界",
+          "配置校验不自动注册、批准来源或执行模型；启用来源的contract与运行身份一致"
+        ],
+        "target_slices": [
+          "S1",
+          "S4"
+        ]
+      },
+      "original_effort_change": "核心只校验已实现配置",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SEC-01",
+      "name": "网络与执行隔离",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        7,
+        12
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "来源准入与连接绑定在核心/worker各自执行，逐跳检查",
+          "生产proxy/remote DNS/CIDR放宽拒绝；跨来源凭据不传播",
+          "进程边界不能代替系统级解析/浏览器出口验收"
+        ],
+        "target_slices": [
+          "S1",
+          "S3"
+        ]
+      },
+      "original_effort_change": "SSRF 防护在 Python worker 的解析/连接层实现；浏览器出口代理随 READ-02",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "STORE-01",
+      "name": "内容快照、结构块与证据基础存储",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 7,
+      "effort_high": 12,
+      "v11_effort": [
+        7,
+        12
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "schema 3兼容两种历史schema 2，保留快照/证据/引用/删除与隔离",
+          "累计配额、引用pin、事务回滚和恢复性质需实际回归"
+        ],
+        "target_slices": [
+          "S1",
+          "S2",
+          "S4",
+          "S9"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "AUTH-01",
+      "name": "认证、授权、私有内容与删除策略",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "STORE-01"
+      ],
+      "v11_depends": [
+        "STORE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 2,
+      "effort_high": 4,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "保留owner隔离、真实撤权和删除对象发布屏障，按文档删除仅减少无关失效",
+          "单用户不豁免独立撤销日志与恢复隔离；引入多授权主体前完成隔离验收"
+        ],
+        "target_slices": [
+          "S1",
+          "S2",
+          "S5",
+          "S7"
+        ]
+      },
+      "original_effort_change": "先单用户；多客户端令牌随 API-01",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "OPS-00",
+      "name": "早期追踪、资源账本与诊断底座",
+      "slice": "S1",
+      "v11_phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01",
+        "JOB-01",
+        "AUTH-01"
+      ],
+      "dependency_change": "基础日志不依赖任务系统",
+      "effort_low": 2,
+      "effort_high": 3,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": "请求日志与基础计数",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-01",
+      "name": "统一查询语法与AST",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "CONTRACT-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-02",
+      "name": "精确字面与标识符匹配",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "QRY-01"
+      ],
+      "v11_depends": [
+        "QRY-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SRC-02",
+      "name": "健康检查、限流、退避与共享配额",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SRC-01"
+      ],
+      "v11_depends": [
+        "SRC-01",
+        "JOB-01"
+      ],
+      "dependency_change": "限流/冷却属于来源调度，不依赖持久任务",
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "遵守Retry-After、共享适用范围配额、冷却与禁用",
+          "probe预算quota_scope=this_probe_run，不能当作searchd部署或跨次日配额账本"
+        ],
+        "target_slices": [
+          "S0",
+          "S1",
+          "S2"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SRC-03",
+      "name": "来源能力协商与参数翻译",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SRC-01",
+        "CONTRACT-01"
+      ],
+      "v11_depends": [
+        "SRC-01",
+        "CONTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SRC-04",
+      "name": "免费底层来源并集清点与首批适配",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SRC-02",
+        "SRC-03",
+        "SEC-01",
+        "QA-01",
+        "QRY-01"
+      ],
+      "v11_depends": [
+        "SRC-02",
+        "SRC-03",
+        "SEC-01",
+        "QA-01",
+        "QRY-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 11,
+      "effort_high": 20,
+      "v11_effort": [
+        11,
+        20
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "真实通用网页源需审核和固定查询报告；假网站或纯垂直源不能替代S1真实来源门槛"
+        ],
+        "target_slices": [
+          "S0",
+          "S1"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SEARCH-01",
+      "name": "多源并发搜索与部分结果",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SRC-02",
+        "SRC-03",
+        "QRY-01",
+        "QRY-02",
+        "AUTH-01",
+        "CONTRACT-02"
+      ],
+      "v11_depends": [
+        "SRC-04",
+        "QRY-01",
+        "QRY-02",
+        "JOB-01",
+        "AUTH-01",
+        "CONTRACT-02"
+      ],
+      "dependency_change": "聚合逻辑先对模拟源开发，真实适配器（SRC-04）同片并行接入",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SEARCH-03",
+      "name": "来源去重、内容身份与基础融合",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SEARCH-01"
+      ],
+      "v11_depends": [
+        "SEARCH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "未知索引独立性保守控制贡献；DDG暂与Bing同族",
+          "来源名不同不等于底层索引独立，近重复等增强后续验收"
+        ],
+        "target_slices": [
+          "S1",
+          "S6"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SESSION-01",
+      "name": "搜索会话、冻结结果与稳定游标",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "SEARCH-03",
+        "AUTH-01",
+        "STORE-01"
+      ],
+      "v11_depends": [
+        "SEARCH-03",
+        "AUTH-01",
+        "STORE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "本地冻结分页与权限复核保留；联网结果会话/分页尚需实现",
+          "旧版本不静默重排、不跨页重复；权限收紧不能发布敏感结果或计数"
+        ],
+        "target_slices": [
+          "S1",
+          "S2"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "READ-01",
+      "name": "HTTP读取与质量状态",
+      "slice": "S1",
+      "v11_phase": "M2",
+      "depends": [
+        "SEC-01",
+        "STORE-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "v11_depends": [
+        "SEC-01",
+        "JOB-01",
+        "STORE-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "dependency_change": "单页读取是同步操作，不是持久任务",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "READ-03",
+      "name": "正文、代码、表格与元数据提取",
+      "slice": "S1",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-01",
+        "STORE-01"
+      ],
+      "v11_depends": [
+        "READ-01",
+        "STORE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 6,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": "trafilatura + 回退提取替代自研正文算法",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "INDEX-01",
+      "name": "字段化全文检索与索引服务",
+      "slice": "S1",
+      "v11_phase": "M2",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "v11_depends": [
+        "STORE-01",
+        "AUTH-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        7,
+        12
+      ],
+      "effort_change": "SQLite FTS5 + 自研 CJK 分词器 + BM25",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "INDEX-03",
+      "name": "索引增删改、可见性与版本切换",
+      "slice": "S1",
+      "v11_phase": "M2",
+      "depends": [
+        "INDEX-01"
+      ],
+      "v11_depends": [
+        "INDEX-01",
+        "CRAWL-03"
+      ],
+      "dependency_change": "基础增删改不应被公开索引规则（CRAWL-03）卡住",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "EVID-01",
+      "name": "原文Highlights与证据定位",
+      "slice": "S1",
+      "v11_phase": "M4",
+      "depends": [
+        "READ-03",
+        "INDEX-01",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "READ-03",
+        "INDEX-01",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "EVID-02",
+      "name": "页内查找、定位与分段阅读",
+      "slice": "S1",
+      "v11_phase": "M4",
+      "depends": [
+        "STORE-01",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "STORE-01",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CACHE-01",
+      "name": "多级缓存与在途请求复用",
+      "slice": "S1",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-01",
+        "INDEX-03"
+      ],
+      "v11_depends": [
+        "READ-01",
+        "INDEX-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "API-00",
+      "name": "基础HTTP/CLI/MCP合同与早期集成",
+      "slice": "S1",
+      "v11_phase": "M1",
+      "depends": [
+        "CONTRACT-02",
+        "AUTH-01",
+        "QA-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-02",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "dependency_change": "MCP/HTTP 最小接口不依赖持久任务",
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "保留原生contract.validate和HTTP/CLI语义；MCP只映射已实现核心",
+          "S1的七个工具不等于后续jobs/文档等完整跨协议覆盖"
+        ],
+        "target_slices": [
+          "S1",
+          "S2"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "JOB-01",
+      "name": "持久任务、预算与恢复",
+      "slice": "S2",
+      "v11_phase": "M0",
+      "depends": [
+        "CONTRACT-01",
+        "STORE-01",
+        "AUTH-01",
+        "QA-01"
+      ],
+      "v11_depends": [
+        "CONTRACT-01",
+        "STORE-01",
+        "AUTH-01",
+        "QA-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        9,
+        16
+      ],
+      "effort_change": "单机任务与租约，暂不做多节点围栏",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "BATCH-01",
+      "name": "批量网页/文档读取",
+      "slice": "S2",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-01",
+        "READ-03",
+        "JOB-01"
+      ],
+      "v11_depends": [
+        "READ-02",
+        "DOC-01",
+        "JOB-01"
+      ],
+      "dependency_change": "静态 HTML 批量读取不需要浏览器与 PDF，避免卡住爬虫",
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "MAP-01",
+      "name": "Sitemap/Feed/链接发现",
+      "slice": "S2",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-03",
+        "JOB-01"
+      ],
+      "v11_depends": [
+        "READ-03",
+        "JOB-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "ROBOTS-01",
+      "name": "爬虫准入与robots前置策略",
+      "slice": "S2",
+      "v11_phase": "M1",
+      "depends": [
+        "SEC-01",
+        "JOB-01",
+        "SRC-01",
+        "QA-01"
+      ],
+      "v11_depends": [
+        "SEC-01",
+        "JOB-01",
+        "SRC-01",
+        "QA-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CRAWL-01",
+      "name": "有界递归爬虫与抓取前沿",
+      "slice": "S2",
+      "v11_phase": "M2",
+      "depends": [
+        "MAP-01",
+        "BATCH-01",
+        "SRC-02",
+        "ROBOTS-01"
+      ],
+      "v11_depends": [
+        "MAP-01",
+        "BATCH-01",
+        "SRC-02",
+        "ROBOTS-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CRAWL-03",
+      "name": "公开索引与摘要发布规则",
+      "slice": "S2",
+      "v11_phase": "M2",
+      "depends": [
+        "ROBOTS-01",
+        "READ-03"
+      ],
+      "v11_depends": [
+        "ROBOTS-01",
+        "READ-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "MODE-01",
+      "name": "快速/均衡/深入执行预设",
+      "slice": "S2",
+      "v11_phase": "M1",
+      "depends": [
+        "SEARCH-01",
+        "SRC-02"
+      ],
+      "v11_depends": [
+        "SEARCH-01",
+        "SRC-02"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "BACKUP-00",
+      "name": "早期一致备份、恢复隔离与撤销水位",
+      "slice": "S2",
+      "v11_phase": "M0",
+      "depends": [
+        "STORE-01",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "v11_depends": [
+        "STORE-01",
+        "AUTH-01",
+        "JOB-01",
+        "QA-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 2,
+      "effort_high": 4,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "保留隔离备份；独立撤销journal与可信水位，不可只保存在可能回滚的DB中",
+          "恢复前验证，无法证明最新撤销连续性保持隔离，单用户同样适用"
+        ],
+        "target_slices": [
+          "S2",
+          "S9"
+        ]
+      },
+      "original_effort_change": "单用户一致备份与恢复，暂不做独立撤销日志",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SESSION-02",
+      "name": "流式结果、断线续传与取消",
+      "slice": "S2",
+      "v11_phase": "M1",
+      "depends": [
+        "SESSION-01",
+        "JOB-01"
+      ],
+      "v11_depends": [
+        "SESSION-01",
+        "JOB-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 2,
+      "effort_high": 3,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "MCP通知可承载进度，但需等效的断线重取、事件/结果去重、取消、过期处理和背压",
+          "仅有通知不代表原B-14/FT-018通过"
+        ],
+        "target_slices": [
+          "S2",
+          "S5"
+        ]
+      },
+      "original_effort_change": "用 MCP 进度通知替代自建 SSE 重放",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "QA-02",
+      "name": "检索相关性与约束基准",
+      "slice": "S2",
+      "v11_phase": "M3",
+      "depends": [
+        "QA-01",
+        "SEARCH-03"
+      ],
+      "v11_depends": [
+        "QRY-04",
+        "RANK-01",
+        "FACET-01",
+        "QA-01"
+      ],
+      "dependency_change": "相关性基线随真实来源尽早测量，排序增强后再提升",
+      "effort_low": 6,
+      "effort_high": 11,
+      "v11_effort": [
+        6,
+        11
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "READ-02",
+      "name": "动态网页与受控浏览器动作",
+      "slice": "S3",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-01",
+        "SEC-01",
+        "SPIKE-01"
+      ],
+      "v11_depends": [
+        "READ-01",
+        "SEC-01",
+        "SPIKE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        9,
+        16
+      ],
+      "effort_change": "Playwright worker 替代自研 CDP 驱动",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "DOC-01",
+      "name": "PDF/文本及Office开放格式解析",
+      "slice": "S3",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "v11_depends": [
+        "READ-01",
+        "READ-03",
+        "SPIKE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 6,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": "pypdf/pypdfium2 等成熟库",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "READ-05",
+      "name": "授权会话与站点读取配置",
+      "slice": "S3",
+      "v11_phase": "M2",
+      "depends": [
+        "READ-02",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "READ-02",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-03",
+      "name": "中文简繁、混合语言与原文映射",
+      "slice": "S3",
+      "v11_phase": "M3",
+      "depends": [
+        "QRY-02",
+        "INDEX-01"
+      ],
+      "v11_depends": [
+        "QRY-02",
+        "INDEX-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": "OpenCC 现成库 + 自研 CJK 分词器",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-04",
+      "name": "硬条件核验与预算内补召回",
+      "slice": "S3",
+      "v11_phase": "M3",
+      "depends": [
+        "SRC-03",
+        "READ-03",
+        "INDEX-03"
+      ],
+      "v11_depends": [
+        "SRC-03",
+        "READ-03",
+        "INDEX-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "UI-01",
+      "name": "最小搜索、读取与任务界面",
+      "slice": "S3",
+      "v11_phase": "M1",
+      "depends": [
+        "CORE-01",
+        "API-00",
+        "SESSION-01"
+      ],
+      "v11_depends": [
+        "SESSION-02",
+        "CORE-01",
+        "API-00"
+      ],
+      "dependency_change": "最小界面轮询即可，不必等流式推送",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "MODEL-01",
+      "name": "模型端点、角色配置与能力验证",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "CONTRACT-02",
+        "SEC-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "v11_depends": [
+        "CONTRACT-02",
+        "SEC-01",
+        "AUTH-01",
+        "OPS-00"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "MODEL-02",
+      "name": "模型预算、结构输出、缓存与数据出站",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "MODEL-01",
+        "CACHE-01",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "MODEL-01",
+        "CACHE-01",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SEARCH-02",
+      "name": "自然语言规划与跨语言扩展",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "MODEL-02",
+        "QRY-04"
+      ],
+      "v11_depends": [
+        "MODEL-02",
+        "QRY-04"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "INDEX-02",
+      "name": "语义向量与混合检索",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "MODEL-02",
+        "INDEX-03",
+        "QRY-03"
+      ],
+      "v11_depends": [
+        "MODEL-02",
+        "INDEX-03",
+        "QRY-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        10,
+        17
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "sqlite-vec替代引擎仍需模型/维度身份、权限过滤、原子可见性、崩溃恢复与重建验收",
+          "同库事务不自动证明全部旧向量测试性质"
+        ],
+        "target_slices": [
+          "S4"
+        ]
+      },
+      "original_effort_change": "sqlite-vec 与全文同库事务，省去 outbox/代际切换",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "EXTRACT-01",
+      "name": "规则/模型字段提取与证据核验",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "EVID-01",
+        "MODEL-02"
+      ],
+      "v11_depends": [
+        "EVID-01",
+        "MODEL-02"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "ANSWER-01",
+      "name": "证据回答与冲突呈现",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "EXTRACT-01",
+        "EVID-02"
+      ],
+      "v11_depends": [
+        "EXTRACT-01",
+        "EVID-02"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "RESEARCH-01",
+      "name": "有界多轮研究",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "ANSWER-01",
+        "SEARCH-02",
+        "JOB-01"
+      ],
+      "v11_depends": [
+        "ANSWER-01",
+        "SEARCH-02",
+        "JOB-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SEARCH-04",
+      "name": "相似网页与示例驱动检索",
+      "slice": "S4",
+      "v11_phase": "M4",
+      "depends": [
+        "INDEX-02",
+        "EVID-01"
+      ],
+      "v11_depends": [
+        "INDEX-02",
+        "EVID-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "API-01",
+      "name": "完整协议覆盖、版本迁移与扩展接口收尾",
+      "slice": "S5",
+      "v11_phase": "M7",
+      "depends": [
+        "API-00",
+        "AUTH-01",
+        "SEC-01",
+        "OPS-00"
+      ],
+      "v11_depends": [
+        "API-00",
+        "RESEARCH-01",
+        "IMAGE-02",
+        "AV-02",
+        "EXPORT-01"
+      ],
+      "dependency_change": "改为远程 MCP（Streamable HTTP + 鉴权 + 限流）；后续功能各自交付 MCP 工具",
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "远程TLS、令牌、客户端限流、审计和工具授权在开放前验收",
+          "后续业务各自补协议映射与版本兼容，不能因API-01提前删除完整覆盖要求"
+        ],
+        "target_slices": [
+          "S5",
+          "S6",
+          "S7",
+          "S8",
+          "S9"
+        ]
+      },
+      "original_effort_change": "新增远程 MCP 传输、鉴权与按客户端限流",
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "OPS-01",
+      "name": "观测、诊断与资源容量基线",
+      "slice": "S5",
+      "v11_phase": "M8",
+      "depends": [
+        "OPS-00",
+        "QA-02"
+      ],
+      "v11_depends": [
+        "OPS-00",
+        "QA-02",
+        "UI-02"
+      ],
+      "dependency_change": "容量与诊断基线服务于远程部署，不等完整界面",
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-05",
+      "name": "纠错、别名与可控模糊匹配",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "QRY-03"
+      ],
+      "v11_depends": [
+        "QRY-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QRY-06",
+      "name": "联想补全与相关查询",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "QRY-05",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "QRY-05",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "RANK-01",
+      "name": "多样性、转载聚类与质量过滤",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "SEARCH-03",
+        "READ-03"
+      ],
+      "v11_depends": [
+        "SEARCH-03",
+        "READ-03"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "RANK-02",
+      "name": "排序解释与来源增量价值",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "RANK-01",
+        "MODE-01"
+      ],
+      "v11_depends": [
+        "RANK-01",
+        "MODE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SEARCH-05",
+      "name": "空结果诊断与安全放宽建议",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "QRY-04",
+        "MODE-01"
+      ],
+      "v11_depends": [
+        "QRY-04",
+        "MODE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 3,
+      "effort_high": 5,
+      "v11_effort": [
+        3,
+        5
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "FACET-01",
+      "name": "分面筛选与连续细化",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "SESSION-01",
+        "QRY-04"
+      ],
+      "v11_depends": [
+        "SESSION-01",
+        "QRY-04"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SRC-05",
+      "name": "自适应来源选择与后续批次扩展",
+      "slice": "S6",
+      "v11_phase": "M3",
+      "depends": [
+        "RANK-02",
+        "SEARCH-05"
+      ],
+      "v11_depends": [
+        "RANK-02",
+        "SEARCH-05"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CODE-01",
+      "name": "代码与技术文档专门检索",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "QRY-02",
+        "INDEX-01",
+        "DOC-01"
+      ],
+      "v11_depends": [
+        "INDEX-02",
+        "QRY-02",
+        "DOC-01"
+      ],
+      "dependency_change": "精确符号检索只需全文索引，向量为可选增强",
+      "effort_low": 7,
+      "effort_high": 12,
+      "v11_effort": [
+        7,
+        12
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SCHOLAR-01",
+      "name": "论文/数据集检索与标识消歧",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "SRC-04",
+        "DOC-01"
+      ],
+      "v11_depends": [
+        "DATASET-01",
+        "SRC-04",
+        "DOC-01"
+      ],
+      "dependency_change": "论文/数据集检索是来源适配，不依赖资料集与多轮研究",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "PRIVATE-01",
+      "name": "本地文件与授权私人资料导入",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "DOC-01",
+        "INDEX-03",
+        "AUTH-01"
+      ],
+      "v11_depends": [
+        "DOC-01",
+        "INDEX-03",
+        "AUTH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 7,
+      "effort_high": 12,
+      "v11_effort": [
+        7,
+        12
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "DATASET-01",
+      "name": "实体资料集与逐项条件核验",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "EXTRACT-01",
+        "RESEARCH-01"
+      ],
+      "v11_depends": [
+        "EXTRACT-01",
+        "RESEARCH-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "READ-04",
+      "name": "自适应定位与规则修复",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "READ-03",
+        "EXTRACT-01"
+      ],
+      "v11_depends": [
+        "READ-03",
+        "EXTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 11,
+      "v11_effort": [
+        6,
+        11
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "CRAWL-02",
+      "name": "主题定向采集与列表分页策略",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "CRAWL-01",
+        "SEARCH-02"
+      ],
+      "v11_depends": [
+        "CRAWL-01",
+        "SEARCH-02"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "SRC-06",
+      "name": "免费来源扩充与维护工作台",
+      "slice": "S7",
+      "v11_phase": "M5",
+      "depends": [
+        "SRC-02",
+        "SRC-04"
+      ],
+      "v11_depends": [
+        "SRC-05",
+        "SCHOLAR-01"
+      ],
+      "dependency_change": "来源维护工作台不依赖论文检索",
+      "effort_low": 8,
+      "effort_high": 16,
+      "v11_effort": [
+        8,
+        16
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "DOC-02",
+      "name": "OCR、复杂版面与视觉辅助读取",
+      "slice": "S8",
+      "v11_phase": "M6",
+      "depends": [
+        "DOC-01",
+        "MODEL-02",
+        "EVID-01"
+      ],
+      "v11_depends": [
+        "DOC-01",
+        "MODEL-02",
+        "EVID-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": "本地 OCR 或用户视觉模型",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "IMAGE-01",
+      "name": "图片检索与图片资产索引",
+      "slice": "S8",
+      "v11_phase": "M6",
+      "depends": [
+        "SRC-04",
+        "INDEX-01"
+      ],
+      "v11_depends": [
+        "INDEX-02",
+        "SRC-06"
+      ],
+      "dependency_change": "图片关键词检索走来源+元数据全文索引，不依赖研究链",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "IMAGE-02",
+      "name": "以图搜图、近重复与文本搜图",
+      "slice": "S8",
+      "v11_phase": "M6",
+      "depends": [
+        "IMAGE-01",
+        "INDEX-02"
+      ],
+      "v11_depends": [
+        "IMAGE-01",
+        "DOC-02"
+      ],
+      "dependency_change": "以图搜图依赖图像向量，不依赖 OCR",
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "AV-01",
+      "name": "视频音频搜索与字幕时间戳检索",
+      "slice": "S8",
+      "v11_phase": "M6",
+      "depends": [
+        "SRC-04",
+        "EVID-01",
+        "INDEX-01"
+      ],
+      "v11_depends": [
+        "SRC-06",
+        "EVID-01",
+        "INDEX-02"
+      ],
+      "dependency_change": "字幕检索不依赖向量与来源工作台",
+      "effort_low": 8,
+      "effort_high": 13,
+      "v11_effort": [
+        8,
+        13
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "AV-02",
+      "name": "转写、关键帧与视频内容理解",
+      "slice": "S8",
+      "v11_phase": "M6",
+      "depends": [
+        "AV-01",
+        "MODEL-02",
+        "DOC-02"
+      ],
+      "v11_depends": [
+        "AV-01",
+        "MODEL-02",
+        "DOC-02"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        10,
+        18
+      ],
+      "effort_change": "本地转写库或用户 ASR 端点",
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "UPDATE-01",
+      "name": "网页快照变化与增量刷新",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "INDEX-03",
+        "CACHE-01",
+        "EXTRACT-01"
+      ],
+      "v11_depends": [
+        "INDEX-03",
+        "CACHE-01",
+        "EXTRACT-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 5,
+      "effort_high": 9,
+      "v11_effort": [
+        5,
+        9
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "WORKSPACE-01",
+      "name": "历史、收藏、标签与搜索工作区",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "AUTH-01",
+        "EVID-02",
+        "SESSION-01"
+      ],
+      "v11_depends": [
+        "FACET-01",
+        "AUTH-01",
+        "EVID-02"
+      ],
+      "dependency_change": "收藏/历史不依赖分面",
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "PREF-01",
+      "name": "排序偏好、站点屏蔽与隐私开关",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "RANK-02",
+        "WORKSPACE-01"
+      ],
+      "v11_depends": [
+        "RANK-02",
+        "WORKSPACE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "WATCH-01",
+      "name": "保存查询、订阅新增与更新监控",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "UPDATE-01",
+        "WORKSPACE-01",
+        "JOB-01"
+      ],
+      "v11_depends": [
+        "UPDATE-01",
+        "WORKSPACE-01",
+        "JOB-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "EXPORT-01",
+      "name": "搜索结果、证据与资料集导出",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "WORKSPACE-01"
+      ],
+      "v11_depends": [
+        "WORKSPACE-01",
+        "DATASET-01"
+      ],
+      "dependency_change": "导出不依赖资料集；资料集导出随 DATASET-01 补充",
+      "effort_low": 5,
+      "effort_high": 8,
+      "v11_effort": [
+        5,
+        8
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "WEBHOOK-01",
+      "name": "通知出口与Webhook",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "WATCH-01",
+        "EXPORT-01",
+        "SEC-01"
+      ],
+      "v11_depends": [
+        "WATCH-01",
+        "EXPORT-01",
+        "SEC-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 4,
+      "effort_high": 7,
+      "v11_effort": [
+        4,
+        7
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "UI-02",
+      "name": "完整搜索/资料/爬虫/研究操作台",
+      "slice": "S9",
+      "v11_phase": "M7",
+      "depends": [
+        "UI-01",
+        "API-01",
+        "PREF-01"
+      ],
+      "v11_depends": [
+        "API-01",
+        "PREF-01",
+        "WEBHOOK-01"
+      ],
+      "dependency_change": "完整操作台不依赖 Webhook",
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "OPS-02",
+      "name": "备份恢复、迁移与内容保留",
+      "slice": "S9",
+      "v11_phase": "M8",
+      "depends": [
+        "BACKUP-00",
+        "INDEX-03"
+      ],
+      "v11_depends": [
+        "BACKUP-00",
+        "INDEX-03",
+        "WATCH-01"
+      ],
+      "dependency_change": "长期备份恢复不依赖订阅",
+      "effort_low": 4,
+      "effort_high": 6,
+      "v11_effort": [
+        4,
+        6
+      ],
+      "effort_change": "原v1.2估算保留，补回整合约束后待重估；不能以简化理由删除验收语义。",
+      "full_work_package_accepted": false,
+      "review_constraints": {
+        "required_semantics": [
+          "延续BACKUP-00恢复隔离/撤销性质，补长期保留、升级和恢复演练"
+        ],
+        "target_slices": [
+          "S9"
+        ]
+      },
+      "original_effort_change": null,
+      "estimate_status": "pending_reestimate"
+    },
+    {
+      "id": "SCALE-01",
+      "name": "多工作节点与公平调度",
+      "slice": "S9",
+      "v11_phase": "M8",
+      "depends": [
+        "OPS-01",
+        "JOB-01",
+        "OPS-02",
+        "API-00"
+      ],
+      "v11_depends": [
+        "OPS-01",
+        "JOB-01",
+        "OPS-02",
+        "API-00"
+      ],
+      "dependency_change": null,
+      "effort_low": 10,
+      "effort_high": 18,
+      "v11_effort": [
+        10,
+        18
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "QA-03",
+      "name": "安全/故障/多模态/端到端发布门禁",
+      "slice": "S9",
+      "v11_phase": "M8",
+      "depends": [
+        "OPS-01",
+        "OPS-02",
+        "SCALE-01"
+      ],
+      "v11_depends": [
+        "OPS-01",
+        "OPS-02",
+        "SCALE-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 8,
+      "effort_high": 14,
+      "v11_effort": [
+        8,
+        14
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    },
+    {
+      "id": "RELEASE-01",
+      "name": "可复现打包、升级与运维手册",
+      "slice": "S9",
+      "v11_phase": "M8",
+      "depends": [
+        "QA-03",
+        "GOV-01"
+      ],
+      "v11_depends": [
+        "QA-03",
+        "GOV-01"
+      ],
+      "dependency_change": null,
+      "effort_low": 6,
+      "effort_high": 10,
+      "v11_effort": [
+        6,
+        10
+      ],
+      "effort_change": null,
+      "full_work_package_accepted": false
+    }
+  ],
+  "review_revision": "2026-10-18",
+  "implementation_stage": "0.1.1_s1_review_candidate",
+  "estimate_status": "original_v1_2_estimate_retained_pending_reestimate_after_equivalent_requirements",
+  "generator_note": "This reviewed JSON and the blueprint are authoritative. tools/plan_v1_2.py check only reads and validates structure; legacy --write is disabled with exit code 2 and never regenerates files. Structural validity does not certify product acceptance.",
+  "scope_policy": {
+    "full_work_packages_accepted": 0,
+    "slices_accepted": [],
+    "planned_acceptance_suite_executed": false,
+    "rule": "Package slice is primary development placement; deferred semantics remain mandatory at their exposure/release gate. Mechanism substitutions need equivalent acceptance.",
+    "current_report": "validation/s1_review/test_report.json"
+  },
+  "acceptance_mapping": [
+    {
+      "id": "A-01",
+      "name": "禁用或故障所有参考产品服务",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "自研基础流程仍可执行；无 SearXNG/Scrapling/Firecrawl/Exa 产品后端依赖",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-02",
+      "name": "搜索/读取失败时观察所有出站请求",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "不出现收费服务或未配置回退；模型请求仅发往已授权配置",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-03",
+      "name": "同一来源以两个适配器登记",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "不重复查询或重复计票；共享适用限流状态",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-04",
+      "name": "一个搜索源超时，另一个成功",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "返回成功来源结果与失败报告；不把部分结果当作完整结果",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-05",
+      "name": "目标页面实际返回登录/挑战/404页面",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "HTTP 状态与内容状态正确；不将提示页当目标正文",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-06",
+      "name": "静态与JS延迟页面",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "静态页不无故启动浏览器；动态读取在预算内获得正文或明确失败",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-07",
+      "name": "指定10个URL批量读取",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "不扩展到页面内其他URL；逐项状态和结果可查",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-08",
+      "name": "含循环、分页陷阱和跨域链接的测试站",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "不突破scope和原子预算；停止原因明确；符合robots策略",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-09",
+      "name": "页面采集中强制退出工作进程",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "重启恢复；不产生重复已提交产物；可能重请求有审计",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-10",
+      "name": "暂停、恢复、取消任务",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "状态转换正确；终态后无新派发；保留已完成内容",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-11",
+      "name": "快照中给定中英混合quote",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "100%的输出原文引文通过UTF-8边界与文本一致性校验，否则不发布该引文",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-12",
+      "name": "修改网页后读取旧证据",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "旧引用仍指向旧快照；删除/过期后明确不可用，不悄悄替换",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-13",
+      "name": "文档不包含某必填语义字段",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "返回unknown/缺失说明；Schema要求与证据要求冲突时报告，不能造值",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-14",
+      "name": "模型返回错误Schema或未知引用ID",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "受限修复或失败；不发布未验证字段；已取证据保留",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-15",
+      "name": "模型端点不支持视觉/嵌入/思考参数",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "能力报错或显式已允许降级；不偷偷更换提供方",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-16",
+      "name": "研究达到轮次、调用或时间预算",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "停止并返回partial/原因和已有证据，不自加额度",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-17",
+      "name": "提示注入要求外传密钥或访问内网",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "工具及网络层阻止越权，不依赖模型自我拒绝",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-18",
+      "name": "私网地址、DNS变化、重定向与浏览器子请求攻击样本",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "所有已收录攻击样本被安全策略阻止；无法保证未测试攻击不存在",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-19",
+      "name": "不同用户读取同URL的私有内容",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "内容/缓存/向量/模型结果不跨授权泄漏",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-20",
+      "name": "cache-only与全局offline",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "前者不发采集请求；后者连远程模型请求也不发",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-21",
+      "name": "模型端点不可用或配置移除",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "普通搜索/读取/爬虫/全文检索仍可用；模型功能明确失败",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "A-22",
+      "name": "同一任务输入与幂等键重复提交",
+      "baseline_features": "跨模块",
+      "feature_ids": [],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "cross_cutting_gate",
+      "baseline_acceptance": "复用或拒绝重复job，参数不同则冲突，不能默默改旧任务",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-01",
+      "name": "统一查询语法与注入",
+      "baseline_features": "QRY-01",
+      "feature_ids": [
+        "QRY-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "解析得到相同语义或明确拒绝；不执行注入；深度/节点数量受限",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-02",
+      "name": "精确符号保护",
+      "baseline_features": "QRY-02",
+      "feature_ids": [
+        "QRY-02"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不能被相互替换；精确条件返回完整字面核验范围",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-03",
+      "name": "中文简繁原文映射",
+      "baseline_features": "QRY-03 EVID-01",
+      "feature_ids": [
+        "EVID-01",
+        "QRY-03"
+      ],
+      "planned_slices": [
+        "S1",
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "检索变体可命中；quote仍准确切自原文UTF-8边界",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-04",
+      "name": "硬条件不支持",
+      "baseline_features": "SRC-03 QRY-04",
+      "feature_ids": [
+        "QRY-04",
+        "SRC-03"
+      ],
+      "planned_slices": [
+        "S1",
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "native状态不冒充verified；strict未知项不进满足列表",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-05",
+      "name": "否定条件证据不足",
+      "baseline_features": "QRY-04",
+      "feature_ids": [
+        "QRY-04"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "返回unknown而非因未看到词就判满足",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-06",
+      "name": "筛选后补候选",
+      "baseline_features": "QRY-04 SEARCH-05",
+      "feature_ids": [
+        "QRY-04",
+        "SEARCH-05"
+      ],
+      "planned_slices": [
+        "S3",
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "预算内补取；不足则报告当前核验范围，不能断言仅2个结果",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-07",
+      "name": "模型改写保留硬条件",
+      "baseline_features": "SEARCH-02",
+      "feature_ids": [
+        "SEARCH-02"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "程序拒绝放宽；派生查询仍绑定原硬条件",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-08",
+      "name": "多来源重复计票",
+      "baseline_features": "SRC-01 SEARCH-03",
+      "feature_ids": [
+        "SEARCH-03",
+        "SRC-01"
+      ],
+      "planned_slices": [
+        "S0",
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "分组控制贡献；未知独立性不自行拆分为独立索引",
+      "equivalent_requirement": "按真实索引族保守控制贡献，未知独立性不能自行拆票；S1当前DDG与Bing同组。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-09",
+      "name": "近重复与主题相关分离",
+      "baseline_features": "RANK-01 SEARCH-04",
+      "feature_ids": [
+        "RANK-01",
+        "SEARCH-04"
+      ],
+      "planned_slices": [
+        "S4",
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "转载折叠可撤回；相关原创不按重复删除；版本有标记",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-10",
+      "name": "域名多样性边界",
+      "baseline_features": "RANK-01",
+      "feature_ids": [
+        "RANK-01"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "前者不跨网站；后者在候选允许时改善覆盖且不填无关结果",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-11",
+      "name": "解释忠实性",
+      "baseline_features": "RANK-02",
+      "feature_ids": [
+        "RANK-02"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "只显示执行日志中的原因和版本；不生成假理由",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-12",
+      "name": "零结果诊断",
+      "baseline_features": "SEARCH-05",
+      "feature_ids": [
+        "SEARCH-05"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "状态分别可辨；所有情况都不能等同全网不存在",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-13",
+      "name": "分页稳定性",
+      "baseline_features": "SESSION-01",
+      "feature_ids": [
+        "SESSION-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "旧版本不悄悄重排；新结果为新版本；无跨页重复",
+      "equivalent_requirement": "本地和联网冻结会话分别验收；仅本地分页通过不签全部联网会话范围。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-14",
+      "name": "SSE重播与背压",
+      "baseline_features": "SESSION-02",
+      "feature_ids": [
+        "SESSION-02"
+      ],
+      "planned_slices": [
+        "S2",
+        "S5"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "按ID去重；过期提示重取；服务器有内存与排队上限",
+      "equivalent_requirement": "传输可改MCP，但断线重取、去重、保留期、过期提示、取消和背压需等效验证。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-15",
+      "name": "游标撤权与失效",
+      "baseline_features": "SESSION-01 AUTH-01",
+      "feature_ids": [
+        "AUTH-01",
+        "SESSION-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2",
+        "S5"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "重新鉴权；敏感结果和计数不可见；明确失效而非继续泄露",
+      "equivalent_requirement": "保留发布前权限复核与删除对象不可见，按文档删除只减少无关失效。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-16",
+      "name": "分面范围",
+      "baseline_features": "FACET-01",
+      "feature_ids": [
+        "FACET-01"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "计数标当前候选；不显示成全网精确数量；未知值单列",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-17",
+      "name": "隐私联想",
+      "baseline_features": "QRY-06 PREF-01",
+      "feature_ids": [
+        "PREF-01",
+        "QRY-06"
+      ],
+      "planned_slices": [
+        "S6",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "无自动外发和历史写入；他人补全不能看到该词",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-18",
+      "name": "来源动态停用",
+      "baseline_features": "SRC-02 SRC-05",
+      "feature_ids": [
+        "SRC-02",
+        "SRC-05"
+      ],
+      "planned_slices": [
+        "S1",
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "后续请求停止；缓存复用按新政策重新检查；无收费回退",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-19",
+      "name": "浏览器出口旁路",
+      "baseline_features": "SEC-01 READ-02",
+      "feature_ids": [
+        "READ-02",
+        "SEC-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "隔离层阻断非法出口；CDP监控不是唯一网络安全边界",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-20",
+      "name": "内容类型与压缩炸弹",
+      "baseline_features": "DOC-01 READ-01",
+      "feature_ids": [
+        "DOC-01",
+        "READ-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "按安全策略拒绝；解析进程受限；无宏与外链执行",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-21",
+      "name": "索引增删改与可见水位",
+      "baseline_features": "INDEX-03",
+      "feature_ids": [
+        "INDEX-03"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "状态区分；索引可重试不重抓；撤权立即阻断展示；重建可回滚",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-22",
+      "name": "向量过滤与版本",
+      "baseline_features": "INDEX-02",
+      "feature_ids": [
+        "INDEX-02"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "禁止混维度；只返回授权项；报告近似性/不足；小集可精确比对",
+      "equivalent_requirement": "替换向量机制仍需授权过滤和召回不足的partial边界，不以引擎更换取消场景。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-23",
+      "name": "公开索引和摘要控制",
+      "baseline_features": "CRAWL-03",
+      "feature_ids": [
+        "CRAWL-03"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "执行本产品明确策略；不盲从非本爬虫专属规则；撤索引不靠轮到重排",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-24",
+      "name": "共享请求取消",
+      "baseline_features": "CACHE-01",
+      "feature_ids": [
+        "CACHE-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不错误取消另一任务；未共享权限不得合并；预算归属可追踪",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-25",
+      "name": "模型能力差异",
+      "baseline_features": "MODEL-01",
+      "feature_ids": [
+        "MODEL-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "明确能力错误或获准降级；不假装已使用所需能力",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-26",
+      "name": "模型注入与出站",
+      "baseline_features": "MODEL-02 AUTH-01",
+      "feature_ids": [
+        "AUTH-01",
+        "MODEL-02"
+      ],
+      "planned_slices": [
+        "S1",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "模型输出不能扩大白名单；执行层拒绝；密钥不进入提示",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-27",
+      "name": "证据与字段冲突",
+      "baseline_features": "EXTRACT-01 ANSWER-01",
+      "feature_ids": [
+        "ANSWER-01",
+        "EXTRACT-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "原文定位与语义核验分别进行；矛盾/未知不隐藏",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-28",
+      "name": "研究预算与故障",
+      "baseline_features": "RESEARCH-01 JOB-01",
+      "feature_ids": [
+        "JOB-01",
+        "RESEARCH-01"
+      ],
+      "planned_slices": [
+        "S2",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "有界停止；已得证据保留；旧租约无效；不自行加额度",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-29",
+      "name": "代码版本和行号",
+      "baseline_features": "CODE-01",
+      "feature_ids": [
+        "CODE-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "行号绑定commit和blob；检索不执行项目脚本",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-30",
+      "name": "科研标识与全文边界",
+      "baseline_features": "SCHOLAR-01",
+      "feature_ids": [
+        "SCHOLAR-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "实体与版本有证据；不把摘要当已读全文；未核验撤稿状态unknown",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-31",
+      "name": "本地路径与连接器撤权",
+      "baseline_features": "PRIVATE-01",
+      "feature_ids": [
+        "PRIVATE-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "拒绝越界；索引/片段/模型上下文同步阻断；无任意file://",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-32",
+      "name": "反向图片覆盖与隐私",
+      "baseline_features": "IMAGE-02",
+      "feature_ids": [
+        "IMAGE-02"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "明确仅自有图库；不暗传私图；不声称全网以图搜图成功",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-33",
+      "name": "图片权利与资产身份",
+      "baseline_features": "IMAGE-01",
+      "feature_ids": [
+        "IMAGE-01"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "分别记录；权利unknown，不默认可再分发",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-34",
+      "name": "音视频时间轴与采样",
+      "baseline_features": "AV-01 AV-02",
+      "feature_ids": [
+        "AV-01",
+        "AV-02"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "毫秒定位可核验；字幕来源可辨；有限采样如实标注",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-35",
+      "name": "OCR证据与质量",
+      "baseline_features": "DOC-02 EVID-01",
+      "feature_ids": [
+        "DOC-02",
+        "EVID-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "按需OCR；保留页/区域；一致性校验不冒充识别正确率",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-36",
+      "name": "订阅失败与时区",
+      "baseline_features": "WATCH-01",
+      "feature_ids": [
+        "WATCH-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "失败不推进水位；补跑有上限；同一事件去重；可暂停删除",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-37",
+      "name": "导出与Webhook风险",
+      "baseline_features": "EXPORT-01 WEBHOOK-01",
+      "feature_ids": [
+        "EXPORT-01",
+        "WEBHOOK-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "公式注入防护；出口校验；逐项权限检查；无密钥原文外泄",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-38",
+      "name": "备份恢复与删除日志",
+      "baseline_features": "OPS-02",
+      "feature_ids": [
+        "OPS-02"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "一致备份；重放tombstone；索引重建；不复活被删除内容",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-39",
+      "name": "多节点租约与限流",
+      "baseline_features": "SCALE-01 JOB-01",
+      "feature_ids": [
+        "JOB-01",
+        "SCALE-01"
+      ],
+      "planned_slices": [
+        "S2",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "旧fence不能提交；配额全局生效；终态不新增派发",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "B-40",
+      "name": "完整能力发布检查",
+      "baseline_features": "RELEASE-01 API-01 UI-02 QA-03",
+      "feature_ids": [
+        "API-01",
+        "QA-03",
+        "RELEASE-01",
+        "UI-02"
+      ],
+      "planned_slices": [
+        "S5",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "能力目录真实；基础功能可用；缺模型能力如实报告；无参考产品或付费隐藏依赖",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-001",
+      "name": "需求边界、能力目录与许可证清单",
+      "baseline_features": "GOV-01",
+      "feature_ids": [
+        "GOV-01"
+      ],
+      "planned_slices": [
+        "S0"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "无参考产品运行依赖；未实现能力不对外宣告；依赖记录包含版本/来源/许可/替换策略。 审核状态与实现状态独立；外部审查报告须能对应输入版本、reviewer_id与实际工具运行，不可凭角色提示词伪造。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-002",
+      "name": "C++工程骨架与跨平台构建",
+      "baseline_features": "CORE-01",
+      "feature_ids": [
+        "CORE-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "Linux与Windows构建通过；核心不依赖浏览器存在；纯逻辑测试无外网。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-003",
+      "name": "数据合同与错误/取消协议",
+      "baseline_features": "CONTRACT-01",
+      "feature_ids": [
+        "CONTRACT-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "合法/非法样例双向验证；字段未知、参数冲突、能力缺失有稳定错误；不把资源ID当授权。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-004",
+      "name": "网络与执行隔离",
+      "baseline_features": "SEC-01",
+      "feature_ids": [
+        "SEC-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "IPv4/IPv6、重绑定、重定向、子资源、WebSocket/QUIC旁路样例被拒；模型内网白名单不开放给网页。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-005",
+      "name": "持久任务、预算与恢复",
+      "baseline_features": "JOB-01",
+      "feature_ids": [
+        "JOB-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "崩溃恢复不重复发布产物；旧租约不能提交；重試占预算；取消后无新派发；不承诺网络恰好一次。 旧epoch提交被拒；取消后无新派发；暂停/重启后预算账本可对账且失败不退成免费请求。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-006",
+      "name": "内容快照、结构块与证据基础存储",
+      "baseline_features": "STORE-01",
+      "feature_ids": [
+        "STORE-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "同URL更新不覆盖旧快照；Unicode字节定位一致；未提交blob不进入结果；无跨用户去重侧信道。 并发抓取遇磁盘满应回压而不是无限重试；GC与提交竞争无丢失已引用blob；拒绝超额后账本可恢复。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-007",
+      "name": "认证、授权、私有内容与删除策略",
+      "baseline_features": "AUTH-01",
+      "feature_ids": [
+        "AUTH-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2",
+        "S5",
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "撤权后旧游标/证据/聚合计数均不可泄露；删除状态可追踪；历史备份恢复也重放删除日志。 撤销在本系统新发布入口同步生效；恢复时无法确认最新撤销水位则保持隔离。",
+      "equivalent_requirement": "单用户先行保留既有owner隔离；恢复前落实独立撤销与隔离，多主体开放前完成对应授权。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-008",
+      "name": "固定样本、模拟来源与回放测试底座",
+      "baseline_features": "QA-01",
+      "feature_ids": [
+        "QA-01"
+      ],
+      "planned_slices": [
+        "S0"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "测试不依赖实时外网才可通过；测试集版本冻结；真实用户数据不进入公共fixture。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-009",
+      "name": "免费入口审核与来源注册",
+      "baseline_features": "SRC-01",
+      "feature_ids": [
+        "SRC-01"
+      ],
+      "planned_slices": [
+        "S0"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "免费状态与可用状态分开；条款变更立即停用；没有付费备用路径。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-010",
+      "name": "健康检查、限流、退避与共享配额",
+      "baseline_features": "SRC-02",
+      "feature_ids": [
+        "SRC-02"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "两适配器不绕过同源限流；限流不会触发无限重试；源禁用即时阻止后续请求。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-011",
+      "name": "来源能力协商与参数翻译",
+      "baseline_features": "SRC-03",
+      "feature_ids": [
+        "SRC-03"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不支持条件不静默丢弃；native只是执行位置，不等于结果已经满足。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-012",
+      "name": "免费底层来源并集清点与首批适配",
+      "baseline_features": "SRC-04",
+      "feature_ids": [
+        "SRC-04"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "未知是否共用索引不猜测；首批至少有可用外部来源并跨类别；不能审核的候选明确排除。 报告具体入口、许可证据、日期、查询样本、限流与独有结果；无源时明确E_CAPABILITY_UNAVAILABLE，不删减长期功能承诺。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-013",
+      "name": "统一查询语法与AST",
+      "baseline_features": "QRY-01",
+      "feature_ids": [
+        "QRY-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "语法优先级明确；字符串与结构化请求等价；注入/超深嵌套拒绝；不直接拼SQL/FTS字符串。 错误日期、host配after、数组配eq、非host使用host匹配、深AST在执行来源前拒绝。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-014",
+      "name": "精确字面与标识符匹配",
+      "baseline_features": "QRY-02",
+      "feature_ids": [
+        "QRY-02"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "C++/C#/std::expected/HTTP 429样例保持区别；精确条件在候选核验前不得标满足。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-015",
+      "name": "多源并发搜索与部分结果",
+      "baseline_features": "SEARCH-01",
+      "feature_ids": [
+        "SEARCH-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "单源超时不吞其他结果；不伪造全网数量；未完成源显示未完成。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-016",
+      "name": "来源去重、内容身份与基础融合",
+      "baseline_features": "SEARCH-03",
+      "feature_ids": [
+        "SEARCH-03"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "同底层源多实现不重复加权；不同文档版本/语种不盲删；保留发现路径。 两个不同未知族服务仍有各自候选贡献；同provider多adapter不会加票；未知族不计为已证实独立证据。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-017",
+      "name": "搜索会话、冻结结果与稳定游标",
+      "baseline_features": "SESSION-01",
+      "feature_ids": [
+        "SESSION-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "无跨页重复或静默重排；权限收紧时失效重建而非泄漏；游标过期需重搜。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-018",
+      "name": "流式结果、断线续传与取消",
+      "baseline_features": "SESSION-02",
+      "feature_ids": [
+        "SESSION-02"
+      ],
+      "planned_slices": [
+        "S2",
+        "S5"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "断线重播按event_id去重；客户端慢不耗尽内存；停止搜索保留已完成结果。",
+      "equivalent_requirement": "MCP进度通知不是恢复协议；保持原取消、背压、冻结结果和断线恢复性质。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-019",
+      "name": "快速/均衡/深入执行预设",
+      "baseline_features": "MODE-01",
+      "feature_ids": [
+        "MODE-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "快速模式不强制浏览器或模型；任一预设都受同源额度与硬约束限制。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-020",
+      "name": "最小搜索、读取与任务界面",
+      "baseline_features": "UI-01",
+      "feature_ids": [
+        "UI-01"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不加载第三方统计或外链字体；未实现按钮隐藏；所有操作仍经统一授权接口。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-021",
+      "name": "HTTP读取与质量状态",
+      "baseline_features": "READ-01",
+      "feature_ids": [
+        "READ-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "HTTP200登录页不等于正文成功；断流保留部分状态；不自动使用代理或收费后端。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-022",
+      "name": "动态网页与受控浏览器动作",
+      "baseline_features": "READ-02",
+      "feature_ids": [
+        "READ-02"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "延迟渲染成功或明确失败；浏览器无出口绕过；auth状态隔离；禁止用无限等待充当页面就绪。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-023",
+      "name": "正文、代码、表格与元数据提取",
+      "baseline_features": "READ-03",
+      "feature_ids": [
+        "READ-03"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "正文质量分类型评测；发布时间未知为null；规则版本改变新建Extraction；片段位置可追溯。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-024",
+      "name": "授权会话与站点读取配置",
+      "baseline_features": "READ-05",
+      "feature_ids": [
+        "READ-05"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "两用户同URL不混Cookie；凭据删除立即停止后续调用；日志不含Cookie与密钥。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-025",
+      "name": "PDF/文本及Office开放格式解析",
+      "baseline_features": "DOC-01",
+      "feature_ids": [
+        "DOC-01"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "扩展名与内容嗅探冲突可拒绝；压缩炸弹与路径穿越阻断；缺失文本层进入显式OCR队列。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-026",
+      "name": "批量网页/文档读取",
+      "baseline_features": "BATCH-01",
+      "feature_ids": [
+        "BATCH-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "10个输入只处理授权10项；失败隔离；暂停恢复不会重发已提交项。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-027",
+      "name": "Sitemap/Feed/链接发现",
+      "baseline_features": "MAP-01",
+      "feature_ids": [
+        "MAP-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "候选不是已读；不宣称完整全站；XML外部实体禁用；页面深度与路径层数分开。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-028",
+      "name": "有界递归爬虫与抓取前沿",
+      "baseline_features": "CRAWL-01",
+      "feature_ids": [
+        "CRAWL-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "在途预算原子预留；达到限额显示partial；frontier耗尽仅代表允许范围；断点可恢复。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-029",
+      "name": "公开索引与摘要发布规则",
+      "baseline_features": "CRAWL-03",
+      "feature_ids": [
+        "CRAWL-03"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "抓取允许不等于可公开索引；不按Google专属token套用于本工具；noindex变化触发索引移除。 未满足robots准入不会先到本模块；公开发布标签生效不等待整站爬虫完成。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-030",
+      "name": "字段化全文检索与索引服务",
+      "baseline_features": "INDEX-01",
+      "feature_ids": [
+        "INDEX-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增内容可搜索；FTS查询由AST编译而非原串；私有授权集合内排序与计数。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-031",
+      "name": "索引增删改、可见性与版本切换",
+      "baseline_features": "INDEX-03",
+      "feature_ids": [
+        "INDEX-03"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "可读不假装可搜；删除同步挡发布；旧游标撤权立即失效；恢复备份不复活删除内容。 更新后默认结果不返回旧正文；历史显式查询仍定位原版本；索引损坏可从有效正文恢复。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-032",
+      "name": "多级缓存与在途请求复用",
+      "baseline_features": "CACHE-01",
+      "feature_ids": [
+        "CACHE-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "cache_only不联网采集；offline连远程模型也禁止；刷新失败旧内容需显式授权；不跨身份复用。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-033",
+      "name": "中文简繁、混合语言与原文映射",
+      "baseline_features": "QRY-03",
+      "feature_ids": [
+        "QRY-03"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "中英代码混合可命中；两语种不互相覆盖；每条highlight仍指向原文。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-034",
+      "name": "硬条件核验与预算内补召回",
+      "baseline_features": "QRY-04",
+      "feature_ids": [
+        "QRY-04"
+      ],
+      "planned_slices": [
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "strict主结果只放已核验满足项；unknown单列；预算不足不说全网无结果。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-035",
+      "name": "纠错、别名与可控模糊匹配",
+      "baseline_features": "QRY-05",
+      "feature_ids": [
+        "QRY-05"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "没有自动把C++改成C#；纠错不删除硬条件；中英文词典范围可配置。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-036",
+      "name": "联想补全与相关查询",
+      "baseline_features": "QRY-06",
+      "feature_ids": [
+        "QRY-06"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "未提交的按键默认不外发；关闭历史后不继续积累；查询建议无他人私有词。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-037",
+      "name": "多样性、转载聚类与质量过滤",
+      "baseline_features": "RANK-01",
+      "feature_ids": [
+        "RANK-01"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "site限定不被多样性突破；未知站点不默认降权；被折叠结果可展开并可核验误杀。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-038",
+      "name": "排序解释与来源增量价值",
+      "baseline_features": "RANK-02",
+      "feature_ids": [
+        "RANK-02"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "解释与实际排序版本一致；原始分数不冒充事实可信度；只评估采样/当前集合。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-039",
+      "name": "空结果诊断与安全放宽建议",
+      "baseline_features": "SEARCH-05",
+      "feature_ids": [
+        "SEARCH-05"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "没搜到不显示为不存在；重复补搜无新增时停止；保留原始条件。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-040",
+      "name": "分面筛选与连续细化",
+      "baseline_features": "FACET-01",
+      "feature_ids": [
+        "FACET-01"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "所有计数过ACL；不把候选数量当全网量；未知时间单列。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-041",
+      "name": "自适应来源选择与后续批次扩展",
+      "baseline_features": "SRC-05",
+      "feature_ids": [
+        "SRC-05"
+      ],
+      "planned_slices": [
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增源改善或降低效果有分组报告；同源限流不被策略绕过；策略可回滚。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-042",
+      "name": "检索相关性与约束基准",
+      "baseline_features": "QA-02",
+      "feature_ids": [
+        "QA-02"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "硬条件与引用错误阻断发布；无全网召回率声称；质量提升有人工与复现依据。 未冻结环境/语料hash/阈值/审查人不能通过性能或语义发布门禁；确定性约束失败数必须为0。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-043",
+      "name": "模型端点、角色配置与能力验证",
+      "baseline_features": "MODEL-01",
+      "feature_ids": [
+        "MODEL-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "本地与远程都允许；未支持参数报错；不隐式换提供方；禁用供应商托管搜索/浏览器。 无模型配置Schema和程序均接受；角色引用不存在、能力不匹配、非法出站地址由明确层次拒绝。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-044",
+      "name": "模型预算、结构输出、缓存与数据出站",
+      "baseline_features": "MODEL-02",
+      "feature_ids": [
+        "MODEL-02"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "未知usage不记0；模型不能增预算；网页不能扩大工具权限；私有材料未授权不外发。 遗漏/显式null/任务覆盖分别测试；模型请求中不能混入未获准profile；参数不支持不静默丢弃。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-045",
+      "name": "自然语言规划与跨语言扩展",
+      "baseline_features": "SEARCH-02",
+      "feature_ids": [
+        "SEARCH-02"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "原查询保留；派生查询数量受控；模型故障可原词搜索；不是翻译结果后伪称原文。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-046",
+      "name": "语义向量与混合检索",
+      "baseline_features": "INDEX-02",
+      "feature_ids": [
+        "INDEX-02"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不同维度/模型不混用；索引可重建；ANN过滤召回不足标partial；无向量仍有全文搜索。 查询与写入压力交错不发生数据竞争；崩溃重放幂等；k大于可用数不伪造结果；重载后恢复ef/模型空间和水位。",
+      "equivalent_requirement": "允许sqlite-vec替换引擎；模型维度、权限、原子性、崩溃恢复、可重建和partial性质需等效证据。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-047",
+      "name": "原文Highlights与证据定位",
+      "baseline_features": "EVID-01",
+      "feature_ids": [
+        "EVID-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "每条已发布quote可从不可变文本精确切出；模型改写进summary；OCR另标识。 无模型仍能产出可定位基础片段；有模型后相关性增强另测，不用基础完成冒充模型增强。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-048",
+      "name": "页内查找、定位与分段阅读",
+      "baseline_features": "EVID-02",
+      "feature_ids": [
+        "EVID-02"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "find不重新抓网页；过期/删除证据明确不可用；每次调用重新鉴权。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-049",
+      "name": "规则/模型字段提取与证据核验",
+      "baseline_features": "EXTRACT-01",
+      "feature_ids": [
+        "EXTRACT-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "Schema合法不等于语义正确；未知引用ID拒绝；不支持必填要求报告冲突。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-050",
+      "name": "证据回答与冲突呈现",
+      "baseline_features": "ANSWER-01",
+      "feature_ids": [
+        "ANSWER-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "无证据关键断言删除/限定；对立资料不隐藏；模型记忆不伪装成引用事实。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-051",
+      "name": "有界多轮研究",
+      "baseline_features": "RESEARCH-01",
+      "feature_ids": [
+        "RESEARCH-01"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "模型不得增预算；无新增证据停止；生成失败保留证据；中止可恢复。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-052",
+      "name": "相似网页与示例驱动检索",
+      "baseline_features": "SEARCH-04",
+      "feature_ids": [
+        "SEARCH-04"
+      ],
+      "planned_slices": [
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "标明搜索覆盖范围；无全网反向索引承诺；私人种子不擅自变成外部查询。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-053",
+      "name": "实体资料集与逐项条件核验",
+      "baseline_features": "DATASET-01",
+      "feature_ids": [
+        "DATASET-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "unknown不当false；新证据覆盖字段要留历史；搜索相关不能冒充满足。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-054",
+      "name": "自适应定位与规则修复",
+      "baseline_features": "READ-04",
+      "feature_ids": [
+        "READ-04"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不确定和错误匹配均可报告；失败不静默替换已确认规则；跨站点隔离。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-055",
+      "name": "主题定向采集与列表分页策略",
+      "baseline_features": "CRAWL-02",
+      "feature_ids": [
+        "CRAWL-02"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "优先级不能突破scope/robots/预算；停止条件可解释；不自发整网遍历。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-056",
+      "name": "代码与技术文档专门检索",
+      "baseline_features": "CODE-01",
+      "feature_ids": [
+        "CODE-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "函数符号/错误码/版本号可检索；同文件不同commit分开；无通用编译级语义保证。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-057",
+      "name": "论文/数据集检索与标识消歧",
+      "baseline_features": "SCHOLAR-01",
+      "feature_ids": [
+        "SCHOLAR-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "元数据免费不伪称正文可读；DOI归一不混版本；没有来源支持时状态unknown。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-058",
+      "name": "本地文件与授权私人资料导入",
+      "baseline_features": "PRIVATE-01",
+      "feature_ids": [
+        "PRIVATE-01"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "网页不能调用任意file://；文件移走/撤权触发删除；私有查询不自动外发。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-059",
+      "name": "免费来源扩充与维护工作台",
+      "baseline_features": "SRC-06",
+      "feature_ids": [
+        "SRC-06"
+      ],
+      "planned_slices": [
+        "S7"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增源有可测增量或明确垂直价值；数量不替代质量；超出数量按单位适配工量另排。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-060",
+      "name": "OCR、复杂版面与视觉辅助读取",
+      "baseline_features": "DOC-02",
+      "feature_ids": [
+        "DOC-02"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "OCR文本不冒充原生文字；定位回页面而非声称识别绝对正确；无收费OCR回退。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-061",
+      "name": "图片检索与图片资产索引",
+      "baseline_features": "IMAGE-01",
+      "feature_ids": [
+        "IMAGE-01"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "缩略图不冒充原图；公开可见不等于可再分发；图片维度与类型校验。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-062",
+      "name": "以图搜图、近重复与文本搜图",
+      "baseline_features": "IMAGE-02",
+      "feature_ids": [
+        "IMAGE-02"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "没有外部反向源时明确只搜自有图库；不把相似视为同一；不得暗传图片。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-063",
+      "name": "视频音频搜索与字幕时间戳检索",
+      "baseline_features": "AV-01",
+      "feature_ids": [
+        "AV-01"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "找到视频不冒充已理解；时间戳命中可回放验证；无法获取媒体仍可返回链接元数据。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-064",
+      "name": "转写、关键帧与视频内容理解",
+      "baseline_features": "AV-02",
+      "feature_ids": [
+        "AV-02"
+      ],
+      "planned_slices": [
+        "S8"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "转写与原字幕分开；视频采样不能声称每帧检查；长媒体有时长/显存/资源限额；无模型则能力缺失。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-065",
+      "name": "网页快照变化与增量刷新",
+      "baseline_features": "UPDATE-01",
+      "feature_ids": [
+        "UPDATE-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "超时/403不当删除；304仅更新checked_at；改变解析器不伪称网页改动。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-066",
+      "name": "历史、收藏、标签与搜索工作区",
+      "baseline_features": "WORKSPACE-01",
+      "feature_ids": [
+        "WORKSPACE-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "收藏不自动授权永久保存正文；删除历史不删用户另存集合；共享不越权。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-067",
+      "name": "排序偏好、站点屏蔽与隐私开关",
+      "baseline_features": "PREF-01",
+      "feature_ids": [
+        "PREF-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "硬条件优先；切换偏好形成新结果版本；关闭个性化恢复基线。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-068",
+      "name": "保存查询、订阅新增与更新监控",
+      "baseline_features": "WATCH-01",
+      "feature_ids": [
+        "WATCH-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "停机补跑有catch-up上限；时区/DST行为明确；只通知新增或新满足条件；不借监控绕过上游限流。 两源一成一败后恢复不漏失败源内容；重试通知沿用event_id；不保证外部收件方恰好一次。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-069",
+      "name": "搜索结果、证据与资料集导出",
+      "baseline_features": "EXPORT-01",
+      "feature_ids": [
+        "EXPORT-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "导出时再次鉴权；不泄露Cookie/密钥；导出引用可定位；删除撤权后的旧导出按保留策略失效。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-070",
+      "name": "通知出口与Webhook",
+      "baseline_features": "WEBHOOK-01",
+      "feature_ids": [
+        "WEBHOOK-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "DNS变化与重定向同样检查；payload不包含未授权正文；失败不重复计一次新事件。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-071",
+      "name": "完整协议覆盖、版本迁移与扩展接口收尾",
+      "baseline_features": "API-01",
+      "feature_ids": [
+        "API-01"
+      ],
+      "planned_slices": [
+        "S5",
+        "S6",
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "CLI/HTTP/MCP同请求结果语义一致；原生插件视为可信代码；不为每个协议实现一套逻辑。 跨协议完成矩阵逐项对照已实现功能；旧版本兼容与故意非法请求有回归。",
+      "equivalent_requirement": "API-01提前远程接口，完整协议覆盖随S5–S9每个新增功能交付，旧版本和非法请求仍回归。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-072",
+      "name": "完整搜索/资料/爬虫/研究操作台",
+      "baseline_features": "UI-02",
+      "feature_ids": [
+        "UI-02"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "在慢源/错误/部分结果下仍可操作；所有功能有空态与错误态；无只好看不可用入口。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-073",
+      "name": "观测、诊断与资源容量基线",
+      "baseline_features": "OPS-01",
+      "feature_ids": [
+        "OPS-01"
+      ],
+      "planned_slices": [
+        "S5"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "性能分冷热缓存/页面类别/模型条件；不以框架宣传QPS当产品指标。 原始测量绑定commit/机器/负载/模型配置；无URL或query高基数标签。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-074",
+      "name": "备份恢复、迁移与内容保留",
+      "baseline_features": "OPS-02",
+      "feature_ids": [
+        "OPS-02"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "不是直接复制运行中的DB文件；恢复后权限/删除仍有效；坏索引可独立重建。 恢复副本验证最新撤销水位后才能退出隔离；测试新旧Schema/FTS/向量重建。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-075",
+      "name": "多工作节点与公平调度",
+      "baseline_features": "SCALE-01",
+      "feature_ids": [
+        "SCALE-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "失联节点不可继续提交；跨节点同源配额有效；多租户公平；不得把WAL放网络盘。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-076",
+      "name": "安全/故障/多模态/端到端发布门禁",
+      "baseline_features": "QA-03",
+      "feature_ids": [
+        "QA-03"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "安全/权限/约束/quote错误为阻断；多媒体和Windows不只跑空壳构建；报告风险与覆盖缺口。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-077",
+      "name": "可复现打包、升级与运维手册",
+      "baseline_features": "RELEASE-01",
+      "feature_ids": [
+        "RELEASE-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "干净环境能按文档启动；旧数据升级/回滚演练；全部能力有任务映射及已实现清单。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-078",
+      "name": "基础HTTP/CLI/MCP合同与早期集成",
+      "baseline_features": "API-00",
+      "feature_ids": [
+        "API-00"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "同一授权请求在HTTP/CLI/MCP经过同一核心；无媒体验收依赖；能力未实现或禁用时明确返回不可用。",
+      "equivalent_requirement": "保留现有合同与共享核心，已实现MCP工具不代替后续任务等映射；按暴露功能分层验收。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-079",
+      "name": "早期追踪、资源账本与诊断底座",
+      "baseline_features": "OPS-00",
+      "feature_ids": [
+        "OPS-00"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "单请求可串联授权/调度/获取/提交；超时和重试可解释；日志无密钥；指标样例的资源计数一致。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-080",
+      "name": "早期一致备份、恢复隔离与撤销水位",
+      "baseline_features": "BACKUP-00",
+      "feature_ids": [
+        "BACKUP-00"
+      ],
+      "planned_slices": [
+        "S2",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "M0恢复固定资料与任务；M2补FTS回放；M4补向量重建。删除前备份恢复后不能复活删除内容；撤销日志不可验证时保持隔离。",
+      "equivalent_requirement": "安全恢复需要独立撤销连续性；未知水位保持隔离，不因单用户延期该性质。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-081",
+      "name": "爬虫准入与robots前置策略",
+      "baseline_features": "ROBOTS-01",
+      "feature_ids": [
+        "ROBOTS-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "未取得有效准入前不得发爬虫内容请求；robots访问本身受网络/总预算控制；网络或服务器不可达且无适用缓存时不放行。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-082",
+      "name": "关键技术可行性与版本冻结验证",
+      "baseline_features": "SPIKE-01",
+      "feature_ids": [
+        "SPIKE-01"
+      ],
+      "planned_slices": [
+        "S0"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "记录输入/环境/版本/步骤/失败；浏览器Windows隔离若未通过可继续无网与其他已验证能力，不得宣布Windows全功能通过。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "FT-083",
+      "name": "可执行配置合同、默认值与负例校验",
+      "baseline_features": "CONTRACT-02",
+      "feature_ids": [
+        "CONTRACT-02"
+      ],
+      "planned_slices": [
+        "S1",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "Python合同样例只作fixture；正式C++实现要通过同一测试向量。无模型配置、角色并发、无效日期、坏profile、深AST均有正负例。",
+      "equivalent_requirement": "保留已交付三类原生C++校验及相同fixture；模型执行后移不删除纯配置合同。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-01",
+      "name": "早期协议集成没有独立交付包",
+      "baseline_features": "API-00 API-01 UI-01",
+      "feature_ids": [
+        "API-00",
+        "API-01",
+        "UI-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S3",
+        "S5"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增API-00，API-01减量改为全覆盖收尾。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-02",
+      "name": "robots在依赖图中晚于递归爬虫",
+      "baseline_features": "ROBOTS-01 CRAWL-01 CRAWL-03",
+      "feature_ids": [
+        "CRAWL-01",
+        "CRAWL-03",
+        "ROBOTS-01"
+      ],
+      "planned_slices": [
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "拆出ROBOTS-01作为CRAWL-01前置；noindex/nosnippet继续在CRAWL-03。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-03",
+      "name": "观测和备份排到M8才交付",
+      "baseline_features": "OPS-00 BACKUP-00 OPS-01 OPS-02",
+      "feature_ids": [
+        "BACKUP-00",
+        "OPS-00",
+        "OPS-01",
+        "OPS-02"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2",
+        "S5",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增OPS-00/BACKUP-00，原包减量保留最终演练。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-04",
+      "name": "无模型配置与基础运行承诺矛盾",
+      "baseline_features": "MODEL-01 CONTRACT-02",
+      "feature_ids": [
+        "CONTRACT-02",
+        "MODEL-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "允许空profile集合/null默认；模型增强能力单独禁用。",
+      "equivalent_requirement": "无模型配置保持合法，增强能力单独禁用，不要求先注册模型才能使用离线能力。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-05",
+      "name": "请求语义校验仍只有文字约定",
+      "baseline_features": "QRY-01 CONTRACT-02",
+      "feature_ids": [
+        "CONTRACT-02",
+        "QRY-01"
+      ],
+      "planned_slices": [
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "加强字段/操作符/时间结构，补复杂度/离线冲突语义验证器与负例。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-06",
+      "name": "角色继承、并发与默认值未闭合",
+      "baseline_features": "MODEL-01 MODEL-02 SRC-01 CONTRACT-02",
+      "feature_ids": [
+        "CONTRACT-02",
+        "MODEL-01",
+        "MODEL-02",
+        "SRC-01"
+      ],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "统一角色覆盖对象、明确缺省/null、格式校验与source审核到期语义。",
+      "equivalent_requirement": "保留原生角色继承/null/默认/限额及审核到期语义，新增运行注册单独验证。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-07",
+      "name": "unknown来源桶与证据独立性容易混用",
+      "baseline_features": "SEARCH-03 RANK-02",
+      "feature_ids": [
+        "RANK-02",
+        "SEARCH-03"
+      ],
+      "planned_slices": [
+        "S1",
+        "S6"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "保留RRF，补稳定服务贡献桶；不把所有unknown合并，也不声明未知来源独立。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-08",
+      "name": "向量索引在线更新缺少并发合同",
+      "baseline_features": "INDEX-02 INDEX-03",
+      "feature_ids": [
+        "INDEX-02",
+        "INDEX-03"
+      ],
+      "planned_slices": [
+        "S1",
+        "S4"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "保留hnswlib候选；应用锁/单writer/代际切换/水位与版本准入；不立即改成重型数据库。",
+      "equivalent_requirement": "替换并发/代际机制需保留无数据竞争、崩溃恢复与模型空间绑定的可验证性质。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-09",
+      "name": "高风险技术验证没有可交付工作包",
+      "baseline_features": "SPIKE-01 READ-02 DOC-01 INDEX-01",
+      "feature_ids": [
+        "DOC-01",
+        "INDEX-01",
+        "READ-02",
+        "SPIKE-01"
+      ],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S3"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增SPIKE-01并设前置依赖与ADR退出条件。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-10",
+      "name": "来源数量门禁不能证明通用网页能力",
+      "baseline_features": "SRC-04",
+      "feature_ids": [
+        "SRC-04"
+      ],
+      "planned_slices": [
+        "S0",
+        "S1"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "web上线必须至少一个真实审核web来源和固定查询报告；不足不签web Alpha。",
+      "equivalent_requirement": "S1至少两个实际可用来源含一个经审核通用网页源；S0候选成功率不能替代审核。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-11",
+      "name": "从旧备份恢复的撤销水位来源不完整",
+      "baseline_features": "BACKUP-00 AUTH-01 OPS-02",
+      "feature_ids": [
+        "AUTH-01",
+        "BACKUP-00",
+        "OPS-02"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "独立保护的撤销journal+水位；恢复隔离，不能验证则fail-closed。",
+      "equivalent_requirement": "独立保护journal及水位，恢复前核对；不可让日志与数据库一起回滚后直接发布。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-12",
+      "name": "多来源订阅需要分源推进与交付事务",
+      "baseline_features": "WATCH-01 WEBHOOK-01",
+      "feature_ids": [
+        "WATCH-01",
+        "WEBHOOK-01"
+      ],
+      "planned_slices": [
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "分源checkpoint、重叠扫描、outbox、event_id去重和交付状态。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-13",
+      "name": "依赖无环不等于依赖完整",
+      "baseline_features": "JOB-01 EVID-01 SEARCH-01",
+      "feature_ids": [
+        "EVID-01",
+        "JOB-01",
+        "SEARCH-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "补STORE/AUTH/QA依赖；移除EVID基础对MODEL的硬依赖，增强路径仍单验。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-14",
+      "name": "质量门禁需要冻结过程而非待定承诺",
+      "baseline_features": "QA-02 SPIKE-01",
+      "feature_ids": [
+        "QA-02",
+        "SPIKE-01"
+      ],
+      "planned_slices": [
+        "S0",
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "设G0基线与逐阶段门禁文件；未知阈值不得标通过，保留覆盖率与弃答率。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-15",
+      "name": "任务预算不能代替总存储与回压",
+      "baseline_features": "STORE-01 JOB-01 CACHE-01",
+      "feature_ids": [
+        "CACHE-01",
+        "JOB-01",
+        "STORE-01"
+      ],
+      "planned_slices": [
+        "S1",
+        "S2"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "分类配额、高低水位、并发预留、GC引用pin和磁盘满恢复用例。",
+      "equivalent_requirement": "保持原功能语义，按相关能力实际开放时分层执行；未实现增强路径不提前声称通过。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    },
+    {
+      "id": "C-16",
+      "name": "独立review需要可验证执行与版本绑定",
+      "baseline_features": "GOV-01 CONTRACT-02",
+      "feature_ids": [
+        "CONTRACT-02",
+        "GOV-01"
+      ],
+      "planned_slices": [
+        "S0",
+        "S1",
+        "S9"
+      ],
+      "applicability": "mapped_features",
+      "baseline_acceptance": "新增handoff模板和review状态/输入哈希；本轮明确未执行独立子Agent审核。",
+      "equivalent_requirement": "原文的历史review状态保留；本轮按实际身份、输入哈希、问题产物和测试区分作者/复核/完整批准。",
+      "execution_status": "not_signed_off_for_0.1.1",
+      "evidence": []
+    }
+  ]
+}

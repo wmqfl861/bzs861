@@ -1,5 +1,6 @@
 #pragma once
 #include "bzs/store.hpp"
+#include "bzs/web.hpp"
 #include <map>
 #include <thread>
 #include <vector>
@@ -32,10 +33,11 @@ namespace bzs {
     Store& store_;
     const FixtureCatalog& fixtures_;
     std::filesystem::path backup_root_;
-    public: Service(Store& store, const FixtureCatalog& fixtures, std::filesystem::path backup_root) :store_(store), fixtures_(fixtures), backup_root_(std::move(backup_root)) {
+    WebService* web_=nullptr;
+    public: Service(Store& store, const FixtureCatalog& fixtures, std::filesystem::path backup_root, WebService* web=nullptr) :store_(store), fixtures_(fixtures), backup_root_(std::move(backup_root)), web_(web) {
     }
     Json dispatch(const Principal& principal, const Json& request);
-    static Json capabilities();
+    Json capabilities() const;
   };
   std::jthread start_worker(Store& store, const FixtureCatalog& fixtures);
 }

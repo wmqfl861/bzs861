@@ -179,8 +179,8 @@ namespace bzs {
       }
     };
   }
-  Json Json::parse(std::string_view text) {
-    require(!text.empty() && text.size()<=2*1024*1024, "E_JSON_LIMIT", "JSON size outside supported limits");
+  Json Json::parse(std::string_view text, std::size_t max_bytes) {
+    require(!text.empty() && text.size()<=max_bytes, "E_JSON_LIMIT", "JSON size outside supported limits");
     require(valid_utf8(text), "E_UTF8", "Invalid UTF-8 input");
     ShapeGuard(text).run();
     std::string owned(text);

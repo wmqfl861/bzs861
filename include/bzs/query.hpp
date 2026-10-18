@@ -2,6 +2,7 @@
 #include "bzs/json.hpp"
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 namespace bzs {
   struct QueryNode {
@@ -20,8 +21,12 @@ namespace bzs {
   // Safe optional FTS candidate query. Unsupported expressions use a bounded scan,
   // never a lossy approximation which could silently drop matching documents.
   std::optional<std::string> fts_candidates(const Query& q);
-  // FTS-only text: token boundaries must match the ASCII term predicate.
-  // The immutable document text and evidence offsets never use this projection.
+  // Legacy schema-2 ASCII projection. Schema 3 indexes immutable text with
+  // the bzs tokenizer; document text and evidence never use this projection.
   std::string fts_index_text(std::string_view text);
   int score_match(const QueryNode& q, std::string_view title, std::string_view body);
+  // Exact match spans [start,end) of one leaf in an ASCII-lowered haystack.
+  std::vector<std::pair<std::size_t, std::size_t>> leaf_matches(std::string_view hay_lower, const QueryNode& leaf, std::size_t limit);
+  // Leaves that must or may match (excludes everything below NOT).
+  std::vector<const QueryNode*> positive_leaves(const QueryNode& root);
 }

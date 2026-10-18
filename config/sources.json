@@ -1,0 +1,792 @@
+{
+  "version": 1,
+  "notes": "All sources start disabled. Enable only after a complete, current approved source contract. S0 --include-candidates --only ID is an explicit availability probe, not approval. No paid fallback or block evasion.",
+  "sources": [
+    {
+      "id": "bing",
+      "provider": "microsoft",
+      "index_family": "bing",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": true,
+      "weight": 100,
+      "min_interval_ms": 2000,
+      "daily_cap": 300,
+      "status": "candidate",
+      "params": {
+        "adapter": "bing_html",
+        "base_url": "https://www.bing.com/search"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "bing",
+        "provider_id": "microsoft",
+        "index_family": "bing",
+        "capability": "web",
+        "endpoint": "https://www.bing.com/search",
+        "adapter_id": "bing_html",
+        "enabled": false,
+        "logical_service_id": "microsoft",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 2000,
+          "shared_budget_key": "microsoft",
+          "request_quota": 300,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "duckduckgo",
+      "provider": "duckduckgo",
+      "index_family": "bing",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": true,
+      "weight": 100,
+      "min_interval_ms": 2000,
+      "daily_cap": 300,
+      "status": "candidate",
+      "params": {
+        "adapter": "duckduckgo_html",
+        "base_url": "https://html.duckduckgo.com/html/"
+      },
+      "notes": "Conservatively shares the Bing family until independent contributions are verified. Candidate probe does not approve use.",
+      "contract": {
+        "id": "duckduckgo",
+        "provider_id": "duckduckgo",
+        "index_family": "bing",
+        "capability": "web",
+        "endpoint": "https://html.duckduckgo.com/html/",
+        "adapter_id": "duckduckgo_html",
+        "enabled": false,
+        "logical_service_id": "duckduckgo",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 2000,
+          "shared_budget_key": "duckduckgo",
+          "request_quota": 300,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "baidu",
+      "provider": "baidu",
+      "index_family": "baidu",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": true,
+      "weight": 100,
+      "min_interval_ms": 3000,
+      "daily_cap": 200,
+      "status": "candidate",
+      "params": {
+        "adapter": "baidu_html",
+        "base_url": "https://www.baidu.com/s"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "baidu",
+        "provider_id": "baidu",
+        "index_family": "baidu",
+        "capability": "web",
+        "endpoint": "https://www.baidu.com/s",
+        "adapter_id": "baidu_html",
+        "enabled": false,
+        "logical_service_id": "baidu",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 3000,
+          "shared_budget_key": "baidu",
+          "request_quota": 200,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "mojeek",
+      "provider": "mojeek",
+      "index_family": "mojeek",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": false,
+      "weight": 80,
+      "min_interval_ms": 3000,
+      "daily_cap": 200,
+      "status": "candidate",
+      "params": {
+        "adapter": "mojeek_html",
+        "base_url": "https://www.mojeek.com/search"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "mojeek",
+        "provider_id": "mojeek",
+        "index_family": "mojeek",
+        "capability": "web",
+        "endpoint": "https://www.mojeek.com/search",
+        "adapter_id": "mojeek_html",
+        "enabled": false,
+        "logical_service_id": "mojeek",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 3000,
+          "shared_budget_key": "mojeek",
+          "request_quota": 200,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "sogou",
+      "provider": "sogou",
+      "index_family": "sogou",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": false,
+      "weight": 90,
+      "min_interval_ms": 3000,
+      "daily_cap": 200,
+      "status": "candidate",
+      "params": {
+        "adapter": "sogou_html",
+        "base_url": "https://www.sogou.com/web"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "sogou",
+        "provider_id": "sogou",
+        "index_family": "sogou",
+        "capability": "web",
+        "endpoint": "https://www.sogou.com/web",
+        "adapter_id": "sogou_html",
+        "enabled": false,
+        "logical_service_id": "sogou",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 3000,
+          "shared_budget_key": "sogou",
+          "request_quota": 200,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "so360",
+      "provider": "qihoo360",
+      "index_family": "so360",
+      "capability": "web",
+      "kind": "scrape",
+      "enabled": false,
+      "default": false,
+      "weight": 90,
+      "min_interval_ms": 3000,
+      "daily_cap": 200,
+      "status": "candidate",
+      "params": {
+        "adapter": "so360_html",
+        "base_url": "https://www.so.com/s"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "so360",
+        "provider_id": "qihoo360",
+        "index_family": "so360",
+        "capability": "web",
+        "endpoint": "https://www.so.com/s",
+        "adapter_id": "so360_html",
+        "enabled": false,
+        "logical_service_id": "qihoo360",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 3000,
+          "shared_budget_key": "qihoo360",
+          "request_quota": 200,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "marginalia",
+      "provider": "marginalia",
+      "index_family": "marginalia",
+      "capability": "web",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "weight": 60,
+      "min_interval_ms": 2000,
+      "daily_cap": 500,
+      "status": "candidate",
+      "params": {
+        "adapter": "marginalia_api",
+        "key_env": "BZS_MARGINALIA_KEY",
+        "base_url": "https://api2.marginalia-search.com/search"
+      },
+      "terms_url": "https://about.marginalia-search.com/article/api",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "marginalia",
+        "provider_id": "marginalia",
+        "index_family": "marginalia",
+        "capability": "web",
+        "endpoint": "https://api2.marginalia-search.com/search",
+        "adapter_id": "marginalia_api",
+        "enabled": false,
+        "logical_service_id": "marginalia",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": "https://about.marginalia-search.com/article/api",
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 2000,
+          "shared_budget_key": "marginalia",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "wikipedia_zh",
+      "provider": "wikimedia",
+      "index_family": "wikipedia_zh",
+      "capability": "encyclopedia",
+      "kind": "api",
+      "enabled": false,
+      "default": true,
+      "weight": 70,
+      "min_interval_ms": 500,
+      "daily_cap": 2000,
+      "status": "candidate",
+      "params": {
+        "adapter": "wikipedia_api",
+        "lang": "zh",
+        "base_url": "https://zh.wikipedia.org/w/api.php"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "wikipedia_zh",
+        "provider_id": "wikimedia",
+        "index_family": "wikipedia_zh",
+        "capability": "web",
+        "endpoint": "https://zh.wikipedia.org/w/api.php",
+        "adapter_id": "wikipedia_api",
+        "enabled": false,
+        "logical_service_id": "wikimedia",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 500,
+          "shared_budget_key": "wikimedia",
+          "request_quota": 2000,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "wikipedia_en",
+      "provider": "wikimedia",
+      "index_family": "wikipedia_en",
+      "capability": "encyclopedia",
+      "kind": "api",
+      "enabled": false,
+      "default": true,
+      "weight": 70,
+      "min_interval_ms": 500,
+      "daily_cap": 2000,
+      "status": "candidate",
+      "params": {
+        "adapter": "wikipedia_api",
+        "lang": "en",
+        "base_url": "https://en.wikipedia.org/w/api.php"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "wikipedia_en",
+        "provider_id": "wikimedia",
+        "index_family": "wikipedia_en",
+        "capability": "web",
+        "endpoint": "https://en.wikipedia.org/w/api.php",
+        "adapter_id": "wikipedia_api",
+        "enabled": false,
+        "logical_service_id": "wikimedia",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 500,
+          "shared_budget_key": "wikimedia",
+          "request_quota": 2000,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "arxiv",
+      "provider": "arxiv",
+      "index_family": "arxiv",
+      "capability": "papers",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "weight": 100,
+      "min_interval_ms": 3000,
+      "daily_cap": 1000,
+      "status": "candidate",
+      "params": {
+        "adapter": "arxiv_api",
+        "base_url": "https://export.arxiv.org/api/query"
+      },
+      "terms_url": "https://info.arxiv.org/help/api/tou.html",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "arxiv",
+        "provider_id": "arxiv",
+        "index_family": "arxiv",
+        "capability": "scholar",
+        "endpoint": "https://export.arxiv.org/api/query",
+        "adapter_id": "arxiv_api",
+        "enabled": false,
+        "logical_service_id": "arxiv",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": "https://info.arxiv.org/help/api/tou.html",
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 3000,
+          "shared_budget_key": "arxiv",
+          "request_quota": 1000,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "stackoverflow",
+      "provider": "stackexchange",
+      "index_family": "stackexchange",
+      "capability": "code",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "weight": 100,
+      "min_interval_ms": 1000,
+      "daily_cap": 250,
+      "status": "candidate",
+      "params": {
+        "adapter": "stackexchange_api",
+        "site": "stackoverflow",
+        "site_url": "https://stackoverflow.com",
+        "base_url": "https://api.stackexchange.com/2.3/search/excerpts"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "stackoverflow",
+        "provider_id": "stackexchange",
+        "index_family": "stackexchange",
+        "capability": "code",
+        "endpoint": "https://api.stackexchange.com/2.3/search/excerpts",
+        "adapter_id": "stackexchange_api",
+        "enabled": false,
+        "logical_service_id": "stackexchange",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "stackexchange",
+          "request_quota": 250,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "github",
+      "provider": "github",
+      "index_family": "github",
+      "capability": "code",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "weight": 100,
+      "min_interval_ms": 6000,
+      "daily_cap": 500,
+      "status": "candidate",
+      "params": {
+        "adapter": "github_api",
+        "token_env": "BZS_GITHUB_TOKEN",
+        "base_url": "https://api.github.com/search/repositories"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "github",
+        "provider_id": "github",
+        "index_family": "github",
+        "capability": "code",
+        "endpoint": "https://api.github.com/search/repositories",
+        "adapter_id": "github_api",
+        "enabled": false,
+        "logical_service_id": "github",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 6000,
+          "shared_budget_key": "github",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "hackernews",
+      "provider": "algolia",
+      "index_family": "hackernews",
+      "capability": "news",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "weight": 80,
+      "min_interval_ms": 1000,
+      "daily_cap": 1000,
+      "status": "candidate",
+      "params": {
+        "adapter": "hackernews_api",
+        "base_url": "https://hn.algolia.com/api/v1/search"
+      },
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "contract": {
+        "id": "hackernews",
+        "provider_id": "algolia",
+        "index_family": "hackernews",
+        "capability": "news",
+        "endpoint": "https://hn.algolia.com/api/v1/search",
+        "adapter_id": "hackernews_api",
+        "enabled": false,
+        "logical_service_id": "algolia",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "algolia",
+          "request_quota": 1000,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "mwmbl",
+      "provider": "mwmbl",
+      "index_family": "mwmbl",
+      "capability": "web",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "status": "candidate",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "min_interval_ms": 1000,
+      "daily_cap": 500,
+      "params": {
+        "base_url": "https://mwmbl.org/",
+        "adapter": "mwmbl_planned"
+      },
+      "contract": {
+        "id": "mwmbl",
+        "provider_id": "mwmbl",
+        "index_family": "mwmbl",
+        "capability": "web",
+        "endpoint": "https://mwmbl.org/",
+        "adapter_id": "mwmbl_planned",
+        "enabled": false,
+        "logical_service_id": "mwmbl",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "mwmbl",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "gdelt",
+      "provider": "gdelt",
+      "index_family": "gdelt",
+      "capability": "news",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "status": "candidate",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "min_interval_ms": 1000,
+      "daily_cap": 500,
+      "params": {
+        "base_url": "https://api.gdeltproject.org/api/v2/doc/doc",
+        "adapter": "gdelt_planned"
+      },
+      "contract": {
+        "id": "gdelt",
+        "provider_id": "gdelt",
+        "index_family": "gdelt",
+        "capability": "news",
+        "endpoint": "https://api.gdeltproject.org/api/v2/doc/doc",
+        "adapter_id": "gdelt_planned",
+        "enabled": false,
+        "logical_service_id": "gdelt",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "gdelt",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "openalex",
+      "provider": "openalex",
+      "index_family": "openalex",
+      "capability": "papers",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "status": "candidate",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "min_interval_ms": 1000,
+      "daily_cap": 500,
+      "params": {
+        "base_url": "https://api.openalex.org/works",
+        "adapter": "openalex_planned"
+      },
+      "contract": {
+        "id": "openalex",
+        "provider_id": "openalex",
+        "index_family": "openalex",
+        "capability": "scholar",
+        "endpoint": "https://api.openalex.org/works",
+        "adapter_id": "openalex_planned",
+        "enabled": false,
+        "logical_service_id": "openalex",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "openalex",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    },
+    {
+      "id": "crossref",
+      "provider": "crossref",
+      "index_family": "crossref",
+      "capability": "papers",
+      "kind": "api",
+      "enabled": false,
+      "default": false,
+      "status": "candidate",
+      "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
+      "min_interval_ms": 1000,
+      "daily_cap": 500,
+      "params": {
+        "base_url": "https://api.crossref.org/works",
+        "adapter": "crossref_planned"
+      },
+      "contract": {
+        "id": "crossref",
+        "provider_id": "crossref",
+        "index_family": "crossref",
+        "capability": "scholar",
+        "endpoint": "https://api.crossref.org/works",
+        "adapter_id": "crossref_planned",
+        "enabled": false,
+        "logical_service_id": "crossref",
+        "review": {
+          "status": "candidate",
+          "payment_scheme": "unverified",
+          "automated_access": "unverified",
+          "checked_at": null,
+          "expires_at": null,
+          "terms_url": null,
+          "cache_policy": "unverified",
+          "redistribution_policy": "unverified",
+          "approved_by": null
+        },
+        "limits": {
+          "max_concurrency": 1,
+          "min_interval_ms": 1000,
+          "shared_budget_key": "crossref",
+          "request_quota": 500,
+          "quota_window_seconds": 86400
+        }
+      }
+    }
+  ]
+}

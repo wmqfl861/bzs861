@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
-project(bzs861 VERSION 0.0.2 LANGUAGES CXX)
+project(bzs861 VERSION 0.1.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 option(BZS_SANITIZERS "Enable address and undefined-behavior sanitizers" OFF)
 option(BZS_BUILD_TESTS "Build offline tests" ON)
+option(BZS_REQUIRE_PYTHON_TESTS "Fail configure if worker test dependencies are missing" OFF)
 find_package(Threads REQUIRED)
 find_package(SQLite3 3.38 REQUIRED)
 find_package(LibXml2 REQUIRED)
@@ -13,7 +14,8 @@ find_path(JSONC_INCLUDE_DIR json-c/json.h REQUIRED)
 find_library(JSONC_LIBRARY NAMES json-c json-c-static REQUIRED)
 find_path(BOOST_INCLUDE_DIR boost/beast.hpp REQUIRED)
 add_library(bzs_core
-  src/json.cpp src/util.cpp src/query.cpp src/html.cpp src/store.cpp src/contracts.cpp src/service.cpp)
+  src/json.cpp src/util.cpp src/query.cpp src/html.cpp src/tokenizer.cpp src/highlight.cpp
+  src/store.cpp src/contracts.cpp src/web.cpp src/service.cpp)
 target_include_directories(bzs_core PUBLIC include PRIVATE ${JSONC_INCLUDE_DIR})
 target_link_libraries(bzs_core PUBLIC SQLite::SQLite3 OpenSSL::Crypto PRIVATE LibXml2::LibXml2 ${JSONC_LIBRARY})
 target_compile_definitions(bzs_core PUBLIC BZS_VERSION="${PROJECT_VERSION}")
@@ -63,8 +65,28 @@ if(BZS_BUILD_TESTS)
   add_test(NAME http_cli COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration.py
     --server $<TARGET_FILE:searchd> --cli $<TARGET_FILE:searchctl>
     --fixtures ${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures)
+  # Python with the worker dependencies installed (`pip install -e python[test]`); e.g. a venv.
+  set(BZS_PYTHON "${Python3_EXECUTABLE}" CACHE FILEPATH "Python interpreter used for worker/MCP tests")
+  add_test(NAME e2e_web COMMAND ${BZS_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e_web.py
+    --server $<TARGET_FILE:searchd> --python ${BZS_PYTHON} --repo ${CMAKE_CURRENT_SOURCE_DIR})
+  execute_process(COMMAND ${BZS_PYTHON} -c "import pytest, aiohttp, lxml, trafilatura, mcp"
+    RESULT_VARIABLE BZS_PY_DEPS OUTPUT_QUIET ERROR_QUIET)
+  if(BZS_PY_DEPS EQUAL 0)
+    add_test(NAME python_worker COMMAND ${BZS_PYTHON} -m pytest -q -p no:cacheprovider tests
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python)
+  else()
+    if(BZS_REQUIRE_PYTHON_TESTS)
+      message(FATAL_ERROR "Required worker test dependencies are missing from ${BZS_PYTHON}")
+    endif()
+    message(STATUS "bzs861: worker dependencies not importable by ${BZS_PYTHON}; python_worker/e2e_web will be skipped "
+                   "(pip install -e python[test], then -DBZS_PYTHON=<that python>)")
+    add_test(NAME python_worker COMMAND ${BZS_PYTHON} -c "import sys; print('SKIP: worker deps missing'); sys.exit(77)")
+  endif()
   set_tests_properties(core PROPERTIES TIMEOUT 45)
   set_tests_properties(contracts PROPERTIES TIMEOUT 45)
   set_tests_properties(http_cli PROPERTIES TIMEOUT 90)
+  # 77 = dependencies missing -> reported as skipped, not passed.
+  set_tests_properties(e2e_web PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)
+  set_tests_properties(python_worker PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)
 endif()
 install(TARGETS searchd searchctl RUNTIME DESTINATION bin)
