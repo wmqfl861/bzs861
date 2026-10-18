@@ -1,0 +1,16 @@
+.....F.................................................                  [100%]
+=================================== FAILURES ===================================
+_____________ test_shared_service_quota_counts_both_source_aliases _____________
+tests/test_probe.py:218: in test_shared_service_quota_counts_both_source_aliases
+    assert {source for source, _ in scripted.calls} == {"ddg", "bing"}
+E   AssertionError: assert {'ddg'} == {'bing', 'ddg'}
+E     
+E     Extra items in the right set:
+E     'bing'
+E     Use -v to get more diff
+----------------------------- Captured stdout call -----------------------------
+[ddg] q1: ok hits=1 0ms
+[ddg] q2: ok hits=1 0ms
+=========================== short test summary info ============================
+FAILED tests/test_probe.py::test_shared_service_quota_counts_both_source_aliases
+1 failed, 54 passed in 1.17s

@@ -142,7 +142,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=3,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=4,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -226,6 +226,27 @@ namespace bzs {
       Stmt tokenizer(db_,"SELECT value FROM settings WHERE key='fts_tokenizer_version'");
       require(tokenizer.step()&&tokenizer.text(0)==fts_tokenizer_version,"E_SCHEMA_VERSION",
               "Index tokenizer version requires an explicit migration",409);
+    }
+    if(version<4) {
+      if(!has_column(db_,"jobs","kind"))exec(db_,"ALTER TABLE jobs ADD COLUMN kind TEXT NOT NULL DEFAULT 'fixture.ingest';");
+      exec(db_,R"SQL(
+ CREATE TABLE read_job_budgets(job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+   max_requests INTEGER NOT NULL,max_bytes INTEGER NOT NULL,per_page_timeout_ms INTEGER NOT NULL,
+   charged_requests INTEGER NOT NULL DEFAULT 0,charged_bytes INTEGER NOT NULL DEFAULT 0);
+ CREATE TABLE read_job_items(job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+   position INTEGER NOT NULL,url TEXT NOT NULL,state TEXT NOT NULL DEFAULT 'pending',
+   deletion_generation INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,
+   lease_epoch INTEGER NOT NULL DEFAULT 0,attempt_id TEXT NOT NULL DEFAULT '',
+   request_grant INTEGER NOT NULL DEFAULT 0,byte_grant INTEGER NOT NULL DEFAULT 0,
+   external_requests INTEGER NOT NULL DEFAULT 0,content_bytes INTEGER NOT NULL DEFAULT 0,
+   unknown_requests INTEGER NOT NULL DEFAULT 0,unknown_bytes INTEGER NOT NULL DEFAULT 0,
+   usage_unknown INTEGER NOT NULL DEFAULT 0,snapshot_id TEXT REFERENCES snapshots(id) ON DELETE SET NULL,
+   receipt_json TEXT,error_code TEXT,PRIMARY KEY(job_id,position),UNIQUE(job_id,url));
+ CREATE INDEX read_job_items_state ON read_job_items(job_id,state,position);
+ CREATE UNIQUE INDEX read_job_one_running ON read_job_items(job_id) WHERE state='running';
+ CREATE INDEX read_job_snapshot ON read_job_items(snapshot_id);
+ PRAGMA user_version=4;
+ )SQL");
     }
     tx.commit();
   }
@@ -420,7 +441,7 @@ namespace bzs {
     tx.commit();
     return out;
   }
-  Json Store::ingest_web(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation) {
+  Json Store::ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation) {
     require(expected_deletion_generation>=0,"E_SCHEMA","Invalid deletion fence");
     metadata_host(input.url);
     require(valid_utf8(input.raw)&&valid_utf8(parsed.text)&&valid_utf8(parsed.title), "E_UTF8", "Worker output is not UTF-8", 502);
@@ -437,11 +458,14 @@ namespace bzs {
       m.set("text_truncated", true);
     }
     parsed.title=utf8_prefix(parsed.title.empty()?std::string("Untitled"):parsed.title, 1024);
-    std::lock_guard lock(mutex_);
-    Tx tx(db_);
     require(deletion_generation_locked(owner,doc.url)==expected_deletion_generation,"E_TARGET_DELETED",
             "Document was deleted after this read started",409);
-    auto out=ingest_locked(owner, doc, parsed, m.dump(), "web");
+    return ingest_locked(owner, doc, parsed, m.dump(), "web");
+  }
+  Json Store::ingest_web(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation) {
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    auto out=ingest_web_locked(owner,input,std::move(parsed),meta,expected_deletion_generation);
     tx.commit();
     return out;
   }
@@ -787,10 +811,11 @@ namespace bzs {
     return out;
   }
   Json Store::job_locked(const std::string& owner, const std::string& id) {
-    Stmt s(db_, "SELECT id,fixture_id,state,epoch,attempts,max_attempts,lease_until,deadline,used_pages,result_json,error_code FROM jobs WHERE id=? AND owner=?");
+    Stmt s(db_, "SELECT id,fixture_id,state,epoch,attempts,max_attempts,lease_until,deadline,used_pages,result_json,error_code,kind FROM jobs WHERE id=? AND owner=?");
     s.bind(1, id);
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Job not found", 404);
+    if(s.text(11)=="web.read_many")return read_job_locked(owner,id);
     Json j=Json::object();
     j.set("job_id", s.text(0));
     j.set("kind", "fixture.ingest");
@@ -860,6 +885,11 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     Tx tx(db_);
     auto old=job_locked(owner, id);
+    if(old.at("kind").str()=="web.read_many") {
+      auto out=control_read_locked(owner,id,action);
+      tx.commit();
+      return out;
+    }
     auto state=old.at("state").str();
     std::string next;
     if(action=="pause") {
@@ -885,7 +915,7 @@ namespace bzs {
     return out;
   }
   void Store::settle_interruptions_locked() {
-    Stmt s(db_, "UPDATE jobs SET state=CASE state WHEN 'cancelling' THEN 'cancelled' ELSE 'paused' END WHERE state IN ('cancelling','pausing') AND lease_until<=?");
+    Stmt s(db_, "UPDATE jobs SET state=CASE state WHEN 'cancelling' THEN 'cancelled' ELSE 'paused' END WHERE kind='fixture.ingest' AND state IN ('cancelling','pausing') AND lease_until<=?");
     s.bind(1, clock_());
     s.step();
   }
@@ -893,6 +923,7 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     Tx tx(db_);
     settle_interruptions_locked();
+    settle_read_jobs_locked();
     tx.commit();
   }
   std::optional<Lease> Store::lease_next(std::int64_t lease_ms) {
@@ -902,12 +933,12 @@ namespace bzs {
     auto now=clock_();
     settle_interruptions_locked();
     // auth_epoch only moves on real permission changes; document deletes use per-document tombstones.
-    Stmt invalid(db_, R"SQL(UPDATE jobs SET state='failed',epoch=epoch+1,error_code=CASE WHEN auth_epoch!=(SELECT epoch FROM subjects WHERE owner=jobs.owner) THEN 'E_POLICY_CHANGED' WHEN deadline<=? THEN 'E_DEADLINE' ELSE 'E_ATTEMPT_BUDGET' END WHERE state IN ('queued','running') AND (deadline<=? OR auth_epoch!=(SELECT epoch FROM subjects WHERE owner=jobs.owner) OR (attempts>=max_attempts AND (state='queued' OR lease_until<=?))))SQL");
+    Stmt invalid(db_, R"SQL(UPDATE jobs SET state='failed',epoch=epoch+1,error_code=CASE WHEN auth_epoch!=(SELECT epoch FROM subjects WHERE owner=jobs.owner) THEN 'E_POLICY_CHANGED' WHEN deadline<=? THEN 'E_DEADLINE' ELSE 'E_ATTEMPT_BUDGET' END WHERE kind='fixture.ingest' AND state IN ('queued','running') AND (deadline<=? OR auth_epoch!=(SELECT epoch FROM subjects WHERE owner=jobs.owner) OR (attempts>=max_attempts AND (state='queued' OR lease_until<=?))))SQL");
     invalid.bind(1, now);
     invalid.bind(2, now);
     invalid.bind(3, now);
     invalid.step();
-    Stmt s(db_, "SELECT id,owner,fixture_id,epoch FROM jobs WHERE state='queued' OR (state='running' AND lease_until<=?) ORDER BY created_at,id LIMIT 1");
+    Stmt s(db_, "SELECT id,owner,fixture_id,epoch FROM jobs WHERE kind='fixture.ingest' AND (state='queued' OR (state='running' AND lease_until<=?)) ORDER BY created_at,id LIMIT 1");
     s.bind(1, now);
     if(!s.step()) {
       tx.commit();

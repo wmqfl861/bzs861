@@ -1,6 +1,6 @@
-# searchd API（0.1.1 S1 review candidate）
+# searchd API（0.1.2 S0/S2 development candidate）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s1_review/test_report.json)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s0_s2_progress/test_report.json)。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -48,6 +48,42 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 `cache_first` 使用期限内缓存，`refresh` 重新获取，`cache_only` 不联网、无缓存则明确报错。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
 
+## 持久批量网页读取
+
+`read_many.submit` 只处理调用方列出的 URL。它不从页面发现链接，不递归遍历网站。完整爬虫仍需独立完成 ROBOTS-01、MAP-01 和爬取准入验收。
+
+```json
+{"operation":"read_many.submit","params":{"urls":["https://example.com/a","https://example.com/b"],"idempotency_key":"research_batch_1","max_requests":12,"max_bytes":16777216,"max_attempts":1}}
+```
+
+| 参数 | 默认值 | 允许范围和含义 |
+|---|---|---|
+| `urls` | 必填 | 1–20 个明确 URL；规范化后重复 URL 拒绝；保留协议、`www`、路径和查询差异 |
+| `idempotency_key` | 必填 | 同一用户内唯一；相同参数重复提交返回原任务，改参数复用键返回 `E_IDEMPOTENCY_CONFLICT` |
+| `timeout_ms` | 600000 | 1000–3600000；任务从创建开始的总期限，暂停不延长 |
+| `per_page_timeout_ms` | 20000 | 1000–55000；每次读取尝试的时间上限，受剩余任务期限限制 |
+| `max_requests` | URL 数量 × 18 | 1–1000；整项任务的 HTTP 请求尝试总上限 |
+| `max_bytes` | URL 数量 × 8 MiB | 1–256 MiB；整项任务读取的解压后响应体字节总上限 |
+| `max_attempts` | 1 | 1–5；每个输入 URL 最多尝试次数；大于 1 也不会自动重试失败项 |
+
+请求预算包括每次已派发的 HTTP 尝试、HTTP 跳转和支持的软跳转；字节预算累计读取的响应体，包括跳转响应体。该字节数不是网络线上包含协议头和压缩数据的流量计数。核心在调用 worker 之前持久预留预算；收到可信完整用量后，仅释放未使用部分。超时、崩溃或丢失响应使结果未知时，整份预留继续计费，并在 `unknown_requests_charged` / `unknown_bytes_charged` 中体现。
+
+提交立即返回 `job_id`、`kind=web.read_many`、状态、各状态条目数量、`budget` 和 `usage`。`budget.charged_*` 包含已知实际用量、未决预留和未知结果的保守计费；`usage.external_requests` / `content_bytes` 只表示已知用量，不能把它们单独当作总预算消耗。任务状态的 `usage.scope=job_lifetime` 表示任务累计记录；查询 `job.get` 本身不会再次发起这些 HTTP 请求，不能逐次相加轮询响应中的累计数字。
+
+| 操作 | 参数 | 行为 |
+|---|---|---|
+| `job.get` | `job_id` | 查看持久状态、进度、总期限、剩余预算和已知/未知用量 |
+| `job.results` | `job_id`；可选 `offset=0`、`limit=20` | 依输入顺序返回条目；`offset` 为 0–20，`limit` 为 1–20；用 `next_offset` / `has_more` 继续读取 |
+| `job.control` | `job_id`、`action` | `pause`、`resume`、`cancel`；批量任务另外支持显式 `retry_failed` |
+
+成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。
+
+暂停或取消会改变租约代数，旧执行不能发布快照；核心还会向 worker 协作取消当前尝试。已发出的 HTTP 请求无法撤回。恢复只继续尚未开始的条目；暂停时被打断的条目可能成为失败/未知项，不会被自动重发。`retry_failed` 需要任务仍在期限内、失败项还有授权尝试次数和剩余预算；不会清零用量或重新执行已成功条目。默认 `max_attempts=1` 时，没有第二次授权尝试。
+
+每项快照、索引、收据、状态和预算确认在同一事务内提交，并复核 owner、权限代数、租约、期限和删除代数。schema 4 在既有 schema 3 上增加批量任务账本；历史 schema 1 / 两种 schema 2 的迁移仍保留。任务恢复保证旧执行不重复发布；外部 HTTP 行为不承诺 exactly-once。
+
+MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。它们转发同一核心操作，不自行扩张预算。结果里的网页内容继续按不可信外部数据处理。
+
 ## 本地操作
 
 | 操作 | 说明 |
@@ -58,14 +94,14 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 | `document.range` / `find` | UTF-8 字节窗口续读、精确查找和上下文 |
 | `evidence.create` / `evidence.read` | 快照、权限与字节区间复核；`semantic_support=not_evaluated` |
 | `capabilities` / `stats` | 当前运行能力与用量，不发布尚未实现能力 |
-| `fixtures.*` / `fixture.ingest` / `job.*` / `backup.create` | 保留离线 fixture 和任务路径；备份强制隔离，没有安全恢复发布流程 |
+| `fixtures.*` / `fixture.ingest` / `backup.create` | 保留离线 fixture 和任务路径；备份强制隔离，没有安全恢复发布流程 |
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为本轮增量，实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 3 迁移承接两种历史 schema 2；具体覆盖见本轮报告。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 4 保留对两种历史 schema 2 的迁移；具体覆盖见本轮报告。
 
 ## worker RPC 与错误
 
-核心经独立令牌的回环 `POST /rpc` 调用 `health`、`search.multi`、`fetch.extract` 等内部操作。worker 再次校验来源与网络目标，不写数据库，也不提供公开的代理/网段放行接口。生产代理、远程 DNS 放宽、非空 allow_cidrs、无鉴权 MCP HTTP 被拒绝。
+核心经独立令牌的回环 `POST /rpc` 调用 `health`、`search.multi`、`fetch.extract`、`fetch.cancel` 等内部操作。批量读取的 `fetch.extract` 携带唯一 `attempt_id`、`max_requests` 和 `max_content_bytes`，响应带 `usage.external_requests` / `content_bytes`。worker 再次校验来源与网络目标，不写数据库，也不提供公开的代理/网段放行接口。生产代理、远程 DNS 放宽、非空 allow_cidrs、无鉴权 MCP HTTP 被拒绝。
 
 合同错误保持 `E_SCHEMA`、`E_CONTRACT`、`E_CONTRACT_LIMIT`。来源错误为 `E_SOURCE_CONFIG` / `E_SOURCE_REVIEW`；其余网页、权限、游标、证据、任务和隔离错误通过统一信封报告。每个新增错误的具体状态码与行为以本轮 API 回归绑定，不将候选实现视为冻结的完整 v1 合同。

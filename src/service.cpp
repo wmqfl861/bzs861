@@ -137,10 +137,10 @@ namespace bzs {
     j.set("production_ready", false);
     Json a=Json::array();
     for(const auto*op: {
-      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "backup.create"
+      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "backup.create"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
-      "web.search", "web.read", "web.sources"
+      "web.search", "web.read", "web.sources", "read_many.submit"
     })a.push(Json::string(op));
     j.set("operations", a);
     Json missing=Json::array();
@@ -223,6 +223,7 @@ namespace bzs {
     }
     if(web_&&op=="web.search")return web_->search(p.subject, args);
     if(web_&&op=="web.read")return web_->read(p.subject, args);
+    if(web_&&op=="read_many.submit")return web_->submit_reads(p.subject,args);
     if(web_&&op=="web.sources") {
       args.allowed( {
       });
@@ -295,7 +296,15 @@ namespace bzs {
       args.allowed( {
         "job_id", "action"
       });
-      return store_.job_control(p.subject, required_string(args, "job_id", 64), required_string(args, "action", 16));
+      const auto id=required_string(args,"job_id",64),action=required_string(args,"action",16);
+      auto result=store_.job_control(p.subject,id,action);
+      if(web_&&(action=="cancel"||action=="pause"))web_->cancel_read_attempt(store_.active_read_attempt(p.subject,id));
+      return result;
+    }
+    if(op=="job.results") {
+      args.allowed({"job_id","offset","limit"});
+      return store_.job_results(p.subject,required_string(args,"job_id",64),
+                                int_option(args,"offset",0,0,20),int_option(args,"limit",20,1,20));
     }
     if(op=="backup.create") {
       args.allowed( {
@@ -309,8 +318,8 @@ namespace bzs {
     }
     throw Error("E_CAPABILITY_UNAVAILABLE", "Operation is unavailable in this build; inspect capabilities", 422);
   }
-  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures) {
-    return std::jthread([&](std::stop_token stop) {
+  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures, WebService* web) {
+    return std::jthread([&store,&fixtures,web](std::stop_token stop) {
       while(!stop.stop_requested()) {
         std::optional<Lease> l;
         try {
@@ -329,6 +338,20 @@ namespace bzs {
           if(l)try {
             store.fail(*l, "E_INTERNAL");
           }catch(...) {
+          }
+        }
+        if(web&&!stop.stop_requested()) {
+          std::optional<ReadLease> read;
+          try {
+            read=store.lease_next_read();
+            if(read) {
+              if(stop.stop_requested())store.fail_read(*read,"E_SHUTDOWN",0,0);
+              else web->execute_read(*read);
+            }
+          } catch(...) {
+            // On an unreported RPC/storage failure, retain the full durable
+            // reservation; recovery marks this attempt unknown, never free.
+            if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) {}
           }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(20));

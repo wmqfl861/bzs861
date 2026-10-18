@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.1 S1 review candidate。** 本轮整合 Claude S1 增量与已交付的 0.0.2 主分支，面向 Linux、本机使用和 AI Agent。S0 真实来源实测与 S1 全部标准尚未完成，当前不是正式联网搜索版本。
+**状态：0.1.2 S0/S2 development candidate。** 在已整合的 0.1.1 上，继续实现可恢复来源探测、离线解析回放、黄金查询冻结和持久批量网页读取。面向 Linux、本机使用和 AI Agent；S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。输入来源、修复问题与验证边界见 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md)；实际结果见 [本轮报告](validation/s1_review/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [S0/S2 验证说明](validation/s0_s2_progress/README.md) 和 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md)；实际结果见 [本轮报告](validation/s0_s2_progress/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。Claude 输入和上一轮整合保留在 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md)。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -14,9 +14,12 @@
 | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
 | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
 | 网页读取候选实现 | worker 抓取与 Markdown 提取、快照、`cache_first / refresh / cache_only`；直接出站仅允许通过连接层检查的公网目标 |
+| 批量网页读取 | 1–20 个显式 URL、持久任务、逐项结果、暂停/恢复/取消、显式失败重试；请求/响应体预算与快照收据原子提交 |
+| 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
+| 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
 | 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
 | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
-| 任务与备份 | 保留 fixture 任务和隔离备份；安全恢复未完成，备份不能直接启动服务 |
+| 历史任务与备份 | 保留 fixture 任务和隔离备份；安全恢复未完成，备份不能直接启动服务 |
 
 尚未交付动态 JS 页面、PDF/Office、递归爬虫、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
@@ -59,10 +62,19 @@ bzs call contract.validate '{"kind":"model-config","config":{"policy":{"allow_re
 ```bash
 bzs search "断点续爬 实现"
 bzs read https://zh.wikipedia.org/wiki/网络爬虫
-bzs stop
 ```
 
 没有合格来源时明确报告来源不可用，不自动使用未核验回退。S0 步骤见 [S0_PROBE](docs/S0_PROBE.md)；候选探测是显式联网动作，不自动批准或注册来源。
+
+### 显式批量读取
+
+```bash
+bzs call read_many.submit '{"urls":["https://example.com/a","https://example.com/b"],"idempotency_key":"batch_1","max_requests":12,"max_bytes":16777216}'
+bzs call job.get '{"job_id":"替换为返回的任务ID"}'
+bzs call job.results '{"job_id":"替换为返回的任务ID","offset":0,"limit":20}'
+```
+
+任务只读取列出的 URL。完成项提供不可变快照收据；单项失败不会自动重试。默认每个 URL 只有一次授权尝试，崩溃后的未知执行保留预算消耗。`job.control` 提供 `pause / resume / cancel / retry_failed`；恢复不重发完成项，也不重置期限和预算。详细参数、用量与取消边界见 [API](docs/API.md#持久批量网页读取)。
 
 ## 接入 Agent
 
@@ -72,7 +84,7 @@ bzs stop
 {"mcpServers":{"bzs861":{"command":"/path/to/bzs861/.venv/bin/python","args":["-m","bzs.cli","mcp"]}}}
 ```
 
-MCP 工具为 `web_search`、`read_url`、`read_range`、`find_in_page`、`search_local`、`cite_evidence`、`list_sources`。运行能力与来源准入由核心决定；网页正文和搜索引擎摘要是外部数据，不赋予 Agent 新权限。
+MCP 工具为 `web_search`、`read_url`、`read_range`、`find_in_page`、`search_local`、`cite_evidence`、`list_sources`，以及本批增加的 `read_urls`、`get_job`、`job_results`、`control_job`。批量工作流为提交、查询任务状态、分页读取条目收据，再按快照读取正文。运行能力与来源准入由核心决定；网页正文和搜索引擎摘要是外部数据，不赋予 Agent 新权限。
 
 本机 HTTP MCP 需要每客户端令牌：
 
@@ -97,15 +109,15 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮 Linux 离线 CTest **5/5 通过**：核心 **81 项 / 707 断言**、原生合同 **55 项 / 269 断言**、HTTP/CLI **20 项**、假网站端到端 **12 项**、Python worker/MCP **122 项**；另有 **34 项**保留的 Python 设计合同参考校验。核心与原生合同均通过 ASan/UBSan，开启泄漏检查。源码哈希、环境、命令与原日志见 [本轮报告](validation/s1_review/test_report.json)。这些套件存在交叉覆盖，不是 161 项完整产品验收；真实来源尚未探测。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
+本轮测试分为原生核心/合同、HTTP/CLI、假网站端到端、Python worker/MCP、离线回放和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s0_s2_progress/test_report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。有限云端来源探测单列在 [云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表用户网络实测、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
 
-`validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明。它们不能代替本轮整合提交的验证。
+`validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
 ## 已有数据与后续范围
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-本候选版离线修复和回归已完成；下一步补来源审核和 S0 证据，再按 S2–S9 推进。单用户先行不删除恢复、撤权、会话重取和多客户端阶段的等效验收。
+下一步继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，再推进 S2 的 robots/map/递归爬取、恢复与会话重取。批量列表读取不等于爬虫就绪；单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
 
 ## 文档与许可
 

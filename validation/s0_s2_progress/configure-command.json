@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "cmake",
+    "-S",
+    ".",
+    "-B",
+    "build-s1-review",
+    "-G",
+    "Ninja",
+    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+    "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "environment_overrides": {},
+  "started_at_utc": "2026-10-18T08:30:24.944434+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 0.867,
+  "log": "configure.log"
+}

@@ -39,5 +39,5 @@ namespace bzs {
     Json dispatch(const Principal& principal, const Json& request);
     Json capabilities() const;
   };
-  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures);
+  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures, WebService* web=nullptr);
 }

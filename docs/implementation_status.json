@@ -1,23 +1,30 @@
 {
-  "version": "0.1.1",
-  "stage": "S1 review candidate",
+  "version": "0.1.2",
+  "stage": "S0/S2 development candidate",
   "recorded_at": "2026-10-18",
-  "baseline": "main95710ba + Claude S1 2b121fc; v1.2 ordering, retained v1.1/spec0.3 semantics",
+  "baseline": "426c431fd3b39390564045e31316e79ca3f27483",
   "integration_inputs": {
-    "main": "95710ba30d9495645de0e0966746446c0e70cdc9",
-    "claude_bundle_tip": "2b121fcc6bb47973a4315b6684d429651626025c"
+    "main": "426c431fd3b39390564045e31316e79ca3f27483",
+    "historical_pre_s1_main": "95710ba30d9495645de0e0966746446c0e70cdc9",
+    "claude_bundle_tip": "2b121fcc6bb47973a4315b6684d429651626025c",
+    "scope": "Continue the published 0.1.1 integration; the pre-S1 main and Claude tip preserve historical provenance, not a new bundle replacement."
   },
   "status_counts": {
-    "partial": 29,
-    "not_started": 54
+    "partial": 30,
+    "not_started": 53,
+    "accepted": 0
   },
   "status_legend": {
-    "partial": "有既有或候选产物，完整工作包未签收；本轮验证另看报告",
-    "not_started": "暂无实现产物",
-    "received_candidate_status": "仅保存Claude随包子范围标签，不是当前整包验收"
+    "partial": "有既有或本批实现产物，完整工作包未签收；验证范围以当前报告为准",
+    "not_started": "该工作包尚未实现；其他工作包提供的前置产物不算本包开工",
+    "received_candidate_status": "仅保存Claude随包子范围标签，不是当前整包验收",
+    "accepted": "完整工作包验收已签署；本批为0，不能由套件测试数量推导",
+    "baseline_main_status": "保留历史整合前 main 95710ba 的工作包状态，不是本批426c431基线状态",
+    "retained_main_slice": "继承历史 main 的内容；其中原测试数量仅为历史来源",
+    "baseline_0_1_1_status": "本批开始时已交付0.1.1的状态"
   },
-  "partial_work_packages": 29,
-  "not_started": 54,
+  "partial_work_packages": 30,
+  "not_started": 53,
   "full_work_packages_accepted": 0,
   "milestones_accepted": [],
   "slices_accepted": [],
@@ -25,17 +32,18 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s1_review/test_report.json",
+  "current_test_report": "validation/s0_s2_progress/test_report.json",
   "current_verification": "passed_local_offline_suites_and_native_sanitizers",
-  "upstream_baseline_reproduction": "Claude S1 original Debug offline suites reproduced this turn; see review record/current report; original ASan not rerun",
+  "upstream_baseline_reproduction": "Historical 0.1.1 intake reproduced the original Claude S1 Debug offline suites; see validation/s1_review/test_report.json. This is not a new 0.1.2 reproduction; original Claude ASan was not rerun.",
   "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-  "independent_review": "scope_limited_review_and_separate_implementation_contexts; not_full_product_signoff",
+  "independent_review": "scope_limited_cross_review; six concrete replay/source/budget findings fixed and rechecked; not_full_product_signoff",
   "full_product_independent_review": "not_performed",
-  "review_record": "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
+  "review_record": "validation/s0_s2_progress/independent_review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
-    "validation/s1_test_report.json"
+    "validation/s1_test_report.json",
+    "validation/s1_review/test_report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -51,7 +59,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "真实能力目录、免费服务/用户模型边界、依赖记录和ADR",
-      "candidate_increment": "ADR-0002/0003/0004、免费来源策略、能力清单（capabilities）、依赖记录",
+      "candidate_increment": "保留v1.2 ADR、范围/许可证边界与来源审核要求；本批记录黄金冻结、云端失败证据、独立复核与测试来源，产品签收仍独立。",
       "remaining": "完整依赖/SBOM/许可证核对与全产品独立签收尚未完成。",
       "baseline_test_ids": [
         "FT-001",
@@ -68,7 +76,11 @@
           "S9"
         ]
       },
-      "verified_in_this_review": "本轮输入、源码和执行证据已绑定，三项分工复核范围有记录。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮输入、源码和执行证据已绑定，三项分工复核范围有记录。"
+      }
     },
     {
       "feature_id": "SRC-01",
@@ -82,8 +94,8 @@
       "received_candidate_status": "tooling_ready",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "17条运行来源登记默认禁用，13适配器待真实审核；显式S0候选探测与正常contract准入分离。",
-      "remaining": "实际S0及完整来源审核；17条登记默认禁用，probe不能自动批准。",
+      "candidate_increment": "17条运行来源登记全部默认禁用，13条已有适配器；显式候选probe与正常contract准入分离。schema2绑定清单/查询/解析器身份并保存审核元数据；本批云端对Marginalia与Wikipedia英文各尝试1次，均DNS失败，0 HTTP响应。",
+      "remaining": "目标部署环境S0、真实HTTP来源样本及完整免费/自动访问/缓存再发布/有效期审核；当前0已批准、0已启用，云端DNS失败不推断用户网络可用性，probe不自动批准。",
       "baseline_test_ids": [
         "FT-009",
         "B-08",
@@ -98,7 +110,8 @@
           "S0",
           "S1"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "QA-01",
@@ -112,12 +125,16 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定HTML/TXT与来源样例；52核心测试、55原生配置合同测试、20HTTP/CLI测试；另保留34组Python设计基线",
-      "candidate_increment": "随包假网站、合成结果页、黄金查询与各语言测试；原S1离线成绩已复现，整合版计数另见本轮报告。",
-      "remaining": "真实来源回放样本；完整161验收需按切片执行。",
+      "candidate_increment": "保留合成来源/假网站与跨语言回归；原40条查询新增20 development/15 regression/5 holdout及冻结manifest，严格加载/重复键和ID拒绝、capability/category确定性选题、默认排除留出且不跨能力fallback；probe schema2保存完整有限结果和证据，离线replay严格身份和响应体校验。",
+      "remaining": "当前云端只有DNS失败元数据，没有真实HTTP结果页或来源解析样本；QA-02人工qrels、评分runner、冻结阈值与留出质量评测未实现；完整161验收仍按切片执行。",
       "baseline_test_ids": [
         "FT-008"
       ],
-      "verified_in_this_review": "本轮离线回归、原生sanitizer及源码/日志绑定已完成。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮离线回归、原生sanitizer及源码/日志绑定已完成。"
+      }
     },
     {
       "feature_id": "SPIKE-01",
@@ -138,7 +155,11 @@
         "C-09",
         "C-14"
       ],
-      "verified_in_this_review": "本轮Linux依赖已安装并记录，Python依赖一致性检查通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮Linux依赖已安装并记录，Python依赖一致性检查通过。"
+      }
     },
     {
       "feature_id": "CORE-01",
@@ -152,7 +173,7 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "Linux C++20构建、searchd/searchctl、3组CTest及固定checkout/vcpkg来源的跨平台CI",
-      "candidate_increment": "C++20构建与worker/MCP测试接入，保留原生合同及原平台门槛；对应提交实际验证另记。",
+      "candidate_increment": "保留C++20核心、worker/MCP和原生合同；本批接入独立batch原生用例、六套CTest与三套原生sanitizer，固定Linux/Windows门槛保留。",
       "remaining": "最终提交对应Linux/Windows验证；完整平台打包和发布验收。",
       "baseline_test_ids": [
         "FT-002"
@@ -167,7 +188,11 @@
           "S9"
         ]
       },
-      "verified_in_this_review": "本轮Linux构建、五套离线回归、原生sanitizer和Python依赖锁已通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮Linux构建、五套离线回归、原生sanitizer和Python依赖锁已通过。"
+      }
     },
     {
       "feature_id": "CONTRACT-01",
@@ -181,12 +206,16 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "运行时JSON、QueryAST、快照/证据/任务/会话错误合同",
-      "candidate_increment": "/api/v0：web.search/web.read/web.sources/document.range 与错误码；worker RPC 合同",
+      "candidate_increment": "保留/api/v0联网读取/搜索与worker RPC；新增read_many.submit、job.results及batch任务get/control语义，MCP映射同一核心；probe/replay schema与状态显式区分结果、失败和未知执行。",
       "remaining": "完整v1执行/取消/版本协议冻结，后续新增接口继续做边界回归。",
       "baseline_test_ids": [
         "FT-003"
       ],
-      "verified_in_this_review": "本轮worker与新增API边界通过本地HTTP、E2E和Python回归。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮worker与新增API边界通过本地HTTP、E2E和Python回归。"
+      }
     },
     {
       "feature_id": "CONTRACT-02",
@@ -218,7 +247,8 @@
           "S1",
           "S4"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SEC-01",
@@ -249,7 +279,11 @@
           "S3"
         ]
       },
-      "verified_in_this_review": "本轮来源、连接、跳转和跨origin凭据反例通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮来源、连接、跳转和跨origin凭据反例通过。"
+      }
     },
     {
       "feature_id": "STORE-01",
@@ -263,8 +297,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "SQLite原始内容/快照/提取/证据的不可变版本关系",
-      "candidate_increment": "schema3承接两种历史schema2、抓取来源元数据、版本保留和用量计数；迁移与权限性质本轮回归。",
-      "remaining": "通用GC、容量和断电验收尚未闭合。",
+      "candidate_increment": "schema4在已兼容两种历史schema2的schema3上增加批量任务、条目和预算账本；保留schema1/两种schema2/schema3迁移，以及不可变快照/索引/收据/状态与预算确认的事务提交。",
+      "remaining": "通用GC、容量与断电验收尚未闭合；任务账本升级不替代独立撤销日志与隔离恢复。",
       "baseline_test_ids": [
         "FT-006",
         "C-15"
@@ -281,7 +315,11 @@
           "S9"
         ]
       },
-      "verified_in_this_review": "schema3对schema1和两类schema2的迁移，以及引用、删除、隔离与当前保留/额度回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "schema3对schema1和两类schema2的迁移，以及引用、删除、隔离与当前保留/额度回归通过。"
+      }
     },
     {
       "feature_id": "AUTH-01",
@@ -295,7 +333,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "令牌摘要、用户隔离、删除与auth_epoch撤销",
-      "candidate_increment": "令牌鉴权、按 owner 隔离、按文档的删除标记（B2）；单用户（ADR-0004）",
+      "candidate_increment": "保留令牌、owner隔离和删除/撤权发布屏障；批量任务及逐项结果继续校验owner、权限代数、租约和删除代数，删除后不重新发布旧快照收据。",
       "remaining": "独立撤销日志/隔离恢复、多主体开放前的完整权限验收。",
       "baseline_test_ids": [
         "FT-007",
@@ -315,7 +353,11 @@
           "S7"
         ]
       },
-      "verified_in_this_review": "本轮删除/在途发布屏障、重导入和MCP令牌即时吊销回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮删除/在途发布屏障、重导入和MCP令牌即时吊销回归通过。"
+      }
     },
     {
       "feature_id": "OPS-00",
@@ -329,12 +371,13 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "请求ID/状态/时长日志、stats、尝试/内容/会话/备份硬限制",
-      "candidate_increment": "请求日志（不含查询与正文）、来源状态（冷却、失败次数、今日请求数）、stats",
+      "candidate_increment": "保留请求/来源状态日志和stats；批量任务区分已知用量、未决预留与未知结果保守计费；probe记录运行身份、计划状态、预算与未执行原因，不冒称与部署账本合并。",
       "remaining": "指标与容量基线（S5 OPS-01）",
       "baseline_test_ids": [
         "FT-079",
         "C-03"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "QRY-01",
@@ -354,7 +397,8 @@
         "FT-013",
         "B-01",
         "C-05"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "QRY-02",
@@ -373,7 +417,8 @@
       "baseline_test_ids": [
         "FT-014",
         "B-02"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SRC-02",
@@ -387,8 +432,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "候选来源冷却、Retry-After和缓存；probe预算仅this_probe_run，不冒称与部署每日/共享账本合并。",
-      "remaining": "真实部署适用配额/并发和全部原验收；probe仍是单次独立预算。",
+      "candidate_increment": "保留冷却、Retry-After和共享执行间隔；probe在请求前持久预留、保存uncertain并在同次恢复时不自动重发completed/uncertain，限流/阻断优先于历史成功。429截断保留限流信号，API错误backoff与Retry-After取较长等待；quota_scope仅this_probe_run。",
+      "remaining": "真实部署适用配额/并发和全部原验收；probe尚未合并跨次日额度或searchd部署共享账本。",
       "baseline_test_ids": [
         "FT-010",
         "B-18"
@@ -404,7 +449,11 @@
           "S2"
         ]
       },
-      "verified_in_this_review": "本轮Retry-After、共享执行间隔、排队冷却、禁用与缓存审核过期回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮Retry-After、共享执行间隔、排队冷却、禁用与缓存审核过期回归通过。"
+      }
     },
     {
       "feature_id": "SRC-03",
@@ -418,12 +467,13 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "site: 复核；按语言选择地区/市场参数",
+      "candidate_increment": "保留site:复核与语言/市场参数；S0黄金选题严格匹配capability并按category轮转，无合格查询不回退到无关能力。",
       "remaining": "完整native/emulated/unsupported条件翻译与硬过滤，不能静默丢弃条件。",
       "baseline_test_ids": [
         "FT-011",
         "B-04"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SRC-04",
@@ -437,8 +487,8 @@
       "received_candidate_status": "implemented_unverified",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "13 个适配器：必应、DuckDuckGo、百度、搜狗、360、Mojeek（结果页）＋维基百科中英、arXiv、Stack Overflow、HN、GitHub、Marginalia（免费 API）；Mwmbl、GDELT、OpenAlex、Crossref 登记为候选",
-      "remaining": "13适配器真实来源可用性和审核；候选默认禁用，不签真实通用网页源标准。",
+      "candidate_increment": "13条来源登记已有解析器：必应、DuckDuckGo、百度、搜狗、360、Mojeek、维基百科中英、arXiv、Stack Overflow、HN、GitHub、Marginalia；4条后续候选继续登记。API解析区分合法空集合、结构错误和HTTP200应用错误，拒绝重复键与非标准常量；回放身份包含ADAPTERS注册表。",
+      "remaining": "13条已有解析器登记仍须真实可用性和来源审核；本批2次云端尝试均DNS失败，不能签真实通用网页源标准；17条登记继续禁用。",
       "baseline_test_ids": [
         "FT-012",
         "C-10"
@@ -451,7 +501,8 @@
           "S0",
           "S1"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SEARCH-01",
@@ -470,7 +521,8 @@
       "baseline_test_ids": [
         "FT-015",
         "C-13"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SEARCH-03",
@@ -501,7 +553,11 @@
           "S6"
         ]
       },
-      "verified_in_this_review": "本轮保守索引族、去重和排名边界回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮保守索引族、去重和排名边界回归通过。"
+      }
     },
     {
       "feature_id": "SESSION-01",
@@ -531,7 +587,8 @@
           "S1",
           "S2"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "READ-01",
@@ -545,13 +602,17 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "公网抓取、编码/内容类型处理、访问限制与跳转识别、IRI规范化；危险生产代理模式拒绝。",
+      "candidate_increment": "保留公网连接、编码/内容类型、逐跳检查和IRI规范化；本批为静态批量读取传递请求/响应体字节预算与协作取消，HTTP及软跳转计入尝试预算，未知响应保守计费。",
       "remaining": "真实网页质量和完整错误状态验收。",
       "baseline_test_ids": [
         "FT-021",
         "B-20"
       ],
-      "verified_in_this_review": "本轮连接、跳转、凭据、内容上限、worker协议与缓存回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮连接、跳转、凭据、内容上限、worker协议与缓存回归通过。"
+      }
     },
     {
       "feature_id": "READ-03",
@@ -570,7 +631,11 @@
       "baseline_test_ids": [
         "FT-023"
       ],
-      "verified_in_this_review": "本轮历史HTML缺陷、隐藏/robots规则与worker提取回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮历史HTML缺陷、隐藏/robots规则与worker提取回归通过。"
+      }
     },
     {
       "feature_id": "INDEX-01",
@@ -590,7 +655,11 @@
         "FT-030",
         "C-09"
       ],
-      "verified_in_this_review": "本轮中文/BM25与原字面语义合并回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮中文/BM25与原字面语义合并回归通过。"
+      }
     },
     {
       "feature_id": "INDEX-03",
@@ -604,14 +673,18 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "内容事务内新增更新删除同步到FTS，冻结结果撤销",
-      "candidate_increment": "增删改与 FTS 同事务、noindex、v1→v2 迁移重建索引",
+      "candidate_increment": "保留增删改与FTS同事务、noindex和历史迁移；批量读取的快照、索引、收据、条目状态和预算确认共同提交，旧租约或已删除对象不得重新发布。",
       "remaining": "向量/多节点同步后续实现及完整断电一致性验收。",
       "baseline_test_ids": [
         "FT-031",
         "B-21",
         "C-08"
       ],
-      "verified_in_this_review": "本轮两支结构迁移、事务可见性和删除回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮两支结构迁移、事务可见性和删除回归通过。"
+      }
     },
     {
       "feature_id": "EVID-01",
@@ -633,7 +706,11 @@
         "B-35",
         "C-13"
       ],
-      "verified_in_this_review": "本轮查询相关片段、字节证据与UTF-8范围回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮查询相关片段、字节证据与UTF-8范围回归通过。"
+      }
     },
     {
       "feature_id": "EVID-02",
@@ -652,7 +729,11 @@
       "baseline_test_ids": [
         "FT-048"
       ],
-      "verified_in_this_review": "本轮原文窗口、查找与权限回归通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮原文窗口、查找与权限回归通过。"
+      }
     },
     {
       "feature_id": "CACHE-01",
@@ -672,7 +753,8 @@
         "FT-032",
         "B-24",
         "C-15"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "API-00",
@@ -686,8 +768,8 @@
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "真实loopback HTTP和C++ CLI共享Service逻辑",
-      "candidate_increment": "MCP（stdio 与带每客户端令牌的 Streamable HTTP）7 个工具；启动器 bzs；searchctl",
-      "remaining": "后续功能继续映射到共用核心；完整v1协议与远程传输验收。",
+      "candidate_increment": "保留已有MCP、HTTP、C++ CLI与纯配置校验；新增read_urls/get_job/job_results/control_job映射持久批量核心；bzs probe/replay CLI支持schema2证据和恢复/回放，未复制业务或权限规则。",
+      "remaining": "后续功能继续映射共用核心；完整v1协议/远程传输验收与完整启动器生命周期本批重跑尚未完成。",
       "baseline_test_ids": [
         "FT-078",
         "C-01"
@@ -702,7 +784,11 @@
           "S2"
         ]
       },
-      "verified_in_this_review": "本轮保留contract.validate，HTTP/CLI/MCP路径与独立启动器生命周期验证通过。"
+      "baseline_0_1_1_status": "partial",
+      "historical_verification_0_1_1": {
+        "report": "validation/s1_review/test_report.json",
+        "statement": "本轮保留contract.validate，HTTP/CLI/MCP路径与独立启动器生命周期验证通过。"
+      }
     },
     {
       "feature_id": "JOB-01",
@@ -716,15 +802,16 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定页面任务持久化、幂等、暂停/取消、lease epoch、过期恢复和原子提交",
-      "candidate_increment": "0.0.1：固定样例任务的幂等、暂停/取消、租约",
-      "remaining": "接入真实抓取与爬虫（S2）",
+      "candidate_increment": "保留fixture任务；新增显式URL批量任务持久化、幂等、owner/权限/删除屏障、租约、暂停/恢复/取消、逐项结果与显式retry_failed。派发前持久预留请求和字节预算，未知结果保守计费，已提交项不自动重发。",
+      "remaining": "完整任务故障/断电/跨节点和公平调度验收；robots/发现/递归爬虫、SESSION-02断线重取、独立撤销日志与恢复仍未闭合；外部HTTP不承诺exactly-once。",
       "baseline_test_ids": [
         "FT-005",
         "B-28",
         "B-39",
         "C-13",
         "C-15"
-      ]
+      ],
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "BATCH-01",
@@ -732,17 +819,18 @@
       "name": "批量网页/文档读取",
       "slice": "S2",
       "v11_phase": "M2",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "see_current_report",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "candidate_increment": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "candidate_increment": "read_many.submit持久读取调用方显式给出的1至20个URL；逐项失败隔离和结果分页，get/control/results复用核心，已提交项恢复后不重发，失败重试须显式授权且保留原预算/期限/尝试上限。",
+      "remaining": "完整FT-026及系统故障验收尚未签收；本批只含静态网页列表，不含文档批量能力、链接发现、robots准入或递归爬取。",
       "baseline_test_ids": [
         "FT-026"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "MAP-01",
@@ -760,7 +848,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-027"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "ROBOTS-01",
@@ -779,7 +868,8 @@
       "baseline_test_ids": [
         "FT-081",
         "C-02"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "CRAWL-01",
@@ -798,7 +888,8 @@
       "baseline_test_ids": [
         "FT-028",
         "C-02"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "CRAWL-03",
@@ -818,7 +909,8 @@
         "FT-029",
         "B-23",
         "C-02"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "MODE-01",
@@ -836,7 +928,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-019"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "BACKUP-00",
@@ -866,7 +959,8 @@
           "S2",
           "S9"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "partial"
     },
     {
       "feature_id": "SESSION-02",
@@ -881,7 +975,7 @@
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
       "candidate_increment": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "remaining": "尚未实现流式事件协议、断线重取、去重、背压与会话取消完整语义；持久job轮询和MCP任务工具不等价于FT-018/B-14。",
       "baseline_test_ids": [
         "FT-018",
         "B-14"
@@ -895,7 +989,8 @@
           "S2",
           "S5"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QA-02",
@@ -910,11 +1005,12 @@
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
       "candidate_increment": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "remaining": "尚未实现人工qrels、nDCG@10/MRR评分runner、来源独有贡献、冻结阈值及留出评测；本批QA-01的黄金输入/回放底座仅提供前置材料，不能算QA-02已开工。",
       "baseline_test_ids": [
         "FT-042",
         "C-14"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "READ-02",
@@ -934,7 +1030,8 @@
         "FT-022",
         "B-19",
         "C-09"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "DOC-01",
@@ -954,7 +1051,8 @@
         "FT-025",
         "B-20",
         "C-09"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "READ-05",
@@ -972,7 +1070,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-024"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QRY-03",
@@ -991,7 +1090,8 @@
       "baseline_test_ids": [
         "FT-033",
         "B-03"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QRY-04",
@@ -1012,7 +1112,8 @@
         "B-04",
         "B-05",
         "B-06"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "UI-01",
@@ -1031,7 +1132,8 @@
       "baseline_test_ids": [
         "FT-020",
         "C-01"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "MODEL-01",
@@ -1052,7 +1154,8 @@
         "B-25",
         "C-04",
         "C-06"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "MODEL-02",
@@ -1072,7 +1175,8 @@
         "FT-044",
         "B-26",
         "C-06"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SEARCH-02",
@@ -1091,7 +1195,8 @@
       "baseline_test_ids": [
         "FT-045",
         "B-07"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "INDEX-02",
@@ -1120,7 +1225,8 @@
         "target_slices": [
           "S4"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "EXTRACT-01",
@@ -1139,7 +1245,8 @@
       "baseline_test_ids": [
         "FT-049",
         "B-27"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "ANSWER-01",
@@ -1158,7 +1265,8 @@
       "baseline_test_ids": [
         "FT-050",
         "B-27"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "RESEARCH-01",
@@ -1177,7 +1285,8 @@
       "baseline_test_ids": [
         "FT-051",
         "B-28"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SEARCH-04",
@@ -1196,7 +1305,8 @@
       "baseline_test_ids": [
         "FT-052",
         "B-09"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "API-01",
@@ -1229,7 +1339,8 @@
           "S8",
           "S9"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "OPS-01",
@@ -1248,7 +1359,8 @@
       "baseline_test_ids": [
         "FT-073",
         "C-03"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QRY-05",
@@ -1266,7 +1378,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-035"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QRY-06",
@@ -1285,7 +1398,8 @@
       "baseline_test_ids": [
         "FT-036",
         "B-17"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "RANK-01",
@@ -1305,7 +1419,8 @@
         "FT-037",
         "B-09",
         "B-10"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "RANK-02",
@@ -1325,7 +1440,8 @@
         "FT-038",
         "B-11",
         "C-07"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SEARCH-05",
@@ -1345,7 +1461,8 @@
         "FT-039",
         "B-06",
         "B-12"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "FACET-01",
@@ -1364,7 +1481,8 @@
       "baseline_test_ids": [
         "FT-040",
         "B-16"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SRC-05",
@@ -1383,7 +1501,8 @@
       "baseline_test_ids": [
         "FT-041",
         "B-18"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "CODE-01",
@@ -1402,7 +1521,8 @@
       "baseline_test_ids": [
         "FT-056",
         "B-29"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SCHOLAR-01",
@@ -1421,7 +1541,8 @@
       "baseline_test_ids": [
         "FT-057",
         "B-30"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "PRIVATE-01",
@@ -1440,7 +1561,8 @@
       "baseline_test_ids": [
         "FT-058",
         "B-31"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "DATASET-01",
@@ -1458,7 +1580,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-053"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "READ-04",
@@ -1476,7 +1599,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-054"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "CRAWL-02",
@@ -1494,7 +1618,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-055"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SRC-06",
@@ -1512,7 +1637,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-059"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "DOC-02",
@@ -1531,7 +1657,8 @@
       "baseline_test_ids": [
         "FT-060",
         "B-35"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "IMAGE-01",
@@ -1550,7 +1677,8 @@
       "baseline_test_ids": [
         "FT-061",
         "B-33"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "IMAGE-02",
@@ -1569,7 +1697,8 @@
       "baseline_test_ids": [
         "FT-062",
         "B-32"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "AV-01",
@@ -1588,7 +1717,8 @@
       "baseline_test_ids": [
         "FT-063",
         "B-34"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "AV-02",
@@ -1607,7 +1737,8 @@
       "baseline_test_ids": [
         "FT-064",
         "B-34"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "UPDATE-01",
@@ -1625,7 +1756,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-065"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "WORKSPACE-01",
@@ -1643,7 +1775,8 @@
       "remaining": "按原工作包输入、输出和验收条目实现。",
       "baseline_test_ids": [
         "FT-066"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "PREF-01",
@@ -1662,7 +1795,8 @@
       "baseline_test_ids": [
         "FT-067",
         "B-17"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "WATCH-01",
@@ -1682,7 +1816,8 @@
         "FT-068",
         "B-36",
         "C-12"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "EXPORT-01",
@@ -1701,7 +1836,8 @@
       "baseline_test_ids": [
         "FT-069",
         "B-37"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "WEBHOOK-01",
@@ -1721,7 +1857,8 @@
         "FT-070",
         "B-37",
         "C-12"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "UI-02",
@@ -1740,7 +1877,8 @@
       "baseline_test_ids": [
         "FT-072",
         "B-40"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "OPS-02",
@@ -1769,7 +1907,8 @@
         "target_slices": [
           "S9"
         ]
-      }
+      },
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "SCALE-01",
@@ -1788,7 +1927,8 @@
       "baseline_test_ids": [
         "FT-075",
         "B-39"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "QA-03",
@@ -1807,7 +1947,8 @@
       "baseline_test_ids": [
         "FT-076",
         "B-40"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     },
     {
       "feature_id": "RELEASE-01",
@@ -1826,51 +1967,141 @@
       "baseline_test_ids": [
         "FT-077",
         "B-40"
-      ]
+      ],
+      "baseline_0_1_1_status": "not_started"
     }
   ],
   "current_results": {
+    "ctest": {
+      "status": "passed",
+      "passed": 6,
+      "total": 6,
+      "elapsed_seconds": 18.75,
+      "log": "validation/s0_s2_progress/ctest.log",
+      "command": "validation/s0_s2_progress/ctest-command.json"
+    },
     "core": {
+      "status": "passed",
       "passed": 81,
-      "assertions": 707
+      "assertions": 713
+    },
+    "batch": {
+      "status": "passed",
+      "passed": 18,
+      "assertions": 439
     },
     "native_contracts": {
+      "status": "passed",
       "passed": 55,
       "assertions": 269
     },
     "http_cli": {
+      "status": "passed",
       "passed": 20
     },
     "e2e_web": {
-      "passed": 12
+      "status": "passed",
+      "passed": 13
     },
     "python_worker": {
-      "passed": 122
+      "status": "passed",
+      "passed": 302
     },
     "design_contract_reference": {
-      "passed": 34
+      "status": "passed",
+      "passed": 34,
+      "log": "validation/s0_s2_progress/design-contracts.log"
     },
     "sanitizers": {
+      "status": "passed",
       "address": true,
       "undefined_behavior": true,
       "detect_leaks": true,
       "scope": [
         "core",
+        "batch",
         "native_contracts"
-      ]
+      ],
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+      "scope_note": "Three native test executables only; this does not claim sanitized HTTP/E2E/Python coverage."
     },
-    "live_search_source_requests": 0,
+    "live_search_source_requests": 2,
+    "live_search_http_responses": 0,
+    "live_search_request_count_semantics": "Source adapter attempts including DNS failures, not completed HTTP transactions; see source_availability.cloud_probe.",
+    "cloud_replay": {
+      "status": "passed",
+      "matched": 2,
+      "mismatches": 0,
+      "network_requests": 0,
+      "scope": "recorded_network_failure_metadata_only",
+      "http_response_parser_exercised": false,
+      "report": "validation/s0_s2_progress/cloud_replay/replay_report.json"
+    },
     "model_calls": 0,
     "launcher": {
-      "passed_commands": 7,
-      "passed_assertions": 16,
+      "status": "not_run",
+      "passed_commands": null,
+      "passed_assertions": null,
       "configured_sources": 17,
-      "enabled_sources": 0
+      "enabled_sources": 0,
+      "scope_note": "The complete launcher lifecycle was not rerun for 0.1.2; historical 7 commands/16 assertions are not current results. Probe/replay CLI paths are covered by current Python tests; native CLI/MCP paths are covered by current HTTP/E2E tests."
     },
     "planning_tool": {
+      "status": "passed",
       "passed": 13,
       "scope": "planning_tool_regression_only",
-      "product_acceptance_cases_executed": 0
+      "product_acceptance_cases_executed": 0,
+      "report": "validation/s0_s2_progress/plan_guard.json"
+    },
+    "planning_check": {
+      "status": "passed",
+      "work_packages": 83,
+      "acceptance_items": 161,
+      "slices": 10,
+      "log": "validation/s0_s2_progress/plan-check.log"
+    },
+    "pip_check": {
+      "status": "passed",
+      "evidence": "validation/s0_s2_progress/environment.json"
+    },
+    "counting_note": "CTest suites, Python submodules, sanitizer reruns and planning checks overlap or have different scopes; do not sum them as completed product acceptance cases."
+  },
+  "baseline_version": "0.1.1",
+  "planned_work_packages": 83,
+  "s2_acceptance": "not_completed",
+  "historical_review_records": [
+    "docs/handoff/CLAUDE_S1_REVIEW_20261018.md"
+  ],
+  "verification_binding": {
+    "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
+    "report": "validation/s0_s2_progress/test_report.json",
+    "source_manifest": "validation/s0_s2_progress/source_manifest.json",
+    "remote_ci": "Query GitHub Actions for the exact containing commit after publication. This immutable pre-publication report does not claim future CI results or embed a self-referential commit SHA.",
+    "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+  },
+  "source_availability": {
+    "status": "not_verified",
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "approved_sources": 0,
+    "cloud_probe": {
+      "status": "dns_failed_no_http_response",
+      "environment": "cloud_execution_environment",
+      "sources": [
+        "marginalia",
+        "wikipedia_en"
+      ],
+      "attempted_source_requests": 2,
+      "dns_failures": 2,
+      "http_responses": 0,
+      "result_bearing_responses": 0,
+      "user_environment_validated": false,
+      "source_approval_changed": false,
+      "quota_scope": "this_probe_run",
+      "report": "validation/s0_s2_progress/cloud_probe_summary.json",
+      "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
+      "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment."
     }
   }
 }

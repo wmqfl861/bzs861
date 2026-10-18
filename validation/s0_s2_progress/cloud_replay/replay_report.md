@@ -1,0 +1,13 @@
+# Offline probe parser replay
+
+Status: **passed**. Network requests: **0**.
+
+Probe report SHA-256: `9328c6ef5b2acc24f2653a10702a9a0867b0eab97300756c740cd84a0c4d611c`.
+
+Parser identity matches recording: `true`.
+
+| Replayed | Matched | Mismatches | Skipped |
+|---:|---:|---:|---:|
+| 2 | 2 | 0 | 0 |
+
+Detailed differences are in `replay_report.json`. Skipped rows are not successful parser checks. A matching replay proves reproducible parsing of these saved responses; it does not establish current source availability, relevance, source approval or authenticity of the recording.

@@ -20,6 +20,15 @@ namespace bzs {
     // Older revisions beyond this count are pruned unless evidence or a live session pins them.
     std::int64_t max_revisions_per_document=5;
   };
+  struct ReadManyOptions {
+    std::int64_t timeout_ms=600000, per_page_timeout_ms=20000;
+    std::int64_t max_requests=0, max_bytes=0, max_attempts=1;
+  };
+  struct ReadLease {
+    std::string job_id, owner, url, attempt_id;
+    std::int64_t epoch=0, input_index=0, deletion_generation=0;
+    std::int64_t request_grant=0, byte_grant=0, timeout_ms=0, deadline_ms=0;
+  };
   class Store {
     sqlite3* db_=nullptr;
     std::filesystem::path path_;
@@ -32,7 +41,16 @@ namespace bzs {
     std::int64_t deletion_generation_locked(const std::string& owner,const std::string& url);
     Json snapshot_locked(const std::string& owner, const std::string& snapshot);
     Json ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind);
+    Json ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed,
+                           const Json& meta, std::int64_t expected_deletion_generation);
     Json job_locked(const std::string& owner, const std::string& id);
+    Json read_job_locked(const std::string& owner, const std::string& id);
+    Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
+    void settle_read_jobs_locked();
+    void settle_read_job_locked(const std::string& id);
+    bool owns_read_lease_locked(const ReadLease& lease);
+    bool live_read_lease_locked(const ReadLease& lease);
+    void reconcile_read_usage_locked(const ReadLease& lease, std::int64_t requests, std::int64_t bytes);
     bool live_lease_locked(const Lease& lease);
     void settle_interruptions_locked();
     void usage_add_locked(const std::string& owner, std::int64_t bytes, std::int64_t snapshots);
@@ -66,6 +84,18 @@ namespace bzs {
     Json job_create(const std::string& owner, const std::string& fixture_id, const std::string& key, std::int64_t max_attempts=3, std::int64_t timeout_ms=60000);
     Json job_get(const std::string& owner, const std::string& job_id);
     Json job_control(const std::string& owner, const std::string& job_id, const std::string& action);
+    Json read_many_submit(const std::string& owner, const std::vector<std::string>& urls,
+                          const std::string& key, ReadManyOptions options);
+    Json job_results(const std::string& owner, const std::string& job_id,
+                     std::int64_t offset=0, std::int64_t limit=20);
+    std::string active_read_attempt(const std::string& owner, const std::string& job_id);
+    std::optional<ReadLease> lease_next_read();
+    bool read_lease_live(const ReadLease& lease);
+    bool complete_read(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
+                       const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
+    // Negative usage means an unknown outcome. Its entire durable grant stays charged.
+    void fail_read(const ReadLease& lease, const std::string& error_code,
+                   std::int64_t external_requests=-1, std::int64_t content_bytes=-1);
     std::optional<Lease> lease_next(std::int64_t lease_ms=10000);
     bool complete(const Lease& lease, const SourceDocument& input, const ParsedDocument& parsed);
     void fail(const Lease& lease, const std::string& error_code);

@@ -1,4 +1,4 @@
-"""S1 end-to-end test with real processes: fake web <- bzs-worker <- searchd <- HTTP API / MCP stdio.
+"""Web and durable-read tests with real processes: fake web <- worker <- core <- HTTP / MCP.
 
 Never touches the real internet. Every page lives on a local fake web server; the worker maps
 the test host name to 127.0.0.1 and exempts only 127.0.0.1/32 from the public-address rule
@@ -287,11 +287,30 @@ class EndToEnd(unittest.TestCase):
                         iri = await session.call_tool("read_url", {"url": self.stack.url("/pages/中文路径")})
                         local = await session.call_tool("search_local", {"query": "断点续爬"})
                         bad = await session.call_tool("read_url", {"url": "http://169.254.169.254/"})
-                        return {"tools": tools, "search": search, "read": read, "local": local, "bad": bad, "iri": iri}
+                        batch_urls = [self.stack.url("/pages/article.html?batch=mcp"),
+                                      self.stack.url("/pages/中文路径?batch=mcp")]
+                        submitted = await session.call_tool("read_urls", {"urls": batch_urls,
+                            "idempotency_key": "mcp-read-many", "max_requests": 2, "max_bytes": 65536})
+                        self.assertFalse(submitted.is_error, submitted)
+                        job_id = submitted.structured_content["job_id"]
+                        until = asyncio.get_running_loop().time() + 15
+                        while True:
+                            job = await session.call_tool("get_job", {"job_id": job_id})
+                            self.assertFalse(job.is_error, job)
+                            if job.structured_content["state"] in ("succeeded", "failed", "cancelled"):
+                                break
+                            self.assertLess(asyncio.get_running_loop().time(), until)
+                            await asyncio.sleep(0.03)
+                        receipts = await session.call_tool("job_results", {"job_id": job_id})
+                        self.assertFalse(receipts.is_error, receipts)
+                        first_snapshot = receipts.structured_content["items"][0]["receipt"]["snapshot_id"]
+                        saved = await session.call_tool("read_range", {"snapshot_id": first_snapshot, "max_bytes": 500})
+                        return {"tools": tools, "search": search, "read": read, "local": local, "bad": bad, "iri": iri,
+                                "job": job, "receipts": receipts, "saved": saved}
 
         out = asyncio.run(asyncio.wait_for(run(), 60))
         self.assertTrue({"web_search", "read_url", "read_range", "find_in_page", "search_local", "cite_evidence",
-                         "list_sources"} <= out["tools"])
+                         "list_sources", "read_urls", "get_job", "job_results", "control_job"} <= out["tools"])
         search = out["search"].structured_content
         self.assertFalse(out["search"].is_error)
         self.assertTrue(search["results"][0]["url"].startswith(self.stack.url("/pages/article.html")))
@@ -304,6 +323,49 @@ class EndToEnd(unittest.TestCase):
         self.assertFalse(out["iri"].is_error)
         self.assertIn("断点续爬", out["iri"].structured_content["text"])
         self.assertIn("E_URL_BLOCKED", out["bad"].content[0].text)
+        job = out["job"].structured_content
+        self.assertEqual(job["state"], "succeeded")
+        self.assertEqual(job["usage"]["external_requests"], 2)
+        self.assertEqual(job["usage"]["scope"], "job_lifetime")
+        receipts = out["receipts"].structured_content
+        self.assertEqual(receipts["content_trust"], "untrusted_web_content")
+        self.assertEqual([item["input_index"] for item in receipts["items"]], [0, 1])
+        self.assertFalse(receipts["has_more"])
+        self.assertIn("resumable crawling", out["saved"].structured_content["text"])
+
+    def test_09a_http_batch_ten_inputs_failure_isolation_and_idempotency(self):
+        urls = [self.stack.url(f"/pages/article.html?batch=http&item={i}") for i in range(8)]
+        urls += [self.stack.url("/pages/paper.pdf?batch=http"), self.stack.url("/pages/other.html?batch=http")]
+        before = self.ok("stats")["documents"]
+        params = {"urls": urls, "idempotency_key": "http-ten-explicit-inputs", "max_requests": 10, "max_bytes": 131072}
+        submitted = self.ok("read_many.submit", params)
+        job_id = submitted["job_id"]
+        until = time.monotonic() + 15
+        while True:
+            job = self.ok("job.get", {"job_id": job_id})
+            if job["state"] in ("succeeded", "failed", "cancelled"):
+                break
+            self.assertLess(time.monotonic(), until)
+            time.sleep(0.03)
+        self.assertEqual((job["state"], job["succeeded_items"], job["failed_items"]), ("failed", 9, 1))
+        self.assertEqual(job["budget"]["charged_requests"], 10)
+        self.assertEqual(job["usage"]["external_requests"], 10)
+        self.assertEqual(job["usage"]["unknown_requests_charged"], 0)
+        self.assertEqual(self.ok("stats")["documents"] - before, 9)
+        first = self.ok("job.results", {"job_id": job_id, "limit": 4})
+        tail = self.ok("job.results", {"job_id": job_id, "offset": first["next_offset"]})
+        items = first["items"] + tail["items"]
+        self.assertEqual([item["url"] for item in items], urls)
+        self.assertEqual(items[8]["error_code"], "E_UNSUPPORTED_CONTENT")
+        self.assertFalse(items[9]["receipt"]["indexed"])
+        self.assertFalse(tail["has_more"])
+        reused = self.ok("read_many.submit", params)
+        self.assertEqual(reused["job_id"], job_id)
+        self.assertTrue(reused["reused"])
+        self.assertEqual(reused["dispatches"], 10)
+        self.err("job.control", {"job_id": job_id, "action": "retry_failed"}, "E_ATTEMPT_BUDGET", 409)
+        for field in ("max_requests", "max_bytes"):
+            self.err("read_many.submit", dict(params, **{field: 0}), "E_SCHEMA", 400)
 
     def test_09b_mcp_http_requires_a_client_token(self):
         import socket

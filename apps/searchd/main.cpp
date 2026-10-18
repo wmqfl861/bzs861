@@ -311,7 +311,7 @@ int main(int argc, char**argv) {
     net::io_context io;
     Listener listener(io, port, service, auth);
     std::jthread worker_thread;
-    if(worker)worker_thread=start_worker(store, catalog);
+    if(worker)worker_thread=start_worker(store, catalog, web.get());
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
       worker_thread.request_stop();

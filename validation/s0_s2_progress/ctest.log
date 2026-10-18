@@ -1,0 +1,265 @@
+Internal ctest changing into directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/DartConfiguration.tcl
+Test project /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: core
+
+1: Test command: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review/bzs_tests
+1: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_quoted_directives
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_selected_subtree
+1: PASS html_hidden_ancestors
+1: PASS html_robots_tokens
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS store_candidate_predicate_agreement
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS migrate_schema_one_preserves_records
+1: PASS migration_rejects_quarantined_and_newer_databases
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_target_tombstone
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: PASS tokenizer_cjk_and_symbols
+1: PASS fts_chinese_uses_index
+1: PASS bm25_ranks_relevance
+1: PASS literal_exactness
+1: PASS html_main_excludes_siblings
+1: PASS delete_keeps_unrelated_jobs_and_sessions
+1: PASS highlights_are_query_relevant_and_exact
+1: PASS revisions_pruned_and_quota_counters
+1: PASS range_windows_are_utf8_safe
+1: PASS migration_from_v1
+1: PASS dedup_and_rrf_fusion
+1: PASS public_url_policy
+1: PASS web_search_merges_and_cools_down
+1: PASS web_search_cache_spares_sources
+1: PASS iri_urls_are_encoded_for_reading
+1: PASS web_read_ingests_and_caches
+1: PASS source_admission_limits
+1: PASS migrate_both_schema_two_layouts_preserves_records
+1: PASS schema_two_quarantine_is_checked_before_migration
+1: PASS deletion_fences_survive_reimport_restart_and_clock_ties
+1: PASS web_noindex_change_is_not_hidden_by_content_reuse
+1: PASS retention_reclaims_before_quota_and_ignores_expired_pins
+1: PASS highlight_clipping_reports_only_visible_terms
+1: PASS web_read_does_not_publish_across_target_deletion
+1: PASS late_success_does_not_cancel_source_cooldown
+1: PASS web_cache_is_scoped_to_owner_and_review_validity
+1: PASS rrf_rejects_invalid_ranks_and_preserves_nondefault_ports
+1: PASS worker_success_schema_cannot_create_a_snapshot_by_default
+1: PASS malformed_source_success_is_partial_and_not_cached
+1: {"tests":81,"passed":81,"assertions":713}
+1/6 Test #1: core .............................   Passed    1.29 sec
+test 2
+    Start 2: batch
+
+2: Test command: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review/bzs_batch_tests
+2: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+2: Test timeout computed to be: 45
+2: PASS ten_explicit_inputs_only_and_ordered_receipts
+2: PASS input_budget_validation_and_owner_scope
+2: PASS execution_identity_does_not_use_search_deduplication
+2: PASS errors_are_isolated_and_default_attempts_do_not_retry
+2: PASS completed_items_survive_pause_restart_resume_without_refetch
+2: PASS pause_or_cancel_during_fetch_fences_late_publication
+2: PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+2: PASS deletion_before_dispatch_stops_only_its_target
+2: PASS unknown_execution_keeps_grants_across_recovery
+2: PASS request_and_byte_budgets_stop_unstarted_items
+2: PASS lease_expiry_and_permission_changes_refuse_late_results
+2: PASS receipt_failure_rolls_back_snapshot_and_index
+2: PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+2: PASS noindex_and_deleted_receipts_never_resurrect_content
+2: PASS api_dispatch_and_fixture_jobs_coexist
+2: PASS deadline_near_int64_max_does_not_overflow_lease
+2: PASS schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index
+2: PASS schema_three_quarantine_is_rejected_before_new_tables
+2: 18 batch tests, 439 assertions, 0 failures
+2/6 Test #2: batch ............................   Passed    0.25 sec
+test 3
+    Start 3: contracts
+
+3: Test command: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review/bzs_contract_tests "/workspace/scratch/80f41eb198a3/bzs861/docs/planning/validation/contract_cases.json"
+3: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+3: Test timeout computed to be: 45
+3: PASS fixture 正常_model-config
+3: PASS fixture 正常_search-request
+3: PASS fixture 正常_source-manifest
+3: PASS fixture 无模型基础部署
+3: PASS fixture 角色继承默认profile
+3: PASS fixture 显式null禁用角色
+3: PASS fixture 默认角色并发覆盖生效
+3: PASS fixture 坏profile引用
+3: PASS fixture 错误嵌入能力
+3: PASS fixture 并发不能为零
+3: PASS fixture 隐藏付费工具被拒
+3: PASS fixture 坏备用模型
+3: PASS fixture 显式思考参数缺失
+3: PASS fixture file模型端点拒绝
+3: PASS fixture 负预算
+3: PASS fixture host不能配after
+3: PASS fixture eq不能配数组
+3: PASS fixture in必须配数组
+3: PASS fixture 非法日期
+3: PASS fixture 倒置时间范围
+3: PASS fixture 离线本地检索
+3: PASS fixture 离线不允许外部范围
+3: PASS fixture AST过深
+3: PASS fixture 字符串查询仍有效
+3: PASS fixture 查询体过大
+3: PASS fixture 候选源不能启用
+3: PASS fixture 源配置合同正例不构成真实授权
+3: PASS fixture 审核时间格式非法
+3: PASS fixture 审核过期
+3: PASS fixture 审核时间来自未来
+3: PASS fixture 启用源缺逻辑服务身份
+3: PASS fixture 限額缺窗口
+3: PASS fixture 配额窗口完整
+3: PASS fixture file来源拒绝
+3: PASS normalization_is_pure_and_defaults_are_explicit
+3: PASS no_model_and_explicit_disabled_roles
+3: PASS role_inheritance_does_not_mutate_sibling_limits
+3: PASS model_structure_and_policy_are_strict
+3: PASS profile_and_role_limits_use_trusted_ceilings
+3: PASS unused_profiles_still_validate_reasoning_and_references
+3: PASS specialized_roles_require_explicit_suitable_profiles
+3: PASS endpoint_structure_is_checked_without_network
+3: PASS source_validation_does_not_invent_review_or_activation
+3: PASS source_structural_and_conditional_fields_are_checked
+3: PASS source_quotas_and_deployment_ceilings_are_enforced
+3: PASS review_times_use_the_trusted_clock_and_fractional_precision
+3: PASS search_defaults_preserve_query_and_filters
+3: PASS search_schema_rejects_unknown_fields_wrong_types_and_enums
+3: PASS ast_structure_and_complexity_have_independent_limits
+3: PASS unicode_schema_lengths_are_characters_not_bytes
+3: PASS repeated_date_bounds_are_conjunctive_in_every_order
+3: PASS date_equalities_respect_timezone_fraction_and_open_bounds
+3: PASS filter_field_operator_value_and_match_must_agree
+3: PASS search_budget_and_offline_conflicts_cannot_expand_scope
+3: PASS unknown_kind_and_non_object_inputs_are_rejected
+3: Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions
+3/6 Test #3: contracts ........................   Passed    0.15 sec
+test 4
+    Start 4: http_cli
+
+4: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/80f41eb198a3/bzs861/tests/integration.py" "--server" "/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/searchd" "--cli" "/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/searchctl" "--fixtures" "/workspace/scratch/80f41eb198a3/bzs861/tests/fixtures"
+4: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+4: Test timeout computed to be: 90
+4: test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+4: test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+4: test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+4: test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+4: test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+4: test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+4: test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+4: test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+4: test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+4: test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+4: test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+4: test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+4: test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+4: test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+4: test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+4: test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+4: test_17_invalid_search_options_preserve_session_quota (__main__.Integration.test_17_invalid_search_options_preserve_session_quota) ... ok
+4: test_18_contract_validation_and_trusted_parameters (__main__.Integration.test_18_contract_validation_and_trusted_parameters) ... ok
+4: test_19_validation_does_not_enable_execution (__main__.Integration.test_19_validation_does_not_enable_execution) ... ok
+4: test_20_cli_contract_validation_and_file_limit (__main__.Integration.test_20_cli_contract_validation_and_file_limit) ... ok
+4: 
+4: ----------------------------------------------------------------------
+4: Ran 20 tests in 5.511s
+4: 
+4: OK
+4/6 Test #4: http_cli .........................   Passed    5.58 sec
+test 5
+    Start 5: e2e_web
+
+5: Test command: /workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py" "--server" "/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/searchd" "--python" "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python" "--repo" "/workspace/scratch/80f41eb198a3/bzs861"
+5: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/build-s1-review
+5: Test timeout computed to be: 180
+5: test_01_capabilities (__main__.EndToEnd.test_01_capabilities) ... ok
+5: test_02_web_search_merges_sources (__main__.EndToEnd.test_02_web_search_merges_sources) ... ok
+5: test_03_blocked_source_cools_down_and_others_still_answer (__main__.EndToEnd.test_03_blocked_source_cools_down_and_others_still_answer) ... ok
+5: test_04_read_url_extracts_and_caches (__main__.EndToEnd.test_04_read_url_extracts_and_caches) ... ok
+5: test_04b_robots_header_change_replaces_index_projection (__main__.EndToEnd.test_04b_robots_header_change_replaces_index_projection) ... ok
+5: test_05_ssrf_is_refused (__main__.EndToEnd.test_05_ssrf_is_refused) ... ok
+5: test_06_gbk_page_and_chinese_local_search (__main__.EndToEnd.test_06_gbk_page_and_chinese_local_search) ... ok
+5: test_07_find_range_and_evidence (__main__.EndToEnd.test_07_find_range_and_evidence) ... ok
+5: test_08_unreadable_pages_report_why (__main__.EndToEnd.test_08_unreadable_pages_report_why) ... ok
+5: test_09_mcp_stdio (__main__.EndToEnd.test_09_mcp_stdio) ... ok
+5: test_09a_http_batch_ten_inputs_failure_isolation_and_idempotency (__main__.EndToEnd.test_09a_http_batch_ten_inputs_failure_isolation_and_idempotency) ... ok
+5: test_09b_mcp_http_requires_a_client_token (__main__.EndToEnd.test_09b_mcp_http_requires_a_client_token) ... ok
+5: test_10_worker_down_is_explicit_and_local_features_survive (__main__.EndToEnd.test_10_worker_down_is_explicit_and_local_features_survive) ... ok
+5: 
+5: ----------------------------------------------------------------------
+5: Ran 13 tests in 4.349s
+5: 
+5: OK
+5: {"e2e_tests": 13, "failures": 0, "errors": 0, "seconds": 4.4}
+5/6 Test #5: e2e_web ..........................   Passed    5.25 sec
+test 6
+    Start 6: python_worker
+
+6: Test command: /workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python "-m" "pytest" "-q" "-p" "no:cacheprovider" "tests"
+6: Working Directory: /workspace/scratch/80f41eb198a3/bzs861/python
+6: Test timeout computed to be: 180
+6: ........................................................................ [ 23%]
+6: ........................................................................ [ 47%]
+6: ........................................................................ [ 71%]
+6: ........................................................................ [ 95%]
+6: ..............                                                           [100%]
+6: 302 passed in 5.65s
+6/6 Test #6: python_worker ....................   Passed    6.23 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =  18.75 sec

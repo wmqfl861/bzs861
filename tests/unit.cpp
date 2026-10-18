@@ -87,6 +87,7 @@ namespace {
       CHECK(sqlite3_exec(db.get(),sql.c_str(),nullptr,nullptr,nullptr)==SQLITE_OK);
     };
     exec("BEGIN IMMEDIATE;");
+    exec("DROP TABLE read_job_items; DROP TABLE read_job_budgets; ALTER TABLE jobs DROP COLUMN kind;");
     exec("DROP TABLE content_fts; ALTER TABLE documents DROP COLUMN delete_generation;"
          "ALTER TABLE jobs DROP COLUMN created_delete_sequence;"
          "DELETE FROM settings WHERE key IN ('deletion_sequence','fts_tokenizer_version');");
@@ -593,7 +594,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==3);
+    CHECK(database_scalar(path, "PRAGMA user_version")==4);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -616,11 +617,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=4;");
+    database_exec(future, "PRAGMA user_version=5;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==4);
+    CHECK(database_scalar(future, "PRAGMA user_version")==5);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -1285,7 +1286,7 @@ namespace {
         CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
         if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
       }
-      CHECK(database_scalar(path,"PRAGMA user_version")==3);
+      CHECK(database_scalar(path,"PRAGMA user_version")==4);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
     }

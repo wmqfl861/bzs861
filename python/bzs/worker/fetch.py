@@ -19,6 +19,41 @@ _ALIASES = {"gb2312": "gb18030", "gbk": "gb18030", "x-gbk": "gb18030", "big5": "
 _CROSS_ORIGIN_HEADERS = frozenset(("user-agent", "accept", "accept-language"))
 
 
+class FetchStopped(Exception):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+
+
+@dataclass
+class FetchBudget:
+    """One durable grant shared by all HTTP and soft redirects of one read attempt.
+
+    Bytes mean decompressed response-body bytes consumed by this application, not
+    socket/TLS overhead or data the HTTP stack may already have buffered. The core
+    reserves the whole grant before invoking the worker and reconciles only a
+    complete response; a lost response therefore cannot create free requests.
+    """
+    max_requests: int
+    max_content_bytes: int
+    external_requests: int = 0
+    content_bytes: int = 0
+    cancelled: bool = False
+
+    def check(self) -> None:
+        if self.cancelled:
+            raise FetchStopped("E_CANCELLED", "read attempt was cancelled")
+
+    def dispatch(self) -> None:
+        self.check()
+        if self.external_requests >= self.max_requests:
+            raise FetchStopped("E_REQUEST_BUDGET", "HTTP request grant exhausted")
+        if self.content_bytes >= self.max_content_bytes:
+            raise FetchStopped("E_BYTE_BUDGET", "response-body byte grant exhausted")
+        # Charge immediately before dispatch, including DNS/connection failures.
+        self.external_requests += 1
+
+
 @dataclass
 class FetchResult:
     status: str                      # ok | http_error | blocked_by_policy | timeout | network_error | too_large | invalid_url
@@ -31,6 +66,9 @@ class FetchResult:
     redirects: list[str] = field(default_factory=list)
     error: str = ""
     elapsed_ms: int = 0
+    external_requests: int = 0
+    content_bytes: int = 0
+    error_code: str = ""
 
     @property
     def content_type(self) -> str:
@@ -88,6 +126,10 @@ class Fetcher:
         connector = aiohttp.TCPConnector(resolver=self._resolver, use_dns_cache=False, limit=64, limit_per_host=4)
         self._session = aiohttp.ClientSession(connector=connector, trust_env=False,
                                               cookie_jar=aiohttp.DummyCookieJar(), auto_decompress=True)
+        # aiohttp 3.10+ otherwise retries idempotent requests on a disconnected
+        # persistent connection inside a single request() call. A dispatched
+        # attempt must correspond to at most one HTTP request in our ledger.
+        self._session._retry_connection = False
 
     async def close(self) -> None:
         if self._session:
@@ -100,7 +142,8 @@ class Fetcher:
 
     async def fetch(self, url: str, *, timeout_s: float = 20.0, method: str = "GET",
                     params: dict | None = None, data: dict | None = None, headers: dict | None = None,
-                    max_bytes: int | None = None, accept: str | None = None) -> FetchResult:
+                    max_bytes: int | None = None, accept: str | None = None,
+                    budget: FetchBudget | None = None) -> FetchResult:
         assert self._session is not None, "Fetcher.start() not called"
         started = time.monotonic()
         deadline = started + timeout_s
@@ -113,6 +156,8 @@ class Fetcher:
             req_headers.update(headers)
         try:
             for hop in range(self.max_redirects + 1):
+                if budget:
+                    budget.check()
                 target = self.policy.prepare_url(current)
                 current = str(target)
                 host = target.raw_host
@@ -128,6 +173,9 @@ class Fetcher:
                     if remaining <= 0:
                         raise asyncio.TimeoutError()
                     timeout = aiohttp.ClientTimeout(total=remaining, sock_connect=min(10.0, remaining))
+                    if budget:
+                        budget.dispatch()
+                    result.external_requests += 1
                     async with self._session.request(method, target, params=params if hop == 0 else None,
                                                      data=data if method == "POST" else None, headers=req_headers,
                                                      allow_redirects=False, timeout=timeout) as resp:
@@ -138,7 +186,52 @@ class Fetcher:
                         robots = resp.headers.getall("X-Robots-Tag", ())
                         if robots:
                             result.headers["x-robots-tag"] = "\n".join(robots)
-                        if resp.status in (301, 302, 303, 307, 308) and "location" in result.headers:
+                        redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
+                        chunks: list[bytes] = []
+                        size = 0
+                        # Bounded reads also consume/count redirect bodies. Ordinary
+                        # single reads keep their existing redirect/truncation policy.
+                        if budget:
+                            while not resp.content.at_eof():
+                                budget.check()
+                                available = min(limit - size, budget.max_content_bytes - budget.content_bytes)
+                                if available <= 0:
+                                    # A chunked response may deliver its empty EOF
+                                    # after the last allowed body byte. Wait for EOF
+                                    # or evidence of buffered extra bytes without
+                                    # consuming a probe byte beyond the grant.
+                                    while not resp.content.is_eof() and resp.content.total_bytes <= size:
+                                        budget.check()
+                                        remaining = deadline - time.monotonic()
+                                        if remaining <= 0:
+                                            raise asyncio.TimeoutError()
+                                        try:
+                                            await asyncio.wait_for(resp.content.wait_eof(), min(0.05, remaining))
+                                        except asyncio.TimeoutError:
+                                            pass
+                                    if resp.content.at_eof():
+                                        break
+                                    result.truncated = True
+                                    code = "E_BYTE_BUDGET" if budget.content_bytes >= budget.max_content_bytes else "E_CONTENT_LIMIT"
+                                    raise FetchStopped(code, "response body exceeds its byte grant")
+                                chunk = await resp.content.read(min(65536, available))
+                                if not chunk:
+                                    break
+                                budget.content_bytes += len(chunk)
+                                result.content_bytes += len(chunk)
+                                size += len(chunk)
+                                if not redirect:
+                                    chunks.append(chunk)
+                        elif not redirect:
+                            async for chunk in resp.content.iter_chunked(65536):
+                                result.content_bytes += len(chunk)
+                                size += len(chunk)
+                                if size > limit:
+                                    chunks.append(chunk[: max(0, limit - (size - len(chunk)))])
+                                    result.truncated = True
+                                    break
+                                chunks.append(chunk)
+                        if redirect:
                             nxt = self.policy.prepare_url(urljoin(str(resp.url), result.headers["location"]))
                             result.redirects.append(str(nxt))
                             if target.origin() != nxt.origin():
@@ -149,15 +242,6 @@ class Fetcher:
                                 method, data = "GET", None
                             current = str(nxt)
                             continue
-                        chunks: list[bytes] = []
-                        size = 0
-                        async for chunk in resp.content.iter_chunked(65536):
-                            size += len(chunk)
-                            if size > limit:
-                                chunks.append(chunk[: max(0, limit - (size - len(chunk)))])
-                                result.truncated = True
-                                break
-                            chunks.append(chunk)
                         result.body = b"".join(chunks)
                         result.final_url = str(resp.url)
                         result.status = "ok" if resp.status < 400 else "http_error"
@@ -168,6 +252,9 @@ class Fetcher:
             result.error = "too many redirects"
         except PolicyError as exc:
             result.status, result.error = "blocked_by_policy", str(exc)
+        except FetchStopped as exc:
+            result.status = "cancelled" if exc.code == "E_CANCELLED" else "budget_exhausted"
+            result.error_code, result.error = exc.code, str(exc)
         except asyncio.TimeoutError:
             result.status, result.error = "timeout", "request timed out"
         except aiohttp.InvalidURL as exc:

@@ -631,6 +631,12 @@ namespace bzs {
     params.set("url", url);
     params.set("timeout_ms", timeout);
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
+    auto artifact=decode_read(url,r);
+    auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
+    return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
+  }
+  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r) {
+    require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     auto status=opt_string(r, "status");
     if(status!="ok") {
       std::string detail=opt_string(r, "error");
@@ -640,7 +646,6 @@ namespace bzs {
       }
       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
     }
-    require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
       require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str()),"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
@@ -676,7 +681,83 @@ namespace bzs {
       "http_status", "charset", "extractor", "extract_status", "warnings", "redirects", "metadata"
     })if(r.has(k))meta.set(k, r.at(k));
     meta.set("content_type", doc.content_type);
-    auto snap=store_.ingest_web(owner, doc, parsed, meta, deletion_generation);
-    return window(owner, snap, start, max_bytes, false, fetched);
+    return {std::move(doc),std::move(parsed),std::move(meta)};
+  }
+  Json WebService::submit_reads(const std::string& owner,const Json& args) {
+    args.allowed({"urls","idempotency_key","timeout_ms","per_page_timeout_ms","max_requests","max_bytes","max_attempts"});
+    auto list=args.at("urls");
+    require(list.is_array()&&list.size()>=1&&list.size()<=20,"E_SCHEMA","urls must contain 1..20 explicit URLs");
+    std::vector<std::string> urls;
+    for(std::size_t i=0;i<list.size();++i) {
+      require(list.at(i).is_string()&&!list.at(i).str().empty()&&list.at(i).str().size()<=4096,
+              "E_SCHEMA","Each URL must be a non-empty string of at most 4096 bytes");
+      urls.push_back(list.at(i).str());
+    }
+    ReadManyOptions options;
+    options.timeout_ms=int_option(args,"timeout_ms",600000,1000,3600000);
+    options.per_page_timeout_ms=int_option(args,"per_page_timeout_ms",20000,1000,55000);
+    // Only omission selects defaults: explicit zero or null never enlarges a budget.
+    options.max_requests=args.has("max_requests")?int_option(args,"max_requests",0,1,1000):0;
+    options.max_bytes=args.has("max_bytes")?int_option(args,"max_bytes",0,1,256LL*1024*1024):0;
+    options.max_attempts=int_option(args,"max_attempts",1,1,5);
+    return store_.read_many_submit(owner,urls,required_string(args,"idempotency_key",128),options);
+  }
+  void WebService::execute_read(const ReadLease& lease) {
+    std::int64_t requests=-1,bytes=-1;
+    try {
+      if(!store_.read_lease_live(lease)) {
+        store_.fail_read(lease,"E_LEASE_EXPIRED",0,0);
+        return;
+      }
+      const auto now=store_.now();
+      if(now>=lease.deadline_ms) {
+        store_.fail_read(lease,"E_DEADLINE",0,0);
+        return;
+      }
+      const auto timeout=std::min(lease.timeout_ms,lease.deadline_ms-now);
+      Json params=Json::object();
+      params.set("url",lease.url);params.set("timeout_ms",timeout);
+      params.set("max_requests",lease.request_grant);params.set("max_content_bytes",lease.byte_grant);
+      params.set("attempt_id",lease.attempt_id);
+      const auto response=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
+      require(response.is_object()&&response.has("status")&&response.at("status").is_string()&&
+              response.has("usage")&&response.at("usage").is_object(),
+              "E_WORKER_PROTOCOL","Bounded read response must report status and usage",502);
+      auto usage=response.at("usage");
+      require(usage.has("external_requests")&&usage.at("external_requests").is_integer()&&
+              usage.has("content_bytes")&&usage.at("content_bytes").is_integer(),
+              "E_WORKER_PROTOCOL","Read usage must be explicit integers",502);
+      const auto used_requests=usage.at("external_requests").num(),used_bytes=usage.at("content_bytes").num();
+      require(used_requests>=0&&used_requests<=lease.request_grant&&used_bytes>=0&&used_bytes<=lease.byte_grant&&
+              (used_requests!=0||used_bytes==0)&&
+              (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
+              "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
+      requests=used_requests;bytes=used_bytes;
+      const auto status=response.at("status").str();
+      if(status=="budget_exhausted"||status=="cancelled"||status=="attempt_replayed") {
+        const auto code=opt_string(response,"error_code");
+        require((status=="budget_exhausted"&&(code=="E_REQUEST_BUDGET"||code=="E_BYTE_BUDGET"||code=="E_CONTENT_LIMIT"))||
+                (status=="cancelled"&&code=="E_CANCELLED")||(status=="attempt_replayed"&&code=="E_ATTEMPT_REPLAY"),
+                "E_WORKER_PROTOCOL","Invalid bounded read stop reason",502);
+        store_.fail_read(lease,code,requests,bytes);
+        return;
+      }
+      auto artifact=decode_read(lease.url,response);
+      (void)store_.complete_read(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
+    } catch(const Error& error) {
+      store_.fail_read(lease,error.code,requests,bytes);
+    } catch(...) {
+      store_.fail_read(lease,"E_INTERNAL",requests,bytes);
+    }
+  }
+  void WebService::cancel_read_attempt(const std::string& attempt_id) noexcept {
+    if(attempt_id.empty())return;
+    try {
+      Json params=Json::object();params.set("attempt_id",attempt_id);
+      (void)worker_.call("fetch.cancel",params,2000);
+    } catch(...) {
+      // Job control has already advanced the durable epoch. Worker cooperation
+      // only shortens outstanding work and is never the publication fence.
+    }
   }
 }

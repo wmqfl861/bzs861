@@ -143,13 +143,15 @@ class Adapter:
         return decode_body(res.body, res.header_charset)[0]
 
     def check(self, res: FetchResult) -> None:
-        if res.status in ("timeout", "network_error", "blocked_by_policy", "invalid_url"):
-            raise SourceError("timeout" if res.status == "timeout" else "network_error", res.error, res.http_status)
         if res.http_status == 429:
             raise SourceError("rate_limited", "HTTP 429", 429, retry_after_ms(res.headers))
+        if res.status in ("timeout", "network_error", "blocked_by_policy", "invalid_url"):
+            raise SourceError("timeout" if res.status == "timeout" else "network_error", res.error, res.http_status)
         body = self.text(res) if res.body else ""
         if self.kind == "scrape" and (self.blocked(res, body) or looks_like_challenge(res.http_status, body)):
             raise SourceError("blocked", "upstream presented a bot check or block page", res.http_status)
+        if res.truncated or res.status == "too_large":
+            raise SourceError("too_large", "upstream response exceeded the byte limit", res.http_status)
         if res.status == "http_error":
             raise SourceError("http_error", f"HTTP {res.http_status}", res.http_status)
 

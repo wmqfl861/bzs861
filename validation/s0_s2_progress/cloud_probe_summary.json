@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.2",
+  "environment": "cloud_workspace_not_user_deployment_network",
+  "result": "dns_failed_before_any_upstream_http_response",
+  "run_id": "f8eb97723c4147e5bed7311eb26ab74d",
+  "started_at_utc": "2026-10-18T08:27:11.005Z",
+  "finished_at_utc": "2026-10-18T08:27:16.023Z",
+  "command_record": "cloud-probe-command.json",
+  "cli_exit_code": 1,
+  "exit_code_meaning": "All attempted source queries failed; this is not a successful source-availability gate.",
+  "planned_queries": 4,
+  "reserved_source_query_attempts": 2,
+  "fetch_dispatch_attempts_including_dns_failures": 2,
+  "upstream_http_responses": 0,
+  "response_body_bytes": 0,
+  "parsed_hits": 0,
+  "planned_but_not_sent": 2,
+  "per_source": [
+    {
+      "source": "marginalia",
+      "query_id": "aca01",
+      "status": "network_error",
+      "http_status": null,
+      "elapsed_ms": 3,
+      "error": "ClientConnectorDNSError: Cannot connect to host api2.marginalia-search.com:443 ssl:default [Temporary failure in name resolution]",
+      "remaining_query_stop_reason": "service_stopped:network_error",
+      "verdict": "needs_work"
+    },
+    {
+      "source": "wikipedia_en",
+      "query_id": "aca01",
+      "status": "network_error",
+      "http_status": null,
+      "elapsed_ms": 5006,
+      "error": "ClientConnectorDNSError: Cannot connect to host en.wikipedia.org:443 ssl:default [Temporary failure in name resolution]",
+      "remaining_query_stop_reason": "service_stopped:network_error",
+      "verdict": "needs_work"
+    }
+  ],
+  "quota_scope": "this_probe_run",
+  "quota_unit": "reserved_source_query_attempts",
+  "public_development_key_only": true,
+  "paid_calls": 0,
+  "model_calls": 0,
+  "default_sources": {
+    "configured": 17,
+    "enabled": 0,
+    "review_state_changed": false,
+    "bytes_unchanged_from_base": true,
+    "sha256": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83"
+  },
+  "published_evidence": {
+    "probe_report": "cloud_probe/probe_report.json",
+    "probe_report_sha256": "9328c6ef5b2acc24f2653a10702a9a0867b0eab97300756c740cd84a0c4d611c",
+    "inspection": "Both response bodies are empty. Published evidence contains public golden queries, safe response metadata and DNS errors; no response pages, credentials, runtime database or lock files.",
+    "raw_body_files": 0
+  },
+  "offline_replay": {
+    "report": "cloud_replay/replay_report.json",
+    "command_record": "cloud-replay-command.json",
+    "exit_code": 0,
+    "identity_match": true,
+    "network_requests": 0,
+    "matched": 2,
+    "mismatches": 0,
+    "replayed": 2,
+    "skipped": 0,
+    "scope": "Reproduces two empty-body transport error states only; no successful upstream result parser sample was obtained."
+  },
+  "official_reference_pages_consulted": [
+    "https://about.marginalia-search.com/article/api/",
+    "https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_API_Usage_Guidelines"
+  ],
+  "limitations": [
+    "Does not establish source availability or unavailability on the user deployment network.",
+    "Does not approve source terms, automation, free-entry eligibility, cache or redistribution.",
+    "No provider fallback, proxy or egress-policy relaxation was used.",
+    "No real-source relevance labels, qrels or ranking quality metrics were produced."
+  ]
+}

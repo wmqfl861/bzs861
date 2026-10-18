@@ -66,10 +66,21 @@ namespace bzs {
     std::map<std::string, CachedSearch> cache_;
     std::optional<Json> cache_get(const std::string& key);
     void cache_put(const std::string& key, const Json& value, bool partial);
+    struct ReadArtifact {
+      SourceDocument document;
+      ParsedDocument parsed;
+      Json meta;
+    };
+    ReadArtifact decode_read(const std::string& url, const Json& response);
     Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry);
     Json search(const std::string& owner, const Json& args);
     Json read(const std::string& owner, const Json& args);
+    Json submit_reads(const std::string& owner, const Json& args);
+    // The worker only returns an artifact. Store validates the durable lease and
+    // publishes the artifact, receipt and reconciled usage in one transaction.
+    void execute_read(const ReadLease& lease);
+    void cancel_read_attempt(const std::string& attempt_id) noexcept;
     Json sources();
     std::size_t enabled_sources() const;
   };

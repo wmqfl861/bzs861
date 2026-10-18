@@ -70,6 +70,30 @@ def test_rate_limit_status():
     assert e.value.status == "rate_limited" and e.value.retry_after_ms == 120000
 
 
+def test_rate_limit_and_block_signals_survive_truncated_response_bodies():
+    response = res("partial rate-limit response", status=429, headers={"retry-after": "3600"})
+    response.status, response.truncated = "too_large", True
+    with pytest.raises(SourceError) as limited:
+        Wikipedia({"id": "wiki", "params": {}}, None).check(response)
+    assert limited.value.status == "rate_limited" and limited.value.retry_after_ms == 3_600_000
+    blocked = res("<div class='anomaly-modal'>bots use DuckDuckGo too</div>")
+    blocked.truncated = True
+    with pytest.raises(SourceError) as error:
+        DuckDuckGoHtml({"id": "ddg", "params": {}}, None).check(blocked)
+    assert error.value.status == "blocked"
+
+
+@pytest.mark.parametrize("body,header,expected", [
+    ({"error_id": 502, "error_name": "throttle_violation", "backoff": 3600}, "20", 3_600_000),
+    ({"error_id": 502, "error_name": "throttle_violation", "backoff": 20}, "7200", 7_200_000),
+    ({"items": [], "backoff": 20}, "7200", 7_200_000),
+])
+def test_api_application_backoff_never_shortens_upstream_wait(body, header, expected):
+    with pytest.raises(SourceError) as error:
+        run(StackExchange, json.dumps(body), ctype="application/json", headers={"retry-after": header})
+    assert error.value.status == "rate_limited" and error.value.retry_after_ms == expected
+
+
 def test_http_date_retry_after_is_preserved_for_source_cooldown(monkeypatch):
     now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
     retry_at = format_datetime(now + dt.timedelta(seconds=120), usegmt=True)
@@ -262,6 +286,7 @@ def test_json_apis():
     with pytest.raises(SourceError) as e:
         run(StackExchange, json.dumps({"items": [], "backoff": 10}), ctype="application/json")
     assert e.value.status == "rate_limited"
+
     hn = json.dumps({"hits": [{"title": "Show HN", "url": None, "objectID": "42", "points": 3, "num_comments": 1}]})
     assert run(HackerNews, hn, ctype="application/json")[0].url == "https://news.ycombinator.com/item?id=42"
     gh = json.dumps({"items": [{"full_name": "a/b", "html_url": "https://github.com/a/b", "description": "d", "language": "C++", "stargazers_count": 5}]})
@@ -274,3 +299,62 @@ def test_json_apis():
     with pytest.raises(SourceError) as e:
         run(Marginalia, "busy", status=503, ctype="text/plain")
     assert e.value.status == "rate_limited"
+
+@pytest.mark.parametrize("adapter,body", [
+    (Wikipedia, {}), (Wikipedia, {"query": {}}),
+    (Wikipedia, {"query": {"search": {}}}),
+    (Wikipedia, {"query": {"search": [{"title": 12}]}}),
+    (Marginalia, []), (Marginalia, {}), (Marginalia, {"results": [None]}),
+    (Marginalia, {"results": [{"url": True}]}),
+    (HackerNews, {"hits": None}), (HackerNews, {"hits": [{"title": []}]}),
+    (GitHubRepos, {"items": [{"html_url": "https://example.com/"}]}),
+    (StackExchange, {"items": [], "backoff": True}),
+    (StackExchange, {"items": [], "backoff": -1}),
+    (StackExchange, {"items": [], "backoff": 1.5}),
+])
+def test_api_response_shape_failures_are_not_empty_results(adapter, body):
+    with pytest.raises(SourceError) as exc:
+        run(adapter, json.dumps(body), ctype="application/json")
+    assert exc.value.status == "parse_error"
+
+
+@pytest.mark.parametrize("body", [
+    '{"results":[],"results":[]}', '{"results":[],"score":NaN}',
+    '{"results":[],"score":Infinity}',
+])
+def test_api_json_rejects_ambiguous_and_nonstandard_values(body):
+    with pytest.raises(SourceError) as exc:
+        run(Marginalia, body, ctype="application/json")
+    assert exc.value.status == "parse_error"
+
+
+def test_api_http_200_application_errors_and_backoff_are_failures():
+    with pytest.raises(SourceError) as exc:
+        run(Wikipedia, json.dumps({"error": {"code": "maxlag"}}), ctype="application/json",
+            headers={"retry-after": "90"})
+    assert exc.value.status == "rate_limited" and exc.value.retry_after_ms == 90000
+    with pytest.raises(SourceError) as exc:
+        run(Marginalia, json.dumps({"error": "invalid API key"}), ctype="application/json")
+    assert exc.value.status == "upstream_error"
+    with pytest.raises(SourceError) as exc:
+        run(StackExchange, json.dumps({"error_id": 502, "error_name": "throttle_violation"}),
+            ctype="application/json")
+    assert exc.value.status == "rate_limited"
+
+
+@pytest.mark.parametrize("adapter,body", [
+    (Wikipedia, {"query": {"search": []}}), (Marginalia, {"results": []}),
+    (HackerNews, {"hits": []}), (GitHubRepos, {"items": []}),
+    (StackExchange, {"items": [], "backoff": 0}),
+])
+def test_explicit_empty_api_collections_remain_valid(adapter, body):
+    assert run(adapter, json.dumps(body), ctype="application/json") == []
+
+
+def test_a_truncated_response_is_not_parsed_as_a_complete_search():
+    response = res('{"results": []}', ctype="application/json")
+    response.truncated = True
+    adapter = Marginalia({"id": "fixture", "params": {}}, None)
+    with pytest.raises(SourceError) as exc:
+        adapter.check(response)
+    assert exc.value.status == "too_large"

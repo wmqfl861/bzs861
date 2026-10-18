@@ -1,0 +1,307 @@
+{
+  "budgets": {
+    "marginalia": {
+      "cooldown_until_ms": 1792312331013,
+      "last_started_at_ms": 1792312031008,
+      "stop_reason": "network_error",
+      "stopped": true,
+      "used": 1
+    },
+    "wikimedia": {
+      "cooldown_until_ms": 1792312336019,
+      "last_started_at_ms": 1792312031010,
+      "stop_reason": "network_error",
+      "stopped": true,
+      "used": 1
+    }
+  },
+  "created_at": "2026-10-18T08:27:11.005Z",
+  "environment": {
+    "bzs861": "0.1.2",
+    "golden_frozen": true,
+    "golden_version": 1,
+    "include_candidates": true,
+    "live_source_approval": false,
+    "proxy": false,
+    "proxy_remote_dns": false,
+    "quota_scope": "this_probe_run",
+    "quota_unit": "reserved_source_query_attempts",
+    "review_changed": false,
+    "test_fixture": false
+  },
+  "identity": {
+    "golden_manifest_sha256": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "manifest_sha256": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "options_sha256": "a558a0731cf465b13117efa2c2e3ab2ea904bc7fb240b1177f63004dda4ce1f6",
+    "parser": {
+      "code_sha256": "f2046c2287a41ca6ed3b7eaec0c29d4390795b8701f5c979b2538d4832a6ab25",
+      "dependencies": {
+        "aiohttp": "3.14.5",
+        "cssselect": "1.6.0",
+        "idna": "3.20",
+        "lxml": "6.1.3",
+        "python": "3.12.14",
+        "trafilatura": "2.3.1",
+        "yarl": "1.25.1"
+      },
+      "files": {
+        "worker/extract.py": "08d484c22d2e17ee24aacaeec77aaaba3b743b5663325c8135bd80dd4baab914",
+        "worker/fetch.py": "85e62ebe577407e46a3cc5741cbe3a91f1d6cf1723a15e07b15a5dad963fdd16",
+        "worker/sources/__init__.py": "0aa94db1a1abf5a0f7ad10cea6f92764de8f264e468c61d1640da8db65346da1",
+        "worker/sources/apis.py": "5341bdcaad7660b460974e49f8a7cdc8b42c02a1e5945de2078af6ed77cbf47a",
+        "worker/sources/base.py": "0a1ed9504c4c4c364ea101a253350bf51b667c794544db0857fff76167560bb4",
+        "worker/sources/engines.py": "9dd91248e7c5a3561d0a13236a56209f2980170476bbd951c7ac2db6bafbcb12"
+      }
+    },
+    "queries_sha256": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798"
+  },
+  "options": {
+    "accept_language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "allow_private": [],
+    "delay_s": 4.0,
+    "include_candidates": true,
+    "per_source": 2,
+    "proxy": false,
+    "proxy_remote_dns": false,
+    "source_ids": [
+      "marginalia",
+      "wikipedia_en"
+    ],
+    "test_hosts": {},
+    "timeout_s": 12.0,
+    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+  },
+  "plan": [
+    {
+      "category": "academic",
+      "item_id": "p000001",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "marginalia",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "code",
+      "item_id": "p000002",
+      "language": "en",
+      "query": "aiohttp custom resolver",
+      "query_id": "code01",
+      "reason": "service_stopped:network_error",
+      "source": "marginalia",
+      "split": "development",
+      "state": "skipped"
+    },
+    {
+      "category": "academic",
+      "item_id": "p000003",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "wikipedia_en",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "general_en",
+      "item_id": "p000004",
+      "language": "en",
+      "query": "how tall is mount everest",
+      "query_id": "gen01",
+      "reason": "service_stopped:network_error",
+      "source": "wikipedia_en",
+      "split": "development",
+      "state": "skipped"
+    }
+  ],
+  "rows": [
+    {
+      "attempt_id": "a000001",
+      "attempt_state": "completed",
+      "elapsed_ms": 3,
+      "error": "ClientConnectorDNSError: Cannot connect to host api2.marginalia-search.com:443 ssl:default [Temporary failure in name resolution]",
+      "finished_at": "2026-10-18T08:27:11.013Z",
+      "hits": 0,
+      "http_status": null,
+      "item_id": "p000001",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 0,
+      "response": {
+        "body_bytes": 0,
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "content_bytes": 0,
+        "elapsed_ms": 3,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "",
+        "headers": {},
+        "http_status": null,
+        "redirects": [],
+        "status": "network_error",
+        "truncated": false,
+        "url": "https://api2.marginalia-search.com/search"
+      },
+      "results": [],
+      "retry_after_ms": 0,
+      "source": "marginalia",
+      "started_at": "2026-10-18T08:27:11.008Z",
+      "status": "network_error",
+      "top": []
+    },
+    {
+      "attempt_id": "a000003",
+      "attempt_state": "completed",
+      "elapsed_ms": 5006,
+      "error": "ClientConnectorDNSError: Cannot connect to host en.wikipedia.org:443 ssl:default [Temporary failure in name resolution]",
+      "finished_at": "2026-10-18T08:27:16.019Z",
+      "hits": 0,
+      "http_status": null,
+      "item_id": "p000003",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 0,
+      "response": {
+        "body_bytes": 0,
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "content_bytes": 0,
+        "elapsed_ms": 5006,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "",
+        "headers": {},
+        "http_status": null,
+        "redirects": [],
+        "status": "network_error",
+        "truncated": false,
+        "url": "https://en.wikipedia.org/w/api.php"
+      },
+      "results": [],
+      "retry_after_ms": 0,
+      "source": "wikipedia_en",
+      "started_at": "2026-10-18T08:27:11.010Z",
+      "status": "network_error",
+      "top": []
+    }
+  ],
+  "run_id": "f8eb97723c4147e5bed7311eb26ab74d",
+  "schema_version": 2,
+  "sources": {
+    "marginalia": {
+      "adapter_id": "marginalia_api",
+      "budget_key": "marginalia",
+      "capability": "web",
+      "enabled": false,
+      "id": "marginalia",
+      "index_family": "marginalia",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 2000,
+        "quota_window_seconds": 86400,
+        "request_quota": 500,
+        "shared_budget_key": "marginalia"
+      },
+      "params": {
+        "adapter": "marginalia_api",
+        "base_url": "https://api2.marginalia-search.com/search"
+      },
+      "provider": "marginalia",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": "https://about.marginalia-search.com/article/api"
+      }
+    },
+    "wikipedia_en": {
+      "adapter_id": "wikipedia_api",
+      "budget_key": "wikimedia",
+      "capability": "encyclopedia",
+      "enabled": false,
+      "id": "wikipedia_en",
+      "index_family": "wikipedia_en",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 500,
+        "quota_window_seconds": 86400,
+        "request_quota": 2000,
+        "shared_budget_key": "wikimedia"
+      },
+      "params": {
+        "adapter": "wikipedia_api",
+        "base_url": "https://en.wikipedia.org/w/api.php",
+        "lang": "en"
+      },
+      "provider": "wikimedia",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": null
+      }
+    }
+  },
+  "status": "completed",
+  "summary": {
+    "marginalia": {
+      "answered_rate": 0.0,
+      "avg_hits_when_ok": 0.0,
+      "avg_ms": 3,
+      "completed": 1,
+      "not_started_reasons": {
+        "service_stopped:network_error": 1
+      },
+      "ok_rate": 0.0,
+      "plan_states": {
+        "completed": 1,
+        "skipped": 1
+      },
+      "planned": 2,
+      "reason": null,
+      "requests": 1,
+      "statuses": {
+        "network_error": 1
+      },
+      "uncertain_reasons": {},
+      "verdict": "needs_work"
+    },
+    "wikipedia_en": {
+      "answered_rate": 0.0,
+      "avg_hits_when_ok": 0.0,
+      "avg_ms": 5006,
+      "completed": 1,
+      "not_started_reasons": {
+        "service_stopped:network_error": 1
+      },
+      "ok_rate": 0.0,
+      "plan_states": {
+        "completed": 1,
+        "skipped": 1
+      },
+      "planned": 2,
+      "reason": null,
+      "requests": 1,
+      "statuses": {
+        "network_error": 1
+      },
+      "uncertain_reasons": {},
+      "verdict": "needs_work"
+    }
+  },
+  "updated_at": "2026-10-18T08:27:16.023Z"
+}

@@ -274,12 +274,27 @@ def cmd_probe(args) -> int:
                                    delay_s=args.delay, timeout_s=args.timeout, proxy=proxy or None,
                                    proxy_remote_dns=bool(cfg and cfg.proxy_remote_dns),
                                    allow_private=list(cfg.allow_cidrs) if cfg else None,
-                                   include_candidates=args.include_candidates))
+                                   include_candidates=args.include_candidates, resume=args.resume))
     except (ValueError, OSError) as exc:
-        print(f"E_CONFIG: {exc}", file=sys.stderr)
+        print(f"E_PROBE: {exc}", file=sys.stderr)
         return 2
+    except KeyboardInterrupt:
+        print("Probe interrupted. Its checkpoint keeps reserved attempts charged; use --resume with the same inputs.",
+              file=sys.stderr)
+        return 130
     print((Path(args.out) / "probe_report.md").read_text(encoding="utf-8"))
-    return 0 if report["rows"] else 1
+    return 0 if any(row["status"] in ("ok", "empty") for row in report["rows"]) else 1
+
+
+def cmd_replay(args) -> int:
+    from .replay import replay
+    try:
+        report = replay(args.report, args.out, allow_parser_change=args.allow_parser_change)
+    except (ValueError, OSError) as exc:
+        print(f"E_REPLAY: {exc}", file=sys.stderr)
+        return 2
+    print((Path(args.out) / "replay_report.md").read_text(encoding="utf-8"))
+    return 0 if report["status"] == "passed" else 1
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -318,6 +333,8 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(fn=cmd_read)
     p = sub.add_parser("probe", help="S0: measure each source from this machine")
     p.add_argument("--out", default="probe-out")
+    p.add_argument("--resume", action="store_true",
+                   help="resume this exact run; completed and uncertain attempts remain charged and are not resent")
     p.add_argument("--sources")
     p.add_argument("--queries")
     p.add_argument("--only", nargs="*")
@@ -328,6 +345,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--timeout", type=float, default=12.0)
     p.add_argument("--proxy", default=None, help="reserved; outbound proxies are currently rejected")
     p.set_defaults(fn=cmd_probe)
+    p = sub.add_parser("replay", help="reparse recorded probe responses offline and compare complete hits")
+    p.add_argument("--report", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--allow-parser-change", action="store_true",
+                   help="explicitly compare using a different parser identity")
+    p.set_defaults(fn=cmd_replay)
     args = ap.parse_args(argv)
     if args.cmd == "mcp" and args.insecure_no_auth:
         ap.error("--insecure-no-auth is unavailable; HTTP MCP requires a client token")

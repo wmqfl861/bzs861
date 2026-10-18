@@ -188,6 +188,9 @@ class Integration(unittest.TestCase):
         job = self.ok('job.create', params)
         same = self.ok('job.create', params)
         self.assertEqual(job['job_id'], same['job_id'])
+        native = self.server.cli('get-job', job['job_id'])
+        self.assertEqual(native.returncode, 0, native.stderr)
+        self.assertEqual(json.loads(native.stdout)['result']['job_id'], job['job_id'])
         until = time.monotonic() + 8
         while time.monotonic() < until:
             state = self.ok('job.get', {'job_id': job['job_id']})

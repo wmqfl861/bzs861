@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.2",
+  "recorded_at_utc": "2026-10-18T08:44:11.534875+00:00",
+  "scope": "Separate assistant implementation contexts and cross-review of the stated boundaries; not external human approval or full-product independent signoff.",
+  "implementation_owners": {
+    "/root/review_core": "Persistent native batch jobs, schema 4 migration, request/byte accounting, worker fetch budgets, native CLI and integration tests.",
+    "/root/review_service": "Resumable probe evidence, storage/identity helpers, CLI probe/replay wiring and probe regressions.",
+    "/root/handoff_requirements": "Frozen golden-query metadata, strict loader/selector, planning status and handoff documentation.",
+    "/root": "Strict JSON API response handling, offline full-result replay, MCP job tools, integration and recorded final execution."
+  },
+  "cross_reviews": [
+    {
+      "reviewer": "/root/handoff_requirements",
+      "implementation_reviewed": "Root-authored replay/source-parser behavior and the probe parser fingerprint boundary.",
+      "method": "Read-only review and concrete counterexample identification; final re-review of fixes and corresponding regression source. Did not rerun the final tests itself.",
+      "findings": [
+        {
+          "id": "R1",
+          "problem": "A completed parser-result row without response evidence could be skipped and produce replay passed.",
+          "resolution": "Missing response is rejected for completed parser outcomes; only explicit timeout/network_error/error and uncertain rows may be skipped, and skips never count as matched.",
+          "regression": "python/tests/test_replay.py"
+        },
+        {
+          "id": "R2",
+          "problem": "Truncated HTTP 429 could lose the Retry-After classification.",
+          "resolution": "HTTP 429 is handled before truncation; scrape blocking checks also precede truncation.",
+          "regression": "python/tests/test_sources.py"
+        },
+        {
+          "id": "R3",
+          "problem": "Parser identity omitted the actual ADAPTERS registry.",
+          "resolution": "worker/sources/__init__.py is fingerprinted; a temporary-copy registry mutation changes the file and aggregate hashes.",
+          "regression": "python/tests/test_probe.py"
+        },
+        {
+          "id": "R4",
+          "problem": "StackExchange HTTP 200 application throttling could shorten a JSON backoff to the minimum cooldown.",
+          "resolution": "Strict backoff validation and the maximum applicable header/JSON/minimum delay are retained.",
+          "regression": "python/tests/test_sources.py"
+        }
+      ],
+      "final_scope_limited_conclusion": "The four concrete findings are addressed in the reviewed code and targeted regressions; no additional blocking issue was identified in this scope."
+    },
+    {
+      "reviewer": "/root/review_service",
+      "implementation_reviewed": "Core-author worker request/byte budget and retired-attempt accounting boundaries.",
+      "method": "Read-only cross-review, two concrete findings, then read-only verification of the author fixes. Final test execution belongs to root.",
+      "findings": [
+        {
+          "id": "R5",
+          "problem": "Replaying a retired attempt or cancelling after completion could report zero usage and cause an invalid refund.",
+          "resolution": "Retired attempt records preserve original cumulative usage; only cancel-before-start may legitimately have zero dispatched requests.",
+          "regression": "python/tests/test_fetch_budget.py"
+        },
+        {
+          "id": "R6",
+          "problem": "A body exactly at its byte budget with delayed chunked EOF could be rejected as over-budget.",
+          "resolution": "Wait for bounded EOF/extra-buffer evidence under the absolute deadline and cancellation checks without consuming a probe byte.",
+          "regression": "python/tests/test_fetch_budget.py"
+        }
+      ],
+      "final_scope_limited_conclusion": "Both findings are addressed; shared redirect/soft-redirect grants, unknown-usage charging and the persistent publication fence were also inspected."
+    }
+  ],
+  "root_execution_evidence": "ctest.log and asan-core.log / asan-batch.log / asan-contracts.log, with adjacent command records.",
+  "reviewed_files_sha256": {
+    "python/bzs/replay.py": "bb74844f7276983654e7e313614e949e74b7845e858226abc3bf2bb19e653c7d",
+    "python/bzs/worker/sources/base.py": "0a1ed9504c4c4c364ea101a253350bf51b667c794544db0857fff76167560bb4",
+    "python/bzs/worker/sources/apis.py": "5341bdcaad7660b460974e49f8a7cdc8b42c02a1e5945de2078af6ed77cbf47a",
+    "python/bzs/probe_format.py": "96fede0a2f755c5ab61eadfdc88f70fd89688bde05d25363b6f0391c477abe85",
+    "python/bzs/worker/fetch.py": "85e62ebe577407e46a3cc5741cbe3a91f1d6cf1723a15e07b15a5dad963fdd16",
+    "python/bzs/worker/server.py": "027ebb15008c10c8268e8bc1f21c7bb362803293f8a046b64dd0ae6368ebf887",
+    "python/tests/test_replay.py": "29d170512588015991efdc1c21d215e9da279b1d082e887874dc4a03693e5a46",
+    "python/tests/test_sources.py": "533712807c27f15d69191523fc5b58e1ab59d79e7da86be51d6d7e373d19196c",
+    "python/tests/test_probe.py": "8c625ef37a193c80653762786cceff4bf5fc07348815eb95c519c9db0131aa68",
+    "python/tests/test_fetch_budget.py": "a44b2b9c8537e2d7bc6cd7f4693d280e64b98eb2b21fb59ceb4b4c6d3a5e2875",
+    "src/batch.cpp": "765e52abb93de04670b36c0be2c7fffa52f85f29944d7f3f10924b2bd56d1a62",
+    "tests/batch.cpp": "233049fe0d0b3c487ffb7e80ed308d887820f3be31002aaa7f5de4012de95135"
+  },
+  "full_product_independent_signoff": false
+}

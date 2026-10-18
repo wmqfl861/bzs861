@@ -8,7 +8,20 @@ from urllib.parse import quote
 
 from lxml import etree
 
-from .base import API_USER_AGENT, Adapter, Hit, SourceError, clean_text
+from .base import API_USER_AGENT, Adapter, Hit, SourceError, clean_text, retry_after_ms
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate API response key")
+        result[key] = value
+    return result
+
+
+def _invalid_constant(value):
+    raise ValueError("non-finite JSON value")
 
 
 class JsonApi(Adapter):
@@ -16,9 +29,41 @@ class JsonApi(Adapter):
 
     def json(self, res):
         try:
-            return json.loads(self.text(res))
-        except ValueError as exc:
+            data = json.loads(self.text(res), object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
+        except (ValueError, RecursionError) as exc:
             raise SourceError("parse_error", f"invalid JSON: {exc}", res.http_status) from exc
+        if not isinstance(data, dict):
+            raise SourceError("parse_error", "API response must be an object", res.http_status)
+        # Several APIs return application errors with HTTP 200. Such a response
+        # must never be accepted as a successful search with no matches.
+        if data.get("error") or data.get("error_id") or data.get("errors"):
+            error = data.get("error")
+            code = error.get("code") if isinstance(error, dict) else data.get("error_name")
+            if code in ("maxlag", "ratelimited", "throttle_violation"):
+                raise SourceError("rate_limited", "upstream API requested backoff", res.http_status,
+                                  max(5000, retry_after_ms(res.headers), self.backoff_ms(data, res)))
+            raise SourceError("upstream_error", "upstream API returned an application error", res.http_status)
+        return data
+
+    def backoff_ms(self, data, res):
+        value = data.get("backoff", 0)
+        if type(value) is not int or value < 0:
+            raise SourceError("parse_error", "invalid API backoff", res.http_status)
+        return min(value * 1000, (1 << 62) - 1)
+
+    def items(self, data, key, res):
+        items = data.get(key)
+        if not isinstance(items, list) or len(items) > 1000 or any(not isinstance(x, dict) for x in items):
+            raise SourceError("parse_error", f"API response requires an array of objects: {key}", res.http_status)
+        return items
+
+    def text_field(self, item, key, res, *, required=False):
+        value = item.get(key)
+        if value is None and not required:
+            return ""
+        if not isinstance(value, str) or (required and not value.strip()):
+            raise SourceError("parse_error", f"invalid API result field: {key}", res.http_status)
+        return value
 
 
 class Wikipedia(JsonApi):
@@ -33,14 +78,15 @@ class Wikipedia(JsonApi):
     def parse(self, res, query, limit):
         data = self.json(res)
         lang = self.params.get("lang", "en")
-        items = data.get("query", {}).get("search", [])
+        result = data.get("query")
+        if not isinstance(result, dict):
+            raise SourceError("parse_error", "Wikipedia response requires a query object", res.http_status)
+        items = self.items(result, "search", res)
         hits = []
         for item in items:
-            title = item.get("title", "")
-            if not title:
-                continue
+            title = self.text_field(item, "title", res, required=True)
             url = f"https://{lang}.wikipedia.org/wiki/{quote(title.replace(' ', '_'), safe='()_,')}"
-            hits.append(Hit(url, title, clean_text(item.get("snippet")), len(hits) + 1))
+            hits.append(Hit(url, title, clean_text(self.text_field(item, "snippet", res)), len(hits) + 1))
         return hits
 
 
@@ -83,18 +129,21 @@ class StackExchange(JsonApi):
 
     def parse(self, res, query, limit):
         data = self.json(res)
-        if data.get("backoff"):
-            raise SourceError("rate_limited", "Stack Exchange asked to back off", res.http_status, int(data["backoff"]) * 1000)
+        backoff = self.backoff_ms(data, res)
+        if backoff:
+            raise SourceError("rate_limited", "Stack Exchange asked to back off", res.http_status,
+                              max(backoff, retry_after_ms(res.headers)))
         site = self.params.get("site_url", "https://stackoverflow.com")
         hits = []
-        for item in data.get("items", []):
+        for item in self.items(data, "items", res):
             if item.get("item_type") == "answer" and item.get("answer_id"):
                 url = f"{site}/a/{item['answer_id']}"
             elif item.get("question_id"):
                 url = f"{site}/questions/{item['question_id']}"
             else:
                 continue
-            hits.append(Hit(url, clean_text(item.get("title")), clean_text(item.get("excerpt"), 400), len(hits) + 1))
+            hits.append(Hit(url, clean_text(self.text_field(item, "title", res)),
+                            clean_text(self.text_field(item, "excerpt", res), 400), len(hits) + 1))
         return hits
 
 
@@ -108,11 +157,12 @@ class HackerNews(JsonApi):
 
     def parse(self, res, query, limit):
         hits = []
-        for item in self.json(res).get("hits", []):
-            url = item.get("url") or f"https://news.ycombinator.com/item?id={item.get('objectID')}"
-            snippet = clean_text(item.get("story_text"), 300) or f"{item.get('points', 0)} points, {item.get('num_comments', 0)} comments"
-            if item.get("title"):
-                hits.append(Hit(url, clean_text(item["title"]), snippet, len(hits) + 1))
+        for item in self.items(self.json(res), "hits", res):
+            url = self.text_field(item, "url", res) or f"https://news.ycombinator.com/item?id={item.get('objectID')}"
+            snippet = clean_text(self.text_field(item, "story_text", res), 300) or f"{item.get('points', 0)} points, {item.get('num_comments', 0)} comments"
+            title = self.text_field(item, "title", res)
+            if title:
+                hits.append(Hit(url, clean_text(title), snippet, len(hits) + 1))
         return hits
 
 
@@ -134,10 +184,12 @@ class GitHubRepos(JsonApi):
 
     def parse(self, res, query, limit):
         hits = []
-        for item in self.json(res).get("items", []):
-            desc = clean_text(item.get("description"), 300)
-            extra = ", ".join(x for x in (item.get("language") or "", f"★{item.get('stargazers_count', 0)}") if x)
-            hits.append(Hit(item.get("html_url", ""), item.get("full_name", ""), f"{desc} ({extra})".strip(), len(hits) + 1))
+        for item in self.items(self.json(res), "items", res):
+            desc = clean_text(self.text_field(item, "description", res), 300)
+            extra = ", ".join(x for x in (self.text_field(item, "language", res), f"★{item.get('stargazers_count', 0)}") if x)
+            hits.append(Hit(self.text_field(item, "html_url", res, required=True),
+                            self.text_field(item, "full_name", res, required=True),
+                            f"{desc} ({extra})".strip(), len(hits) + 1))
         return [h for h in hits if h.url.startswith("https://")]
 
 
@@ -157,7 +209,9 @@ class Marginalia(JsonApi):
 
     def parse(self, res, query, limit):
         hits = []
-        for item in self.json(res).get("results", []):
-            if item.get("url", "").startswith(("http://", "https://")):
-                hits.append(Hit(item["url"], clean_text(item.get("title")), clean_text(item.get("description"), 400), len(hits) + 1))
+        for item in self.items(self.json(res), "results", res):
+            url = self.text_field(item, "url", res, required=True)
+            if url.startswith(("http://", "https://")):
+                hits.append(Hit(url, clean_text(self.text_field(item, "title", res)),
+                                clean_text(self.text_field(item, "description", res), 400), len(hits) + 1))
         return hits

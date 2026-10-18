@@ -1,16 +1,17 @@
 # bzs861 · 当前开发入口
 
-**更新：2026-10-18｜阶段：0.1.1 S1 review candidate｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
+**更新：2026-10-18｜阶段：0.1.2 S0/S2 development candidate｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
 
-本轮把 Claude S1 混合架构增量整合到已交付的 0.0.2 主分支，保留原生配置合同、用户隔离、不可变快照、证据和隔离备份。候选实现、本轮离线验证、真实来源可用性和完整工作包验收分别记录；S0 与 S1 尚未签署完成。
+本轮基于已交付的 0.1.1，推进可恢复来源探测、黄金查询冻结、离线回放和显式 URL 批量读取。保留原生配置合同、用户隔离、不可变快照、证据和隔离备份。实际执行记录与完整工作包验收分别保存；S0、S1、S2 尚未签署完成。
 
 | 先看什么 | 路径 |
 |---|---|
-| 本轮输入、问题与整合边界 | [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) |
+| 本批功能和验证边界 | [S0/S2 验证说明](validation/s0_s2_progress/README.md)、[黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) |
+| 上一轮 Claude 输入及整合 | [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) |
 | 安装、运行与 MCP | [README](README.md) |
-| 实际状态与本轮验证 | [开发进度](docs/DEVELOPMENT_STATUS.md)、[机器可读状态](docs/implementation_status.json)、[本轮报告](validation/s1_review/test_report.json) |
+| 实际状态与本轮验证 | [开发进度](docs/DEVELOPMENT_STATUS.md)、[机器可读状态](docs/implementation_status.json)、[本轮报告](validation/s0_s2_progress/test_report.json) |
 | API 与保留的原生配置合同 | [API](docs/API.md)、[配置合同](docs/CONFIGURATION.md) |
-| 显式候选来源探测 | [S0 来源实测](docs/S0_PROBE.md) |
+| 显式候选来源探测 | [S0 来源实测](docs/S0_PROBE.md)、[有限云端观察](validation/s0_s2_progress/cloud_probe_summary.json) |
 | 切片顺序与验收映射 | [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md)、[切片数据](docs/planning/slices_v1.2.json) |
 | 下一批任务与有效决策 | [NEXT_AGENT](docs/handoff/NEXT_AGENT.md)、[DECISIONS](docs/handoff/DECISIONS.md) |
 | 已交付的 0.0.2 历史 | [2026-10-17 接手记录](docs/handoff/TAKEOVER_20261017.md) |

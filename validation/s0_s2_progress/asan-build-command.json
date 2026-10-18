@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "cmake",
+    "--build",
+    "build-s1-review-asan",
+    "--target",
+    "bzs_tests",
+    "bzs_batch_tests",
+    "bzs_contract_tests",
+    "-j",
+    "1"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "environment_overrides": {},
+  "started_at_utc": "2026-10-18T08:36:06.146409+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 35.057,
+  "log": "asan-build.log"
+}

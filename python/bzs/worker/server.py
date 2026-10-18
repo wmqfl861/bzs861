@@ -1,6 +1,6 @@
 """bzs-worker: loopback JSON RPC used by searchd (POST /rpc, Bearer token).
 
-Methods: health, search.multi, fetch.extract. The worker never writes the database and
+Methods: health, search.multi, fetch.extract, fetch.cancel. The worker never writes the database and
 never decides which sources to query; it executes what searchd asks within its own
 network policy (SSRF guard), which it enforces independently.
 """
@@ -19,7 +19,7 @@ from aiohttp import web
 
 from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
-from .fetch import DEFAULT_UA, Fetcher, decode_body, host_of
+from .fetch import DEFAULT_UA, FetchBudget, Fetcher, decode_body, host_of
 from .netguard import NetPolicy
 from .sources import SourceSet, load_manifest
 
@@ -43,6 +43,10 @@ class Worker:
                                proxy=proxy, proxy_remote_dns=proxy_remote_dns)
         self.specs = load_manifest(sources_path)
         self.sources: SourceSet | None = None
+        self._read_attempts: dict[str, FetchBudget] = {}
+        # expiry, cancelled, cumulative dispatched requests, cumulative body bytes.
+        # A replay's usage describes the whole attempt, never just its latest RPC.
+        self._retired_attempts: dict[str, tuple[float, bool, int, int]] = {}
 
     async def start(self) -> None:
         await self.fetcher.start()
@@ -70,11 +74,74 @@ class Worker:
         return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
 
     async def fetch_extract(self, params: dict) -> dict:
+        bounded = any(key in params for key in ("max_requests", "max_content_bytes", "attempt_id"))
+        budget = None
+        attempt_id = ""
+        if bounded:
+            attempt_id = self._attempt_id(params)
+            requests, byte_limit = params.get("max_requests"), params.get("max_content_bytes")
+            timeout = params.get("timeout_ms", 20000)
+            if (type(requests) is not int or not 1 <= requests <= 18 or
+                    type(byte_limit) is not int or not 1 <= byte_limit <= 8 * 1024 * 1024 or
+                    type(timeout) is not int or not 1 <= timeout <= 55000):
+                raise ValueError("invalid durable read grant")
+            self._prune_attempts()
+            if attempt_id in self._read_attempts:
+                raise ValueError("read attempt is already running")
+            if attempt_id in self._retired_attempts:
+                _, cancelled, used_requests, used_bytes = self._retired_attempts[attempt_id]
+                return {"status": "cancelled" if cancelled else "attempt_replayed",
+                        "error_code": "E_CANCELLED" if cancelled else "E_ATTEMPT_REPLAY",
+                        "error": "read attempt is no longer dispatchable",
+                        "usage": {"external_requests": used_requests, "content_bytes": used_bytes}}
+            if len(self._read_attempts) + len(self._retired_attempts) >= 2048:
+                raise ValueError("read attempt retention capacity reached")
+            budget = FetchBudget(requests, byte_limit)
+            self._read_attempts[attempt_id] = budget
+        try:
+            out = await self._fetch_extract(params, budget)
+            if budget:
+                out["usage"] = {"external_requests": budget.external_requests, "content_bytes": budget.content_bytes}
+            return out
+        finally:
+            if budget:
+                self._read_attempts.pop(attempt_id, None)
+                self._retired_attempts[attempt_id] = (asyncio.get_running_loop().time() + 120, budget.cancelled,
+                                                    budget.external_requests, budget.content_bytes)
+
+    @staticmethod
+    def _attempt_id(params: dict) -> str:
+        value = params.get("attempt_id")
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{48}", value):
+            raise ValueError("invalid read attempt id")
+        return value
+
+    def _prune_attempts(self) -> None:
+        now = asyncio.get_running_loop().time()
+        self._retired_attempts = {key: value for key, value in self._retired_attempts.items() if value[0] > now}
+
+    async def fetch_cancel(self, params: dict) -> dict:
+        attempt_id = self._attempt_id(params)
+        self._prune_attempts()
+        budget = self._read_attempts.get(attempt_id)
+        if budget:
+            budget.cancelled = True
+        else:
+            # Remember cancel-before-start without an unbounded attacker-controlled
+            # set. A capacity error cannot remove the core's persistent epoch fence.
+            if attempt_id not in self._retired_attempts and len(self._read_attempts) + len(self._retired_attempts) >= 2048:
+                raise ValueError("read attempt retention capacity reached")
+            previous = self._retired_attempts.get(attempt_id)
+            self._retired_attempts[attempt_id] = (asyncio.get_running_loop().time() + 120, True,
+                                                previous[2] if previous else 0, previous[3] if previous else 0)
+        return {"cancel_requested": True}
+
+    async def _fetch_extract(self, params: dict, budget: FetchBudget | None) -> dict:
         url = str(params.get("url", ""))
-        timeout_s = max(1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
+        timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout_s
-        res = await self.fetcher.fetch(url, timeout_s=timeout_s)
+        res = await self.fetcher.fetch(url, timeout_s=timeout_s, **({"budget": budget} if budget else {}))
         follows = 0
         while True:
             base = {"http_status": res.http_status, "final_url": res.final_url or url, "redirects": res.redirects}
@@ -83,7 +150,8 @@ class Worker:
                     text, _ = decode_body(res.body, res.header_charset)
                     if looks_like_challenge(res.http_status, text):
                         return {**base, "status": "challenge", "error": "site presented a bot check (not bypassed)"}
-                return {**base, "status": res.status, "error": res.error or f"HTTP {res.http_status}"}
+                return {**base, "status": res.status, "error": res.error or f"HTTP {res.http_status}",
+                        "error_code": res.error_code}
             ctype = res.content_type
             body_head = res.body[:512].lstrip().lower()
             if not ctype and (body_head.startswith(b"<!doctype html") or body_head.startswith(b"<html")):
@@ -97,7 +165,7 @@ class Worker:
                 remaining = deadline - loop.time()
                 if target and follows < 2 and remaining > 1:
                     follows += 1
-                    nxt = await self.fetcher.fetch(target, timeout_s=remaining)
+                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, **({"budget": budget} if budget else {}))
                     nxt.redirects = res.redirects + [target] + nxt.redirects
                     res = nxt
                     continue
@@ -132,7 +200,8 @@ class Worker:
 
 
 def make_app(worker: Worker, token: str) -> web.Application:
-    methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract}
+    methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
+               "fetch.cancel": worker.fetch_cancel}
 
     async def rpc(request: web.Request) -> web.Response:
         auth = request.headers.get("Authorization", "")
