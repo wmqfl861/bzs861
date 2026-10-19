@@ -1,6 +1,6 @@
 # 有界站点发现与 robots 准入
 
-本页描述 0.1.3 的 `map.submit` 实现切片，对应蓝图 v1.2 的 ROBOTS-01 / MAP-01。它从明确的入口文档发现 URL，保存候选和发现来源。Sitemap index 可以产生后续发现文档；Sitemap urlset、RSS、Atom 和 HTML 链接产生候选。**候选没有因为本次发现而获得正文快照或索引。** 完整正文递归抓取仍属于 CRAWL-01，公开索引与摘要规则属于 CRAWL-03。
+本页描述从 0.1.3 保留的 `map.submit` 实现切片，对应蓝图 v1.2 的 ROBOTS-01 / MAP-01。它从明确的入口文档发现 URL，保存候选和发现来源。Sitemap index 可以产生后续发现文档；Sitemap urlset、RSS、Atom 和 HTML 链接产生候选。**候选没有因为本次发现而获得正文快照或索引。** 0.1.4 新增的正文前沿与页面发布规则见 [SITE_CRAWLING](SITE_CRAWLING.md)，需要单独调用 `crawl.submit`。
 
 ## 站点审核与部署
 
@@ -100,4 +100,4 @@
 
 本批使用受控 `.test` 站点和真实进程验证网络请求计数、robots 拒绝、跳转范围、Sitemap/Feed/HTML、历史、重启与 MCP。测试专用回环映射不能在生产模式启用；XML 解析禁止 DTD/实体展开和外部资源读取。每个发现响应最多读取 2 MiB，解析器硬边界另限制树深、元素数和候选条目；HTTP 内容编码使用现有有界解压，`.gz` 归档不会自动展开。
 
-实际执行命令、结果、源码身份和限制以 [本批报告](../validation/s2_discovery/test_report.json) 为准。没有用合成站点替代真实来源 S0，没有新增人工 qrels 或相关性质量分数。ROBOTS-01 / MAP-01 仍按完整工作包验收要求单独判断；递归正文 frontier、CRAWL-03、会话断线重取、独立撤销日志及隔离恢复继续保留。
+0.1.3 的原始发现执行证据保留在 [历史报告](../validation/s2_discovery/test_report.json)，0.1.4 的继承回归与正文增量见 [当前报告](../validation/s2_crawl/test_report.json)。没有用合成站点替代真实来源 S0，没有新增人工 qrels 或相关性质量分数。ROBOTS-01 / MAP-01 / CRAWL-01 / CRAWL-03 均按完整工作包验收要求单独判断；会话断线重取、独立撤销日志及隔离恢复继续保留。

@@ -79,7 +79,7 @@ int main(int argc, char**argv) {
       i+=2;
     }
     if(i>=argc||std::string(argv[i])=="--help") {
-      std::cout<<"searchctl [--port 8610] COMMAND [ARGS]\n\nCommands:\n  health | capabilities | fixtures | stats | backup\n  fixture-search QUERY | fixture-ingest FIXTURE_ID\n  ingest FILE URL [text/html|text/plain]\n  query QUERY | search QUERY\n  read SNAPSHOT_ID | delete DOCUMENT_ID\n  range SNAPSHOT_ID START_BYTE [MAX_BYTES]\n  find SNAPSHOT_ID TEXT\n  page SESSION_ID [CURSOR]\n  web-search QUERY | read-url URL | sources\n  read-many PARAMS_JSON_FILE | get-job JOB_ID\n  map-submit PARAMS_JSON_FILE | sites\n  job-results JOB_ID [OFFSET [LIMIT]]\n  control-job JOB_ID pause|resume|cancel|retry_failed\n  validate KIND CONFIG_JSON_FILE\n  call REQUEST_JSON_FILE\n\nValidation kinds: model-config | source-manifest | search-request.\nValidation checks configuration without applying it.\nSEARCH_API_TOKEN supplies the bearer token; only loopback connections are allowed.\n";
+      std::cout<<"searchctl [--port 8610] COMMAND [ARGS]\n\nCommands:\n  health | capabilities | fixtures | stats | backup\n  fixture-search QUERY | fixture-ingest FIXTURE_ID\n  ingest FILE URL [text/html|text/plain]\n  query QUERY | search QUERY\n  read SNAPSHOT_ID | delete DOCUMENT_ID\n  range SNAPSHOT_ID START_BYTE [MAX_BYTES]\n  find SNAPSHOT_ID TEXT\n  page SESSION_ID [CURSOR]\n  web-search QUERY | read-url URL | sources\n  read-many PARAMS_JSON_FILE | get-job JOB_ID\n  map-submit PARAMS_JSON_FILE | sites\n  crawl-submit PARAMS_JSON_FILE | crawl-edges JOB_ID [OFFSET [LIMIT]]\n  job-results JOB_ID [OFFSET [LIMIT]]\n  control-job JOB_ID pause|resume|cancel|retry_failed\n  validate KIND CONFIG_JSON_FILE\n  call REQUEST_JSON_FILE\n\nValidation kinds: model-config | source-manifest | search-request.\nValidation checks configuration without applying it.\nSEARCH_API_TOKEN supplies the bearer token; only loopback connections are allowed.\n";
       return 0;
     }
     auto command=std::string(argv[i++]);
@@ -118,6 +118,12 @@ int main(int argc, char**argv) {
       params.set("url", arg());
     } else if(command=="sites") {
       op="map.sites";
+    } else if(command=="crawl-submit") {
+      op="crawl.submit";params=Json::parse(read_file(arg(),65536));
+    } else if(command=="crawl-edges") {
+      op="crawl.edges";params.set("job_id",arg());
+      if(i<argc)params.set("offset",static_cast<std::int64_t>(std::stoll(arg())));
+      if(i<argc)params.set("limit",static_cast<std::int64_t>(std::stoll(arg())));
     } else if(command=="map-submit") {
       op="map.submit";params=Json::parse(read_file(arg(),65536));
     } else if(command=="read-many") {

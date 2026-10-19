@@ -1,0 +1,14 @@
+{
+  "recorded_at_utc": "2026-10-18T15:57:45.016856+00:00",
+  "artifact": "ctest-final.log",
+  "command_record": "ctest-final-command.json",
+  "observed_incomplete_bytes": 25129,
+  "observed_incomplete_sha256": "a566597522ad96768ef01861a54580d7970acfcdfef072b9d68c159eb07c8e3f",
+  "restored_bytes": 25391,
+  "restored_sha256": "6aa80f5c03a972910af774a7c3736c3f4ca529fa14c8e290728315347697238f",
+  "original_execution_sha256": "6aa80f5c03a972910af774a7c3736c3f4ca529fa14c8e290728315347697238f",
+  "method": "Restore the exact missing suffix from the already returned completed runner output, only after SHA-256 matches its unchanged pre-existing command record.",
+  "tests_or_counts_inferred": false,
+  "command_record_modified": false,
+  "cause": "Filesystem exposed an older partial log tail after the runner had returned completion; the precise synchronization cause is not established."
+}

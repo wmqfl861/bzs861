@@ -254,6 +254,15 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
     reject.bind(1,lease.job_id);reject.bind(2,lease.input_index);reject.step();settle_read_job_locked(lease.job_id);tx.commit();return false;
   }
   require(input.url==lease.url,"E_WORKER_PROTOCOL","Read result identity differs from its lease",502);
+  if(meta.has("redirect_publication_observations")) {
+    Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
+    const auto observations=meta.at("redirect_publication_observations");
+    for(std::size_t i=0;i<observations.size();++i) {
+      const auto observation=observations.at(i);
+      (void)alias_fences_locked(lease.owner,lease.url,observation.at("url").str(),created.num(0));
+      observe_policy_locked(lease.owner,lease.url,observation.at("url").str(),observation.at("publication"));
+    }
+  }
   auto snapshot=ingest_web_locked(lease.owner,input,std::move(parsed),meta,lease.deletion_generation);
   require(live_read_lease_locked(lease),"E_LEASE_EXPIRED","Lease/deadline expired before commit",409);
   reconcile_read_usage_locked(lease,requests,bytes);
@@ -262,10 +271,21 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
   settle_read_job_locked(lease.job_id);tx.commit();return true;
 }
 
-void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64_t requests,std::int64_t bytes) {
+void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64_t requests,std::int64_t bytes,const Json* publication,const std::string& final_url,const Json* redirect_observations) {
   require_identifier(error);
   std::lock_guard lock(mutex_);Transaction tx(db_);
   if(owns_read_lease_locked(lease)) {
+    if((publication||redirect_observations)&&requests>0&&live_read_lease_locked(lease)&&deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation) {
+      Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
+      const auto apply=[&](const std::string& target,const Json& policy) {
+        bool live=true;try { (void)alias_fences_locked(lease.owner,lease.url,target,created.num(0)); } catch(const Error& e) { if(e.code!="E_TARGET_DELETED")throw;live=false; }
+        if(live)observe_policy_locked(lease.owner,lease.url,target,policy);
+      };
+      if(publication)apply(final_url,*publication);
+      if(redirect_observations)for(std::size_t i=0;i<redirect_observations->size();++i) {
+        const auto observation=redirect_observations->at(i);apply(observation.at("url").str(),observation.at("publication"));
+      }
+    }
     reconcile_read_usage_locked(lease,requests,bytes);
     Sql failed(db_,"UPDATE read_job_items SET state='failed',error_code=? WHERE job_id=? AND position=?");
     failed.bind(1,error);failed.bind(2,lease.job_id);failed.bind(3,lease.input_index);failed.step();
@@ -310,6 +330,7 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
   std::lock_guard lock(mutex_);
   auto kind=job_locked(owner,id).at("kind").str();
   if(kind=="web.map")return map_results_locked(owner,id,offset,limit);
+  if(kind=="web.crawl")return crawl_results_locked(owner,id,offset,limit);
   require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");
   auto job=read_job_locked(owner,id);
   Sql rows(db_,"SELECT position,url,state,attempts,external_requests,content_bytes,unknown_requests,unknown_bytes,usage_unknown,snapshot_id,receipt_json,error_code FROM read_job_items WHERE job_id=? AND position>=? ORDER BY position LIMIT ?");

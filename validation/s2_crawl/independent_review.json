@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.4",
+  "recorded_at_utc": "2026-10-18T15:58:03.311211+00:00",
+  "scope": "Separate assistant contexts with scope-limited counterexample and cross-module review; not external human approval or full-product independent signoff.",
+  "implementation_owners": {
+    "/root/crawl_core": "Native frontier/store/publication, migration, CLI capability and CMake/CI/native regression tests.",
+    "/root/crawl_worker": "Worker publication/extraction/one-hop body protocol and read-hop retention with worker regressions.",
+    "/root": "MCP raw boundary, controlled HTTP fixture/process E2E, planning/status/handoff and recorded final verification."
+  },
+  "cross_reviews": [
+    {
+      "reviewer": "/root/requirements_review",
+      "scope": "Original blueprint/acceptance preservation, native queue/accounting/SQL/publication/frozen identity, root MCP/E2E and final status/docs/evidence.",
+      "method": "Read-only source review, independent native runtime counterexamples, regression rechecks and structural planning comparison.",
+      "limits": "Reviewer scratch repro programs are not shipped. Committed native/E2E suites provide the reproducible execution gate."
+    },
+    {
+      "reviewer": "/root/crawl_worker",
+      "scope": "Independent native worker-protocol/read/publication boundary and raw MCP scope semantics.",
+      "method": "Read-only native review plus controlled loopback/SDK reproduction; author implemented worker-side corrections after coordination."
+    },
+    {
+      "reviewer": "/root",
+      "scope": "Cross-author frontier, URL/owner/deletion/publication contracts and real core/worker/CLI/stdio MCP processes.",
+      "method": "Source review and final recorded ordinary, sanitizer, launcher and planning gates."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "CRAWL-R1",
+      "reviewer": [
+        "/root/requirements_review",
+        "/root/crawl_worker",
+        "/root"
+      ],
+      "problem": "MCP SDK could coerce null/booleans/numeric strings, discard unknown fields, or parse the literal scope_path string null into omitted scope.",
+      "resolution": "Validate the two new crawl tools raw JSON fields/types and absolute scope_path before the SDK; numeric ranges and authorization remain native. Advertise matching non-null schemas.",
+      "regressions": [
+        "python/tests/test_mcp_crawl.py",
+        "tests/e2e_crawl.py:test_12"
+      ]
+    },
+    {
+      "id": "CRAWL-R2",
+      "reviewer": [
+        "/root/requirements_review",
+        "/root"
+      ],
+      "problem": "Agent-scoped header/meta rules, character encodings, and data-nosnippet titles/text needed a consistent independent publication representation.",
+      "resolution": "Versioned BzsBot/legacy alias policy, repeated-header scope union, separate bounded DOM extraction and safe title; no canonical-byte offsets are invented for re-extracted snippets.",
+      "regressions": [
+        "python/tests/test_publication.py",
+        "python/tests/test_crawl_worker.py",
+        "tests/e2e_crawl.py:test_04",
+        "tests/e2e_crawl.py:test_06"
+      ]
+    },
+    {
+      "id": "CRAWL-R3",
+      "reviewer": [
+        "/root",
+        "/root/crawl_worker",
+        "/root/requirements_review"
+      ],
+      "problem": "Ordinary read/read_many refresh could widen registered links_only restrictions, while a valid candidate review with no redistribution field could throw unexpectedly.",
+      "resolution": "Core and worker enforce applicable original/final/redirect site ceilings; the optional review field is read safely without requiring automatic-crawl approval for an explicit read.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "python/tests/test_crawl_worker.py",
+        "tests/e2e_crawl.py:test_06"
+      ]
+    },
+    {
+      "id": "CRAWL-R4",
+      "reviewer": [
+        "/root/requirements_review",
+        "/root/crawl_worker",
+        "/root"
+      ],
+      "problem": "Valid prohibitions could leave stale indexed content when new body parsing, empty meta extraction or logical storage quota failed; an incomplete permitting prefix could also clear restrictions in a missing tail.",
+      "resolution": "Validate restriction-only observations independently of successful body ingestion; use monotone updates behind owner/lease/deletion fences and a logical-quota savepoint. Empty meta direct/batch reads retain their error and create no successful body receipt. Existing ordinary truncated previews are private, conservatively unindexed/unsnippeted and cannot grant publication.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "python/tests/test_crawl_worker.py",
+        "tests/e2e_crawl.py:test_05",
+        "tests/e2e_crawl.py:test_15",
+        "tests/e2e_crawl.py:test_17"
+      ]
+    },
+    {
+      "id": "CRAWL-R5",
+      "reviewer": [
+        "/root/requirements_review",
+        "/root/crawl_worker",
+        "/root"
+      ],
+      "problem": "A restrictive redirect response at A could be overwritten by an allowing final B, both in the crawl queue and in ordinary/bounded reads that discarded earlier headers.",
+      "resolution": "Persist crawl chain ceilings and retain URL-bound restrictive read-hop records; logical A and actual B publication identities are handled separately so independent B remains allowed. A refused private/unsafe target cannot discard the prior actual response restriction.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "python/tests/test_crawl_worker.py",
+        "tests/e2e_crawl.py:test_18"
+      ]
+    },
+    {
+      "id": "CRAWL-R6",
+      "reviewer": [
+        "/root/requirements_review",
+        "/root"
+      ],
+      "problem": "A previously read redirect representation could escape B policy, or a frozen A(B) row could expose B again after A retargeted to C; same-body snapshot reuse also changed the historic final URL.",
+      "resolution": "Bind current logical and actual representation policy plus immutable frozen-session representation identities and snapshot publication records; preserve restriction generations through retarget, same-content refresh and subsequent allowing responses.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "tests/e2e_crawl.py:test_03",
+        "tests/e2e_crawl.py:test_16",
+        "tests/e2e_crawl.py:test_19"
+      ]
+    },
+    {
+      "id": "CRAWL-R7",
+      "reviewer": [
+        "/root/crawl_worker",
+        "/root/crawl_core"
+      ],
+      "problem": "Malformed successful worker artifacts could claim error/partial HTTP status, hidden additional redirects or a policy looser than their own restriction observation; malformed discovery could discard a valid restrictive observation.",
+      "resolution": "Check complete successful status, single-hop proof and monotone same-response policy; account trusted physical usage and retain independently validated restrictive observations before rejecting artifacts.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "python/tests/test_crawl_worker.py"
+      ]
+    },
+    {
+      "id": "CRAWL-R8",
+      "reviewer": [
+        "/root",
+        "/root/crawl_core"
+      ],
+      "problem": "An edge recorded before frontier admission could retain followed=false despite later successful admission, losing the provenance decision on duplicate discovery.",
+      "resolution": "Deduplicate parent/target/source edges while monotonically recording the admitted decision; multiple parents remain visible and successful body state stays separate.",
+      "regressions": [
+        "tests/crawl.cpp",
+        "tests/e2e_crawl.py:test_01"
+      ]
+    }
+  ],
+  "full_product_independent_signoff": false,
+  "execution_evidence": "ctest-final.log, five asan-*.log files, launcher_smoke.json and adjacent command records.",
+  "reviewed_files_sha256": {
+    "src/crawl.cpp": "91016b2cbc41c50bad23008f9c32dfe9bd99edbced376a7d56ff97364e1b178c",
+    "src/publication.cpp": "4d97931423ab2f4161478dc34be40fd3126bdf686567f28b43c2484439fbcbd3",
+    "src/map.cpp": "919ee7ed80c43b89ecaca17b61a7b85f2434fd31302dae88d9337c50d5d7955e",
+    "src/map_service.cpp": "0fca97f1736a6328ce6c980d0c050f603e5f747b8c7590e56361a9376b7f805e",
+    "src/store.cpp": "23be7ac1db03b6a3302b38ffea41e95b1a5c2bfe649bcd8e260f13f8f0f9a7d0",
+    "src/web.cpp": "f66a08a40d0b4e5f9335390772f0179f56bbee2b1f871293cc16e9ee365c2279",
+    "src/batch.cpp": "5cd2f7b3c8bd04c79843b1f37cb1780c20459274aed3fd3149151b8b2bdcefc7",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/store.hpp": "1683333592786fb2fa471fe941d068383775d9b3a29fc876e781a2318feb9a6a",
+    "include/bzs/web.hpp": "d46466f731dae572cab7c250534aed8c403020dfd7ab2483fb1f402899da4a91",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "python/bzs/worker/publication.py": "59bbf263ed2b918d26a15601d794cbd570b91fccd7d8be15a81e15a07a2caa7c",
+    "python/bzs/worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+    "python/bzs/worker/fetch.py": "54d18e9c96e5eac914ae91a30bb7f948997c892dd1bd3e3b36bebd1fb8059fad",
+    "python/bzs/worker/server.py": "fb06115a88d96d24c680bb9e2688499c136488a77222c3da4016278afd9e493d",
+    "python/bzs/worker/sites.py": "e48495c0c9ea66bf1e92f0be3e9734c7e9fc6d04a19dbc9be71ff67a5f10a0aa",
+    "python/bzs/mcp_server.py": "1a0205577d94c529ceee27011a05f13add26850a49ee2174dc63d25f0e63f640",
+    "tests/crawl.cpp": "f5e711a42c597e4a1e54ad3def537e7376446b31056497dd924993ff12ea8543",
+    "tests/e2e_crawl.py": "2f6ead52d82bad53fa44ff9feea9958ee7126d0a6fc541201e02fadf3ade3899",
+    "python/tests/fakecrawl.py": "8a500c670dd45cdff019ca7c5b67b2efba0ad99233a1e23c6f92a2abe1435e62",
+    "python/tests/test_crawl_worker.py": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "python/tests/test_publication.py": "d86a1c73da2f5e3f67e2a5a9e50bb138141c8ae90c0529b9996aebb3be39be2b",
+    "python/tests/test_mcp_crawl.py": "6f261fb673ec91a7c2c5a6db995962e1db1eae5e11a02fc4779acada6f498d72",
+    "docs/SITE_CRAWLING.md": "bfc12073d77c6b92013585824f141eb6eb81cb862b4bc0e6631d0013864c92d6",
+    "docs/DEVELOPMENT_STATUS.md": "5ae787667b53b5f73f7d274bef55fa834d70299aa57e32fd9ce781d5358c16b2",
+    "docs/handoff/NEXT_AGENT.md": "0bef8faddc2f8bad2f5c0ddb823486e3781345440a3905a2764bbf49233093ae"
+  },
+  "known_nonblocking_limits": [
+    {
+      "id": "CRAWL-L1",
+      "description": "Legacy schema5 could overwrite snapshot final_url metadata on identical-content refresh. Migration derives identity from retained metadata and cannot reconstruct identity that was already lost before upgrade."
+    },
+    {
+      "id": "CRAWL-L2",
+      "description": "Inherited retired private attempt replay can be classified E_WORKER_PROTOCOL while retaining historical usage and refusing publication; the current core does not automatically replay it."
+    }
+  ]
+}

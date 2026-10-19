@@ -1,6 +1,6 @@
-# searchd API（0.1.3 S2 discovery development candidate）
+# searchd API（0.1.4 S2 crawl development candidate）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_discovery/test_report.json)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_crawl/test_report.json)。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -50,7 +50,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 ## 持久批量网页读取
 
-`read_many.submit` 只处理调用方列出的 URL。它不从页面发现链接，不递归遍历网站。有界发现由下节的 `map.submit` 提供；完整工作包与递归正文爬取仍须分别验收。
+`read_many.submit` 只处理调用方列出的 URL。它不从页面发现链接，不递归遍历网站。有界发现由 `map.submit` 提供，有界递归正文读取由 `crawl.submit` 单独提交；完整工作包仍须分别验收。
 
 ```json
 {"operation":"read_many.submit","params":{"urls":["https://example.com/a","https://example.com/b"],"idempotency_key":"research_batch_1","max_requests":12,"max_bytes":16777216,"max_attempts":1}}
@@ -110,6 +110,39 @@ map 分页每页最多 1000 项，`offset` 是候选位置，`next_offset=null` 
 
 MCP 对应 `list_sites` / `map_site`，并复用三个 job 查询/控制工具；C++ CLI 可以用 `searchctl call request.json` 调用同一操作。robots 缓存规则、URI 合同、存储上限和部署配置见 [SITE_DISCOVERY](SITE_DISCOVERY.md)。
 
+## 有界正文爬取
+
+`crawl.submit` 返回 `kind=web.crawl`，使用相同的已审核站点、固定 BzsBot robots 准入、持久请求/字节预算和单跳队列。它从入口读取正文，并把允许的同源范围内链接加入前沿；同一响应同时产生正文和发现结果。自动请求不转到普通 `web.read` 绕过准入。
+
+```json
+{"operation":"crawl.submit","params":{"site_id":"operator-reviewed-site","seeds":["https://reviewed.example/docs/"],"scope_path":"/docs/","idempotency_key":"docs_crawl_1","max_pages":30,"max_urls":100,"max_depth":3,"max_requests":80,"max_bytes":16777216}}
+```
+
+参数沿用 map 的 `site_id/seeds/idempotency_key/scope_path/timeout_ms/per_request_timeout_ms/max_requests/max_bytes/max_urls/max_depth`。新增 `max_pages` 范围 1–1000 且不超过 `max_urls`，省略时取 `min(100,max_urls)`。它限制已派发的逻辑正文页；重定向仍是同一页，robots/单独发现文档独立消耗请求而不计正文页。失败和未知的实际派发仍占页预算。
+
+| 操作 | 输入与返回 |
+|---|---|
+| `job.get` | 除共同预算、状态外，提供 `max_pages/used_pages/remaining_pages/page_count/succeeded_pages/failed_pages/skipped_pages/edge_count` |
+| `job.results` | `offset` 0–1000、`limit` 1–1000；返回 `type=page`、URL/最终 URL、parent/source/depth、state、available/body_read、snapshot_id/document_id、publication 和错误 |
+| `crawl.edges` | `job_id`，可选 `offset=0`（0–10000）、`limit=20`（1–1000）；返回 parent/url/source/depth/followed/reason 的持久边 |
+| `job.control` | `pause/resume/cancel`；crawl 不接受 `retry_failed`，也不自动重发失败/未知请求 |
+
+结果和边均使用 `items`、`has_more`、`next_offset`；有删除过滤时位置可以不连续。`followed` 是前沿扩张决定，不是正文成功收据。重复页面按 URL 去重，边按 parent/URL/source 去重。已成功条目提供快照收据，正文用 `document.range` 读取；权限或删除限制仍在发布前检查。
+
+map/crawl 使用持久轮转顺序，并共享同源通道、间隔、配额与冷却。任务停止检查 `partial/stop_reason`；`succeeded` 不承诺全站覆盖。页、URL、深度、查询变体、请求、字节与边保留上限、迁移和精确状态语义见 [SITE_CRAWLING](SITE_CRAWLING.md)。
+
+MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前拒绝未知字段和非严格 JSON 类型，显式 `null/true/"2"` 不能替代整数预算。可选参数应省略以采用核心默认值；有效类型的零值原样交给核心拒绝。数值范围、审核和业务逻辑仍只有核心一套。
+
+### 索引和摘要刷新
+
+`bzs-publication-1` 识别通用及 BzsBot/bzs861 适用的 noindex、nosnippet、nofollow、none 与 data-nosnippet；重复 `X-Robots-Tag` 保留 agent 范围并合并限制。其他爬虫专属规则不控制本产品，完整参数化搜索引擎扩展尚未实现。
+
+正文快照与允许的摘要/安全标题分开保存。当前发布限制约束新搜索及旧冻结会话；noindex 变化在页面提交时撤索引和旧结果，nosnippet/data-nosnippet 限制不会从 canonical 正文补回片段。受限制摘要不提供伪造的 canonical 命中字节偏移。站点 `links_only` 限制同样约束普通网页/批量读取刷新。
+
+即使新正文解析失败或无法保留，收到的有效禁止声明也通过独立的限制观察收紧已有发布状态；失败响应不能放开原限制。读取失败、预算和错误仍照常报告，不能因此伪造正文成功。owner 显式快照/证据读取与搜索发布分别执行，旧内容已经发送到外部时无法收回。
+
+普通读取的 `download_truncated` 预览不获索引、摘要或跟随许可；批量和 crawl 仍保持字节预算失败语义。重定向中间页的响应规则绑定实际 URL，目标拒绝不会丢掉之前已收到的限制，允许的最终页也不能覆盖入口规则。
+
 ## 本地操作
 
 | 操作 | 说明 |
@@ -124,12 +157,16 @@ MCP 对应 `list_sites` / `map_site`，并复用三个 job 查询/控制工具�
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 5 在 schema 4 上增加 map 队列、HTTP 跳账本、候选、robots 缓存与同源配额；保留 schema 1、两种历史 schema 2、schema 3/4 的迁移，具体覆盖见本轮报告。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 6 增加正文前沿/边/页记账、调度次序与发布状态；保留 schema 1、两种历史 schema 2、schema 3/4/5 的迁移，具体覆盖见本轮报告。
 
 ## worker RPC 与错误
 
 核心经独立令牌的回环 `POST /rpc` 调用 `health`、`search.multi`、`fetch.extract`、`fetch.cancel` 等内部操作。批量读取的 `fetch.extract` 携带唯一 `attempt_id`、`max_requests` 和 `max_content_bytes`，响应带 `usage.external_requests` / `content_bytes`。worker 再次校验来源与网络目标，不写数据库，也不提供公开的代理/网段放行接口。生产代理、远程 DNS 放宽、非空 allow_cidrs、无鉴权 MCP HTTP 被拒绝。
 
 内部 `map.fetch` 每次最多执行一个 HTTP 请求，不自动跟随重定向或软跳转。参数绑定 `attempt_id`、站点清单哈希、目标、种类、期限和单跳预算；内容请求还必须带有效 robots 记录。Worker 在真正派发前再次核验审核和 robots，响应带实际用量及准入决策；核心严格验证回执并负责持久化、下一跳和删除/权限屏障。没有 HTTP 响应的明确拒绝允许 `http_status=null`，不能因此丢弃原拒绝错误或误报已经收到响应。
+
+本批增加 `kind=page`，返回受限的 `page`、`publication` 与同响应 `discovery`。失败响应若已观察到适用禁止声明，可携带只收紧发布的 `publication_observation`；该记录不授予请求、索引或摘要权限。`fetch.extract` 的普通读取共享页面策略；两种路径都必须在核心通过结构、URL、状态、用量及版本复核。
+
+`fetch.extract` 另以有界 `redirect_publication_observations` 保存 HTTP/软跳转的限制性记录，每项绑定 `url/http_status/publication`。最终正文策略与逻辑入口规则分别保存，内核只接受实际已到达的合法响应身份；未请求或被拒绝的目标不是发布授权。
 
 合同错误保持 `E_SCHEMA`、`E_CONTRACT`、`E_CONTRACT_LIMIT`。来源错误为 `E_SOURCE_CONFIG` / `E_SOURCE_REVIEW`；发现路径另报告站点审核、清单不一致、范围或 robots 拒绝等独立原因。其余网页、权限、游标、证据、任务和隔离错误通过统一信封报告。每个新增错误的具体状态码与行为以本轮 API 回归绑定，不将候选实现视为冻结的完整 v1 合同。

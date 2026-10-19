@@ -19,6 +19,7 @@ from yarl import URL
 
 from .fetch import FetchAdmissionDenied
 from .netguard import NetPolicy, PolicyError
+from .publication import apply_redistribution
 from .sources.review import SourceReviewError, _http_url, _stamp
 
 EMPTY_MANIFEST = b'{"version":1,"sites":[]}'
@@ -122,6 +123,24 @@ class SiteRegistry:
         self.lanes = {site_id: asyncio.Semaphore(1) for site_id in self.sites}
         self.last_dispatch: dict[str, float] = {}
         self.cooldown_until: dict[str, float] = {}
+
+    def publication_ceiling(self, publication: dict, urls: list[str]) -> dict:
+        """An explicit read never grants broader snippet redistribution.
+
+        Matching a known original/final URL applies its content ceiling only;
+        this does not grant or require automatic crawling admission, reset a
+        request quota, or contact the site. Disabled/expired reviews do not turn
+        a recorded links-only restriction into a snippet permission.
+        """
+        for value in urls:
+            try:
+                target = canonical_map_url(value, self.policy)
+            except (PolicyError, ValueError):
+                continue
+            for spec in self.sites.values():
+                if str(target.origin()) == spec["origin"] and in_path_scope(target, spec["path_prefixes"]):
+                    publication = apply_redistribution(publication, spec["review"])
+        return publication
 
     def _validate(self, spec: Any) -> None:
         _need(isinstance(spec, dict) and set(spec) == _SITE_KEYS, "invalid site fields")

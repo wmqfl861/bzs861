@@ -1,5 +1,6 @@
 #include "bzs/web.hpp"
 #include "bzs/error.hpp"
+#include "bzs/publication.hpp"
 #include "bzs/util.hpp"
 #include <algorithm>
 #include <set>
@@ -37,7 +38,7 @@ namespace {
     const auto type=text_field(record,"document_type",32),status=text_field(record,"parse_status",32);
     protocol(status=="ok"||status=="invalid"||status=="unsupported","Invalid discovery parse status");
     const std::set<std::string> types={"sitemap_urlset","sitemap_index","rss","atom","html","unknown"};
-    protocol(types.contains(type),"Unknown discovery document type");
+    protocol(types.contains(type)||(lease.kind=="page"&&type=="text"),"Unknown discovery document type");
     (void)record.at("truncated").flag();protocol(record.at("diagnostics").is_object()&&record.at("diagnostics").dump().size()<=16384,"Invalid discovery diagnostics");
     const auto candidates=record.at("candidates");protocol(candidates.is_array()&&static_cast<std::int64_t>(candidates.size())<=max_entries,"Discovery candidate count exceeds grant");
     for(std::size_t i=0;i<candidates.size();++i) {
@@ -51,10 +52,11 @@ namespace {
   }
 }
 Json WebService::submit_map(const std::string& owner,const Json& args) { return store_.map_submit(owner,args,sites_); }
+Json WebService::submit_crawl(const std::string& owner,const Json& args) { return store_.crawl_submit(owner,args,sites_); }
 Json WebService::sites() { return sites_.describe(store_.now()); }
 std::optional<MapLease> WebService::lease_map() { return store_.lease_next_map(sites_); }
 void WebService::execute_map(const MapLease& lease) {
-  std::int64_t requests=-1,bytes=-1;
+  std::int64_t requests=-1,bytes=-1;std::optional<Json> observation;
   try {
     if(!store_.map_lease_live(lease)) { store_.fail_map(lease,"E_LEASE_EXPIRED",0,0);return; }
     const auto* site=sites_.find(lease.site_id);require(site,"E_SITE_REVIEW","Site is no longer registered",403);site->require_review(store_.now());
@@ -78,8 +80,9 @@ void WebService::execute_map(const MapLease& lease) {
     const auto http=response.at("http_status").is_null()?std::int64_t{0}:response.at("http_status").num();
     protocol(http>=0&&http<=599&&(status=="error"||http>=100),"Invalid map HTTP status");
     if(status!="error")protocol(requests==1,"Successful map exchange requires one charged request");
+    if(status=="ok"&&lease.kind!="robots")protocol(http>=200&&http<300&&http!=206,"Successful content needs a complete 2xx response");
     if(status=="redirect") {
-      protocol(http==301||http==302||http==303||http==307||http==308,"Invalid redirect HTTP status");(void)map_url(text_field(response,"redirect_url",4096));
+      protocol(http==301||http==302||http==303||http==307||http==308,"Invalid redirect HTTP status");
     } else if(status=="error") {
       auto error=text_field(response,"error_code",96);protocol(error.starts_with("E_"),"Invalid map error code");
     }
@@ -95,13 +98,28 @@ void WebService::execute_map(const MapLease& lease) {
         protocol(status=="error"||decision.at("allowed").flag(),"Successful discovery needs robots permission");
       } else protocol(requests==0&&status=="error","Dispatched discovery lacks a bound robots decision");
     }
+    // Header policy is independently usable after identity, usage and robots
+    // admission are bound, even if the later discovery/body record is invalid.
+    observation=lease.kind=="page"?decode_observation(lease.url,response):std::optional<Json>();
+    if(status=="redirect")(void)map_url(text_field(response,"redirect_url",4096));
     if(lease.kind=="robots") {
       if(response.has("robots"))robots_record(response.at("robots"),lease,store_.now());
       else protocol(status!="ok","Successful robots fetch lacks a cache decision");
     } else if(status=="ok")discovery_record(response.at("discovery"),lease,1000);
-    store_.complete_map(lease,response,sites_,requests,bytes);
+    std::optional<ReadArtifact> artifact;
+    if(lease.kind=="page"&&status=="ok") {
+      protocol(response.has("publication")&&response.has("page"),"Successful crawl lacks page/publication artifact");
+      const auto page=response.at("page");
+      protocol(page.has("publication")&&page.at("publication").canonical()==response.at("publication").canonical(),"Crawl publication copies disagree");
+      protocol(map_url(text_field(page,"final_url",4096))==lease.url&&page.at("http_status").num()==http,"Crawl page identity changed");
+      protocol(page.has("redirects")&&page.at("redirects").is_array()&&page.at("redirects").size()==0,"Single-hop page cannot hide more redirects");
+      artifact=decode_read(lease.url,page,true);
+      if(observation)protocol(publication_covers(artifact->parsed.publication,*observation),"Crawl artifact would relax its response's restrictive observation");
+    }
+    store_.complete_map(lease,response,sites_,requests,bytes,
+                        artifact?&artifact->document:nullptr,artifact?&artifact->parsed:nullptr,artifact?&artifact->meta:nullptr,observation?&*observation:nullptr);
   } catch(const Error& error) {
-    store_.fail_map(lease,error.code,requests,bytes);
+    store_.fail_map(lease,error.code,requests,bytes,observation?&*observation:nullptr);
   } catch(...) { store_.fail_map(lease,"E_INTERNAL",requests,bytes); }
 }
 }

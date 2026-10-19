@@ -13,6 +13,7 @@ import aiohttp
 from yarl import URL
 
 from .netguard import GuardedResolver, NetPolicy, PolicyError
+from .publication import restriction_observation
 
 DEFAULT_UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/130.0.0.0 Safari/537.36")
@@ -74,6 +75,7 @@ class FetchResult:
     body: bytes = b""
     truncated: bool = False
     redirects: list[str] = field(default_factory=list)
+    redirect_publication_observations: list[dict] = field(default_factory=list)
     error: str = ""
     elapsed_ms: int = 0
     external_requests: int = 0
@@ -86,7 +88,7 @@ class FetchResult:
 
     @property
     def header_charset(self) -> str | None:
-        m = re.search(r"charset=([\w\-]+)", self.headers.get("content-type", ""), re.I)
+        m = re.search(r"(?:^|;)\s*charset\s*=\s*['\"]?([a-z0-9_-]{1,40})", self.headers.get("content-type", ""), re.I)
         return m.group(1) if m else None
 
 
@@ -209,6 +211,9 @@ class Fetcher:
                                                      data=data if method == "POST" else None, headers=req_headers,
                                                      allow_redirects=False, timeout=timeout) as resp:
                         result.http_status = resp.status
+                        # Bind policy seen before a body timeout to the actual
+                        # HTTP response, including later redirect-chain hops.
+                        result.final_url = str(resp.url)
                         result.headers = {k.lower(): v for k, v in resp.headers.items()}
                         # Preserve individual fields so a later directive cannot erase an earlier noindex,
                         # and an agent-specific field does not change the scope of another field.
@@ -227,6 +232,15 @@ class Fetcher:
                                 if fields:
                                     result.headers[name.lower()] = ("," if name == "Vary" else "\n").join(fields)
                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
+                        if redirect and follow_redirects:
+                            observation = restriction_observation(result.headers)
+                            if observation is not None:
+                                # An intermediate URL can restrict itself without
+                                # changing the final resource's publication policy.
+                                # Capture headers before body/budget failures too.
+                                result.redirect_publication_observations.append({
+                                    "url": str(resp.url), "http_status": resp.status,
+                                    "publication": observation})
                         chunks: list[bytes] = []
                         size = 0
                         # Bounded reads also consume/count redirect bodies. Ordinary

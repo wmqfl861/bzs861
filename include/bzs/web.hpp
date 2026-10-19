@@ -73,7 +73,10 @@ namespace bzs {
       ParsedDocument parsed;
       Json meta;
     };
-    ReadArtifact decode_read(const std::string& url, const Json& response);
+    Json decode_publication(const Json& policy,const std::string& url,const std::string& final_url,const Json& redirects);
+    std::optional<Json> decode_observation(const std::string& url,const Json& response);
+    Json decode_redirect_observations(const std::string& url,const Json& response);
+    ReadArtifact decode_read(const std::string& url, const Json& response,bool allow_empty=false);
     Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
     Json search(const std::string& owner, const Json& args);
@@ -84,6 +87,7 @@ namespace bzs {
     void execute_read(const ReadLease& lease);
     void cancel_read_attempt(const std::string& attempt_id) noexcept;
     Json submit_map(const std::string& owner,const Json& args);
+    Json submit_crawl(const std::string& owner,const Json& args);
     Json sites();
     std::optional<MapLease> lease_map();
     void execute_map(const MapLease& lease);

@@ -22,6 +22,9 @@ from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
 from .fetch import DEFAULT_UA, FetchAdmissionDenied, FetchBudget, FetchStopped, Fetcher, decode_body, host_of
 from .netguard import NetPolicy, PolicyError
+from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
+                          extraction_restriction_observation, incomplete_publication,
+                          publication_rules, restriction_observation)
 from .robots import CRAWLER_USER_AGENT, MAX_ROBOTS_BYTES, POLICY_VERSION, PRODUCT_TOKEN, require_record, response_record, rule_decision
 from .sites import SiteRegistry, canonical_map_url
 from .sources import SourceSet, load_manifest
@@ -63,7 +66,8 @@ class Worker:
     async def health(self, params: dict) -> dict:
         return {"ok": True, "version": __version__, "extractor": EXTRACTOR, "proxy": bool(self.fetcher.proxy),
                 "adapters": sorted(self.sources.adapters) if self.sources else [],
-                "robots_policy": POLICY_VERSION, "sites_manifest_sha256": self.sites.digest}
+                "robots_policy": POLICY_VERSION, "publication_policy": PUBLICATION_VERSION,
+                "sites_manifest_sha256": self.sites.digest}
 
     async def search_multi(self, params: dict) -> dict:
         assert self.sources is not None
@@ -106,6 +110,20 @@ class Worker:
             self._read_attempts[attempt_id] = budget
         try:
             out = await self._fetch_extract(params, budget)
+            if "publication" in out:
+                out["publication"] = self.sites.publication_ceiling(
+                    out["publication"], [str(params.get("url", "")), out.get("final_url", ""), *out.get("redirects", [])])
+                if "download_truncated" in out.get("warnings", []):
+                    # Keep the owner's existing readable-prefix behavior, while
+                    # refusing grants whose restrictive tail was not received.
+                    out["publication"] = incomplete_publication(out["publication"])
+                    out["index_allowed"] = False
+                    out["publication_observation"] = out["publication"]
+                if out.get("status") == "empty_content":
+                    observation = empty_extraction_observation(out["publication"])
+                    if observation is not None:
+                        out["publication"] = {**out["publication"], "snippet_allowed": observation["snippet_allowed"], "snippet_text": ""}
+                        out["publication_observation"] = observation
             if budget:
                 out["usage"] = {"external_requests": budget.external_requests, "content_bytes": budget.content_bytes}
             return out
@@ -143,7 +161,7 @@ class Worker:
         return {"cancel_requested": True}
 
     async def map_fetch(self, params: dict) -> dict:
-        """Execute exactly one durable metadata/discovery HTTP hop.
+        """Execute exactly one durable metadata, discovery or page HTTP hop.
 
         The core alone schedules robots phases and redirects. No automatic
         request from this method can fall through the interactive-read path.
@@ -153,7 +171,7 @@ class Worker:
         if not isinstance(params, dict) or set(params) - allowed:
             raise ValueError("unknown map.fetch parameters")
         attempt_id = self._attempt_id(params)
-        if (params.get("kind") not in ("robots", "auto", "sitemap") or
+        if (params.get("kind") not in ("robots", "auto", "sitemap", "page") or
                 not isinstance(params.get("url"), str) or not 1 <= len(params["url"]) <= 4096 or
                 not isinstance(params.get("site_id"), str) or not re.fullmatch(r"[a-z0-9][a-z0-9._-]{1,63}", params["site_id"]) or
                 not isinstance(params.get("sites_manifest_sha256"), str) or
@@ -266,9 +284,16 @@ class Worker:
             response = await self.fetcher.fetch(target, timeout_s=remaining(), budget=budget,
                                                 max_bytes=min(params["max_content_bytes"], MAX_ROBOTS_BYTES if metadata else 2 * 1024 * 1024),
                                                 headers={"User-Agent": CRAWLER_USER_AGENT},
-                                                accept="text/plain" if metadata else "text/html,application/xml,text/xml,application/rss+xml,application/atom+xml",
+                                                accept=("text/plain" if metadata else
+                                                        "text/html,application/xhtml+xml,application/xml,text/xml,application/rss+xml,application/atom+xml,text/plain,text/markdown,application/json"),
                                                 follow_redirects=False, before_dispatch=before_dispatch)
             out.update(final_url=response.final_url or str(target), http_status=response.http_status)
+            if not metadata and response.http_status is not None:
+                observation = restriction_observation(response.headers)
+                if observation is not None:
+                    # Keep this on failures as well as successes. It is a
+                    # monotonic restriction, never a successful read artifact.
+                    out["publication_observation"] = observation
             retry = max((retry_after_ms({"retry-after": value})
                          for value in response.headers.get("retry-after", "").split("\n")), default=0)
             if response.http_status == 429:
@@ -327,6 +352,30 @@ class Worker:
                     out["error_code"] = "E_CHALLENGE"
                     self.sites.cooldown_until[site_id] = time.monotonic() + 30 * 60
                     return out
+            if len(response.headers.get("content-type", "")) > 1024:
+                out["error_code"] = "E_UNSUPPORTED_CONTENT"
+                return out
+            if params["kind"] == "page":
+                page_result = await asyncio.wait_for(asyncio.to_thread(
+                    self._extract_crawl_page, response.body, out["final_url"], response.headers,
+                    params.get("depth", 0), params.get("max_entries", 1000), params["max_content_bytes"]), remaining())
+                remaining()
+                if "error_code" in page_result:
+                    out["error_code"] = page_result["error_code"]
+                    if page_result["error_code"] == "E_CHALLENGE":
+                        self.sites.cooldown_until[site_id] = time.monotonic() + 30 * 60
+                    return out
+                page = page_result["page"]
+                page.update(final_url=out["final_url"], http_status=response.http_status, redirects=[])
+                page["publication"] = apply_redistribution(page["publication"], site["review"])
+                if page["status"] == "empty_content":
+                    observation = empty_extraction_observation(page["publication"])
+                    if observation is not None:
+                        page["publication"] = {**page["publication"], "snippet_allowed": observation["snippet_allowed"], "snippet_text": ""}
+                        out["publication_observation"] = observation
+                out.update(status="ok", page=page, publication=page["publication"],
+                           discovery=page_result["discovery"])
+                return out
             parsed = await asyncio.wait_for(asyncio.to_thread(discover, response.body, out["final_url"],
                                                               content_type=response.headers.get("content-type", response.content_type), kind=params["kind"],
                                                               depth=params.get("depth", 0), max_entries=params.get("max_entries", 1000),
@@ -335,6 +384,7 @@ class Worker:
             if parsed["parse_status"] != "ok":
                 out["error_code"] = "E_UNSUPPORTED_CONTENT" if parsed["parse_status"] == "unsupported" else "E_DISCOVERY_PARSE"
                 return out
+            self._restrict_discovery(parsed, publication_rules(response.headers))
             out.update(status="ok", discovery=parsed)
             return out
         except FetchAdmissionDenied as exc:
@@ -350,15 +400,79 @@ class Worker:
                 lane.release()
         return out
 
+    @staticmethod
+    def _restrict_discovery(parsed: dict, publication: dict) -> None:
+        if not publication["follow_allowed"]:
+            parsed["diagnostics"]["nofollow"] += len(parsed["candidates"])
+            parsed["candidates"] = []
+
+    @staticmethod
+    def _extract_crawl_page(body: bytes, url: str, headers: dict[str, str],
+                            depth: int, max_entries: int, max_input_bytes: int) -> dict:
+        """Bounded CPU work only. Every outbound request remains in _map_fetch."""
+        from .discovery import discover
+
+        content_type = headers.get("content-type", "")
+        ctype = content_type.split(";", 1)[0].strip().lower()
+        if not ctype and body[:512].lstrip().lower().startswith((b"<!doctype html", b"<html")):
+            ctype = "text/html"
+        charset_match = re.search(r"charset\s*=\s*['\"]?([\w-]+)", content_type, re.I)
+        text, charset = decode_body(body, charset_match[1] if charset_match else None)
+        parsed = {"parse_status": "ok", "document_url": url, "document_type": "text", "candidates": [],
+                  "truncated": False,
+                  "diagnostics": {"errors": [], "invalid": 0, "invalid_reasons": {}, "invalid_bases": 0,
+                                  "duplicates": 0, "self_links": 0, "nofollow": 0, "ignored_links": 0,
+                                  "examined": 0, "limits": []}}
+        xml = ctype in ("text/xml", "application/xml") or ctype.endswith("+xml")
+        if (ctype in HTML_TYPES or xml) and body.strip():
+            parsed = discover(body, url, content_type=content_type or ctype, kind="auto", depth=depth,
+                              max_entries=max_entries, max_input_bytes=max_input_bytes)
+            if parsed["parse_status"] != "ok":
+                return {"error_code": "E_UNSUPPORTED_CONTENT" if parsed["parse_status"] == "unsupported" else "E_DISCOVERY_PARSE"}
+        if ctype in HTML_TYPES or (xml and parsed["document_type"] == "html"):
+            if looks_like_challenge(200, text):
+                return {"error_code": "E_CHALLENGE"}
+            if not body.strip():
+                parsed["document_type"] = "html"
+            had_nul = "\x00" in text
+            text = text.replace("\x00", "\ufffd")
+            page = extract_html(text, url, headers)
+            if had_nul:
+                page["warnings"].append("nul_replaced")
+            page.update(content_type="text/html", html=text)
+        elif ctype in TEXT_TYPES or ctype.startswith("text/") or xml:
+            # Sitemap/feed XML is validated in full by discover before retaining
+            # its literal text. External entities are never expanded or loaded.
+            page = extract_text(text, url, ctype, headers)
+            page.update(content_type="text/plain", html="")
+        else:
+            return {"error_code": "E_UNSUPPORTED_CONTENT"}
+        page.update(status="empty_content" if page["extract_status"] == "empty" else "ok", charset=charset)
+        Worker._restrict_discovery(parsed, page["publication"])
+        # Metadata links and page links share byte-preserving base resolution,
+        # rel=nofollow and page-level publication admission.
+        page["links"] = [item["url"] for item in parsed["candidates"]][:512]
+        return {"page": page, "discovery": parsed}
+
     async def _fetch_extract(self, params: dict, budget: FetchBudget | None) -> dict:
         url = str(params.get("url", ""))
         timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout_s
         res = await self.fetcher.fetch(url, timeout_s=timeout_s, **({"budget": budget} if budget else {}))
+        used_requests, used_bytes = res.external_requests, res.content_bytes
         follows = 0
         while True:
-            base = {"http_status": res.http_status, "final_url": res.final_url or url, "redirects": res.redirects}
+            base = {"http_status": res.http_status, "final_url": res.final_url or url, "redirects": res.redirects,
+                    "usage": {"external_requests": used_requests, "content_bytes": used_bytes}}
+            if res.redirect_publication_observations:
+                base["redirect_publication_observations"] = res.redirect_publication_observations
+            if res.http_status is not None:
+                observation = restriction_observation(res.headers)
+                if observation is not None:
+                    base["publication_observation"] = observation
+                if res.http_status == 206:
+                    base["publication_observation"] = incomplete_publication(publication_rules(res.headers))
             if res.status != "ok":
                 if res.status == "http_error" and res.body:
                     text, _ = decode_body(res.body, res.header_charset)
@@ -366,6 +480,9 @@ class Worker:
                         return {**base, "status": "challenge", "error": "site presented a bot check (not bypassed)"}
                 return {**base, "status": res.status, "error": res.error or f"HTTP {res.http_status}",
                         "error_code": res.error_code}
+            if res.http_status == 206:
+                return {**base, "status": "http_error", "error_code": "E_CONTENT_LIMIT",
+                        "error": "partial HTTP 206 response cannot provide a complete page"}
             ctype = res.content_type
             body_head = res.body[:512].lstrip().lower()
             if not ctype and (body_head.startswith(b"<!doctype html") or body_head.startswith(b"<html")):
@@ -373,27 +490,55 @@ class Worker:
             warnings = ["download_truncated"] if res.truncated else []
             if ctype in HTML_TYPES:
                 html, charset = decode_body(res.body, res.header_charset)
+                if "\x00" in html:
+                    html = html.replace("\x00", "\ufffd")
+                    warnings.append("nul_replaced")
                 if looks_like_challenge(res.http_status, html):
                     return {**base, "status": "challenge", "error": "site presented a bot check (not bypassed)"}
                 target = self._soft_redirect(html, res.final_url or url)
                 remaining = deadline - loop.time()
-                if target and follows < 2 and remaining > 1:
+                if (target and follows < 2 and remaining > 1 and not res.truncated and
+                        res.http_status is not None and 200 <= res.http_status < 300 and res.http_status != 206):
                     follows += 1
+                    # A soft redirect still delivered a complete HTML response.
+                    # Extract its bounded policy before replacing it with the
+                    # target, but leave the target's own publication unchanged.
+                    prior = await asyncio.to_thread(extract_html, html, res.final_url or url, res.headers)
+                    observation = extraction_restriction_observation(
+                        prior["publication"], "soft_redirect_restriction")
+                    observed = res.redirect_publication_observations
+                    if observation is not None:
+                        observed = [*observed, {"url": res.final_url or url,
+                                               "http_status": res.http_status, "publication": observation}]
+                    remaining = deadline - loop.time()
+                    if remaining <= 0:
+                        return {**base, "status": "timeout", "error": "request timed out",
+                                "redirect_publication_observations": observed}
                     nxt = await self.fetcher.fetch(target, timeout_s=remaining, **({"budget": budget} if budget else {}))
+                    used_requests += nxt.external_requests
+                    used_bytes += nxt.content_bytes
                     nxt.redirects = res.redirects + [target] + nxt.redirects
+                    nxt.redirect_publication_observations = observed + nxt.redirect_publication_observations
+                    if not nxt.final_url:
+                        # No headers arrived from the next attempt. The last
+                        # actual response may be an intermediate soft redirect,
+                        # rather than the original input URL.
+                        nxt.final_url = res.final_url or url
                     res = nxt
                     continue
                 # CPU-bound: keep the event loop free for concurrent searches.
                 out = await asyncio.to_thread(extract_html, html, res.final_url or url, res.headers)
-                if out["extract_status"] == "empty":
-                    return {**base, "status": "empty_content", "error": "no readable text", "warnings": out["warnings"]}
                 out["warnings"] = warnings + out["warnings"]
+                if out["extract_status"] == "empty":
+                    return {**base, **out, "status": "empty_content", "error": "no readable text",
+                            "content_type": "text/html", "charset": charset, "html": html}
                 return {**base, **out, "status": "ok", "content_type": "text/html", "charset": charset, "html": html}
             if ctype in TEXT_TYPES or ctype.startswith("text/"):
                 text, charset = decode_body(res.body, res.header_charset)
                 out = extract_text(text, res.final_url or url, ctype, res.headers)
                 if out["extract_status"] == "empty":
-                    return {**base, "status": "empty_content", "error": "empty document"}
+                    return {**base, **out, "status": "empty_content", "error": "empty document",
+                            "content_type": "text/plain", "charset": charset, "html": ""}
                 return {**base, **out, "status": "ok", "content_type": "text/plain", "charset": charset,
                         "html": "", "warnings": warnings}
             if ctype == "application/pdf":

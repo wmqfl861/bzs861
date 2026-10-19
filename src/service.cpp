@@ -140,15 +140,15 @@ namespace bzs {
       "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "backup.create"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
-      "web.search", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites"
+      "web.search", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
     })a.push(Json::string(op));
     j.set("operations", a);
     Json missing=Json::array();
     if(!web_)for(const auto*x: {
-      "live_web_search", "url_fetch"
+      "live_web_search", "url_fetch", "recursive_crawl"
     })missing.push(Json::string(x));
     for(const auto*x: {
-      "browser", "recursive_crawl", "pdf", "models", "semantic_search", "remote_mcp", "media", "windows_validation"
+      "browser", "pdf", "models", "semantic_search", "remote_mcp", "media", "windows_validation"
     })missing.push(Json::string(x));
     j.set("not_implemented", missing);
     return j;
@@ -225,6 +225,11 @@ namespace bzs {
     if(web_&&op=="web.read")return web_->read(p.subject, args);
     if(web_&&op=="read_many.submit")return web_->submit_reads(p.subject,args);
     if(web_&&op=="map.submit")return web_->submit_map(p.subject,args);
+    if(web_&&op=="crawl.submit")return web_->submit_crawl(p.subject,args);
+    if(web_&&op=="crawl.edges") {
+      args.allowed({"job_id","offset","limit"});
+      return store_.crawl_edges(p.subject,required_string(args,"job_id",64),int_option(args,"offset",0,0,10000),int_option(args,"limit",20,1,1000));
+    }
     if(web_&&op=="map.sites") { args.allowed({});return web_->sites(); }
     if(web_&&op=="web.sources") {
       args.allowed( {

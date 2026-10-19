@@ -2,6 +2,7 @@
 #include "bzs/error.hpp"
 #include "bzs/highlight.hpp"
 #include "bzs/tokenizer.hpp"
+#include "bzs/sites.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
 #include <algorithm>
@@ -142,7 +143,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=5,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=6,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -282,6 +283,64 @@ namespace bzs {
  PRAGMA user_version=5;
  )SQL");
     }
+    if(version<6) {
+      if(!has_column(db_,"documents","url_key"))exec(db_,"ALTER TABLE documents ADD COLUMN url_key TEXT NOT NULL DEFAULT '';");
+      if(!has_column(db_,"documents","representation_key"))exec(db_,"ALTER TABLE documents ADD COLUMN representation_key TEXT NOT NULL DEFAULT '';");
+      if(!has_column(db_,"snapshots","publication_json"))exec(db_,"ALTER TABLE snapshots ADD COLUMN publication_json TEXT NOT NULL DEFAULT '{}';");
+      if(!has_column(db_,"snapshots","representation_publication_json"))exec(db_,"ALTER TABLE snapshots ADD COLUMN representation_publication_json TEXT NOT NULL DEFAULT '{}';");
+      if(!has_column(db_,"session_rows","representation_key"))exec(db_,"ALTER TABLE session_rows ADD COLUMN representation_key TEXT NOT NULL DEFAULT '';");
+      if(!has_column(db_,"session_rows","publication_generation"))exec(db_,"ALTER TABLE session_rows ADD COLUMN publication_generation INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"map_jobs","max_pages"))exec(db_,"ALTER TABLE map_jobs ADD COLUMN max_pages INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"map_jobs","used_pages"))exec(db_,"ALTER TABLE map_jobs ADD COLUMN used_pages INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"map_jobs","last_dispatch_sequence"))exec(db_,"ALTER TABLE map_jobs ADD COLUMN last_dispatch_sequence INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"map_resources","parent"))exec(db_,"ALTER TABLE map_resources ADD COLUMN parent TEXT NOT NULL DEFAULT '';");
+      if(!has_column(db_,"map_resources","source"))exec(db_,"ALTER TABLE map_resources ADD COLUMN source TEXT NOT NULL DEFAULT 'seed';");
+      if(!has_column(db_,"map_resources","page_charged"))exec(db_,"ALTER TABLE map_resources ADD COLUMN page_charged INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"map_resources","snapshot_id"))exec(db_,"ALTER TABLE map_resources ADD COLUMN snapshot_id TEXT REFERENCES snapshots(id) ON DELETE SET NULL;");
+      if(!has_column(db_,"map_resources","publication_ceiling_json"))exec(db_,"ALTER TABLE map_resources ADD COLUMN publication_ceiling_json TEXT NOT NULL DEFAULT '{}';");
+      if(!has_column(db_,"map_resources","receipt_json"))exec(db_,"ALTER TABLE map_resources ADD COLUMN receipt_json TEXT;");
+      exec(db_,R"SQL(
+ CREATE INDEX IF NOT EXISTS documents_url_key ON documents(owner,url_key);
+ CREATE INDEX IF NOT EXISTS documents_representation_key ON documents(owner,representation_key);
+ CREATE INDEX IF NOT EXISTS session_rows_representation ON session_rows(representation_key);
+ CREATE INDEX IF NOT EXISTS map_resource_snapshot ON map_resources(snapshot_id);
+ CREATE TABLE IF NOT EXISTS document_publication(owner TEXT NOT NULL,url_key TEXT NOT NULL,
+   snapshot_id TEXT REFERENCES snapshots(id) ON DELETE SET NULL,record_json TEXT NOT NULL,
+   index_allowed INTEGER NOT NULL,snippet_allowed INTEGER NOT NULL,restricted INTEGER NOT NULL,
+   restriction_generation INTEGER NOT NULL DEFAULT 0,observed_at INTEGER NOT NULL,
+   PRIMARY KEY(owner,url_key));
+ CREATE TABLE IF NOT EXISTS crawl_edges(job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,position INTEGER NOT NULL,
+   parent TEXT NOT NULL,url TEXT NOT NULL,source TEXT NOT NULL,depth INTEGER NOT NULL,followed INTEGER NOT NULL,
+   reason TEXT NOT NULL DEFAULT '',parent_generation INTEGER NOT NULL,target_generation INTEGER NOT NULL,
+   PRIMARY KEY(job_id,position),UNIQUE(job_id,parent,url,source));
+ INSERT OR IGNORE INTO settings(key,value)VALUES('map_dispatch_sequence','0');
+ INSERT OR IGNORE INTO settings(key,value)VALUES('publication_restriction_sequence','0');
+ PRAGMA user_version=6;
+ )SQL");
+      Stmt docs(db_,"SELECT id,url FROM documents WHERE url_key=''");
+      std::vector<std::pair<std::string,std::string>> keys;
+      while(docs.step()) {
+        auto url=docs.text(1);try { url=map_url(url); } catch(const Error&) {}
+        keys.emplace_back(docs.text(0),std::move(url));
+      }
+      for(const auto& [id,key]:keys) { Stmt key_update(db_,"UPDATE documents SET url_key=? WHERE id=?");key_update.bind(1,key);key_update.bind(2,id);key_update.step(); }
+      Stmt representations(db_,"SELECT d.id,d.url_key,s.meta_json,s.source_kind FROM documents d LEFT JOIN snapshots s ON s.id=d.current_snapshot WHERE d.representation_key=''");
+      keys.clear();
+      while(representations.step()) {
+        auto key=representations.text(1);
+        if(representations.text(3)=="web")try { const auto meta=Json::parse(representations.text(2),8*1024*1024);if(meta.has("final_url")) { key=meta.at("final_url").str();try { key=map_url(key); } catch(const Error&) {} } } catch(const Error&) {}
+        keys.emplace_back(representations.text(0),std::move(key));
+      }
+      for(const auto& [id,key]:keys) { Stmt key_update(db_,"UPDATE documents SET representation_key=? WHERE id=?");key_update.bind(1,key);key_update.bind(2,id);key_update.step(); }
+      Stmt frozen(db_,"SELECT r.session_id,r.position,d.url_key,s.meta_json,s.source_kind FROM session_rows r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id WHERE r.representation_key=''");
+      std::vector<std::tuple<std::string,std::int64_t,std::string>> frozen_keys;
+      while(frozen.step()) {
+        auto key=frozen.text(2);
+        if(frozen.text(4)=="web")try { const auto meta=Json::parse(frozen.text(3),8*1024*1024);if(meta.has("final_url")) { key=meta.at("final_url").str();try { key=map_url(key); } catch(const Error&) {} } } catch(const Error&) {}
+        frozen_keys.emplace_back(frozen.text(0),frozen.num(1),std::move(key));
+      }
+      for(const auto& [session,position,key]:frozen_keys) { Stmt update(db_,"UPDATE session_rows SET representation_key=? WHERE session_id=? AND position=?");update.bind(1,key);update.bind(2,session);update.bind(3,position);update.step(); }
+    }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -319,7 +378,7 @@ namespace bzs {
   }
   Json Store::snapshot_locked(const std::string& owner, const std::string& id) {
     Stmt s(db_, R"SQL(SELECT s.id,s.extraction_id,d.id,d.url,s.title,s.canonical_text,s.raw_hash,s.content_type,
- s.parser_version,s.created_at,s.revision,s.index_allowed,s.links_json,s.meta_json,s.source_kind
+ s.parser_version,s.created_at,s.revision,s.index_allowed,s.links_json,s.meta_json,s.source_kind,s.publication_json,s.representation_publication_json
  FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.owner=? AND d.deleted=0)SQL");
     s.bind(1, id);
     s.bind(2, owner);
@@ -340,13 +399,15 @@ namespace bzs {
     j.set("links", Json::parse(s.text(12)));
     j.set("meta", Json::parse(s.text(13)));
     j.set("source_kind", s.text(14));
+    j.set("publication",Json::parse(s.text(15),8*1024*1024));
+    j.set("representation_publication",Json::parse(s.text(16),8*1024*1024));
     j.set("content_origin", s.text(14)=="web"?"web_fetch_untrusted":"authorized_input_or_fixture");
     return j;
   }
   void Store::prune_locked(const std::string& document_id, const std::string& keep, std::int64_t newest_revision, const std::string& owner) {
     auto threshold=newest_revision-options_.max_revisions_per_document;
     if(threshold<1)return;
-    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB)) FROM snapshots
+    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB)) FROM snapshots
  WHERE document_id=? AND id!=? AND revision<=? AND id NOT IN (SELECT snapshot_id FROM evidence)
  AND id NOT IN (SELECT r.snapshot_id FROM session_rows r JOIN sessions q ON q.id=r.session_id WHERE q.expires_at>?))SQL");
     list.bind(1, document_id);
@@ -381,8 +442,16 @@ namespace bzs {
       }
     }
     auto rawhash=sha256(input.raw);
+    const auto publication=parsed.publication.canonical(),representation_publication=parsed.representation_publication.canonical();
+    const auto& final_policy=parsed.representation_publication.has("version")?parsed.representation_publication:parsed.publication;
+    auto url_key=input.url;try { url_key=map_url(input.url); } catch(const Error&) {}
+    auto representation_key=url_key;
+    if(source_kind=="web") {
+      const auto metadata=Json::parse(meta_json,8*1024*1024);
+      if(metadata.has("final_url")) { representation_key=metadata.at("final_url").str();try { representation_key=map_url(representation_key); } catch(const Error&) {} }
+    }
     if(!latest.empty()) {
-      Stmt same(db_, "SELECT id FROM snapshots WHERE id=? AND raw_hash=? AND canonical_text=? AND title=? AND parser_version=? AND content_type=? AND index_allowed=?");
+      Stmt same(db_, "SELECT id FROM snapshots WHERE id=? AND raw_hash=? AND canonical_text=? AND title=? AND parser_version=? AND content_type=? AND index_allowed=? AND publication_json=? AND representation_publication_json=?");
       same.bind(1, latest);
       same.bind(2, rawhash);
       same.bind(3, parsed.text);
@@ -390,6 +459,7 @@ namespace bzs {
       same.bind(5, parsed.parser_version);
       same.bind(6, input.content_type);
       same.bind(7, static_cast<std::int64_t>(parsed.index_allowed));
+      same.bind(8,publication);same.bind(9,representation_publication);
       if(same.step()) {
         if(source_kind=="web") {
           // Unchanged content: only fetch provenance (meta.fetched_at_ms) moves; the snapshot text stays immutable.
@@ -397,6 +467,11 @@ namespace bzs {
           touch.bind(1, meta_json);
           touch.bind(2, latest);
           touch.step();
+        }
+        Stmt representation(db_,"UPDATE documents SET representation_key=? WHERE id=?");representation.bind(1,representation_key);representation.bind(2,did);representation.step();
+        if(parsed.publication.has("version")) {
+          publish_policy_locked(owner,url_key,latest,parsed.publication);
+          if(representation_key!=url_key)publish_policy_locked(owner,representation_key,latest,final_policy);
         }
         auto out=snapshot_locked(owner, latest);
         out.set("reused", true);
@@ -406,7 +481,7 @@ namespace bzs {
     // Reclaim only old, unreferenced versions that this successful write would
     // supersede. A quota/insert failure rolls the deletions back with the write.
     if(!did.empty())prune_locked(did,"",revision+1,owner);
-    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size());
+    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size()+(publication=="{}"?0:publication.size())+(representation_publication=="{}"?0:representation_publication.size()));
     {
       Stmt used(db_, "SELECT bytes,snapshots FROM usage WHERE owner=?");
       used.bind(1, owner);
@@ -419,16 +494,17 @@ namespace bzs {
     }
     if(did.empty()) {
       did=random_id();
-      Stmt d(db_, "INSERT INTO documents(id,owner,url,host)VALUES(?,?,?,?)");
+      Stmt d(db_, "INSERT INTO documents(id,owner,url,host,url_key,representation_key)VALUES(?,?,?,?,?,?)");
       d.bind(1, did);
       d.bind(2, owner);
       d.bind(3, input.url);
       d.bind(4, host);
+      d.bind(5, url_key);d.bind(6,representation_key);
       d.step();
     }
     auto sid=random_id();
     auto eid=random_id();
-    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind,publication_json,representation_publication_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
     ins.bind(1, sid);
     ins.bind(2, eid);
     ins.bind(3, did);
@@ -444,22 +520,29 @@ namespace bzs {
     ins.bind(13, parsed.links.dump());
     ins.bind(14, meta_json);
     ins.bind(15, source_kind);
+    ins.bind(16, publication);ins.bind(17,representation_publication);
     ins.step();
-    Stmt upd(db_, "UPDATE documents SET current_snapshot=?,revision=revision+1,deleted=0 WHERE id=?");
+    Stmt upd(db_, "UPDATE documents SET current_snapshot=?,revision=revision+1,deleted=0,representation_key=? WHERE id=?");
     upd.bind(1, sid);
-    upd.bind(2, did);
+    upd.bind(2, representation_key);upd.bind(3,did);
     upd.step();
     usage_add_locked(owner, bytes, 1);
     Stmt del(db_, "DELETE FROM content_fts WHERE document_id=?");
     del.bind(1, did);
     del.step();
-    if(parsed.index_allowed) {
+    Stmt active_policy(db_,"SELECT 1 FROM document_publication WHERE owner=? AND url_key IN (?,?) AND index_allowed=0");
+    active_policy.bind(1,owner);active_policy.bind(2,url_key);active_policy.bind(3,representation_key);
+    if(parsed.index_allowed&&!active_policy.step()) {
       Stmt ix(db_, "INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
       ix.bind(1, did);
       ix.bind(2, owner);
       ix.bind(3, parsed.title);
       ix.bind(4, parsed.text);
       ix.step();
+    }
+    if(parsed.publication.has("version")) {
+      publish_policy_locked(owner,url_key,sid,parsed.publication);
+      if(representation_key!=url_key)publish_policy_locked(owner,representation_key,sid,final_policy);
     }
     prune_locked(did, sid, revision+1, owner);
     auto out=snapshot_locked(owner, sid);
@@ -475,12 +558,12 @@ namespace bzs {
     tx.commit();
     return out;
   }
-  Json Store::ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation) {
+  Json Store::ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation,bool allow_empty) {
     require(expected_deletion_generation>=0,"E_SCHEMA","Invalid deletion fence");
     metadata_host(input.url);
     require(valid_utf8(input.raw)&&valid_utf8(parsed.text)&&valid_utf8(parsed.title), "E_UTF8", "Worker output is not UTF-8", 502);
     require(input.raw.find('\0')==std::string::npos&&parsed.text.find('\0')==std::string::npos, "E_UTF8", "Worker output contains NUL", 502);
-    require(!parsed.text.empty(), "E_PARSE_FAILED", "No readable text", 422);
+    require(allow_empty||!parsed.text.empty(), "E_PARSE_FAILED", "No readable text", 422);
     Json m=meta.is_object()?meta:Json::object();
     SourceDocument doc=input;
     if(static_cast<std::int64_t>(doc.raw.size())>max_raw_bytes) {
@@ -546,7 +629,7 @@ namespace bzs {
     s.bind(1, id);
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Document not found", 404);
-    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))),0),COUNT(*) FROM snapshots WHERE document_id=?");
+    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))),0),COUNT(*) FROM snapshots WHERE document_id=?");
     size.bind(1, id);
     size.step();
     auto freed=size.num(0), count=size.num(1);
@@ -598,13 +681,13 @@ namespace bzs {
     std::string sql;
     if(fts) {
       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,bm25(content_fts,0.0,0.0,4.0,1.0) AS r
- FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot
- WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1
+      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+ FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
+ WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  ORDER BY r LIMIT ?)SQL";
     } else {
-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0
- FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1
+      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+ FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
     }
     Stmt c(db_, sql);
@@ -617,7 +700,8 @@ namespace bzs {
     c.bind(bind, max_candidates+1);
     struct Hit {
       std::string doc, snap;
-      std::int64_t score;
+      std::int64_t score,publication_generation;
+      std::string representation_key;
     };
     std::vector<Hit> hits;
     std::int64_t scanned=0;
@@ -631,7 +715,7 @@ namespace bzs {
       if(!matches(q, c.text(2), c.text(3), c.text(4), c.text(5), c.text(6)))continue;
       auto score=fts?static_cast<std::int64_t>(-c.real(7)*1000.0):static_cast<std::int64_t>(score_match(q.root, c.text(2), c.text(3)));
       hits.push_back( {
-        c.text(0), c.text(1), score
+        c.text(0), c.text(1), score,c.num(8),c.text(9)
       });
     }
     if(!fts)std::stable_sort(hits.begin(), hits.end(), [](const Hit&a, const Hit&b) {
@@ -656,12 +740,13 @@ namespace bzs {
     ins.step();
     std::int64_t p=0;
     for(const auto&h:hits) {
-      Stmt row(db_, "INSERT INTO session_rows VALUES(?,?,?,?,?)");
+      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key)VALUES(?,?,?,?,?,?,?)");
       row.bind(1, id);
       row.bind(2, p++);
       row.bind(3, h.doc);
       row.bind(4, h.snap);
       row.bind(5, h.score);
+      row.bind(6,h.publication_generation);row.bind(7,h.representation_key);
       row.step();
     }
     Json out=Json::object();
@@ -700,7 +785,12 @@ namespace bzs {
       require(cu.step(), "E_CURSOR", "Cursor does not belong to this session", 400);
       pos=cu.num(0);
     }
-    Stmt rows(db_, "SELECT r.position,r.document_id,r.snapshot_id,r.score,s.title,d.url,s.canonical_text,s.revision FROM session_rows r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id WHERE r.session_id=? AND r.position>=? AND d.owner=? AND d.deleted=0 ORDER BY r.position LIMIT ?");
+    Stmt rows(db_, R"SQL(SELECT r.position,r.document_id,r.snapshot_id,r.score,s.title,d.url,s.canonical_text,s.revision,
+ s.publication_json,p.snapshot_id,COALESCE(p.restricted,0),MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0),COALESCE(cp.restriction_generation,0)),r.publication_generation,rp.snapshot_id,COALESCE(rp.restricted,0),cp.snapshot_id,COALESCE(cp.restricted,0)
+ FROM session_rows r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id
+ JOIN snapshots current ON current.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=r.representation_key LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
+ WHERE r.session_id=? AND r.position>=? AND d.owner=? AND d.deleted=0 AND current.index_allowed=1
+ AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 ORDER BY r.position LIMIT ?)SQL");
     rows.bind(1, session_id);
     rows.bind(2, pos);
     rows.bind(3, owner);
@@ -721,12 +811,24 @@ namespace bzs {
       h.set("score", rows.num(3));
       h.set("title", rows.text(4));
       h.set("url", rows.text(5));
-      auto text=rows.text(6);
-      if(query) {
+      auto text=rows.text(6);auto publication=Json::parse(rows.text(8),8*1024*1024);
+      const bool stale_restricted=rows.num(11)>rows.num(12)||(rows.num(10)!=0&&rows.text(9)!=rows.text(2))||(rows.num(14)!=0&&rows.text(13)!=rows.text(2))||(rows.num(16)!=0&&rows.text(15)!=rows.text(2));
+      bool snippet_allowed=!stale_restricted;
+      if(stale_restricted) { text.clear();h.set("title",rows.text(5)); }
+      else if(publication.has("version")) {
+        snippet_allowed=publication.at("snippet_allowed").flag();text=publication.at("snippet_text").str();
+        auto safe_title=publication.at("snippet_title").str();h.set("title",safe_title.empty()?rows.text(5):safe_title);
+      }
+      if(!snippet_allowed) {
+        h.set("snippet","");h.set("snippet_kind","publication_suppressed");h.set("highlights",Json::array());
+      } else if(query) {
         auto hl=highlight(text, query->root);
         h.set("snippet", hl.at("snippet"));
-        h.set("snippet_kind", hl.at("snippet_kind"));
-        h.set("highlights", hl.at("highlights"));
+        // Sanitized publication text is a different representation. Never
+        // label its byte offsets as locations in the canonical owner snapshot.
+        const bool canonical=text==rows.text(6);
+        h.set("snippet_kind",canonical?hl.at("snippet_kind"):Json::string("publication_excerpt"));
+        h.set("highlights",canonical?hl.at("highlights"):Json::array());
       } else {
         h.set("snippet", utf8_prefix(text, 350));
         h.set("snippet_kind", "document_prefix");
@@ -850,7 +952,7 @@ namespace bzs {
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Job not found", 404);
     if(s.text(11)=="web.read_many")return read_job_locked(owner,id);
-    if(s.text(11)=="web.map")return map_job_locked(owner,id);
+    if(s.text(11)=="web.map"||s.text(11)=="web.crawl")return map_job_locked(owner,id);
     Json j=Json::object();
     j.set("job_id", s.text(0));
     j.set("kind", "fixture.ingest");
@@ -925,7 +1027,7 @@ namespace bzs {
       tx.commit();
       return out;
     }
-    if(old.at("kind").str()=="web.map") {
+    if(old.at("kind").str()=="web.map"||old.at("kind").str()=="web.crawl") {
       auto out=control_map_locked(owner,id,action);tx.commit();return out;
     }
     auto state=old.at("state").str();

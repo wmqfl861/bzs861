@@ -1,4 +1,5 @@
 #include "bzs/web.hpp"
+#include "bzs/publication.hpp"
 #include "bzs/contracts.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
@@ -15,6 +16,46 @@ namespace bzs {
         "gclid", "dclid", "fbclid", "msclkid", "yclid", "igshid", "mc_cid", "mc_eid", "_hsenc", "_hsmi", "spm", "ved", "ei", "usg"
       };
       return k.starts_with("utm_")||exact.contains(k);
+    }
+    // Identity comparison for the existing ordinary HTTP client. This is not
+    // automatic-site admission: escaped separators remain distinct, while URI
+    // requoting and dot resolution can identify its actual response URL.
+    std::string read_identity(std::string_view input) {
+      auto uri=normalize_iri(input);check_public_url(uri);
+      const auto start=uri.find("://")+3;auto end=uri.find_first_of("/?#",start);if(end==std::string::npos)end=uri.size();
+      auto authority=ascii_lower(std::string_view(uri).substr(start,end-start));
+      if(const auto colon=authority.find(':');colon!=std::string::npos) {
+        const auto port=std::stoll(authority.substr(colon+1));
+        authority=authority.substr(0,colon)+(((uri.starts_with("https://")&&port==443)||(uri.starts_with("http://")&&port==80))?"":":"+std::to_string(port));
+      }
+      auto rest=uri.substr(end,uri.find('#',end)-end);if(rest.empty()||rest.front()=='?')rest='/'+rest;
+      const auto query=rest.find('?');
+      const auto component=[](std::string_view value,bool is_query) {
+        static constexpr char hex[]="0123456789ABCDEF";
+        const auto digit=[](char c)->int { if(c>='0'&&c<='9')return c-'0';if(c>='a'&&c<='f')return c-'a'+10;if(c>='A'&&c<='F')return c-'A'+10;return -1; };
+        std::string out;
+        for(std::size_t i=0;i<value.size();++i) {
+          if(value[i]!='%') { out+=value[i];continue; }
+          require(i+2<value.size()&&digit(value[i+1])>=0&&digit(value[i+2])>=0,"E_URL","Malformed read URL escape");
+          const auto c=static_cast<char>(digit(value[i+1])*16+digit(value[i+2]));i+=2;
+          const std::string_view safe=is_query?"-._~!$'()*,/:?@":"-._~!$&'()*,=:;@";
+          if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||safe.find(c)!=std::string_view::npos)out+=c;
+          else { out+='%';out+=hex[static_cast<unsigned char>(c)>>4];out+=hex[static_cast<unsigned char>(c)&15]; }
+        }
+        return out;
+      };
+      auto path=component(std::string_view(rest).substr(0,query),false);std::vector<std::string> parts;
+      for(std::size_t from=1;from<=path.size();) {
+        auto to=path.find('/',from);if(to==std::string::npos)to=path.size();const auto part=path.substr(from,to-from);
+        if(part=="..") { if(!parts.empty())parts.pop_back();if(to==path.size())parts.emplace_back(); }
+        else if(part==".") { if(to==path.size())parts.emplace_back(); }
+        else parts.push_back(part);
+        from=to+1;
+      }
+      path.clear();for(const auto& part:parts) { path+='/';path+=part; }if(path.empty())path="/";
+      auto result=uri.substr(0,start)+authority+path;
+      if(query!=std::string::npos&&query+1<rest.size())result+='?'+component(std::string_view(rest).substr(query+1),true);
+      return result;
     }
     std::vector<std::string> split(std::string_view s, char sep) {
       std::vector<std::string> out;
@@ -619,7 +660,8 @@ namespace bzs {
     auto max_bytes=int_option(args, "max_bytes", 20000, 1, 262144);
     auto start=int_option(args, "start_byte", 0, 0, 1LL<<40);
     auto timeout=int_option(args, "timeout_ms", 20000, 1000, 60000);
-    const auto deletion_generation=store_.deletion_generation(owner,url);
+    const auto publication_fence=store_.publication_fence(owner,url);
+    const auto deletion_generation=publication_fence.at("generation").num();
     auto cached=store_.cached(owner, url);
     if(freshness=="cache_only") {
       require(cached.has_value(), "E_NOT_CACHED", "No stored snapshot for this URL; use freshness=cache_first or refresh", 404);
@@ -631,14 +673,102 @@ namespace bzs {
     params.set("url", url);
     params.set("timeout_ms", timeout);
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
-    auto artifact=decode_read(url,r);
-    auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
-    return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
+    const auto redirect_observations=decode_redirect_observations(url,r);
+    for(std::size_t i=0;i<redirect_observations.size();++i) {
+      const auto observed=redirect_observations.at(i);
+      store_.observe_web_publication(owner,url,observed.at("url").str(),observed.at("publication"),publication_fence);
+    }
+    const auto observation=decode_observation(url,r);
+    if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
+    auto artifact=decode_read(url,r);const auto policy=artifact.parsed.publication;
+    const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
+    try {
+      auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
+      return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
+    } catch(const Error& error) {
+      if(error.code=="E_QUOTA") {
+        if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
+        if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
+      }
+      throw;
+    }
   }
-  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r) {
+  Json WebService::decode_publication(const Json& record,const std::string& url,const std::string& final_url,const Json& redirects) {
+    auto policy=validate_publication(record);
+      for(const auto& site:sites_.all()) {
+        bool matching=site.allows(url)||site.allows(final_url);
+        for(std::size_t i=0;i<redirects.size();++i)matching=matching||site.allows(redirects.at(i).str());
+        if(matching&&site.review.has("redistribution_policy")&&site.review.at("redistribution_policy").is_string()&&site.review.at("redistribution_policy").str()=="links_only") {
+        policy.set("snippet_allowed",false);policy.set("snippet_text","");policy.set("snippet_title","");
+        auto diagnostics=policy.at("diagnostics");bool present=false;
+        for(std::size_t i=0;i<diagnostics.size();++i)present=present||diagnostics.at(i).str()=="site_links_only";
+        if(!present)diagnostics.push(Json::string("site_links_only"));
+        }
+      }
+    return policy;
+  }
+  std::optional<Json> WebService::decode_observation(const std::string& url,const Json& response) {
+    Json record;
+    if(response.has("publication_observation"))record=response.at("publication_observation");
+    else if(response.has("status")&&response.at("status").str()=="empty_content"&&response.has("publication")) {
+      // An empty body can still carry applicable HTML meta directives. Validate
+      // the complete artifact before deriving a restrictive observation; keep
+      // the original empty-content error and never manufacture a successful read.
+      auto empty=decode_read(url,response,true);
+      const auto& final_policy=empty.parsed.representation_publication.has("version")?empty.parsed.representation_publication:empty.parsed.publication;
+      if(!restrictive_publication(final_policy))return std::nullopt;
+      record=Json::parse(final_policy.dump(),8*1024*1024);record.set("snippet_text","");record.set("snippet_title","");
+    } else return std::nullopt;
+    require(response.has("http_status")&&response.at("http_status").is_integer()&&response.at("http_status").num()>=100&&response.at("http_status").num()<=599,
+            "E_WORKER_PROTOCOL","Publication observation lacks a real HTTP response",502);
+    const auto final_url=normalize_iri(required_string(response,"final_url",4096));check_public_url(final_url);
+    const auto redirects=response.has("redirects")?response.at("redirects"):Json::array();
+    require(redirects.is_array()&&redirects.size()<=20,"E_WORKER_PROTOCOL","Invalid observed redirect chain",502);
+    for(std::size_t i=0;i<redirects.size();++i)check_public_url(normalize_iri(redirects.at(i).str()));
+    // This record describes the actual final HTTP response. Redirect response
+    // rules are carried separately and cannot be attributed to its target.
+    auto policy=decode_publication(record,final_url,final_url,Json::array());
+    require(restrictive_publication(policy)&&policy.at("snippet_text").str().empty()&&policy.at("snippet_title").str().empty(),"E_WORKER_PROTOCOL","Failed fetch cannot publish an allowing policy",502);
+    return policy;
+  }
+  Json WebService::decode_redirect_observations(const std::string& url,const Json& response) {
+    auto out=Json::array();
+    if(!response.has("redirect_publication_observations"))return out;
+    const auto records=response.at("redirect_publication_observations");
+    require(records.is_array()&&records.size()<=20,"E_WORKER_PROTOCOL","Invalid redirect publication observations",502);
+    if(records.size()==0)return out;
+    require(response.has("redirects")&&response.at("redirects").is_array()&&response.at("redirects").size()<=20,"E_WORKER_PROTOCOL","Observed redirects lack a bounded chain",502);
+    const auto actual_final=read_identity(required_string(response,"final_url",4096));
+    std::vector<std::string> prefix={read_identity(url)};
+    const auto redirects=response.at("redirects");
+    // The final advertised target may have been refused before HTTP. Restrict
+    // policy identity to public hops through the last actual response; an unsafe
+    // unvisited tail must not erase an earlier applicable response directive.
+    for(std::size_t i=0;i<redirects.size();++i) {
+      try { prefix.push_back(read_identity(redirects.at(i).str())); }catch(const Error&) { break; }
+    }
+    std::size_t reached=prefix.size();
+    for(std::size_t i=0;i<prefix.size();++i)if(prefix[i]==actual_final)reached=i;
+    require(reached<prefix.size(),"E_WORKER_PROTOCOL","Final response is not bound to the observed redirect chain",502);
+    std::set<std::string> chain(prefix.begin(),prefix.begin()+static_cast<std::ptrdiff_t>(reached+1));
+    require(records.size()<=redirects.size()+1,"E_WORKER_PROTOCOL","More redirect observations than responses",502);
+    require(response.has("usage")&&response.at("usage").at("external_requests").num()>=static_cast<std::int64_t>(records.size()),"E_WORKER_PROTOCOL","Redirect observations exceed known HTTP usage",502);
+    for(std::size_t i=0;i<records.size();++i) {
+      const auto record=records.at(i);record.allowed({"url","http_status","publication"});
+      const auto hop=normalize_iri(required_string(record,"url",4096));
+      require(chain.contains(read_identity(hop)),"E_WORKER_PROTOCOL","Redirect observation is not bound to the returned chain",502);
+      const auto http=record.at("http_status").num();
+      require(http==301||http==302||http==303||http==307||http==308||(http>=200&&http<300&&http!=206),"E_WORKER_PROTOCOL","Invalid observed redirect response status",502);
+      const auto policy=decode_publication(record.at("publication"),hop,hop,Json::array());
+      require(restrictive_publication(policy)&&policy.at("snippet_text").str().empty()&&policy.at("snippet_title").str().empty(),"E_WORKER_PROTOCOL","Redirect observation must only restrict publication",502);
+      auto item=Json::object();item.set("url",hop);item.set("http_status",http);item.set("publication",policy);out.push(item);
+    }
+    return out;
+  }
+  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty) {
     require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     auto status=opt_string(r, "status");
-    if(status!="ok") {
+    if(status!="ok"&&!(allow_empty&&status=="empty_content")) {
       std::string detail=opt_string(r, "error");
       if(r.has("http_status")&&r.at("http_status").is_integer()) {
         auto code="HTTP "+std::to_string(r.at("http_status").num());
@@ -647,7 +777,7 @@ namespace bzs {
       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
     }
     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
-      require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str()),"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
+      require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str())&&r.at(key).str().find('\0')==std::string::npos,"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
     require(r.at("html").str().size()<=8*1024*1024&&r.at("text").str().size()<=2*1024*1024&&
             r.at("title").str().size()<=4096&&r.at("content_type").str().size()<=128&&
@@ -669,6 +799,27 @@ namespace bzs {
     parsed.content_type=doc.content_type;
     parsed.parser_version=opt_string(r, "extractor").empty()?"worker":opt_string(r, "extractor");
     parsed.index_allowed=r.at("index_allowed").flag();
+    if(r.has("publication")) {
+      require(r.has("http_status")&&r.at("http_status").is_integer()&&r.at("http_status").num()>=200&&r.at("http_status").num()<300&&r.at("http_status").num()!=206,"E_WORKER_PROTOCOL","Readable publication needs a complete 2xx response",502);
+      parsed.publication=decode_publication(r.at("publication"),url,final_url,r.at("redirects"));
+      require(parsed.publication.at("index_allowed").flag()==parsed.index_allowed,"E_WORKER_PROTOCOL","Publication index decision disagrees with page",502);
+      if(status=="ok"&&r.has("publication_observation")) {
+        const auto observation=decode_publication(r.at("publication_observation"),url,final_url,r.at("redirects"));
+        require(publication_covers(parsed.publication,observation),"E_WORKER_PROTOCOL","Read artifact would relax its response's restrictive observation",502);
+      }
+      const auto final_policy=decode_publication(r.at("publication"),final_url,final_url,Json::array());
+      if(r.has("warnings")) {
+        const auto warnings=r.at("warnings");require(warnings.is_array()&&warnings.size()<=64,"E_WORKER_PROTOCOL","Invalid read warnings",502);
+        for(std::size_t i=0;i<warnings.size();++i) {
+          require(warnings.at(i).is_string()&&warnings.at(i).str().size()<=256,"E_WORKER_PROTOCOL","Invalid read warning",502);
+          if(warnings.at(i).str()=="download_truncated")require(!final_policy.at("index_allowed").flag()&&!final_policy.at("snippet_allowed").flag()&&!final_policy.at("follow_allowed").flag(),"E_WORKER_PROTOCOL","Incomplete HTTP body cannot publish an allowing policy",502);
+        }
+      }
+      const auto redirects=decode_redirect_observations(url,r);
+      for(std::size_t i=0;i<redirects.size();++i)parsed.publication=meet_publication(parsed.publication,redirects.at(i).at("publication"));
+      if(parsed.publication.canonical()!=final_policy.canonical())parsed.representation_publication=final_policy;
+      parsed.index_allowed=parsed.publication.at("index_allowed").flag();
+    }
     if(r.has("links")&&r.at("links").is_array()) {
       auto links=r.at("links");
       for(std::size_t i=0; i<links.size()&&i<512; ++i)if(links.at(i).is_string()&&links.at(i).str().size()<=4096)parsed.links.push(links.at(i));
@@ -680,6 +831,7 @@ namespace bzs {
     for(const auto* k: {
       "http_status", "charset", "extractor", "extract_status", "warnings", "redirects", "metadata"
     })if(r.has(k))meta.set(k, r.at(k));
+    meta.set("redirect_publication_observations",decode_redirect_observations(url,r));
     meta.set("content_type", doc.content_type);
     return {std::move(doc),std::move(parsed),std::move(meta)};
   }
@@ -703,7 +855,7 @@ namespace bzs {
     return store_.read_many_submit(owner,urls,required_string(args,"idempotency_key",128),options);
   }
   void WebService::execute_read(const ReadLease& lease) {
-    std::int64_t requests=-1,bytes=-1;
+    std::int64_t requests=-1,bytes=-1;std::optional<Json> observation;std::string observed_url;auto redirect_observations=Json::array();
     try {
       if(!store_.read_lease_live(lease)) {
         store_.fail_read(lease,"E_LEASE_EXPIRED",0,0);
@@ -733,19 +885,26 @@ namespace bzs {
               (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
               "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
       requests=used_requests;bytes=used_bytes;
+      redirect_observations=decode_redirect_observations(lease.url,response);
+      observation=decode_observation(lease.url,response);if(observation)observed_url=normalize_iri(response.at("final_url").str());
       const auto status=response.at("status").str();
       if(status=="budget_exhausted"||status=="cancelled"||status=="attempt_replayed") {
         const auto code=opt_string(response,"error_code");
         require((status=="budget_exhausted"&&(code=="E_REQUEST_BUDGET"||code=="E_BYTE_BUDGET"||code=="E_CONTENT_LIMIT"))||
                 (status=="cancelled"&&code=="E_CANCELLED")||(status=="attempt_replayed"&&code=="E_ATTEMPT_REPLAY"),
                 "E_WORKER_PROTOCOL","Invalid bounded read stop reason",502);
-        store_.fail_read(lease,code,requests,bytes);
+        store_.fail_read(lease,code,requests,bytes,observation?&*observation:nullptr,observed_url,&redirect_observations);
         return;
       }
       auto artifact=decode_read(lease.url,response);
+      const auto& final_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:artifact.parsed.publication;
+      if(restrictive_publication(final_policy)) { observation=final_policy;observed_url=artifact.meta.at("final_url").str(); }
+      if(artifact.parsed.representation_publication.has("version")&&restrictive_publication(artifact.parsed.publication)) {
+        auto logical=Json::object();logical.set("url",lease.url);logical.set("publication",artifact.parsed.publication);redirect_observations.push(logical);
+      }
       (void)store_.complete_read(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
     } catch(const Error& error) {
-      store_.fail_read(lease,error.code,requests,bytes);
+      store_.fail_read(lease,error.code,requests,bytes,observation?&*observation:nullptr,observed_url,&redirect_observations);
     } catch(...) {
       store_.fail_read(lease,"E_INTERNAL",requests,bytes);
     }

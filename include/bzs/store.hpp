@@ -43,13 +43,17 @@ namespace bzs {
     StoreOptions options_;
     mutable std::mutex mutex_;
     void migrate();
+    void observe_policy_locked(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy);
+    void publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy);
+    Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
+    bool alias_fences_live_locked(const Json& fences);
     std::int64_t epoch_locked(const std::string& owner);
     std::int64_t delete_sequence_locked();
     std::int64_t deletion_generation_locked(const std::string& owner,const std::string& url);
     Json snapshot_locked(const std::string& owner, const std::string& snapshot);
     Json ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind);
     Json ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed,
-                           const Json& meta, std::int64_t expected_deletion_generation);
+                           const Json& meta, std::int64_t expected_deletion_generation,bool allow_empty=false);
     Json job_locked(const std::string& owner, const std::string& id);
     Json read_job_locked(const std::string& owner, const std::string& id);
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
@@ -58,6 +62,9 @@ namespace bzs {
     bool owns_read_lease_locked(const ReadLease& lease);
     bool live_read_lease_locked(const ReadLease& lease);
     void reconcile_read_usage_locked(const ReadLease& lease, std::int64_t requests, std::int64_t bytes);
+    Json frontier_submit(const std::string& owner,const Json& args,const SiteRegistry& sites,bool crawl);
+    Json crawl_results_locked(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit);
+    bool crawl_edge_locked(const std::string& id,const std::string& owner,const Json& candidate,bool followed,const std::string& reason);
     Json map_job_locked(const std::string& owner,const std::string& id);
     Json map_results_locked(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit);
     Json control_map_locked(const std::string& owner,const std::string& id,const std::string& action);
@@ -69,7 +76,7 @@ namespace bzs {
     void map_partial_locked(const std::string& id,const std::string& reason);
     bool map_candidate_locked(const std::string& id,const std::string& owner,const Json& candidate);
     bool map_resource_locked(const std::string& id,const std::string& owner,const std::string& url,
-                             const std::string& kind,std::int64_t depth);
+                             const std::string& kind,std::int64_t depth,const std::string& parent="",const std::string& source="seed");
     bool live_lease_locked(const Lease& lease);
     void settle_interruptions_locked();
     void usage_add_locked(const std::string& owner, std::int64_t bytes, std::int64_t snapshots);
@@ -81,6 +88,8 @@ namespace bzs {
     Store(const Store&)=delete;
     Store& operator=(const Store&)=delete;
     Json ingest(const std::string& owner, const SourceDocument& input);
+    Json publication_fence(const std::string& owner,const std::string& url);
+    void observe_web_publication(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy,const Json& fence);
     // Capture before a worker read. Every deletion advances this persistent
     // value, including when an explicit later import revives the document.
     std::int64_t deletion_generation(const std::string& owner,const std::string& url);
@@ -114,14 +123,18 @@ namespace bzs {
                        const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
     // Negative usage means an unknown outcome. Its entire durable grant stays charged.
     void fail_read(const ReadLease& lease, const std::string& error_code,
-                   std::int64_t external_requests=-1, std::int64_t content_bytes=-1);
+                   std::int64_t external_requests=-1, std::int64_t content_bytes=-1,
+                   const Json* publication=nullptr,const std::string& final_url="",const Json* redirect_observations=nullptr);
     Json map_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
+    Json crawl_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
+    Json crawl_edges(const std::string& owner,const std::string& id,std::int64_t offset=0,std::int64_t limit=20);
     std::optional<MapLease> lease_next_map(const SiteRegistry& sites);
     bool map_lease_live(const MapLease& lease);
     bool complete_map(const MapLease& lease,const Json& response,const SiteRegistry& sites,
-                      std::int64_t external_requests,std::int64_t content_bytes);
+                      std::int64_t external_requests,std::int64_t content_bytes,
+                      const SourceDocument* page=nullptr,const ParsedDocument* parsed=nullptr,const Json* meta=nullptr,const Json* observation=nullptr);
     void fail_map(const MapLease& lease,const std::string& error_code,
-                  std::int64_t external_requests=-1,std::int64_t content_bytes=-1);
+                  std::int64_t external_requests=-1,std::int64_t content_bytes=-1,const Json* observation=nullptr);
     std::string active_map_attempt(const std::string& owner,const std::string& job_id);
     std::optional<Lease> lease_next(std::int64_t lease_ms=10000);
     bool complete(const Lease& lease, const SourceDocument& input, const ParsedDocument& parsed);
