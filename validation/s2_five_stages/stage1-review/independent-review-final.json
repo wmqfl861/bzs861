@@ -1,0 +1,102 @@
+{
+  "kind": "bzs-phase1-independent-review",
+  "recorded_at": "2026-10-20T03:26:28.157037+00:00",
+  "reviewer_role": "independent requirements reviewer; no production source edits for phase1",
+  "status": "passed_for_scoped_runtime_contract",
+  "reviewed_library": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "sha256": "db34cae20d7190f8a92f7a8e2da328d50e182dfc6fa9a04f6c74e8224c9437aa"
+  },
+  "reviewer_direct_execution": {
+    "final_record": "final-author-v2-command.json",
+    "final_record_sha256": "77f0957962ed02c951122bf72804ad1384129141cbb057be28884cc5b15d7e04",
+    "log": "final-author-v2.log",
+    "log_sha256": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+    "direct_public_api_cases": 17,
+    "genuine_schema7_active_batch_upgrade_cases": 2,
+    "failures": 0,
+    "inputs_unchanged": true,
+    "network_requests": 0,
+    "database_mutation_by_harness": "public Store/WebService APIs only; sole direct SQL reads PRAGMA user_version",
+    "temporary_databases_removed": true
+  },
+  "groups": [
+    {
+      "id": "late_publication_order",
+      "status": "resolved_and_directly_verified",
+      "finding": "An older allowing read could replace a later noindex or nosnippet policy for the same URL, final redirect resource, or intermediate hop.",
+      "evidence": "Original 7-case published-library baseline has 7 expected failures; final direct cases pass under typed persistent history.",
+      "retained_behavior": "Private canonical body/evidence remains owner-accessible; explicit complete fresh read may create new allowed representation."
+    },
+    {
+      "id": "independent_new_current",
+      "status": "resolved_and_directly_verified",
+      "finding": "Sealing an old A-to-B artifact must not revoke a newer independent allowed B or replace later current A-to-C / current A snapshot.",
+      "evidence": "Final direct cases verify two restrictive modes, final target restrict-then-allow, frozen A-to-C bindings, fresh B and A current preservation, and private late artifact retention."
+    },
+    {
+      "id": "repeated_actual_restriction",
+      "status": "resolved_and_directly_verified",
+      "finding": "A second identical failed header response must advance restriction history even if its policy JSON/snapshot-empty state matches the prior observation.",
+      "evidence": "Two actual-response-pulse fake-worker cases verify noindex and nosnippet with a read started between the two pulses."
+    },
+    {
+      "id": "compatible_unversioned_artifact",
+      "status": "resolved_and_directly_verified",
+      "finding": "An unversioned compatibility artifact must receive a versioned sealed policy so a later allowing B cannot cause canonical-snippet fallback in A.",
+      "evidence": "Final legacy_unversioned_nosnippet case checks current/frozen A and independent new B."
+    },
+    {
+      "id": "actual_chain_deletion",
+      "status": "resolved_and_directly_verified",
+      "finding": "A direct in-flight A-to-B success must reject when B was deleted after read start.",
+      "evidence": "Final deleted_final_alias requires E_TARGET_DELETED and zero searchable A."
+    },
+    {
+      "id": "legacy_unknown_capture_vs_empty",
+      "status": "resolved_and_directly_verified",
+      "finding": "Schema7 had no current snapshot capture; absence cannot be interpreted as a new request that positively observed no current snapshot.",
+      "evidence": "Published 0.1.5 static library creates live batch lease then B restriction. New library completes same lease, B is reread allowing, A remains restricted, evidence/body preserved. Two new direct empty-capture cases preserve genuinely later new current.",
+      "legacy_limit": "Schema7 historical restriction type is unavailable. Migrated nosnippet history can conservatively withdraw the entire old web row; no claim of exact lost history reconstruction."
+    },
+    {
+      "id": "durable_dispatch_wiring",
+      "status": "read_only_review_with_author_regressions",
+      "finding": "Read-start sequence/current snapshot must come from durable lease/resource state, including crawl redirect chains, and not from worker-controlled metadata.",
+      "review": "Read-only traced batch claim/complete from read_job_items, crawl first-dispatch resource sequence plus physical-hop current capture, and lease/deletion checks before publication.",
+      "author_reported_tests": "Core author reports core81/batch18/map24/crawl54/site31 native tests passed, including schema7 in-flight crawl migration; these are secondary reports, not tests independently rerun by reviewer."
+    }
+  ],
+  "preparation_and_intermediate_evidence": {
+    "published_baseline_record": "baseline-execution.json",
+    "published_baseline_source": "review_refresh_order-baseline.cpp",
+    "first_15_pass_record": "author-v1-command.json",
+    "first_15_source": "review_refresh_order-author-v1.cpp",
+    "legacy_bridge_v1_record": "legacy-active-author-v1-command.json",
+    "legacy_bridge_v1_source": "review_legacy_active-author-v1.cpp",
+    "bridge_fixture_corrections": [
+      "snapshot ID lives in receipt for batch items; direct top-level lookup in first bridge was wrong",
+      "legacy untyped history can conservatively hide whole row after nosnippet; first bridge wrongly required row visibility"
+    ],
+    "no_failure_reclassified_as_product_success_without_execution": true
+  },
+  "sources_to_archive": [
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order-baseline.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order-author-v1.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_active.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_active-author-v1.cpp"
+  ],
+  "header_provenance": {
+    "published_headers_directory": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include",
+    "published_commit": "2007690c9403b8ae593101488de1adf228608284",
+    "published_library_sha256": "0385b54988c2c7e8794f684dc0a4db56cc88fb189cd3033dccd265d0b8fb22e7",
+    "all_recorded_hashes_in_final_command": true
+  },
+  "limits": [
+    "Fake Worker responses; no real HTTP or model/network activity",
+    "Known API callback interleavings and genuine same-database version upgrade; not arbitrary power-loss fault injection or simultaneous multi-node performance evidence",
+    "Final root debug/ASan/HTTP/CI gates are separately owned by root and were not rerun by this reviewer",
+    "No package accepted by this review; original 83 packages /161 acceptance mappings /10 slices preserved; baseline 34 partial /49 not_started /0 accepted is not promoted"
+  ]
+}

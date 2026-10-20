@@ -1,6 +1,6 @@
 # 当前规划与证据口径
 
-更新：2026-10-19。已交付基线为 0.1.4（90ca7e9）；本批为 0.1.5 的 S2 存量发布、持久陷阱与崩溃恢复加固候选。CRAWL-01 / CRAWL-03 在已有部分实现上继续推进，仍为 34 包部分实现、49 包未开始、0 包完整签收；S0/S1/S2 均未签署完整验收。计划不代表实现或验收。
+更新：2026-10-20。输入基线为0.1.5（2007690c）；当前0.1.6为[五阶段开发](../handoff/S2_FIVE_STAGES_20261020.md)的第一检查点，关闭旧读取跨越新页面发布限制的竞争。仍为34包部分实现、49包未开始、0包完整签收；原83包、161验收、10切片保留。阶段二至五合并并验证后再计入交付范围。
 
 | 文件 | 作用 |
 |---|---|
@@ -21,4 +21,4 @@
 
 本批 0.1.5 增加明确阈值的日期、查询和重复分页防护，以及站点存量发布水位、历史表示绑定和实际崩溃/回执丢失回归，详见 [存量发布与升级](../SITE_PUBLICATION.md)。CRAWL-01/03 的广泛网站误判评估、长期恢复与公开集合等效验收仍待完成；有限启发式、四个实际故障边界与 owner 隔离搜索不能替代这些要求。QA-02 / FT-042 的人工标签、指标、阈值和留出评测，以及 SESSION-02 仍未开始。C-14 的完整质量冻结过程继续保留；冻结查询和合成站点测试不能代替相关性验收或真实来源 S0。当前 17 个搜索来源仍禁用，站点登记默认空。
 
-实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_hardening/test_report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。
+实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_five_stages/stage1-report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。

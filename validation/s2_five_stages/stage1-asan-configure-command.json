@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "cmake",
+    "-S",
+    ".",
+    "-B",
+    "build-s2-five-stages-asan",
+    "-G",
+    "Ninja",
+    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DBZS_SANITIZERS=ON",
+    "-DBZS_BUILD_TESTS=ON",
+    "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+    "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "environment_overrides": {},
+  "started_at_utc": "2026-10-20T03:25:05.604800+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 2.996,
+  "log": "stage1-asan-configure.log",
+  "log_sha256": "f0d37e1e3e5623b44ddcca12aed58e3201999198109c4faf7f3295f6d05599d2",
+  "runner_sha256": "8555dab3f056a62ec53e606d53277847a83e7b0b8e5b51747ebb8d3b29451f93",
+  "execution_inputs": {
+    "manifest": "validation/s2_five_stages/stage1-execution-inputs.json",
+    "sha256": "93e3fbd51226a666943b4aa88d2f201bc116144f87c0f1bf22f5e317fc585ecc",
+    "unchanged_before_and_after": true
+  },
+  "binaries_before_sha256": {},
+  "binaries_after_sha256": {
+    "build-s2-five-stages/CTestTestfile.cmake": "14931e8a3a26dfa4f5c8251f58bf85c19f7866556d972eca3ce73e2e3b3b524f",
+    "build-s2-five-stages-asan/CTestTestfile.cmake": "b9c0d781301d59e28970bf577be5b88d924c7a086070994c9cc011300231dea3"
+  }
+}

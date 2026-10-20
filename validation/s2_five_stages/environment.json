@@ -1,0 +1,50 @@
+{
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "memory_limit_bytes": 8589934592,
+  "build_parallelism_per_command": 1,
+  "concurrent_builds": 2,
+  "commands": [
+    {
+      "argv": [
+        "cmake",
+        "--version"
+      ],
+      "output": "cmake version 3.28.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake)."
+    },
+    {
+      "argv": [
+        "ninja",
+        "--version"
+      ],
+      "output": "1.11.1"
+    },
+    {
+      "argv": [
+        "c++",
+        "--version"
+      ],
+      "output": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+    },
+    {
+      "argv": [
+        "pkg-config",
+        "--modversion",
+        "sqlite3",
+        "libxml-2.0",
+        "json-c",
+        "openssl"
+      ],
+      "output": "3.45.1\n2.9.14\n0.17\n3.0.13"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "--version"
+      ],
+      "output": "Python 3.12.14"
+    }
+  ],
+  "real_source_requests": 0,
+  "network_test_scope": "loopback synthetic HTTP/Worker services only",
+  "dependencies": "Existing pinned Python lock, system native build dependencies restored by apt on Ubuntu24.04; no source/approval defaults altered."
+}

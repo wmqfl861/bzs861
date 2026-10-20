@@ -594,7 +594,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==7);
+    CHECK(database_scalar(path, "PRAGMA user_version")==8);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -617,11 +617,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=8;");
+    database_exec(future, "PRAGMA user_version=9;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==8);
+    CHECK(database_scalar(future, "PRAGMA user_version")==9);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -1286,7 +1286,7 @@ namespace {
         CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
         if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
       }
-      CHECK(database_scalar(path,"PRAGMA user_version")==7);
+      CHECK(database_scalar(path,"PRAGMA user_version")==8);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
     }

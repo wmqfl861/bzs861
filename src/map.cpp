@@ -296,7 +296,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     }
     const bool crawl=job.text(14)=="web.crawl";
     if(crawl)crawl_trap_ensure(db_,id);
-    Sql resource(db_,"SELECT position,url,fetch_url,kind,depth,redirect_hop,deletion_generation,page_charged,parent,source FROM map_resources WHERE job_id=? AND state='pending' ORDER BY CASE WHEN kind='robots' THEN 0 ELSE 1 END,depth,position LIMIT 1");resource.bind(1,id);
+    Sql resource(db_,"SELECT position,url,fetch_url,kind,depth,redirect_hop,deletion_generation,page_charged,parent,source,publication_sequence FROM map_resources WHERE job_id=? AND state='pending' ORDER BY CASE WHEN kind='robots' THEN 0 ELSE 1 END,depth,position LIMIT 1");resource.bind(1,id);
     if(!resource.step()) { settle_map_job_locked(id);break; }
     const auto kind=resource.text(3),url=resource.text(2),logical=resource.text(1);
     if(kind=="page"&&resource.num(7)==0&&job.num(13)>=job.num(12)) {
@@ -368,10 +368,20 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     const auto lease_until=now+std::min(job.num(2)-now,timeout+5000);
     MapLease lease{id,owner,site->id,sites.manifest_digest(),origin,url,logical,kind,random_id(),job.num(1)+1,sequence.num(0),resource.num(0),resource.num(4),resource.num(5),resource.num(6),1,
         std::min<std::int64_t>(job.num(10),kind=="robots"?512*1024:2*1024*1024),timeout,now+timeout,kind=="robots"?Json():robots};
+    lease.publication_sequence=resource.num(10)<0?publication_sequence_locked():resource.num(10);
+    if(kind=="page"&&resource.num(10)<0) {
+      Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,logical);
+      const auto snapshot=current.step()?current.text(0):"";
+      Sql capture(db_,"UPDATE map_resources SET publication_sequence=?,publication_snapshot_id=? WHERE job_id=? AND position=?");
+      capture.bind(1,lease.publication_sequence);capture.bind(2,snapshot);capture.bind(3,id);capture.bind(4,lease.resource_position);capture.step();
+    }
     auto admission=Json::object();admission.set("site_id",site->id);admission.set("manifest_sha256",sites.manifest_digest());admission.set("origin",origin);admission.set("url",url);
     admission.set("logical_url",logical);admission.set("robots_cache_id",robots_id.empty()?Json():Json::string(robots_id));
     admission.set("robots_sha256",robots.is_null()?Json():Json::string(sha256(robots.canonical())));
     admission.set("alias_fences",aliases);admission.set("deadline_ms",lease.deadline_ms);admission.set("target_generation",deletion_generation_locked(owner,url));
+    Sql current_page(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current_page.bind(1,owner);current_page.bind(2,url);
+    admission.set("publication_snapshot_id",current_page.step()?current_page.text(0):"");
+    admission.set("publication_sequence",lease.publication_sequence);
     Sql hop(db_,"INSERT INTO map_hops(job_id,position,resource_position,url,kind,attempt_id,lease_epoch,state,byte_grant,request_grant,admission_json)VALUES(?,?,?,?,?,?,?,'running',?,1,?)");
     hop.bind(1,id);hop.bind(2,lease.position);hop.bind(3,lease.resource_position);hop.bind(4,url);hop.bind(5,kind);hop.bind(6,lease.attempt_id);hop.bind(7,lease.epoch);hop.bind(8,lease.byte_grant);hop.bind(9,admission.dump());hop.step();
     Sql sequence_value(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='map_dispatch_sequence'");sequence_value.step();
@@ -431,7 +441,7 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
   if(error.empty()&&observation&&lease.kind=="page"&&requests==1) {
     try {
       (void)alias_fences_locked(lease.owner,lease.logical_url,lease.url,config.num(4));
-      observe_policy_locked(lease.owner,lease.logical_url,lease.url,*observation);
+      if(status!="ok"||!page||!parsed)observe_policy_locked(lease.owner,lease.logical_url,lease.url,*observation);
       auto recorded=Json::object();for(const auto& key:observation->keys())if(key!="snippet_text"&&key!="snippet_title")recorded.set(key,observation->at(key));
       receipt.set("publication_observation",recorded);
       if(status=="redirect") {
@@ -499,9 +509,10 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         // cannot revive the in-flight task that observed the older generation.
         (void)alias_fences_locked(lease.owner,lease.logical_url,lease.url,config.num(4));
         Sql bound(db_,"SELECT admission_json FROM map_hops WHERE job_id=? AND position=?");bound.bind(1,lease.job_id);bound.bind(2,lease.position);bound.step();
-        const auto generation=Json::parse(bound.text(0)).at("target_generation").num();
+        const auto admission=Json::parse(bound.text(0));const auto generation=admission.at("target_generation").num();
+        Sql capture(db_,"SELECT publication_sequence,publication_snapshot_id FROM map_resources WHERE job_id=? AND position=?");capture.bind(1,lease.job_id);capture.bind(2,lease.resource_position);capture.step();
         checked(sqlite3_exec(db_,"SAVEPOINT crawl_body",nullptr,nullptr,nullptr));
-        Json snapshot;
+        Json snapshot,logical_history;
         try {
           auto page_meta=Json::parse(meta->dump()),route=Json::array();std::set<std::string> route_urls;
           Sql hops(db_,"SELECT url FROM map_hops WHERE job_id=? AND resource_position=? AND kind='page' AND (state='succeeded' OR position=?) ORDER BY position LIMIT 6");
@@ -509,6 +520,11 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
           while(hops.step())if(route_urls.insert(hops.text(0)).second)route.push(Json::string(hops.text(0)));
           for(const auto& url:{lease.logical_url,lease.url})if(route_urls.insert(url).second)route.push(Json::string(url));
           page_meta.set("crawl_publication_urls",route);
+          logical_history=publication_history_locked(lease.owner,route,capture.num(0));
+          page_meta.set("page_publication_sequence",capture.num(0));
+          auto fence=Json::object();fence.set("epoch",epoch_locked(lease.owner));fence.set("sequence",config.num(4));fence.set("url",lease.logical_url);fence.set("generation",lease.deletion_generation);
+          if(admission.has("publication_snapshot_id"))fence.set("snapshot_id",admission.at("publication_snapshot_id"));
+          page_meta.set("publication_fence",fence);
           snapshot=ingest_web_locked(lease.owner,*page,*parsed,page_meta,generation,true);
           checked(sqlite3_exec(db_,"RELEASE crawl_body",nullptr,nullptr,nullptr));
         } catch(const Error& failure) {
@@ -525,11 +541,24 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         if(lease.logical_url!=lease.url) {
           Sql current(db_,"SELECT publication_ceiling_json FROM map_resources WHERE job_id=? AND position=?");current.bind(1,lease.job_id);current.bind(2,lease.resource_position);current.step();
           const auto logical_policy=meet_publication(parsed->publication,Json::parse(current.text(0)));
-          publish_policy_locked(lease.owner,lease.logical_url,snapshot.at("snapshot_id").str(),logical_policy);
+          const bool stale=logical_history.at("index_generation").num()>0||logical_history.at("snippet_generation").num()>0;
+          Sql logical(db_,"SELECT d.id,d.current_snapshot,s.site_bindings_json,COALESCE(json_extract(s.meta_json,'$.page_publication_sequence'),0) FROM documents d LEFT JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=?");logical.bind(1,lease.owner);logical.bind(2,lease.logical_url);
+          const bool exists=logical.step();
+          if(stale&&exists)seal_frozen_publication_locked(lease.owner,logical.text(0),logical_history);
+          bool matching=!exists;
+          if(exists) {
+            const auto bindings=Json::parse(logical.text(2));const auto restrictions=logical_history.at("restrictions");
+            if(!bindings.has("urls"))matching=true;
+            else for(std::size_t i=0;i<restrictions.size();++i)for(std::size_t j=0;j<bindings.at("urls").size();++j)
+              matching=matching||restrictions.at(i).at("url").str()==bindings.at("urls").at(j).str();
+          }
+          if(!stale)publish_policy_locked(lease.owner,lease.logical_url,snapshot.at("snapshot_id").str(),logical_policy);
+          else if((!exists||logical.text(1)==capture.text(1)||(capture.text(1)=="@legacy"&&logical.num(3)<std::max(logical_history.at("index_generation").num(),logical_history.at("snippet_generation").num())))&&matching)
+            publish_policy_locked(lease.owner,lease.logical_url,snapshot.at("snapshot_id").str(),seal_publication_locked(logical_policy,logical_history));
         }
         auto page_receipt=Json::object();page_receipt.set("snapshot_id",snapshot.at("snapshot_id"));page_receipt.set("document_id",snapshot.at("document_id"));
         page_receipt.set("final_url",lease.url);page_receipt.set("revision",snapshot.at("revision"));page_receipt.set("body_read",true);
-        auto policy=Json::object();for(const auto& key:parsed->publication.keys())if(key!="snippet_text"&&key!="snippet_title")policy.set(key,parsed->publication.at(key));
+        auto policy=Json::object();const auto stored_policy=snapshot.at("publication");for(const auto& key:stored_policy.keys())if(key!="snippet_text"&&key!="snippet_title")policy.set(key,stored_policy.at(key));
         page_receipt.set("publication",policy);
         const auto trap=crawl_trap_observe_body(db_,lease.job_id,lease.url,parsed->text);
         if(!trap.is_null())page_receipt.set("trap",trap);

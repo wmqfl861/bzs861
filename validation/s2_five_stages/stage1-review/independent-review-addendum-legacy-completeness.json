@@ -1,0 +1,29 @@
+{
+  "kind": "bzs-phase1-independent-review-addendum",
+  "recorded_at": "2026-10-20T03:34:30.083491+00:00",
+  "status": "blocking_issue_found_after_prior_scoped_pass",
+  "prior_report": "independent-review-final.json",
+  "prior_report_sha256": "8f4e8ed40453efbc18b12e2b6b34eddb44ce54a7397a1da5918354c77cfe4daa",
+  "prior_tests_still_valid": {
+    "direct": 17,
+    "genuine_schema7_active_batch_upgrade": 2,
+    "failures": 0
+  },
+  "finding": {
+    "id": "legacy_incomplete_artifact_thaws_restriction",
+    "status": "open_reported_to_root_and_core",
+    "severity": "publication restriction bypass",
+    "reproduction": "Existing A has noindex. A later ordinary read begins after that observation and returns status ok, HTTP200, warnings=[download_truncated], index_allowed=true, no publication field. Compatibility prepare constructs allowing policy, because decode_read only checks warning under versioned publication branch; new search exposes A.",
+    "contract": "Only a complete explicitly fresh read may relax previous publication policy. Compatibility support cannot turn an incomplete body preview into an allowing policy.",
+    "evidence": "legacy-truncated-v1-command.json",
+    "evidence_sha256": "6fb9717e8003c424c37cc5853176f478ee3ace1884c35278372606265c512686",
+    "actual_log": "legacy-truncated-v1.log",
+    "actual_log_sha256": "3f742f80c795170be91c9db02bbeacdbdfb9a1dbd46597e7a0be6e068dacc4e3",
+    "executed_cases": 1,
+    "failures": 1,
+    "harness": "review_legacy_truncated.cpp",
+    "harness_sha256": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "test_scope": "Native fake worker; no real HTTP; public APIs only; existing final author library.",
+    "related_review": "The shared complete HTTP status gate is also currently inside the optional publication branch; author asked to enforce completeness regardless of compatibility version."
+  }
+}

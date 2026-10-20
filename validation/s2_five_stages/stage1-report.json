@@ -1,0 +1,500 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.6",
+  "stage": "S2 five stages: stage 1 checkpoint",
+  "recorded_at_utc": "2026-10-20T03:51:53.497505+00:00",
+  "result": "passed_local_gates_scope_limited_candidate",
+  "provenance": {
+    "repository": "https://github.com/wmqfl861/bzs861",
+    "base_commit": "2007690c9403b8ae593101488de1adf228608284",
+    "base_tree": "b85be7edb97fbbbfa0d880ffe503bd76119f625a",
+    "previous_report": "validation/s2_hardening/test_report.json"
+  },
+  "execution_binding": {
+    "manifest": "stage1-v2-execution-inputs.json",
+    "sha256": "8119ad8744c84d754fd7097277d5f8172dc85d597accf0f02044cf0b51c86ebb",
+    "input_files": 154,
+    "unchanged_through_all_final_commands": true,
+    "debug_binaries_sha256": {
+      "build-s2-five-stages/searchd": "54e6435ad95d0b2c0dd0820e94a231b9f44f6a55ecd11893c11c235d5f29859e",
+      "build-s2-five-stages/searchctl": "2a3197db653dccfe859c4ecfb86ab20dd42acf9ea02f0f424db63c8199431491",
+      "build-s2-five-stages/bzs_tests": "0954200a59b969f73dc91e1af07dbf417b5b87a8171456a301d1405eb4921662",
+      "build-s2-five-stages/bzs_batch_tests": "670cf52e62fda11619c518ebd4fce7bbdab1ac76aca2524e85e726a9aeb398fe",
+      "build-s2-five-stages/bzs_map_tests": "57f54ee069436cb8efe22e2a310b51b780bf2d1af2b6a741c345271524b94270",
+      "build-s2-five-stages/bzs_crawl_tests": "eafe2ca9e134c3a34e3a30e2833f9a3c8d00bb7acace4fb7e87d87ce72674f25",
+      "build-s2-five-stages/bzs_site_publication_tests": "eb2cca2abf70c14d09a26ee276d4bac3119907c82b0b269fd50a7227a44ff719",
+      "build-s2-five-stages/bzs_contract_tests": "f884c5e4407e46baa217907a59c26f1d2be298f16fc47113798683dace4e8c9e",
+      "build-s2-five-stages/CTestTestfile.cmake": "14931e8a3a26dfa4f5c8251f58bf85c19f7866556d972eca3ce73e2e3b3b524f"
+    },
+    "asan_binaries_sha256": {
+      "build-s2-five-stages-asan/bzs_tests": "7e9ca5caec4bff9624c3c20f18070eda0205b05a370be10d8697e5696b7a661e",
+      "build-s2-five-stages-asan/bzs_batch_tests": "3f379f66a038be99392b8a00e37d37595064460b3c32ef8a57c050e44bd8ec66",
+      "build-s2-five-stages-asan/bzs_map_tests": "9933d1624890dc53b04d536618e9036f7348ca88b27a671d3f19df815aa4122a",
+      "build-s2-five-stages-asan/bzs_crawl_tests": "78ebeb14bb2ecaba07db6bb059fb182fdb86c87a62c51d36ee5104bcfc7ec4fc",
+      "build-s2-five-stages-asan/bzs_site_publication_tests": "e44c07a8399dbcf5638333f253ee2f6268da11bae9d0f7e813372f98e605fdbb",
+      "build-s2-five-stages-asan/bzs_contract_tests": "419e5c45e9ac907c7d98a454cb27ec7cdd5b642e736759f2219edd3fa6c25f25",
+      "build-s2-five-stages-asan/CTestTestfile.cmake": "b9c0d781301d59e28970bf577be5b88d924c7a086070994c9cc011300231dea3"
+    }
+  },
+  "source_binding": {
+    "file": "stage1-v2-source-manifest.json",
+    "sha256": "4b8d6911764b84c1b6c4f0a6fd3e835329d15e2f03d43dc94957fc1c2488cc8b",
+    "file_count": 167,
+    "git_binding": "Containing commit binds exact tree; query its CI after publication."
+  },
+  "commands": [
+    {
+      "name": "stage1-v2-debug-configure",
+      "record": "stage1-v2-debug-configure-command.json",
+      "log": "stage1-v2-debug-configure.log",
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build-s2-five-stages",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_BUILD_TESTS=ON",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.989
+    },
+    {
+      "name": "stage1-v2-debug-build",
+      "record": "stage1-v2-debug-build-command.json",
+      "log": "stage1-v2-debug-build.log",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-s2-five-stages",
+        "-j1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 11.878
+    },
+    {
+      "name": "stage1-v2-asan-configure",
+      "record": "stage1-v2-asan-configure-command.json",
+      "log": "stage1-v2-asan-configure.log",
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build-s2-five-stages-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_SANITIZERS=ON",
+        "-DBZS_BUILD_TESTS=ON",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.989
+    },
+    {
+      "name": "stage1-v2-asan-build",
+      "record": "stage1-v2-asan-build-command.json",
+      "log": "stage1-v2-asan-build.log",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-s2-five-stages-asan",
+        "--target",
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "-j1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 17.691
+    },
+    {
+      "name": "stage1-v2-ctest",
+      "record": "stage1-v2-ctest-command.json",
+      "log": "stage1-v2-ctest.log",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "build-s2-five-stages",
+        "-V",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 91.13
+    },
+    {
+      "name": "stage1-v2-planning",
+      "record": "stage1-v2-planning-command.json",
+      "log": "stage1-v2-planning.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "docs/planning/tools/plan_v1_2.py",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.118
+    },
+    {
+      "name": "stage1-v2-plan-guard",
+      "record": "stage1-v2-plan-guard-command.json",
+      "log": "stage1-v2-plan-guard.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "tools/test_plan_guard.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.232
+    },
+    {
+      "name": "stage1-v2-design-contracts",
+      "record": "stage1-v2-design-contracts-command.json",
+      "log": "stage1-v2-design-contracts.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "docs/planning/tools/validate_contracts.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.679
+    },
+    {
+      "name": "stage1-v2-dependencies",
+      "record": "stage1-v2-dependencies-command.json",
+      "log": "stage1-v2-dependencies.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.652
+    },
+    {
+      "name": "stage1-v2-asan-core-final",
+      "record": "stage1-v2-asan-core-final-command.json",
+      "log": "stage1-v2-asan-core-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.956
+    },
+    {
+      "name": "stage1-v2-asan-batch-final",
+      "record": "stage1-v2-asan-batch-final-command.json",
+      "log": "stage1-v2-asan-batch-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_batch_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.103
+    },
+    {
+      "name": "stage1-v2-asan-map-final",
+      "record": "stage1-v2-asan-map-final-command.json",
+      "log": "stage1-v2-asan-map-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_map_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.674
+    },
+    {
+      "name": "stage1-v2-asan-crawl-final",
+      "record": "stage1-v2-asan-crawl-final-command.json",
+      "log": "stage1-v2-asan-crawl-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_crawl_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 28.059
+    },
+    {
+      "name": "stage1-v2-asan-site-publication-final",
+      "record": "stage1-v2-asan-site-publication-final-command.json",
+      "log": "stage1-v2-asan-site-publication-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_site_publication_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 22.324
+    },
+    {
+      "name": "stage1-v2-asan-contracts-final",
+      "record": "stage1-v2-asan-contracts-final-command.json",
+      "log": "stage1-v2-asan-contracts-final.log",
+      "argv": [
+        "build-s2-five-stages-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.589
+    }
+  ],
+  "integrated_ctest": {
+    "passed_suites": 12,
+    "failed_suites": 0,
+    "skipped_suites": 0,
+    "elapsed_seconds": 91.08,
+    "log": "stage1-v2-ctest.log",
+    "suites": [
+      {
+        "name": "core",
+        "passed": 81,
+        "assertions": 713,
+        "failed": 0
+      },
+      {
+        "name": "batch",
+        "passed": 18,
+        "assertions": 439,
+        "failed": 0
+      },
+      {
+        "name": "map",
+        "passed": 24,
+        "assertions": 462,
+        "failed": 0
+      },
+      {
+        "name": "crawl",
+        "passed": 54,
+        "assertions": 2798,
+        "failed": 0
+      },
+      {
+        "name": "site_publication",
+        "passed": 32,
+        "assertions": 1200,
+        "failed": 0
+      },
+      {
+        "name": "contracts",
+        "passed": 55,
+        "failed": 0,
+        "retained_design_fixtures": 34,
+        "additional_native_cases": 21,
+        "assertions": 269
+      },
+      {
+        "name": "http_cli",
+        "passed": 20,
+        "failed": 0
+      },
+      {
+        "name": "e2e_web",
+        "passed": 13,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 7.8
+      },
+      {
+        "name": "e2e_map",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 3.779
+      },
+      {
+        "name": "e2e_crawl",
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 11.044
+      },
+      {
+        "name": "e2e_crawl_recovery",
+        "passed": 8,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 23.69
+      },
+      {
+        "name": "python_worker",
+        "passed": 687,
+        "failed": 0
+      }
+    ]
+  },
+  "native_sanitizers": {
+    "executables": 6,
+    "failed": 0,
+    "detect_leaks": true,
+    "address": true,
+    "undefined_behavior": true,
+    "scope": "Native only; HTTP and Python use normal build."
+  },
+  "independent_review": {
+    "record": "stage1-v2-review.json",
+    "direct_api_cases": 17,
+    "genuine_schema7_active_upgrade_cases": 2,
+    "compatibility_completeness_cases": 6,
+    "total_cases": 25,
+    "failed": 0
+  },
+  "intermediate_attempts": {
+    "superseded_candidate": "stage1-initial-report.json preserves the first candidate. Independent legacy-truncated-v1 then exposed an actual completeness defect. src/web.cpp and its regression were fixed, all final gates rerun against the new v2 manifest. Earlier source manifests are historical.",
+    "sandbox_lsan": "Six original sanitizer attempts failed with explicit ptrace incompatibility, retained unchanged. Same frozen binaries rerun with leak checks in compatible approved environment passed; final v2 also passes with leak detection enabled."
+  },
+  "planning": {
+    "packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "guard_regressions_passed": 13,
+    "original_design_contracts_passed": 34,
+    "packages_and_slice_objects_equal_baseline": true,
+    "acceptance_objects_equal_except_execution_status": true,
+    "full_work_packages_accepted": 0
+  },
+  "preserved_inputs_sha256": {
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+    "tests/golden/queries.json": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798",
+    "tests/golden/manifest.json": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "docs/planning/functional_spec_v0.3.md": "ce5e2cedaa9cb84e72a4460ac5f3e14b86ae39164e66e70a4e9eae48c85160e8",
+    "docs/planning/development_blueprint_v1.1.md": "176daad8328d91a6840a12f8b40719df4d903e4c79a0f962faae85d355d72b7d",
+    "docs/planning/requirements_and_backlog.json": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+    "tools/requirements-s1-lock.txt": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb"
+  },
+  "evidence_sha256": {
+    "stage1-baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "stage1-asan-map.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "stage1-plan-guard.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "stage1-debug-configure.log": "b1d10c6c045a138a91d0049fc5a13e40f2c134a31d65626bc6d52ca984b8486c",
+    "stage1-review.json": "8b8c2db3e296c4b572beab62320172c61293b896b5c947738591a0b3b7b006f5",
+    "stage1-v2-asan-core-final-command.json": "940a03200575193d887140e574da2df4b05fa9e270b042ca7bb212592dc35255",
+    "stage1-asan-core.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "stage1-v2-plan-guard-command.json": "6f1a1650ba499f97be183ad8ce25ecd6070d9e20508156a5ee2d948feef96768",
+    "stage1-v2-asan-map-final-command.json": "367b57d3539e0cb005a2df5308bf2fb90138ddaf2c29eec30b34cd080083cdcd",
+    "stage1-asan-build-command.json": "0cabc61cc6a7e408ff65d18c9b7be976c26127b3cf2581febbe26266c4a95b02",
+    "stage1-ctest-command.json": "29c99d9f72541c0845660ecf179a8ab1b97818c067aac973f7370dc3cbbcbbe3",
+    "stage1-v2-dependencies-command.json": "b4b7896884f52140983830e1c7aa4684203e7a0d9529008f518c998e8e86ca8f",
+    "stage1-v2-asan-contracts-final-command.json": "1c37eef0c4986ac6f1e686fed119c78145565b815c1d0e2197e242e1fb7e5fb1",
+    "stage1-asan-core-final-command.json": "409dd8d3bca00fa01f55cd8fc349d5a1d0cd42067a12e1df697083df1b32803d",
+    "stage1-source-manifest.json": "e8f33357e6777df14a82ed20cda72932a58bafd4c263774371cacb4005c36020",
+    "stage1-asan-site-publication-final.log": "9142b81a2e0d1133bd44fe5535217834c47cb8f191fb409eaabac4ae7faee867",
+    "stage1-asan-batch-command.json": "c1efd862203e5622b60936120a2a009985679a1b5eb7fbbbc8841638328bdc3d",
+    "stage1-v2-asan-batch-final-command.json": "c6f1477bff7f8fb97d6d4254e1bd5baaa292cfee48d480378d07467365f3607e",
+    "stage1-debug-build-command.json": "48815425ee3a5a1316802fe4d56c45fe5d2a689db5b98e60db93984bcc6e57fe",
+    "stage1-plan-guard-command.json": "61dbf6fd4de27099f12926006ecd7bff2317a6efafffb0b648f97fa83e9e1518",
+    "stage1-asan-crawl-final-command.json": "244886da372e677d094eddc7e69a0a95b1b25618a9b5f29a115345d4ab553c65",
+    "stage1-baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "stage1-asan-contracts-final-command.json": "1e14fa7bb3434c36d431d02243fe25b13c9fd6980fc9fa3327d1b29cf2162e83",
+    "stage1-execution-inputs.json": "93e3fbd51226a666943b4aa88d2f201bc116144f87c0f1bf22f5e317fc585ecc",
+    "stage1-v2-debug-configure-command.json": "155d91bf414ed8c981ae2f9b785c0642bc2bc7e0d6e5b32a411f41d9ef6aba3f",
+    "stage1-v2-asan-site-publication-final-command.json": "9c49b627e91be5a4acd2aec135e8765af302d202fb3d531baba745a961e5bd47",
+    "stage1-asan-site-publication-final-command.json": "5a1a2cb822f622bf065cd354c198513a48e6446de0000edf0d386a31aa0b42d6",
+    "stage1-planning-command.json": "a9ee5670662989e1965aac1417b34958f01d8d2744c8227ec5f8909f98aaf521",
+    "stage1-v2-design-contracts.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "stage1-planning.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "stage1-v2-debug-build-command.json": "da1063b6a641d237e359d3e68435387f148e55c2a5f69dfbd5920572f181f1b5",
+    "stage1-dependencies-command.json": "a6c81c449c82f045a8dd146e9eeda5331d05cb06b8745a32f558e497402f8a13",
+    "stage1-v2-dependencies.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "stage1-debug-build.log": "b5b0aba4a8afd679f2cede30c5ec324bf1e7dc9bcc8d751414c331125ba8a6d4",
+    "stage1-dependencies.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "stage1-v2-asan-batch-final.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "stage1-asan-build.log": "01936b01e50c3384855da4f8250cf811d444e798b2d0c1816618f4f91fbd2e06",
+    "stage1-v2-execution-inputs.json": "8119ad8744c84d754fd7097277d5f8172dc85d597accf0f02044cf0b51c86ebb",
+    "stage1-asan-batch-final.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "stage1-asan-contracts-command.json": "f1fbc79630a7765454030f9d1cde1330d5b10e912a9528c6552f8545dea32aff",
+    "stage1-asan-contracts.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "stage1-asan-map-final-command.json": "44ab18617fd464142d821486e1a1ab365ac222f9018210e6d8cd482926afa174",
+    "stage1-asan-map-final.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "stage1-v2-ctest-command.json": "7ce9213b9f81513d966c832f44c1da39bdf3e94b50b5674a4b2edb3b9791dc65",
+    "stage1-v2-asan-configure.log": "c54b3823ca807a0262ba9aea507d7618be04fab959de566244805e1f44661825",
+    "stage1-baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "stage1-v2-asan-build-command.json": "d44416d734f64768749dab528457a271792526f799b5e1d186ccbc07ba164398",
+    "stage1-asan-crawl-command.json": "8e322c512c5b0e068966d5459287c9ea57b63d1c2534fb6758f3098e1398bb51",
+    "stage1-asan-site-publication-command.json": "52bc20312adc79843e0b65a604e49fade4f5311509d6c06a652fea3fbc518c36",
+    "stage1-asan-site-publication.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "stage1-asan-map-command.json": "36b4e3c8b51892115163dca2ceed2eb6b424cb89bd8037d6a6fd60f6ad1ad1ca",
+    "stage1-v2-asan-crawl-final-command.json": "d3e43e006491eb65f57dbb12163aa56ddb97884ba636938793fcfd210d1a1f83",
+    "stage1-asan-configure-command.json": "1b86c0af6bac2ae264c2f677865696dace74fd761bc1c4ce876cd6f0a83a118f",
+    "README.md": "1318e941eea12cedea81f4f7b8fadaec7ff6d954e2d9328d9528c84b8c35bd7f",
+    "stage1-asan-batch-final-command.json": "86561dd337726861077e94bc4ddf15f29b3f060a77a6a1848c70bd8d6479b073",
+    "stage1-v2-review.json": "e729970eb33dcf808f0d00c0c074a70958f9e64f2bd62f8c0f0faf414bf2b0e6",
+    "stage1-v2-asan-site-publication-final.log": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+    "stage1-v2-asan-core-final.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "stage1-v2-source-manifest.json": "4b8d6911764b84c1b6c4f0a6fd3e835329d15e2f03d43dc94957fc1c2488cc8b",
+    "stage1-v2-asan-contracts-final.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "stage1-v2-debug-configure.log": "978d1f9440b094946d4d80afc2803096bf66de20d955493b4f3fc1973d511ba4",
+    "stage1-asan-crawl-final.log": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+    "stage1-v2-asan-crawl-final.log": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+    "stage1-v2-planning-command.json": "71fb8ffe2443c079053efe5be11ff76a01858f8ad99d6a36cd509da47819d8c4",
+    "stage1-debug-configure-command.json": "b9e3ff24f5b03d544b664d1c48d5554b285f24cdf0057f13f270f466befd4dd6",
+    "stage1-v2-asan-build.log": "dfada3f0032ecabf6a483a017cadca4279873fbef93b52bca67f3d2a806bd77c",
+    "stage1-asan-crawl.log": "736c0bc8c9e537a1661f1ede16c78488a48d9825a9ad95a15eeb62f4cd84065c",
+    "stage1-v2-debug-build.log": "e0488d1ab8eb0e6a7d53d62c08bdbc83a47bc4a3b8fd5634378691820ebe5bb9",
+    "stage1-asan-core-final.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "stage1-v2-planning.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "stage1-design-contracts-command.json": "06a5819db90fce63adc234d5d7f99681b45ed651f4b0d12fc8fcf2f8a67a956f",
+    "review_refresh_order.cpp": "e2cf63bedcb6105f9e2dcef6eafc1ec7ff22f66223b428f5731d66fd6c45c654",
+    "stage1-v2-design-contracts-command.json": "56e40059bb23d282f7be62c52d184c1e93576ea5b4a5838080b400fbdabcf3fd",
+    "stage1-v2-asan-configure-command.json": "d5f2dc4509f9540b328a3efbd3a23a8b586358a3790d59da2f479e9f37911cfc",
+    "stage1-asan-configure.log": "f0d37e1e3e5623b44ddcca12aed58e3201999198109c4faf7f3295f6d05599d2",
+    "stage1-v2-plan-guard.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "stage1-asan-core-command.json": "8a8abb161f11a3fbf5207841bdac3d6afe0366e9049fadf9ee475556eddb5556",
+    "stage1-design-contracts.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "stage1-asan-batch.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "environment.json": "a2a70d626d6535d8a6e2b5321ae641b8f51a819c56c35e9b89b8c214f6eb7ebc",
+    "stage1-v2-asan-map-final.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "stage1-ctest.log": "b8524079fb0f92c9c33fd6d4d1b9a14a4af0fdf1c32aa5c4c9e90e06e9ee813c",
+    "stage1-asan-contracts-final.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "stage1-initial-report.json": "a2e6e92a16a5ca8c902ec61cc0ea592361307e42a06c452f5497d68bf047f60c",
+    "run_validation.py": "8555dab3f056a62ec53e606d53277847a83e7b0b8e5b51747ebb8d3b29451f93",
+    "stage1-v2-ctest.log": "f7e76d060edc6a2688a5e5e131aec558bb64fb2904331ae133d13b475ed86e26",
+    "stage1-baseline/baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "stage1-baseline/baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "stage1-baseline/baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "stage1-review/legacy-active-author-v1.log": "ebec379c6732a89741a64921a7bd697fc1203a37011419ac90f0241544bcc662",
+    "stage1-review/legacy-active-author-v1-command.json": "fa76bc4d5760601f050bcc776f12944d06f38bd965ca421ab5c33cfd291c5c1d",
+    "stage1-review/legacy-truncated-v2.log": "f6d2cc09a468425232ea05f9c757b35762b1eeba3e612a5b307c488583283ad0",
+    "stage1-review/review_legacy_active-author-v1.cpp": "a5067ea07ad0d27c01ebed89281aa076168e22ca1503c3d0eefd3b47ac5e9352",
+    "stage1-review/independent-review-final.json": "8f4e8ed40453efbc18b12e2b6b34eddb44ce54a7397a1da5918354c77cfe4daa",
+    "stage1-review/baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "stage1-review/legacy-truncated-v1-command.json": "6fb9717e8003c424c37cc5853176f478ee3ace1884c35278372606265c512686",
+    "stage1-review/review_legacy_truncated-v1.cpp": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "stage1-review/review_refresh_order-author-v1.cpp": "3aff69b6827269c756470ea2456ced4a5ecdb6caacad989c33fce3aa92e46a6a",
+    "stage1-review/author-v1-command.json": "84997392e1e0366a4ffeb75cbd23cd724f8957bbc806dde3be46ec13fc73c0df",
+    "stage1-review/baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "stage1-review/final-author-v3.log": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+    "stage1-review/final-author-v2.log": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+    "stage1-review/author-v1.log": "cd0940703ad2d0643a0af2c362949dfa31491754268b6f5ab47eace4f3d3eaea",
+    "stage1-review/legacy-truncated-v2-command.json": "b16525afe3282b0bde55c03693776265ba3676332b6d6c391aa64e90788fe3b7",
+    "stage1-review/legacy-truncated-v1.log": "3f742f80c795170be91c9db02bbeacdbdfb9a1dbd46597e7a0be6e068dacc4e3",
+    "stage1-review/review_legacy_truncated.cpp": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "stage1-review/baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "stage1-review/independent-review-final-v3.json": "8196d8c2f9065100ac14da47d7df401e28f02d877699bb182e3735f6d781df4f",
+    "stage1-review/author-v1-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stage1-review/final-author-v3-command.json": "63eb7dd2dbbc3e763c321c5bbfc7623427b5fa2efd25d3f873abd90090c0284c",
+    "stage1-review/final-author-v2-command.json": "77f0957962ed02c951122bf72804ad1384129141cbb057be28884cc5b15d7e04",
+    "stage1-review/review_refresh_order-baseline.cpp": "e2cf63bedcb6105f9e2dcef6eafc1ec7ff22f66223b428f5731d66fd6c45c654",
+    "stage1-review/independent-review-addendum-legacy-completeness.json": "dd4e6bd86e4ce83fdb417008a751d1b17cdb6e33904eed24f557935c54cbf5f7",
+    "stage1-review/review_refresh_order.cpp": "9cf760535062067420b02f80750d4a8ae93f1b504bfdcf20de58769f49e48714",
+    "stage1-review/review_legacy_active.cpp": "47646b71becc2fb4dc3f7977aa6855da78e1159ab341a8199cc186076a261188"
+  },
+  "availability": {
+    "real_source_requests": 0,
+    "default_enabled_search_sources": 0,
+    "registered_search_sources": 17,
+    "default_registered_sites": 0,
+    "human_relevance_results": "not_provided",
+    "s0_acceptance": "not_completed"
+  },
+  "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+  "limitations": [
+    "This checkpoint includes phase1 only; remaining phase candidates are not yet integrated.",
+    "Full CRAWL-03/public collection and arbitrary power-loss verification remain unaccepted.",
+    "Publication histories and session event logs do not replace independent revocation continuity; restore quarantine remains."
+  ]
+}

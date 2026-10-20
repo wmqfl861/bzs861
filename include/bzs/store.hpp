@@ -33,12 +33,14 @@ namespace bzs {
     std::string job_id, owner, url, attempt_id;
     std::int64_t epoch=0, input_index=0, deletion_generation=0;
     std::int64_t request_grant=0, byte_grant=0, timeout_ms=0, deadline_ms=0;
+    std::int64_t publication_sequence=0;
   };
   struct MapLease {
     std::string job_id,owner,site_id,manifest_sha256,origin,url,logical_url,kind,attempt_id;
     std::int64_t epoch=0,position=0,resource_position=0,depth=0,redirect_hop=0,deletion_generation=0;
     std::int64_t request_grant=1,byte_grant=0,timeout_ms=0,deadline_ms=0;
     Json robots_record;
+    std::int64_t publication_sequence=0;
   };
   class Store {
     sqlite3* db_=nullptr;
@@ -66,6 +68,11 @@ namespace bzs {
                                     const std::string& frozen_representation="");
     void observe_policy_locked(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy);
     void publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy);
+    std::int64_t publication_sequence_locked();
+    Json publication_history_locked(const std::string& owner,const Json& urls,std::int64_t sequence);
+    Json seal_publication_locked(const Json& policy,const Json& history);
+    void prepare_web_publication_locked(const std::string& owner,const std::string& url,ParsedDocument& parsed,Json& meta);
+    void seal_frozen_publication_locked(const std::string& owner,const std::string& document_id,const Json& history);
     Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
     bool alias_fences_live_locked(const Json& fences);
     std::int64_t epoch_locked(const std::string& owner);

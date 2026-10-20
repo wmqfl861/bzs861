@@ -1,10 +1,10 @@
 # GitHub 交付与开发历史
 
-更新：2026-10-19。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+更新：2026-10-20。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
 ## 当前增量与已交付输入
 
-当前工作批次为 **0.1.5 S2 crawl hardening candidate**，输入是已交付 0.1.4 的 `90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63`，工作分支为 `agent/s2-crawl-hardening-20261019`。本批修复存量网页发布上限，增加持久日期/参数/重复分页防护与真实崩溃/回执丢失验证；源码及命令证据见 [validation/s2_hardening/test_report.json](../validation/s2_hardening/test_report.json)。
+当前检查点为 **0.1.6 S2 五阶段 · 阶段一**，输入基线是已交付 0.1.5 的 `2007690c9403b8ae593101488de1adf228608284`（tree `b85be7edb97fbbbfa0d880ffe503bd76119f625a`），对应 [CI 39350799429](https://github.com/wmqfl861/bzs861/actions/runs/39350799429) 的 Linux/Windows 在本轮开始时已核对成功。当前修复和执行见 [五阶段计划](handoff/S2_FIVE_STAGES_20261020.md) 与 [当前报告](../validation/s2_five_stages/stage1-report.json)。新报告只声明实际本地结果，精确新提交 CI 需发布后查询。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
@@ -32,6 +32,6 @@
 
 ## 证据分期
 
-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；当前为 `validation/s2_hardening/`。旧证据不覆盖、不改名冒充新运行。
+`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；当前五阶段为 `validation/s2_five_stages/`。旧证据不覆盖、不改名冒充新运行。
 
 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。

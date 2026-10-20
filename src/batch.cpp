@@ -232,11 +232,12 @@ std::optional<ReadLease> Store::lease_next_read() {
     require(job.num(2)<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Lease generation exhausted",500);
     const auto timeout=std::min(job.num(8),job.num(3)-now);
     ReadLease lease{id,owner,item.text(1),random_id(),job.num(2)+1,item.num(0),item.num(2),
-                    std::min(per_item_requests,job.num(6)),std::min(per_item_bytes,job.num(7)),timeout,job.num(3)};
+                    std::min(per_item_requests,job.num(6)),std::min(per_item_bytes,job.num(7)),timeout,job.num(3),publication_sequence_locked()};
     Sql reserve(db_,"UPDATE read_job_budgets SET charged_requests=charged_requests+?,charged_bytes=charged_bytes+? WHERE job_id=?");
     reserve.bind(1,lease.request_grant);reserve.bind(2,lease.byte_grant);reserve.bind(3,id);reserve.step();
-    Sql claim(db_,"UPDATE read_job_items SET state='running',attempts=attempts+1,lease_epoch=?,attempt_id=?,request_grant=?,byte_grant=?,error_code=NULL WHERE job_id=? AND position=?");
-    claim.bind(1,lease.epoch);claim.bind(2,lease.attempt_id);claim.bind(3,lease.request_grant);claim.bind(4,lease.byte_grant);claim.bind(5,id);claim.bind(6,lease.input_index);claim.step();
+    Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,lease.url);const auto snapshot=current.step()?current.text(0):"";
+    Sql claim(db_,"UPDATE read_job_items SET state='running',attempts=attempts+1,lease_epoch=?,attempt_id=?,request_grant=?,byte_grant=?,error_code=NULL,publication_sequence=?,publication_snapshot_id=? WHERE job_id=? AND position=?");
+    claim.bind(1,lease.epoch);claim.bind(2,lease.attempt_id);claim.bind(3,lease.request_grant);claim.bind(4,lease.byte_grant);claim.bind(5,lease.publication_sequence);claim.bind(6,snapshot);claim.bind(7,id);claim.bind(8,lease.input_index);claim.step();
     Sql activate(db_,"UPDATE jobs SET state='running',epoch=?,attempts=attempts+1,lease_until=?,error_code=NULL WHERE id=?");
     // Bound the duration before adding to the clock (also valid close to INT64_MAX).
     activate.bind(1,lease.epoch);activate.bind(2,now+std::min(job.num(3)-now,timeout+5000));activate.bind(3,id);activate.step();
@@ -254,16 +255,12 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
     reject.bind(1,lease.job_id);reject.bind(2,lease.input_index);reject.step();settle_read_job_locked(lease.job_id);tx.commit();return false;
   }
   require(input.url==lease.url,"E_WORKER_PROTOCOL","Read result identity differs from its lease",502);
-  if(meta.has("redirect_publication_observations")) {
-    Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
-    const auto observations=meta.at("redirect_publication_observations");
-    for(std::size_t i=0;i<observations.size();++i) {
-      const auto observation=observations.at(i);
-      (void)alias_fences_locked(lease.owner,lease.url,observation.at("url").str(),created.num(0));
-      observe_policy_locked(lease.owner,lease.url,observation.at("url").str(),observation.at("publication"));
-    }
-  }
-  auto snapshot=ingest_web_locked(lease.owner,input,std::move(parsed),meta,lease.deletion_generation);
+  Sql captured(db_,"SELECT j.created_delete_sequence,j.auth_epoch,i.publication_sequence,i.publication_snapshot_id FROM jobs j JOIN read_job_items i ON i.job_id=j.id WHERE j.id=? AND i.position=?");
+  captured.bind(1,lease.job_id);captured.bind(2,lease.input_index);captured.step();
+  auto read_meta=Json::parse(meta.dump()),fence=Json::object();fence.set("epoch",captured.num(1));fence.set("sequence",captured.num(0));fence.set("generation",lease.deletion_generation);
+  if(captured.text(3)!="@legacy")fence.set("snapshot_id",captured.text(3));
+  read_meta.set("publication_fence",fence);read_meta.set("page_publication_sequence",captured.num(2));
+  auto snapshot=ingest_web_locked(lease.owner,input,std::move(parsed),read_meta,lease.deletion_generation);
   require(live_read_lease_locked(lease),"E_LEASE_EXPIRED","Lease/deadline expired before commit",409);
   reconcile_read_usage_locked(lease,requests,bytes);
   Sql done(db_,"UPDATE read_job_items SET state='succeeded',snapshot_id=?,receipt_json=?,error_code=NULL WHERE job_id=? AND position=?");

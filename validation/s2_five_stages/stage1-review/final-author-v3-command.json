@@ -1,0 +1,135 @@
+{
+  "started_at": "2026-10-20T03:40:56.288694+00:00",
+  "duration_s": 5.727,
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "inputs": {
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp": "9cf760535062067420b02f80750d4a8ae93f1b504bfdcf20de58769f49e48714",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order-baseline.cpp": "e2cf63bedcb6105f9e2dcef6eafc1ec7ff22f66223b428f5731d66fd6c45c654",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_active.cpp": "47646b71becc2fb4dc3f7977aa6855da78e1159ab341a8199cc186076a261188",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a": "7b6a7fbb9b9ecd904b2d87697914fccf17bab6473a8d1c42c9cb816cf49dc0a5",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-schema7-final": "5906cefbc3fc97b9a994d917048b9a108d5cad1ae54f6bab6266bb88bb8bd988",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/store.cpp": "6e4c619768712502f9c9c1ed8f14963ab9fca15fa32aa4db029f846dd5941e9e",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/publication.cpp": "9e4a88edaabf934846b96128ef0409268f98165c22d732bc13dce3cb8acc98eb",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/batch.cpp": "fe4f78e6d0d202e6f37400c49db9c188dc3430c81c23b1e993d44e475ef4f324",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp": "13fe23d93553c4ea7dd5be58b0d9cda8d10bb8c61bc5505c1bb77dbdf2fd39fd",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/web.cpp": "6451f98afcee1cf80e541390e1170c3d079fc3119f849651b8998a46eb0d9719",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/query.hpp": "5e14e721065bae54fbd5c04afb8bd6a7bce7949fbe01b29a1d2876604c25b1eb",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/service.hpp": "7b26011bc75fef70059c4db336371e6d450bfeb8e3979233845ae2a449b76e5b",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/store.hpp": "dedad1dfa4204add1a2f94adca6ffb315cd0d11b2b86f433ebc56a05ffe6339b",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/tokenizer.hpp": "e4945b4d8475000acbbb274b6fe1af9baa3779f7c5c2b29cf0c67e10add7475d",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/web.hpp": "16180fa6e53ff815075d64584847c295ab8243fe82c180c4eb83b1cf737e66c1"
+  },
+  "commands": [
+    {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/80f41eb198a3/bzs861/include",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp",
+        "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-refresh-final-v3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/80f41eb198a3/bzs861/include",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_active.cpp",
+        "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-final-v3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-refresh-final-v3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-schema7-final",
+        "create",
+        "noindex",
+        "/tmp/bzs-active7-final-v3-0izkqox2/state.db",
+        "/tmp/bzs-active7-final-v3-0izkqox2/metadata.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-final-v3",
+        "upgrade",
+        "noindex",
+        "/tmp/bzs-active7-final-v3-0izkqox2/state.db",
+        "/tmp/bzs-active7-final-v3-0izkqox2/metadata.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-schema7-final",
+        "create",
+        "nosnippet",
+        "/tmp/bzs-active7-final-v3-j_dcp90f/state.db",
+        "/tmp/bzs-active7-final-v3-j_dcp90f/metadata.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-active-final-v3",
+        "upgrade",
+        "nosnippet",
+        "/tmp/bzs-active7-final-v3-j_dcp90f/state.db",
+        "/tmp/bzs-active7-final-v3-j_dcp90f/metadata.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "log": "final-author-v3.log",
+  "log_sha256": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+  "inputs_unchanged": true,
+  "temporary_databases_removed": true,
+  "scope": "Rebind original 17 direct race/identity cases plus2 genuine schema7 active batch upgrades to the final library after compatibility completeness fix. No network or direct SQL mutation.",
+  "published_schema7_generator_provenance": {
+    "record": "final-author-v2-command.json",
+    "record_sha256": "77f0957962ed02c951122bf72804ad1384129141cbb057be28884cc5b15d7e04",
+    "binary_sha256": "5906cefbc3fc97b9a994d917048b9a108d5cad1ae54f6bab6266bb88bb8bd988",
+    "source_sha256": "47646b71becc2fb4dc3f7977aa6855da78e1159ab341a8199cc186076a261188"
+  },
+  "all_commands_succeeded": true
+}

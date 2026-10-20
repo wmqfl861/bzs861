@@ -1,0 +1,16 @@
+{
+  "status": "passed_scope_limited_cross_review",
+  "record": "stage1-review/independent-review-final-v3.json",
+  "record_sha256": "8196d8c2f9065100ac14da47d7df401e28f02d877699bb182e3735f6d781df4f",
+  "direct_api_cases": 17,
+  "genuine_schema7_active_upgrade_cases": 2,
+  "compatibility_completeness_cases": 6,
+  "total_cases": 25,
+  "failures": 0,
+  "production_sources_and_headers_match_frozen_gate_inputs": true,
+  "review_library": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "sha256": "7b6a7fbb9b9ecd904b2d87697914fccf17bab6473a8d1c42c9cb816cf49dc0a5"
+  },
+  "scope": "Independent reviewer executes its own harness against the author build of the same production sources. Root final builds and complete gates are bound separately. Historical headers are reproducible from the baseline commit; databases are not published."
+}

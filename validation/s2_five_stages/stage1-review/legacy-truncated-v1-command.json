@@ -1,0 +1,46 @@
+{
+  "started_at": "2026-10-20T03:33:36.125735+00:00",
+  "duration_s": 2.46,
+  "commands": [
+    {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/80f41eb198a3/bzs861/include",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_truncated.cpp",
+        "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-truncated"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-legacy-truncated"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "inputs": {
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_legacy_truncated.cpp": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp": "9cf760535062067420b02f80750d4a8ae93f1b504bfdcf20de58769f49e48714",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a": "db34cae20d7190f8a92f7a8e2da328d50e182dfc6fa9a04f6c74e8224c9437aa",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/web.cpp": "ba028f9091895fb5e25210b3871d9bb88c0e24317aa7b56ddac4864bf6cc1b6c",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/publication.cpp": "9e4a88edaabf934846b96128ef0409268f98165c22d732bc13dce3cb8acc98eb"
+  },
+  "inputs_unchanged": true,
+  "log": "legacy-truncated-v1.log",
+  "log_sha256": "3f742f80c795170be91c9db02bbeacdbdfb9a1dbd46597e7a0be6e068dacc4e3",
+  "scope": "Native fake worker compatibility response lacks publication, carries HTTP200 plus download_truncated; existing noindex must not be cleared. No real HTTP or direct SQL mutation."
+}

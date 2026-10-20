@@ -243,7 +243,7 @@ namespace {
   TEST(schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity) {
     Temp t;Fake f;Json snapshot,evidence,session;std::string map_id,read_id;
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));snapshot=s.ingest("alice",{"https://MAP.example:443/map/old#fragment","marker preserved","text/plain","old"});evidence=s.evidence("alice",snapshot.at("snapshot_id").str(),0,6);session=freeze(s);map_id=w.submit_map("alice",args()).at("job_id").str();drain(w);read_id=s.read_many_submit("alice",{std::string(base)+"/map/read"},"read",{}).at("job_id").str();sql(s.raw_handle(),"UPDATE content_fts SET rowid=913;");drop_crawl(s.raw_handle()); }
-    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==7);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
+    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==8);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
   }
   TEST(schema_five_quarantine_rejects_before_new_publication_ddl) {
     Temp t;{ Store s(t.path/"db");drop_crawl(s.raw_handle());sql(s.raw_handle(),"UPDATE settings SET value='1' WHERE key='restore_quarantine';"); }
@@ -257,6 +257,67 @@ namespace {
     }
     Json call(const std::string& method,const Json& params,int timeout)override { CHECK(method=="fetch.extract");CHECK(timeout>0);reads.push_back(params);return response?response(params):ok(params); }
   };
+  Json page_policy(Json page,bool index,bool snippets) {
+    page.set("index_allowed",index);auto policy=page.at("publication");policy.set("index_allowed",index);policy.set("snippet_allowed",index&&snippets);
+    if(!index||!snippets)policy.set("snippet_text","");
+    if(!index)policy.set("snippet_title","");
+    if(!index)policy.at("directives").push(Json::string("noindex"));else if(!snippets)policy.at("directives").push(Json::string("nosnippet"));
+    return page;
+  }
+  Json refresh_args(const std::string& url) { auto p=Json::object();p.set("url",url);p.set("freshness","refresh");return p; }
+  Json hit_url(const Json& rows,const std::string& url) { for(std::size_t i=0;i<rows.size();++i)if(rows.at(i).at("url").str()==url)return rows.at(i);return Json(); }
+  TEST(crawl_late_body_cannot_undo_a_newer_direct_page_restriction_or_replace_fresh_current) {
+    for(bool index:{false,true})for(bool restore_before:{false,true}) {
+      Temp t;Fake f;Reader reader;Store first(t.path/"db",[&]{return f.now;}),second(t.path/"db",[&]{return f.now;});WebService crawl(first,f,{},SiteRegistry(manifest())),read(second,reader,{});
+      const auto url=std::string(base)+"/map/a";read.read("alice",refresh_args(url));const auto previous=freeze(first);Json qualified;
+      f.response=[&](const Json& p) {
+        auto response=f.ok(p);if(p.at("kind").str()!="page")return response;
+        reader.response=[&](const Json& q) { return page_policy(reader.ok(q),index,false); };read.read("alice",refresh_args(url));
+        if(restore_before) { reader.response={};qualified=read.read("alice",refresh_args(url)); }
+        return response;
+      };
+      const auto late=crawl_one(crawl,first,"late",url);CHECK(late.at("state").str()=="succeeded");CHECK(late.at("body_read").flag());
+      const auto snapshot=first.snapshot("alice",late.at("snapshot_id").str());CHECK(!snapshot.at("publication").at("snippet_allowed").flag());CHECK(snapshot.at("canonical_text").str()=="marker visible secret");
+      const auto current=hit_url(hits(first,freeze(first)),url);
+      if(restore_before) { CHECK(!current.is_null());CHECK(!current.at("snippet").str().empty());CHECK(first.cached("alice",url)->at("snapshot_id").str()==qualified.at("snapshot_id").str()); }
+      else if(!index)CHECK(current.is_null());else CHECK(current.at("snippet").str().empty());
+      CHECK(f.calls.size()==2);const auto old=hit_url(hits(first,previous),url);if(!index)CHECK(old.is_null());else CHECK(old.at("snippet").str().empty());
+      reader.response={};read.read("alice",refresh_args(url));CHECK(!hit_url(hits(first,freeze(first)),url).at("snippet").str().empty());
+      const auto after=hit_url(hits(first,previous),url);if(!index)CHECK(after.is_null());else CHECK(after.at("snippet").str().empty());
+    }
+  }
+  TEST(crawl_logical_refresh_sequence_survives_redirect_pause_and_restart) {
+    for(bool index:{false,true}) {
+      Temp t;Fake f;Reader reader;std::string id;Json previous;const std::string a=std::string(base)+"/map/a",x=std::string(base)+"/map/x",b=std::string(base)+"/map/b";
+      f.response=[&](const Json& p) { auto response=f.ok(p);if(p.at("kind").str()=="page"&&p.at("url").str()!=b) { response.set("status","redirect");response.set("http_status",std::int64_t{302});response.set("redirect_url",p.at("url").str()==a?x:b); }return response; };
+      {
+        Store first(t.path/"db",[&]{return f.now;});WebService crawl(first,f,{},SiteRegistry(manifest())),read(first,reader,{});
+        reader.response=[&](const Json& p) { auto page=reader.ok(p);page.set("final_url",b);auto redirects=Json::array();redirects.push(Json::string(x));redirects.push(Json::string(b));page.set("redirects",redirects);return page; };
+        read.read("alice",refresh_args(a));previous=freeze(first);id=crawl.submit_crawl("alice",args({a},"retained-logical-sequence")).at("job_id").str();
+        auto robots=crawl.lease_map();CHECK(robots&&robots->kind=="robots");crawl.execute_map(*robots);auto start=crawl.lease_map();CHECK(start&&start->url==a);crawl.execute_map(*start);first.job_control("alice",id,"pause");CHECK(first.job_get("alice",id).at("state").str()=="paused");
+      }
+      Store reopened(t.path/"db",[&]{return f.now;}),second(t.path/"db",[&]{return f.now;});WebService read(second,reader,{}),crawl(reopened,f,{},SiteRegistry(manifest()));
+      reader.response=[&](const Json& p) { return page_policy(reader.ok(p),index,false); };read.read("alice",refresh_args(x));reader.response={};read.read("alice",refresh_args(x));
+      reopened.job_control("alice",id,"resume");drain(crawl);CHECK(reopened.job_get("alice",id).at("state").str()=="succeeded");CHECK(f.calls.size()==4);CHECK(reopened.job_get("alice",id).at("usage").at("external_requests").num()==4);
+      const auto rows=hits(reopened,freeze(reopened));CHECK(!hit_url(rows,b).is_null());CHECK(!hit_url(rows,b).at("snippet").str().empty());CHECK(!hit_url(rows,x).at("snippet").str().empty());
+      const auto current=hit_url(rows,a),old=hit_url(hits(reopened,previous),a);if(!index) { CHECK(current.is_null());CHECK(old.is_null()); }else { CHECK(current.at("snippet").str().empty());CHECK(old.at("snippet").str().empty()); }
+      read.read("alice",refresh_args(a));CHECK(!hit_url(hits(reopened,freeze(reopened)),a).is_null());const auto after=hit_url(hits(reopened,previous),a);if(!index)CHECK(after.is_null());else CHECK(after.at("snippet").str().empty());
+    }
+  }
+  TEST(schema_seven_redirected_crawl_keeps_an_unknown_logical_capture_restricted_after_upgrade) {
+    Temp t;Fake f;Reader reader;std::string id;Json previous;const std::string a=std::string(base)+"/map/a",b=std::string(base)+"/map/b";
+    f.response=[&](const Json& p) { auto response=f.ok(p);if(p.at("kind").str()=="page"&&p.at("url").str()==a) { response.set("status","redirect");response.set("http_status",std::int64_t{302});response.set("redirect_url",b); }return response; };
+    {
+      Store store(t.path/"db",[&]{return f.now;});WebService crawl(store,f,{},SiteRegistry(manifest())),read(store,reader,{});
+      reader.response=[&](const Json& p) { auto page=reader.ok(p);page.set("final_url",b);auto redirects=Json::array();redirects.push(Json::string(b));page.set("redirects",redirects);return page; };
+      read.read("alice",refresh_args(a));previous=freeze(store);id=crawl.submit_crawl("alice",args({a},"schema-seven-inflight")).at("job_id").str();auto robots=crawl.lease_map();CHECK(robots);crawl.execute_map(*robots);auto start=crawl.lease_map();CHECK(start);crawl.execute_map(*start);
+      reader.response=[&](const Json& p) { return page_policy(reader.ok(p),false,false); };read.read("alice",refresh_args(b));
+      sql(store.raw_handle(),"ALTER TABLE document_publication DROP COLUMN index_generation; ALTER TABLE document_publication DROP COLUMN snippet_generation; ALTER TABLE session_rows DROP COLUMN snippet_suppressed; ALTER TABLE read_job_items DROP COLUMN publication_sequence; ALTER TABLE read_job_items DROP COLUMN publication_snapshot_id; ALTER TABLE map_resources DROP COLUMN publication_sequence; ALTER TABLE map_resources DROP COLUMN publication_snapshot_id; UPDATE snapshots SET meta_json=json_remove(meta_json,'$.page_publication_sequence','$.page_publication_history','$.page_publication_stale','$.publication_fence'); UPDATE map_hops SET admission_json=json_remove(admission_json,'$.publication_sequence','$.publication_snapshot_id'); PRAGMA user_version=7;");
+    }
+    Store reopened(t.path/"db",[&]{return f.now;});WebService crawl(reopened,f,{},SiteRegistry(manifest())),read(reopened,reader,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==8);drain(crawl);CHECK(reopened.job_get("alice",id).at("state").str()=="succeeded");CHECK(hits(reopened,freeze(reopened)).size()==0);
+    reader.response={};read.read("alice",refresh_args(b));const auto current=hits(reopened,freeze(reopened));CHECK(hit_url(current,a).is_null());CHECK(!hit_url(current,b).is_null());CHECK(hits(reopened,previous).size()==0);CHECK(f.calls.size()==3);
+    read.read("alice",refresh_args(a));CHECK(!hit_url(hits(reopened,freeze(reopened)),a).is_null());CHECK(hits(reopened,previous).size()==0);
+  }
   TEST(links_only_publication_ceiling_survives_direct_and_batch_refresh) {
     for(bool batch:{false,true}) {
       Temp t;Fake f;auto config=manifest();config.at("sites").at(0).at("review").set("redistribution_policy","links_only");Store s(t.path/"db",[&]{return f.now;});WebService crawl(s,f,{},SiteRegistry(config));crawl_one(crawl,s,"first");CHECK(hits(s,freeze(s)).at(0).at("snippet").str().empty());
@@ -348,7 +409,11 @@ namespace {
       if(batch) { auto job=s.read_many_submit("alice",{a},"redirect",{});auto lease=s.lease_next_read();CHECK(lease);web.execute_read(*lease);auto result=s.job_results("alice",job.at("job_id").str()).at("items").at(0);CHECK(result.at("state").str()=="succeeded");CHECK(result.at("external_requests").num()==2);CHECK(result.at("receipt").at("indexed").flag()==index);snapshot=result.at("receipt").at("snapshot_id").str(); }
       else { auto result=web.read("alice",p);CHECK(result.at("indexed").flag()==index);snapshot=result.at("snapshot_id").str(); }
       CHECK(snapshot!=old.at("snapshot_id").str());auto stored=s.snapshot("alice",snapshot);CHECK(stored.at("publication").at("index_allowed").flag()==index);CHECK(!stored.at("publication").at("snippet_allowed").flag());CHECK(stored.at("representation_publication").at("index_allowed").flag());CHECK(stored.at("representation_publication").at("snippet_allowed").flag());
-      auto reused=web.read("alice",p);CHECK(reused.at("snapshot_id").str()==snapshot);
+      // The same bytes observed after a restriction have a new immutable
+      // dispatch fence. Reusing and mutating the older fence would also
+      // requalify frozen sessions bound to that older observation.
+      auto refreshed=web.read("alice",p);CHECK(refreshed.at("snapshot_id").str()!=snapshot);
+      CHECK(s.snapshot("alice",snapshot).at("meta").canonical()==stored.at("meta").canonical());
       for(const auto& session:{frozen,freeze(s)}) { auto result=hits(s,session);bool found_a=false,found_b=false;for(std::size_t i=0;i<result.size();++i) { auto hit=result.at(i);if(hit.at("url").str()==a) { found_a=true;CHECK(hit.at("snippet").str().empty()); }if(hit.at("url").str()==b) { found_b=true;CHECK(!hit.at("snippet").str().empty()); } }CHECK(found_a==index);CHECK(found_b); }
       CHECK(s.snapshot("alice",old.at("snapshot_id").str()).at("canonical_text").str().find("marker")!=std::string::npos);
     }
@@ -572,7 +637,7 @@ namespace {
       else if(p.at("kind").str()=="page")readable_body(r,repeated_body);
       return r; };
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",parameters).at("job_id").str();execute_pages(w,4);CHECK(s.job_get("alice",id).at("used_pages").num()==3);drop_schema_seven(s.raw_handle()); }
-    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==7);
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==8);
       const auto reused=w.submit_crawl("alice",parameters);CHECK(reused.at("reused").flag());CHECK(reused.at("job_id").str()==id);CHECK(f.calls.size()==4);CHECK(reused.at("trap_policy").is_null());drain(w);
       auto job=s.job_get("alice",id);CHECK(job.at("trap_policy").at("version").str()==crawl_trap_version);CHECK(job.at("trap_policy").at("body_observations").num()==3);CHECK(job.at("trap_policy").at("url_observations").num()==6);
       CHECK(job.at("used_pages").num()==4);CHECK(job.at("skipped_pages").num()==2);CHECK(f.calls.size()==5);CHECK(stopped_edges(s,id,"E_CRAWL_TRAP_DUPLICATE_PAGINATION").size()==2);CHECK(s.stats("alice").at("snapshots").num()==4); }

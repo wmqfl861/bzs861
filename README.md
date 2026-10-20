@@ -1,6 +1,6 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.5 S2 crawl hardening candidate。** 接续已交付的 0.1.4，修复站点规则收紧后仍返回旧索引/摘要的问题，增加持久日期、查询组合和重复分页防护，以及真实进程崩溃/回执丢失回归。保留 robots 准入、站点发现、来源探测、黄金查询和显式批量读取。面向 Linux、本机使用和 AI Agent；S0、S1、S2 的完整验收仍未完成。
+**状态：0.1.6 S2 五阶段开发 · 第一检查点。** 接续已交付的 0.1.5，修复旧允许回包跨越较新 `noindex` / `nosnippet` 的顺序竞争，覆盖直接读取、批量读取、重定向和爬取；升级保留原冻结表示与限制历史。五阶段范围见 [接续计划](docs/handoff/S2_FIVE_STAGES_20261020.md)。S0、S1、S2 的完整验收仍未完成。
 
 目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_hardening/README.md)；实际结果见 [本轮报告](validation/s2_hardening/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
 

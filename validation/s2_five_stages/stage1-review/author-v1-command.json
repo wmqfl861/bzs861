@@ -1,0 +1,43 @@
+{
+  "started_at": "2026-10-20T03:10:55.645205+00:00",
+  "compile_command": [
+    "c++",
+    "-std=c++20",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs861/include",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-refresh-author-v1"
+  ],
+  "compile_exit_code": 0,
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "inputs": {
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review_refresh_order.cpp": "3aff69b6827269c756470ea2456ced4a5ecdb6caacad989c33fce3aa92e46a6a",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a": "0bac039b647becd36cbe793575100c257beb533cd4bf3fddbb17fcfb904222da",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/store.hpp": "dedad1dfa4204add1a2f94adca6ffb315cd0d11b2b86f433ebc56a05ffe6339b",
+    "/workspace/scratch/80f41eb198a3/bzs861/include/bzs/web.hpp": "16180fa6e53ff815075d64584847c295ab8243fe82c180c4eb83b1cf737e66c1",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/publication.cpp": "ed419ae4ba830d138686a63f4d85ec38358bdfb71fda22a1573e3af5fd7c2b72",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/store.cpp": "65949a98e52ac9278468971b7cd029f1c11e170297cadbb3a59d5b0b68431599",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/web.cpp": "ba028f9091895fb5e25210b3871d9bb88c0e24317aa7b56ddac4864bf6cc1b6c",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/batch.cpp": "ec16321522a1f15b21f08b79b8f5813c96dce7a9f501f3492385d5e3507e2f2e",
+    "/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp": "cc5a23a45e166d3b430af3ed4e9ef498a169b097a6a666d154de5ed26af016e9"
+  },
+  "command": [
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/review-refresh-author-v1"
+  ],
+  "exit_code": 0,
+  "log": "author-v1.log",
+  "log_sha256": "cd0940703ad2d0643a0af2c362949dfa31491754268b6f5ab47eace4f3d3eaea",
+  "duration_s": 2.955,
+  "inputs_unchanged": true
+}

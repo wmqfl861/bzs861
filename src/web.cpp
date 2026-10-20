@@ -677,19 +677,27 @@ namespace bzs {
     params.set("timeout_ms", timeout);
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
     const auto redirect_observations=decode_redirect_observations(url,r);
-    for(std::size_t i=0;i<redirect_observations.size();++i) {
-      const auto observed=redirect_observations.at(i);
-      store_.observe_web_publication(owner,url,observed.at("url").str(),observed.at("publication"),publication_fence);
-    }
-    const auto observation=decode_observation(url,r);
-    if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
-    auto artifact=decode_read(url,r);const auto policy=artifact.parsed.publication;
+    std::optional<Json> observation;
+    const auto apply_observations=[&] {
+      for(std::size_t i=0;i<redirect_observations.size();++i) {
+        const auto observed=redirect_observations.at(i);
+        store_.observe_web_publication(owner,url,observed.at("url").str(),observed.at("publication"),publication_fence);
+      }
+      if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
+    };
+    ReadArtifact artifact;
+    try { observation=decode_observation(url,r);artifact=decode_read(url,r); }
+    catch(...) { apply_observations();throw; }
+    artifact.meta.set("publication_fence",publication_fence);
+    artifact.meta.set("page_publication_sequence",publication_fence.at("publication_sequence"));
+    const auto policy=artifact.parsed.publication;
     const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
     try {
       auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
       return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
     } catch(const Error& error) {
       if(error.code=="E_QUOTA") {
+        apply_observations();
         if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
         if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
       }
@@ -787,6 +795,20 @@ namespace bzs {
             !r.at("extractor").str().empty()&&r.at("extractor").str().size()<=128&&
             (r.at("content_type").str()=="text/html"||r.at("content_type").str()=="text/plain"),
             "E_WORKER_PROTOCOL","Worker content exceeds protocol bounds",502);
+    // Compatibility responses may omit the versioned publication record, but
+    // an explicitly incomplete or unsuccessful HTTP response never qualifies
+    // as a complete refresh capable of lifting a stored restriction.
+    if(r.has("http_status")||r.has("publication"))
+      require(r.has("http_status")&&r.at("http_status").is_integer()&&r.at("http_status").num()>=200&&r.at("http_status").num()<300&&r.at("http_status").num()!=206,"E_WORKER_PROTOCOL","Readable publication needs a complete 2xx response",502);
+    bool incomplete=false;
+    if(r.has("warnings")) {
+      const auto warnings=r.at("warnings");require(warnings.is_array()&&warnings.size()<=64,"E_WORKER_PROTOCOL","Invalid read warnings",502);
+      for(std::size_t i=0;i<warnings.size();++i) {
+        require(warnings.at(i).is_string()&&warnings.at(i).str().size()<=256,"E_WORKER_PROTOCOL","Invalid read warning",502);
+        incomplete=incomplete||warnings.at(i).str()=="download_truncated";
+      }
+    }
+    require(!incomplete||r.has("publication"),"E_WORKER_PROTOCOL","Incomplete HTTP body needs an explicit non-publishing policy",502);
     std::string final_url;
     try {
       final_url=normalize_iri(r.at("final_url").str());
@@ -803,7 +825,6 @@ namespace bzs {
     parsed.parser_version=opt_string(r, "extractor").empty()?"worker":opt_string(r, "extractor");
     parsed.index_allowed=r.at("index_allowed").flag();
     if(r.has("publication")) {
-      require(r.has("http_status")&&r.at("http_status").is_integer()&&r.at("http_status").num()>=200&&r.at("http_status").num()<300&&r.at("http_status").num()!=206,"E_WORKER_PROTOCOL","Readable publication needs a complete 2xx response",502);
       parsed.publication=decode_publication(r.at("publication"),url,final_url,r.at("redirects"));
       require(parsed.publication.at("index_allowed").flag()==parsed.index_allowed,"E_WORKER_PROTOCOL","Publication index decision disagrees with page",502);
       if(status=="ok"&&r.has("publication_observation")) {
@@ -811,13 +832,7 @@ namespace bzs {
         require(publication_covers(parsed.publication,observation),"E_WORKER_PROTOCOL","Read artifact would relax its response's restrictive observation",502);
       }
       const auto final_policy=decode_publication(r.at("publication"),final_url,final_url,Json::array());
-      if(r.has("warnings")) {
-        const auto warnings=r.at("warnings");require(warnings.is_array()&&warnings.size()<=64,"E_WORKER_PROTOCOL","Invalid read warnings",502);
-        for(std::size_t i=0;i<warnings.size();++i) {
-          require(warnings.at(i).is_string()&&warnings.at(i).str().size()<=256,"E_WORKER_PROTOCOL","Invalid read warning",502);
-          if(warnings.at(i).str()=="download_truncated")require(!final_policy.at("index_allowed").flag()&&!final_policy.at("snippet_allowed").flag()&&!final_policy.at("follow_allowed").flag(),"E_WORKER_PROTOCOL","Incomplete HTTP body cannot publish an allowing policy",502);
-        }
-      }
+      if(incomplete)require(!final_policy.at("index_allowed").flag()&&!final_policy.at("snippet_allowed").flag()&&!final_policy.at("follow_allowed").flag(),"E_WORKER_PROTOCOL","Incomplete HTTP body cannot publish an allowing policy",502);
       const auto redirects=decode_redirect_observations(url,r);
       for(std::size_t i=0;i<redirects.size();++i)parsed.publication=meet_publication(parsed.publication,redirects.at(i).at("publication"));
       if(parsed.publication.canonical()!=final_policy.canonical())parsed.representation_publication=final_policy;

@@ -211,7 +211,7 @@ void schema_six(sqlite3* db) {
 TEST(schema_six_empty_unconfigured_upgrade_does_not_withdraw_unregistered_explicit_reads) {
   Temp temp;Json previous,snapshot;
   { Store store(temp.path/"db");snapshot=artifact(store,"alice","https://unregistered.example/a");previous=frozen(store);schema_six(store.raw_handle()); }
-  Store store(temp.path/"db");CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==7);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured("removed")));
+  Store store(temp.path/"db");CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==8);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured("removed")));
   CHECK(hits(store,previous).size()==1);CHECK(hits(store,frozen(store)).size()==1);CHECK(scalar(store.raw_handle(),"SELECT legacy_frozen_withdrawn FROM site_publication_state")==0);
   CHECK(store.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker canonical secret");
 }
@@ -276,6 +276,149 @@ TEST(inflight_restricted_response_cannot_borrow_a_later_allowing_generation) {
     else { CHECK(hits(store,previous).at(0).at("snippet").str().empty());CHECK(hits(store,scan).at(0).at("snippet").str().empty()); }
     WebService allowed(activation,worker,{},SiteRegistry(allowing));const auto fresh=allowed.read("alice",read_args(url));CHECK(fresh.at("snapshot_id").str()!=old);CHECK(!hits(store,frozen(store)).at(0).at("snippet").str().empty());
     if(std::string(mode)=="rejected")CHECK(hits(store,previous).size()==0);else CHECK(hits(store,previous).at(0).at("snippet").str().empty());CHECK(worker.requests==2);
+  }
+}
+struct OrderedReadWorker:ReadWorker {
+  bool index=true,snippets=true,legacy=false,failed=false,partial_snippets=false;
+  std::string final_url;Json redirects=Json::array();
+  Json call(const std::string& method,const Json& args,int timeout)override {
+    auto callback=std::exchange(during,{});auto response=ReadWorker::call(method,args,timeout);during=callback;
+    response.set("final_url",final_url.empty()?args.at("url").str():final_url);response.set("redirects",redirects);
+    response.at("usage").set("external_requests",static_cast<std::int64_t>(redirects.size()+1));
+    response.set("index_allowed",index);auto policy=response.at("publication");policy.set("index_allowed",index);policy.set("snippet_allowed",index&&snippets);
+    if(!index||!snippets)policy.set("snippet_text","");
+    if(!index)policy.set("snippet_title","");
+    if(!index)policy.at("directives").push(Json::string("noindex"));else if(!snippets)policy.at("directives").push(Json::string("nosnippet"));
+    if(partial_snippets) { policy.at("directives").push(Json::string("data-nosnippet"));policy.set("snippet_text","marker safe excerpt");policy.set("snippet_title","marker safe title"); }
+    if(failed) {
+      response.set("status","http_error");response.set("http_status",std::int64_t{503});auto observed=Json::parse(policy.dump());observed.set("snippet_text","");observed.set("snippet_title","");response.set("publication_observation",observed);
+    }
+    if(legacy) { auto old=Json::object();for(const auto& key:response.keys())if(key!="publication")old.set(key,response.at(key));response=old; }
+    if(callback)callback();
+    return response;
+  }
+};
+Json find_url(const Json& rows,const std::string& url) { for(std::size_t i=0;i<rows.size();++i)if(rows.at(i).at("url").str()==url)return rows.at(i);return Json(); }
+Json ordered_read(Store& store,WebService& web,const std::string& url,bool batch) {
+  if(!batch)return web.read("alice",read_args(url));
+  const auto job=store.read_many_submit("alice",{url},random_id(),{});auto lease=store.lease_next_read();CHECK(lease.has_value());web.execute_read(*lease);
+  const auto done=store.job_get("alice",job.at("job_id").str());CHECK(done.at("state").str()=="succeeded");
+  auto result=store.job_results("alice",job.at("job_id").str()).at("items").at(0);CHECK(result.at("external_requests").num()>=1);CHECK(!result.at("usage_unknown").flag());
+  return store.snapshot("alice",result.at("receipt").at("snapshot_id").str());
+}
+TEST(refresh_order_fences_direct_and_bounded_reads_across_all_known_aliases) {
+  const std::string a="https://order.example/a",b="https://order.example/b",x="https://order.example/x";
+  for(bool batch:{false,true})for(const auto* mode:{"noindex","nosnippet","data-nosnippet"})for(int chain=0;chain<3;++chain)for(bool restore_before:{false,true}) {
+    Temp temp;Store first(temp.path/"db"),second(temp.path/"db");OrderedReadWorker slow,newer;WebService old_web(first,slow,{}),new_web(second,newer,{});
+    if(chain) { slow.final_url=b;slow.redirects.push(Json::string(chain==2?x:b));if(chain==2)slow.redirects.push(Json::string(b)); }
+    const auto original=old_web.read("alice",read_args(a));const auto previous=frozen(first);const auto evidence=first.evidence("alice",original.at("snapshot_id").str(),0,6);
+    artifact(second,"bob",a);const auto other=frozen(second,"bob");const auto target=chain==0?a:chain==1?b:x;
+    newer.index=std::string(mode)!="noindex";newer.snippets=std::string(mode)!="nosnippet";newer.partial_snippets=std::string(mode)=="data-nosnippet";
+    slow.during=[&] { new_web.read("alice",read_args(target));if(restore_before) { newer.index=true;newer.snippets=true;newer.partial_snippets=false;new_web.read("alice",read_args(target)); } };
+    const auto late=ordered_read(first,old_web,a,batch);slow.during={};
+    const auto policy=first.snapshot("alice",late.at("snapshot_id").str()).at("publication");CHECK(!policy.at("snippet_allowed").flag());
+    if(std::string(mode)=="noindex")CHECK(!policy.at("index_allowed").flag());
+    const auto current=find_url(hits(first,frozen(first)),a);const auto old=find_url(hits(first,previous),a);
+    if(restore_before&&chain==0) { CHECK(!current.is_null());CHECK(!current.at("snippet").str().empty()); }
+    else if(chain==0&&std::string(mode)=="data-nosnippet") { CHECK(!current.is_null());CHECK(current.at("snippet").str().find("safe")!=std::string::npos);CHECK(current.at("snippet").str().find("secret")==std::string::npos); }
+    else if(std::string(mode)=="noindex")CHECK(current.is_null());
+    else { CHECK(!current.is_null());CHECK(current.at("snippet").str().empty()); }
+    if(std::string(mode)=="noindex")CHECK(old.is_null());else { CHECK(!old.is_null());CHECK(old.at("snippet").str().empty());CHECK(old.at("title").str()==a); }
+    if(restore_before&&chain) { const auto independent=find_url(hits(first,frozen(first)),target);CHECK(!independent.is_null());CHECK(!independent.at("snippet").str().empty()); }
+    CHECK(first.snapshot("alice",late.at("snapshot_id").str()).at("canonical_text").str()=="marker canonical secret");CHECK(first.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(!hits(second,other,"bob").at(0).at("snippet").str().empty());
+    old_web.read("alice",read_args(a));CHECK(!find_url(hits(first,frozen(first)),a).is_null());const auto after=find_url(hits(first,previous),a);
+    if(std::string(mode)=="noindex")CHECK(after.is_null());else { CHECK(!after.is_null());CHECK(after.at("snippet").str().empty()); }
+  }
+}
+TEST(legacy_allowing_responses_are_permanently_sealed_after_a_new_snippet_restriction) {
+  for(bool batch:{false,true}) {
+    Temp temp;Store first(temp.path/"db"),second(temp.path/"db");OrderedReadWorker slow,newer;WebService old_web(first,slow,{}),new_web(second,newer,{});
+    const std::string a="https://order.example/a",b="https://order.example/b";slow.final_url=b;slow.redirects.push(Json::string(b));slow.legacy=true;
+    old_web.read("alice",read_args(a));const auto previous=frozen(first);newer.snippets=false;slow.during=[&] { new_web.read("alice",read_args(b)); };
+    const auto late=ordered_read(first,old_web,a,batch);slow.during={};newer.snippets=true;new_web.read("alice",read_args(b));
+    CHECK(first.snapshot("alice",late.at("snapshot_id").str()).at("publication").at("version").str()=="bzs-publication-1");CHECK(find_url(hits(first,frozen(first)),a).at("snippet").str().empty());CHECK(find_url(hits(first,previous),a).at("snippet").str().empty());
+  }
+}
+TEST(identical_failed_header_observations_each_fence_a_new_inflight_allow) {
+  for(bool batch:{false,true})for(bool noindex:{false,true}) {
+    Temp temp;Store first(temp.path/"db"),second(temp.path/"db");OrderedReadWorker slow,newer;WebService old_web(first,slow,{}),new_web(second,newer,{});const auto url=std::string("https://order.example/a");
+    old_web.read("alice",read_args(url));const auto previous=frozen(first);newer.index=!noindex;newer.snippets=false;newer.failed=true;
+    rejects([&]{new_web.read("alice",read_args(url));},"E_FETCH_HTTP");const auto before=scalar(first.raw_handle(),"SELECT CAST(value AS INTEGER) FROM settings WHERE key='publication_restriction_sequence'");
+    slow.during=[&] { rejects([&]{new_web.read("alice",read_args(url));},"E_FETCH_HTTP"); };
+    const auto late=ordered_read(first,old_web,url,batch);slow.during={};CHECK(scalar(first.raw_handle(),"SELECT CAST(value AS INTEGER) FROM settings WHERE key='publication_restriction_sequence'")>before);
+    CHECK(!first.snapshot("alice",late.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());
+    if(noindex)CHECK(hits(first,frozen(first)).size()==0);else CHECK(hits(first,frozen(first)).at(0).at("snippet").str().empty());
+    old_web.read("alice",read_args(url));CHECK(!hits(first,frozen(first)).at(0).at("snippet").str().empty());if(noindex)CHECK(hits(first,previous).size()==0);else CHECK(hits(first,previous).at(0).at("snippet").str().empty());
+  }
+}
+TEST(late_alias_response_keeps_a_later_logical_retarget_and_its_frozen_row) {
+  for(bool batch:{false,true}) {
+    Temp temp;Store first(temp.path/"db"),second(temp.path/"db");OrderedReadWorker slow,newer;WebService old_web(first,slow,{}),new_web(second,newer,{});const std::string a="https://order.example/a",b="https://order.example/b",c="https://order.example/c";
+    slow.final_url=b;slow.redirects.push(Json::string(b));old_web.read("alice",read_args(a));const auto old=frozen(first);Json current,new_session;
+    slow.during=[&] { newer.final_url=c;newer.redirects=Json::array();newer.redirects.push(Json::string(c));current=new_web.read("alice",read_args(a));new_session=frozen(second);newer.final_url="";newer.redirects=Json::array();newer.index=false;new_web.read("alice",read_args(b)); };
+    const auto late=ordered_read(first,old_web,a,batch);CHECK(late.at("snapshot_id").str()!=current.at("snapshot_id").str());CHECK(first.cached("alice",a)->at("snapshot_id").str()==current.at("snapshot_id").str());CHECK(!find_url(hits(first,new_session),a).is_null());CHECK(find_url(hits(first,old),a).is_null());
+  }
+}
+TEST(deletion_fences_cover_final_and_intermediate_aliases_for_direct_and_bounded_reads) {
+  for(bool batch:{false,true})for(bool middle:{false,true}) {
+    Temp temp;Store first(temp.path/"db"),second(temp.path/"db");OrderedReadWorker slow,newer;WebService old_web(first,slow,{}),new_web(second,newer,{});const std::string a="https://order.example/a",b="https://order.example/b",x="https://order.example/x";
+    const auto target=new_web.read("alice",read_args(middle?x:b));slow.final_url=b;slow.redirects.push(Json::string(middle?x:b));if(middle)slow.redirects.push(Json::string(b));
+    slow.during=[&]{second.erase("alice",target.at("document_id").str());};
+    if(!batch)rejects([&]{old_web.read("alice",read_args(a));},"E_TARGET_DELETED");
+    else { const auto job=first.read_many_submit("alice",{a},random_id(),{});auto lease=first.lease_next_read();CHECK(lease);old_web.execute_read(*lease);const auto item=first.job_results("alice",job.at("job_id").str()).at("items").at(0);CHECK(item.at("state").str()=="failed");CHECK(item.at("error_code").str()=="E_TARGET_DELETED");CHECK(item.at("external_requests").num()==(middle?3:2));CHECK(!item.at("usage_unknown").flag()); }
+    CHECK(find_url(hits(first,frozen(first)),a).is_null());
+  }
+}
+TEST(bounded_read_dispatch_fence_survives_a_new_store_connection) {
+  Temp temp;OrderedReadWorker older,newer;std::int64_t now=1800000000000;ReadLease lease;Json previous;std::string job_id;
+  {
+    Store store(temp.path/"db",[&]{return now;});WebService web(store,older,{});web.read("alice",read_args("https://order.example/a"));previous=frozen(store);const auto job=store.read_many_submit("alice",{"https://order.example/a"},"retained-fence",{});job_id=job.at("job_id").str();lease=*store.lease_next_read();
+  }
+  Store reopened(temp.path/"db",[&]{return now;});Store second(temp.path/"db",[&]{return now;});WebService newer_web(second,newer,{});newer.index=false;newer_web.read("alice",read_args(lease.url));WebService old_web(reopened,older,{});old_web.execute_read(lease);
+  CHECK(reopened.job_get("alice",job_id).at("state").str()=="succeeded");CHECK(hits(reopened,frozen(reopened)).size()==0);CHECK(hits(reopened,previous).size()==0);CHECK(older.requests==2&&newer.requests==1);
+}
+TEST(schema_seven_inflight_read_has_an_unknown_capture_and_cannot_republish_a_legacy_alias) {
+  Temp temp;OrderedReadWorker older,newer;std::int64_t now=1800000000000;ReadLease lease;Json previous,proof;std::string job_id;const std::string a="https://order.example/a",b="https://order.example/b";
+  older.final_url=b;older.redirects.push(Json::string(b));
+  {
+    Store store(temp.path/"db",[&]{return now;});WebService old_web(store,older,{}),new_web(store,newer,{});const auto original=old_web.read("alice",read_args(a));previous=frozen(store);proof=store.evidence("alice",original.at("snapshot_id").str(),0,6);
+    job_id=store.read_many_submit("alice",{a},"legacy-inflight",{}).at("job_id").str();lease=*store.lease_next_read();newer.index=false;new_web.read("alice",read_args(b));
+    sql(store.raw_handle(),"ALTER TABLE document_publication DROP COLUMN index_generation; ALTER TABLE document_publication DROP COLUMN snippet_generation; ALTER TABLE session_rows DROP COLUMN snippet_suppressed; ALTER TABLE read_job_items DROP COLUMN publication_sequence; ALTER TABLE read_job_items DROP COLUMN publication_snapshot_id; ALTER TABLE map_resources DROP COLUMN publication_sequence; ALTER TABLE map_resources DROP COLUMN publication_snapshot_id; UPDATE snapshots SET meta_json=json_remove(meta_json,'$.page_publication_sequence','$.page_publication_history','$.page_publication_stale','$.publication_fence'); PRAGMA user_version=7;");
+  }
+  Store reopened(temp.path/"db",[&]{return now;});WebService old_web(reopened,older,{}),new_web(reopened,newer,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==8);CHECK(scalar(reopened.raw_handle(),"SELECT COUNT(*) FROM read_job_items WHERE publication_snapshot_id='@legacy'")==1);
+  old_web.execute_read(lease);CHECK(reopened.job_get("alice",job_id).at("state").str()=="succeeded");CHECK(hits(reopened,frozen(reopened)).size()==0);
+  newer.index=true;new_web.read("alice",read_args(b));const auto current=hits(reopened,frozen(reopened));CHECK(find_url(current,a).is_null());CHECK(!find_url(current,b).is_null());CHECK(hits(reopened,previous).size()==0);CHECK(reopened.evidence_get("alice",proof.at("evidence_id").str()).at("quote").str()=="marker");
+  old_web.read("alice",read_args(a));CHECK(!find_url(hits(reopened,frozen(reopened)),a).is_null());CHECK(hits(reopened,previous).size()==0);
+}
+struct IncompleteLegacyRead:OrderedReadWorker {
+  std::string failure;
+  Json call(const std::string& method,const Json& args,int timeout)override {
+    auto response=OrderedReadWorker::call(method,args,timeout);
+    if(failure=="truncated")response.at("warnings").push(Json::string("download_truncated"));
+    else if(!failure.empty())response.set("http_status",std::int64_t{failure=="partial"?206:500});
+    return response;
+  }
+};
+TEST(compatibility_responses_cannot_relax_restrictions_with_incomplete_http_bodies) {
+  for(const bool batch:{false,true})for(const auto* mode:{"truncated","partial","http_error"}) {
+    Temp temp;Store store(temp.path/"db");OrderedReadWorker warm;IncompleteLegacyRead legacy;
+    legacy.legacy=true;legacy.failure=mode;WebService original(store,warm,{}),incomplete(store,legacy,{});
+    const std::string url="https://order.example/incomplete";
+    const auto saved=original.read("alice",read_args(url)),previous=frozen(store);
+    const auto proof=store.evidence("alice",saved.at("snapshot_id").str(),0,6);
+    warm.index=false;original.read("alice",read_args(url));CHECK(hits(store,frozen(store)).size()==0);
+    const auto snapshots=store.stats("alice").at("snapshots").num();
+    if(!batch)rejects([&]{incomplete.read("alice",read_args(url));},"E_WORKER_PROTOCOL");
+    else {
+      const auto id=store.read_many_submit("alice",{url},random_id(),{}).at("job_id").str();
+      const auto lease=store.lease_next_read();CHECK(lease);incomplete.execute_read(*lease);
+      const auto result=store.job_results("alice",id).at("items").at(0);
+      CHECK(result.at("state").str()=="failed");CHECK(result.at("error_code").str()=="E_WORKER_PROTOCOL");
+      CHECK(result.at("external_requests").num()==1);CHECK(!result.at("usage_unknown").flag());
+    }
+    CHECK(store.stats("alice").at("snapshots").num()==snapshots);CHECK(hits(store,frozen(store)).size()==0);CHECK(hits(store,previous).size()==0);
+    CHECK(store.evidence_get("alice",proof.at("evidence_id").str()).at("quote").str()=="marker");
+    legacy.failure.clear();ordered_read(store,incomplete,url,batch);CHECK(hits(store,frozen(store)).size()==1);CHECK(hits(store,previous).size()==0);
   }
 }
 }

@@ -268,6 +268,108 @@ bool Store::alias_fences_live_locked(const Json& fences) {
   return true;
 }
 
+std::int64_t Store::publication_sequence_locked() {
+  Sql value(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='publication_restriction_sequence'");
+  require(value.step(),"E_STORAGE","Missing publication sequence",500);return value.num(0);
+}
+Json Store::publication_history_locked(const std::string& owner,const Json& urls,std::int64_t sequence) {
+  require(urls.is_array()&&urls.size()<=24&&sequence>=0,"E_WORKER_PROTOCOL","Invalid publication fence",502);
+  std::int64_t index=0,snippet=0;std::set<std::string> keys;auto restrictions=Json::array();
+  for(std::size_t i=0;i<urls.size();++i) {
+    const auto url=urls.at(i).str();keys.insert(key_for(url));keys.insert(key_for(publication_url_identity(url)));
+  }
+  for(const auto& key:keys) {
+    Sql row(db_,"SELECT index_generation,snippet_generation FROM document_publication WHERE owner=? AND url_key=?");
+    row.bind(1,owner);row.bind(2,key);if(!row.step())continue;
+    if(row.num(0)>sequence)index=std::max(index,row.num(0));
+    if(row.num(1)>sequence)snippet=std::max(snippet,row.num(1));
+    if(row.num(0)>sequence||row.num(1)>sequence) {
+      auto restriction=Json::object();restriction.set("url",publication_url_identity(key));
+      restriction.set("index_generation",row.num(0)>sequence?row.num(0):0);restriction.set("snippet_generation",row.num(1)>sequence?row.num(1):0);restrictions.push(restriction);
+    }
+  }
+  auto result=Json::object();result.set("index_generation",index);result.set("snippet_generation",snippet);result.set("restrictions",restrictions);return result;
+}
+Json Store::seal_publication_locked(const Json& input,const Json& history) {
+  auto policy=Json::parse(input.dump(),8*1024*1024);
+  if(!policy.has("version")||(history.at("index_generation").num()==0&&history.at("snippet_generation").num()==0))return policy;
+  if(history.at("index_generation").num()>0)policy.set("index_allowed",false);
+  policy.set("snippet_allowed",false);policy.set("snippet_text","");policy.set("snippet_title","");
+  auto diagnostics=policy.at("diagnostics");bool present=false;
+  for(std::size_t i=0;i<diagnostics.size();++i)present=present||diagnostics.at(i).str()=="stale_publication_response";
+  if(!present)diagnostics.push(Json::string("stale_publication_response"));
+  return policy;
+}
+void Store::seal_frozen_publication_locked(const std::string& owner,const std::string& document_id,const Json& history) {
+  const auto restrictions=history.at("restrictions");
+  for(std::size_t i=0;i<restrictions.size();++i) {
+    const auto restriction=restrictions.at(i);const auto index=restriction.at("index_generation").num(),snippet=restriction.at("snippet_generation").num();
+    // Immutable site bindings contain the same actual logical/final/redirect
+    // identities. A later A-to-C refresh must not change an old A-to-B row's
+    // binding, nor should a B observation suppress an unrelated frozen C row.
+    if(index>0) {
+      Sql remove(db_,"DELETE FROM session_rows WHERE document_id=? AND session_id IN (SELECT id FROM sessions WHERE owner=?) AND snapshot_id IN (SELECT id FROM snapshots WHERE source_kind='web' AND COALESCE(json_extract(meta_json,'$.page_publication_sequence'),0)<? AND (EXISTS(SELECT 1 FROM json_each(site_bindings_json,'$.urls') WHERE value=?) OR site_bindings_json='{}'))");
+      remove.bind(1,document_id);remove.bind(2,owner);remove.bind(3,index);remove.bind(4,restriction.at("url").str());remove.step();
+    }
+    if(snippet>0) {
+      Sql suppress(db_,"UPDATE session_rows SET snippet_suppressed=1 WHERE document_id=? AND session_id IN (SELECT id FROM sessions WHERE owner=?) AND snapshot_id IN (SELECT id FROM snapshots WHERE source_kind='web' AND COALESCE(json_extract(meta_json,'$.page_publication_sequence'),0)<? AND (EXISTS(SELECT 1 FROM json_each(site_bindings_json,'$.urls') WHERE value=?) OR site_bindings_json='{}'))");
+      suppress.bind(1,document_id);suppress.bind(2,owner);suppress.bind(3,snippet);suppress.bind(4,restriction.at("url").str());suppress.step();
+    }
+  }
+}
+void Store::prepare_web_publication_locked(const std::string& owner,const std::string& url,ParsedDocument& parsed,Json& meta) {
+  if(!parsed.publication.has("version")) {
+    // Compatibility read artifacts still enter the same persistent fence.
+    // Once restricted they must never fall back to canonical snippet text.
+    auto policy=Json::object();policy.set("version","bzs-publication-1");policy.set("index_allowed",parsed.index_allowed);
+    policy.set("snippet_allowed",parsed.index_allowed);policy.set("follow_allowed",true);
+    policy.set("snippet_text",parsed.index_allowed?utf8_prefix(parsed.text,1024*1024):"");policy.set("snippet_title",parsed.index_allowed?parsed.title:"");
+    policy.set("directives",Json::array());policy.set("diagnostics",Json::parse(R"(["legacy_read_publication"])"));parsed.publication=policy;
+  }
+  const auto sequence=meta.has("page_publication_sequence")?meta.at("page_publication_sequence").num():publication_sequence_locked();
+  require(sequence>=0&&sequence<=publication_sequence_locked(),"E_WORKER_PROTOCOL","Invalid read publication sequence",502);
+  auto urls=Json::array();std::set<std::string> known;
+  const auto add=[&](const std::string& value) { if(known.insert(value).second)urls.push(Json::string(value));require(urls.size()<=24,"E_WORKER_PROTOCOL","Publication chain exceeds its bound",502); };
+  add(url);if(meta.has("final_url"))add(meta.at("final_url").str());
+  for(const auto* key:{"redirects","crawl_publication_urls"})if(meta.has(key)) {
+    const auto chain=meta.at(key);require(chain.is_array()&&chain.size()<=24,"E_WORKER_PROTOCOL","Invalid publication chain",502);
+    for(std::size_t i=0;i<chain.size();++i)add(chain.at(i).str());
+  }
+  if(meta.has("publication_fence")) {
+    const auto fence=meta.at("publication_fence");const auto logical=fence.has("url")?fence.at("url").str():url;
+    require(epoch_locked(owner)==fence.at("epoch").num(),"E_POLICY_CHANGED","Owner policy changed during this read",409);
+    require(deletion_generation_locked(owner,logical)==fence.at("generation").num(),"E_TARGET_DELETED","Document was deleted after this read started",409);
+    for(std::size_t i=0;i<urls.size();++i) {
+      (void)alias_fences_locked(owner,logical,urls.at(i).str(),fence.at("sequence").num());
+      (void)alias_fences_locked(owner,logical,publication_url_identity(urls.at(i).str()),fence.at("sequence").num());
+    }
+  }
+  // Crawl stores the physical final page independently of its logical
+  // redirect resource; complete_map fences that logical resource separately.
+  auto identities=urls;if(meta.has("crawl_publication_urls")) { identities=Json::array();identities.push(Json::string(url)); }
+  const auto history=publication_history_locked(owner,identities,sequence);
+  const bool stale=history.at("index_generation").num()>0||history.at("snippet_generation").num()>0;
+  meta.set("page_publication_sequence",sequence);meta.set("page_publication_history",history);meta.set("page_publication_stale",stale);
+  if(stale) {
+    // Only restrictions actually observed in this response update the current
+    // resource policy. Inherited history seals this immutable artifact alone.
+    if(restrictive_publication(parsed.publication))observe_policy_locked(owner,url,url,parsed.publication);
+    const auto& final=parsed.representation_publication.has("version")?parsed.representation_publication:parsed.publication;
+    if(meta.has("final_url")&&restrictive_publication(final))observe_policy_locked(owner,meta.at("final_url").str(),meta.at("final_url").str(),final);
+    parsed.publication=seal_publication_locked(parsed.publication,history);
+    if(parsed.representation_publication.has("version"))parsed.representation_publication=seal_publication_locked(parsed.representation_publication,history);
+    if(history.at("index_generation").num()>0)parsed.index_allowed=false;
+  }
+  // Evaluate history before applying this response's own redirect headers.
+  if(meta.has("redirect_publication_observations")) {
+    const auto observations=meta.at("redirect_publication_observations");
+    require(observations.is_array()&&observations.size()<=24,"E_WORKER_PROTOCOL","Invalid redirect publication observations",502);
+    for(std::size_t i=0;i<observations.size();++i) {
+      const auto item=observations.at(i);const auto target=item.at("url").str();
+      observe_policy_locked(owner,target,target,item.at("publication"));
+    }
+  }
+}
 void Store::publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy) {
   refresh_site_publication_locked(false);
   const auto key=key_for(url);
@@ -279,21 +381,27 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
   for(std::size_t i=0;i<directives.size();++i)if(directives.at(i).str()=="data-nosnippet")restricted=true;
   const auto diagnostics=policy.at("diagnostics");
   for(std::size_t i=0;i<diagnostics.size();++i)if(diagnostics.at(i).str()=="site_links_only")restricted=true;
-  std::int64_t generation=0;std::string previous,previous_snapshot;
-  Sql old(db_,"SELECT restriction_generation,record_json,snapshot_id FROM document_publication WHERE owner=? AND url_key=?");
+  std::int64_t generation=0,index_generation=0,snippet_generation=0;
+  Sql old(db_,"SELECT restriction_generation,index_generation,snippet_generation FROM document_publication WHERE owner=? AND url_key=?");
   old.bind(1,owner);old.bind(2,key);
-  if(old.step()) { generation=old.num(0);previous=old.text(1);previous_snapshot=old.text(2); }
+  if(old.step()) { generation=old.num(0);index_generation=old.num(1);snippet_generation=old.num(2); }
   const auto encoded=record.canonical();
-  if(restricted&&(previous!=encoded||previous_snapshot!=snapshot_id)) {
+  // A second real response with the same header still fences allowing reads
+  // which started after the first response. Lease ownership prevents replayed
+  // completions; policy equality cannot stand in for observation identity.
+  if(restricted) {
     Sql sequence(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='publication_restriction_sequence'");require(sequence.step(),"E_STORAGE","Missing publication sequence",500);
     require(sequence.num(0)<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Publication generation exhausted",500);generation=sequence.num(0)+1;
     Sql update(db_,"UPDATE settings SET value=? WHERE key='publication_restriction_sequence'");update.bind(1,generation);update.step();
+    if(!index)index_generation=generation;
+    snippet_generation=generation;
   }
-  Sql save(db_,R"SQL(INSERT INTO document_publication(owner,url_key,snapshot_id,record_json,index_allowed,snippet_allowed,restricted,restriction_generation,observed_at)
- VALUES(?,?,NULLIF(?,''),?,?,?,?,?,?) ON CONFLICT(owner,url_key) DO UPDATE SET snapshot_id=excluded.snapshot_id,record_json=excluded.record_json,
+  Sql save(db_,R"SQL(INSERT INTO document_publication(owner,url_key,snapshot_id,record_json,index_allowed,snippet_allowed,restricted,restriction_generation,observed_at,index_generation,snippet_generation)
+ VALUES(?,?,NULLIF(?,''),?,?,?,?,?,?,?,?) ON CONFLICT(owner,url_key) DO UPDATE SET snapshot_id=excluded.snapshot_id,record_json=excluded.record_json,
  index_allowed=excluded.index_allowed,snippet_allowed=excluded.snippet_allowed,restricted=excluded.restricted,
- restriction_generation=excluded.restriction_generation,observed_at=excluded.observed_at)SQL");
-  save.bind(1,owner);save.bind(2,key);save.bind(3,snapshot_id);save.bind(4,encoded);save.bind(5,index?1:0);save.bind(6,snippet?1:0);save.bind(7,restricted?1:0);save.bind(8,generation);save.bind(9,clock_());save.step();
+ restriction_generation=excluded.restriction_generation,observed_at=excluded.observed_at,
+ index_generation=excluded.index_generation,snippet_generation=excluded.snippet_generation)SQL");
+  save.bind(1,owner);save.bind(2,key);save.bind(3,snapshot_id);save.bind(4,encoded);save.bind(5,index?1:0);save.bind(6,snippet?1:0);save.bind(7,restricted?1:0);save.bind(8,generation);save.bind(9,clock_());save.bind(10,index_generation);save.bind(11,snippet_generation);save.step();
   // The current policy is keyed by exact normalized retrieval URL, so historical
   // host/default-port/fragment aliases cannot retain a public index entry.
   Sql remove(db_,"DELETE FROM content_fts WHERE owner=? AND document_id IN (SELECT id FROM documents WHERE owner=? AND (url_key=? OR representation_key=?))");
@@ -332,7 +440,8 @@ void Store::observe_policy_locked(const std::string& owner,const std::string& ur
   }
 }
 Json Store::publication_fence(const std::string& owner,const std::string& url) {
-  std::lock_guard lock(mutex_);auto fence=Json::object();fence.set("epoch",epoch_locked(owner));fence.set("sequence",delete_sequence_locked());fence.set("generation",deletion_generation_locked(owner,url));return fence;
+  std::lock_guard lock(mutex_);auto fence=Json::object();fence.set("epoch",epoch_locked(owner));fence.set("sequence",delete_sequence_locked());fence.set("generation",deletion_generation_locked(owner,url));fence.set("publication_sequence",publication_sequence_locked());
+  Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,url);fence.set("snapshot_id",current.step()?current.text(0):"");return fence;
 }
 void Store::observe_web_publication(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy,const Json& fence) {
   std::lock_guard lock(mutex_);checked(sqlite3_exec(db_,"BEGIN IMMEDIATE",nullptr,nullptr,nullptr));
