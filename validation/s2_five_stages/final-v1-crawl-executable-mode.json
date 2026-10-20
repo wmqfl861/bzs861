@@ -1,0 +1,16 @@
+{
+  "before": {
+    "uid": 0,
+    "euid": 0,
+    "mode": "0o644",
+    "file_uid": 0,
+    "file_gid": 0,
+    "executable": false
+  },
+  "after": {
+    "mode": "0o755",
+    "executable": true
+  },
+  "binary_sha256_unchanged": "12c03c55ebdaaed85545f6829650bc7b2099d526df0326e18ddcdc011650fbe7",
+  "reason": "Normalize generated test executable mode to standard0755 in the same execution context before starting. Source/binary bytes untouched."
+}

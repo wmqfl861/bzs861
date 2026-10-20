@@ -163,7 +163,7 @@ int Store::site_publication_mode_locked(const std::string& source_kind,const std
   auto bindings=Json::parse(encoded,128*1024);
   int mode=bindings.has("captured_mode")?static_cast<int>(bindings.at("captured_mode").num()):0;
   require(mode>=0&&mode<=2,"E_STORAGE","Invalid captured deployment publication ceiling",500);
-  if(bindings.has("legacy_crawl_unverified")&&bindings.at("legacy_crawl_unverified").flag())return site_publication_legacy_withdrawn_?2:0;
+  if(bindings.has("legacy_crawl_unverified")&&bindings.at("legacy_crawl_unverified").flag())return site_publication_legacy_withdrawn_?2:mode;
   if(site_publication_rules_.empty())return mode;
   if(!bindings.has("version"))bindings=site_bindings_locked(url,Json::parse(meta,8*1024*1024));
   require(bindings.at("version").str()=="bzs-site-bindings-1","E_SCHEMA_VERSION","Unknown stored publication binding version",409);

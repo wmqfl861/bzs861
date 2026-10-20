@@ -4,10 +4,12 @@
 
 ## 当前增量与已交付输入
 
-当前检查点为 **0.1.6 S2 五阶段 · 阶段一**，输入基线是已交付 0.1.5 的 `2007690c9403b8ae593101488de1adf228608284`（tree `b85be7edb97fbbbfa0d880ffe503bd76119f625a`），对应 [CI 39350799429](https://github.com/wmqfl861/bzs861/actions/runs/39350799429) 的 Linux/Windows 在本轮开始时已核对成功。当前修复和执行见 [五阶段计划](handoff/S2_FIVE_STAGES_20261020.md) 与 [当前报告](../validation/s2_five_stages/stage1-report.json)。新报告只声明实际本地结果，精确新提交 CI 需发布后查询。
+当前范围为 **0.1.8 S2 五阶段集成**。本轮起点是0.1.5 `2007690c9403b8ae593101488de1adf228608284`，该输入的 [CI 39350799429](https://github.com/wmqfl861/bzs861/actions/runs/39350799429) 在开始时已核对成功。阶段一0.1.6已非强制发布为 `27966ffe61c16964c45d595e3ee2689115815217`，tree `e27f133ad3cb7647f89439cfb957e6caddec0c75` 与本地已验证树相同，对应 [CI 39431992846](https://github.com/wmqfl861/bzs861/actions/runs/39431992846)。后续完整交付继续核对最终实际提交自己的CI；不能用第一阶段通过替代集成结果。当前范围见 [五阶段计划](handoff/S2_FIVE_STAGES_20261020.md) 与 [当前报告](../validation/s2_five_stages/final-report.json)。报告只记录实际本地执行，不预写未来提交SHA或CI成功。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
+| 0.1.6 第一检查点 | `27966ffe61c16964c45d595e3ee2689115815217` | 读取顺序屏障、旧Worker完整性与独立复核；本轮后续整合的远端父检查点 |
+| 0.1.5 main | `2007690c9403b8ae593101488de1adf228608284` | 持久发布约束、抓取陷阱与真实进程恢复回归 |
 | 0.1.4 main | `90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63` | 有界正文前沿、页预算、链接边、页面发布规则；tree `b51e0f126c49727506ad2cc08ff3912d59108703` |
 | 0.1.3 main | `8a4e0f4cc630627ffa91c49598c66fec7fb4291d` | 版本化 robots 准入、独立站点登记、持久有界发现、每跳预算与配置身份 |
 | 0.1.2 main | `434a9dfa8ce26b86bf765c9d863c8607c3dabae0` | 可恢复 probe、黄金冻结、离线 replay、持久显式批量读取 |
@@ -15,7 +17,7 @@
 | 0.0.2 main | `95710ba30d9495645de0e0966746446c0e70cdc9` | 原生配置合同、修复及平台回归 |
 | 原 Claude S1 bundle | `2b121fcc6bb47973a4315b6684d429651626025c` | 原 `dev/s1-hybrid-workers` 候选输入；不是当前 HEAD |
 
-0.1.4 的 [CI 39207218575](https://github.com/wmqfl861/bzs861/actions/runs/39207218575)、0.1.3 的 [CI 39125426011](https://github.com/wmqfl861/bzs861/actions/runs/39125426011) 与 0.1.2 的 [CI 39113748316](https://github.com/wmqfl861/bzs861/actions/runs/39113748316) 在各自交付时核对 Linux/Windows 成功，它们只证明对应历史提交；0.1.5 必须查询最终发布提交自己的工作流。Claude ZIP/bundle 和逐 blob 核对见 [接收审查](handoff/CLAUDE_S1_REVIEW_20261018.md)。
+0.1.4 的 [CI 39207218575](https://github.com/wmqfl861/bzs861/actions/runs/39207218575)、0.1.3 的 [CI 39125426011](https://github.com/wmqfl861/bzs861/actions/runs/39125426011) 与 0.1.2 的 [CI 39113748316](https://github.com/wmqfl861/bzs861/actions/runs/39113748316) 在各自交付时核对 Linux/Windows 成功，它们只证明对应历史提交；后续版本必须查询最终发布提交自己的工作流。Claude ZIP/bundle 和逐 blob 核对见 [接收审查](handoff/CLAUDE_S1_REVIEW_20261018.md)。
 
 交付前读取远端 main 与预期旧 SHA，先完成代码、复核和实际测试，再以非强制更新发布。提交的 tree 必须与本地已验证内容相同；远端前进时先检查新差异，不覆盖未知修改。发布后获取实际 commit/tree，将本地副本对齐，并核对对应 Linux/Windows 的实际步骤和结论。
 

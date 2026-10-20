@@ -37,6 +37,13 @@ namespace {
     void commit() { checked(sqlite3_exec(db,"COMMIT",nullptr,nullptr,nullptr));done=true; }
   };
   std::int64_t count(sqlite3* db,const char* query) { Sql s(db,query);s.step();return s.num(0); }
+  std::int64_t next_queue_sequence(sqlite3* db) {
+    Sql current(db,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='map_dispatch_sequence'");
+    require(current.step()&&current.num(0)>=0&&current.num(0)<std::numeric_limits<std::int64_t>::max(),
+            "E_STORAGE","Map scheduling sequence is missing or exhausted",500);
+    const auto sequence=current.num(0)+1;
+    Sql update(db,"UPDATE settings SET value=? WHERE key='map_dispatch_sequence'");update.bind(1,sequence);update.step();return sequence;
+  }
   std::int64_t path_depth(const std::string& url) {
     auto path=map_path(url);std::int64_t depth=0;bool component=false;
     for(char c:path) { if(c=='/')component=false;else if(!component) { ++depth;component=true; } }
@@ -153,16 +160,20 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
   Sql old(db_,"SELECT id,fingerprint,kind FROM jobs WHERE owner=? AND idempotency_key=?");old.bind(1,owner);old.bind(2,key);
   if(old.step()) { require(old.text(1)==fingerprint&&old.text(2)==job_kind,"E_IDEMPOTENCY_CONFLICT","Idempotency key reused with different parameters",409);
     auto out=map_job_locked(owner,old.text(0));out.set("reused",true);tx.commit();return out; }
+  compact_jobs_locked(owner,8);
+  job_capacity_locked(owner);
   require(count(db_,"SELECT COUNT(*) FROM map_jobs")<512&&count(db_,"SELECT COUNT(*) FROM map_resources")+static_cast<std::int64_t>(seeds.size())+1<=20000,
           "E_QUOTA","Map retention quota reached",429);
-  Sql retained(db_,"SELECT COUNT(*) FROM jobs WHERE owner=?");retained.bind(1,owner);retained.step();require(retained.num(0)<10000,"E_QUOTA","Job retention quota reached",429);
   require(now<=std::numeric_limits<std::int64_t>::max()-timeout,"E_SCHEMA","Clock exceeds deadline range");
   const auto id=random_id();
   Sql job(db_,"INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at,created_delete_sequence,kind)VALUES(?,?,'',?,?,'queued',?,1,?,?,?,?)");
   job.bind(1,id);job.bind(2,owner);job.bind(3,key);job.bind(4,fingerprint);job.bind(5,auth);job.bind(6,now+timeout);job.bind(7,now);job.bind(8,delete_sequence_locked());job.bind(9,job_kind);job.step();
-  Sql config(db_,"INSERT INTO map_jobs(job_id,site_id,manifest_sha256,origin,scope_path,max_urls,max_depth,max_requests,max_bytes,per_request_timeout_ms,max_pages)VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+  Sql config(db_,"INSERT INTO map_jobs(job_id,site_id,manifest_sha256,origin,scope_path,max_urls,max_depth,max_requests,max_bytes,per_request_timeout_ms,max_pages,last_dispatch_sequence)VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
   config.bind(1,id);config.bind(2,site_id);config.bind(3,sites.manifest_digest());config.bind(4,site->origin);config.bind(5,scope);
-  config.bind(6,max_urls);config.bind(7,max_depth);config.bind(8,max_requests);config.bind(9,max_bytes);config.bind(10,per_request);config.bind(11,max_pages);config.step();
+  config.bind(6,max_urls);config.bind(7,max_depth);config.bind(8,max_requests);config.bind(9,max_bytes);config.bind(10,per_request);config.bind(11,max_pages);
+  // A newly submitted job joins the current queue tail. Reusing an idempotent
+  // key above never changes this order or consumes another scheduling ticket.
+  config.bind(12,next_queue_sequence(db_));config.step();
   // The server's pinned policy is separate from the client's canonical
   // fingerprint, so an upgraded live job still reuses its original key.
   if(crawl)crawl_trap_ensure(db_,id);
@@ -186,6 +197,7 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
   auto out=map_job_locked(owner,id);out.set("reused",false);tx.commit();return out;
 }
 Json Store::map_job_locked(const std::string& owner,const std::string& id) {
+  if(auto archived=compacted_job_locked(owner,id))return *archived;
   Sql j(db_,"SELECT j.state,j.epoch,j.attempts,j.lease_until,j.deadline,j.error_code,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_urls,m.max_depth,m.max_requests,m.max_bytes,m.per_request_timeout_ms,m.charged_requests,m.charged_bytes,m.external_requests,m.content_bytes,m.unknown_requests,m.unknown_bytes,m.partial,m.stop_reason,j.kind,m.max_pages,m.used_pages FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.owner=? AND j.kind IN ('web.map','web.crawl')");
   j.bind(1,id);j.bind(2,owner);require(j.step(),"E_NOT_FOUND","Map job not found",404);
   auto out=Json::object();out.set("job_id",id);out.set("kind",j.text(23));out.set("state",j.text(0));out.set("lease_epoch",j.num(1));out.set("dispatches",j.num(2));
@@ -212,7 +224,7 @@ Json Store::map_job_locked(const std::string& owner,const std::string& id) {
   return out;
 }
 void Store::settle_map_job_locked(const std::string& id) {
-  Sql job(db_,"SELECT state FROM jobs WHERE id=? AND kind IN ('web.map','web.crawl')");job.bind(1,id);if(!job.step())return;
+  Sql job(db_,"SELECT state FROM jobs WHERE id=? AND kind IN ('web.map','web.crawl') AND archived_at=0");job.bind(1,id);if(!job.step())return;
   Sql totals(db_,"SELECT COALESCE(SUM(state='pending'),0),COALESCE(SUM(state='running'),0),COALESCE(SUM(state='failed'),0),COALESCE(SUM(state='succeeded' AND kind!='robots'),0) FROM map_resources WHERE job_id=?");totals.bind(1,id);totals.step();
   if(totals.num(1)>0)return;
   auto current=job.text(0);std::string state;
@@ -344,6 +356,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
         crawl_trap_skip_edges(db_,id,logical,blocked);map_partial_locked(id,blocked.reason);settle_map_job_locked(id);continue;
       }
     }
+    if(kind=="robots"&&count(db_,"SELECT COUNT(*) FROM robots_cache")>=512)compact_robots_locked(owner,64);
     if(job.num(9)<=0)stop="E_REQUEST_BUDGET";else if(job.num(10)<=0)stop="E_BYTE_BUDGET";
     else if(count(db_,"SELECT COUNT(*) FROM map_hops")>=50000)stop="E_QUOTA";
     else if(kind=="robots"&&count(db_,"SELECT COUNT(*) FROM robots_cache")>=512)stop="E_QUOTA";
@@ -384,10 +397,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     admission.set("publication_sequence",lease.publication_sequence);
     Sql hop(db_,"INSERT INTO map_hops(job_id,position,resource_position,url,kind,attempt_id,lease_epoch,state,byte_grant,request_grant,admission_json)VALUES(?,?,?,?,?,?,?,'running',?,1,?)");
     hop.bind(1,id);hop.bind(2,lease.position);hop.bind(3,lease.resource_position);hop.bind(4,url);hop.bind(5,kind);hop.bind(6,lease.attempt_id);hop.bind(7,lease.epoch);hop.bind(8,lease.byte_grant);hop.bind(9,admission.dump());hop.step();
-    Sql sequence_value(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='map_dispatch_sequence'");sequence_value.step();
-    require(sequence_value.num(0)<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Dispatch sequence exhausted",500);
-    const auto dispatch_sequence=sequence_value.num(0)+1;
-    Sql sequence_update(db_,"UPDATE settings SET value=? WHERE key='map_dispatch_sequence'");sequence_update.bind(1,dispatch_sequence);sequence_update.step();
+    const auto dispatch_sequence=next_queue_sequence(db_);
     Sql budget(db_,"UPDATE map_jobs SET charged_requests=charged_requests+1,charged_bytes=charged_bytes+?,used_pages=used_pages+?,last_dispatch_sequence=? WHERE job_id=?");
     budget.bind(1,lease.byte_grant);budget.bind(2,kind=="page"&&resource.num(7)==0?1:0);budget.bind(3,dispatch_sequence);budget.bind(4,id);budget.step();
     if(kind=="page") { Sql charged(db_,"UPDATE map_resources SET page_charged=1 WHERE job_id=? AND position=?");charged.bind(1,id);charged.bind(2,lease.resource_position);charged.step(); }

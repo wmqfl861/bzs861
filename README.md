@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.6 S2 五阶段开发 · 第一检查点。** 接续已交付的 0.1.5，修复旧允许回包跨越较新 `noindex` / `nosnippet` 的顺序竞争，覆盖直接读取、批量读取、重定向和爬取；升级保留原冻结表示与限制历史。五阶段范围见 [接续计划](docs/handoff/S2_FIVE_STAGES_20261020.md)。S0、S1、S2 的完整验收仍未完成。
+**状态：0.1.8 S2 五阶段集成。** 已实现页面响应顺序修复、终态任务明细回收、持久公平调度、固定候选相关性评测和持久搜索会话。第一阶段已发布为0.1.6检查点，其余阶段在本批整合；具体执行与验收边界见 [五阶段计划](docs/handoff/S2_FIVE_STAGES_20261020.md) 和 [当前报告](validation/s2_five_stages/final-report.json)。S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_hardening/README.md)；实际结果见 [本轮报告](validation/s2_hardening/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_five_stages/README.md)；实际结果见 [本轮报告](validation/s2_five_stages/final-report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -22,9 +22,12 @@
 | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
 | 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
 | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
-| 历史任务与备份 | 保留 fixture 任务和隔离备份；安全恢复未完成，备份不能直接启动服务 |
+| 任务历史回收 | 至少七天后压缩稳定终态明细，永久保留 key/指纹/计费摘要；活动与未结算任务受保护，无引用过期 robots 可回收 |
+| 持久调度与会话 | 批读与map/crawl持久轮转；联网搜索冻结版本、游标和元数据事件，支持重连、去重、取消、过期与背压 |
+| 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结及原黄金投影复核；相关性指标可执行，完整质量门禁仍阻塞 |
+| 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
 
-尚未交付动态 JS 页面、PDF/Office、完整爬虫工作包、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留；34 包部分实现、49 包未开始、0 包完整签收，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
+尚未交付动态 JS 页面、PDF/Office、完整爬虫工作包、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留；36 包部分实现、47 包未开始、0 包完整签收，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
 ## 架构
 
@@ -96,6 +99,18 @@ bzs call crawl.edges '{"job_id":"替换为返回的任务ID","offset":0,"limit":
 
 页面当前的 noindex / 摘要限制在每页提交时执行，旧搜索会话也必须遵守。正文快照与允许公开的摘要分别保存；站点 `links_only` 限制不会被普通读取刷新扩大。具体页预算、恢复、声明处理及限制见 [正文爬取](docs/SITE_CRAWLING.md)。
 
+## 任务回收、持久会话与评测
+
+```bash
+bzs jobs compact --limit 16
+bzs call web.search.start '{"query":"example","sources":["operator-approved-source"],"idempotency_key":"search_001"}'
+bzs call session.events '{"session_id":"替换为返回的会话ID","after_event_id":0,"limit":20}'
+```
+
+任务回收只释放符合固定七天资格的终态明细；旧键和累计计费保留，明细过期返回410。见 [任务保留](docs/JOB_RETENTION.md) 和 [公平调度](docs/TASK_SCHEDULING.md)。联网会话仍需要真实获准来源，分页绑定不可变结果版本；事件只传状态和版本身份，内容每次分页重新鉴权。见 [持久会话](docs/SEARCH_SESSIONS.md)。
+
+`bzs evaluation prepare/freeze/run` 用于离线固定候选评测，具体文件合同见 [相关性评测](docs/RELEVANCE_EVALUATION.md)。模板不会自动填写人类等级，原黄金查询与20/15/5划分保持；没有真实人工标签与完整质量证据时，不能将合成计算结果当作产品验收。
+
 ## 接入 Agent
 
 优先用 `bzs mcp-config` 生成适合本机的 stdio 配置。配置形状如下，路径需替换：
@@ -104,7 +119,7 @@ bzs call crawl.edges '{"job_id":"替换为返回的任务ID","offset":0,"limit":
 {"mcpServers":{"bzs861":{"command":"/path/to/bzs861/.venv/bin/python","args":["-m","bzs.cli","mcp"]}}}
 ```
 
-MCP 工具为 `web_search`、`read_url`、`read_range`、`find_in_page`、`search_local`、`cite_evidence`、`list_sources`、`read_urls`、`get_job`、`job_results`、`control_job`、`list_sites`、`map_site`，以及本批增加的 `crawl_site`、`crawl_edges`。批量读取和 crawl 按快照收据续读正文；map 返回发现候选和来源，三者共用持久任务接口。运行能力与准入由核心决定；网页正文和搜索摘要是外部数据，不赋予 Agent 新权限。
+MCP 工具为 `web_search`、`read_url`、`read_range`、`find_in_page`、`search_local`、`cite_evidence`、`list_sources`、`read_urls`、`get_job`、`job_results`、`control_job`、`list_sites`、`map_site`，`crawl_site`、`crawl_edges`、`compact_job_history`，以及 `start_web_search`、`get_search_session`、`search_session_events`、`search_session_page`、`cancel_search_session`。批量读取和 crawl 按快照收据续读正文；map 返回发现候选和来源，三者共用持久任务接口。运行能力与准入由核心决定；网页正文和搜索摘要是外部数据，不赋予 Agent 新权限。
 
 本机 HTTP MCP 需要每客户端令牌：
 
@@ -129,7 +144,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮测试分为原生核心/批量/发现/爬取/合同、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_hardening/test_report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
+本轮测试分为原生核心/批量/发现/爬取/发布/合同/回收/公平调度/会话、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_five_stages/final-report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
@@ -137,7 +152,7 @@ ctest --preset dev
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-下一步继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复与会话重取。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
+下一步继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
 
 ## 文档与许可
 

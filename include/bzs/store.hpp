@@ -12,6 +12,12 @@ struct sqlite3_context;
 struct sqlite3_value;
 namespace bzs {
   class SiteRegistry;
+  class SourceRegistry;
+  struct SearchLease {
+    std::string id,owner,source_id,manifest_sha256;
+    std::int64_t epoch=0,position=0,deadline_ms=0;
+    Json request;
+  };
   struct Lease {
     std::string id, owner, fixture_id;
     std::int64_t epoch=0;
@@ -59,6 +65,15 @@ namespace bzs {
     std::int64_t site_publication_manifest_generation_=0;
     bool site_publication_legacy_withdrawn_=false;
     void migrate();
+    void migrate_sessions_locked();
+    void local_stream_locked(const std::string& owner,const std::string& id);
+    Json stream_locked(const std::string& owner,const std::string& id);
+    void stream_event_locked(const std::string& id,const std::string& kind,const std::string& version="");
+    void settle_searches_locked();
+    void stream_receipt_locked(const std::string& id);
+    bool search_lease_locked(const SearchLease& lease);
+    std::string freeze_search_locked(const std::string& id,const SourceRegistry& registry);
+    Json search_bindings_locked(const std::string& owner,const std::string& url,const Json& contributing_urls=Json::array());
     static void site_publication_sql(sqlite3_context*,int,sqlite3_value**);
     void refresh_site_publication_locked(bool sweep=true);
     void sweep_site_publication_locked();
@@ -83,6 +98,10 @@ namespace bzs {
     Json ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed,
                            const Json& meta, std::int64_t expected_deletion_generation,bool allow_empty=false);
     Json job_locked(const std::string& owner, const std::string& id);
+    std::optional<Json> compacted_job_locked(const std::string& owner,const std::string& id);
+    Json compact_jobs_locked(const std::string& owner,std::int64_t limit);
+    std::int64_t compact_robots_locked(const std::string& owner,std::int64_t limit);
+    void job_capacity_locked(const std::string& owner);
     Json read_job_locked(const std::string& owner, const std::string& id);
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
     void settle_read_jobs_locked();
@@ -138,6 +157,15 @@ namespace bzs {
     Json erase(const std::string& owner, const std::string& document_id);
     Json search(const std::string& owner, const Query& query, std::int64_t max_candidates=2000, std::int64_t limit=200);
     Json page(const std::string& owner, const std::string& session_id, const std::string& cursor, std::int64_t page_size=20);
+    Json search_submit(const std::string& owner,const Json& request,const SourceRegistry& registry);
+    Json session_get(const std::string& owner,const std::string& id);
+    Json session_events(const std::string& owner,const std::string& id,std::int64_t after_id=0,std::int64_t limit=20);
+    Json session_cancel(const std::string& owner,const std::string& id);
+    Json session_page(const std::string& owner,const std::string& id,const std::string& version,const std::string& cursor,std::int64_t page_size=20);
+    std::optional<SearchLease> lease_next_search(const SourceRegistry& registry);
+    bool search_lease_live(const SearchLease& lease);
+    bool complete_search(const SearchLease& lease,const Json& result,const SourceRegistry& registry);
+    void fail_search(const SearchLease& lease,const std::string& error);
     Json find(const std::string& owner, const std::string& snapshot_id, const std::string& needle, std::int64_t limit=16);
     Json evidence(const std::string& owner, const std::string& snapshot_id, std::int64_t start, std::int64_t end);
     Json evidence_get(const std::string& owner, const std::string& evidence_id);
@@ -145,6 +173,9 @@ namespace bzs {
     Json job_create(const std::string& owner, const std::string& fixture_id, const std::string& key, std::int64_t max_attempts=3, std::int64_t timeout_ms=60000);
     Json job_get(const std::string& owner, const std::string& job_id);
     Json job_control(const std::string& owner, const std::string& job_id, const std::string& action);
+    // Reclaim bounded terminal web-job details at least seven days after all
+    // deadline/lease bounds. Permanent keys and aggregate accounting survive.
+    Json compact_jobs(const std::string& owner,std::int64_t limit=16);
     Json read_many_submit(const std::string& owner, const std::vector<std::string>& urls,
                           const std::string& key, ReadManyOptions options);
     Json job_results(const std::string& owner, const std::string& job_id,

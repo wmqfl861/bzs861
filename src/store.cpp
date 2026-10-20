@@ -150,7 +150,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=8,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=11,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -413,6 +413,30 @@ namespace bzs {
       }
       exec(db_,"PRAGMA user_version=8;");
     }
+    if(version<9) {
+      if(!has_column(db_,"jobs","archive_json"))exec(db_,"ALTER TABLE jobs ADD COLUMN archive_json TEXT NOT NULL DEFAULT '';");
+      if(!has_column(db_,"jobs","archived_at"))exec(db_,"ALTER TABLE jobs ADD COLUMN archived_at INTEGER NOT NULL DEFAULT 0;");
+      exec(db_,R"SQL(
+ CREATE INDEX IF NOT EXISTS jobs_retention ON jobs(owner,archived_at,state,deadline,id);
+ CREATE INDEX IF NOT EXISTS robots_retention ON robots_cache(owner,expires_at,id);
+ CREATE INDEX IF NOT EXISTS map_hops_robots_admission ON map_hops(json_extract(admission_json,'$.robots_cache_id'));
+ CREATE INDEX IF NOT EXISTS map_hops_robots_receipt ON map_hops(json_extract(response_json,'$.robots_cache_id'));
+ PRAGMA user_version=9;
+ )SQL");
+    }
+    if(version<10) {
+      if(!has_column(db_,"read_job_budgets","last_dispatch_sequence"))
+        exec(db_,"ALTER TABLE read_job_budgets ADD COLUMN last_dispatch_sequence INTEGER NOT NULL DEFAULT 0;");
+      // Legacy jobs have no captured admission order. Their existing stable
+      // created_at/id tie break is retained until each receives a first turn;
+      // all new admissions and dispatches get a unique durable queue ticket.
+      exec(db_,R"SQL(
+ INSERT OR IGNORE INTO settings(key,value)VALUES('read_dispatch_sequence','0');
+ CREATE INDEX IF NOT EXISTS read_job_scheduling ON read_job_budgets(last_dispatch_sequence,job_id);
+ CREATE INDEX IF NOT EXISTS map_job_scheduling ON map_jobs(last_dispatch_sequence,job_id);
+ PRAGMA user_version=10;
+ )SQL");
+    }
     if(version<3) {
       // Shape-compatible legacy attachments may already contain some newer
       // immutable metadata. Rebuild capacity after all optional columns exist,
@@ -427,6 +451,7 @@ namespace bzs {
  FROM documents d JOIN snapshots s ON s.document_id=d.id GROUP BY d.owner;
  )SQL");
     }
+    if(version<11) { migrate_sessions_locked();exec(db_,"PRAGMA user_version=11"); }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -782,6 +807,7 @@ namespace bzs {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    settle_searches_locked();
     refresh_site_publication_locked();
     auto epoch=epoch_locked(owner);
     auto now=clock_();
@@ -879,6 +905,7 @@ namespace bzs {
     out.set("coverage", "authorized_local_documents_only");
     out.set("retrieval", retrieval);
     out.set("query", q.json());
+    local_stream_locked(owner,id);
     tx.commit();
     return out;
   }
@@ -1071,6 +1098,7 @@ namespace bzs {
     return out;
   }
   Json Store::job_locked(const std::string& owner, const std::string& id) {
+    if(auto archived=compacted_job_locked(owner,id))return *archived;
     Stmt s(db_, "SELECT id,fixture_id,state,epoch,attempts,max_attempts,lease_until,deadline,used_pages,result_json,error_code,kind FROM jobs WHERE id=? AND owner=?");
     s.bind(1, id);
     s.bind(2, owner);
@@ -1113,12 +1141,8 @@ namespace bzs {
         return out;
       }
     }
-    {
-      Stmt count(db_, "SELECT count(*) FROM jobs WHERE owner=?");
-      count.bind(1, owner);
-      count.step();
-      require(count.num(0)<10000, "E_QUOTA", "Job retention quota reached", 429);
-    }
+    compact_jobs_locked(owner,8);
+    job_capacity_locked(owner);
     auto now=clock_();
     auto id=random_id();
     Stmt ins(db_, "INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at,created_delete_sequence)VALUES(?,?,?,?,?,'queued',?,?,?,?,?)");
@@ -1146,6 +1170,7 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     Tx tx(db_);
     auto old=job_locked(owner, id);
+    require(!old.has("retention"),"E_JOB_RESULTS_EXPIRED","Job details have expired; its permanent summary cannot be resumed",410);
     if(old.at("kind").str()=="web.read_many") {
       auto out=control_read_locked(owner,id,action);
       tx.commit();

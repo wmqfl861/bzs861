@@ -85,6 +85,7 @@ Json Store::crawl_results_locked(const std::string& owner,const std::string& id,
 Json Store::crawl_edges(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit) {
   require(offset>=0&&offset<=10000&&limit>=1&&limit<=1000,"E_SCHEMA","Invalid crawl edge window");
   std::lock_guard lock(mutex_);const auto job=map_job_locked(owner,id);require(job.at("kind").str()=="web.crawl","E_JOB_KIND","Edge results require a crawl job",409);
+  require(!job.has("retention"),"E_JOB_RESULTS_EXPIRED","Crawl edges have expired; use job.get for the permanent summary",410);
   // Deletion tombstones retract both ends, including original URL aliases.
   const auto predicate=" AND NOT EXISTS(SELECT 1 FROM documents d WHERE d.owner=? AND ((d.url_key=e.url AND (d.deleted!=0 OR d.delete_generation>j.created_delete_sequence)) OR (d.url_key=e.parent AND (d.deleted!=0 OR d.delete_generation>j.created_delete_sequence))))";
   const auto query=std::string("SELECT e.position,e.parent,e.url,e.source,e.depth,e.followed,e.reason,t.decision_json FROM crawl_edges e JOIN jobs j ON j.id=e.job_id LEFT JOIN crawl_trap_edges t ON t.job_id=e.job_id AND t.position=e.position WHERE e.job_id=? AND e.position>=?")+predicate+" ORDER BY e.position LIMIT ?";

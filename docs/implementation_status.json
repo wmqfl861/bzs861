@@ -1,17 +1,19 @@
 {
-  "version": "0.1.6",
-  "stage": "S2 five stages: stage 1 checkpoint",
+  "version": "0.1.8",
+  "stage": "S2 five-stage integration",
   "recorded_at": "2026-10-20",
-  "baseline": "2007690c9403b8ae593101488de1adf228608284",
+  "baseline": "27966ffe61c16964c45d595e3ee2689115815217",
   "integration_inputs": {
     "main": "2007690c9403b8ae593101488de1adf228608284",
     "historical_pre_s1_main": "95710ba30d9495645de0e0966746446c0e70cdc9",
     "claude_bundle_tip": "2b121fcc6bb47973a4315b6684d429651626025c",
-    "scope": "Continue published 0.1.5; earlier inputs remain historical provenance."
+    "scope": "Five S2 increments; original plan objects and deferred semantics preserved.",
+    "first_stage_published": "27966ffe61c16964c45d595e3ee2689115815217",
+    "work_started_from": "2007690c9403b8ae593101488de1adf228608284"
   },
   "status_counts": {
-    "partial": 34,
-    "not_started": 49,
+    "partial": 36,
+    "not_started": 47,
     "accepted": 0
   },
   "status_legend": {
@@ -27,10 +29,12 @@
     "baseline_0_1_3_status": "保留0.1.3历史整包状态。",
     "historical_candidate_increment_0_1_3": "原0.1.3增量说明，保留为历史，不代表0.1.4新增或重跑。",
     "baseline_0_1_4_status": "本批开始时已交付0.1.4的整包状态。",
-    "historical_candidate_increment_0_1_4": "原0.1.4增量说明，保留为历史，不代表本批新增。"
+    "historical_candidate_increment_0_1_4": "原0.1.4增量说明，保留为历史，不代表本批新增。",
+    "baseline_0_1_6_status": "第一检查点0.1.6的整包状态。",
+    "historical_candidate_increment_0_1_6": "第一阶段增量说明，仅作历史来源，后续集成验证以当前报告为准。"
   },
-  "partial_work_packages": 34,
-  "not_started": 49,
+  "partial_work_packages": 36,
+  "not_started": 47,
   "full_work_packages_accepted": 0,
   "milestones_accepted": [],
   "slices_accepted": [],
@@ -38,13 +42,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s2_five_stages/stage1-report.json",
-  "current_verification": "passed_final_local_gates_frozen_stage1_v2_inputs",
+  "current_test_report": "validation/s2_five_stages/final-report.json",
+  "current_verification": "passed_final_integrated_local_gates_scope_limited",
   "upstream_baseline_reproduction": "Seven independent public-API dual-Store order/alias/deletion scenarios fail on the exact published 0.1.5 library; input and output evidence are retained separately.",
   "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-  "independent_review": "passed_scoped_final_25_cases_after_compatibility_completeness_fix",
+  "independent_review": "stage_specific_reviews_and_final_genuine_upgrade_passed_scope_limited",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s2_five_stages/stage1-v2-review.json",
+  "review_record": "validation/s2_five_stages/final-review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -144,7 +148,7 @@
       "v11_phase": "M0",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定HTML/TXT与来源样例；52核心测试、55原生配置合同测试、20HTTP/CLI测试；另保留34组Python设计基线",
@@ -164,7 +168,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "保留冻结黄金输入；新增真实worker/core/HTTP/CLI/stdio MCP的正文前沿、预算、发布刷新/失败/重定向/旧会话、轮转和删除回归。",
       "baseline_0_1_5_status": "partial",
-      "historical_candidate_increment_0_1_5": "真实Worker/Core回归新增日期、查询组合/排列/维度、重复分页及有限文章负例；真实SIGKILL、丢失RPC/ACK与显式离线站点收紧均检查实际HTTP、快照/证据和用量。"
+      "historical_candidate_increment_0_1_5": "真实Worker/Core回归新增日期、查询组合/排列/维度、重复分页及有限文章负例；真实SIGKILL、丢失RPC/ACK与显式离线站点收紧均检查实际HTTP、快照/证据和用量。",
+      "baseline_0_1_6_status": "partial",
+      "candidate_increment": "保留原40条20/15/5冻结黄金输入；新增固定候选数学/身份/漏标门控合同、持久会话/回收/公平调度与独立反例证据，作者候选、交叉复核和最终整合运行分别记录。"
     },
     {
       "feature_id": "SPIKE-01",
@@ -353,11 +359,11 @@
       "v11_phase": "M0",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "SQLite原始内容/快照/提取/证据的不可变版本关系",
-      "remaining": "通用GC、长期容量/断电和全面恢复未完成；历史crawl无法证明完整链时保守撤发布，需完整重读；策略表不是独立撤销日志。",
+      "remaining": "有界终态任务与robots回收不等同通用GC、无限容量或数据库文件立即缩小；长期容量/任意断电/全面恢复未完成。历史缺失链保守撤发布，政策表和摘要不是独立撤销日志。",
       "baseline_test_ids": [
         "FT-006",
         "C-15"
@@ -387,7 +393,9 @@
       "historical_candidate_increment_0_1_4": "schema6保存正文/页/边/调度与发布身份，保留schema1/两种schema2/3/4/5迁移及隔离拒绝；逻辑配额失败可回滚正文并保留限制观察。",
       "baseline_0_1_5_status": "partial",
       "historical_candidate_increment_0_1_5": "schema7保存站点发布水位、不可变完整URL绑定、冻结行版本和trap观察；搜索候选即时门控，FTS每事务最多128文档推进清理，保持原快照与证据。",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "保留阶段一schema8派发/页面水位；schema9新增永久任务摘要和robots引用索引，schema10保存队列票号，schema11保存来源会话/版本/事件。至少七天的稳定终态明细事务压缩，身份/已知未知计费/正文证据与删除发布水位保留。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "AUTH-01",
@@ -648,7 +656,7 @@
       "v11_phase": "M1",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -679,7 +687,9 @@
       "historical_candidate_increment_0_1_3": "继承0.1.2实现；本批未增加本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
-      "baseline_0_1_5_status": "partial"
+      "baseline_0_1_5_status": "partial",
+      "baseline_0_1_6_status": "partial",
+      "candidate_increment": "持久来源会话复用C++索引族RRF；两次融合保留真实候选URL发布贡献者，同一来源重复命中保持最优正rank；URL去重键不扩张策略身份，没有另建Python生产排序器。"
     },
     {
       "feature_id": "SESSION-01",
@@ -689,11 +699,11 @@
       "v11_phase": "M1",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "本地结果物化、稳定游标、TTL、跨用户拒绝与撤权失效",
-      "remaining": "保留本地冻结分页；联网结果会话/后续页、权限与完整游标范围未完成。",
+      "remaining": "联网冻结分页已有实现，仍需全量 FT-017/B-13/B-15 签收、真实来源长时运行、广泛撤权/游标矩阵与来源撤销连续性；有界记录溢出时保守封闭，不能重建旧历史缺失的链。",
       "baseline_test_ids": [
         "FT-017",
         "B-13",
@@ -717,7 +727,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "联网 web.search.start 逐来源生成不可变核心RRF版本；游标绑定会话/版本/位置，本地分页兼容；真实候选URL及已知链、冻结时已有及后来的删除/页面发布限制与站点水位复查，完整读取/重导入不能复活旧版本。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "READ-01",
@@ -727,7 +739,7 @@
       "v11_phase": "M2",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -748,7 +760,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "真实派发捕获页面序号与当前快照，较新限制/删除封住晚到的旧允许回包；逻辑/最终/中间URL均检查；已报告的截断/206/错误HTTP同样约束旧Worker兼容回包，完整后发刷新可形成新表示。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "READ-03",
@@ -936,7 +950,7 @@
       "v11_phase": "M1",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "implemented",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "真实loopback HTTP和C++ CLI共享Service逻辑",
@@ -967,7 +981,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "新增MCP crawl_site/crawl_edges，总计15工具；CLI/HTTP复用核心，新增工具原始JSON类型/未知字段/绝对scope_path在SDK转换前拒绝。",
       "baseline_0_1_5_status": "partial",
-      "historical_candidate_increment_0_1_5": "沿用HTTP/CLI/MCP同一核心；job.get新增trap_policy，crawl.edges可返回结构化trap原因，正文/任务回执返回当前site_publication状态。"
+      "historical_candidate_increment_0_1_5": "沿用HTTP/CLI/MCP同一核心；job.get新增trap_policy，crawl.edges可返回结构化trap原因，正文/任务回执返回当前site_publication状态。",
+      "baseline_0_1_6_status": "partial",
+      "candidate_increment": "新增 jobs.compact 与CLI/MCP映射；web.search.start/session.get/events/cancel及版本化search.page；MCP在SDK转换前保留严格原始JSON类型、未知字段拒绝，范围/owner/预算与业务语义由核心判断。"
     },
     {
       "feature_id": "JOB-01",
@@ -977,11 +993,11 @@
       "v11_phase": "M0",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "固定页面任务持久化、幂等、暂停/取消、lease epoch、过期恢复和原子提交",
-      "remaining": "仍未覆盖每条SQLite指令、物理断电、长时故障矩阵、跨节点、SESSION-02或独立撤销恢复；HTTP不承诺exactly-once。",
+      "remaining": "仍未覆盖每条SQLite指令、物理断电、完整长期故障矩阵、跨节点、完整SESSION-02或独立撤销恢复；有界回收不删除永久身份，HTTP不承诺exactly-once。",
       "baseline_test_ids": [
         "FT-005",
         "B-28",
@@ -998,7 +1014,9 @@
       "historical_candidate_increment_0_1_4": "增加web.crawl持久前沿与独立页预算，逐跳已知/未知用量保守结算；map/crawl共享持久轮转、同源配额/冷却及暂停恢复取消。",
       "baseline_0_1_5_status": "partial",
       "historical_candidate_increment_0_1_5": "用真实进程kill覆盖Worker派发前、Worker完整响应丢失、pending目标删除及任务已提交但accepted回执丢失；保留原幂等、未知预留计费与未派发尾部恢复。",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "稳定终态网页任务压缩为永久8KiB内摘要，原key/指纹/计费保留，明细过期410；活动/暂停/未知预留未结算不压缩。读队列与map/crawl队列成功入队/租约后持久排队，来源会话另有有界公平队列。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "BATCH-01",
@@ -1008,7 +1026,7 @@
       "v11_phase": "M2",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -1024,7 +1042,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "批量派发保存页面序号和快照身份；兼容回包的截断/206/错误状态不能恢复限制。成功提交及每项租约使用持久队尾序号；七天后稳定终态详情可压缩，原幂等键、已知/未知预算、条目统计和页统计保留。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "MAP-01",
@@ -1034,7 +1054,7 @@
       "v11_phase": "M2",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -1048,7 +1068,9 @@
       "historical_candidate_increment_0_1_3": "实现持久有界Sitemap/index、RSS2/RSS1、Atom、HTML/XHTML及owner历史发现；保存parent/source/depth/path_depth和未读候选，index/robots声明有界入队，URL并集及每path查询变体限制。",
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承未读候选发现，与crawl共用持久轮转；元数据发现不产生本次正文快照或索引，map和crawl保持不同结果合同。",
-      "baseline_0_1_5_status": "partial"
+      "baseline_0_1_5_status": "partial",
+      "baseline_0_1_6_status": "partial",
+      "candidate_increment": "map/crawl共用的持久队列以实际入队和成功租约轮转；旧终态发现明细与无引用过期robots可回收，原key、统计、计费与同源配额/冷却保留，未读候选仍不能当正文。"
     },
     {
       "feature_id": "ROBOTS-01",
@@ -1083,7 +1105,7 @@
       "v11_phase": "M2",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -1099,7 +1121,9 @@
       "historical_candidate_increment_0_1_4": "实现有界静态正文frontier、页预算、链接边、规范URL去重、深度/查询变体/循环约束、map/crawl轮转和暂停后重启；单跳用量、robots和删除屏障持久生效。",
       "baseline_0_1_5_status": "partial",
       "historical_candidate_increment_0_1_5": "新增bzs-crawl-trap-1：日期序列/日期族、query排列/组合/维度、完整正文重复分页；持久观察、结构化边原因、已排队页派发前复核和旧任务有界bootstrap。",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "保留有界正文前沿、页预算与trap；终态详情/无引用过期robots回收后容量可恢复，永久计费与水位不回退。成功入队/每跳租约取得持久票号，持续新任务不再长期越过已就绪前沿；交错、重启和正常URL负例继续回归。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "CRAWL-03",
@@ -1109,7 +1133,7 @@
       "v11_phase": "M2",
       "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "see_current_report",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
@@ -1126,7 +1150,9 @@
       "historical_candidate_increment_0_1_4": "实现通用/BzsBot meta与X-Robots-Tag、noindex/nosnippet/nofollow/data-nosnippet、独立安全摘要/标题和links_only；限制性失败观察、重定向链与历史搜索表示保持发布约束。",
       "baseline_0_1_5_status": "partial",
       "historical_candidate_increment_0_1_5": "新增bzs-site-publication-1站点上限与历史水位；显式离线激活、过期即时收紧、完整跳转链与冻结表示绑定、stale实例和回执复核；旧会话不因放宽而复活。",
-      "candidate_increment": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
+      "candidate_increment": "阶段一修复旧允许回包跨越新页面索引/摘要限制，显式不完整兼容回包不能解冻；阶段五冻结会话绑定实际贡献者URL/已知链与既有约束，后续完整允许读/重导入不恢复旧版本。跨owner公共集合和完整条件刷新仍未签收。",
+      "baseline_0_1_6_status": "partial",
+      "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。"
     },
     {
       "feature_id": "MODE-01",
@@ -1194,13 +1220,13 @@
       "name": "流式结果、断线续传与取消",
       "slice": "S2",
       "v11_phase": "M1",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "remaining": "尚未实现流式事件协议、断线重取、去重、背压与会话取消完整语义；持久job轮询和MCP任务工具不等价于FT-018/B-14。",
+      "remaining": "FT-018/B-14 完整验收、真实来源长期运行、任意断电/文件系统故障、多节点与 S5 场景仍未完成；在途有界RPC没有即时物理中断，来源审核检查不替代独立撤销连续性，会话事件不能解除恢复隔离。",
       "baseline_test_ids": [
         "FT-018",
         "B-14"
@@ -1220,7 +1246,9 @@
       "baseline_0_1_3_status": "not_started",
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
-      "baseline_0_1_5_status": "not_started"
+      "baseline_0_1_5_status": "not_started",
+      "baseline_0_1_6_status": "not_started",
+      "candidate_increment": "持久联网来源队列、不可变结果版本、版本绑定游标与单调元数据事件；session.get/events/cancel 实现有界拉取、重连/去重、取消在途发布屏障、明确过期与背压，兼容本地冻结会话；MCP只映射严格核心参数。"
     },
     {
       "feature_id": "QA-02",
@@ -1228,13 +1256,13 @@
       "name": "检索相关性与约束基准",
       "slice": "S2",
       "v11_phase": "M3",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "passed_final_integrated_local_gates_scope_limited",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "remaining": "人工qrels、质量评分runner、来源消融、冻结阈值与留出评测尚未实现；黄金冻结及发现/正文fixture只是前置，不算本包开工。",
+      "remaining": "没有真实人工qrels与裁决、目标环境质量成绩、来源消融、留出运行、硬条件/引用正确率或独立人审身份认证。完整 release_gate 始终 blocked，FT-042/C-14 整体未签收；不以合成指标或输入方human声明证明真实人类评价。",
       "baseline_test_ids": [
         "FT-042",
         "C-14"
@@ -1244,7 +1272,9 @@
       "baseline_0_1_3_status": "not_started",
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
-      "baseline_0_1_5_status": "not_started"
+      "baseline_0_1_5_status": "not_started",
+      "baseline_0_1_6_status": "not_started",
+      "candidate_increment": "固定候选 evaluation prepare/freeze/run、未标注人工模板、精确包/语料/方法/阈值/环境身份及原黄金投影复核；计算 nDCG@10、MRR@10、Precision@10 与覆盖诊断，严格区分缺标、empty、failed 和 unavailable；有限非回归需预冻结基线与容忍度。"
     },
     {
       "feature_id": "READ-02",
@@ -2390,6 +2420,181 @@
     }
   ],
   "current_results": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 15,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 81.67,
+      "command_elapsed_seconds": 81.696,
+      "log": "final-v1-ctest.log",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 81,
+          "assertions": 713,
+          "failed": 0
+        },
+        {
+          "name": "batch",
+          "passed": 18,
+          "assertions": 439,
+          "failed": 0
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "assertions": 462,
+          "failed": 0
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "assertions": 2798,
+          "failed": 0
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "assertions": 1200,
+          "failed": 0
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "assertions": 404,
+          "failed": 0
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "assertions": 251,
+          "failed": 0
+        },
+        {
+          "name": "sessions",
+          "passed": 20,
+          "assertions": 228,
+          "failed": 0
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "assertions": 269,
+          "failed": 0,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0
+        },
+        {
+          "name": "e2e_web",
+          "passed": 14,
+          "failed": 0
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0
+        },
+        {
+          "name": "python_worker",
+          "passed": 838,
+          "failed": 0
+        }
+      ]
+    },
+    "native_sanitizer_executables": 9,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "dependencies": "No broken requirements found.",
+    "independent_final_upgrade": {
+      "old_schema": 8,
+      "new_schema": 11,
+      "existing_scenarios_rerun": 2,
+      "preparation_assertions": 32,
+      "candidate_assertions": 87,
+      "new_product_acceptance_cases_claimed": 0
+    },
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "counting_note": "Overlapping tests do not sum to planned product acceptance."
+  },
+  "baseline_version": "0.1.6",
+  "planned_work_packages": 83,
+  "s2_acceptance": "not_completed",
+  "historical_review_records": [
+    "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
+    "validation/s0_s2_progress/independent_review.json",
+    "validation/s2_discovery/independent_review.json",
+    "validation/s2_crawl/independent_review.json"
+  ],
+  "verification_binding": {
+    "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
+    "report": "validation/s2_five_stages/final-report.json",
+    "source_manifest": "validation/s2_five_stages/final-source-manifest.json",
+    "remote_ci": "Query GitHub Actions for the exact containing commit after publication. This immutable pre-publication report does not claim future CI results or embed a self-referential commit SHA.",
+    "actions_url": "https://github.com/wmqfl861/bzs861/actions",
+    "execution_inputs": "validation/s2_five_stages/final-v1-execution-inputs.json",
+    "executed_binary_identity": "SHA-256 before and after each final command; matched to debug/ASan build outputs."
+  },
+  "source_availability": {
+    "status": "not_verified",
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "approved_sources": 0,
+    "cloud_probe": {
+      "status": "dns_failed_no_http_response",
+      "environment": "cloud_execution_environment",
+      "sources": [
+        "marginalia",
+        "wikipedia_en"
+      ],
+      "attempted_source_requests": 2,
+      "dns_failures": 2,
+      "http_responses": 0,
+      "result_bearing_responses": 0,
+      "user_environment_validated": false,
+      "source_approval_changed": false,
+      "quota_scope": "this_probe_run",
+      "report": "validation/s0_s2_progress/cloud_probe_summary.json",
+      "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
+      "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment.",
+      "historical_version": "0.1.2",
+      "executed_for_current_increment": false
+    },
+    "current_increment_real_source_attempts": 0
+  },
+  "site_discovery_availability": {
+    "default_registered_sites": 0,
+    "default_enabled_sites": 0,
+    "real_site_requests_for_current_increment": 0,
+    "synthetic_fixture_review_is_production_approval": false,
+    "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+  },
+  "site_crawl_availability": {
+    "default_registered_sites": 0,
+    "default_enabled_sites": 0,
+    "real_site_requests_for_current_increment": 0,
+    "synthetic_fixture_review_is_production_approval": false,
+    "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+  },
+  "historical_results_0_1_6": {
     "status": "passed_final_local_gates",
     "ctest": {
       "passed_suites": 12,
@@ -2483,66 +2688,15 @@
     "independent_direct_publication_cases": 17,
     "independent_genuine_schema7_active_upgrade_cases": 2,
     "independent_compatibility_completeness_cases": 6,
-    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-    "counting_note": "Overlapping tests do not sum to planned product acceptance."
-  },
-  "baseline_version": "0.1.5",
-  "planned_work_packages": 83,
-  "s2_acceptance": "not_completed",
-  "historical_review_records": [
-    "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
-    "validation/s0_s2_progress/independent_review.json",
-    "validation/s2_discovery/independent_review.json",
-    "validation/s2_crawl/independent_review.json"
-  ],
-  "verification_binding": {
-    "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
-    "report": "validation/s2_five_stages/stage1-report.json",
-    "source_manifest": "validation/s2_five_stages/stage1-v2-source-manifest.json",
-    "remote_ci": "Query GitHub Actions for the exact containing commit after publication. This immutable pre-publication report does not claim future CI results or embed a self-referential commit SHA.",
-    "actions_url": "https://github.com/wmqfl861/bzs861/actions",
-    "execution_inputs": "validation/s2_five_stages/stage1-v2-execution-inputs.json",
-    "executed_binary_identity": "SHA-256 before and after each final command; matched to debug/ASan build outputs."
-  },
-  "source_availability": {
-    "status": "not_verified",
-    "registered_sources": 17,
-    "enabled_sources": 0,
-    "approved_sources": 0,
-    "cloud_probe": {
-      "status": "dns_failed_no_http_response",
-      "environment": "cloud_execution_environment",
-      "sources": [
-        "marginalia",
-        "wikipedia_en"
-      ],
-      "attempted_source_requests": 2,
-      "dns_failures": 2,
-      "http_responses": 0,
-      "result_bearing_responses": 0,
-      "user_environment_validated": false,
-      "source_approval_changed": false,
-      "quota_scope": "this_probe_run",
-      "report": "validation/s0_s2_progress/cloud_probe_summary.json",
-      "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
-      "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment.",
-      "historical_version": "0.1.2",
-      "executed_for_current_increment": false
+    "github_ci": {
+      "head_sha": "27966ffe61c16964c45d595e3ee2689115815217",
+      "run_id": 39431992846,
+      "conclusion": "success",
+      "linux": "success",
+      "windows": "success",
+      "record": "validation/s2_five_stages/stage1-published-ci.json"
     },
-    "current_increment_real_source_attempts": 0
-  },
-  "site_discovery_availability": {
-    "default_registered_sites": 0,
-    "default_enabled_sites": 0,
-    "real_site_requests_for_current_increment": 0,
-    "synthetic_fixture_review_is_production_approval": false,
-    "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
-  },
-  "site_crawl_availability": {
-    "default_registered_sites": 0,
-    "default_enabled_sites": 0,
-    "real_site_requests_for_current_increment": 0,
-    "synthetic_fixture_review_is_production_approval": false,
-    "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+    "counting_note": "Overlapping tests do not sum to planned product acceptance.",
+    "published_commit": "27966ffe61c16964c45d595e3ee2689115815217"
   }
 }

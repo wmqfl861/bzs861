@@ -234,6 +234,17 @@ def cmd_call(args) -> int:
         return 1
 
 
+def cmd_jobs_compact(args) -> int:
+    cfg = config.load()
+    try:
+        result = _client(cfg).call_sync("jobs.compact", {"limit": args.limit})
+    except CoreError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_search(args) -> int:
     cfg = config.load()
     try:
@@ -305,6 +316,32 @@ def cmd_replay(args) -> int:
     return 0 if report["status"] == "passed" else 1
 
 
+def cmd_evaluation(args) -> int:
+    from . import evaluation
+    try:
+        if args.evaluation_action == "prepare":
+            result = evaluation.prepare(args.queries or str(config.REPO_ROOT / "tests" / "golden" / "queries.json"),
+                                        args.out, candidates_path=args.candidates, probe_path=args.probe_report,
+                                        splits=args.splits)
+            print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+            return 0  # A prepared, unjudged template is not a passed quality gate.
+        if args.evaluation_action == "freeze":
+            result = evaluation.freeze(args.package, args.gate, args.out, queries_path=args.queries)
+            print(json.dumps({"status": result["status"], "blocked_reasons": result["blocked_reasons"],
+                              "artifact": str(Path(args.out) / "freeze.json")}, ensure_ascii=False, sort_keys=True))
+            return 0 if result["status"] == "frozen" else 3
+        result = evaluation.run(args.package, args.freeze, args.labels, args.out, baseline_path=args.baseline,
+                                queries_path=args.queries)
+        print(json.dumps({"status": result["status"], "scope": result["scope"],
+                          "blocked_reasons": result["quality_gate"]["blocked_reasons"],
+                          "release_gate": result["release_gate"],
+                          "artifact": str(Path(args.out) / "evaluation_report.json")}, ensure_ascii=False, sort_keys=True))
+        return {"passed": 0, "failed": 1, "blocked": 3}[result["status"]]
+    except (ValueError, OSError) as exc:
+        print(f"E_EVALUATION: {exc}", file=sys.stderr)
+        return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="bzs", description=f"bzs861 {__version__} launcher")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -329,6 +366,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("operation")
     p.add_argument("params", nargs="?")
     p.set_defaults(fn=cmd_call)
+    p = sub.add_parser("jobs", help="manage owned job history")
+    jobs = p.add_subparsers(dest="jobs_action", required=True)
+    compact = jobs.add_parser("compact", help="delete eligible settled terminal details after the core's minimum 7-day retention",
+                             description="Delete eligible batch-read, map and crawl detail history for the authenticated owner. "
+                             "The core enforces a minimum 7-day retention and keeps job identities, summaries and usage counters. "
+                             "Active and paused jobs remain. Repeating this command may compact the next eligible batch.")
+    compact.add_argument("--limit", type=int, default=16, help="maximum jobs in this batch, 1..64 (default: 16; validated by the core)")
+    compact.set_defaults(fn=cmd_jobs_compact)
     p = sub.add_parser("search", help="web search from the terminal")
     p.add_argument("query", nargs="+")
     p.add_argument("--limit", type=int, default=10)
@@ -359,6 +404,31 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--allow-parser-change", action="store_true",
                    help="explicitly compare using a different parser identity")
     p.set_defaults(fn=cmd_replay)
+    p = sub.add_parser("evaluation", help="offline fixed-candidate judgments, freezing and relevance metrics")
+    ep = p.add_subparsers(dest="evaluation_action", required=True)
+    e = ep.add_parser("prepare", help="validate fixed evidence and create unjudged templates; no network")
+    source = e.add_mutually_exclusive_group(required=True)
+    source.add_argument("--candidates", help="versioned fixed-candidate JSON input")
+    source.add_argument("--probe-report", help="existing schema-2 probe_report.json with complete saved responses")
+    e.add_argument("--queries", help="frozen golden input or explicitly unfrozen synthetic fixture")
+    e.add_argument("--splits", nargs="+", choices=("development", "regression"),
+                   help="defaults to both non-holdout splits; holdout is not supported")
+    e.add_argument("--out", required=True, help="new output directory; never overwrite previous evidence")
+    e.set_defaults(fn=cmd_evaluation)
+    e = ep.add_parser("freeze", help="freeze exact inputs/method/gate; missing criteria remain blocked")
+    e.add_argument("--package", required=True)
+    e.add_argument("--gate", required=True)
+    e.add_argument("--queries", help="original query file with sibling manifest; omitted verification keeps the gate blocked")
+    e.add_argument("--out", required=True)
+    e.set_defaults(fn=cmd_evaluation)
+    e = ep.add_parser("run", help="score frozen candidates; incomplete judgments cannot pass")
+    e.add_argument("--package", required=True)
+    e.add_argument("--queries", help="reverify the original query bytes and selected split projection; required to pass")
+    e.add_argument("--freeze", required=True)
+    e.add_argument("--labels", required=True)
+    e.add_argument("--baseline", help="report whose exact SHA-256 was frozen for non-regression")
+    e.add_argument("--out", required=True)
+    e.set_defaults(fn=cmd_evaluation)
     args = ap.parse_args(argv)
     if args.cmd == "mcp" and args.insecure_no_auth:
         ap.error("--insecure-no-auth is unavailable; HTTP MCP requires a client token")

@@ -1,0 +1,4 @@
+PASS published schema 7 generated real pending read/map jobs with immutable snapshot, evidence and frozen session; 3 fake calls
+PASS genuine schema 7 read queue upgrades: original IDs/usage, legacy order then durable rotation, new arrivals behind; 4 dispatched items
+PASS genuine schema 7 map queue upgrades: original dispatch counter/order, warm robots cache, no extra work on key reuse; 4 dispatched items
+PASS snapshot/evidence/frozen import preserved; no SQL data mutation used by harness; no real network

@@ -1,0 +1,101 @@
+{
+  "scope": "independent phase5 session boundary review and synthetic reproductions; no real sources or outbound network",
+  "base": "2007690c9403b8ae593101488de1adf228608284",
+  "lib_sha256": "752b0307043475670c19546225c02e5d8854d364ee9d967ca39d8d15198a7fe0",
+  "records": {
+    "expanded": {
+      "command": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-g",
+        "-Iinclude",
+        "-I/usr/include/libxml2",
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/expanded-repro.cpp",
+        "build-sessions-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/expanded-repro-final"
+      ],
+      "run_command": [
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/expanded-repro-final"
+      ],
+      "exit_code": 0,
+      "source_sha256": "746d5f2006907793b3589aa67d33670ebdf4d2d149dfe057bb606914b3143206",
+      "binary_sha256": "fdecd6d866da0acd4696d108624c1f83069b7c0cdb92c32032d70df38b5114ce",
+      "log_sha256": "e3341667159c41f7ec6254ab421586f19569c037014cf701f754855626d0a68a"
+    },
+    "legacy": {
+      "command": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-g",
+        "-Iinclude",
+        "-I/usr/include/libxml2",
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/legacy-repro.cpp",
+        "build-sessions-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/legacy-repro-final"
+      ],
+      "run_command": [
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/legacy-repro-final"
+      ],
+      "exit_code": 0,
+      "source_sha256": "e64676c4f86698cb93925675010c8364ead376019ac9e17652ca8177ad5bf730",
+      "binary_sha256": "3a77ba86322896720e0268ffbc753cd12d324cade16abef93fba05ccbae9be12",
+      "log_sha256": "4c64208b663854de509811067ff70b14c1c9497878b24e05921495edec5b2fcf"
+    },
+    "native_author_suite": {
+      "run_command": [
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-author/bzs_session_tests"
+      ],
+      "exit_code": 0,
+      "log_sha256": "7638b5998452bbea445714c1f41dd841b20a8de298655e8131ea67227b30a026"
+    },
+    "mcp_independent": {
+      "run_command": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-review/mcp-retest.py"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e038b88ea555d3b57fdde941c9df0aaa2d17c764f78cfc9dddfb3c497da82f42"
+    }
+  },
+  "source_sha256": {
+    "src/sessions.cpp": "3fa6600f52a82d21527cb9d11bca03e931b79a51327539915bfe72e273c8c687",
+    "src/web.cpp": "a4457502bb41c6e0ae8acad9ab64197a68b69783ab67a9fc85807966eac05795",
+    "src/publication.cpp": "1850edae466c5bb08eafc32d3446a359f73f61001df9392f83c2719b2cee1903",
+    "src/store.cpp": "93529372289a8adf3877d115a113f01675ad12fe08dd47fbecf6954d0bd2cb37",
+    "src/service.cpp": "935c796ae7b663c256d7e8a086de27d328820019f72c0a78b17ead9e43b1c57c",
+    "include/bzs/store.hpp": "46b1be6b59f06699468e4ce3014ba80a76ec51beffdf81b0d9965ea88dfd6b37",
+    "include/bzs/web.hpp": "d1336780a3d220f7e3767e87479a954c5decd867879c785e9f8aa5e8ad86958a",
+    "python/bzs/mcp_server.py": "9a13945303ccbd22878a64f122c7f8e4893fca0f8306b848f33cb2dbc7df0ff0",
+    "tests/sessions.cpp": "6bd6e09bac754cecd77e0e8af25294c0cd48262db881a8a7e882f6cb594682b1",
+    "python/tests/test_mcp_sessions.py": "10288b3ffdee6cd5b511e20c4b5fb85e0f72c9d1f9fcfdd23d6b82bcfce7d1b4",
+    "docs/SEARCH_SESSIONS.md": "7f4186cc2266b9c1ed92bee50dbbb069cda149c6b306d4ae46ecda61f74286f2"
+  },
+  "fixed_findings": [
+    "raw MCP arguments coerced/ignored before core",
+    "expired local session payloads blocked web capacity",
+    "dedup fusion lost actual URL provenance and page restrictions",
+    "second fusion selected worst duplicate source rank",
+    "legacy compatibility branch cleared captured publication ceiling"
+  ],
+  "independent_native": "10 expanded cases / 26 assertions plus 1 legacy overflow reproduction; all pass",
+  "author_suite_independently_rerun": "19 tests / 199 assertions / zero failures",
+  "mcp_independent": "6 invalid raw shapes, 3 exact string controls, 5 strict schemas; all pass",
+  "known_limits": [
+    "no real source availability or quality claim",
+    "no physical power-loss/multi-node proof",
+    "publication/owner/deletion policy gates are verified within the reviewed scope",
+    "source configuration activation semantics remain governed by existing session and registry contracts"
+  ]
+}

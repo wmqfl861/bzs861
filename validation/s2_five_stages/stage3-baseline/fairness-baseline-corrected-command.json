@@ -1,0 +1,36 @@
+{
+  "baseline_commit": "2007690c9403b8ae593101488de1adf228608284",
+  "compile_command": [
+    "c++",
+    "-std=c++20",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wshadow",
+    "-DBZS_FIXTURE_DIR=\"/workspace/scratch/80f41eb198a3/bzs861-fairness/tests/fixtures\"",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs861-fairness/include",
+    "/workspace/scratch/80f41eb198a3/bzs861-fairness/tests/fairness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-hardening-review/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-baseline-corrected"
+  ],
+  "run_command": [
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-baseline-corrected",
+    "calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-fairness",
+  "exit_code": 0,
+  "log": "fairness-baseline-corrected-trap.log",
+  "log_sha256": "9236fa694f091326a5cc3e89b6bd649591d66c72a281941f457721ffa505324f",
+  "source": "fairness-corrected-source.cpp",
+  "source_sha256": "3af5ad99f1e3120a1d83974e430b3114736424533f6df64d1977f3de441c0f0a",
+  "fixture_fix": "Optional edge reason is null for followed edges; test must read it only when string. Background category test asserts call order instead of observer timing. Original baseline source reconstructed from exact inverse patch and accepted only after its pre-recorded SHA256 matched."
+}

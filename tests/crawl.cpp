@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <set>
 #include <vector>
 using namespace bzs;
 namespace {
@@ -192,7 +193,9 @@ namespace {
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));first=w.submit_crawl("alice",args({std::string(base)+"/map/a",std::string(base)+"/map/b",std::string(base)+"/map/c"},"first")).at("job_id").str();
       auto lease=w.lease_map();CHECK(lease);w.execute_map(*lease);lease=w.lease_map();CHECK(lease);w.execute_map(*lease);
       ++f.now;mapped=w.submit_map("alice",args({std::string(base)+"/map/metadata"},"mapped")).at("job_id").str();++f.now;second=w.submit_crawl("alice",args({std::string(base)+"/map/second"},"second")).at("job_id").str(); }
-    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));auto lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==mapped);w.execute_map(*lease);lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==second);w.execute_map(*lease);drain(w);CHECK(s.job_get("alice",first).at("state").str()=="succeeded");CHECK(f.calls.size()==6); }
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));std::set<std::string> served;
+      for(int turn=0;turn<3;++turn){auto lease=w.lease_map();CHECK(lease);served.insert(lease->job_id);w.execute_map(*lease);}
+      CHECK(served==std::set<std::string>({first,mapped,second}));drain(w);CHECK(s.job_get("alice",first).at("state").str()=="succeeded");CHECK(f.calls.size()==6); }
   }
   TEST(pause_cancel_and_auth_epoch_fence_late_body_and_observation) {
     for(const std::string mode:{"pause","cancel","epoch"}) {
@@ -226,7 +229,10 @@ namespace {
     drain(w);CHECK(f.calls.size()==2);CHECK(s.job_get("alice",id).at("stop_reason").str()=="E_CRAWL_EDGE_LIMIT");CHECK(s.job_get("alice",id).at("page_count").num()==1);CHECK(s.crawl_edges("alice",id).at("total").num()==10000);
   }
   void drop_schema_seven(sqlite3* db) {
-    sql(db,R"SQL(DROP TABLE crawl_trap_edges; DROP TABLE crawl_trap_urls; DROP TABLE crawl_trap_policy;
+    sql(db,R"SQL(DROP INDEX read_job_scheduling; DROP INDEX map_job_scheduling;
+ ALTER TABLE read_job_budgets DROP COLUMN last_dispatch_sequence;
+ DELETE FROM settings WHERE key='read_dispatch_sequence';
+ DROP TABLE crawl_trap_edges; DROP TABLE crawl_trap_urls; DROP TABLE crawl_trap_policy;
  DROP TABLE site_publication_rules; DROP TABLE site_publication_state;
  ALTER TABLE snapshots DROP COLUMN site_bindings_json; ALTER TABLE snapshots DROP COLUMN site_publication_generation;
  ALTER TABLE session_rows DROP COLUMN site_binding_version; PRAGMA user_version=6;)SQL");
@@ -243,7 +249,7 @@ namespace {
   TEST(schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity) {
     Temp t;Fake f;Json snapshot,evidence,session;std::string map_id,read_id;
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));snapshot=s.ingest("alice",{"https://MAP.example:443/map/old#fragment","marker preserved","text/plain","old"});evidence=s.evidence("alice",snapshot.at("snapshot_id").str(),0,6);session=freeze(s);map_id=w.submit_map("alice",args()).at("job_id").str();drain(w);read_id=s.read_many_submit("alice",{std::string(base)+"/map/read"},"read",{}).at("job_id").str();sql(s.raw_handle(),"UPDATE content_fts SET rowid=913;");drop_crawl(s.raw_handle()); }
-    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==8);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
+    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==11);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
   }
   TEST(schema_five_quarantine_rejects_before_new_publication_ddl) {
     Temp t;{ Store s(t.path/"db");drop_crawl(s.raw_handle());sql(s.raw_handle(),"UPDATE settings SET value='1' WHERE key='restore_quarantine';"); }
@@ -314,7 +320,7 @@ namespace {
       reader.response=[&](const Json& p) { return page_policy(reader.ok(p),false,false); };read.read("alice",refresh_args(b));
       sql(store.raw_handle(),"ALTER TABLE document_publication DROP COLUMN index_generation; ALTER TABLE document_publication DROP COLUMN snippet_generation; ALTER TABLE session_rows DROP COLUMN snippet_suppressed; ALTER TABLE read_job_items DROP COLUMN publication_sequence; ALTER TABLE read_job_items DROP COLUMN publication_snapshot_id; ALTER TABLE map_resources DROP COLUMN publication_sequence; ALTER TABLE map_resources DROP COLUMN publication_snapshot_id; UPDATE snapshots SET meta_json=json_remove(meta_json,'$.page_publication_sequence','$.page_publication_history','$.page_publication_stale','$.publication_fence'); UPDATE map_hops SET admission_json=json_remove(admission_json,'$.publication_sequence','$.publication_snapshot_id'); PRAGMA user_version=7;");
     }
-    Store reopened(t.path/"db",[&]{return f.now;});WebService crawl(reopened,f,{},SiteRegistry(manifest())),read(reopened,reader,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==8);drain(crawl);CHECK(reopened.job_get("alice",id).at("state").str()=="succeeded");CHECK(hits(reopened,freeze(reopened)).size()==0);
+    Store reopened(t.path/"db",[&]{return f.now;});WebService crawl(reopened,f,{},SiteRegistry(manifest())),read(reopened,reader,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==11);drain(crawl);CHECK(reopened.job_get("alice",id).at("state").str()=="succeeded");CHECK(hits(reopened,freeze(reopened)).size()==0);
     reader.response={};read.read("alice",refresh_args(b));const auto current=hits(reopened,freeze(reopened));CHECK(hit_url(current,a).is_null());CHECK(!hit_url(current,b).is_null());CHECK(hits(reopened,previous).size()==0);CHECK(f.calls.size()==3);
     read.read("alice",refresh_args(a));CHECK(!hit_url(hits(reopened,freeze(reopened)),a).is_null());CHECK(hits(reopened,previous).size()==0);
   }
@@ -597,7 +603,11 @@ namespace {
       else if(p.at("url").str().find("/catalog/page/")!=std::string::npos)readable_body(r,repeated_body);
       return r; };
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",args({std::string(base)+"/map/root-a",std::string(base)+"/map/root-b"})).at("job_id").str();execute_pages(w,3);
-      ++f.now;other=w.submit_crawl("alice",args({std::string(base)+"/map/useful"},"other-job")).at("job_id").str();auto lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==other);w.execute_map(*lease);execute_pages(w,3);
+      ++f.now;other=w.submit_crawl("alice",args({std::string(base)+"/map/useful"},"other-job")).at("job_id").str();
+      // An admitted newcomer joins behind the existing frontier's next turn.
+      // It then runs before that frontier may receive another turn.
+      auto lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==id);w.execute_map(*lease);
+      lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==other);w.execute_map(*lease);execute_pages(w,2);
       CHECK(s.job_get("alice",id).at("used_pages").num()==5);CHECK(s.job_get("alice",id).at("pending_documents").num()==2);CHECK(s.job_get("alice",id).at("trap_policy").at("limited_pagination_families").num()==1);s.job_control("alice",id,"pause"); }
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));s.job_control("alice",id,"resume");drain(w);
       const auto job=s.job_get("alice",id);CHECK(job.at("state").str()=="succeeded");CHECK(job.at("skipped_pages").num()==2);CHECK(job.at("used_pages").num()==5);CHECK(f.calls.size()==7);
@@ -637,7 +647,7 @@ namespace {
       else if(p.at("kind").str()=="page")readable_body(r,repeated_body);
       return r; };
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",parameters).at("job_id").str();execute_pages(w,4);CHECK(s.job_get("alice",id).at("used_pages").num()==3);drop_schema_seven(s.raw_handle()); }
-    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==8);
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==11);
       const auto reused=w.submit_crawl("alice",parameters);CHECK(reused.at("reused").flag());CHECK(reused.at("job_id").str()==id);CHECK(f.calls.size()==4);CHECK(reused.at("trap_policy").is_null());drain(w);
       auto job=s.job_get("alice",id);CHECK(job.at("trap_policy").at("version").str()==crawl_trap_version);CHECK(job.at("trap_policy").at("body_observations").num()==3);CHECK(job.at("trap_policy").at("url_observations").num()==6);
       CHECK(job.at("used_pages").num()==4);CHECK(job.at("skipped_pages").num()==2);CHECK(f.calls.size()==5);CHECK(stopped_edges(s,id,"E_CRAWL_TRAP_DUPLICATE_PAGINATION").size()==2);CHECK(s.stats("alice").at("snapshots").num()==4); }

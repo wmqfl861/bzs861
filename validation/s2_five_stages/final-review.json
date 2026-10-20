@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "project_version": "0.1.8",
+  "recorded_at_utc": "2026-10-20T13:58:31.051989+00:00",
+  "status": "scoped_reviews_and_final_local_gates_passed",
+  "assembled_by": "/root",
+  "scope": "Five S2 increments. Author candidates, independent scoped reviews, final integrated execution and external CI are distinct evidence scopes.",
+  "full_product_independent_review": false,
+  "product_acceptance_granted": false,
+  "execution_inputs": {
+    "path": "validation/s2_five_stages/final-v1-execution-inputs.json",
+    "sha256": "a190351a395426083ed4f113f3a6c81368c8ced8680bafdc4f7c7b19cddd4b6c"
+  },
+  "stages": [
+    {
+      "stage": 1,
+      "topic": "Publication order and stale restrictions",
+      "independent_evidence": [
+        {
+          "path": "validation/s2_five_stages/stage1-v2-review.json",
+          "sha256": "e729970eb33dcf808f0d00c0c074a70958f9e64f2bd62f8c0f0faf414bf2b0e6"
+        },
+        {
+          "path": "validation/s2_five_stages/stage1-review/independent-review-final-v3.json",
+          "sha256": "8196d8c2f9065100ac14da47d7df401e28f02d877699bb182e3735f6d781df4f"
+        }
+      ],
+      "result": "17 public-API race cases, 2 genuine schema7 in-flight upgrade cases and 6 legacy Worker completeness cases passed for the repaired stage1-v2 candidate.",
+      "preserved_findings": "The original 0.1.5 seven-case failures and superseded initial candidate remain archived. A reported 206/error/truncated response must not clear a restriction, including legacy Worker responses."
+    },
+    {
+      "stage": 2,
+      "topic": "Terminal job compaction and robots references",
+      "independent_evidence": [
+        {
+          "path": "validation/s2_five_stages/stage2-review/independent-review.json",
+          "sha256": "fabc75cb8fd3dfae7d6bfd613fcda3bb4da615d94797a2b977300c655e67e6c7"
+        },
+        {
+          "path": "validation/s2_five_stages/final-upgrade/final-upgrade-review.json",
+          "sha256": "7826659127558b4d6a9c465ed33878b0a3370c5385dbc4a255dc02d7dbb86fac"
+        }
+      ],
+      "adapter_author_evidence": {
+        "path": "validation/s2_five_stages/stage2-adapters/author-evidence.json",
+        "sha256": "ec0ec8a7554066f54639d375e12606bd2c5254d7e2e25fa6a514213b70487aa8"
+      },
+      "result": "Two genuine schema8-created databases upgraded via final schema11 public APIs. 32 preparation and 87 candidate assertions passed; these are reruns of the existing two scenarios, not additional acceptance coverage.",
+      "limits": "Adapter author tests use mocked core mapping. Final native/HTTP/Python gates cover the integrated implementation; no unbounded ledger or physical database shrink claim."
+    },
+    {
+      "stage": 3,
+      "topic": "Durable queue rotation and trap controls",
+      "author_evidence": {
+        "path": "validation/s2_five_stages/stage3-author/author-handoff.json",
+        "sha256": "bbc82a018e3a0382280a9783efe234c82d2df3157f55bc70ceb6c46feccb93e9"
+      },
+      "baseline_evidence_directory": "validation/s2_five_stages/stage3-baseline",
+      "integration_result": "11 fairness cases / 251 assertions passed in both final native CTest and ASan/UBSan. Final crawl has54 cases; the earlier branch-local51 count excludes subsequent publication tests.",
+      "limits": "The real old schema7 queue upgrade is author evidence. Read-only integration merge review is separate from independent product acceptance. Missing historic admission order is not reconstructed."
+    },
+    {
+      "stage": 4,
+      "topic": "Frozen candidate relevance evaluation",
+      "author_evidence": {
+        "path": "validation/s2_five_stages/stage4-author/author_projection_evidence.json",
+        "sha256": "30417e1c66301070c50b7f9b3c11995ea6a205ca15ef924accf15147c1b2b494"
+      },
+      "independent_evidence": {
+        "path": "validation/s2_five_stages/stage4-review/independent-review-dee49b3.json",
+        "sha256": "225e41e89198d7334d204a4270f774618bf7a7f8c8803bef242c03f43a0dbdc5"
+      },
+      "result": "Root finding on forgeable golden projection was fixed; freeze and each run now require the original byte-bound complete projection. Final Python suite includes evaluator regressions.",
+      "reviewer_test_execution": 0,
+      "limits": "The read-only reviewer did not execute the207 author tests or verify human truth. No human labels were created; complete release_gate remains blocked."
+    },
+    {
+      "stage": 5,
+      "topic": "Durable frozen sessions and bounded event replay",
+      "independent_evidence": [
+        {
+          "path": "validation/s2_five_stages/stage5-review/final-evidence.json",
+          "sha256": "570bb3f6482ccc3ff1075b513358d65428009103ff68fa74e837401f2f924656"
+        },
+        {
+          "path": "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/supplement-evidence.json",
+          "sha256": "a44bf8720f3f638c3ca6adc2e175e2bfe32826451140b118a20db701337ab163"
+        }
+      ],
+      "result": "Independent expanded/legacy/MCP repros and three preexisting noindex/nosnippet/deletion full-read cases passed after fixes. Final integrated native session suite has20 cases/228 assertions and web process E2E has14 cases.",
+      "limits": "The earlier19-case native rerun belongs to the prior candidate. The supplement did not independently rerun the later20-case author suite; root final gates executed it. No live-source availability or arbitrary power-loss/multinode proof."
+    }
+  ],
+  "integration_readonly_review": {
+    "reviewer": "/root/integrate_fairness",
+    "scope": "Four auto-merged production files: src/web.cpp, src/publication.cpp, include/bzs/store.hpp, include/bzs/web.hpp.",
+    "result": "No lost publication-capture, completeness-check, retention-declaration or contributor-URL wiring found. Captured/current chain paths and legacy captured ceiling remained wired.",
+    "source_edits": 0,
+    "tests_executed": 0,
+    "scope_note": "This review preceded the separately reviewed preexisting-policy supplement; final behavior is backed by the unified schema11 gates."
+  },
+  "documentation_readonly_review": {
+    "reviewer": "/root/integration_docs",
+    "scope": "Current version entrypoints,36/47/0 package status and new API parameter/retention bounds.",
+    "result": "No blocking parameter/status mismatch; historical site publication/crawling headings and validation entrypoint were corrected without rewriting old evidence.",
+    "source_edits_by_reviewer": 0,
+    "product_tests_executed": 0
+  },
+  "final_evidence_readonly_audit": {
+    "reviewer": "/root/integration_docs",
+    "result": "No discrepancies:164 frozen files match before/after audit;18 successful command records match log, manifest and runner hashes;15/15 CTest with0 skipped,838 Python passes and9 sanitizer pass summaries with leak detection. Eight preserved inputs match0.1.5.83 package and10 slice objects match;161 mappings differ only in execution_status.",
+    "other_plan_metadata_changes": [
+      "implementation_stage",
+      "review_revision",
+      "scope_policy.current_report"
+    ],
+    "files_written": 0,
+    "product_tests_executed": 0,
+    "remote_ci_checked": false,
+    "provenance": "Root transcription of the peer final read-only evidence audit; not a second execution of product tests."
+  },
+  "final_local_gates": {
+    "ctest_suites": 15,
+    "ctest_failed": 0,
+    "ctest_skipped": 0,
+    "python_tests": 838,
+    "native_sanitizer_executables": 9,
+    "planning_guard": 13,
+    "original_design_fixtures": 34,
+    "genuine_schema8_to11_scenarios": 2
+  },
+  "boundary": "Overlapping author, reviewer, native, Python and sanitizer runs are not added to form product acceptance counts.83 work packages and161 original acceptance items remain unsigned."
+}

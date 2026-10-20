@@ -1,0 +1,12 @@
+FAIL read_batches_follow_submission_order_and_rotate_with_identical_timestamps: check failed: lease.job_id==id at 77
+FAIL late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains: check failed: served at 85
+FAIL read_queue_position_survives_restart_and_owner_isolation: check failed: dispatch(s,web).job_id==second at 90
+FAIL restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch: check failed: dispatch(s,web).job_id==second at 97
+FAIL two_store_connections_reserve_distinct_jobs_and_rounds: check failed: one->job_id==a at 101
+FAIL paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns: check failed: dispatch(s,web).job_id==paused at 107
+FAIL continuous_new_map_jobs_do_not_starve_an_existing_frontier: check failed: original_progress==2 at 114
+FAIL new_map_jobs_have_a_strict_submission_order_at_the_same_clock: check failed: dispatch_map(web).job_id==id at 120
+PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+PASS worker_loop_gives_batch_and_discovery_categories_progress
+FAIL calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart: String required
+11 fairness tests, 98 assertions, 9 failures

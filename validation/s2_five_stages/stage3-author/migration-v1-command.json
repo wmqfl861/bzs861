@@ -1,0 +1,94 @@
+{
+  "started_at": "2026-10-20T03:15:48.726919+00:00",
+  "duration_s": 4.263,
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-fairness",
+  "inputs": {
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration_queue.cpp": "c3d74769d8f8027ef40571d2ee132a3b0935ea371c91ec96cfd783e8160ebacc",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-hardening-review/libbzs_core.a": "0385b54988c2c7e8794f684dc0a4db56cc88fb189cd3033dccd265d0b8fb22e7",
+    "/workspace/scratch/80f41eb198a3/bzs861-fairness/build-fairness-author/libbzs_core.a": "9e4379914d8737781589f965629d5e4da2b58c493fe5bd85d5cd9f00e2fa2811",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/query.hpp": "5e14e721065bae54fbd5c04afb8bd6a7bce7949fbe01b29a1d2876604c25b1eb",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/service.hpp": "7b26011bc75fef70059c4db336371e6d450bfeb8e3979233845ae2a449b76e5b",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/store.hpp": "c82fd39e6e18884887a83305e72d8eda1cb300182a096d1b5fa989bcb237707b",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/tokenizer.hpp": "e4945b4d8475000acbbb274b6fe1af9baa3779f7c5c2b29cf0c67e10add7475d",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include/bzs/web.hpp": "16180fa6e53ff815075d64584847c295ab8243fe82c180c4eb83b1cf737e66c1"
+  },
+  "commands": [
+    {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage1/baseline-headers/include",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration_queue.cpp",
+        "/workspace/scratch/80f41eb198a3/bzs861/build-s2-hardening-review/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration-queue-schema7"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/80f41eb198a3/bzs861-fairness/include",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration_queue.cpp",
+        "/workspace/scratch/80f41eb198a3/bzs861-fairness/build-fairness-author/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration-queue-candidate"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration-queue-schema7",
+        "create",
+        "/tmp/bzs-genuine7-queue-3ds65_oa/state.db",
+        "/tmp/bzs-genuine7-queue-3ds65_oa/metadata.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-author/migration-queue-candidate",
+        "upgrade",
+        "/tmp/bzs-genuine7-queue-3ds65_oa/state.db",
+        "/tmp/bzs-genuine7-queue-3ds65_oa/metadata.json"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "log": "migration-v1.log",
+  "log_sha256": "36c7b2d0283855e8be1a2d86f42712da758446b3454fb322f16affcf9bab63ee",
+  "inputs_unchanged": true,
+  "temporary_database_removed": true,
+  "preparation_note": "Initial pre-test compile failed because harness read_file collided with bzs::read_file; helper renamed read_metadata. No migration was executed in that compile failure.",
+  "scope": "Actual published 0.1.5 static library writes schema7; candidate opens same DB. Native fake worker, public data APIs; only SQL operation in harness reads PRAGMA version."
+}

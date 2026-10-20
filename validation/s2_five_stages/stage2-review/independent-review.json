@@ -1,0 +1,131 @@
+{
+  "version": "bzs-independent-retention-review-1",
+  "reviewed_at_utc": "2026-10-20T03:55:07.876823+00:00",
+  "reviewer": "/root/requirements_review",
+  "status": "scoped_review_passed_no_known_blocker",
+  "scope": "Stage 2 terminal job detail and expired robots reclamation; review only in the capacity worktree, external independently written harness. No shared production changes.",
+  "candidate": {
+    "worktree": "/workspace/scratch/80f41eb198a3/bzs861-capacity",
+    "library": "/workspace/scratch/80f41eb198a3/bzs861-capacity/build-s2-capacity-author/libbzs_core.a",
+    "library_sha256": "f28d30996e3f6410f605789c919eb3d8d969383ede5616f8bdf8fec01a785e4b",
+    "schema": 9
+  },
+  "genuine_prior_schema_fixture": {
+    "library": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "library_sha256": "7b6a7fbb9b9ecd904b2d87697914fccf17bab6473a8d1c42c9cb816cf49dc0a5",
+    "schema": 8,
+    "description": "The separately compiled Stage 1 candidate library actually creates the database through public APIs. It is a genuine schema8 producer, not a claim that schema8 was already published. No columns are dropped and no SQL data mutations create the fixture."
+  },
+  "direct_reviewer_execution": {
+    "scenarios": 2,
+    "passed": 2,
+    "failed": 0,
+    "candidate_assertions": 87,
+    "prior_schema_preparation_assertions": 32,
+    "total_assertions": 119,
+    "commands": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/independent-v1-command.json",
+    "commands_sha256": "bb8040b1b2564c4dcc76688f4a61c1dfaabc9a27c7fa58b68eaf8808bee75a91",
+    "log": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/independent-v1.log",
+    "log_sha256": "f047fa953f6e6f0e8f450a8e30e3cbd5e456a37b664e4fd7415a640ec1e25385",
+    "inputs_count": 42,
+    "inputs_unchanged": true,
+    "temporary_databases_removed": true,
+    "external_network_requests": 0,
+    "model_calls": 0,
+    "worker": "Only an in-process synthetic WorkerPort is used. Synthetic receipts contain known usage counters; no real HTTP occurred.",
+    "sql": "The query helper enforces sqlite3_stmt_readonly; all fixture creation, control, settlement, ingestion, compaction and replay use public Store/WebService APIs.",
+    "compile_note": "The schema8 preparation binary emits four unused-function warnings because upgrade-only helper definitions are compiled but unused in that build. Both builds and all four preparation/upgrade commands exit0."
+  },
+  "groups": [
+    {
+      "id": "RET-01",
+      "status": "closed_by_implementation_and_direct_execution",
+      "boundary": "Expired or cancelled is insufficient while any read/page grant remains unsettled. The fixed window is at least seven days beyond current created/deadline/lease bounds.",
+      "finding": "Selection excludes nonterminal states, pending/running details and nonzero grants. Normal settlement precedes eligibility. Immutable summary checks reserved usage is0 and charged equals known plus unknown.",
+      "direct_evidence": "The genuine schema8 read retains unresolved3requests/983bytes through upgrade and an aged compaction refusal. Normal settlement then preserves known1/17, unknown3/983 and charged4/1000 through compaction/reopen. A live map admission similarly retains its whole grant until normal settlement."
+    },
+    {
+      "id": "RET-02",
+      "status": "closed_by_static_trace_and_direct_execution",
+      "boundary": "Permanent keys, budget receipts and access isolation survive removed detail rows.",
+      "finding": "Archive interception is present in job_locked, read_job_locked and map_job_locked. get/replay returns the original job summary; details/control return410 only after owner resolution. Callbacks cannot find an owned running detail lease.",
+      "direct_evidence": "Canonical equality of the original summary after removing only the added retention field; repeated original read/map keys reuse exact IDs, late callbacks do not alter summaries, map worker_calls stays0, owner details410 and other-owner lookup404. Paused and Bob details remain unarchived."
+    },
+    {
+      "id": "RET-03",
+      "status": "closed_by_full_reference_inventory_and_direct_execution",
+      "boundary": "An expired robots record must remain while any retained successful-fetch receipt or admitted hop references it.",
+      "finding": "Repository-wide robots_cache_id inventory resolves to map_hops.response_json and map_hops.admission_json. Both indexed NOT EXISTS checks are present; cleanup remains owner-scoped and expires_at-bounded.",
+      "direct_evidence": "A real schema8 robots receipt, completed document admission and unresolved document admission share one record. Three limit1 calls remove the eligible jobs successively; cache remains while the unresolved admission pins it and disappears only after that admission settles and is compacted. Reader checks origin active lane, quota/cooldown/window and map_dispatch_sequence are unchanged by compaction."
+    },
+    {
+      "id": "RET-04",
+      "status": "static_and_author_evidence_with_narrow_direct_confirmation",
+      "boundary": "Reclamation releases bounded detail capacity while preserving finite key and scheduling ledgers.",
+      "finding": "At most64 jobs and64 expired robots per call; ordinary new submissions auto-compact8. Original owner10000 permanent keys plus global50000 remain enforced. Retention deletes none of settings, site_request_state, sources, document_publication or site publication rules.",
+      "direct_evidence": "limit1 has_more changes correctly; original dispatch sequence and site quota state survive.",
+      "secondary_evidence": "Author reports native coverage of the actual512 map-job cap, global50000/owner10000 key quotas and two concurrent Store compactors. Reviewer did not rerun those tests."
+    },
+    {
+      "id": "RET-05",
+      "status": "static_and_author_evidence",
+      "boundary": "An interrupted storage mutation or backup must not bypass durable accounting or restore quarantine.",
+      "finding": "Public compact owns BEGIN IMMEDIATE; auto compaction uses its submission writer transaction. Summary update precedes dependent deletion; failed deletion unwinds the whole transaction. Deletion order respects trap/edge and hop/resource dependencies. Schema9 indexes and columns follow schema8 and preserve the prior migrations. Backup code continues to set quarantine.",
+      "secondary_evidence": "Author reports16 native cases including a SQLite-triggered atomic rollback, genuine bounded quotas, a synthetic schema8 downgrade fixture, threaded compactors, and backup E_RESTORE_QUARANTINED. Independently performed actual schema8 producer upgrades complement those authored tests."
+    },
+    {
+      "id": "RET-06",
+      "status": "preserved_scope_with_direct_private_pin_check",
+      "boundary": "Compaction must preserve immutable snapshots/evidence, deletion/publication/site restrictions and original acceptance gates.",
+      "finding": "Retention table deletion set contains only task details and eligible robots. Private canonical bodies/evidence and all watermarks are outside it.",
+      "direct_evidence": "Existing import snapshot, its evidence quote and a completed read snapshot remain byte-identical through real schema upgrade, compaction and reopen.",
+      "limitation": "Publication race and frozen-policy behavior are covered by the prior Stage1 independent report plus author/root integration gates, not re-certified by this retention harness."
+    }
+  ],
+  "read_files": {
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/retention.cpp": "9cd0abfa74c6140bfd6d6df789b6348f9487df8d385469b21ae4d92a1b1294e8",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/store.cpp": "872bbeaf4a5cc47a8172982b3ee88ddc18c319c148ae502ec89cb6e640676ebd",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/batch.cpp": "f4b70f78dbfec33f33f0200568c969315efc3322524b0151e05906251fc49a9f",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/map.cpp": "7f213db055e87825222eff6602b0d218d3a529a3d5cf7afb854c4567a53154c8",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/crawl.cpp": "21a878d0268933e572dbd63bd9d8b5a73649daaba4b45de4ce01c2f454a35271",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/map_service.cpp": "0fca97f1736a6328ce6c980d0c050f603e5f747b8c7590e56361a9376b7f805e",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/publication.cpp": "9e4a88edaabf934846b96128ef0409268f98165c22d732bc13dce3cb8acc98eb",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/web.cpp": "6451f98afcee1cf80e541390e1170c3d079fc3119f849651b8998a46eb0d9719",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/sites.cpp": "b8e8f34baca47e732e4aa14a8369c8b171d00879426175819ea901bc828b0d49",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/src/service.cpp": "559a3561c86e198ffc81e4e3966e31521c23fda6277c3ff64b393232c5c5bd6b",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/include/bzs/store.hpp": "99d94d4f49f79edab80067454f4aa24c82f4c32bb69444ae1efa173cf1f93c3b",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/tests/retention.cpp": "7ccda006a9df8f7fbf9801cfaf1dd877fce05e6ee658dedf8e023e773a55e10d",
+    "/workspace/scratch/80f41eb198a3/bzs861-capacity/CMakeLists.txt": "c58fd27e8460a9b0038bb5195d69620825ff5c644124232c89394bbc966b45a5"
+  },
+  "author_report_separate": {
+    "agent": "/root/crawl_core",
+    "reported_at_review": "16 retention native scenarios passed in2.50s; no independent full native rerun by reviewer. Exact final suite assertion counts and whole-tree gating belong to root execution records.",
+    "full_repository_gates_executed_by_this_reviewer": false
+  },
+  "limitations": [
+    "No true HTTP, subprocess-crash, sanitizer or target Windows test was performed by this review. Root must execute and bind the integrated source tree gates.",
+    "Compaction is a finite permanent-key ledger with detail reclamation; it is not unbounded lifetime operation. owner10000/global50000 can still be reached, and legacy databases already exceeding new caps are not silently purged.",
+    "The seven-day cutoff uses created_at, deadline and lease_until. Aged paused/queued/unsettled work is not forcibly made terminal by compact_jobs. Ordinary settlement/control remains necessary.",
+    "DELETE releases logical row capacity and SQLite reusable pages. It does not promise an immediate filesystem size reduction or run VACUUM.",
+    "Native core limit/accounting and authorization boundaries are reviewed here; the separate CLI/MCP adapter is outside this report.",
+    "The maintained execution order after integration is schema8 refresh fences, schema9 retention, schema10 fairness and schema11 sessions. The root must remap isolated branch migration numbers and include new native targets in Windows/ASan gates.",
+    "The original83 packages,161 acceptance mappings and10 slices are preserved. This review grants no package acceptance and fabricates no human labels, independent source approval, S0 result or backup restore certification."
+  ],
+  "planning_baseline": {
+    "packages": 83,
+    "acceptance_mappings": 161,
+    "slices": 10,
+    "published_baseline_partial": 34,
+    "published_baseline_not_started": 49,
+    "accepted": 0,
+    "note": "Final implementation partial counts after all five increments are computed by root; scoped review itself does not promote or sign off original packages."
+  },
+  "deliverables": {
+    "source": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp",
+    "runner": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/run_independent.py",
+    "prior_headers": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/baseline-headers/include/bzs",
+    "command_record": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/independent-v1-command.json",
+    "actual_log": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/independent-v1.log"
+  },
+  "no_shared_source_edits": true
+}

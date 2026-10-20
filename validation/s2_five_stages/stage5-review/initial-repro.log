@@ -1,0 +1,19 @@
+expired_local_slots: E_SESSION_BACKPRESSURE
+dedup_alias_page: {"coverage":"external_search_snippets_unread","has_more":false,"hits":[{"body_read":false,"index_families":2,"position":0,"rank":1,"score_micro":32786,"snippet":"protected canary","snippet_kind":"search_engine_snippet","sources":[{"rank":1,"source_id":"source0"},{"rank":1,"source_id":"source1"}],"title":"protected title","url":"https:\/\/results.example\/alias"}],"partial":false,"result_set_version":"1f6b75f0bc6b438ebefc8e3b2354ebe30500215f2a7077c9","session_id":"f93b9d74090fcc5966b256da86e4ee7c369ab47c6ac4d101"}
+author_suite_result: PASS progress_creates_immutable_versions_and_bound_stable_cursors
+PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+PASS cancel_mid_request_fences_late_response_and_preserves_completed_version
+PASS cancel_pending_is_zero_request_and_idempotent
+PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+PASS owner_isolation_invalid_options_and_version_binding
+PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+PASS delete_and_page_restriction_rechecked_without_content_in_event_log
+PASS site_tightening_survives_reopen_and_later_relaxation
+PASS active_session_backpressure_and_expired_detail_reclamation
+PASS local_search_gets_durable_events_and_still_has_snapshot_paging
+PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+PASS permission_epoch_invalidates_replay_and_late_completion
+PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source
+PASS frozen_known_redirect_binding_survives_target_revival_and_route_change
+15 tests, 150 assertions, 0 failures
+0

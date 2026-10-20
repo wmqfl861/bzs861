@@ -1,0 +1,69 @@
+{
+  "argv": [
+    "build-s2-five-stages-asan/bzs_fairness_tests"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "environment_overrides": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "started_at_utc": "2026-10-20T13:48:33.556776+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 3.66,
+  "log": "final-v1-asan-fairness.log",
+  "log_sha256": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+  "runner_sha256": "8555dab3f056a62ec53e606d53277847a83e7b0b8e5b51747ebb8d3b29451f93",
+  "execution_inputs": {
+    "manifest": "validation/s2_five_stages/final-v1-execution-inputs.json",
+    "sha256": "a190351a395426083ed4f113f3a6c81368c8ced8680bafdc4f7c7b19cddd4b6c",
+    "unchanged_before_and_after": true
+  },
+  "binaries_before_sha256": {
+    "build-s2-five-stages/searchd": "3a0db648a66918fdea5ff3518a7412b3a902da0bc17b3484e8fc60a0342c0017",
+    "build-s2-five-stages/searchctl": "3187dfddea750ea0bdf0711cc707e2797afbe859fff9706f99d83800d2e4886b",
+    "build-s2-five-stages/bzs_tests": "61589aaa6522e0d6b1671b45c080535f30e2139c7ade80bffb083dca2cecbb2b",
+    "build-s2-five-stages/bzs_batch_tests": "174ba6d7b784913e2a8c400015b41a81682ca61062cca49af50581f383aeb010",
+    "build-s2-five-stages/bzs_map_tests": "353a3cc58a139511f0fad7938af1ec7b34a86ef36f884a563a3fab4fb6b004d9",
+    "build-s2-five-stages/bzs_crawl_tests": "cf2ba474d19c116ed526039b3214fd02536e5c24d9b2548e79fbabd0af0a0de3",
+    "build-s2-five-stages/bzs_site_publication_tests": "a611b4375a3d4f11afa5ea102aa8f7a677209f502a36cc7a766898b22baf5bc6",
+    "build-s2-five-stages/bzs_contract_tests": "f884c5e4407e46baa217907a59c26f1d2be298f16fc47113798683dace4e8c9e",
+    "build-s2-five-stages/bzs_fairness_tests": "6c1c4219e70948cf67a46fb68e4377e7d9c74be9c37e3dcc46fee81a4d8fd534",
+    "build-s2-five-stages/bzs_retention_tests": "6684577777f2b1cdba9b42adc500c2ab91ba0196abca8a39bfb334db67e1f686",
+    "build-s2-five-stages/bzs_session_tests": "ffb5410875791be4cc321be21f6a0ee0f2b6600cf44d9f738521f60778b1183e",
+    "build-s2-five-stages/CTestTestfile.cmake": "84b233eade76b21c5b26d2370063f35275d23cf2184144f57a68f31b1e85abda",
+    "build-s2-five-stages-asan/bzs_tests": "8f88216f548bfe1b652b7862cd83bf2f76cbb308e35c78f77de7a894e37c148c",
+    "build-s2-five-stages-asan/bzs_batch_tests": "58b78e7ccb6d5ac7e227656b1166bcd39db3849fb4b21192d4ab4016d49ba07b",
+    "build-s2-five-stages-asan/bzs_map_tests": "824d6ca5d928e90826db7e40f9e55642eb5abd8707692c9116ff1accc364a858",
+    "build-s2-five-stages-asan/bzs_crawl_tests": "12c03c55ebdaaed85545f6829650bc7b2099d526df0326e18ddcdc011650fbe7",
+    "build-s2-five-stages-asan/bzs_site_publication_tests": "acde9e8ae92d79d215fc0665e799f85a9165b1bf78467834b0d9cad97d699df4",
+    "build-s2-five-stages-asan/bzs_contract_tests": "419e5c45e9ac907c7d98a454cb27ec7cdd5b642e736759f2219edd3fa6c25f25",
+    "build-s2-five-stages-asan/bzs_fairness_tests": "7abd850775f0bc0f96d36a7a619c9af26570afe3112f240dcabc7f0b0ae3090b",
+    "build-s2-five-stages-asan/bzs_retention_tests": "c04c8587e99d666d5bc0a834bcf402dbb6ce509ac61d5ef1fad68b5ad8ef94a2",
+    "build-s2-five-stages-asan/bzs_session_tests": "fcaa683eacb9be1ede7c1ae669dfc36e63449d46ef0708505e3f7073d3596593",
+    "build-s2-five-stages-asan/CTestTestfile.cmake": "73b096928e72c7afa332599e1bb98c791fc0bf2ffc9c9204193fa8a6353aad2b"
+  },
+  "binaries_after_sha256": {
+    "build-s2-five-stages/searchd": "3a0db648a66918fdea5ff3518a7412b3a902da0bc17b3484e8fc60a0342c0017",
+    "build-s2-five-stages/searchctl": "3187dfddea750ea0bdf0711cc707e2797afbe859fff9706f99d83800d2e4886b",
+    "build-s2-five-stages/bzs_tests": "61589aaa6522e0d6b1671b45c080535f30e2139c7ade80bffb083dca2cecbb2b",
+    "build-s2-five-stages/bzs_batch_tests": "174ba6d7b784913e2a8c400015b41a81682ca61062cca49af50581f383aeb010",
+    "build-s2-five-stages/bzs_map_tests": "353a3cc58a139511f0fad7938af1ec7b34a86ef36f884a563a3fab4fb6b004d9",
+    "build-s2-five-stages/bzs_crawl_tests": "cf2ba474d19c116ed526039b3214fd02536e5c24d9b2548e79fbabd0af0a0de3",
+    "build-s2-five-stages/bzs_site_publication_tests": "a611b4375a3d4f11afa5ea102aa8f7a677209f502a36cc7a766898b22baf5bc6",
+    "build-s2-five-stages/bzs_contract_tests": "f884c5e4407e46baa217907a59c26f1d2be298f16fc47113798683dace4e8c9e",
+    "build-s2-five-stages/bzs_fairness_tests": "6c1c4219e70948cf67a46fb68e4377e7d9c74be9c37e3dcc46fee81a4d8fd534",
+    "build-s2-five-stages/bzs_retention_tests": "6684577777f2b1cdba9b42adc500c2ab91ba0196abca8a39bfb334db67e1f686",
+    "build-s2-five-stages/bzs_session_tests": "ffb5410875791be4cc321be21f6a0ee0f2b6600cf44d9f738521f60778b1183e",
+    "build-s2-five-stages/CTestTestfile.cmake": "84b233eade76b21c5b26d2370063f35275d23cf2184144f57a68f31b1e85abda",
+    "build-s2-five-stages-asan/bzs_tests": "8f88216f548bfe1b652b7862cd83bf2f76cbb308e35c78f77de7a894e37c148c",
+    "build-s2-five-stages-asan/bzs_batch_tests": "58b78e7ccb6d5ac7e227656b1166bcd39db3849fb4b21192d4ab4016d49ba07b",
+    "build-s2-five-stages-asan/bzs_map_tests": "824d6ca5d928e90826db7e40f9e55642eb5abd8707692c9116ff1accc364a858",
+    "build-s2-five-stages-asan/bzs_crawl_tests": "12c03c55ebdaaed85545f6829650bc7b2099d526df0326e18ddcdc011650fbe7",
+    "build-s2-five-stages-asan/bzs_site_publication_tests": "acde9e8ae92d79d215fc0665e799f85a9165b1bf78467834b0d9cad97d699df4",
+    "build-s2-five-stages-asan/bzs_contract_tests": "419e5c45e9ac907c7d98a454cb27ec7cdd5b642e736759f2219edd3fa6c25f25",
+    "build-s2-five-stages-asan/bzs_fairness_tests": "7abd850775f0bc0f96d36a7a619c9af26570afe3112f240dcabc7f0b0ae3090b",
+    "build-s2-five-stages-asan/bzs_retention_tests": "c04c8587e99d666d5bc0a834bcf402dbb6ce509ac61d5ef1fad68b5ad8ef94a2",
+    "build-s2-five-stages-asan/bzs_session_tests": "fcaa683eacb9be1ede7c1ae669dfc36e63449d46ef0708505e3f7073d3596593",
+    "build-s2-five-stages-asan/CTestTestfile.cmake": "73b096928e72c7afa332599e1bb98c791fc0bf2ffc9c9204193fa8a6353aad2b"
+  }
+}

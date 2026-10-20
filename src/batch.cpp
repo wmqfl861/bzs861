@@ -47,6 +47,17 @@ namespace {
   };
   constexpr std::int64_t per_item_requests=18;
   constexpr std::int64_t per_item_bytes=8*1024*1024;
+  // Admissions and dispatched attempts share one durable queue clock. New
+  // arrivals join the tail, and equal wall clocks never fall back to random
+  // job IDs for jobs admitted by this scheduler version.
+  std::int64_t next_queue_sequence(sqlite3* db) {
+    Sql current(db,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='read_dispatch_sequence'");
+    require(current.step()&&current.num(0)>=0&&current.num(0)<std::numeric_limits<std::int64_t>::max(),
+            "E_STORAGE","Read scheduling sequence is missing or exhausted",500);
+    const auto sequence=current.num(0)+1;
+    Sql update(db,"UPDATE settings SET value=? WHERE key='read_dispatch_sequence'");update.bind(1,sequence);update.step();
+    return sequence;
+  }
   Json receipt(const Json& snapshot) {
     Json out=Json::object();
     for(const auto* key:{"document_id","snapshot_id","extraction_id","revision","indexed"})out.set(key,snapshot.at(key));
@@ -96,16 +107,17 @@ Json Store::read_many_submit(const std::string& owner,const std::vector<std::str
       auto out=read_job_locked(owner,existing.text(0));out.set("reused",true);tx.commit();return out;
     }
   }
-  Sql count(db_,"SELECT COUNT(*) FROM jobs WHERE owner=?");count.bind(1,owner);count.step();
-  require(count.num(0)<10000,"E_QUOTA","Job retention quota reached",429);
+  compact_jobs_locked(owner,8);
+  job_capacity_locked(owner);
   const auto now=clock_();
   require(now<=std::numeric_limits<std::int64_t>::max()-options.timeout_ms,"E_SCHEMA","Clock exceeds job deadline range");
   auto id=random_id();
   Sql job(db_,"INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at,created_delete_sequence,kind)VALUES(?,?,'',?,?,'queued',?,?,?,?,?,'web.read_many')");
   job.bind(1,id);job.bind(2,owner);job.bind(3,key);job.bind(4,fingerprint);job.bind(5,auth);
   job.bind(6,options.max_attempts);job.bind(7,now+options.timeout_ms);job.bind(8,now);job.bind(9,delete_sequence_locked());job.step();
-  Sql budget(db_,"INSERT INTO read_job_budgets(job_id,max_requests,max_bytes,per_page_timeout_ms)VALUES(?,?,?,?)");
-  budget.bind(1,id);budget.bind(2,options.max_requests);budget.bind(3,options.max_bytes);budget.bind(4,options.per_page_timeout_ms);budget.step();
+  Sql budget(db_,"INSERT INTO read_job_budgets(job_id,max_requests,max_bytes,per_page_timeout_ms,last_dispatch_sequence)VALUES(?,?,?,?,?)");
+  budget.bind(1,id);budget.bind(2,options.max_requests);budget.bind(3,options.max_bytes);budget.bind(4,options.per_page_timeout_ms);
+  budget.bind(5,next_queue_sequence(db_));budget.step();
   for(std::size_t i=0;i<urls.size();++i) {
     Sql item(db_,"INSERT INTO read_job_items(job_id,position,url,deletion_generation)VALUES(?,?,?,?)");
     item.bind(1,id);item.bind(2,static_cast<std::int64_t>(i));item.bind(3,urls[i]);
@@ -115,6 +127,7 @@ Json Store::read_many_submit(const std::string& owner,const std::vector<std::str
 }
 
 Json Store::read_job_locked(const std::string& owner,const std::string& id) {
+  if(auto archived=compacted_job_locked(owner,id))return *archived;
   Sql job(db_,"SELECT j.state,j.epoch,j.attempts,j.max_attempts,j.lease_until,j.deadline,j.error_code,b.max_requests,b.max_bytes,b.charged_requests,b.charged_bytes,b.per_page_timeout_ms FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id WHERE j.id=? AND j.owner=? AND j.kind='web.read_many'");
   job.bind(1,id);job.bind(2,owner);require(job.step(),"E_NOT_FOUND","Job not found",404);
   Sql totals(db_,"SELECT COUNT(*),COALESCE(SUM(state='succeeded'),0),COALESCE(SUM(state='failed'),0),COALESCE(SUM(state='cancelled'),0),COALESCE(SUM(state='running'),0),COALESCE(SUM(external_requests),0),COALESCE(SUM(content_bytes),0),COALESCE(SUM(unknown_requests),0),COALESCE(SUM(unknown_bytes),0),COALESCE(SUM(request_grant),0),COALESCE(SUM(byte_grant),0) FROM read_job_items WHERE job_id=?");
@@ -144,7 +157,7 @@ Json Store::read_job_locked(const std::string& owner,const std::string& id) {
 }
 
 void Store::settle_read_job_locked(const std::string& id) {
-  Sql current(db_,"SELECT state FROM jobs WHERE id=? AND kind='web.read_many'");current.bind(1,id);
+  Sql current(db_,"SELECT state FROM jobs WHERE id=? AND kind='web.read_many' AND archived_at=0");current.bind(1,id);
   if(!current.step())return;
   auto state=current.text(0);
   Sql counts(db_,"SELECT COALESCE(SUM(state='pending'),0),COALESCE(SUM(state='running'),0),COALESCE(SUM(state='succeeded'),0),COALESCE(SUM(state IN ('failed','cancelled')),0) FROM read_job_items WHERE job_id=?");
@@ -209,7 +222,7 @@ void Store::settle_read_jobs_locked() {
 std::optional<ReadLease> Store::lease_next_read() {
   std::lock_guard lock(mutex_);Transaction tx(db_);settle_read_jobs_locked();
   for(;;) {
-    Sql job(db_,"SELECT j.id,j.owner,j.epoch,j.deadline,j.auth_epoch,j.max_attempts,b.max_requests-b.charged_requests,b.max_bytes-b.charged_bytes,b.per_page_timeout_ms FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id WHERE j.kind='web.read_many' AND j.state='queued' ORDER BY j.created_at,j.id LIMIT 1");
+    Sql job(db_,"SELECT j.id,j.owner,j.epoch,j.deadline,j.auth_epoch,j.max_attempts,b.max_requests-b.charged_requests,b.max_bytes-b.charged_bytes,b.per_page_timeout_ms FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id WHERE j.kind='web.read_many' AND j.state='queued' ORDER BY b.last_dispatch_sequence,j.created_at,j.id LIMIT 1");
     if(!job.step()){tx.commit();return std::nullopt;}
     const auto id=job.text(0),owner=job.text(1);const auto now=clock_();
     std::string stop;
@@ -233,8 +246,8 @@ std::optional<ReadLease> Store::lease_next_read() {
     const auto timeout=std::min(job.num(8),job.num(3)-now);
     ReadLease lease{id,owner,item.text(1),random_id(),job.num(2)+1,item.num(0),item.num(2),
                     std::min(per_item_requests,job.num(6)),std::min(per_item_bytes,job.num(7)),timeout,job.num(3),publication_sequence_locked()};
-    Sql reserve(db_,"UPDATE read_job_budgets SET charged_requests=charged_requests+?,charged_bytes=charged_bytes+? WHERE job_id=?");
-    reserve.bind(1,lease.request_grant);reserve.bind(2,lease.byte_grant);reserve.bind(3,id);reserve.step();
+    Sql reserve(db_,"UPDATE read_job_budgets SET charged_requests=charged_requests+?,charged_bytes=charged_bytes+?,last_dispatch_sequence=? WHERE job_id=?");
+    reserve.bind(1,lease.request_grant);reserve.bind(2,lease.byte_grant);reserve.bind(3,next_queue_sequence(db_));reserve.bind(4,id);reserve.step();
     Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,lease.url);const auto snapshot=current.step()?current.text(0):"";
     Sql claim(db_,"UPDATE read_job_items SET state='running',attempts=attempts+1,lease_epoch=?,attempt_id=?,request_grant=?,byte_grant=?,error_code=NULL,publication_sequence=?,publication_snapshot_id=? WHERE job_id=? AND position=?");
     claim.bind(1,lease.epoch);claim.bind(2,lease.attempt_id);claim.bind(3,lease.request_grant);claim.bind(4,lease.byte_grant);claim.bind(5,lease.publication_sequence);claim.bind(6,snapshot);claim.bind(7,id);claim.bind(8,lease.input_index);claim.step();
@@ -326,7 +339,9 @@ Json Store::control_read_locked(const std::string& owner,const std::string& id,c
 Json Store::job_results(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit) {
   std::lock_guard lock(mutex_);
   Transaction transaction(db_);refresh_site_publication_locked();
-  auto kind=job_locked(owner,id).at("kind").str();
+  const auto retained=job_locked(owner,id);
+  require(!retained.has("retention"),"E_JOB_RESULTS_EXPIRED","Job details have expired; use job.get for the permanent summary",410);
+  auto kind=retained.at("kind").str();
   if(kind=="web.map") { auto result=map_results_locked(owner,id,offset,limit);transaction.commit();return result; }
   if(kind=="web.crawl") { auto result=crawl_results_locked(owner,id,offset,limit);transaction.commit();return result; }
   require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");

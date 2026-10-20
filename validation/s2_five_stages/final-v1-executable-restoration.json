@@ -1,0 +1,19 @@
+{
+  "cause": "Some pre-existing executable outputs retained non-executable mode after environment restoration and linker overwrite; native process creation returned PermissionError.",
+  "source_or_binary_bytes_changed": false,
+  "changes": [
+    {
+      "path": "build-s2-five-stages-asan/bzs_batch_tests",
+      "mode_before": "0o644",
+      "mode_after": "0o744",
+      "sha256_unchanged": "58b78e7ccb6d5ac7e227656b1166bcd39db3849fb4b21192d4ab4016d49ba07b"
+    },
+    {
+      "path": "build-s2-five-stages-asan/bzs_crawl_tests",
+      "mode_before": "0o644",
+      "mode_after": "0o744",
+      "sha256_unchanged": "12c03c55ebdaaed85545f6829650bc7b2099d526df0326e18ddcdc011650fbe7"
+    }
+  ],
+  "rerun_policy": "Keep original empty logs and process-creation exception observations. Only affected ASan batch/crawl executables require new restored-name runs; debug CTest binaries already have execute permission and remain unchanged."
+}

@@ -1,0 +1,39 @@
+{
+  "scope": "phase4 evaluator author follow-up after independent golden projection finding",
+  "commit": "dee49b3f409b12d26c75cd56a3a27157f3ab2736",
+  "first_commit": "b697105acadcc87206c01da83549eadca4c4f468",
+  "command": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_evaluation.py",
+    "tests/test_golden.py",
+    "tests/test_probe.py",
+    "tests/test_replay.py"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-qa/python",
+  "passed": 207,
+  "new_evaluation_cases": 82,
+  "existing_regression_cases": 125,
+  "log_sha256": "6ac08875cabd41b5636ebfda7c053e7fc4f29333486b6fc1c9cdc6fd8b0da1a7",
+  "files": {
+    "python/bzs/evaluation_format.py": "f0e257ddcb061d07a90e9023331616d5b434938a0ff5bac3fd86c5f5a9007066",
+    "python/bzs/evaluation.py": "c6eb2f2fed7bbfd3377ae5d197a900fbd7f82667c380b14990898308b46e92bf",
+    "python/bzs/cli.py": "21c242eb6cb192aae9849972fa46bf0fd09039e5cb9aa6d59330e80e8e37c077",
+    "python/tests/test_evaluation.py": "c2daa8497a41290d3772df349e1a73923cf0cb515505223d88a5cdcec4aeb481",
+    "docs/RELEVANCE_EVALUATION.md": "84a74f85a4c96b6cdd264d65210c0d60324cff055f0c07bdcbc9ad6b8d9fb54c"
+  },
+  "golden_changes": [],
+  "human_judgments_created": 0,
+  "real_source_requests": 0,
+  "limitations": [
+    "full release gate blocked",
+    "holdout evaluation not implemented",
+    "source ablation not implemented",
+    "human truth/authenticity is not verified",
+    "freeze and run both require --queries to verify original projection before a limited gate may pass"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "scope": "phase2 CLI and MCP adapter delta only; mocked core mapping/guard/error tests and real CLI parser tests",
+  "commit": "fd263c9cd5a090b8eea555927038d2065abc44cf",
+  "parent": "6146f675cac31722ae052e50e6b9cd7d92aaa673",
+  "sessions_base": "6124cde1a65e1245349090ba8ae12461b16b1dbd",
+  "original_qa_parents": [
+    "b697105acadcc87206c01da83549eadca4c4f468",
+    "dee49b3f409b12d26c75cd56a3a27157f3ab2736"
+  ],
+  "command": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_job_compaction_adapters.py",
+    "tests/test_mcp_sessions.py",
+    "tests/test_mcp_jobs.py",
+    "tests/test_mcp_crawl.py",
+    "tests/test_evaluation.py::test_cli_real_process_prepare_freeze_and_unjudged_run",
+    "tests/test_evaluation.py::test_cli_exit_statuses_do_not_confuse_prepared_templates_with_passed_quality"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-adapters/python",
+  "passed": 105,
+  "new_cases": 33,
+  "log_sha256": "df3204eab7c772777900ee3e8f44af5b13ff11642e8b5119cd4b0d39c55bc133",
+  "source_sha256": {
+    "python/bzs/cli.py": "96c9da7e953ab07a3fd2efc1dbadd89683c99270faf8786bfd8c310b73ef9a8e",
+    "python/bzs/mcp_server.py": "2d6f07c0c60ee0936d57bc030011c4bf45fbedd12e1cbb2ab6829d30ab3f98ac",
+    "python/tests/test_job_compaction_adapters.py": "ec75bdbb06fd4b3a0fb419902bef3ac254bfb3fd1d9419163aab60d009ae6ec7"
+  },
+  "wire": {
+    "operation": "jobs.compact",
+    "params": {
+      "limit": 16
+    }
+  },
+  "owner": "implicit authenticated principal",
+  "range": "core validates integer1..64; adapters do not clamp",
+  "minimum_retention_days": 7,
+  "retention_authority": "native core only",
+  "real_source_requests": 0,
+  "real_history_deleted": false,
+  "limitations": [
+    "adapter tests do not certify native compaction eligibility/SQL semantics; root integrates and runs actual core gates"
+  ]
+}

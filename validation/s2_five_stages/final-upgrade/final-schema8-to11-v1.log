@@ -1,0 +1,32 @@
+COMMAND ["c++", "-std=c++20", "-g", "-Wall", "-Wextra", "-Wpedantic", "-DBZS_RETENTION_PREPARE", "-I", "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/baseline-headers/include", "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp", "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a", "-lsqlite3", "-lcrypto", "-lxml2", "-ljson-c", "-pthread", "-o", "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema8-final-v1"]
+/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp:79:6: warning: ‘void {anonymous}::equal_summary(const bzs::Json&, const bzs::Json&)’ defined but not used [-Wunused-function]
+   79 | void equal_summary(const Json& before,const Json& after) {
+      |      ^~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp:73:10: warning: ‘bzs::MapLease {anonymous}::load_map_lease(const bzs::Json&)’ defined but not used [-Wunused-function]
+   73 | MapLease load_map_lease(const Json& j) {
+      |          ^~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp:65:11: warning: ‘bzs::ReadLease {anonymous}::load_read_lease(const bzs::Json&)’ defined but not used [-Wunused-function]
+   65 | ReadLease load_read_lease(const Json& j) {
+      |           ^~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/review_retention.cpp:32:6: warning: ‘bzs::Json {anonymous}::get_file(const std::filesystem::__cxx11::path&)’ defined but not used [-Wunused-function]
+   32 | Json get_file(const std::filesystem::path& path) { return Json::parse(read_file(path,1024*1024)); }
+      |      ^~~~~~~~
+EXIT 0
+COMMAND ["c++", "-std=c++20", "-g", "-Wall", "-Wextra", "-Wpedantic", "-I", "/workspace/scratch/80f41eb198a3/bzs861/include", "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review_retention_schema11.cpp", "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages/libbzs_core.a", "-lsqlite3", "-lcrypto", "-lxml2", "-ljson-c", "-pthread", "-o", "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema11-final-v1"]
+EXIT 0
+COMMAND ["/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema8-final-v1", "prepare", "reads", "/tmp/bzs-final-upgrade-snt41zhm"]
+PREPARED genuine schema8 read fixture: known=1/17, unresolved=3/983, paused=1, other_owner=1
+independent retention assertions=9, failures=0
+EXIT 0
+COMMAND ["/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema11-final-v1", "upgrade", "reads", "/tmp/bzs-final-upgrade-snt41zhm"]
+PASS schema8_to11_unknown_read_archive_owner_pins_replay: known=1/17, unknown=3/983, charged=4/1000, canonical_and_evidence_preserved, no_network
+independent retention assertions=32, failures=0
+EXIT 0
+COMMAND ["/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema8-final-v1", "prepare", "robots", "/tmp/bzs-final-upgrade-j4254h5h"]
+PREPARED genuine schema8 robots fixture: one receipt, one completed admission, one unresolved admission, worker_calls=2
+independent retention assertions=23, failures=0
+EXIT 0
+COMMAND ["/workspace/scratch/80f41eb198a3/bzs-five-stage-review/final-upgrade/review-retention-schema11-final-v1", "upgrade", "robots", "/tmp/bzs-final-upgrade-j4254h5h"]
+PASS schema8_to11_robots_receipt_completed_and_unsettled_admission_pins: limits_1_then1_then1, unknown_full_grant, no_quota_or_sequence_reset, late_worker_calls=0
+independent retention assertions=55, failures=0
+EXIT 0

@@ -1,0 +1,33 @@
+{
+  "baseline_commit": "2007690c9403b8ae593101488de1adf228608284",
+  "compile_command": [
+    "c++",
+    "-std=c++20",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wshadow",
+    "-DBZS_FIXTURE_DIR=\"/workspace/scratch/80f41eb198a3/bzs861-fairness/tests/fixtures\"",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs861-fairness/include",
+    "/workspace/scratch/80f41eb198a3/bzs861-fairness/tests/fairness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-hardening-review/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-baseline"
+  ],
+  "run_command": [
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/fairness-baseline"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-fairness",
+  "exit_code": 1,
+  "log": "fairness-baseline.log",
+  "log_sha256": "1259d23761036ff91a16d8eaf893db4de3de1bc7c6ce9905476459855a258053",
+  "source_sha256": "2272a0c76f8919ac37490fe140046bbbc897a5ffc15ebb779d1729059fe3ecc4"
+}

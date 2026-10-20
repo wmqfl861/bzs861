@@ -1,0 +1,24 @@
+{
+  "purpose": "pre-phase2 schema8 capacity exhaustion through public API",
+  "time": "2026-10-20T03:31:39Z",
+  "source_sha256": "674463c3a8545300a18130e4ac21abd521a28be73b0bff5d356e9351d66e5f55",
+  "library": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+  "library_sha256_before": "db34cae20d7190f8a92f7a8e2da328d50e182dfc6fa9a04f6c74e8224c9437aa",
+  "compile": [
+    "g++",
+    "-std=c++20",
+    "-I/workspace/scratch/80f41eb198a3/bzs861/include",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage2/retention_baseline.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/stage2/retention_baseline"
+  ],
+  "compile_exit": 0,
+  "run_exit": 0,
+  "library_sha256_after": "db34cae20d7190f8a92f7a8e2da328d50e182dfc6fa9a04f6c74e8224c9437aa"
+}

@@ -1,0 +1,736 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.8",
+  "schema_version_after_migration": 11,
+  "stage": "S2 five-stage integration",
+  "recorded_at_utc": "2026-10-20T13:58:31.051989+00:00",
+  "status": "passed_final_integrated_local_gates_scope_limited",
+  "baseline": {
+    "work_started_from": "2007690c9403b8ae593101488de1adf228608284",
+    "work_started_version": "0.1.5",
+    "published_first_checkpoint": "27966ffe61c16964c45d595e3ee2689115815217",
+    "first_checkpoint_version": "0.1.6",
+    "first_checkpoint_tree": "e27f133ad3cb7647f89439cfb957e6caddec0c75"
+  },
+  "identity_binding": {
+    "execution_inputs": {
+      "path": "validation/s2_five_stages/final-v1-execution-inputs.json",
+      "sha256": "a190351a395426083ed4f113f3a6c81368c8ced8680bafdc4f7c7b19cddd4b6c"
+    },
+    "frozen_file_count": 164,
+    "all_frozen_inputs_unchanged": true,
+    "source_manifest": {
+      "path": "validation/s2_five_stages/final-source-manifest.json",
+      "sha256": "1351b38a04c90ef93ef4e0598887f41f6737f09c6dd49ac1a3b7dbc7d005e000"
+    },
+    "review_record": {
+      "path": "validation/s2_five_stages/final-review.json",
+      "sha256": "a03597852c7ac2f07f3c259ea145dde3c4033bff277edd151ac3b9560b460b72"
+    },
+    "recorder": {
+      "path": "validation/s2_five_stages/run_validation.py",
+      "sha256": "8555dab3f056a62ec53e606d53277847a83e7b0b8e5b51747ebb8d3b29451f93"
+    },
+    "debug_build_outputs_sha256": {
+      "build-s2-five-stages/searchd": "3a0db648a66918fdea5ff3518a7412b3a902da0bc17b3484e8fc60a0342c0017",
+      "build-s2-five-stages/searchctl": "3187dfddea750ea0bdf0711cc707e2797afbe859fff9706f99d83800d2e4886b",
+      "build-s2-five-stages/bzs_tests": "61589aaa6522e0d6b1671b45c080535f30e2139c7ade80bffb083dca2cecbb2b",
+      "build-s2-five-stages/bzs_batch_tests": "174ba6d7b784913e2a8c400015b41a81682ca61062cca49af50581f383aeb010",
+      "build-s2-five-stages/bzs_map_tests": "353a3cc58a139511f0fad7938af1ec7b34a86ef36f884a563a3fab4fb6b004d9",
+      "build-s2-five-stages/bzs_crawl_tests": "cf2ba474d19c116ed526039b3214fd02536e5c24d9b2548e79fbabd0af0a0de3",
+      "build-s2-five-stages/bzs_site_publication_tests": "a611b4375a3d4f11afa5ea102aa8f7a677209f502a36cc7a766898b22baf5bc6",
+      "build-s2-five-stages/bzs_contract_tests": "f884c5e4407e46baa217907a59c26f1d2be298f16fc47113798683dace4e8c9e",
+      "build-s2-five-stages/bzs_fairness_tests": "6c1c4219e70948cf67a46fb68e4377e7d9c74be9c37e3dcc46fee81a4d8fd534",
+      "build-s2-five-stages/bzs_retention_tests": "6684577777f2b1cdba9b42adc500c2ab91ba0196abca8a39bfb334db67e1f686",
+      "build-s2-five-stages/bzs_session_tests": "ffb5410875791be4cc321be21f6a0ee0f2b6600cf44d9f738521f60778b1183e",
+      "build-s2-five-stages/CTestTestfile.cmake": "84b233eade76b21c5b26d2370063f35275d23cf2184144f57a68f31b1e85abda"
+    },
+    "asan_build_outputs_sha256": {
+      "build-s2-five-stages-asan/bzs_tests": "8f88216f548bfe1b652b7862cd83bf2f76cbb308e35c78f77de7a894e37c148c",
+      "build-s2-five-stages-asan/bzs_batch_tests": "58b78e7ccb6d5ac7e227656b1166bcd39db3849fb4b21192d4ab4016d49ba07b",
+      "build-s2-five-stages-asan/bzs_map_tests": "824d6ca5d928e90826db7e40f9e55642eb5abd8707692c9116ff1accc364a858",
+      "build-s2-five-stages-asan/bzs_crawl_tests": "12c03c55ebdaaed85545f6829650bc7b2099d526df0326e18ddcdc011650fbe7",
+      "build-s2-five-stages-asan/bzs_site_publication_tests": "acde9e8ae92d79d215fc0665e799f85a9165b1bf78467834b0d9cad97d699df4",
+      "build-s2-five-stages-asan/bzs_contract_tests": "419e5c45e9ac907c7d98a454cb27ec7cdd5b642e736759f2219edd3fa6c25f25",
+      "build-s2-five-stages-asan/bzs_fairness_tests": "7abd850775f0bc0f96d36a7a619c9af26570afe3112f240dcabc7f0b0ae3090b",
+      "build-s2-five-stages-asan/bzs_retention_tests": "c04c8587e99d666d5bc0a834bcf402dbb6ce509ac61d5ef1fad68b5ad8ef94a2",
+      "build-s2-five-stages-asan/bzs_session_tests": "fcaa683eacb9be1ede7c1ae669dfc36e63449d46ef0708505e3f7073d3596593",
+      "build-s2-five-stages-asan/CTestTestfile.cmake": "73b096928e72c7afa332599e1bb98c791fc0bf2ffc9c9204193fa8a6353aad2b"
+    },
+    "final_core_library_sha256": "82eaba9bf5f630f7ce584199dde601f4f501d55eaec8fe59ea8389f35d460600",
+    "tested_binary_matches_build_output": true,
+    "git_binding": "The containing Git commit binds this immutable report and manifest. Publication must match the tested source tree; no future self-referential SHA is invented."
+  },
+  "results": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 15,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 81.67,
+      "command_elapsed_seconds": 81.696,
+      "log": "final-v1-ctest.log",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 81,
+          "assertions": 713,
+          "failed": 0
+        },
+        {
+          "name": "batch",
+          "passed": 18,
+          "assertions": 439,
+          "failed": 0
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "assertions": 462,
+          "failed": 0
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "assertions": 2798,
+          "failed": 0
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "assertions": 1200,
+          "failed": 0
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "assertions": 404,
+          "failed": 0
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "assertions": 251,
+          "failed": 0
+        },
+        {
+          "name": "sessions",
+          "passed": 20,
+          "assertions": 228,
+          "failed": 0
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "assertions": 269,
+          "failed": 0,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0
+        },
+        {
+          "name": "e2e_web",
+          "passed": 14,
+          "failed": 0
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0
+        },
+        {
+          "name": "python_worker",
+          "passed": 838,
+          "failed": 0
+        }
+      ]
+    },
+    "native_sanitizer_executables": 9,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "dependencies": "No broken requirements found.",
+    "independent_final_upgrade": {
+      "old_schema": 8,
+      "new_schema": 11,
+      "existing_scenarios_rerun": 2,
+      "preparation_assertions": 32,
+      "candidate_assertions": 87,
+      "new_product_acceptance_cases_claimed": 0
+    },
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "counting_note": "Overlapping tests do not sum to planned product acceptance."
+  },
+  "successful_command_count": 18,
+  "commands": [
+    {
+      "name": "debug-configure-restored",
+      "path": "validation/s2_five_stages/final-v1-debug-configure-restored-command.json",
+      "sha256": "ea95b15deed991544841ae46a407797513dc98ec3a5604eabf9441277f8be97c",
+      "exit_code": 0,
+      "elapsed_seconds": 1.369,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-debug-configure-restored.log",
+        "sha256": "c91f978d129c2f369313e8d40b472e818fb792eeec84b4ad2401d5e83ea40479"
+      }
+    },
+    {
+      "name": "debug-build",
+      "path": "validation/s2_five_stages/final-v1-debug-build-command.json",
+      "sha256": "fe409cb79d14954a6a6790b85e91bd3ed38de7404c44d395a68d1e8dd99a849b",
+      "exit_code": 0,
+      "elapsed_seconds": 86.3,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-debug-build.log",
+        "sha256": "b76e26ed09b97446799ccfc25462f3c1c16ffb0f547abd429b007b8fdf83ff9c"
+      }
+    },
+    {
+      "name": "asan-configure-restored",
+      "path": "validation/s2_five_stages/final-v1-asan-configure-restored-command.json",
+      "sha256": "6c16e7c417d3baa95ef3f2ebf5b5a61f6f1284143864fc4cbc906e42e1cf513b",
+      "exit_code": 0,
+      "elapsed_seconds": 1.326,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-configure-restored.log",
+        "sha256": "aea96f47689086d34ebb1f2e468020076d4cf647b983cb8ca8394f55291fdea3"
+      }
+    },
+    {
+      "name": "asan-build",
+      "path": "validation/s2_five_stages/final-v1-asan-build-command.json",
+      "sha256": "bf5d972ef8ad6f2190f3f6ecba0edd0dc767b84d45664a209bec96f62e6a20a1",
+      "exit_code": 0,
+      "elapsed_seconds": 98.865,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-build.log",
+        "sha256": "d2a3b0e2fc7fd36ce6ff920513060c4778ad0952c3c76d36edf544544a030188"
+      }
+    },
+    {
+      "name": "ctest",
+      "path": "validation/s2_five_stages/final-v1-ctest-command.json",
+      "sha256": "cddc3e06c0be7784029999ecc9d14a37d6d2df88af2d7fbf9e95c929daed0b24",
+      "exit_code": 0,
+      "elapsed_seconds": 81.696,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-ctest.log",
+        "sha256": "5ed6933a3e77c3f9d5f558f263e93fc99a6fb4ad373ab896514de9d16022581b"
+      }
+    },
+    {
+      "name": "planning",
+      "path": "validation/s2_five_stages/final-v1-planning-command.json",
+      "sha256": "cc7750cb443477ea6b8f50c9c205ca15a7d14f48dcd8e9a8bdd1f417de809bd4",
+      "exit_code": 0,
+      "elapsed_seconds": 0.06,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-planning.log",
+        "sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10"
+      }
+    },
+    {
+      "name": "plan-guard",
+      "path": "validation/s2_five_stages/final-v1-plan-guard-command.json",
+      "sha256": "1f73dbb74e70d0fdf89c6d216099628fa22cf9fc6f368f8a913cd044dc6d87e7",
+      "exit_code": 0,
+      "elapsed_seconds": 0.807,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-plan-guard.log",
+        "sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f"
+      }
+    },
+    {
+      "name": "design-contracts",
+      "path": "validation/s2_five_stages/final-v1-design-contracts-command.json",
+      "sha256": "2a8678a76edcd999d13624d7633d17ba2495007c6903b83c54afeb88caebe22a",
+      "exit_code": 0,
+      "elapsed_seconds": 0.566,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-design-contracts.log",
+        "sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08"
+      }
+    },
+    {
+      "name": "dependencies",
+      "path": "validation/s2_five_stages/final-v1-dependencies-command.json",
+      "sha256": "57e9d7f109e74fe6585cb87d117124649031130c3189f361a99755b92919fa27",
+      "exit_code": 0,
+      "elapsed_seconds": 0.379,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-dependencies.log",
+        "sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+      }
+    },
+    {
+      "name": "asan-core",
+      "path": "validation/s2_five_stages/final-v1-asan-core-command.json",
+      "sha256": "ba51a1f7a4a1067177167cda5cb3125e3ffd6f403f44d1b421799f0c35d87279",
+      "exit_code": 0,
+      "elapsed_seconds": 6.589,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-core.log",
+        "sha256": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f"
+      }
+    },
+    {
+      "name": "asan-batch-restored",
+      "path": "validation/s2_five_stages/final-v1-asan-batch-restored-command.json",
+      "sha256": "1c59477a83a3148d03ceee3ce6044a059b9842ab7cd8ce3c6aee4e0ade83abc1",
+      "exit_code": 0,
+      "elapsed_seconds": 1.678,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-batch-restored.log",
+        "sha256": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502"
+      }
+    },
+    {
+      "name": "asan-map",
+      "path": "validation/s2_five_stages/final-v1-asan-map-command.json",
+      "sha256": "95b8cb5b2f9e3acff9956e43fec3fb347f4ab57b19445fca654d81d564918090",
+      "exit_code": 0,
+      "elapsed_seconds": 3.209,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-map.log",
+        "sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825"
+      }
+    },
+    {
+      "name": "asan-crawl-executable",
+      "path": "validation/s2_five_stages/final-v1-asan-crawl-executable-command.json",
+      "sha256": "f4498a3616d393f44789e4b534e6eacdb49732a9dec561d91487715456c96680",
+      "exit_code": 0,
+      "elapsed_seconds": 18.667,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-crawl-executable.log",
+        "sha256": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c"
+      }
+    },
+    {
+      "name": "asan-site-publication",
+      "path": "validation/s2_five_stages/final-v1-asan-site-publication-command.json",
+      "sha256": "118c95ba24084912b72711be08f80c3bd5d5bb9e2ec274ca4dac07260829c0df",
+      "exit_code": 0,
+      "elapsed_seconds": 16.372,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-site-publication.log",
+        "sha256": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9"
+      }
+    },
+    {
+      "name": "asan-retention",
+      "path": "validation/s2_five_stages/final-v1-asan-retention-command.json",
+      "sha256": "0ff1eac1e3780919a29f83205b9a98e79815cbd48661cfd94d9368c2272f0575",
+      "exit_code": 0,
+      "elapsed_seconds": 7.501,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-retention.log",
+        "sha256": "35c4e2081c04c3f5454dfcc458acdca0559f7b66c369dd14a4193ddb51eeac8e"
+      }
+    },
+    {
+      "name": "asan-fairness",
+      "path": "validation/s2_five_stages/final-v1-asan-fairness-command.json",
+      "sha256": "35eead76b3c3340be18c21c22788f24bf3c9929c975cdb713f066d96d4bd5251",
+      "exit_code": 0,
+      "elapsed_seconds": 3.66,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-fairness.log",
+        "sha256": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f"
+      }
+    },
+    {
+      "name": "asan-sessions",
+      "path": "validation/s2_five_stages/final-v1-asan-sessions-command.json",
+      "sha256": "b34ceea0be05888c2a7212c0c61a61ef66e8f7c4d715c8ca2090150eab375c4a",
+      "exit_code": 0,
+      "elapsed_seconds": 3.495,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-sessions.log",
+        "sha256": "0779f5a6f5c90c0a3b7ebbbc87007dfabd8995ce7367d66e4f4a5e6c8e082f90"
+      }
+    },
+    {
+      "name": "asan-contracts",
+      "path": "validation/s2_five_stages/final-v1-asan-contracts-command.json",
+      "sha256": "c6a7dd5bf5cc558e8cd79d190eff4ca6282c9be83e4675d7dbeb7dae2e5d182a",
+      "exit_code": 0,
+      "elapsed_seconds": 1.05,
+      "log": {
+        "path": "validation/s2_five_stages/final-v1-asan-contracts.log",
+        "sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff"
+      }
+    }
+  ],
+  "migration": {
+    "schema8": "page response dispatch/order and restriction capture",
+    "schema9": "terminal job summary and referenced robots retention",
+    "schema10": "durable admission and dispatch rotation",
+    "schema11": "durable web search sessions, frozen versions and bounded event replay",
+    "independent_final_upgrade_evidence": {
+      "path": "validation/s2_five_stages/final-upgrade/final-upgrade-review.json",
+      "sha256": "7826659127558b4d6a9c465ed33878b0a3370c5385dbc4a255dc02d7dbb86fac"
+    }
+  },
+  "integration_lineage": [
+    "15687e31331cda3e6602a605f6f5db58d926c47c Add owned job history compaction CLI and MCP adapters",
+    "048e1ea1fc1f1b3651dfc3836a73498f44b7a416 Seal preexisting publication and deletion ceilings into frozen search versions",
+    "f54117976c8234822ecdec2a98edf599a7094e85 Add durable frozen search sessions with bounded event replay",
+    "7d54a011adcbef3aa3efc908f2f000257fedf22e fix(qa): revalidate original golden projection before gates",
+    "f566e0f4a747d087709e1415103c91daee677484 Add frozen offline relevance evaluation with explicit blocked gates",
+    "2b732cfb2e263a66ef2fb6deeeec78fff1a62a29 Add persistent fair admission and dispatch queues",
+    "7043b98a4e4bf35e9dbcabea6bd30dea2686415b feat: compact expired web job details with durable accounting",
+    "2f60a063af96302cef552c165003499a18a6b4f1 Fence stale publication responses and legacy incomplete refreshes for 0.1.6",
+    "2007690c9403b8ae593101488de1adf228608284 Harden persistent crawl publication and recovery for 0.1.5"
+  ],
+  "plan_preservation": {
+    "packages": 83,
+    "slices": 10,
+    "acceptance_items": 161,
+    "original_package_slice_dependency_estimate_objects_unchanged": true,
+    "original_acceptance_semantics_unchanged": true,
+    "changed_package_statuses": {
+      "SESSION-02": [
+        "not_started",
+        "partial"
+      ],
+      "QA-02": [
+        "not_started",
+        "partial"
+      ]
+    },
+    "status_counts": {
+      "partial": 36,
+      "not_started": 47,
+      "accepted": 0
+    },
+    "planned_acceptance_suite_executed": false,
+    "milestones_accepted": [],
+    "slices_accepted": [],
+    "preserved_input_sha256": {
+      "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+      "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+      "tests/golden/queries.json": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798",
+      "tests/golden/manifest.json": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+      "docs/planning/functional_spec_v0.3.md": "ce5e2cedaa9cb84e72a4460ac5f3e14b86ae39164e66e70a4e9eae48c85160e8",
+      "docs/planning/development_blueprint_v1.1.md": "176daad8328d91a6840a12f8b40719df4d903e4c79a0f962faae85d355d72b7d",
+      "docs/planning/requirements_and_backlog.json": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+      "tools/requirements-s1-lock.txt": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb"
+    },
+    "historical_validation_files_preserved": 305,
+    "stage1_evidence_files_preserved_except_current_readme": 115
+  },
+  "environment": {
+    "path": "validation/s2_five_stages/final-environment.json",
+    "sha256": "5dcfe6a7ba1e1433423f60f874e072210459de7c89016b4b2fffd16efc856cce"
+  },
+  "environment_recovery": {
+    "initial_configure": {
+      "path": "validation/s2_five_stages/final-v1-environment-setup.json",
+      "sha256": "12d7a88cf1b9f92a89031f5c0a1b31ae722c14c57b5354b12e2c2dc731759331"
+    },
+    "dependency_restore_log": {
+      "path": "validation/s2_five_stages/final-native-dependency-restore.log",
+      "sha256": "b295e546c9761eadbc6bb98e2f3be44c621810eb2f52675b15ed34bd0c84e119"
+    },
+    "execute_permission_restore": {
+      "path": "validation/s2_five_stages/final-v1-executable-restoration.json",
+      "sha256": "4977efad2995db1a8dc628ac9f7c5f89cc8610167e247a41670e1fd6d32c084c"
+    },
+    "crawl_permission_final": {
+      "path": "validation/s2_five_stages/final-v1-crawl-executable-mode.json",
+      "sha256": "775f389733683f9723d1e389b0452a9a211cc0fbe52c76d45904a948159558e2"
+    },
+    "process_not_started_attempts": [
+      "final-v1-debug-configure",
+      "final-v1-asan-configure",
+      "final-v1-asan-batch",
+      "final-v1-asan-crawl",
+      "final-v1-asan-crawl-restored"
+    ],
+    "note": "These attempts did not execute product tests. Original empty logs remain; successful restored/executable records are named separately. Dependencies and generated executable permissions were restored without modifying frozen source inputs or tested binary bytes."
+  },
+  "first_checkpoint_published_ci": {
+    "path": "validation/s2_five_stages/stage1-published-ci.json",
+    "sha256": "54ed96557b61da34392fe80fecfc9d427cc11b8a99ec22820a62e64f44daffc2"
+  },
+  "final_github_ci": {
+    "status": "must_check_workflow_of_containing_commit_after_publication",
+    "repository": "wmqfl861/bzs861",
+    "branch": "main",
+    "required_jobs": [
+      "linux",
+      "windows"
+    ],
+    "linux_scope": "15 CTest suites plus9 native sanitizers and original planning/contracts gates",
+    "windows_scope": "9 native suites plus HTTP/CLI,10 CTest targets; full Worker packaging remains a later requirement",
+    "publication": "Check current remote parent, compare final tree identity, non-force fast-forward, then inspect run head_sha and completed job logs."
+  },
+  "remaining_boundaries": [
+    "No current real source or real site requests/approvals;17 default search sources remain disabled and sites manifest stays empty. S0 target deployment needs at least2 useful approved sources including a general-web source.",
+    "No human relevance labels or verified human quality were produced. Fixed-candidate tooling does not complete source ablation, holdout, hard-constraint/citation scoring or independent assessor authenticity. Full release_gate remains blocked.",
+    "Permanent compacted job/session identities have separate hard limits; reclaimed detail capacity does not imply unbounded storage or immediate SQLite file shrink.",
+    "Event replay and page watermarks are not an independent revocation journal. Restore quarantine remains until separate continuity evidence permits release.",
+    "Cross-owner public collection, full conditional refresh, long-duration/distributed failure coverage and complete Windows Worker packaging remain under the original plan.",
+    "Full S0/S1/S2 and83-package/161-item product acceptance remain unsigned. Overlapping test counts must not be summed into acceptance."
+  ],
+  "evidence_sha256": {
+    "validation/s2_five_stages/README.md": "e147b2bf7856869e22797951c26ae47b8c4e100d2c3348397505a4eb6261fdb4",
+    "validation/s2_five_stages/environment.json": "a2a70d626d6535d8a6e2b5321ae641b8f51a819c56c35e9b89b8c214f6eb7ebc",
+    "validation/s2_five_stages/final-environment.json": "5dcfe6a7ba1e1433423f60f874e072210459de7c89016b4b2fffd16efc856cce",
+    "validation/s2_five_stages/final-native-dependency-restore.log": "b295e546c9761eadbc6bb98e2f3be44c621810eb2f52675b15ed34bd0c84e119",
+    "validation/s2_five_stages/final-review.json": "a03597852c7ac2f07f3c259ea145dde3c4033bff277edd151ac3b9560b460b72",
+    "validation/s2_five_stages/final-source-manifest.json": "1351b38a04c90ef93ef4e0598887f41f6737f09c6dd49ac1a3b7dbc7d005e000",
+    "validation/s2_five_stages/final-upgrade/final-schema8-to11-v1-command.json": "b8b173d85e65eb72b040d10e32776c1300d28f4243762dcdb9ef37788b2ae603",
+    "validation/s2_five_stages/final-upgrade/final-schema8-to11-v1.log": "dabfdb84a35c23fd6db2936555dd11306bc73b5bf0596306e03183675b5abbac",
+    "validation/s2_five_stages/final-upgrade/final-upgrade-review.json": "7826659127558b4d6a9c465ed33878b0a3370c5385dbc4a255dc02d7dbb86fac",
+    "validation/s2_five_stages/final-upgrade/preparation.json": "c053045bf8c4ee5add21d639bc5c7408834e5b04f3c4d0dd55874ba7015fdba2",
+    "validation/s2_five_stages/final-upgrade/review_retention_schema11.cpp": "0c59c8b726c6615242f08a221f4b19125bbd9cc268d218ad7bbb671223236409",
+    "validation/s2_five_stages/final-upgrade/run_final_upgrade.py": "ba6d56cdf2cd0f2f8d8e3921aec233980c95e57ee5e67c013aa31ef0aa2b0191",
+    "validation/s2_five_stages/final-v1-asan-batch-restored-command.json": "1c59477a83a3148d03ceee3ce6044a059b9842ab7cd8ce3c6aee4e0ade83abc1",
+    "validation/s2_five_stages/final-v1-asan-batch-restored.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "validation/s2_five_stages/final-v1-asan-batch.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/final-v1-asan-build-command.json": "bf5d972ef8ad6f2190f3f6ecba0edd0dc767b84d45664a209bec96f62e6a20a1",
+    "validation/s2_five_stages/final-v1-asan-build.log": "d2a3b0e2fc7fd36ce6ff920513060c4778ad0952c3c76d36edf544544a030188",
+    "validation/s2_five_stages/final-v1-asan-configure-restored-command.json": "6c16e7c417d3baa95ef3f2ebf5b5a61f6f1284143864fc4cbc906e42e1cf513b",
+    "validation/s2_five_stages/final-v1-asan-configure-restored.log": "aea96f47689086d34ebb1f2e468020076d4cf647b983cb8ca8394f55291fdea3",
+    "validation/s2_five_stages/final-v1-asan-configure.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/final-v1-asan-contracts-command.json": "c6a7dd5bf5cc558e8cd79d190eff4ca6282c9be83e4675d7dbeb7dae2e5d182a",
+    "validation/s2_five_stages/final-v1-asan-contracts.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "validation/s2_five_stages/final-v1-asan-core-command.json": "ba51a1f7a4a1067177167cda5cb3125e3ffd6f403f44d1b421799f0c35d87279",
+    "validation/s2_five_stages/final-v1-asan-core.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "validation/s2_five_stages/final-v1-asan-crawl-executable-command.json": "f4498a3616d393f44789e4b534e6eacdb49732a9dec561d91487715456c96680",
+    "validation/s2_five_stages/final-v1-asan-crawl-executable.log": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+    "validation/s2_five_stages/final-v1-asan-crawl-restored.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/final-v1-asan-crawl.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/final-v1-asan-fairness-command.json": "35eead76b3c3340be18c21c22788f24bf3c9929c975cdb713f066d96d4bd5251",
+    "validation/s2_five_stages/final-v1-asan-fairness.log": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+    "validation/s2_five_stages/final-v1-asan-map-command.json": "95b8cb5b2f9e3acff9956e43fec3fb347f4ab57b19445fca654d81d564918090",
+    "validation/s2_five_stages/final-v1-asan-map.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "validation/s2_five_stages/final-v1-asan-retention-command.json": "0ff1eac1e3780919a29f83205b9a98e79815cbd48661cfd94d9368c2272f0575",
+    "validation/s2_five_stages/final-v1-asan-retention.log": "35c4e2081c04c3f5454dfcc458acdca0559f7b66c369dd14a4193ddb51eeac8e",
+    "validation/s2_five_stages/final-v1-asan-sessions-command.json": "b34ceea0be05888c2a7212c0c61a61ef66e8f7c4d715c8ca2090150eab375c4a",
+    "validation/s2_five_stages/final-v1-asan-sessions.log": "0779f5a6f5c90c0a3b7ebbbc87007dfabd8995ce7367d66e4f4a5e6c8e082f90",
+    "validation/s2_five_stages/final-v1-asan-site-publication-command.json": "118c95ba24084912b72711be08f80c3bd5d5bb9e2ec274ca4dac07260829c0df",
+    "validation/s2_five_stages/final-v1-asan-site-publication.log": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+    "validation/s2_five_stages/final-v1-crawl-executable-mode.json": "775f389733683f9723d1e389b0452a9a211cc0fbe52c76d45904a948159558e2",
+    "validation/s2_five_stages/final-v1-ctest-command.json": "cddc3e06c0be7784029999ecc9d14a37d6d2df88af2d7fbf9e95c929daed0b24",
+    "validation/s2_five_stages/final-v1-ctest.log": "5ed6933a3e77c3f9d5f558f263e93fc99a6fb4ad373ab896514de9d16022581b",
+    "validation/s2_five_stages/final-v1-debug-build-command.json": "fe409cb79d14954a6a6790b85e91bd3ed38de7404c44d395a68d1e8dd99a849b",
+    "validation/s2_five_stages/final-v1-debug-build.log": "b76e26ed09b97446799ccfc25462f3c1c16ffb0f547abd429b007b8fdf83ff9c",
+    "validation/s2_five_stages/final-v1-debug-configure-restored-command.json": "ea95b15deed991544841ae46a407797513dc98ec3a5604eabf9441277f8be97c",
+    "validation/s2_five_stages/final-v1-debug-configure-restored.log": "c91f978d129c2f369313e8d40b472e818fb792eeec84b4ad2401d5e83ea40479",
+    "validation/s2_five_stages/final-v1-debug-configure.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/final-v1-dependencies-command.json": "57e9d7f109e74fe6585cb87d117124649031130c3189f361a99755b92919fa27",
+    "validation/s2_five_stages/final-v1-dependencies.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "validation/s2_five_stages/final-v1-design-contracts-command.json": "2a8678a76edcd999d13624d7633d17ba2495007c6903b83c54afeb88caebe22a",
+    "validation/s2_five_stages/final-v1-design-contracts.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "validation/s2_five_stages/final-v1-environment-setup.json": "12d7a88cf1b9f92a89031f5c0a1b31ae722c14c57b5354b12e2c2dc731759331",
+    "validation/s2_five_stages/final-v1-executable-restoration.json": "4977efad2995db1a8dc628ac9f7c5f89cc8610167e247a41670e1fd6d32c084c",
+    "validation/s2_five_stages/final-v1-execution-inputs.json": "a190351a395426083ed4f113f3a6c81368c8ced8680bafdc4f7c7b19cddd4b6c",
+    "validation/s2_five_stages/final-v1-plan-guard-command.json": "1f73dbb74e70d0fdf89c6d216099628fa22cf9fc6f368f8a913cd044dc6d87e7",
+    "validation/s2_five_stages/final-v1-plan-guard.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "validation/s2_five_stages/final-v1-planning-command.json": "cc7750cb443477ea6b8f50c9c205ca15a7d14f48dcd8e9a8bdd1f417de809bd4",
+    "validation/s2_five_stages/final-v1-planning.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "validation/s2_five_stages/review_refresh_order.cpp": "e2cf63bedcb6105f9e2dcef6eafc1ec7ff22f66223b428f5731d66fd6c45c654",
+    "validation/s2_five_stages/run_validation.py": "8555dab3f056a62ec53e606d53277847a83e7b0b8e5b51747ebb8d3b29451f93",
+    "validation/s2_five_stages/stage1-asan-batch-command.json": "c1efd862203e5622b60936120a2a009985679a1b5eb7fbbbc8841638328bdc3d",
+    "validation/s2_five_stages/stage1-asan-batch-final-command.json": "86561dd337726861077e94bc4ddf15f29b3f060a77a6a1848c70bd8d6479b073",
+    "validation/s2_five_stages/stage1-asan-batch-final.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "validation/s2_five_stages/stage1-asan-batch.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "validation/s2_five_stages/stage1-asan-build-command.json": "0cabc61cc6a7e408ff65d18c9b7be976c26127b3cf2581febbe26266c4a95b02",
+    "validation/s2_five_stages/stage1-asan-build.log": "01936b01e50c3384855da4f8250cf811d444e798b2d0c1816618f4f91fbd2e06",
+    "validation/s2_five_stages/stage1-asan-configure-command.json": "1b86c0af6bac2ae264c2f677865696dace74fd761bc1c4ce876cd6f0a83a118f",
+    "validation/s2_five_stages/stage1-asan-configure.log": "f0d37e1e3e5623b44ddcca12aed58e3201999198109c4faf7f3295f6d05599d2",
+    "validation/s2_five_stages/stage1-asan-contracts-command.json": "f1fbc79630a7765454030f9d1cde1330d5b10e912a9528c6552f8545dea32aff",
+    "validation/s2_five_stages/stage1-asan-contracts-final-command.json": "1e14fa7bb3434c36d431d02243fe25b13c9fd6980fc9fa3327d1b29cf2162e83",
+    "validation/s2_five_stages/stage1-asan-contracts-final.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "validation/s2_five_stages/stage1-asan-contracts.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "validation/s2_five_stages/stage1-asan-core-command.json": "8a8abb161f11a3fbf5207841bdac3d6afe0366e9049fadf9ee475556eddb5556",
+    "validation/s2_five_stages/stage1-asan-core-final-command.json": "409dd8d3bca00fa01f55cd8fc349d5a1d0cd42067a12e1df697083df1b32803d",
+    "validation/s2_five_stages/stage1-asan-core-final.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "validation/s2_five_stages/stage1-asan-core.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "validation/s2_five_stages/stage1-asan-crawl-command.json": "8e322c512c5b0e068966d5459287c9ea57b63d1c2534fb6758f3098e1398bb51",
+    "validation/s2_five_stages/stage1-asan-crawl-final-command.json": "244886da372e677d094eddc7e69a0a95b1b25618a9b5f29a115345d4ab553c65",
+    "validation/s2_five_stages/stage1-asan-crawl-final.log": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+    "validation/s2_five_stages/stage1-asan-crawl.log": "736c0bc8c9e537a1661f1ede16c78488a48d9825a9ad95a15eeb62f4cd84065c",
+    "validation/s2_five_stages/stage1-asan-map-command.json": "36b4e3c8b51892115163dca2ceed2eb6b424cb89bd8037d6a6fd60f6ad1ad1ca",
+    "validation/s2_five_stages/stage1-asan-map-final-command.json": "44ab18617fd464142d821486e1a1ab365ac222f9018210e6d8cd482926afa174",
+    "validation/s2_five_stages/stage1-asan-map-final.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "validation/s2_five_stages/stage1-asan-map.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "validation/s2_five_stages/stage1-asan-site-publication-command.json": "52bc20312adc79843e0b65a604e49fade4f5311509d6c06a652fea3fbc518c36",
+    "validation/s2_five_stages/stage1-asan-site-publication-final-command.json": "5a1a2cb822f622bf065cd354c198513a48e6446de0000edf0d386a31aa0b42d6",
+    "validation/s2_five_stages/stage1-asan-site-publication-final.log": "9142b81a2e0d1133bd44fe5535217834c47cb8f191fb409eaabac4ae7faee867",
+    "validation/s2_five_stages/stage1-asan-site-publication.log": "d34f6df91ae62b20d65597beda3b8989dc647f37fc142413024326c002c00d79",
+    "validation/s2_five_stages/stage1-baseline/baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "validation/s2_five_stages/stage1-baseline/baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "validation/s2_five_stages/stage1-baseline/baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "validation/s2_five_stages/stage1-baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "validation/s2_five_stages/stage1-baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "validation/s2_five_stages/stage1-baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "validation/s2_five_stages/stage1-ctest-command.json": "29c99d9f72541c0845660ecf179a8ab1b97818c067aac973f7370dc3cbbcbbe3",
+    "validation/s2_five_stages/stage1-ctest.log": "b8524079fb0f92c9c33fd6d4d1b9a14a4af0fdf1c32aa5c4c9e90e06e9ee813c",
+    "validation/s2_five_stages/stage1-debug-build-command.json": "48815425ee3a5a1316802fe4d56c45fe5d2a689db5b98e60db93984bcc6e57fe",
+    "validation/s2_five_stages/stage1-debug-build.log": "b5b0aba4a8afd679f2cede30c5ec324bf1e7dc9bcc8d751414c331125ba8a6d4",
+    "validation/s2_five_stages/stage1-debug-configure-command.json": "b9e3ff24f5b03d544b664d1c48d5554b285f24cdf0057f13f270f466befd4dd6",
+    "validation/s2_five_stages/stage1-debug-configure.log": "b1d10c6c045a138a91d0049fc5a13e40f2c134a31d65626bc6d52ca984b8486c",
+    "validation/s2_five_stages/stage1-dependencies-command.json": "a6c81c449c82f045a8dd146e9eeda5331d05cb06b8745a32f558e497402f8a13",
+    "validation/s2_five_stages/stage1-dependencies.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "validation/s2_five_stages/stage1-design-contracts-command.json": "06a5819db90fce63adc234d5d7f99681b45ed651f4b0d12fc8fcf2f8a67a956f",
+    "validation/s2_five_stages/stage1-design-contracts.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "validation/s2_five_stages/stage1-execution-inputs.json": "93e3fbd51226a666943b4aa88d2f201bc116144f87c0f1bf22f5e317fc585ecc",
+    "validation/s2_five_stages/stage1-initial-report.json": "a2e6e92a16a5ca8c902ec61cc0ea592361307e42a06c452f5497d68bf047f60c",
+    "validation/s2_five_stages/stage1-plan-guard-command.json": "61dbf6fd4de27099f12926006ecd7bff2317a6efafffb0b648f97fa83e9e1518",
+    "validation/s2_five_stages/stage1-plan-guard.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "validation/s2_five_stages/stage1-planning-command.json": "a9ee5670662989e1965aac1417b34958f01d8d2744c8227ec5f8909f98aaf521",
+    "validation/s2_five_stages/stage1-planning.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "validation/s2_five_stages/stage1-published-ci.json": "54ed96557b61da34392fe80fecfc9d427cc11b8a99ec22820a62e64f44daffc2",
+    "validation/s2_five_stages/stage1-report.json": "a8afda5fe4eb0a7986a7b44a0b9f90becb0669241b1919fb57ce5235405607c0",
+    "validation/s2_five_stages/stage1-review/author-v1-command.json": "84997392e1e0366a4ffeb75cbd23cd724f8957bbc806dde3be46ec13fc73c0df",
+    "validation/s2_five_stages/stage1-review/author-v1-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/stage1-review/author-v1.log": "cd0940703ad2d0643a0af2c362949dfa31491754268b6f5ab47eace4f3d3eaea",
+    "validation/s2_five_stages/stage1-review/baseline-execution.json": "e500e51245f431ee034da1ab8008399b9c03980109e6bbd58427be402ddfaeb5",
+    "validation/s2_five_stages/stage1-review/baseline-inputs.json": "244ebefe7a8fa9d150183c28e197f1e84736df7b46cd1f3436b957bf8f6cfc56",
+    "validation/s2_five_stages/stage1-review/baseline.log": "aaf4a9bddf768d52fae06a60b6b3301283f5941978701fbf0cae8c30c7e28acc",
+    "validation/s2_five_stages/stage1-review/final-author-v2-command.json": "77f0957962ed02c951122bf72804ad1384129141cbb057be28884cc5b15d7e04",
+    "validation/s2_five_stages/stage1-review/final-author-v2.log": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+    "validation/s2_five_stages/stage1-review/final-author-v3-command.json": "63eb7dd2dbbc3e763c321c5bbfc7623427b5fa2efd25d3f873abd90090c0284c",
+    "validation/s2_five_stages/stage1-review/final-author-v3.log": "e09ea17d876925fbd62525d62d787c2837e0f3a7c484ad2255b30f8a0f2228a7",
+    "validation/s2_five_stages/stage1-review/independent-review-addendum-legacy-completeness.json": "dd4e6bd86e4ce83fdb417008a751d1b17cdb6e33904eed24f557935c54cbf5f7",
+    "validation/s2_five_stages/stage1-review/independent-review-final-v3.json": "8196d8c2f9065100ac14da47d7df401e28f02d877699bb182e3735f6d781df4f",
+    "validation/s2_five_stages/stage1-review/independent-review-final.json": "8f4e8ed40453efbc18b12e2b6b34eddb44ce54a7397a1da5918354c77cfe4daa",
+    "validation/s2_five_stages/stage1-review/legacy-active-author-v1-command.json": "fa76bc4d5760601f050bcc776f12944d06f38bd965ca421ab5c33cfd291c5c1d",
+    "validation/s2_five_stages/stage1-review/legacy-active-author-v1.log": "ebec379c6732a89741a64921a7bd697fc1203a37011419ac90f0241544bcc662",
+    "validation/s2_five_stages/stage1-review/legacy-truncated-v1-command.json": "6fb9717e8003c424c37cc5853176f478ee3ace1884c35278372606265c512686",
+    "validation/s2_five_stages/stage1-review/legacy-truncated-v1.log": "3f742f80c795170be91c9db02bbeacdbdfb9a1dbd46597e7a0be6e068dacc4e3",
+    "validation/s2_five_stages/stage1-review/legacy-truncated-v2-command.json": "b16525afe3282b0bde55c03693776265ba3676332b6d6c391aa64e90788fe3b7",
+    "validation/s2_five_stages/stage1-review/legacy-truncated-v2.log": "f6d2cc09a468425232ea05f9c757b35762b1eeba3e612a5b307c488583283ad0",
+    "validation/s2_five_stages/stage1-review/review_legacy_active-author-v1.cpp": "a5067ea07ad0d27c01ebed89281aa076168e22ca1503c3d0eefd3b47ac5e9352",
+    "validation/s2_five_stages/stage1-review/review_legacy_active.cpp": "47646b71becc2fb4dc3f7977aa6855da78e1159ab341a8199cc186076a261188",
+    "validation/s2_five_stages/stage1-review/review_legacy_truncated-v1.cpp": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "validation/s2_five_stages/stage1-review/review_legacy_truncated.cpp": "3c42e99409d71fc7dfce2fd7ec6feadcd08257b7a9f2babece37618903c7c4cc",
+    "validation/s2_five_stages/stage1-review/review_refresh_order-author-v1.cpp": "3aff69b6827269c756470ea2456ced4a5ecdb6caacad989c33fce3aa92e46a6a",
+    "validation/s2_five_stages/stage1-review/review_refresh_order-baseline.cpp": "e2cf63bedcb6105f9e2dcef6eafc1ec7ff22f66223b428f5731d66fd6c45c654",
+    "validation/s2_five_stages/stage1-review/review_refresh_order.cpp": "9cf760535062067420b02f80750d4a8ae93f1b504bfdcf20de58769f49e48714",
+    "validation/s2_five_stages/stage1-review.json": "8b8c2db3e296c4b572beab62320172c61293b896b5c947738591a0b3b7b006f5",
+    "validation/s2_five_stages/stage1-source-manifest.json": "e8f33357e6777df14a82ed20cda72932a58bafd4c263774371cacb4005c36020",
+    "validation/s2_five_stages/stage1-v2-asan-batch-final-command.json": "c6f1477bff7f8fb97d6d4254e1bd5baaa292cfee48d480378d07467365f3607e",
+    "validation/s2_five_stages/stage1-v2-asan-batch-final.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "validation/s2_five_stages/stage1-v2-asan-build-command.json": "d44416d734f64768749dab528457a271792526f799b5e1d186ccbc07ba164398",
+    "validation/s2_five_stages/stage1-v2-asan-build.log": "dfada3f0032ecabf6a483a017cadca4279873fbef93b52bca67f3d2a806bd77c",
+    "validation/s2_five_stages/stage1-v2-asan-configure-command.json": "d5f2dc4509f9540b328a3efbd3a23a8b586358a3790d59da2f479e9f37911cfc",
+    "validation/s2_five_stages/stage1-v2-asan-configure.log": "c54b3823ca807a0262ba9aea507d7618be04fab959de566244805e1f44661825",
+    "validation/s2_five_stages/stage1-v2-asan-contracts-final-command.json": "1c37eef0c4986ac6f1e686fed119c78145565b815c1d0e2197e242e1fb7e5fb1",
+    "validation/s2_five_stages/stage1-v2-asan-contracts-final.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "validation/s2_five_stages/stage1-v2-asan-core-final-command.json": "940a03200575193d887140e574da2df4b05fa9e270b042ca7bb212592dc35255",
+    "validation/s2_five_stages/stage1-v2-asan-core-final.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "validation/s2_five_stages/stage1-v2-asan-crawl-final-command.json": "d3e43e006491eb65f57dbb12163aa56ddb97884ba636938793fcfd210d1a1f83",
+    "validation/s2_five_stages/stage1-v2-asan-crawl-final.log": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+    "validation/s2_five_stages/stage1-v2-asan-map-final-command.json": "367b57d3539e0cb005a2df5308bf2fb90138ddaf2c29eec30b34cd080083cdcd",
+    "validation/s2_five_stages/stage1-v2-asan-map-final.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "validation/s2_five_stages/stage1-v2-asan-site-publication-final-command.json": "9c49b627e91be5a4acd2aec135e8765af302d202fb3d531baba745a961e5bd47",
+    "validation/s2_five_stages/stage1-v2-asan-site-publication-final.log": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+    "validation/s2_five_stages/stage1-v2-ctest-command.json": "7ce9213b9f81513d966c832f44c1da39bdf3e94b50b5674a4b2edb3b9791dc65",
+    "validation/s2_five_stages/stage1-v2-ctest.log": "f7e76d060edc6a2688a5e5e131aec558bb64fb2904331ae133d13b475ed86e26",
+    "validation/s2_five_stages/stage1-v2-debug-build-command.json": "da1063b6a641d237e359d3e68435387f148e55c2a5f69dfbd5920572f181f1b5",
+    "validation/s2_five_stages/stage1-v2-debug-build.log": "e0488d1ab8eb0e6a7d53d62c08bdbc83a47bc4a3b8fd5634378691820ebe5bb9",
+    "validation/s2_five_stages/stage1-v2-debug-configure-command.json": "155d91bf414ed8c981ae2f9b785c0642bc2bc7e0d6e5b32a411f41d9ef6aba3f",
+    "validation/s2_five_stages/stage1-v2-debug-configure.log": "978d1f9440b094946d4d80afc2803096bf66de20d955493b4f3fc1973d511ba4",
+    "validation/s2_five_stages/stage1-v2-dependencies-command.json": "b4b7896884f52140983830e1c7aa4684203e7a0d9529008f518c998e8e86ca8f",
+    "validation/s2_five_stages/stage1-v2-dependencies.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "validation/s2_five_stages/stage1-v2-design-contracts-command.json": "56e40059bb23d282f7be62c52d184c1e93576ea5b4a5838080b400fbdabcf3fd",
+    "validation/s2_five_stages/stage1-v2-design-contracts.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "validation/s2_five_stages/stage1-v2-execution-inputs.json": "8119ad8744c84d754fd7097277d5f8172dc85d597accf0f02044cf0b51c86ebb",
+    "validation/s2_five_stages/stage1-v2-plan-guard-command.json": "6f1a1650ba499f97be183ad8ce25ecd6070d9e20508156a5ee2d948feef96768",
+    "validation/s2_five_stages/stage1-v2-plan-guard.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "validation/s2_five_stages/stage1-v2-planning-command.json": "71fb8ffe2443c079053efe5be11ff76a01858f8ad99d6a36cd509da47819d8c4",
+    "validation/s2_five_stages/stage1-v2-planning.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "validation/s2_five_stages/stage1-v2-review.json": "e729970eb33dcf808f0d00c0c074a70958f9e64f2bd62f8c0f0faf414bf2b0e6",
+    "validation/s2_five_stages/stage1-v2-source-manifest.json": "4b8d6911764b84c1b6c4f0a6fd3e835329d15e2f03d43dc94957fc1c2488cc8b",
+    "validation/s2_five_stages/stage2-adapters/author-evidence.json": "ec0ec8a7554066f54639d375e12606bd2c5254d7e2e25fa6a514213b70487aa8",
+    "validation/s2_five_stages/stage2-adapters/pytest-adapters-final.log": "df3204eab7c772777900ee3e8f44af5b13ff11642e8b5119cd4b0d39c55bc133",
+    "validation/s2_five_stages/stage2-author/author-native-command.json": "0c432d2abf080310471e65c073bce3e85b0a988ebd5a1b3843b0dfff0025b74f",
+    "validation/s2_five_stages/stage2-author/author-native.log": "56acb1740ba281c0863f78fbea6d94042fe631c1d116127dcf25278c7550bcf9",
+    "validation/s2_five_stages/stage2-author/baseline-command.json": "2645533a46ea0f508a2fadedd7f7cf3afcb84632498f9b04ee90483034dc0cff",
+    "validation/s2_five_stages/stage2-author/baseline.log": "59dc40b6b7052cf760229f6c9ee3a71099ee4cbcd0ae869c50a9005db1944e5d",
+    "validation/s2_five_stages/stage2-author/retention_baseline.cpp": "674463c3a8545300a18130e4ac21abd521a28be73b0bff5d356e9351d66e5f55",
+    "validation/s2_five_stages/stage2-review/independent-review.json": "fabc75cb8fd3dfae7d6bfd613fcda3bb4da615d94797a2b977300c655e67e6c7",
+    "validation/s2_five_stages/stage2-review/independent-v1-command.json": "bb8040b1b2564c4dcc76688f4a61c1dfaabc9a27c7fa58b68eaf8808bee75a91",
+    "validation/s2_five_stages/stage2-review/independent-v1.log": "f047fa953f6e6f0e8f450a8e30e3cbd5e456a37b664e4fd7415a640ec1e25385",
+    "validation/s2_five_stages/stage2-review/review_retention.cpp": "5f4d0780c031dec23a92ac19d6b71da0a131202760cc2f2453dc0afec342e0af",
+    "validation/s2_five_stages/stage2-review/run_independent.py": "f7d3079586b516a049da2fb6838f2b6a5725325a55d668e5662d2aebdf6f2bff",
+    "validation/s2_five_stages/stage3-author/author-handoff.json": "bbc82a018e3a0382280a9783efe234c82d2df3157f55bc70ceb6c46feccb93e9",
+    "validation/s2_five_stages/stage3-author/batch-v1-command.json": "5a2e40a1e2520f5cbd5679935c3686eebb15b746c8ac3f707dba77d0cf9f08d4",
+    "validation/s2_five_stages/stage3-author/batch-v1.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "validation/s2_five_stages/stage3-author/crawl-v1-command.json": "06fc8a61761d6dab957343acf25348e57368d341a15e0da19f24218ba76fd7ed",
+    "validation/s2_five_stages/stage3-author/crawl-v1.log": "23bd604bba5ffb5ecee223a63175616402ab1ddec4805af7ea3bf61a224b1f9f",
+    "validation/s2_five_stages/stage3-author/crawl-v2-command.json": "df8d5ad37b3d06563475370b18b667e8e6b341c6503ff0528eb6751b0d6f6289",
+    "validation/s2_five_stages/stage3-author/crawl-v2-compile.log": "476ef98a1b39a07270a1b5dfd008c388570e41d62503ecc9d11201a2405615aa",
+    "validation/s2_five_stages/stage3-author/crawl-v2.log": "dcb8c02bf045e3e33e93a5815368359e8ca2fb2c895695280053b82decf14d1e",
+    "validation/s2_five_stages/stage3-author/fairness-v1-command.json": "4f766b8c61b32d03e621b189d815be65492e1cfcda77a7c53739bf9c21e5235f",
+    "validation/s2_five_stages/stage3-author/fairness-v1.log": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+    "validation/s2_five_stages/stage3-author/map-v1-command.json": "c3bba912530d19985d2349e474689c2709387a2a951e0f99fd1ed78eac427ea6",
+    "validation/s2_five_stages/stage3-author/map-v1.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "validation/s2_five_stages/stage3-author/migration-v1-command.json": "3abafab64d53d8b7b61fc58771a2d10a9a70067e2a5b405520d3eefe52c107b2",
+    "validation/s2_five_stages/stage3-author/migration-v1.log": "36c7b2d0283855e8be1a2d86f42712da758446b3454fb322f16affcf9bab63ee",
+    "validation/s2_five_stages/stage3-author/migration_queue.cpp": "c3d74769d8f8027ef40571d2ee132a3b0935ea371c91ec96cfd783e8160ebacc",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-command.json": "baa9f5523642223244b6517912d374ff2c15dc67bdc909865dc379a5b13691af",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-corrected-command.json": "8225dd74e17649cb1208a4d1503f0940e2f1b45235723097d81ca2a460e5ea3c",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-corrected-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-corrected-trap.log": "9236fa694f091326a5cc3e89b6bd649591d66c72a281941f457721ffa505324f",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline-source.cpp": "2272a0c76f8919ac37490fe140046bbbc897a5ffc15ebb779d1729059fe3ecc4",
+    "validation/s2_five_stages/stage3-baseline/fairness-baseline.log": "1259d23761036ff91a16d8eaf893db4de3de1bc7c6ce9905476459855a258053",
+    "validation/s2_five_stages/stage3-baseline/fairness-corrected-source.cpp": "3af5ad99f1e3120a1d83974e430b3114736424533f6df64d1977f3de441c0f0a",
+    "validation/s2_five_stages/stage4-author/author_evidence.json": "d699130f6ad1bb748493a3cd8b2f51bc054100e75f1d089241c00f36feb988af",
+    "validation/s2_five_stages/stage4-author/author_projection_evidence.json": "30417e1c66301070c50b7f9b3c11995ea6a205ca15ef924accf15147c1b2b494",
+    "validation/s2_five_stages/stage4-author/pytest-evaluation-final.log": "e9b51c60db6bdc5e760ce8f388bf8a0a0421dab7016f7ffa7e629ba057f8a81f",
+    "validation/s2_five_stages/stage4-author/pytest-evaluation-projection-final.log": "6ac08875cabd41b5636ebfda7c053e7fc4f29333486b6fc1c9cdc6fd8b0da1a7",
+    "validation/s2_five_stages/stage4-author/pytest-evaluation-regression.log": "2844ab0639842d4d969efb95dcb54a935c6b8f1ccd9eeb875632d3bce3855803",
+    "validation/s2_five_stages/stage4-review/independent-review-dee49b3.json": "225e41e89198d7334d204a4270f774618bf7a7f8c8803bef242c03f43a0dbdc5",
+    "validation/s2_five_stages/stage5-baseline/session-preexisting-baseline-command.json": "298e2ee119bd056b3924bda17cbdb5dc5070d0169dbc453355a96d172f90964a",
+    "validation/s2_five_stages/stage5-baseline/session-preexisting-baseline.log": "4d2f8802ffb3ff2801563aa0a928e727e739f5d8cd15382af1c054b7a0ab7eb9",
+    "validation/s2_five_stages/stage5-baseline/session-preexisting-full-read-baseline-command.json": "30c924d9e33e65a0337fa484cd1dafdd6dea657bfddff254bcd37d8f629876fc",
+    "validation/s2_five_stages/stage5-baseline/session-preexisting-full-read-baseline.log": "2dcfb738b0e7b2033cdea19d83bf621085faed7330abf2b80acb65329beacc50",
+    "validation/s2_five_stages/stage5-baseline/session_preexisting.cpp": "1715d1ddb8be96097f49047d3c36e740547d4a2ecdfaa386310a41d1c38602bd",
+    "validation/s2_five_stages/stage5-baseline/session_preexisting_full_read.cpp": "bf9af66c688c9ddc28b307c4949e393a9ea017e860b75080a630f36583ebef11",
+    "validation/s2_five_stages/stage5-review/expanded-repro-before-legacy-fix.log": "e3341667159c41f7ec6254ab421586f19569c037014cf701f754855626d0a68a",
+    "validation/s2_five_stages/stage5-review/expanded-repro-final.log": "e3341667159c41f7ec6254ab421586f19569c037014cf701f754855626d0a68a",
+    "validation/s2_five_stages/stage5-review/expanded-repro.cpp": "746d5f2006907793b3589aa67d33670ebdf4d2d149dfe057bb606914b3143206",
+    "validation/s2_five_stages/stage5-review/final-evidence.json": "570bb3f6482ccc3ff1075b513358d65428009103ff68fa74e837401f2f924656",
+    "validation/s2_five_stages/stage5-review/initial-evidence.json": "064bfcef441371f38b8f65b69a2f3f68334836979db52f8ee9dd0fd83f35ffe2",
+    "validation/s2_five_stages/stage5-review/initial-repro.cpp": "3360c39f5c158766ee218e69bb73c498e6c7dcaf7ea09f0517c2b8683d394c88",
+    "validation/s2_five_stages/stage5-review/initial-repro.log": "98d0f5a1e108aed153f05e65a451abd057e5c6dec7ac06f58e9f34906ba6ce20",
+    "validation/s2_five_stages/stage5-review/legacy-repro-before-legacy-fix.log": "d0feeb4c9efa969a7751ab10c6346943208708d0fa273161fce2143d02a6a223",
+    "validation/s2_five_stages/stage5-review/legacy-repro-final.log": "4c64208b663854de509811067ff70b14c1c9497878b24e05921495edec5b2fcf",
+    "validation/s2_five_stages/stage5-review/legacy-repro.cpp": "e64676c4f86698cb93925675010c8364ead376019ac9e17652ca8177ad5bf730",
+    "validation/s2_five_stages/stage5-review/mcp-retest.py": "52d6629c3d5d991c119e6c5884bbca6cb17439fced3645705ce4ac89f68d6784",
+    "validation/s2_five_stages/stage5-review/mcp_independent-final.log": "e038b88ea555d3b57fdde941c9df0aaa2d17c764f78cfc9dddfb3c497da82f42",
+    "validation/s2_five_stages/stage5-review/native_author_suite-final.log": "7638b5998452bbea445714c1f41dd841b20a8de298655e8131ea67227b30a026",
+    "validation/s2_five_stages/stage5-review/second-evidence.json": "bf344f0b381b29fe2defa481e21fb59fc7e2215361ec62c27ea42edfe96f8bc2",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/expanded.cpp": "746d5f2006907793b3589aa67d33670ebdf4d2d149dfe057bb606914b3143206",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/expanded.log": "e3341667159c41f7ec6254ab421586f19569c037014cf701f754855626d0a68a",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/legacy.cpp": "e64676c4f86698cb93925675010c8364ead376019ac9e17652ca8177ad5bf730",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/legacy.log": "9c95accb9bbdf0e99bea3f306cf0bd3dd86df04f35cdc7cbe7797b12ddc602b8",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/preexisting.cpp": "bf9af66c688c9ddc28b307c4949e393a9ea017e860b75080a630f36583ebef11",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/preexisting.log": "7de039aec11e9dc435851a65fffd4bbed1a7d182f3a6d19488eb029fdf8fd45d",
+    "validation/s2_five_stages/stage5-review/supplement_preexisting_policy/supplement-evidence.json": "a44bf8720f3f638c3ca6adc2e175e2bfe32826451140b118a20db701337ab163"
+  }
+}

@@ -1,6 +1,6 @@
 # 存量网页结果的站点发布上限
 
-本页定义 **0.1.5 / `bzs-site-publication-1`** 的部署行为，对应 CRAWL-03 / FT-029、B-23、C-02 的继续实现。页面自己的 `bzs-publication-1` 声明见 [SITE_CRAWLING](SITE_CRAWLING.md)；两类规则共同约束检索输出。当前证据见 [验证说明](../validation/s2_hardening/README.md)，完整工作包与 S2 均未签收。
+本页定义始于0.1.5、在0.1.8沿用并扩展的 **`bzs-site-publication-1`** 部署行为，对应 CRAWL-03 / FT-029、B-23、C-02 的继续实现。页面自己的 `bzs-publication-1` 声明见 [SITE_CRAWLING](SITE_CRAWLING.md)；两类规则共同约束检索输出。当前证据见 [验证说明](../validation/s2_five_stages/README.md)，完整工作包与 S2 均未签收。
 
 ## 解决的问题
 
@@ -43,7 +43,7 @@ searchd --auth /absolute/path/auth.json --state /absolute/path/state --sites /ab
 
 物理 FTS 清理每次事务最多检查 128 个当前文档，持久游标在后续操作中继续推进。输出资格立即生效，不等待整个历史库扫描完成。因此不能把一次配置激活描述为所有物理索引行已经清空。owner 的 canonical 正文和证据不属于这项物理清理。
 
-站点规则最多保留 4096 个历史 origin/path scope；单个快照最多绑定 24 个 URL，持久清单不超过 1 MiB。超过边界会明确失败，不静默遗忘历史限制。当前没有通用 scope / frontier / 审计 GC，不能手工清空策略或账本以绕过容量。
+站点规则最多保留 4096 个历史 origin/path scope；单个快照最多绑定 24 个 URL，持久清单不超过 1 MiB。超过边界会明确失败，不静默遗忘历史限制。当前[任务明细回收](JOB_RETENTION.md)只处理固定保留期且已结算的终态前沿/请求跳等详情，保留永久身份与计费；scope/删除发布历史和独立撤销要求不清理，不能手工清策略或账本绕过容量。
 
 ## schema 7 升级影响
 

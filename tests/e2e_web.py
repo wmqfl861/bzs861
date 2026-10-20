@@ -78,6 +78,8 @@ class Stack:
 
     def spawn(self, name: str, cmd: list[str]) -> dict:
         log_path = self.root / f"{name}.log"
+        if name in self.logs:
+            self.logs[name].close()
         log = open(log_path, "a", encoding="utf-8")
         self.logs[name] = log
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=log, text=True, encoding="utf-8",
@@ -168,6 +170,50 @@ class EndToEnd(unittest.TestCase):
         urls = [x["url"] for x in r["results"]]
         self.assertEqual(len(urls), len(set(urls)))
         self.assertTrue(any(u.endswith("/pages/zh.html") for u in urls))
+
+    def test_02b_durable_session_reconnect_paging_and_restart(self):
+        params = {"query": "session roundtrip", "sources": ["ddg", "bing", "wiki"],
+                  "idempotency_key": "http-session-1", "limit": 20}
+        start = self.ok("web.search.start", params)
+        session_id = start["session_id"]
+        after, received = 0, []
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            replay = self.ok("session.events", {"session_id": session_id, "after_event_id": after, "limit": 2})
+            for event in replay["events"]:
+                self.assertGreater(event["event_id"], after)
+                received.append(event["event_id"])
+                after = event["event_id"]
+                self.assertNotIn("snippet", event)
+                self.assertNotIn("url", event)
+            state = self.ok("session.get", {"session_id": session_id})
+            if state["state"] == "completed" and after == state["last_event_id"]:
+                break
+            time.sleep(0.03)
+        self.assertEqual(state["state"], "completed", state)
+        self.assertEqual(len(received), len(set(received)))
+        self.assertEqual(received, list(range(1, after + 1)))
+        self.assertTrue(self.ok("web.search.start", params)["reused"])
+        version = state["result_set_version"]
+        page_args = {"session_id": session_id, "result_set_version": version, "page_size": 1}
+        first = self.ok("search.page", page_args)
+        self.assertEqual(len(first["hits"]), 1)
+        self.assertTrue(first["has_more"])
+        self.assertEqual(first, self.ok("search.page", page_args))
+        second_args = dict(page_args, cursor=first["next_cursor"])
+        second = self.ok("search.page", second_args)
+        self.assertNotEqual(first["hits"][0]["url"], second["hits"][0]["url"])
+        self.stack.kill("searchd")
+        self.stack.core_port = self.stack.spawn("searchd", [
+            CONFIG.server, "--auth", str(self.stack.root / "auth.json"), "--state", str(self.stack.root / "state"),
+            "--fixtures", str(CONFIG.fixtures), "--port", "0", "--threads", "4",
+            "--worker", f"http://127.0.0.1:{self.stack.worker_port}",
+            "--worker-token-file", str(self.stack.root / "worker.token"),
+            "--sources", str(self.stack.root / "sources.json")])["port"]
+        self.assertEqual(second, self.ok("search.page", second_args))
+        self.assertEqual([], self.ok("session.events", {"session_id": session_id, "after_event_id": after})["events"])
+        self.assertEqual(version, self.ok("session.cancel", {"session_id": session_id})["result_set_version"])
+        self.assertEqual(3, self.ok("session.get", {"session_id": session_id})["dispatched_source_attempts"])
 
     def test_03_blocked_source_cools_down_and_others_still_answer(self):
         r = self.ok("web.search", {"query": "resumable", "sources": ["blocked", "ddg"]})

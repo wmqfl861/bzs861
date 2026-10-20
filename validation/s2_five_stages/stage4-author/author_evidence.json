@@ -1,0 +1,31 @@
+{
+  "base": "2007690c9403b8ae593101488de1adf228608284",
+  "branch": "agent/s2-qa-20261020",
+  "command": "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python -m pytest -q -p no:cacheprovider tests/test_evaluation.py tests/test_golden.py tests/test_probe.py tests/test_replay.py",
+  "commit": "b697105acadcc87206c01da83549eadca4c4f468",
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-qa/python",
+  "execution_scope": "synthetic evaluation plus existing local fake-source probe/golden/replay tests; no real sources or model calls",
+  "exit_code": 0,
+  "golden_files_changed": false,
+  "kind": "stage_four_author_evidence",
+  "limitations": [
+    "source_ablation_not_implemented",
+    "holdout_evaluation_not_implemented",
+    "hard_constraint_and_citation_scoring_not_implemented",
+    "human_judgments_not_created",
+    "full_release_gate_blocked",
+    "independent_review_pending_root"
+  ],
+  "log": "/workspace/scratch/80f41eb198a3/bzs861-qa/build-qa-author/pytest-evaluation-final.log",
+  "log_sha256": "e9b51c60db6bdc5e760ce8f388bf8a0a0421dab7016f7ffa7e629ba057f8a81f",
+  "new_evaluation_cases": 64,
+  "other_regressions": 125,
+  "passed": 189,
+  "source_sha256": {
+    "docs/RELEVANCE_EVALUATION.md": "73ad7cfb39404d0e3f89dedf8697f556afa7cbe8a55355d1ede666d130e48857",
+    "python/bzs/cli.py": "46a86db7e72c93dfd4f1ce34a1983dd23f855dfb6a94e52404a145f7391531b3",
+    "python/bzs/evaluation.py": "969cd195353d42dc58439dec685438200fda2cf65e61b882b30f45626e6c9f94",
+    "python/bzs/evaluation_format.py": "2ac204e9049a3e262ce6da3a18f10c5a154582ea6d8651de39adf4a167ac5f96",
+    "python/tests/test_evaluation.py": "32a4fc6c6d9eac4bea83ff70cd48baa064680f4c4b55b36e3f6ddc7f588f0e2a"
+  }
+}

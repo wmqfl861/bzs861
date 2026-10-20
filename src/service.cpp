@@ -137,10 +137,10 @@ namespace bzs {
     j.set("production_ready", false);
     Json a=Json::array();
     for(const auto*op: {
-      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "backup.create"
+      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
-      "web.search", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
+      "web.search", "web.search.start", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
     })a.push(Json::string(op));
     j.set("operations", a);
     Json missing=Json::array();
@@ -222,6 +222,15 @@ namespace bzs {
       return store_.range(p.subject, required_string(args, "snapshot_id", 64), int_option(args, "start_byte", 0, 0, 1LL<<40), int_option(args, "max_bytes", 20000, 1, 262144));
     }
     if(web_&&op=="web.search")return web_->search(p.subject, args);
+    if(web_&&op=="web.search.start")return web_->submit_search(p.subject,args);
+    if(op=="session.get"||op=="session.cancel") {
+      args.allowed({"session_id"});const auto id=required_string(args,"session_id",64);
+      return op=="session.get"?store_.session_get(p.subject,id):store_.session_cancel(p.subject,id);
+    }
+    if(op=="session.events") {
+      args.allowed({"session_id","after_event_id","limit"});
+      return store_.session_events(p.subject,required_string(args,"session_id",64),int_option(args,"after_event_id",0,0,(1LL<<62)-1),int_option(args,"limit",20,1,32));
+    }
     if(web_&&op=="web.read")return web_->read(p.subject, args);
     if(web_&&op=="read_many.submit")return web_->submit_reads(p.subject,args);
     if(web_&&op=="map.submit")return web_->submit_map(p.subject,args);
@@ -258,9 +267,9 @@ namespace bzs {
     }
     if(op=="search.page") {
       args.allowed( {
-        "session_id", "cursor", "page_size"
+        "session_id", "result_set_version", "cursor", "page_size"
       });
-      return store_.page(p.subject, required_string(args, "session_id", 64), args.has("cursor")?required_string(args, "cursor", 64):"", int_option(args, "page_size", 20, 1, 100));
+      return store_.session_page(p.subject, required_string(args, "session_id", 64),args.has("result_set_version")?required_string(args,"result_set_version",64):"", args.has("cursor")?required_string(args, "cursor", 64):"", int_option(args, "page_size", 20, 1, 100));
     }
     if(op=="find") {
       args.allowed( {
@@ -315,6 +324,10 @@ namespace bzs {
       args.allowed({"job_id","offset","limit"});
       return store_.job_results(p.subject,required_string(args,"job_id",64),
                                 int_option(args,"offset",0,0,1000),int_option(args,"limit",20,1,1000));
+    }
+    if(op=="jobs.compact") {
+      args.allowed({"limit"});
+      return store_.compact_jobs(p.subject,int_option(args,"limit",16,1,64));
     }
     if(op=="backup.create") {
       args.allowed( {
@@ -375,6 +388,13 @@ namespace bzs {
           } catch(...) {
             if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) {}
           }
+        }
+        if(web&&!stop.stop_requested()) {
+          std::optional<SearchLease> search;
+          try {
+            search=web->lease_search();
+            if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
+          }catch(...) { if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) {} }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }

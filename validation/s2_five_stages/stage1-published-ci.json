@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-20T13:56:00.471Z",
+  "repository": "wmqfl861/bzs861",
+  "scope": "Historical first checkpoint only; does not certify the subsequent 0.1.8 integration.",
+  "head_sha": "27966ffe61c16964c45d595e3ee2689115815217",
+  "run_id": 39431992846,
+  "run_url": "https://github.com/wmqfl861/bzs861/actions/runs/39431992846",
+  "status": "completed",
+  "conclusion": "success",
+  "run_started_at": "2026-10-20T13:37:22Z",
+  "completed_by": "2026-10-20T13:55:23Z",
+  "jobs": [
+    {
+      "id": 118659100668,
+      "name": "linux",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 39431992846,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Install build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Install the Python worker and pinned test dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Build and test core, contracts, HTTP, worker and MCP",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Address and undefined-behavior checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Original contracts and planning safeguards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        }
+      ]
+    },
+    {
+      "id": 118659100891,
+      "name": "windows",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 39431992846,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Check out the pinned vcpkg baseline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Install C++ dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Offline native and HTTP tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Post Check out the pinned vcpkg baseline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        }
+      ]
+    }
+  ],
+  "log_evidence": {
+    "linux": {
+      "job_id": 118659100668,
+      "checkout_sha_present": true,
+      "ctest_suites": 12,
+      "excerpts": [
+        "2026-10-20T13:37:27.0358262Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +27966ffe61c16964c45d595e3ee2689115815217:refs/remotes/origin/main",
+        "2026-10-20T13:37:27.8428457Z  * [new ref]         27966ffe61c16964c45d595e3ee2689115815217 -> origin/main",
+        "2026-10-20T13:37:27.9049341Z 27966ffe61c16964c45d595e3ee2689115815217",
+        "2026-10-20T13:40:02.6039530Z 100% tests passed, 0 tests failed out of 12",
+        "2026-10-20T13:40:02.6535407Z Total Test time (real) =  75.78 sec"
+      ]
+    },
+    "windows": {
+      "job_id": 118659100891,
+      "checkout_sha_present": true,
+      "ctest_suites": 7,
+      "excerpts": [
+        "2026-10-20T13:37:30.4463575Z [command]\"C:\\Program Files\\Git\\bin\\git.exe\" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +27966ffe61c16964c45d595e3ee2689115815217:refs/remotes/origin/main\r",
+        "2026-10-20T13:37:31.9420903Z  * [new ref]         27966ffe61c16964c45d595e3ee2689115815217 -> origin/main\r",
+        "2026-10-20T13:37:32.3014093Z 27966ffe61c16964c45d595e3ee2689115815217\r",
+        "2026-10-20T13:55:17.0259504Z 100% tests passed, 0 tests failed out of 7\r",
+        "2026-10-20T13:55:17.0259883Z Total Test time (real) = 100.51 sec\r"
+      ]
+    }
+  },
+  "provenance": "GitHub Actions run/job metadata and decoded job logs retrieved after completion. Excerpts are direct observations; full original logs remain on the linked GitHub run."
+}

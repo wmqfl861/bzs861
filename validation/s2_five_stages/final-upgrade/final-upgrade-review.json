@@ -1,0 +1,72 @@
+{
+  "version": "bzs-final-upgrade-regression-1",
+  "checked_at_utc": "2026-10-20T13:47:25.158581+00:00",
+  "status": "passed_two_existing_scenarios_on_final_integrated_library",
+  "reviewer": "/root/retention_review_resume",
+  "project_version": "0.1.8",
+  "old_schema": 8,
+  "new_schema": 11,
+  "old_library": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages-author/libbzs_core.a",
+    "sha256": "7b6a7fbb9b9ecd904b2d87697914fccf17bab6473a8d1c42c9cb816cf49dc0a5"
+  },
+  "final_library": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs861/build-s2-five-stages/libbzs_core.a",
+    "sha256": "82eaba9bf5f630f7ce584199dde601f4f501d55eaec8fe59ea8389f35d460600"
+  },
+  "root_frozen_input": {
+    "manifest": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_five_stages/final-v1-execution-inputs.json",
+    "sha256": "a190351a395426083ed4f113f3a6c81368c8ced8680bafdc4f7c7b19cddd4b6c",
+    "file_count": 164,
+    "all_current_files_match": true
+  },
+  "command_record": {
+    "file": "final-schema8-to11-v1-command.json",
+    "sha256": "b8b173d85e65eb72b040d10e32776c1300d28f4243762dcdb9ef37788b2ae603"
+  },
+  "actual_log": {
+    "file": "final-schema8-to11-v1.log",
+    "sha256": "dabfdb84a35c23fd6db2936555dd11306bc73b5bf0596306e03183675b5abbac"
+  },
+  "source": {
+    "file": "review_retention_schema11.cpp",
+    "sha256": "0c59c8b726c6615242f08a221f4b19125bbd9cc268d218ad7bbb671223236409"
+  },
+  "runner": {
+    "file": "run_final_upgrade.py",
+    "sha256": "ba6d56cdf2cd0f2f8d8e3921aec233980c95e57ee5e67c013aa31ef0aa2b0191"
+  },
+  "scenarios": [
+    {
+      "scenario": "reads",
+      "schema8_preparation_exit": 0,
+      "schema11_upgrade_exit": 0,
+      "preparation_assertions": 9,
+      "candidate_assertions": 32,
+      "passed": true
+    },
+    {
+      "scenario": "robots",
+      "schema8_preparation_exit": 0,
+      "schema11_upgrade_exit": 0,
+      "preparation_assertions": 23,
+      "candidate_assertions": 55,
+      "passed": true
+    }
+  ],
+  "all_recorded_inputs_unchanged": true,
+  "recorded_input_files": 187,
+  "external_http_requests": 0,
+  "model_calls": 0,
+  "temporary_databases_removed": true,
+  "limitations": [
+    "The two scenarios are regression reruns of the prior independent retention review, not new distinct acceptance cases. Original119 preparation/candidate assertions are not added again as new product coverage.",
+    "Old schema8 databases are produced by the unchanged original source and real original schema8 library through public APIs; SQL helper accepts readonly statements only.",
+    "Only candidate schema expectations and diagnostic/PASS labels changed from9 to11. No additional probes, production edits, broad safety review or full product acceptance.",
+    "Final integrated CTest, ASan/UBSan and exact published Linux/Windows CI are separate root gates."
+  ],
+  "original_review": {
+    "file": "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/capacity/independent-review.json",
+    "sha256": "fabc75cb8fd3dfae7d6bfd613fcda3bb4da615d94797a2b977300c655e67e6c7"
+  }
+}

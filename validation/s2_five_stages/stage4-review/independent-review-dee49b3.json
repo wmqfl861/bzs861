@@ -1,0 +1,84 @@
+{
+  "kind": "bzs-phase4-independent-readonly-review",
+  "recorded_at": "2026-10-20T03:28:47.867358+00:00",
+  "reviewed_commit": "dee49b3f409b12d26c75cd56a3a27157f3ab2736",
+  "branch": "agent/s2-qa-20261020",
+  "status": "no_new_blocking_finding_in_scoped_review",
+  "files_read": {
+    "python/bzs/evaluation.py": {
+      "sha256": "c6eb2f2fed7bbfd3377ae5d197a900fbd7f82667c380b14990898308b46e92bf",
+      "scope": "Scoring, aggregation, source probe import, freeze/run, baseline binding, release and limited quality gates read."
+    },
+    "python/bzs/evaluation_format.py": {
+      "sha256": "f0e257ddcb061d07a90e9023331616d5b434938a0ff5bac3fd86c5f5a9007066",
+      "scope": "Input/package/label/gate validation, method identity, original golden projection, bounded file IO read."
+    },
+    "docs/RELEVANCE_EVALUATION.md": {
+      "sha256": "84a74f85a4c96b6cdd264d65210c0d60324cff055f0c07bdcbc9ad6b8d9fb54c",
+      "scope": "Original scope/metrics/labels/gates documentation read; final projection update reviewed via committed diff."
+    },
+    "python/bzs/cli.py": {
+      "sha256": "21c242eb6cb192aae9849972fa46bf0fd09039e5cb9aa6d59330e80e8e37c077",
+      "scope": "Evaluation freeze/run forwarding of explicit queries_path inspected; no full CLI review."
+    },
+    "python/tests/test_evaluation.py": {
+      "sha256": "c2daa8497a41290d3772df349e1a73923cf0cb515505223d88a5cdcec4aeb481",
+      "scope": "Test declarations and relevant snippets inspected; not executed by this reviewer."
+    }
+  },
+  "reviewer_activity": {
+    "source_edits": 0,
+    "test_suites_executed": 0,
+    "network_requests": 0,
+    "original_holdout_contents_read": false,
+    "human_labels_created": false,
+    "reviewer_identity_authenticated": false,
+    "real_quality_measured": false
+  },
+  "findings": [
+    {
+      "area": "Original golden projection",
+      "status": "root-reproduced issue resolved by author; reviewed final fix",
+      "assessment": "freeze and run each call verify_golden_projection against supplied original file. Exact file/manifest digest, frozen/version and complete selected non-holdout split projection with field values/order are compared as canonical bytes. Missing original input stays blocked, and a self-reported freeze verification cannot replace run-time validation."
+    },
+    {
+      "area": "Missing labels and empty outcomes",
+      "status": "reviewed_no_new_issue",
+      "assessment": "Expected judgments cover the entire fixed query pool. Missing judgments block full metrics; diagnostic subset means are explicitly separate. Failed/missing query execution forces blocking independently of permissive thresholds. All empty/no answered samples and no positive relevance judgments cannot pass the finite quality gate."
+    },
+    {
+      "area": "Synthetic versus human claims",
+      "status": "reviewed_no_new_issue",
+      "assessment": "Synthetic candidate evidence or incomplete declared human judgments block finite quality status. The program validates externally provided human/reviewer structure and identity bindings only; it does not authenticate real assessor activity."
+    },
+    {
+      "area": "Baseline and metric scope",
+      "status": "reviewed_no_new_issue",
+      "assessment": "Prior report raw SHA must be frozen; method/corpus/labels/runtime/environment and system identities bind the comparison. Reordered rank input can differ while fixed pool/IDCG cannot silently shrink. Full source ablation/C++ fusion/holdout/hard-constraint/citation verification are not implemented by this increment."
+    },
+    {
+      "area": "Publication of acceptance",
+      "status": "reviewed_no_new_issue",
+      "assessment": "Full release_gate is always blocked with explicit missing dimensions. The finite fixed-candidate gate is separate from package acceptance, source availability, target-machine performance or truth of labels."
+    }
+  ],
+  "reported_author_evidence_only": {
+    "evaluation_cases": 82,
+    "existing_integration_cases": 125,
+    "total_reported_passed": 207,
+    "source": "author message; not independently rerun here"
+  },
+  "acceptance_scope": {
+    "packages": 83,
+    "acceptance_mappings": 161,
+    "slices": 10,
+    "accepted_promoted_by_this_review": 0,
+    "preserve_original_golden": "40 queries with original 20 development /15 regression /5 holdout; no file changes made by reviewer"
+  },
+  "limitations": [
+    "Read-only review does not establish real human relevance or independent assessor participation.",
+    "No real target-environment quality, source availability or performance run was performed.",
+    "Checksums and timestamps do not authenticate externally supplied baseline, ranking or human provenance.",
+    "No further full-suite rerun was performed without a concrete remaining risk."
+  ]
+}

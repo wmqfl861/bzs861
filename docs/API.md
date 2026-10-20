@@ -1,6 +1,6 @@
-# searchd API（0.1.5 S2 crawl hardening candidate）
+# searchd API（0.1.8 S2 五阶段集成）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_hardening/test_report.json)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮验证记录](../validation/s2_five_stages/README.md)。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -40,7 +40,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。已支持的 site 条件在结果中复核；其余未支持条件不能静默丢弃。
 
-联网结果尚未完整进入冻结会话或支持后续页，不能将本地分页能力当作联网分页。完整 SESSION-01/02 语义继续保留为后续验收。
+原同步 web.search 保持兼容；需要联网冻结版本、分页、断线重取和取消时使用 web.search.start。完整 SESSION-01/02 工作包仍未签收。
 
 ### 读取结果与缓存
 
@@ -49,6 +49,67 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
 `cache_first` 使用期限内缓存，`refresh` 重新获取，`cache_only` 不联网、无缓存则明确报错。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
+
+## 持久联网搜索会话
+
+`web.search.start` 创建联网冻结会话。C++ 核心保存来源队列、执行身份、不可变结果版本、分页游标和元数据事件。原同步 `web.search` 兼容入口保留；需要分页、断线重取或取消时使用会话入口，本地 `search` 也接入状态/事件接口。
+
+```json
+{"operation":"web.search.start","params":{"query":"example","sources":["approved_source"],"idempotency_key":"search-001","limit":20,"per_source":10,"timeout_ms":8000,"deadline_ms":120000}}
+```
+
+来源 ID 是占位示例。必须使用当前已启用且审核有效的来源；默认 17 条来源全部禁用，创建会话不构成批准。
+
+| 参数 | 默认值 | 范围与含义 |
+|---|---|---|
+| `query` | 必填 | 非空 UTF-8，最多 1000 字节 |
+| `idempotency_key` | 必填 | 原标识符规则，最多 128 字节；复用须匹配规范化请求及有效来源配置身份 |
+| `sources` | 按 category 选择 | 显式数组长度 1–20；来源须启用且审核有效，重复 ID 合并，首次出现次序执行 |
+| `category` | web | 未提供 sources 时生效；web 选默认 web/encyclopedia，all 选默认来源，其余按能力匹配；仍须选出 1–20 个合法来源 |
+| `limit` | 20 | 冻结版本最多 1–50 条结果 |
+| `per_source` | 10 | 每来源最多 1–30 条候选 |
+| `language` | 省略 | 非空、最多 16 字节，只含 ASCII 字母、连字符或下划线 |
+| `timeout_ms` | 8000 | 单来源 RPC 预算 1000–30000 毫秒 |
+| `deadline_ms` | 120000 | 从提交起的总排队/执行期限 1000–600000 毫秒，过期拒收发布 |
+
+开始和状态响应包含 `session_id/kind/state/result_set_version/last_event_id/expires_at_ms/deadline_ms/dispatched_source_attempts/unknown_source_attempts/model_calls`，以及事件保留配置和建议轮询间隔。尚无冻结结果时版本是空字符串。**请求的 deadline_ms 是相对时长，响应同名字段是绝对截止时间。**
+
+同 owner 同规范化请求/来源配置复用键返回原会话及 `reused=true`，不匹配返回 `E_IDEMPOTENCY_CONFLICT`（409）。旧键身份在会话到期后仍保留，通过当前来源准入后返回 `E_SESSION_EXPIRED`（410），不会重跑；新查询须用新键。当前来源审核或配置错误可能先被拒绝。
+
+核心逐来源派发，每个完整来源响应结算后复用已有 C++ 索引族 RRF，形成新的不可变版本。不同版本可重排，既有版本与游标不重排。`completed` 表示队列已结算，不保证每源成功或有命中；还需检查错误和页面 partial。未知/丢失响应保留计数，不自动重发同一来源。
+
+### 状态、事件与分页
+
+| 操作 | 参数 | 作用 |
+|---|---|---|
+| `session.get` | session_id | 获取当前 owner 状态和最新版本，不请求来源 |
+| `session.events` | session_id，after_event_id=0，limit=20 | 返回指定事件之后的元数据；limit 为 1–32，after_event_id 为 0–(2^62−1) |
+| `search.page` | session_id，联网必填 result_set_version，可选 cursor、page_size=20 | page_size 为 1–100，联网单版本最多 50 条结果 |
+| `session.cancel` | session_id | 停止未派发来源、封住在途发布，已完成版本保留至到期 |
+
+```json
+{"operation":"search.page","params":{"session_id":"SESSION_ID","result_set_version":"VERSION_ID","page_size":20}}
+```
+
+分页返回 hits、版本、has_more、partial 和 `coverage=external_search_snippets_unread`，有下一页才返回 next_cursor。命中的 position 是版本内固定位置，body_read=false。按 `(session_id,result_set_version,position)` 去重；同一游标可重复拉取，但不能换会话/版本。删除和发布约束可使旧页减少，稳定顺序不允许重放已撤内容。本地版本仍等于 session ID，原不传版本的本地分页兼容。
+
+事件响应在状态之外返回 events、next_event_id、has_more、heartbeat_at_ms。事件仅含递增 event_id、kind、创建时间及适用时的版本 ID，不含查询、URL、标题、摘要或历史命中数。处理后保存 next_event_id，重连继续传入，以 `(session_id,event_id)` 去重。无新事件返回空数组和心跳，心跳不写日志；接口为有界拉取，不依赖持续连接。
+
+每会话最多保留 64 事件、10 分钟。请求落在过期历史前返回 `E_EVENT_HISTORY_EXPIRED`（410）：先取 session.get 的最新状态/版本，重新分页，再从该状态的 last_event_id 拉取后续事件。超过最后事件的未来游标是 `E_EVENT_CURSOR`（400）。完整会话和版本最多保留一小时，会话到期须新键重新查询。
+
+每页重新检查 owner、授权代际、删除、页面规则、已知完整 URL 链与站点上限。融合保留真实 URL 贡献者，去重键不能当政策身份。每行最多绑定 24 个 URL 和 24 条历史表示；无法完整绑定则禁止发布。形成版本时已经生效的删除/noindex/nosnippet 同样固定，后来完整读取、重新导入或重定向变化不能恢复旧版本。
+
+来源派发检查当前配置身份；分页重新校验冻结来源合同有效期。它不是独立的来源撤销日志，不证明跨备份撤销连续性。授权变化或审核超期返回 `E_SESSION_INVALIDATED`（409）；其他 owner 为 `E_NOT_FOUND`（404）。
+
+### 取消、背压与映射
+
+取消停止未完成来源，已在途的有限 RPC 可以继续至超时，但不能再发布。重复取消或取消已完成会话不新增取消事件，已完成版本保留，响应含 completed_results_preserved=true。dispatched_source_attempts / unknown_source_attempts 为核心尝试及其未知子集，不是精确实际 HTTP 成功数，也不应按轮询累加。
+
+未过期本地/联网完整会话共用每 owner 64、部署 256 上限。单联网会话请求、审核合同、来源载荷及全部冻结行最多 4 MiB；单来源保存载荷最多 256 KiB。过期完整数据可清理，永久身份/尝试摘要保留，每 owner 10000、部署 100000。达到上限返回 `E_SESSION_BACKPRESSURE`（429），不是无限容量。
+
+缺少或不匹配版本为 `E_RESULT_VERSION`（400），错会话/版本游标为 `E_CURSOR`（400）。MCP 工具为 start_web_search、get_search_session、search_session_events、search_session_page、cancel_search_session，在 SDK 转换前检查原始 JSON 类型和未知字段，不把字符串来源列表、布尔预算或显式 null 转成默认请求。
+
+这部分实现 SESSION-01/02；完整验收、真实长期来源运行、任意断电和分布式部署仍需取证，事件日志不解除恢复隔离。详见 [SEARCH_SESSIONS](SEARCH_SESSIONS.md)。
 
 ## 持久批量网页读取
 
@@ -85,6 +146,20 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 每项快照、索引、收据、状态和预算确认在同一事务内提交，并复核 owner、权限代数、租约、期限和删除代数。schema 4 在既有 schema 3 上增加批量任务账本；历史 schema 1 / 两种 schema 2 的迁移仍保留。任务恢复保证旧执行不重复发布；外部 HTTP 行为不承诺 exactly-once。
 
 MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。它们转发同一核心操作，不自行扩张预算。结果里的网页内容继续按不可信外部数据处理。
+
+## 终态任务明细回收
+
+`jobs.compact` 接收可选整数 limit（默认16、范围1–64），只处理当前 owner 已稳定结算的终态 web.read_many/web.map/web.crawl。创建、原截止和最后租约时间都须超过固定七天窗口；活动、暂停、未结清预留不可回收。没有 owner、days 或清空全部参数。
+
+```json
+{"operation":"jobs.compact","params":{"limit":16}}
+```
+
+原 ID/幂等键/指纹/终态/累计预算和已知未知用量永久保留。job.get 增加 `retention`（version=bzs-job-retention-1、details_available=false、compacted_at_ms、minimum_retention_ms）；同参数重提通过当前准入后返回原摘要，不重做请求。job.results、crawl.edges、job.control 对原 owner 返回 `E_JOB_RESULTS_EXPIRED`（410），其他 owner 仍404。
+
+结果含 compacted_jobs、deleted_detail_rows、deleted_robots_records、has_more_jobs、retained_job_keys 与 limits。摘要最多8192字节；永久身份每owner10000、部署50000。robots 仅在过期且没有保留准入/回执引用时删除，单次最多min(64,limit×4)；has_more_jobs不表示robots积压。新任务接纳前另有最多8项有界维护。
+
+维护不请求网络、不删正文/快照/证据、不清零未知计费、配额/冷却、派发序号及删除/发布水位。释放逻辑容量和SQLite可复用页，不承诺文件立即缩小。CLI为 `bzs jobs compact --limit 16`，MCP为 compact_job_history；重复调用可能删下一批，操作本身不标记幂等。详见 [JOB_RETENTION](JOB_RETENTION.md)。
 
 ## 有界站点发现
 
@@ -131,7 +206,7 @@ MCP 对应 `list_sites` / `map_site`，并复用三个 job 查询/控制工具�
 
 结果和边均使用 `items`、`has_more`、`next_offset`；有删除过滤时位置可以不连续。`followed` 是前沿扩张决定，不是正文成功收据。重复页面按 URL 去重，边按 parent/URL/source 去重。已成功条目提供快照收据，正文用 `document.range` 读取；权限或删除限制仍在发布前检查。
 
-map/crawl 使用持久轮转顺序，并共享同源通道、间隔、配额与冷却。任务停止检查 `partial/stop_reason`；`succeeded` 不承诺全站覆盖。页、URL、深度、查询变体、请求、字节与边保留上限、迁移和精确状态语义见 [SITE_CRAWLING](SITE_CRAWLING.md)。
+批量读取与 map/crawl 分别使用持久队列；成功入队和租约预留在同一事务分配递增票号并排到相应队尾，同键重提不重新排队。符合条件的旧任务不会被持续新任务反复越过。map/crawl 仍共享同源通道、间隔、配额与冷却，具体保证和旧历史顺序迁移限制见 [TASK_SCHEDULING](TASK_SCHEDULING.md)。任务停止检查 `partial/stop_reason`；`succeeded` 不承诺全站覆盖。页、URL、深度、查询变体、请求、字节与边保留上限、迁移和精确状态语义见 [SITE_CRAWLING](SITE_CRAWLING.md)。
 
 MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前拒绝未知字段和非严格 JSON 类型，显式 `null/true/"2"` 不能替代整数预算。可选参数应省略以采用核心默认值；有效类型的零值原样交给核心拒绝。数值范围、审核和业务逻辑仍只有核心一套。
 
@@ -143,7 +218,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 即使新正文解析失败或无法保留，收到的有效禁止声明也通过独立的限制观察收紧已有发布状态；失败响应不能放开原限制。读取失败、预算和错误仍照常报告，不能因此伪造正文成功。owner 显式快照/证据读取与搜索发布分别执行，旧内容已经发送到外部时无法收回。
 
-普通读取的 `download_truncated` 预览不获索引、摘要或跟随许可；批量和 crawl 仍保持字节预算失败语义。重定向中间页的响应规则绑定实际 URL，目标拒绝不会丢掉之前已收到的限制，允许的最终页也不能覆盖入口规则。
+普通读取的 `download_truncated` 预览不获索引、摘要或跟随许可；批量和 crawl 仍保持字节预算失败语义。旧 Worker 兼容回包同样检查已报告的截断、206 和非成功 HTTP 状态，不能用不完整正文解除原限制。真实派发身份与索引/摘要水位持久化，晚到旧允许响应不能跨过新限制或删除；完整后发读取可以形成新表示，旧冻结表示不复活。重定向中间页的响应规则绑定实际 URL，目标拒绝不会丢掉之前已收到的限制，允许的最终页也不能覆盖入口规则。
 
 ## 本地操作
 
@@ -159,7 +234,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 7 增加站点持久发布水位、完整URL绑定与trap观察；保留 schema 1、两种历史 schema 2、schema 3/4/5/6 的迁移，具体覆盖见本轮报告。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前 schema 11 保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列，并增加联网会话/版本/事件。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
 
 ## worker RPC 与错误
 
@@ -167,7 +242,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 内部 `map.fetch` 每次最多执行一个 HTTP 请求，不自动跟随重定向或软跳转。参数绑定 `attempt_id`、站点清单哈希、目标、种类、期限和单跳预算；内容请求还必须带有效 robots 记录。Worker 在真正派发前再次核验审核和 robots，响应带实际用量及准入决策；核心严格验证回执并负责持久化、下一跳和删除/权限屏障。没有 HTTP 响应的明确拒绝允许 `http_status=null`，不能因此丢弃原拒绝错误或误报已经收到响应。
 
-本批增加 `kind=page`，返回受限的 `page`、`publication` 与同响应 `discovery`。失败响应若已观察到适用禁止声明，可携带只收紧发布的 `publication_observation`；该记录不授予请求、索引或摘要权限。`fetch.extract` 的普通读取共享页面策略；两种路径都必须在核心通过结构、URL、状态、用量及版本复核。
+crawl 的 `kind=page` 回包返回受限的 `page`、`publication` 与同响应 `discovery`。失败响应若已观察到适用禁止声明，可携带只收紧发布的 `publication_observation`；该记录不授予请求、索引或摘要权限。`fetch.extract` 的普通读取共享页面策略；两种路径都必须在核心通过结构、URL、状态、用量及版本复核。
 
 `fetch.extract` 另以有界 `redirect_publication_observations` 保存 HTTP/软跳转的限制性记录，每项绑定 `url/http_status/publication`。最终正文策略与逻辑入口规则分别保存，内核只接受实际已到达的合法响应身份；未请求或被拒绝的目标不是发布授权。
 

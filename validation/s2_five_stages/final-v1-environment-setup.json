@@ -1,0 +1,11 @@
+{
+  "status": "initial_configure_process_not_started",
+  "cause": "Execution environment restarted; cmake and native development dependencies absent. Existing source and candidate evidence remained.",
+  "attempted_records": [
+    "final-v1-debug-configure",
+    "final-v1-asan-configure"
+  ],
+  "observed_error": "FileNotFoundError: [Errno 2] No such file or directory: 'cmake'",
+  "log_note": "The recorder opened empty logs before process creation failed; no native configure/build/test ran in these two attempts. Exception returned in execution tool output.",
+  "recovery": "Restore the project CI native build dependencies, then use new -restored record names. Keep frozen source inputs unchanged."
+}

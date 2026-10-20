@@ -1,0 +1,38 @@
+{
+  "source_commit": "7043b98a4e4bf35e9dbcabea6bd30dea2686415b",
+  "binding_note": "Local commit created after the passing run; production and test files were not edited between that run and this commit. Root will run final integration gates independently.",
+  "working_directory": "/workspace/scratch/80f41eb198a3/bzs861-capacity",
+  "commands": [
+    [
+      "cmake",
+      "--build",
+      "build-s2-capacity-author",
+      "--target",
+      "bzs_tests",
+      "bzs_batch_tests",
+      "bzs_map_tests",
+      "bzs_crawl_tests",
+      "bzs_site_publication_tests",
+      "bzs_contract_tests",
+      "-j1"
+    ],
+    [
+      "ctest",
+      "--test-dir",
+      "build-s2-capacity-author",
+      "-R",
+      "^(core|batch|map|crawl|site_publication|retention|contracts)$",
+      "--output-on-failure",
+      "-j1"
+    ]
+  ],
+  "library_sha256_recorded_before": "f28d30996e3f6410f605789c919eb3d8d969383ede5616f8bdf8fec01a785e4b",
+  "library_sha256_after": "f28d30996e3f6410f605789c919eb3d8d969383ede5616f8bdf8fec01a785e4b",
+  "exit_code": 0,
+  "ctest": {
+    "passed": 7,
+    "failed": 0,
+    "seconds": 20.04
+  },
+  "log_sha256": "56acb1740ba281c0863f78fbea6d94042fe631c1d116127dcf25278c7550bcf9"
+}

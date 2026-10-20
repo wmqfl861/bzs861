@@ -1,6 +1,6 @@
 # 当前规划与证据口径
 
-更新：2026-10-20。输入基线为0.1.5（2007690c）；当前0.1.6为[五阶段开发](../handoff/S2_FIVE_STAGES_20261020.md)的第一检查点，关闭旧读取跨越新页面发布限制的竞争。仍为34包部分实现、49包未开始、0包完整签收；原83包、161验收、10切片保留。阶段二至五合并并验证后再计入交付范围。
+更新：2026-10-20。当前为0.1.8 [五阶段集成](../handoff/S2_FIVE_STAGES_20261020.md)，阶段一检查点0.1.6已发布。页面响应顺序、任务回收、公平调度、固定候选评测和持久会话的范围分别记录；36包部分实现、47包未开始、0包完整签收。原83包、161验收、10切片及依赖/估算/验收语义保留。
 
 | 文件 | 作用 |
 |---|---|
@@ -19,6 +19,6 @@
 
 0.1.2 已补 QA-01 / FT-008 的黄金冻结、确定性分层选题与回放产物，以及 JOB-01 / BATCH-01 的显式静态列表读取。0.1.3 已增加 ROBOTS-01 / FT-081 与 MAP-01 / FT-027 的实际请求准入和持久有界发现，策略见 [站点发现](../SITE_DISCOVERY.md)。0.1.4 在同一通道上增加 CRAWL-01 / FT-028 的正文前沿、独立页预算、链接边和轮转，及 CRAWL-03 / FT-029、B-23、C-02 的页面索引/摘要声明、刷新撤发布与旧会话限制，详见 [正文爬取](../SITE_CRAWLING.md)。map 候选继续保持未读取语义，crawl 单独提交。
 
-本批 0.1.5 增加明确阈值的日期、查询和重复分页防护，以及站点存量发布水位、历史表示绑定和实际崩溃/回执丢失回归，详见 [存量发布与升级](../SITE_PUBLICATION.md)。CRAWL-01/03 的广泛网站误判评估、长期恢复与公开集合等效验收仍待完成；有限启发式、四个实际故障边界与 owner 隔离搜索不能替代这些要求。QA-02 / FT-042 的人工标签、指标、阈值和留出评测，以及 SESSION-02 仍未开始。C-14 的完整质量冻结过程继续保留；冻结查询和合成站点测试不能代替相关性验收或真实来源 S0。当前 17 个搜索来源仍禁用，站点登记默认空。
+历史 0.1.5 增加明确阈值的日期、查询和重复分页防护，以及站点存量发布水位、历史表示绑定和实际崩溃/回执丢失回归，详见 [存量发布与升级](../SITE_PUBLICATION.md)。CRAWL-01/03 的广泛网站误判评估、长期恢复与公开集合等效验收仍待完成；有限启发式、四个实际故障边界与 owner 隔离搜索不能替代这些要求。0.1.8已推进QA-02的人工模板、固定候选指标、冻结输入与方法，以及SESSION-02的持久版本/事件重取；两包现在部分实现，真实标签/成绩、来源消融/留出、完整会话故障矩阵仍未验收。C-14 的完整质量冻结过程继续保留；冻结查询和合成站点测试不能代替相关性验收或真实来源 S0。当前 17 个搜索来源仍禁用，站点登记默认空。
 
-实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_five_stages/stage1-report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。
+实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_five_stages/final-report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。

@@ -1,0 +1,33 @@
+{
+  "compile_argv": [
+    "c++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/session_preexisting.cpp",
+    "-I/workspace/scratch/80f41eb198a3/bzs861-sessions/include",
+    "/workspace/scratch/80f41eb198a3/bzs861-sessions/build-sessions-author/libbzs_core.a",
+    "-lsqlite3",
+    "-lxml2",
+    "-ljson-c",
+    "-lcrypto",
+    "-lpthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/session-preexisting-baseline"
+  ],
+  "argv": [
+    "/workspace/scratch/80f41eb198a3/bzs-five-stage-review/session-preexisting-baseline"
+  ],
+  "expected_exit_code": 1,
+  "actual_exit_code": 1,
+  "inputs": {
+    "source": "1715d1ddb8be96097f49047d3c36e740547d4a2ecdfaa386310a41d1c38602bd",
+    "library": "752b0307043475670c19546225c02e5d8854d364ee9d967ca39d8d15198a7fe0",
+    "author_tests": "6bd6e09bac754cecd77e0e8af25294c0cd48262db881a8a7e882f6cb594682b1"
+  },
+  "inputs_unchanged": true,
+  "executable_sha256": "573459c01affe11b83951f67d390ebb36159e9e6bdfea884e9ad4b51d2b113e9",
+  "log": "session-preexisting-baseline.log",
+  "log_sha256": "4d2f8802ffb3ff2801563aa0a928e727e739f5d8cd15382af1c054b7a0ab7eb9",
+  "scope": "three public API synthetic cases; restrictions/delete precede session, relaxation follows freeze; no SQL edits or real network"
+}

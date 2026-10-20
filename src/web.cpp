@@ -270,7 +270,7 @@ namespace bzs {
     for(const auto& s:specs_)if(s.id==id)return &s;
     return nullptr;
   }
-  Json fuse(const std::vector<SourceHits>& results, const SourceRegistry& registry, std::size_t limit, std::int64_t k) {
+  Json fuse(const std::vector<SourceHits>& results, const SourceRegistry& registry, std::size_t limit, std::int64_t k, bool retain_publication_urls) {
     require(k>=1&&k<=1000000,"E_SCHEMA","RRF k must be in 1..1000000");
     struct Agg {
       std::string url, title, snippet;
@@ -278,6 +278,7 @@ namespace bzs {
       std::size_t first_seen=0;
       std::map<std::string, std::pair<std::int64_t, std::int64_t>> family;  // family -> (best rank, weight)
       std::vector<std::pair<std::string, std::int64_t>> sources;
+      std::set<std::string> publication_urls;
     };
     std::map<std::string, Agg> groups;
     std::size_t order=0;
@@ -292,6 +293,7 @@ namespace bzs {
         if(key.empty())continue;
         auto [it, fresh]=groups.try_emplace(key);
         auto& g=it->second;
+        if(retain_publication_urls)g.publication_urls.insert(h.url);
         if(fresh)g.first_seen=order++;
         bool better=h.rank<g.best_rank;
         bool upgrade=g.url.starts_with("http://")&&h.url.starts_with("https://");
@@ -333,6 +335,10 @@ namespace bzs {
       j.set("title", g.title);
       j.set("snippet", g.snippet);
       j.set("snippet_kind", "search_engine_snippet");
+      if(retain_publication_urls) {
+        Json urls=Json::array();for(const auto& url:g.publication_urls)urls.push(Json::string(url));
+        j.set("publication_urls",urls);
+      }
       Json src=Json::array();
       auto sorted=g.sources;
       std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) {
@@ -423,7 +429,7 @@ namespace bzs {
     out.set("sources", list);
     return out;
   }
-  Json WebService::search(const std::string& owner, const Json& args) {
+  Json WebService::search(const std::string& owner, const Json& args, bool retain_publication_urls) {
     args.allowed( {
       "query", "sources", "category", "limit", "per_source", "language", "timeout_ms", "refresh"
     });
@@ -473,6 +479,7 @@ namespace bzs {
     Json key_sources=Json::array();
     for(const auto& id:selected_ids)key_sources.push(Json::string(id));
     key_parts.set("sources",key_sources);
+    if(retain_publication_urls)key_parts.set("internal_publication_urls",true);
     auto cache_key=key_parts.dump();
     bool refresh=args.has("refresh")&&args.at("refresh").flag();
     if(!refresh)if(auto hit=cache_get(cache_key))return *hit;
@@ -572,7 +579,7 @@ namespace bzs {
         collected.push_back(std::move(sh));
       }
     }
-    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit));
+    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
     Json filters=Json::object();
     try {
       // Verify site: constraints on result hosts instead of trusting upstream (QRY-04 lite).
