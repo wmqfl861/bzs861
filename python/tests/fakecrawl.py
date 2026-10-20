@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import Counter
+from datetime import date, timedelta
 import html
 import json
 import sys
@@ -101,6 +102,31 @@ def make_app() -> web.Application:
             content = document("Calendar fixture", "calendarfixtureunique", ("calendar/2026/10/18",))
         elif path.startswith("/crawl/calendar/"):
             content = document("Calendar next", "calendarfixtureunique", (path + "/next",))
+        elif path.startswith("/crawl/date-sequence/"):
+            current = date.fromisoformat(path.removeprefix("/crawl/date-sequence/").replace("/", "-"))
+            following = (current + timedelta(days=1)).strftime("/crawl/date-sequence/%Y/%m/%d")
+            content = document("Daily calendar", "datesequencefixtureunique", (following,))
+        elif path == "/crawl/date-family":
+            content = document("Calendar archive", "datefamilyfixtureunique", tuple(
+                f"/crawl/date-family/2026/10/{day:02d}" for day in range(1, 21)))
+        elif path == "/crawl/trap-combinations":
+            content = document("Filter combinations", "combinationfixtureunique", tuple(
+                f"/crawl/catalog/page/{n}?color={n}&size=large" for n in range(1, 11)))
+        elif path == "/crawl/trap-query-shapes":
+            content = document("Equivalent query ordering", "queryshapefixtureunique", (
+                "/crawl/query-shape?a=1&b=2&c=3", "/crawl/query-shape?b=2&c=3&a=1",
+                "/crawl/query-shape?c=3&a=1&b=2",
+                "/crawl/query-dimensions?" + "&".join(f"k{n}=v" for n in range(9)),
+                "/crawl/query-pairs?" + "&".join(f"key={n}" for n in range(17))))
+        elif path.startswith("/crawl/repeated/page/"):
+            number = int(path.rsplit("/", 1)[-1])
+            content = document("Repeated pagination", "repeatedpaginationfixtureunique",
+                               (f"/crawl/repeated/page/{number + 1}",))
+        elif path == "/crawl/finite-documents":
+            content = document("Finite articles and versions", "finitedocumentsfixtureunique", tuple(
+                [f"/crawl/articles/2026/10/{n + 1:02d}/article-{n}" for n in range(20)] +
+                [f"/crawl/items/{n}" for n in range(100, 105)] +
+                [f"/crawl/docs/v1.{n}" for n in range(5)]))
         elif path == "/crawl/recovery":
             content = document("Recovery fixture", "recoveryfixtureunique", ("gate/recovery", "recovery-tail"))
         elif path.startswith("/crawl/policy/"):

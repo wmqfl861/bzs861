@@ -1,0 +1,15 @@
+{
+  "previous_inputs": "execution_inputs.json",
+  "new_inputs": "execution_inputs-v2.json",
+  "reason": "Read-only documentation review found job_results and crawl_results_locked each sweeping in the same transaction. The sole caller already sweeps, so the inner refresh disables its redundant sweep while preserving policy/expiry refresh.",
+  "files": [
+    {
+      "path": "src/crawl.cpp",
+      "before_sha256": "755bb9d095600d8f57a950dcb8660563e9f13aca62cd2f0ffa4817b047896f25",
+      "after_sha256": "7bb7a0fa93498f5e5732f59193b92f209c080ab831618bd5b1393426fb931b42"
+    }
+  ],
+  "runtime_behavior_change": "At most one 128-document publication sweep per crawl job.results transaction.",
+  "earlier_builds_retained": true,
+  "final_runtime_gates_use_revision": 2
+}

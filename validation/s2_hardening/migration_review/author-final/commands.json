@@ -1,0 +1,76 @@
+[
+  {
+    "label": "compile-schema6",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/tmp/bzs-independent-migration-1jns55b1/baseline/include",
+      "-I",
+      "/tmp/bzs-independent-migration-1jns55b1/baseline",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/create_schema6.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-1jns55b1/create_schema6"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:14.178465+00:00",
+    "finished_at": "2026-10-19T14:19:19.389483+00:00",
+    "exit_code": 0,
+    "log": "compile-schema6.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "compile-upgrade",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/workspace/scratch/80f41eb198a3/bzs861/include",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_upgrade.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s2-policy-author/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-1jns55b1/verify_upgrade"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:19.390071+00:00",
+    "finished_at": "2026-10-19T14:19:21.302648+00:00",
+    "exit_code": 0,
+    "log": "compile-upgrade.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "compile-epoch",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/workspace/scratch/80f41eb198a3/bzs861/include",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_publication_epoch.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s2-policy-author/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-1jns55b1/verify_publication_epoch"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:21.304002+00:00",
+    "finished_at": "2026-10-19T14:19:23.144439+00:00",
+    "exit_code": 1,
+    "log": "compile-epoch.log",
+    "log_sha256": "afc5aef838d6fff80f1d88fa4197fe0673dffa1cc89e21db35f8d61de1ed2944"
+  }
+]

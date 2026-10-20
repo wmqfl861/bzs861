@@ -108,6 +108,7 @@ namespace bzs {
       return j.has(k)&&j.at(k).is_integer()?j.at(k).num():fallback;
     }
   }
+  std::string publication_url_identity(std::string_view url) { return read_identity(url); }
   std::string dedup_key(std::string_view url) {
     std::size_t p=0;
     if(url.starts_with("https://"))p=8;
@@ -351,6 +352,7 @@ namespace bzs {
     return out;
   }
   WebService::WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites):store_(store), worker_(worker), registry_(std::move(registry)), sites_(std::move(sites)) {
+    site_publication_generation_=sites_.all().empty()?store_.site_publication_generation():store_.activate_site_publication(sites_);
   }
   namespace {
     constexpr std::int64_t search_cache_ttl_ms=10*60*1000, partial_cache_ttl_ms=2*60*1000;
@@ -637,6 +639,7 @@ namespace bzs {
     out.set("fetched_at_ms", fetched_at);
     out.set("from_cache", from_cache);
     out.set("indexed", snap.at("indexed"));
+    out.set("site_publication",snap.at("site_publication"));
     out.set("content", store_.range(owner, snap.at("snapshot_id").str(), start, max_bytes));
     out.set("links_count", static_cast<std::int64_t>(snap.at("links").size()));
     out.set("metadata", meta.has("metadata")?meta.at("metadata"):Json::object());
@@ -828,6 +831,7 @@ namespace bzs {
     auto fetched=store_.now();
     meta.set("fetched_at_ms", fetched);
     meta.set("final_url", final_url);
+    meta.set("site_publication_generation",site_publication_generation_);
     for(const auto* k: {
       "http_status", "charset", "extractor", "extract_status", "warnings", "redirects", "metadata"
     })if(r.has(k))meta.set(k, r.at(k));

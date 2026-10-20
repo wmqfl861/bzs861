@@ -132,6 +132,13 @@ namespace bzs {
       register_fts_tokenizer(db_);
       exec(db_, "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;");
       migrate();
+      checked(sqlite3_create_function_v2(db_,"bzs_site_publication",6,SQLITE_UTF8,this,&Store::site_publication_sql,nullptr,nullptr,nullptr),db_);
+      Tx publication(db_);
+      refresh_site_publication_locked();
+      Stmt state(db_,"SELECT generation,manifest_generation FROM site_publication_state WHERE singleton=1");
+      require(state.step(),"E_STORAGE","Missing deployment publication state",500);
+      site_publication_bound_generation_=state.num(0);site_publication_manifest_generation_=state.num(1);
+      publication.commit();
     }catch(...) {
       sqlite3_close(db_);
       db_=nullptr;
@@ -143,7 +150,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=6,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=7,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -214,10 +221,6 @@ namespace bzs {
  INSERT INTO content_fts(document_id,owner,title,body)
    SELECT d.id,d.owner,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot
    WHERE d.deleted=0 AND s.index_allowed=1;
- DELETE FROM usage;
- INSERT INTO usage(owner,bytes,snapshots)
-   SELECT d.owner,COALESCE(SUM(length(CAST(s.raw_content AS BLOB))+length(CAST(s.canonical_text AS BLOB))),0),COUNT(s.id)
-   FROM documents d JOIN snapshots s ON s.document_id=d.id GROUP BY d.owner;
  PRAGMA user_version=3;
  )SQL");
       Stmt tokenizer(db_,"INSERT OR REPLACE INTO settings(key,value)VALUES('fts_tokenizer_version',?)");
@@ -341,6 +344,67 @@ namespace bzs {
       }
       for(const auto& [session,position,key]:frozen_keys) { Stmt update(db_,"UPDATE session_rows SET representation_key=? WHERE session_id=? AND position=?");update.bind(1,key);update.bind(2,session);update.bind(3,position);update.step(); }
     }
+    if(version<7) {
+      if(!has_column(db_,"snapshots","site_bindings_json"))exec(db_,"ALTER TABLE snapshots ADD COLUMN site_bindings_json TEXT NOT NULL DEFAULT '{}';");
+      if(!has_column(db_,"snapshots","site_publication_generation"))exec(db_,"ALTER TABLE snapshots ADD COLUMN site_publication_generation INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"session_rows","site_binding_version"))exec(db_,"ALTER TABLE session_rows ADD COLUMN site_binding_version INTEGER NOT NULL DEFAULT 0;");
+      exec(db_,R"SQL(
+ CREATE TABLE IF NOT EXISTS site_publication_state(singleton INTEGER PRIMARY KEY CHECK(singleton=1),version TEXT NOT NULL,
+   manifest_sha256 TEXT NOT NULL,manifest_json TEXT NOT NULL,manifest_generation INTEGER NOT NULL DEFAULT 0,
+   generation INTEGER NOT NULL DEFAULT 0,legacy_frozen_withdrawn INTEGER NOT NULL DEFAULT 0,
+   legacy_crawl_unverified INTEGER NOT NULL DEFAULT 0,
+   sweep_after INTEGER NOT NULL DEFAULT 0,sweep_complete INTEGER NOT NULL DEFAULT 1);
+ INSERT OR IGNORE INTO site_publication_state(singleton,version,manifest_sha256,manifest_json)
+   VALUES(1,'bzs-site-publication-1','','{"version":1,"sites":[]}');
+ CREATE TABLE IF NOT EXISTS site_publication_rules(origin TEXT NOT NULL,path_prefix TEXT NOT NULL,mode INTEGER NOT NULL,
+   snippet_generation INTEGER NOT NULL DEFAULT 0,index_generation INTEGER NOT NULL DEFAULT 0,
+   PRIMARY KEY(origin,path_prefix));
+ CREATE TABLE IF NOT EXISTS crawl_trap_policy(job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,version TEXT NOT NULL,config_json TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS crawl_trap_urls(job_id TEXT NOT NULL REFERENCES crawl_trap_policy(job_id) ON DELETE CASCADE,
+   url TEXT NOT NULL,explicit_seed INTEGER NOT NULL DEFAULT 0,parent TEXT NOT NULL DEFAULT '',
+   date_family TEXT NOT NULL DEFAULT '',date_value INTEGER NOT NULL DEFAULT 0,date_run INTEGER NOT NULL DEFAULT 0,
+   query_family TEXT NOT NULL DEFAULT '',query_signature TEXT NOT NULL DEFAULT '',ordering_signature TEXT NOT NULL DEFAULT '',
+   page_family TEXT NOT NULL DEFAULT '',body_hash TEXT NOT NULL DEFAULT '',body_bytes INTEGER NOT NULL DEFAULT 0,
+   PRIMARY KEY(job_id,url));
+ CREATE INDEX IF NOT EXISTS crawl_trap_dates ON crawl_trap_urls(job_id,date_family,date_value);
+ CREATE INDEX IF NOT EXISTS crawl_trap_queries ON crawl_trap_urls(job_id,query_family,query_signature);
+ CREATE INDEX IF NOT EXISTS crawl_trap_ordering ON crawl_trap_urls(job_id,ordering_signature);
+ CREATE INDEX IF NOT EXISTS crawl_trap_pages ON crawl_trap_urls(job_id,page_family,body_hash);
+ CREATE TABLE IF NOT EXISTS crawl_trap_edges(job_id TEXT NOT NULL,position INTEGER NOT NULL,decision_json TEXT NOT NULL,
+   PRIMARY KEY(job_id,position),FOREIGN KEY(job_id,position) REFERENCES crawl_edges(job_id,position) ON DELETE CASCADE);
+ PRAGMA user_version=7;
+ )SQL");
+      // Schema 6 crawl artifacts contain one-hop metadata. Their former site
+      // scopes and overwritten intermediate routes cannot be reconstructed
+      // from the final body. Preserve the owner artifact, but require a new
+      // complete read before publishing it under an explicitly activated policy.
+      require(scalar(db_,"SELECT COUNT(*) FROM map_resources")<=20000,"E_SCHEMA_VERSION","Legacy crawl resources exceed the supported migration bound",409);
+      exec(db_,R"SQL(
+ INSERT INTO usage(owner,bytes,snapshots)
+ SELECT d.owner,COUNT(*)*length('{"version":"bzs-site-bindings-1","legacy_crawl_unverified":true,"urls":[]}'),0
+ FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.source_kind='web' AND s.site_bindings_json='{}'
+ AND s.id IN (SELECT snapshot_id FROM map_resources WHERE kind='page' AND snapshot_id IS NOT NULL) GROUP BY d.owner
+ ON CONFLICT(owner) DO UPDATE SET bytes=usage.bytes+excluded.bytes;
+ UPDATE snapshots SET site_bindings_json='{"version":"bzs-site-bindings-1","legacy_crawl_unverified":true,"urls":[]}'
+ WHERE source_kind='web' AND site_bindings_json='{}' AND id IN (SELECT snapshot_id FROM map_resources WHERE kind='page' AND snapshot_id IS NOT NULL);
+ UPDATE site_publication_state SET legacy_crawl_unverified=1 WHERE EXISTS
+   (SELECT 1 FROM map_resources r JOIN snapshots s ON s.id=r.snapshot_id WHERE s.site_bindings_json='{"version":"bzs-site-bindings-1","legacy_crawl_unverified":true,"urls":[]}');
+ )SQL");
+    }
+    if(version<3) {
+      // Shape-compatible legacy attachments may already contain some newer
+      // immutable metadata. Rebuild capacity after all optional columns exist,
+      // counting the records actually retained by this additive migration.
+      exec(db_,R"SQL(
+ DELETE FROM usage;
+ INSERT INTO usage(owner,bytes,snapshots)
+ SELECT d.owner,COALESCE(SUM(length(CAST(s.raw_content AS BLOB))+length(CAST(s.canonical_text AS BLOB))
+   +length(CAST(CASE WHEN s.publication_json='{}' THEN '' ELSE s.publication_json END AS BLOB))
+   +length(CAST(CASE WHEN s.representation_publication_json='{}' THEN '' ELSE s.representation_publication_json END AS BLOB))
+   +length(CAST(CASE WHEN s.site_bindings_json='{}' THEN '' ELSE s.site_bindings_json END AS BLOB))),0),COUNT(s.id)
+ FROM documents d JOIN snapshots s ON s.document_id=d.id GROUP BY d.owner;
+ )SQL");
+    }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -377,8 +441,9 @@ namespace bzs {
     s.step();
   }
   Json Store::snapshot_locked(const std::string& owner, const std::string& id) {
+    refresh_site_publication_locked(false);
     Stmt s(db_, R"SQL(SELECT s.id,s.extraction_id,d.id,d.url,s.title,s.canonical_text,s.raw_hash,s.content_type,
- s.parser_version,s.created_at,s.revision,s.index_allowed,s.links_json,s.meta_json,s.source_kind,s.publication_json,s.representation_publication_json
+ s.parser_version,s.created_at,s.revision,s.index_allowed,s.links_json,s.meta_json,s.source_kind,s.publication_json,s.representation_publication_json,s.site_bindings_json,s.site_publication_generation
  FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.owner=? AND d.deleted=0)SQL");
     s.bind(1, id);
     s.bind(2, owner);
@@ -395,7 +460,10 @@ namespace bzs {
     j.set("parser_version", s.text(8));
     j.set("ingested_at_ms", s.num(9));
     j.set("revision", s.num(10));
-    j.set("indexed", s.num(11)!=0);
+    const auto deployment_mode=site_publication_mode_locked(s.text(14),s.text(17),s.num(18),s.text(3),s.text(13));
+    j.set("indexed", s.num(11)!=0&&deployment_mode<2);
+    auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");deployment.set("mode",deployment_mode==2?"withdrawn":deployment_mode==1?"links_only":"allowed");
+    deployment.set("generation",site_publication_cached_generation_);deployment.set("artifact_generation",s.num(18));j.set("site_publication",deployment);
     j.set("links", Json::parse(s.text(12)));
     j.set("meta", Json::parse(s.text(13)));
     j.set("source_kind", s.text(14));
@@ -407,7 +475,7 @@ namespace bzs {
   void Store::prune_locked(const std::string& document_id, const std::string& keep, std::int64_t newest_revision, const std::string& owner) {
     auto threshold=newest_revision-options_.max_revisions_per_document;
     if(threshold<1)return;
-    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB)) FROM snapshots
+    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB)) FROM snapshots
  WHERE document_id=? AND id!=? AND revision<=? AND id NOT IN (SELECT snapshot_id FROM evidence)
  AND id NOT IN (SELECT r.snapshot_id FROM session_rows r JOIN sessions q ON q.id=r.session_id WHERE q.expires_at>?))SQL");
     list.bind(1, document_id);
@@ -427,6 +495,7 @@ namespace bzs {
   }
   Json Store::ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind) {
     owner_valid(owner);
+    refresh_site_publication_locked(false);
     auto host=metadata_host(input.url);
     epoch_locked(owner);
     std::string did, latest;
@@ -446,12 +515,21 @@ namespace bzs {
     const auto& final_policy=parsed.representation_publication.has("version")?parsed.representation_publication:parsed.publication;
     auto url_key=input.url;try { url_key=map_url(input.url); } catch(const Error&) {}
     auto representation_key=url_key;
+    std::string site_bindings="{}";std::int64_t site_generation=0;
     if(source_kind=="web") {
       const auto metadata=Json::parse(meta_json,8*1024*1024);
       if(metadata.has("final_url")) { representation_key=metadata.at("final_url").str();try { representation_key=map_url(representation_key); } catch(const Error&) {} }
+      site_generation=metadata.has("site_publication_generation")?metadata.at("site_publication_generation").num():site_publication_bound_generation_;
+      require(site_generation>=0&&site_generation<=site_publication_cached_generation_,"E_SITE_POLICY_STALE","Read publication generation is not active in this store",409);
+      auto bindings=site_bindings_locked(input.url,metadata);
+      // Even a read started at the newest configuration generation may have
+      // occurred while publication was prohibited. A later allow cannot turn
+      // that private artifact into a newly authorized public representation.
+      bindings.set("captured_mode",static_cast<std::int64_t>(site_publication_mode_locked(source_kind,bindings.canonical(),site_generation,input.url,meta_json)));
+      site_bindings=bindings.canonical();
     }
     if(!latest.empty()) {
-      Stmt same(db_, "SELECT id FROM snapshots WHERE id=? AND raw_hash=? AND canonical_text=? AND title=? AND parser_version=? AND content_type=? AND index_allowed=? AND publication_json=? AND representation_publication_json=?");
+      Stmt same(db_, "SELECT id FROM snapshots WHERE id=? AND raw_hash=? AND canonical_text=? AND title=? AND parser_version=? AND content_type=? AND index_allowed=? AND publication_json=? AND representation_publication_json=? AND site_bindings_json=? AND site_publication_generation=? AND source_kind=?");
       same.bind(1, latest);
       same.bind(2, rawhash);
       same.bind(3, parsed.text);
@@ -460,6 +538,7 @@ namespace bzs {
       same.bind(6, input.content_type);
       same.bind(7, static_cast<std::int64_t>(parsed.index_allowed));
       same.bind(8,publication);same.bind(9,representation_publication);
+      same.bind(10,site_bindings);same.bind(11,site_generation);same.bind(12,source_kind);
       if(same.step()) {
         if(source_kind=="web") {
           // Unchanged content: only fetch provenance (meta.fetched_at_ms) moves; the snapshot text stays immutable.
@@ -481,7 +560,7 @@ namespace bzs {
     // Reclaim only old, unreferenced versions that this successful write would
     // supersede. A quota/insert failure rolls the deletions back with the write.
     if(!did.empty())prune_locked(did,"",revision+1,owner);
-    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size()+(publication=="{}"?0:publication.size())+(representation_publication=="{}"?0:representation_publication.size()));
+    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size()+(publication=="{}"?0:publication.size())+(representation_publication=="{}"?0:representation_publication.size())+(site_bindings=="{}"?0:site_bindings.size()));
     {
       Stmt used(db_, "SELECT bytes,snapshots FROM usage WHERE owner=?");
       used.bind(1, owner);
@@ -504,7 +583,7 @@ namespace bzs {
     }
     auto sid=random_id();
     auto eid=random_id();
-    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind,publication_json,representation_publication_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind,publication_json,representation_publication_json,site_bindings_json,site_publication_generation) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
     ins.bind(1, sid);
     ins.bind(2, eid);
     ins.bind(3, did);
@@ -521,6 +600,7 @@ namespace bzs {
     ins.bind(14, meta_json);
     ins.bind(15, source_kind);
     ins.bind(16, publication);ins.bind(17,representation_publication);
+    ins.bind(18,site_bindings);ins.bind(19,site_generation);
     ins.step();
     Stmt upd(db_, "UPDATE documents SET current_snapshot=?,revision=revision+1,deleted=0,representation_key=? WHERE id=?");
     upd.bind(1, sid);
@@ -532,7 +612,7 @@ namespace bzs {
     del.step();
     Stmt active_policy(db_,"SELECT 1 FROM document_publication WHERE owner=? AND url_key IN (?,?) AND index_allowed=0");
     active_policy.bind(1,owner);active_policy.bind(2,url_key);active_policy.bind(3,representation_key);
-    if(parsed.index_allowed&&!active_policy.step()) {
+    if(parsed.index_allowed&&!active_policy.step()&&site_publication_mode_locked(source_kind,site_bindings,site_generation,input.url,meta_json)<2) {
       Stmt ix(db_, "INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
       ix.bind(1, did);
       ix.bind(2, owner);
@@ -629,7 +709,7 @@ namespace bzs {
     s.bind(1, id);
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Document not found", 404);
-    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))),0),COUNT(*) FROM snapshots WHERE document_id=?");
+    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB))),0),COUNT(*) FROM snapshots WHERE document_id=?");
     size.bind(1, id);
     size.step();
     auto freed=size.num(0), count=size.num(1);
@@ -664,6 +744,7 @@ namespace bzs {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    refresh_site_publication_locked();
     auto epoch=epoch_locked(owner);
     auto now=clock_();
     {
@@ -684,10 +765,12 @@ namespace bzs {
       sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
  FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+ AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY r LIMIT ?)SQL";
     } else {
       sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+ AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
     }
     Stmt c(db_, sql);
@@ -740,7 +823,7 @@ namespace bzs {
     ins.step();
     std::int64_t p=0;
     for(const auto&h:hits) {
-      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key)VALUES(?,?,?,?,?,?,?)");
+      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version)VALUES(?,?,?,?,?,?,?,1)");
       row.bind(1, id);
       row.bind(2, p++);
       row.bind(3, h.doc);
@@ -765,6 +848,7 @@ namespace bzs {
     require(page_size>=1&&page_size<=100, "E_SCHEMA", "Page size out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    refresh_site_publication_locked();
     Stmt s(db_, "SELECT auth_epoch,expires_at,partial,retrieval,query_json FROM sessions WHERE id=? AND owner=?");
     s.bind(1, session_id);
     s.bind(2, owner);
@@ -786,15 +870,17 @@ namespace bzs {
       pos=cu.num(0);
     }
     Stmt rows(db_, R"SQL(SELECT r.position,r.document_id,r.snapshot_id,r.score,s.title,d.url,s.canonical_text,s.revision,
- s.publication_json,p.snapshot_id,COALESCE(p.restricted,0),MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0),COALESCE(cp.restriction_generation,0)),r.publication_generation,rp.snapshot_id,COALESCE(rp.restricted,0),cp.snapshot_id,COALESCE(cp.restricted,0)
+ s.publication_json,p.snapshot_id,COALESCE(p.restricted,0),MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0),COALESCE(cp.restriction_generation,0)),r.publication_generation,rp.snapshot_id,COALESCE(rp.restricted,0),cp.snapshot_id,COALESCE(cp.restricted,0),
+ CASE WHEN s.source_kind='web' THEN MAX(bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,r.representation_key),bzs_site_publication(current.source_kind,current.site_bindings_json,current.site_publication_generation,d.url,current.meta_json,'')) ELSE 0 END AS site_mode
  FROM session_rows r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id
  JOIN snapshots current ON current.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=r.representation_key LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
  WHERE r.session_id=? AND r.position>=? AND d.owner=? AND d.deleted=0 AND current.index_allowed=1
- AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 ORDER BY r.position LIMIT ?)SQL");
+ AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 AND site_mode<2
+ AND (?=0 OR r.site_binding_version<>0 OR s.source_kind<>'web') ORDER BY r.position LIMIT ?)SQL");
     rows.bind(1, session_id);
     rows.bind(2, pos);
     rows.bind(3, owner);
-    rows.bind(4, page_size+1);
+    rows.bind(4,site_publication_legacy_withdrawn_?1:0);rows.bind(5, page_size+1);
     Json hits=Json::array();
     bool more=false;
     std::int64_t nextpos=pos;
@@ -812,7 +898,7 @@ namespace bzs {
       h.set("title", rows.text(4));
       h.set("url", rows.text(5));
       auto text=rows.text(6);auto publication=Json::parse(rows.text(8),8*1024*1024);
-      const bool stale_restricted=rows.num(11)>rows.num(12)||(rows.num(10)!=0&&rows.text(9)!=rows.text(2))||(rows.num(14)!=0&&rows.text(13)!=rows.text(2))||(rows.num(16)!=0&&rows.text(15)!=rows.text(2));
+      const bool stale_restricted=rows.num(17)>0||rows.num(11)>rows.num(12)||(rows.num(10)!=0&&rows.text(9)!=rows.text(2))||(rows.num(14)!=0&&rows.text(13)!=rows.text(2))||(rows.num(16)!=0&&rows.text(15)!=rows.text(2));
       bool snippet_allowed=!stale_restricted;
       if(stale_restricted) { text.clear();h.set("title",rows.text(5)); }
       else if(publication.has("version")) {

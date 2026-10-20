@@ -1,6 +1,6 @@
-# searchd API（0.1.4 S2 crawl development candidate）
+# searchd API（0.1.5 S2 crawl hardening candidate）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_crawl/test_report.json)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮报告](../validation/s2_hardening/test_report.json)。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -45,6 +45,8 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 ### 读取结果与缓存
 
 读取结果包括文档/快照 ID、来源与最终 URL、标题、版本、抓取时间、缓存状态、索引状态、文本窗口、元数据、抓取/解析状态和 `content_trust=untrusted_web_content`。文本窗口的起止是原文 UTF-8 字节边界。
+
+普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
 `cache_first` 使用期限内缓存，`refresh` 重新获取，`cache_only` 不联网、无缓存则明确报错。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
 
@@ -157,7 +159,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 6 增加正文前沿/边/页记账、调度次序与发布状态；保留 schema 1、两种历史 schema 2、schema 3/4/5 的迁移，具体覆盖见本轮报告。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。schema 7 增加站点持久发布水位、完整URL绑定与trap观察；保留 schema 1、两种历史 schema 2、schema 3/4/5/6 的迁移，具体覆盖见本轮报告。
 
 ## worker RPC 与错误
 
@@ -170,3 +172,15 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 `fetch.extract` 另以有界 `redirect_publication_observations` 保存 HTTP/软跳转的限制性记录，每项绑定 `url/http_status/publication`。最终正文策略与逻辑入口规则分别保存，内核只接受实际已到达的合法响应身份；未请求或被拒绝的目标不是发布授权。
 
 合同错误保持 `E_SCHEMA`、`E_CONTRACT`、`E_CONTRACT_LIMIT`。来源错误为 `E_SOURCE_CONFIG` / `E_SOURCE_REVIEW`；发现路径另报告站点审核、清单不一致、范围或 robots 拒绝等独立原因。其余网页、权限、游标、证据、任务和隔离错误通过统一信封报告。每个新增错误的具体状态码与行为以本轮 API 回归绑定，不将候选实现视为冻结的完整 v1 合同。
+
+## 0.1.5 的存量发布与 trap 可观察状态
+
+`job.get` 的 crawl 结果新增 `trap_policy`，包含 `bzs-crawl-trap-1` 版本、固定阈值、任务期观测数量及拒绝边计数。`crawl.edges` 对 trap 拒绝项返回 `trap`：版本、规则、原因、分类族 SHA-256、观测值与阈值；被派发前复核撤回的边会更新 `followed=false` 和原因。URL 本身不因分类而改写。阈值和例外见 [SITE_CRAWLING](SITE_CRAWLING.md#专门抓取陷阱规则)。
+
+新任务创建时固定 `trap_policy`。旧 schema 6 任务在首次恢复调度前可能返回 `null`；幂等重提不会单独补建策略，已结束且不再调度的旧任务可以一直为 `null`。恢复时补建策略不代表旧有全部准入地址重新执行了新规则。
+
+快照信息/`web.read` 的 `site_publication` 返回版本、`mode`（`allowed/links_only/withdrawn`）、当前代际和 artifact 代际。`read_many` 回执的同名对象返回当前版本/模式/代际；crawl 条目及回执通过当前 `indexed`、`publication` 和 diagnostics 表达站点限制。正文读取状态和快照身份按原含义保留。显式 `searchd --sites` 在没有 Worker 的启动中同样生效；`search` 和 `search.page` 无需新的网页请求就会执行收紧后的上限。
+
+`state` 与 `partial` 分别表达终结状态和覆盖完整性：发生失败跳的任务可以 `state=failed, partial=true`，其中成功条目的快照仍可读取；被有界规则截断的无失败前沿可以 `state=succeeded, partial=true`。未知请求不自动重发，幂等调用返回原任务和累计用量，不把轮询用量相加。
+
+升级后缺少可靠历史链的旧网页结果可能需要新查询或完整重读，owner 原正文和证据保留。完整配置与迁移边界见 [SITE_PUBLICATION](SITE_PUBLICATION.md)。

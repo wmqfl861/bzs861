@@ -635,6 +635,100 @@ class CrawlEndToEnd(unittest.TestCase):
                 self.assertIn(old_marker, self.ok("document.range", {
                     "snapshot_id": original["snapshot_id"], "max_bytes": 4000})["text"])
 
+    def trap_edges(self, job_id, reason):
+        edges = [row for row in self.paged("crawl.edges", job_id) if row["reason"] == reason]
+        self.assertTrue(edges, reason)
+        for row in edges:
+            self.assertFalse(row["followed"], row)
+            self.assertEqual(row["trap"]["version"], "bzs-crawl-trap-1", row)
+            self.assertEqual(row["trap"]["reason"], reason, row)
+            self.assertEqual(len(row["trap"]["family_sha256"] or ""), 64, row)
+        return edges
+
+    def test_21_date_sequence_and_date_family_stop_before_generic_budgets(self):
+        submitted = self.submit(["/crawl/date-sequence/2026/10/01"], "date-sequence", max_depth=8)
+        final = self.completed(submitted["job_id"])
+        self.assertEqual(final["used_pages"], 7, final)
+        self.assertEqual(final["stop_reason"], "E_CRAWL_TRAP_DATE_SEQUENCE", final)
+        self.assertTrue(final["partial"], final)
+        self.assertGreater(final["remaining_pages"], 0)
+        self.assertGreater(final["budget"]["remaining_requests"], 0)
+        edges = self.trap_edges(submitted["job_id"], "E_CRAWL_TRAP_DATE_SEQUENCE")
+        self.assertEqual(len(edges), 1)
+        self.assertEqual(edges[0]["trap"]["observed"], 7)
+        self.assertEqual(edges[0]["trap"]["limit"], 6)
+        self.assertEqual(self.stack.counts().get(("bzs-crawl.test", "/crawl/date-sequence/2026/10/08"), 0), 0)
+        submitted = self.submit(["/crawl/date-family"], "date-family", max_depth=2)
+        final = self.completed(submitted["job_id"])
+        self.assertEqual(final["used_pages"], 17, final)
+        self.assertEqual(final["stop_reason"], "E_CRAWL_TRAP_DATE_FAMILY", final)
+        self.assertEqual(len(self.trap_edges(submitted["job_id"], "E_CRAWL_TRAP_DATE_FAMILY")), 4)
+        for day in range(17, 21):
+            self.assertEqual(self.stack.counts().get(("bzs-crawl.test", f"/crawl/date-family/2026/10/{day:02d}"), 0), 0)
+
+    def test_22_filter_combinations_and_query_shape_have_specific_public_reasons(self):
+        submitted = self.submit(["/crawl/trap-combinations"], "filter-combinations", max_depth=2)
+        final = self.completed(submitted["job_id"])
+        self.assertEqual(final["used_pages"], 9, final)
+        self.assertEqual(final["stop_reason"], "E_CRAWL_TRAP_QUERY_COMBINATIONS", final)
+        edges = self.trap_edges(submitted["job_id"], "E_CRAWL_TRAP_QUERY_COMBINATIONS")
+        self.assertEqual(len(edges), 2)
+        for number in range(9, 11):
+            self.assertEqual(self.stack.counts().get(("bzs-crawl.test", f"/crawl/catalog/page/{number}?color={number}&size=large"), 0), 0)
+        submitted = self.submit(["/crawl/trap-query-shapes"], "query-shapes", max_depth=2)
+        final = self.completed(submitted["job_id"])
+        self.assertEqual(final["used_pages"], 3, final)
+        self.assertEqual(len(self.trap_edges(submitted["job_id"], "E_CRAWL_TRAP_QUERY_PERMUTATIONS")), 1)
+        dimensions = [row for row in self.paged("crawl.edges", submitted["job_id"])
+                      if row["reason"] == "E_CRAWL_TRAP_QUERY_DIMENSIONS"]
+        self.assertEqual({(row["trap"]["observed"], row["trap"]["limit"]) for row in dimensions}, {(9, 8), (17, 16)})
+        counts = self.stack.counts()
+        for query in ("a=1&b=2&c=3", "b=2&c=3&a=1"):
+            self.assertEqual(counts[("bzs-crawl.test", "/crawl/query-shape?" + query)], 1)
+        self.assertEqual(counts.get(("bzs-crawl.test", "/crawl/query-shape?c=3&a=1&b=2"), 0), 0)
+
+    def test_23_repeated_pagination_observations_and_reasons_survive_restart(self):
+        submitted = self.submit(["/crawl/repeated/page/1"], "repeated-pagination", max_depth=8)
+        job_id = submitted["job_id"]
+        final = self.completed(job_id)
+        self.assertEqual(final["used_pages"], 3, final)
+        self.assertEqual(final["stop_reason"], "E_CRAWL_TRAP_DUPLICATE_PAGINATION", final)
+        self.assertEqual(final["trap_policy"]["body_observations"], 3, final)
+        self.assertEqual(final["trap_policy"]["limited_pagination_families"], 1, final)
+        pages = self.results(job_id)
+        texts = [self.ok("document.range", {"snapshot_id": row["snapshot_id"], "max_bytes": 8000})["text"] for row in pages]
+        self.assertEqual(len(set(texts)), 1, texts)
+        self.assertGreaterEqual(len(texts[0].encode()), 256)
+        edges = self.trap_edges(job_id, "E_CRAWL_TRAP_DUPLICATE_PAGINATION")
+        self.assertEqual(len(edges), 1)
+        before = self.stack.counts()
+        self.assertEqual(before.get(("bzs-crawl.test", "/crawl/repeated/page/4"), 0), 0)
+        self.stack.kill("searchd")
+        self.stack.start_core()
+        restored = self.ok("job.get", {"job_id": job_id})
+        self.assertEqual(restored["trap_policy"], final["trap_policy"])
+        self.assertEqual(restored["usage"], final["usage"])
+        self.assertEqual(self.results(job_id), pages)
+        self.assertEqual(self.trap_edges(job_id, "E_CRAWL_TRAP_DUPLICATE_PAGINATION"), edges)
+        reused = self.submit(["/crawl/repeated/page/1"], "repeated-pagination", max_depth=8)
+        self.assertEqual(reused["job_id"], job_id)
+        self.assertTrue(reused["reused"])
+        self.assertEqual(self.stack.counts(), before)
+
+    def test_24_finite_article_slugs_numeric_ids_and_versions_remain_distinct(self):
+        submitted = self.submit(["/crawl/finite-documents"], "finite-documents", max_depth=2,
+                                max_pages=40, max_urls=60, max_requests=60)
+        final = self.completed(submitted["job_id"])
+        self.assertEqual(final["state"], "succeeded", final)
+        self.assertFalse(final["partial"], final)
+        self.assertEqual(final["used_pages"], 31, final)
+        self.assertEqual(final["trap_policy"]["stops"], [])
+        self.assertEqual(len(self.results(submitted["job_id"])), 31)
+        self.assertTrue(all(row["body_read"] for row in self.results(submitted["job_id"])))
+        edges = self.paged("crawl.edges", submitted["job_id"])
+        self.assertEqual(len(edges), 30)
+        self.assertTrue(all(row["followed"] and not row["reason"] for row in edges))
+
     def test_99_manifest_mismatch_retains_refusal_without_body_dispatch(self):
         path = self.stack.root / "sites.json"
         data = json.loads(path.read_text())

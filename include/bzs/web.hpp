@@ -22,6 +22,9 @@ namespace bzs {
   // IRI -> URI for reads: percent-encodes non-ASCII bytes and spaces after the host; a non-ASCII
   // host must already be punycode (the MCP adapter converts it), otherwise E_URL with a hint.
   std::string normalize_iri(std::string_view url);
+  // Ordinary HTTP wire identity for stored publication provenance, without
+  // broadening the separate automatic map/crawl URL admission rules.
+  std::string publication_url_identity(std::string_view url);
   struct SourceSpec {
     std::string id, provider, family, capability, kind, status;
     std::string budget_key;
@@ -59,6 +62,7 @@ namespace bzs {
     WorkerPort& worker_;
     SourceRegistry registry_;
     SiteRegistry sites_;
+    std::int64_t site_publication_generation_=0;
     // Short-lived cache of identical searches (ADR-0003): spares scraped engines repeated agent queries.
     struct CachedSearch {
       std::int64_t stored_at=0, ttl_ms=0;

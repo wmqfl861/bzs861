@@ -1,5 +1,6 @@
 #include "bzs/store.hpp"
 #include "bzs/sites.hpp"
+#include "bzs/web.hpp"
 #include "bzs/publication.hpp"
 #include <set>
 #include "bzs/error.hpp"
@@ -7,6 +8,8 @@
 #include <sqlite3.h>
 #include <limits>
 #include <tuple>
+#include <algorithm>
+#include <map>
 
 namespace bzs {
 namespace {
@@ -29,6 +32,183 @@ namespace {
     std::string text(int i)const { const auto v=sqlite3_column_text(p,i);return v?std::string(reinterpret_cast<const char*>(v),static_cast<std::size_t>(sqlite3_column_bytes(p,i))):""; }
   };
   std::string key_for(const std::string& url) { try { return map_url(url); } catch(const Error&) { return url; } }
+  constexpr std::size_t max_site_scopes=4096,max_site_binding_urls=24;
+  Json site_manifest(const SiteRegistry& sites) {
+    auto manifest=Json::object(),entries=Json::array();manifest.set("version",std::int64_t{1});
+    for(const auto& site:sites.all()) {
+      auto entry=Json::object(),paths=Json::array(),limits=Json::object();
+      entry.set("id",site.id);entry.set("origin",site.origin);entry.set("enabled",site.enabled);entry.set("review",site.review);
+      for(const auto& path:site.path_prefixes)paths.push(Json::string(path));
+      entry.set("path_prefixes",paths);
+      limits.set("max_concurrency",std::int64_t{1});limits.set("min_interval_ms",site.min_interval_ms);
+      limits.set("request_quota",site.request_quota);limits.set("quota_window_seconds",site.quota_window_seconds);entry.set("limits",limits);entries.push(entry);
+    }
+    manifest.set("sites",entries);return manifest;
+  }
+  int deployment_mode(const SiteSpec& site,std::int64_t now) {
+    if(!site.reviewed(now))return 2;
+    return site.review.at("redistribution_policy").str()=="links_only"?1:0;
+  }
+  std::pair<std::string,std::string> origin_path(const std::string& identity) {
+    const auto from=identity.find("://")+3,start=identity.find('/',from);
+    require(start!=std::string::npos,"E_STORAGE","Invalid stored web publication identity",500);
+    return {identity.substr(0,start),identity.substr(start,identity.find('?',start)-start)};
+  }
+}
+
+std::int64_t Store::site_publication_generation() const {
+  std::lock_guard lock(mutex_);return site_publication_bound_generation_;
+}
+std::int64_t Store::activate_site_publication(const SiteRegistry& sites) {
+  std::lock_guard lock(mutex_);checked(sqlite3_exec(db_,"BEGIN IMMEDIATE",nullptr,nullptr,nullptr));
+  try {
+    refresh_site_publication_locked(false);
+    Sql state(db_,"SELECT manifest_sha256,manifest_generation,generation,legacy_crawl_unverified FROM site_publication_state WHERE singleton=1");
+    require(state.step(),"E_STORAGE","Missing deployment publication state",500);
+    const auto previous_manifest=state.num(1);auto generation=state.num(2);
+    if(state.text(0)!=sites.manifest_digest()) {
+      require(previous_manifest==site_publication_manifest_generation_,"E_SITE_POLICY_STALE","A newer deployment publication manifest is already active; reopen before explicit activation",409);
+      require(generation<std::numeric_limits<std::int64_t>::max()&&previous_manifest<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Deployment publication generation exhausted",500);
+      ++generation;
+      auto rules=site_publication_rules_;
+      for(const auto& site:sites.all())for(const auto& path:site.path_prefixes) {
+        if(std::any_of(rules.begin(),rules.end(),[&](const auto& rule){return rule.origin==site.origin&&rule.path==path;}))continue;
+        SitePublicationRule rule;rule.origin=site.origin;rule.path=path;
+        // A new narrower allow cannot erase an earlier ancestor's withdrawal.
+        const SitePublicationRule* ancestor=nullptr;
+        for(const auto& old:site_publication_rules_)if(old.origin==rule.origin&&path_within(path,old.path)&&(!ancestor||old.path.size()>ancestor->path.size()))ancestor=&old;
+        if(ancestor) { rule.mode=ancestor->mode;rule.snippet_generation=ancestor->snippet_generation;rule.index_generation=ancestor->index_generation; }
+        rules.push_back(std::move(rule));
+        require(rules.size()<=max_site_scopes,"E_SITE_POLICY_CAPACITY","Retained deployment publication scopes exceed the configured bound",507);
+      }
+      const auto now=clock_();
+      for(auto& rule:rules) {
+        int mode=2;
+        for(const auto& site:sites.all())if(site.origin==rule.origin&&std::any_of(site.path_prefixes.begin(),site.path_prefixes.end(),[&](const auto& path){return path_within(rule.path,path);})) { mode=deployment_mode(site,now);break; }
+        if(mode>rule.mode) {
+          if(mode>=1)rule.snippet_generation=generation;
+          if(mode>=2)rule.index_generation=generation;
+        }
+        // A response dispatched while a restriction remained active may commit
+        // after this activation. Seal every older generation when releasing
+        // the restriction, including generations changed only by metadata.
+        if(rule.mode>=1&&mode<1)rule.snippet_generation=std::max(rule.snippet_generation,generation-1);
+        if(rule.mode>=2&&mode<2)rule.index_generation=std::max(rule.index_generation,generation-1);
+        rule.mode=mode;
+        Sql save(db_,"INSERT INTO site_publication_rules(origin,path_prefix,mode,snippet_generation,index_generation)VALUES(?,?,?,?,?) ON CONFLICT(origin,path_prefix) DO UPDATE SET mode=excluded.mode,snippet_generation=excluded.snippet_generation,index_generation=excluded.index_generation");
+        save.bind(1,rule.origin);save.bind(2,rule.path);save.bind(3,static_cast<std::int64_t>(rule.mode));save.bind(4,rule.snippet_generation);save.bind(5,rule.index_generation);save.step();
+      }
+      const auto manifest=site_manifest(sites).canonical();require(manifest.size()<=1024*1024,"E_SITE_POLICY_CAPACITY","Deployment publication manifest exceeds the storage bound",507);
+      Sql update(db_,"UPDATE site_publication_state SET manifest_sha256=?,manifest_json=?,manifest_generation=?,generation=?,legacy_frozen_withdrawn=MAX(legacy_frozen_withdrawn,?),sweep_after=0,sweep_complete=0 WHERE singleton=1");
+      update.bind(1,sites.manifest_digest());update.bind(2,manifest);update.bind(3,previous_manifest+1);update.bind(4,generation);update.bind(5,rules.empty()&&state.num(3)==0?0:1);update.step();
+    }
+    refresh_site_publication_locked();
+    Sql current(db_,"SELECT generation,manifest_generation FROM site_publication_state WHERE singleton=1");current.step();
+    const auto bound=current.num(0),manifest_generation=current.num(1);
+    checked(sqlite3_exec(db_,"COMMIT",nullptr,nullptr,nullptr));
+    site_publication_bound_generation_=bound;site_publication_manifest_generation_=manifest_generation;return bound;
+  } catch(...) { sqlite3_exec(db_,"ROLLBACK",nullptr,nullptr,nullptr);site_publication_cached_generation_=-1;throw; }
+}
+void Store::refresh_site_publication_locked(bool sweep) {
+  const bool transaction=sqlite3_get_autocommit(db_)!=0;
+  if(transaction)checked(sqlite3_exec(db_,"BEGIN IMMEDIATE",nullptr,nullptr,nullptr));
+  try {
+    const auto reload=[&] {
+      Sql state(db_,"SELECT version,generation,manifest_json,legacy_frozen_withdrawn FROM site_publication_state WHERE singleton=1");
+      require(state.step()&&state.text(0)=="bzs-site-publication-1","E_SCHEMA_VERSION","Unknown deployment publication policy version",409);
+      if(state.num(1)!=site_publication_cached_generation_) {
+        std::vector<SitePublicationRule> rules;
+        Sql rows(db_,"SELECT origin,path_prefix,mode,snippet_generation,index_generation FROM site_publication_rules ORDER BY origin,path_prefix");
+        while(rows.step()) {
+          require(rules.size()<max_site_scopes&&rows.num(2)>=0&&rows.num(2)<=2&&rows.num(3)>=0&&rows.num(4)>=0,"E_STORAGE","Invalid deployment publication state",500);
+          rules.push_back({rows.text(0),rows.text(1),static_cast<int>(rows.num(2)),rows.num(3),rows.num(4)});
+        }
+        site_publication_registry_=std::make_shared<SiteRegistry>(Json::parse(state.text(2),1024*1024));
+        site_publication_rules_=std::move(rules);site_publication_cached_generation_=state.num(1);
+      }
+      site_publication_legacy_withdrawn_=state.num(3)!=0;
+    };
+    reload();
+    std::set<std::string> expired;
+    for(const auto& site:site_publication_registry_->all())if(!site.reviewed(clock_()))
+      for(const auto& rule:site_publication_rules_)if(rule.origin==site.origin&&rule.mode<2) { expired.insert(site.origin);break; }
+    if(!expired.empty()) {
+      require(site_publication_cached_generation_<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Deployment publication generation exhausted",500);
+      const auto generation=site_publication_cached_generation_+1;
+      for(const auto& origin:expired) {
+        Sql restrict(db_,"UPDATE site_publication_rules SET mode=2,snippet_generation=?,index_generation=? WHERE origin=? AND mode<2");
+        restrict.bind(1,generation);restrict.bind(2,generation);restrict.bind(3,origin);restrict.step();
+      }
+      Sql update(db_,"UPDATE site_publication_state SET generation=?,sweep_after=0,sweep_complete=0 WHERE singleton=1");update.bind(1,generation);update.step();reload();
+    }
+    if(sweep)sweep_site_publication_locked();
+    if(transaction)checked(sqlite3_exec(db_,"COMMIT",nullptr,nullptr,nullptr));
+  } catch(...) { if(transaction)sqlite3_exec(db_,"ROLLBACK",nullptr,nullptr,nullptr);site_publication_cached_generation_=-1;throw; }
+}
+Json Store::site_bindings_locked(const std::string& url,const Json& meta) {
+  std::set<std::string> identities;
+  const auto add=[&](const std::string& value) { identities.insert(publication_url_identity(value));require(identities.size()<=max_site_binding_urls,"E_WORKER_PROTOCOL","Too many stored publication URL bindings",502); };
+  add(url);if(meta.has("final_url"))add(meta.at("final_url").str());
+  for(const auto* field:{"redirects","crawl_publication_urls"})if(meta.has(field)) {
+    const auto urls=meta.at(field);require(urls.is_array()&&urls.size()<=max_site_binding_urls,"E_WORKER_PROTOCOL","Invalid stored publication URL chain",502);
+    for(std::size_t i=0;i<urls.size();++i)add(urls.at(i).str());
+  }
+  auto result=Json::object(),urls=Json::array();result.set("version","bzs-site-bindings-1");
+  for(const auto& identity:identities)urls.push(Json::string(identity));
+  result.set("urls",urls);return result;
+}
+int Store::site_publication_mode_locked(const std::string& source_kind,const std::string& encoded,std::int64_t generation,
+                                      const std::string& url,const std::string& meta,const std::string& frozen_representation) {
+  if(source_kind!="web")return 0;
+  auto bindings=Json::parse(encoded,128*1024);
+  int mode=bindings.has("captured_mode")?static_cast<int>(bindings.at("captured_mode").num()):0;
+  require(mode>=0&&mode<=2,"E_STORAGE","Invalid captured deployment publication ceiling",500);
+  if(bindings.has("legacy_crawl_unverified")&&bindings.at("legacy_crawl_unverified").flag())return site_publication_legacy_withdrawn_?2:0;
+  if(site_publication_rules_.empty())return mode;
+  if(!bindings.has("version"))bindings=site_bindings_locked(url,Json::parse(meta,8*1024*1024));
+  require(bindings.at("version").str()=="bzs-site-bindings-1","E_SCHEMA_VERSION","Unknown stored publication binding version",409);
+  auto urls=bindings.at("urls");require(urls.is_array()&&urls.size()<=max_site_binding_urls,"E_STORAGE","Invalid stored publication bindings",500);
+  if(!frozen_representation.empty())urls.push(Json::string(publication_url_identity(frozen_representation)));
+  for(std::size_t i=0;i<urls.size();++i) {
+    const auto [origin,path]=origin_path(urls.at(i).str());const auto lower=ascii_lower(path);
+    const bool ambiguous=lower.find("%2f")!=std::string::npos||lower.find("%5c")!=std::string::npos||lower.find("%25")!=std::string::npos;
+    const SitePublicationRule* selected=nullptr;
+    auto rule=std::lower_bound(site_publication_rules_.begin(),site_publication_rules_.end(),origin,[](const auto& value,const std::string& key){return value.origin<key;});
+    for(;rule!=site_publication_rules_.end()&&rule->origin==origin;++rule) {
+      if(ambiguous) {
+        mode=std::max(mode,rule->mode);
+        if(rule->index_generation>0&&generation<=rule->index_generation)mode=2;
+        else if(rule->snippet_generation>0&&generation<=rule->snippet_generation)mode=std::max(mode,1);
+      } else if(path_within(path,rule->path)&&(!selected||rule->path.size()>selected->path.size()))selected=&*rule;
+    }
+    if(selected) {
+      mode=std::max(mode,selected->mode);
+      if(selected->index_generation>0&&generation<=selected->index_generation)mode=2;
+      else if(selected->snippet_generation>0&&generation<=selected->snippet_generation)mode=std::max(mode,1);
+    }
+    if(mode==2)break;
+  }
+  return mode;
+}
+void Store::site_publication_sql(sqlite3_context* context,int argc,sqlite3_value** values) {
+  if(argc!=6) { sqlite3_result_int(context,2);return; }
+  try {
+    const auto text=[](sqlite3_value* value) { const auto* bytes=sqlite3_value_text(value);return bytes?std::string(reinterpret_cast<const char*>(bytes),static_cast<std::size_t>(sqlite3_value_bytes(value))):std::string(); };
+    auto* store=static_cast<Store*>(sqlite3_user_data(context));
+    sqlite3_result_int(context,store->site_publication_mode_locked(text(values[0]),text(values[1]),sqlite3_value_int64(values[2]),text(values[3]),text(values[4]),text(values[5])));
+  } catch(...) { sqlite3_result_int(context,2); }
+}
+void Store::sweep_site_publication_locked() {
+  Sql state(db_,"SELECT sweep_after,sweep_complete FROM site_publication_state WHERE singleton=1");state.step();if(state.num(1))return;
+  Sql rows(db_,"SELECT d.rowid,d.id,d.url,s.source_kind,s.site_bindings_json,s.site_publication_generation,s.meta_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.rowid>? ORDER BY d.rowid LIMIT 128");
+  rows.bind(1,state.num(0));auto last=state.num(0);std::int64_t count=0;
+  while(rows.step()) {
+    ++count;last=rows.num(0);
+    if(site_publication_mode_locked(rows.text(3),rows.text(4),rows.num(5),rows.text(2),rows.text(6))>=2) {
+      Sql remove(db_,"DELETE FROM content_fts WHERE document_id=?");remove.bind(1,rows.text(1));remove.step();
+    }
+  }
+  Sql update(db_,"UPDATE site_publication_state SET sweep_after=?,sweep_complete=? WHERE singleton=1");update.bind(1,last);update.bind(2,count<128?1:0);update.step();
 }
 
 Json validate_publication(const Json& record) {
@@ -89,6 +269,7 @@ bool Store::alias_fences_live_locked(const Json& fences) {
 }
 
 void Store::publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy) {
+  refresh_site_publication_locked(false);
   const auto key=key_for(url);
   auto record=Json::object();
   for(const auto& field:policy.keys())if(field!="snippet_text"&&field!="snippet_title")record.set(field,policy.at(field));
@@ -123,7 +304,7 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
     Sql retract(db_,"DELETE FROM session_rows WHERE document_id IN (SELECT id FROM documents WHERE owner=? AND (url_key=? OR representation_key=?)) OR (representation_key=? AND session_id IN (SELECT id FROM sessions WHERE owner=?))");
     retract.bind(1,owner);retract.bind(2,key);retract.bind(3,key);retract.bind(4,key);retract.bind(5,owner);retract.step();
   } else {
-    Sql index_rows(db_,"SELECT d.id,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND (d.url_key=? OR d.representation_key=?) AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1");
+    Sql index_rows(db_,"SELECT d.id,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND (d.url_key=? OR d.representation_key=?) AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2");
     index_rows.bind(1,owner);index_rows.bind(2,key);index_rows.bind(3,key);
     while(index_rows.step()) {
       Sql insert(db_,"INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");

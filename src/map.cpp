@@ -1,6 +1,7 @@
 #include "bzs/store.hpp"
 #include "bzs/sites.hpp"
 #include "bzs/publication.hpp"
+#include "bzs/crawl_trap.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
@@ -97,7 +98,9 @@ bool Store::map_candidate_locked(const std::string& id,const std::string& owner,
 bool Store::map_resource_locked(const std::string& id,const std::string& owner,const std::string& url,
                                const std::string& kind,std::int64_t depth,const std::string& parent,const std::string& source) {
   Sql old(db_,"SELECT 1 FROM map_resources WHERE job_id=? AND url=?");old.bind(1,id);old.bind(2,url);if(old.step())return true;
-  Sql job(db_,"SELECT j.created_delete_sequence,m.max_urls,m.max_depth FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=?");job.bind(1,id);job.step();
+  Sql job(db_,"SELECT j.created_delete_sequence,m.max_urls,m.max_depth,j.kind FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=?");job.bind(1,id);job.step();
+  const bool crawl=job.text(3)=="web.crawl"&&kind!="robots";
+  const bool seed=kind=="page"&&source=="seed"&&parent.empty()&&depth==0;
   if(depth>job.num(2)) { map_partial_locked(id,"E_MAP_DEPTH_LIMIT");return false; }
   if(kind!="robots") {
     try { (void)alias_fences_locked(owner,url,url,job.num(0)); }
@@ -108,9 +111,16 @@ bool Store::map_resource_locked(const std::string& id,const std::string& owner,c
     if(!variant_room(db_,id,url)) { map_partial_locked(id,"E_MAP_VARIANT_LIMIT");return false; }
   }
   if(count(db_,"SELECT COUNT(*) FROM map_resources")>=20000) { map_partial_locked(id,"E_QUOTA");return false; }
+  if(crawl) {
+    crawl_trap_ensure(db_,id);
+    const auto blocked=crawl_trap_decide(db_,id,url,parent,seed);
+    if(blocked) { map_partial_locked(id,blocked.reason);return false; }
+  }
   Sql insert(db_,"INSERT INTO map_resources(job_id,position,url,fetch_url,kind,depth,deletion_generation,parent,source) SELECT ?,COALESCE(MAX(position)+1,0),?,?,?,?,?,?,? FROM map_resources WHERE job_id=?");
   insert.bind(1,id);insert.bind(2,url);insert.bind(3,url);insert.bind(4,kind);insert.bind(5,depth);
-  insert.bind(6,deletion_generation_locked(owner,url));insert.bind(7,parent);insert.bind(8,source);insert.bind(9,id);insert.step();return true;
+  insert.bind(6,deletion_generation_locked(owner,url));insert.bind(7,parent);insert.bind(8,source);insert.bind(9,id);insert.step();
+  if(crawl)crawl_trap_admit(db_,id,url,parent,seed);
+  return true;
 }
 Json Store::map_submit(const std::string& owner,const Json& args,const SiteRegistry& sites) { return frontier_submit(owner,args,sites,false); }
 Json Store::crawl_submit(const std::string& owner,const Json& args,const SiteRegistry& sites) { return frontier_submit(owner,args,sites,true); }
@@ -153,6 +163,9 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
   Sql config(db_,"INSERT INTO map_jobs(job_id,site_id,manifest_sha256,origin,scope_path,max_urls,max_depth,max_requests,max_bytes,per_request_timeout_ms,max_pages)VALUES(?,?,?,?,?,?,?,?,?,?,?)");
   config.bind(1,id);config.bind(2,site_id);config.bind(3,sites.manifest_digest());config.bind(4,site->origin);config.bind(5,scope);
   config.bind(6,max_urls);config.bind(7,max_depth);config.bind(8,max_requests);config.bind(9,max_bytes);config.bind(10,per_request);config.bind(11,max_pages);config.step();
+  // The server's pinned policy is separate from the client's canonical
+  // fingerprint, so an upgraded live job still reuses its original key.
+  if(crawl)crawl_trap_ensure(db_,id);
   require(map_resource_locked(id,owner,site->origin+"/robots.txt","robots",0),"E_QUOTA","Cannot retain robots resource",429);
   for(std::size_t i=0;i<urls.size();++i)require(map_resource_locked(id,owner,urls.at(i).str(),crawl?"page":"auto",0),"E_SCHEMA","Seed exceeds deletion or map variation policy");
   // History is metadata from this owner only. It remains a candidate: this does
@@ -194,6 +207,7 @@ Json Store::map_job_locked(const std::string& owner,const std::string& id) {
     Sql pages(db_,"SELECT COUNT(*),COALESCE(SUM(state='succeeded'),0),COALESCE(SUM(state='failed'),0),COALESCE(SUM(state='skipped'),0) FROM map_resources WHERE job_id=? AND kind='page'");pages.bind(1,id);pages.step();
     out.set("page_count",pages.num(0));out.set("total_items",pages.num(0));out.set("body_read",pages.num(1)>0);out.set("succeeded_pages",pages.num(1));out.set("failed_pages",pages.num(2));out.set("skipped_pages",pages.num(3));
     Sql edges(db_,"SELECT COUNT(*) FROM crawl_edges WHERE job_id=?");edges.bind(1,id);edges.step();out.set("edge_count",edges.num(0));
+    out.set("trap_policy",crawl_trap_summary(db_,id));
   }
   return out;
 }
@@ -266,7 +280,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
   Sql pending(db_,"SELECT j.id FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.kind IN ('web.map','web.crawl') AND j.state='queued' ORDER BY m.last_dispatch_sequence,j.created_at,j.id");
   std::vector<std::string> ids;while(pending.step())ids.push_back(pending.text(0));
   for(const auto& id:ids)for(;;) {
-    Sql job(db_,"SELECT j.owner,j.epoch,j.deadline,j.auth_epoch,j.created_delete_sequence,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_requests-m.charged_requests,m.max_bytes-m.charged_bytes,m.per_request_timeout_ms,m.max_pages,m.used_pages FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.state='queued'");
+    Sql job(db_,"SELECT j.owner,j.epoch,j.deadline,j.auth_epoch,j.created_delete_sequence,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_requests-m.charged_requests,m.max_bytes-m.charged_bytes,m.per_request_timeout_ms,m.max_pages,m.used_pages,j.kind FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.state='queued'");
     job.bind(1,id);if(!job.step())break;
     const auto owner=job.text(0),origin=job.text(7);const auto now=clock_();const auto* site=sites.find(job.text(5));
     std::string stop;
@@ -274,11 +288,15 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     else if(job.text(6)!=sites.manifest_digest())stop="E_SITE_MANIFEST_MISMATCH";
     else if(!site||!site->reviewed(now))stop="E_SITE_REVIEW";
     else if(job.num(2)<=now)stop="E_DEADLINE";
+    Sql active_sites(db_,"SELECT manifest_sha256 FROM site_publication_state WHERE singleton=1");active_sites.step();
+    if(!active_sites.text(0).empty()&&active_sites.text(0)!=sites.manifest_digest())stop="E_SITE_MANIFEST_MISMATCH";
     if(!stop.empty()) {
       Sql all(db_,"UPDATE map_resources SET state='failed',error_code=? WHERE job_id=? AND state='pending'");all.bind(1,stop);all.bind(2,id);all.step();
       map_partial_locked(id,stop);settle_map_job_locked(id);break;
     }
-    Sql resource(db_,"SELECT position,url,fetch_url,kind,depth,redirect_hop,deletion_generation,page_charged FROM map_resources WHERE job_id=? AND state='pending' ORDER BY CASE WHEN kind='robots' THEN 0 ELSE 1 END,depth,position LIMIT 1");resource.bind(1,id);
+    const bool crawl=job.text(14)=="web.crawl";
+    if(crawl)crawl_trap_ensure(db_,id);
+    Sql resource(db_,"SELECT position,url,fetch_url,kind,depth,redirect_hop,deletion_generation,page_charged,parent,source FROM map_resources WHERE job_id=? AND state='pending' ORDER BY CASE WHEN kind='robots' THEN 0 ELSE 1 END,depth,position LIMIT 1");resource.bind(1,id);
     if(!resource.step()) { settle_map_job_locked(id);break; }
     const auto kind=resource.text(3),url=resource.text(2),logical=resource.text(1);
     if(kind=="page"&&resource.num(7)==0&&job.num(13)>=job.num(12)) {
@@ -315,6 +333,16 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     if(!stop.empty()) {
       Sql denied(db_,"UPDATE map_resources SET state='failed',error_code=? WHERE job_id=? AND position=?");denied.bind(1,stop);denied.bind(2,id);denied.bind(3,resource.num(0));denied.step();
       map_partial_locked(id,stop);settle_map_job_locked(id);continue;
+    }
+    if(crawl&&kind!="robots") {
+      const bool seed=kind=="page"&&url==logical&&resource.num(5)==0&&resource.text(9)=="seed"&&resource.text(8).empty()&&resource.num(4)==0;
+      const auto blocked=crawl_trap_decide(db_,id,url,resource.text(8),seed,true);
+      if(blocked) {
+        auto receipt=Json::object();receipt.set("trap",blocked.detail);
+        Sql denied(db_,"UPDATE map_resources SET state='skipped',error_code=?,receipt_json=? WHERE job_id=? AND position=?");
+        denied.bind(1,blocked.reason);denied.bind(2,receipt.canonical());denied.bind(3,id);denied.bind(4,resource.num(0));denied.step();
+        crawl_trap_skip_edges(db_,id,logical,blocked);map_partial_locked(id,blocked.reason);settle_map_job_locked(id);continue;
+      }
     }
     if(job.num(9)<=0)stop="E_REQUEST_BUDGET";else if(job.num(10)<=0)stop="E_BYTE_BUDGET";
     else if(count(db_,"SELECT COUNT(*) FROM map_hops")>=50000)stop="E_QUOTA";
@@ -386,8 +414,11 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
   if(!live_map_lease_locked(lease))error=deletion_generation_locked(lease.owner,lease.logical_url)!=lease.deletion_generation?"E_TARGET_DELETED":"E_LEASE_EXPIRED";
   else if(sites.manifest_digest()!=lease.manifest_sha256)error="E_SITE_MANIFEST_MISMATCH";
   else if(!site||!site->reviewed(now))error="E_SITE_REVIEW";
+  Sql active_sites(db_,"SELECT manifest_sha256 FROM site_publication_state WHERE singleton=1");active_sites.step();
+  if(!active_sites.text(0).empty()&&active_sites.text(0)!=sites.manifest_digest())error="E_SITE_MANIFEST_MISMATCH";
   Sql config(db_,"SELECT m.scope_path,m.max_urls,m.max_depth,j.kind,j.created_delete_sequence FROM map_jobs m JOIN jobs j ON j.id=m.job_id WHERE m.job_id=?");config.bind(1,lease.job_id);require(config.step(),"E_STORAGE","Map configuration missing",500);
   const auto scope=config.text(0);const bool crawl=config.text(3)=="web.crawl";
+  if(error.empty()&&crawl)crawl_trap_ensure(db_,lease.job_id);
   reconcile_map_usage_locked(lease,requests,bytes);
   const auto status=response.at("status").str();std::string next="succeeded";
   auto receipt=Json::object();receipt.set("status",status);receipt.set("http_status",response.at("http_status"));
@@ -418,8 +449,24 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
       Sql seen(db_,"SELECT 1 FROM map_hops WHERE job_id=? AND resource_position=? AND url=?");seen.bind(1,lease.job_id);seen.bind(2,lease.resource_position);seen.bind(3,target);
       if(seen.step())error="E_REDIRECT_LOOP";
       else {
+        if(crawl&&lease.kind!="robots") {
+          // A new Location is automatic navigation even when the logical
+          // page was an explicit seed. Only a target itself in the original
+          // seed set has its own durable admission exemption.
+          const auto blocked=crawl_trap_decide(db_,lease.job_id,target,lease.url);
+          if(blocked) {
+            error=blocked.reason;receipt.set("trap",blocked.detail);receipt.set("redirect_url",target);
+            auto candidate=Json::object();candidate.set("url",target);candidate.set("parent",lease.url);candidate.set("source","redirect");candidate.set("depth",lease.depth);
+            if(crawl_edge_locked(lease.job_id,lease.owner,candidate,false,blocked.reason))crawl_trap_record_edge(db_,lease.job_id,candidate,blocked);
+            crawl_trap_skip_edges(db_,lease.job_id,lease.logical_url,blocked);
+            auto saved_receipt=Json::object();saved_receipt.set("trap",blocked.detail);
+            Sql saved(db_,"UPDATE map_resources SET receipt_json=? WHERE job_id=? AND position=?");saved.bind(1,saved_receipt.canonical());saved.bind(2,lease.job_id);saved.bind(3,lease.resource_position);saved.step();
+          } else crawl_trap_admit(db_,lease.job_id,target,lease.url);
+        }
+        if(error.empty()) {
         Sql redirect(db_,"UPDATE map_resources SET fetch_url=?,redirect_hop=redirect_hop+1 WHERE job_id=? AND position=?");redirect.bind(1,target);redirect.bind(2,lease.job_id);redirect.bind(3,lease.resource_position);redirect.step();
         next="pending";receipt.set("redirect_url",target);
+        }
       }
     }
   } else if(error.empty()&&lease.kind=="robots"&&response.has("robots")) {
@@ -456,7 +503,13 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         checked(sqlite3_exec(db_,"SAVEPOINT crawl_body",nullptr,nullptr,nullptr));
         Json snapshot;
         try {
-          snapshot=ingest_web_locked(lease.owner,*page,*parsed,*meta,generation,true);
+          auto page_meta=Json::parse(meta->dump()),route=Json::array();std::set<std::string> route_urls;
+          Sql hops(db_,"SELECT url FROM map_hops WHERE job_id=? AND resource_position=? AND kind='page' AND (state='succeeded' OR position=?) ORDER BY position LIMIT 6");
+          hops.bind(1,lease.job_id);hops.bind(2,lease.resource_position);hops.bind(3,lease.position);
+          while(hops.step())if(route_urls.insert(hops.text(0)).second)route.push(Json::string(hops.text(0)));
+          for(const auto& url:{lease.logical_url,lease.url})if(route_urls.insert(url).second)route.push(Json::string(url));
+          page_meta.set("crawl_publication_urls",route);
+          snapshot=ingest_web_locked(lease.owner,*page,*parsed,page_meta,generation,true);
           checked(sqlite3_exec(db_,"RELEASE crawl_body",nullptr,nullptr,nullptr));
         } catch(const Error& failure) {
           checked(sqlite3_exec(db_,"ROLLBACK TO crawl_body",nullptr,nullptr,nullptr));checked(sqlite3_exec(db_,"RELEASE crawl_body",nullptr,nullptr,nullptr));
@@ -478,6 +531,8 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         page_receipt.set("final_url",lease.url);page_receipt.set("revision",snapshot.at("revision"));page_receipt.set("body_read",true);
         auto policy=Json::object();for(const auto& key:parsed->publication.keys())if(key!="snippet_text"&&key!="snippet_title")policy.set(key,parsed->publication.at(key));
         page_receipt.set("publication",policy);
+        const auto trap=crawl_trap_observe_body(db_,lease.job_id,lease.url,parsed->text);
+        if(!trap.is_null())page_receipt.set("trap",trap);
         Sql saved(db_,"UPDATE map_resources SET snapshot_id=?,receipt_json=? WHERE job_id=? AND position=?");saved.bind(1,snapshot.at("snapshot_id").str());saved.bind(2,page_receipt.dump());saved.bind(3,lease.job_id);saved.bind(4,lease.resource_position);saved.step();
         receipt.set("page",page_receipt);
         }
@@ -492,11 +547,16 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         }
         candidate.set("url",url);
         std::string blocked;
+        CrawlTrapDecision trap;
         if(candidate.at("depth").num()>config.num(2))blocked="E_MAP_DEPTH_LIMIT";
         if(crawl&&lease.kind=="page"&&!parsed->publication.at("follow_allowed").flag())blocked="E_NOFOLLOW";
+        if(crawl&&blocked.empty()) {
+          trap=crawl_trap_decide(db_,lease.job_id,url,candidate.at("parent").str());
+          if(trap)blocked=trap.reason;
+        }
         if(!blocked.empty()) {
           if(blocked!="E_NOFOLLOW")map_partial_locked(lease.job_id,blocked);
-          if(crawl)crawl_edge_locked(lease.job_id,lease.owner,candidate,false,blocked);
+          if(crawl&&crawl_edge_locked(lease.job_id,lease.owner,candidate,false,blocked)&&trap)crawl_trap_record_edge(db_,lease.job_id,candidate,trap);
           continue;
         }
         if(crawl&&!crawl_edge_locked(lease.job_id,lease.owner,candidate,false,"E_FRONTIER_LIMIT"))continue;

@@ -3,9 +3,13 @@
 #include "bzs/query.hpp"
 #include <filesystem>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <optional>
+#include <vector>
 struct sqlite3;
+struct sqlite3_context;
+struct sqlite3_value;
 namespace bzs {
   class SiteRegistry;
   struct Lease {
@@ -42,7 +46,24 @@ namespace bzs {
     std::function<std::int64_t()> clock_;
     StoreOptions options_;
     mutable std::mutex mutex_;
+    struct SitePublicationRule {
+      std::string origin,path;
+      int mode=0;
+      std::int64_t snippet_generation=0,index_generation=0;
+    };
+    std::vector<SitePublicationRule> site_publication_rules_;
+    std::shared_ptr<SiteRegistry> site_publication_registry_;
+    std::int64_t site_publication_cached_generation_=-1,site_publication_bound_generation_=0;
+    std::int64_t site_publication_manifest_generation_=0;
+    bool site_publication_legacy_withdrawn_=false;
     void migrate();
+    static void site_publication_sql(sqlite3_context*,int,sqlite3_value**);
+    void refresh_site_publication_locked(bool sweep=true);
+    void sweep_site_publication_locked();
+    Json site_bindings_locked(const std::string& url,const Json& meta);
+    int site_publication_mode_locked(const std::string& source_kind,const std::string& bindings,
+                                    std::int64_t generation,const std::string& url,const std::string& meta,
+                                    const std::string& frozen_representation="");
     void observe_policy_locked(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy);
     void publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy);
     Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
@@ -88,6 +109,11 @@ namespace bzs {
     Store(const Store&)=delete;
     Store& operator=(const Store&)=delete;
     Json ingest(const std::string& owner, const SourceDocument& input);
+    // Explicit trusted configuration activation. An empty manifest retires
+    // previously registered scopes; omitting activation keeps durable policy.
+    // A Store opened before another activation cannot overwrite its manifest.
+    std::int64_t activate_site_publication(const SiteRegistry& sites);
+    std::int64_t site_publication_generation() const;
     Json publication_fence(const std::string& owner,const std::string& url);
     void observe_web_publication(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy,const Json& fence);
     // Capture before a worker read. Every deletion advances this persistent

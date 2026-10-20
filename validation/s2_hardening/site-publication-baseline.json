@@ -1,0 +1,19 @@
+{
+  "scope": "Author native regression reproduction before production src/include edits; exploratory source-bound evidence, not the final gate or a separately hashed retained baseline test executable. Exact published binary identity is separately established by baseline-binary.json and the real process recovery baseline.",
+  "production_baseline": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+  "build_argv": [
+    "cmake",
+    "--build",
+    "build-s2-policy-author",
+    "--target",
+    "bzs_site_publication_tests",
+    "-j1"
+  ],
+  "test_argv": [
+    "build-s2-policy-author/bzs_site_publication_tests"
+  ],
+  "files_sha256": {
+    "site-publication-baseline.cpp": "dfdd8406a0d41e31387664c7dbc3f8424963fc1fc4978d5a8e6670aa50f7bc9f",
+    "site-publication-baseline.log": "6a84b307a4c15f76408bed770e514c5889ded2fa279bdae3841b185673503cb1"
+  }
+}

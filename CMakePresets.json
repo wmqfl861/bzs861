@@ -9,7 +9,7 @@
   "buildPresets": [
     {"name":"dev", "configurePreset":"dev"},
     {"name":"release", "configurePreset":"release"},
-    {"name":"asan-core", "configurePreset":"asan", "targets":["bzs_tests","bzs_batch_tests","bzs_map_tests","bzs_crawl_tests","bzs_contract_tests"]}
+    {"name":"asan-core", "configurePreset":"asan", "targets":["bzs_tests","bzs_batch_tests","bzs_map_tests","bzs_crawl_tests","bzs_site_publication_tests","bzs_contract_tests"]}
   ],
   "testPresets": [{"name":"dev", "configurePreset":"dev", "output":{"outputOnFailure":true}}]
 }

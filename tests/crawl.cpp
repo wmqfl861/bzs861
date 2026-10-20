@@ -2,6 +2,7 @@
 #include "bzs/sites.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
+#include "bzs/crawl_trap.hpp"
 #include <sqlite3.h>
 #include <functional>
 #include <iostream>
@@ -224,7 +225,14 @@ namespace {
     f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("kind").str()=="page") { auto links=Json::array();links.push(candidate(p,std::string(base)+"/map/new"));r.at("discovery").set("candidates",links); }return r; };
     drain(w);CHECK(f.calls.size()==2);CHECK(s.job_get("alice",id).at("stop_reason").str()=="E_CRAWL_EDGE_LIMIT");CHECK(s.job_get("alice",id).at("page_count").num()==1);CHECK(s.crawl_edges("alice",id).at("total").num()==10000);
   }
+  void drop_schema_seven(sqlite3* db) {
+    sql(db,R"SQL(DROP TABLE crawl_trap_edges; DROP TABLE crawl_trap_urls; DROP TABLE crawl_trap_policy;
+ DROP TABLE site_publication_rules; DROP TABLE site_publication_state;
+ ALTER TABLE snapshots DROP COLUMN site_bindings_json; ALTER TABLE snapshots DROP COLUMN site_publication_generation;
+ ALTER TABLE session_rows DROP COLUMN site_binding_version; PRAGMA user_version=6;)SQL");
+  }
   void drop_crawl(sqlite3* db) {
+    drop_schema_seven(db);
     sql(db,R"SQL(DROP TABLE crawl_edges; DROP TABLE document_publication; DROP INDEX documents_url_key; DROP INDEX documents_representation_key; DROP INDEX map_resource_snapshot; DROP INDEX session_rows_representation;
  ALTER TABLE documents DROP COLUMN url_key; ALTER TABLE documents DROP COLUMN representation_key; ALTER TABLE snapshots DROP COLUMN publication_json; ALTER TABLE snapshots DROP COLUMN representation_publication_json;
  ALTER TABLE session_rows DROP COLUMN publication_generation; ALTER TABLE session_rows DROP COLUMN representation_key; ALTER TABLE map_jobs DROP COLUMN max_pages; ALTER TABLE map_jobs DROP COLUMN used_pages;
@@ -235,7 +243,7 @@ namespace {
   TEST(schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity) {
     Temp t;Fake f;Json snapshot,evidence,session;std::string map_id,read_id;
     { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));snapshot=s.ingest("alice",{"https://MAP.example:443/map/old#fragment","marker preserved","text/plain","old"});evidence=s.evidence("alice",snapshot.at("snapshot_id").str(),0,6);session=freeze(s);map_id=w.submit_map("alice",args()).at("job_id").str();drain(w);read_id=s.read_many_submit("alice",{std::string(base)+"/map/read"},"read",{}).at("job_id").str();sql(s.raw_handle(),"UPDATE content_fts SET rowid=913;");drop_crawl(s.raw_handle()); }
-    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==6);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
+    { Store s(t.path/"db",[&]{return f.now;});CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==7);CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker preserved");CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(hits(s,session).size()==1);CHECK(s.job_get("alice",map_id).at("state").str()=="succeeded");CHECK(s.job_get("alice",read_id).at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'")==1); }
   }
   TEST(schema_five_quarantine_rejects_before_new_publication_ddl) {
     Temp t;{ Store s(t.path/"db");drop_crawl(s.raw_handle());sql(s.raw_handle(),"UPDATE settings SET value='1' WHERE key='restore_quarantine';"); }
@@ -260,7 +268,9 @@ namespace {
   }
   TEST(candidate_registry_without_optional_redistribution_does_not_break_explicit_read) {
     Temp t;Reader reader;auto config=manifest();auto site=config.at("sites").at(0);site.set("enabled",false);site.set("review",Json::parse(R"({"status":"candidate","payment_scheme":"unverified","automated_access":"unverified","checked_at":null,"terms_url":null})"));Store s(t.path/"db");WebService web(s,reader,{},SiteRegistry(config));
-    auto p=Json::object();p.set("url",std::string(base)+"/map/index");CHECK(web.read("alice",p).at("content").at("text").str().find("marker")!=std::string::npos);CHECK(!hits(s,freeze(s)).at(0).at("snippet").str().empty());rejects([&]{web.submit_crawl("alice",args());},"E_SITE_REVIEW");
+    auto p=Json::object();p.set("url",std::string(base)+"/map/index");const auto read=web.read("alice",p);CHECK(read.at("content").at("text").str().find("marker")!=std::string::npos);
+    CHECK(hits(s,freeze(s)).size()==0);CHECK(s.snapshot("alice",read.at("snapshot_id").str()).at("canonical_text").str().find("marker")!=std::string::npos);rejects([&]{web.submit_crawl("alice",args());},"E_SITE_REVIEW");
+    p.set("url",std::string(base)+"/unregistered/index");CHECK(web.read("alice",p).at("content").at("text").str().find("marker")!=std::string::npos);auto public_hits=hits(s,freeze(s));CHECK(public_hits.size()==1);CHECK(public_hits.at(0).at("url").str()==std::string(base)+"/unregistered/index");
   }
   TEST(empty_meta_only_explicit_and_batch_reads_retract_without_a_new_snapshot) {
     for(bool batch:{false,true}) {
@@ -303,7 +313,9 @@ namespace {
       Temp t;Store s(t.path/"db");const auto a=std::string(base)+"/map/a",b=std::string(base)+"/map/b",c=std::string(base)+"/map/c";
       auto old=representation(s,a,b,"marker secret original");auto frozen=freeze(s);
       if(!first_restrict_after_move)representation(s,b,b,"marker secret original",index,false);
-      auto moved=representation(s,a,c,identical?"marker secret original":"marker allowed replacement");if(identical)CHECK(moved.at("snapshot_id").str()==old.at("snapshot_id").str());
+      auto evidence=s.evidence("alice",old.at("snapshot_id").str(),0,6);
+      auto moved=representation(s,a,c,identical?"marker secret original":"marker allowed replacement");CHECK(moved.at("snapshot_id").str()!=old.at("snapshot_id").str());
+      CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="marker");CHECK(s.snapshot("alice",old.at("snapshot_id").str()).at("meta").at("final_url").str()==b);
       if(first_restrict_after_move)representation(s,b,b,"marker secret original",index,false);
       auto original=hits(s,frozen);if(index) { CHECK(original.size()==1);CHECK(original.at(0).at("snippet").str().empty());CHECK(original.at(0).at("title").str()==a);CHECK(original.at(0).at("highlights").size()==0); }else CHECK(original.size()==0);
       auto fresh=hits(s,freeze(s));bool found=false;for(std::size_t i=0;i<fresh.size();++i)if(fresh.at(i).at("url").str()==a) { found=true;CHECK(!fresh.at(i).at("snippet").str().empty()); }CHECK(found);
@@ -390,6 +402,202 @@ namespace {
     Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));crawl_one(w,s,"first");auto frozen=freeze(s);
     f.response=[&](const Json& p) { auto r=f.ok(p);r.set("status","redirect");r.set("http_status",std::int64_t{302});r.set("redirect_url","http://169.254.169.254/blocked");publication(r,false,false,true,"","",{"noindex"});r.set("publication_observation",r.at("publication"));return r; };
     auto failed=crawl_one(w,s,"denied-redirect");CHECK(failed.at("state").str()=="failed");CHECK(failed.at("error_code").str()=="E_URL_BLOCKED");CHECK(hits(s,frozen).size()==0);CHECK(hits(s,freeze(s)).size()==0);CHECK(scalar(s.raw_handle(),"SELECT SUM(external_requests) FROM map_hops")==3);CHECK(s.stats("alice").at("snapshots").num()==1);
+  }
+
+  Json stopped_edges(Store& store,const std::string& job,const std::string& reason) {
+    auto result=Json::array(),edges=store.crawl_edges("alice",job,0,1000).at("items");
+    for(std::size_t i=0;i<edges.size();++i)if(!edges.at(i).at("reason").is_null()&&edges.at(i).at("reason").str()==reason)result.push(edges.at(i));
+    return result;
+  }
+  void readable_body(Json& response,const std::string& text) {
+    response.at("page").set("text",text);response.at("page").set("html","<p>"+text+"</p>");publication(response,true,true,true,text);
+  }
+  void execute_pages(WebService& web,int count) {
+    for(int i=0;i<count;++i) { auto lease=web.lease_map();CHECK(lease);web.execute_map(*lease); }
+  }
+  std::string calendar_day(int day) { return std::string(base)+"/map/calendar/2024/03/"+(day<10?"0":"")+std::to_string(day); }
+  std::string pagination_page(int page) { return std::string(base)+"/map/catalog/page/"+std::to_string(page); }
+  const std::string repeated_body="marker shared full canonical pagination body. "+std::string(300,'x');
+
+  TEST(trap_policy_is_versioned_separately_from_map_and_pins_finite_limits) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    auto crawl=w.submit_crawl("alice",args()),mapped=w.submit_map("alice",args({std::string(base)+"/map/meta"},"metadata"));
+    CHECK(!mapped.has("trap_policy"));CHECK(crawl.at("trap_policy").at("version").str()==crawl_trap_version);
+    auto policy=crawl.at("trap_policy");CHECK(policy.at("scope").str()=="job_lifetime");CHECK(policy.at("url_observations").num()==1);
+    CHECK(policy.at("classification").str()=="finite_heuristics");CHECK(policy.at("limits").at("max_distinct_dates").num()==16);
+    CHECK(policy.at("limits").at("max_consecutive_date_steps").num()==6);CHECK(policy.at("limits").at("repeated_body_urls").num()==3);
+    CHECK(w.submit_crawl("alice",args()).at("reused").flag());CHECK(f.calls.empty());
+  }
+  TEST(consecutive_calendar_days_include_leap_day_and_survive_pause_restart) {
+    Temp t;Fake f;std::string id;std::int64_t before=0;
+    const std::vector<std::string> days={"2024-02-26","2024-02-27","2024-02-28","2024-02-29","2024-03-01","2024-03-02","2024-03-03","2024-03-04"};
+    const auto url=[&](std::size_t i){return std::string(base)+"/map/calendar/"+days.at(i);};
+    f.response=[&](const Json& p) { auto r=f.ok(p);for(std::size_t i=0;i+1<days.size();++i)if(p.at("url").str()==url(i)) { auto links=Json::array();links.push(candidate(p,url(i+1)));r.at("discovery").set("candidates",links); }return r; };
+    auto parameters=args({url(0)});parameters.set("max_depth",std::int64_t{8});
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",parameters).at("job_id").str();execute_pages(w,4);
+      before=s.job_get("alice",id).at("trap_policy").at("url_observations").num();CHECK(before==4);CHECK(s.job_control("alice",id,"pause").at("state").str()=="paused"); }
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(s.job_get("alice",id).at("trap_policy").at("url_observations").num()==before);
+      CHECK(w.submit_crawl("alice",parameters).at("job_id").str()==id);CHECK(f.calls.size()==4);s.job_control("alice",id,"resume");drain(w);
+      auto job=s.job_get("alice",id);CHECK(job.at("state").str()=="succeeded");CHECK(job.at("partial").flag());CHECK(job.at("stop_reason").str()=="E_CRAWL_TRAP_DATE_SEQUENCE");
+      CHECK(f.calls.size()==8);CHECK(job.at("used_pages").num()==7);CHECK(s.stats("alice").at("snapshots").num()==7);
+      auto denied=stopped_edges(s,id,"E_CRAWL_TRAP_DATE_SEQUENCE");CHECK(denied.size()==1);CHECK(denied.at(0).at("url").str()==url(7));CHECK(!denied.at(0).at("followed").flag());
+      CHECK(denied.at(0).at("trap").at("version").str()==crawl_trap_version);CHECK(denied.at(0).at("trap").at("observed").num()==7);CHECK(denied.at(0).at("trap").at("limit").num()==6); }
+  }
+  TEST(calendar_fanout_is_bounded_across_different_parents_and_keeps_other_documents) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    f.response=[&](const Json& p) { auto r=f.ok(p);auto links=Json::array();if(p.at("url").str().ends_with("index")) {
+      for(int i=1;i<=20;++i)links.push(candidate(p,calendar_day(i)));
+      links.push(candidate(p,std::string(base)+"/map/useful"));
+    } else if(p.at("url").str().ends_with("useful"))links.push(candidate(p,calendar_day(17)));
+      if(p.at("kind").str()!="robots")r.at("discovery").set("candidates",links);
+      return r; };
+    const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);auto job=s.job_get("alice",id);
+    CHECK(job.at("stop_reason").str()=="E_CRAWL_TRAP_DATE_FAMILY");CHECK(job.at("used_pages").num()==18);CHECK(f.calls.size()==19);
+    const auto stopped=stopped_edges(s,id,"E_CRAWL_TRAP_DATE_FAMILY");CHECK(stopped.size()==5);
+    for(std::size_t i=0;i<stopped.size();++i) { CHECK(stopped.at(i).at("trap").at("limit").num()==16);CHECK(!stopped.at(i).at("followed").flag()); }
+    CHECK(s.stats("alice").at("snapshots").num()==18);CHECK(s.crawl_edges("alice",id,0,100).at("total").num()==22);
+  }
+  TEST(finite_dates_unique_article_slugs_versions_and_invalid_dates_are_not_calendar_stops) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));std::vector<std::string> urls;
+    for(int i=1;i<=20;++i)urls.push_back(calendar_day(i)+"/article-"+std::to_string(i));
+    for(int i=1;i<=8;++i)urls.push_back(std::string(base)+"/map/archive/2024-0"+std::to_string(i));
+    for(const auto* path:{"/map/calendar/2023-02-29","/map/calendar/2024/02/30","/map/calendar/2024-13-01","/map/docs/2024/03","/map/docs/v1.2.3","/map/docs/v1.2.4","/map/articles/20240101"})urls.push_back(std::string(base)+path);
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(const auto& url:urls)links.push(candidate(p,url));r.at("discovery").set("candidates",links); }return r; };
+    const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);auto job=s.job_get("alice",id);
+    CHECK(!job.at("partial").flag());CHECK(job.at("used_pages").num()==static_cast<std::int64_t>(urls.size()+1));CHECK(f.calls.size()==urls.size()+2);
+    CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM crawl_trap_urls WHERE date_family!=''")==28);
+    CHECK(job.at("trap_policy").at("date_families").num()==21);CHECK(job.at("trap_policy").at("stops").size()==0);
+  }
+  TEST(calendar_month_and_backward_navigation_have_their_own_sequence_bound) {
+    for(const std::string mode:{"month","backward"}) {
+      Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+      const auto url=[&](int i){return mode=="month"?std::string(base)+"/map/archive/2024-0"+std::to_string(i):calendar_day(i);};
+      f.response=[&](const Json& p) { auto r=f.ok(p);for(int i=9;i>1;--i)if(p.at("url").str()==url(i)) { auto links=Json::array();links.push(candidate(p,url(i-1)));r.at("discovery").set("candidates",links); }return r; };
+      auto parameters=args({url(9)});parameters.set("max_depth",std::int64_t{8});const auto id=w.submit_crawl("alice",parameters).at("job_id").str();drain(w);
+      CHECK(s.job_get("alice",id).at("used_pages").num()==7);CHECK(stopped_edges(s,id,"E_CRAWL_TRAP_DATE_SEQUENCE").size()==1);CHECK(f.calls.size()==8);
+    }
+  }
+  TEST(query_permutations_decode_only_for_analysis_and_keep_repeated_value_order) {
+    for(bool repeated_values:{false,true}) {
+      Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+      const std::vector<std::string> queries=repeated_values?std::vector<std::string>{"tag=a&tag=b&mode=all","mode=all&tag=a&tag=b","tag=b&mode=all&tag=a","mode=all&tag=b&tag=a","%74ag=a&mode=all&tag=b"}:
+        std::vector<std::string>{"color=red&size=m&sort=asc","size=m&sort=asc&color=red","%63olor=red&sort=asc&size=m"};
+      f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(const auto& q:queries)links.push(candidate(p,std::string(base)+"/map/filter?"+q));r.at("discovery").set("candidates",links); }return r; };
+      const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);CHECK(f.calls.size()==queries.size()+1);
+      auto blocked=stopped_edges(s,id,"E_CRAWL_TRAP_QUERY_PERMUTATIONS");CHECK(blocked.size()==1);CHECK(blocked.at(0).at("url").str()==std::string(base)+"/map/filter?"+queries.back());
+      CHECK(blocked.at(0).at("trap").at("observed").num()==3);CHECK(s.job_get("alice",id).at("stop_reason").str()=="E_CRAWL_TRAP_QUERY_PERMUTATIONS");
+      for(std::size_t i=0;i+1<queries.size();++i)CHECK(f.calls.at(i+2).at("url").str()==std::string(base)+"/map/filter?"+queries.at(i));
+    }
+  }
+  TEST(parameter_combinations_stop_across_pagination_paths_before_generic_limits) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(int i=1;i<=10;++i)links.push(candidate(p,pagination_page(i)+"?color=c"+std::to_string(i)+"&size=m"));r.at("discovery").set("candidates",links); }return r; };
+    const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);auto job=s.job_get("alice",id);
+    CHECK(job.at("stop_reason").str()=="E_CRAWL_TRAP_QUERY_COMBINATIONS");CHECK(job.at("used_pages").num()==9);CHECK(f.calls.size()==10);
+    auto blocked=stopped_edges(s,id,"E_CRAWL_TRAP_QUERY_COMBINATIONS");CHECK(blocked.size()==2);CHECK(blocked.at(0).at("trap").at("observed").num()==9);
+    CHECK(job.at("trap_policy").at("query_families").num()==1);CHECK(scalar(s.raw_handle(),"SELECT COUNT(DISTINCT query_signature) FROM crawl_trap_urls WHERE query_signature!=''")==8);
+  }
+  TEST(query_dimension_bounds_count_distinct_keys_and_all_repeated_pairs) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    std::string keys=std::string(base)+"/map/keys?",pairs=std::string(base)+"/map/pairs?";
+    for(int i=0;i<9;++i) { if(i)keys+='&';keys+="k"+std::to_string(i)+"=x"; }
+    for(int i=0;i<17;++i) { if(i)pairs+='&';pairs+="tag="+std::to_string(i); }
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();links.push(candidate(p,keys));links.push(candidate(p,pairs));r.at("discovery").set("candidates",links); }return r; };
+    const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);auto blocked=stopped_edges(s,id,"E_CRAWL_TRAP_QUERY_DIMENSIONS");
+    CHECK(blocked.size()==2);CHECK(blocked.at(0).at("trap").at("limit").num()==8);CHECK(blocked.at(1).at("trap").at("limit").num()==16);CHECK(f.calls.size()==2);
+    const auto seed_id=w.submit_crawl("alice",args({keys,pairs},"explicit-complex")).at("job_id").str();drain(w);CHECK(s.job_get("alice",seed_id).at("used_pages").num()==2);CHECK(!s.job_get("alice",seed_id).at("partial").flag());CHECK(f.calls.at(2).at("url").str()==keys);CHECK(f.calls.at(3).at("url").str()==pairs);
+  }
+  TEST(changing_pagination_urls_with_identical_bodies_close_only_their_family) {
+    for(const std::string mode:{"path","query"}) {
+      Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+      const auto url=[&](int i){return mode=="path"?pagination_page(i):std::string(base)+"/map/catalog?sort=up&%70age="+std::to_string(i);};
+      f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("kind").str()=="robots")return r;auto links=Json::array();
+        if(p.at("url").str().ends_with("index"))links.push(candidate(p,url(1)));
+        for(int i=1;i<=4;++i)if(p.at("url").str()==url(i)) { readable_body(r,repeated_body);links.push(candidate(p,url(i+1)));if(i==3)links.push(candidate(p,std::string(base)+"/map/useful")); }
+        r.at("discovery").set("candidates",links);return r; };
+      auto parameters=args();parameters.set("max_depth",std::int64_t{8});const auto id=w.submit_crawl("alice",parameters).at("job_id").str();drain(w);
+      auto job=s.job_get("alice",id);CHECK(job.at("stop_reason").str()=="E_CRAWL_TRAP_DUPLICATE_PAGINATION");CHECK(job.at("used_pages").num()==5);CHECK(f.calls.size()==6);
+      CHECK(job.at("trap_policy").at("body_observations").num()==3);CHECK(job.at("trap_policy").at("limited_pagination_families").num()==1);
+      const auto blocked=stopped_edges(s,id,"E_CRAWL_TRAP_DUPLICATE_PAGINATION");CHECK(blocked.size()==1);CHECK(blocked.at(0).at("url").str()==url(4));
+      const auto pages=s.job_results("alice",id,0,20).at("items");bool useful=false,third=false;
+      for(std::size_t i=0;i<pages.size();++i) { const auto item=pages.at(i);if(item.at("url").str().ends_with("useful"))useful=item.at("body_read").flag();
+        if(item.at("url").str()==url(3)) { third=true;CHECK(item.at("body_read").flag());CHECK(item.at("trap").at("expansion_limited").flag());CHECK(s.snapshot("alice",item.at("snapshot_id").str()).at("canonical_text").str()==repeated_body); } }
+      CHECK(useful&&third);
+    }
+  }
+  TEST(queued_repeated_pages_keep_all_parent_reasons_after_restart_and_other_job_runs) {
+    Temp t;Fake f;std::string id,other;
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("kind").str()=="robots")return r;
+      if(p.at("url").str().ends_with("root-a")||p.at("url").str().ends_with("root-b")) { auto links=Json::array();for(int i=1;i<=5;++i)links.push(candidate(p,pagination_page(i)));r.at("discovery").set("candidates",links); }
+      else if(p.at("url").str().find("/catalog/page/")!=std::string::npos)readable_body(r,repeated_body);
+      return r; };
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",args({std::string(base)+"/map/root-a",std::string(base)+"/map/root-b"})).at("job_id").str();execute_pages(w,3);
+      ++f.now;other=w.submit_crawl("alice",args({std::string(base)+"/map/useful"},"other-job")).at("job_id").str();auto lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==other);w.execute_map(*lease);execute_pages(w,3);
+      CHECK(s.job_get("alice",id).at("used_pages").num()==5);CHECK(s.job_get("alice",id).at("pending_documents").num()==2);CHECK(s.job_get("alice",id).at("trap_policy").at("limited_pagination_families").num()==1);s.job_control("alice",id,"pause"); }
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));s.job_control("alice",id,"resume");drain(w);
+      const auto job=s.job_get("alice",id);CHECK(job.at("state").str()=="succeeded");CHECK(job.at("skipped_pages").num()==2);CHECK(job.at("used_pages").num()==5);CHECK(f.calls.size()==7);
+      CHECK(job.at("usage").at("external_requests").num()==6);CHECK(job.at("usage").at("reserved_requests").num()==0);CHECK(s.job_get("alice",other).at("state").str()=="succeeded");
+      const auto blocked=stopped_edges(s,id,"E_CRAWL_TRAP_DUPLICATE_PAGINATION");CHECK(blocked.size()==4);for(std::size_t i=0;i<blocked.size();++i) { CHECK(!blocked.at(i).at("followed").flag());CHECK(blocked.at(i).at("trap").at("observed").num()==3); }
+      auto rows=s.job_results("alice",id,0,20).at("items");std::size_t skipped=0;for(std::size_t i=0;i<rows.size();++i)if(rows.at(i).at("state").str()=="skipped") { ++skipped;CHECK(rows.at(i).at("trap").at("reason").str()=="E_CRAWL_TRAP_DUPLICATE_PAGINATION");CHECK(!rows.at(i).at("body_read").flag());CHECK(rows.at(i).at("snapshot_id").is_null()); }CHECK(skipped==2); }
+  }
+  TEST(explicit_pagination_seeds_are_read_after_family_limit_without_false_partial_coverage) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));std::vector<std::string> urls;for(int i=1;i<=5;++i)urls.push_back(pagination_page(i));
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("kind").str()=="page")readable_body(r,repeated_body);return r; };
+    const auto id=w.submit_crawl("alice",args(urls)).at("job_id").str();drain(w);auto job=s.job_get("alice",id);
+    CHECK(!job.at("partial").flag());CHECK(job.at("used_pages").num()==5);CHECK(job.at("trap_policy").at("body_observations").num()==5);CHECK(job.at("trap_policy").at("limited_pagination_families").num()==1);CHECK(f.calls.size()==6);
+  }
+  TEST(duplicate_nonpagination_bodies_and_distinct_pagination_bodies_remain_readable) {
+    for(const std::string mode:{"ordinary","unique"}) {
+      Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+      f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("kind").str()=="robots")return r;
+        if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(int i=1;i<=6;++i)links.push(candidate(p,mode=="ordinary"?std::string(base)+"/map/document/"+std::to_string(i):pagination_page(i)));r.at("discovery").set("candidates",links); }
+        else readable_body(r,repeated_body+(mode=="unique"?p.at("url").str():""));
+        return r; };
+      const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);auto job=s.job_get("alice",id);
+      CHECK(!job.at("partial").flag());CHECK(job.at("used_pages").num()==7);CHECK(f.calls.size()==8);CHECK(job.at("trap_policy").at("limited_pagination_families").num()==0);
+    }
+  }
+  TEST(discovered_redirect_target_is_checked_before_the_next_physical_request) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(int i=1;i<=16;++i)links.push(candidate(p,calendar_day(i)));links.push(candidate(p,std::string(base)+"/map/redirector"));r.at("discovery").set("candidates",links); }
+      else if(p.at("url").str().ends_with("redirector")) { r.set("status","redirect");r.set("http_status",std::int64_t{302});r.set("redirect_url",calendar_day(17)); }
+      return r; };
+    const auto id=w.submit_crawl("alice",args()).at("job_id").str();drain(w);CHECK(f.calls.size()==19);for(const auto& call:f.calls)CHECK(call.at("url").str()!=calendar_day(17));
+    auto denied=stopped_edges(s,id,"E_CRAWL_TRAP_DATE_FAMILY");CHECK(denied.size()==2);bool redirect=false;for(std::size_t i=0;i<denied.size();++i)if(denied.at(i).at("source").str()=="redirect")redirect=true;CHECK(redirect);
+    CHECK(s.job_get("alice",id).at("used_pages").num()==18);CHECK(s.job_get("alice",id).at("usage").at("external_requests").num()==19);CHECK(s.stats("alice").at("snapshots").num()==17);
+  }
+  TEST(schema_six_live_job_bootstraps_body_traps_and_preserves_idempotency) {
+    Temp t;Fake f;std::string id;auto parameters=args();
+    f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str().ends_with("index")) { auto links=Json::array();for(int i=1;i<=5;++i)links.push(candidate(p,pagination_page(i)));r.at("discovery").set("candidates",links); }
+      else if(p.at("kind").str()=="page")readable_body(r,repeated_body);
+      return r; };
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));id=w.submit_crawl("alice",parameters).at("job_id").str();execute_pages(w,4);CHECK(s.job_get("alice",id).at("used_pages").num()==3);drop_schema_seven(s.raw_handle()); }
+    { Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==7);
+      const auto reused=w.submit_crawl("alice",parameters);CHECK(reused.at("reused").flag());CHECK(reused.at("job_id").str()==id);CHECK(f.calls.size()==4);CHECK(reused.at("trap_policy").is_null());drain(w);
+      auto job=s.job_get("alice",id);CHECK(job.at("trap_policy").at("version").str()==crawl_trap_version);CHECK(job.at("trap_policy").at("body_observations").num()==3);CHECK(job.at("trap_policy").at("url_observations").num()==6);
+      CHECK(job.at("used_pages").num()==4);CHECK(job.at("skipped_pages").num()==2);CHECK(f.calls.size()==5);CHECK(stopped_edges(s,id,"E_CRAWL_TRAP_DUPLICATE_PAGINATION").size()==2);CHECK(s.stats("alice").at("snapshots").num()==4); }
+  }
+  TEST(seed_redirect_is_automatic_navigation_unless_target_is_itself_an_explicit_seed) {
+    for(bool target_is_seed:{false,true}) {
+      Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+      const auto start=std::string(base)+"/map/start",target=std::string(base)+"/map/target?a=1&b=1&c=1&d=1&e=1&f=1&g=1&h=1&i=1";
+      f.response=[&](const Json& p) { auto r=f.ok(p);if(p.at("url").str()==start) { r.set("status","redirect");r.set("http_status",std::int64_t{302});r.set("redirect_url",target); }return r; };
+      const auto id=w.submit_crawl("alice",args(target_is_seed?std::vector<std::string>{start,target}:std::vector<std::string>{start})).at("job_id").str();drain(w);
+      CHECK(f.calls.size()==(target_is_seed?4U:2U));const auto denied=stopped_edges(s,id,"E_CRAWL_TRAP_QUERY_DIMENSIONS");CHECK(denied.size()==(target_is_seed?0U:1U));
+      if(!target_is_seed) { CHECK(denied.at(0).at("source").str()=="redirect");CHECK(s.job_get("alice",id).at("used_pages").num()==1);CHECK(s.stats("alice").at("snapshots").num()==0); }
+      CHECK(scalar(s.raw_handle(),"SELECT COUNT(*) FROM crawl_trap_urls WHERE explicit_seed=1")== (target_is_seed?2:1));
+    }
+  }
+  TEST(oversized_legacy_observations_settle_once_without_starving_another_job) {
+    Temp t;Fake f;Store s(t.path/"db",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));
+    const auto old=w.submit_crawl("alice",args()).at("job_id").str();
+    const auto fill="WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<2000) INSERT INTO map_resources(job_id,position,url,fetch_url,kind,depth,parent,source,deletion_generation) SELECT '"+old+"',x+1,'https://map.example/map/legacy/'||x,'https://map.example/map/legacy/'||x,'page',1,'https://map.example/map/index','html',0 FROM n;";
+    sql(s.raw_handle(),fill.c_str());sql(s.raw_handle(),"DELETE FROM crawl_trap_policy;");
+    ++f.now;const auto other=w.submit_crawl("alice",args({std::string(base)+"/map/other"},"another-job")).at("job_id").str();
+    auto lease=w.lease_map();CHECK(lease);CHECK(lease->job_id==other);w.execute_map(*lease);drain(w);
+    auto job=s.job_get("alice",old);CHECK(job.at("partial").flag());CHECK(job.at("stop_reason").str()=="E_CRAWL_TRAP_STATE_LIMIT");CHECK(job.at("pending_documents").num()==0);
+    CHECK(job.at("used_pages").num()==0);CHECK(job.at("usage").at("external_requests").num()==0);CHECK(job.at("trap_policy").at("url_observations").num()==2000);
+    CHECK(s.job_get("alice",other).at("state").str()=="succeeded");CHECK(f.calls.size()==2);CHECK(!w.lease_map());
   }
 
 }

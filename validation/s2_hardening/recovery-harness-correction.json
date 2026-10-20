@@ -1,0 +1,7 @@
+{
+  "baseline_record": "e2e-recovery-baseline-command.json",
+  "initial_harness_sha256": "a521b9007f2142264d831f728732bb64b75af7d2b4124828487413da7dfef411",
+  "corrected_harness_sha256": "d96a1c6f34a5202752d4a4f87875c9c4fbb4b02ecc79ec756bd2d814fb424130",
+  "correction": "A job with a failed hop terminates state=failed and partial=true; max_depth=0 successful body reads terminate state=succeeded. These preexisting API fields are independent. Only test expectations were corrected before rerunning the actual failure boundaries.",
+  "product_defects_inferred_from_initial_run": false
+}

@@ -251,8 +251,9 @@ int main(int argc, char**argv) {
       std::string a=argv[i];
       if(a=="--help") {
         std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
-                   "        [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE [--sites FILE]]\n"
-                   "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n";
+                   "        [--sites FILE] [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
+                   "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n"
+                   "Explicit --sites also governs retained web publication while offline; omission keeps the stored policy.\n";
         return 0;
       }
       if(a=="--version") {
@@ -297,6 +298,12 @@ int main(int argc, char**argv) {
     Auth auth(authfile);
     FixtureCatalog catalog(fixtures);
     Store store(state/"metadata.sqlite");
+    auto sites=sites_file.empty()?SiteRegistry{}:SiteRegistry::load(sites_file);
+    // An explicit site configuration also governs retained local publication
+    // when this process starts without external worker capabilities.
+    // Omission keeps the durable policy; an explicit empty registry withdraws
+    // previously registered scopes.
+    if(!sites_file.empty())store.activate_site_publication(sites);
     std::unique_ptr<HttpWorker> rpc;
     std::unique_ptr<WebService> web;
     if(!worker_url.empty()) {
@@ -306,7 +313,7 @@ int main(int argc, char**argv) {
       while(!token.empty()&&(token.back()=='\n'||token.back()=='\r'||token.back()==' '))token.pop_back();
       require(token.size()>=32, "E_ARGUMENT", "Worker token file must contain a token of at least 32 characters");
       rpc=std::make_unique<HttpWorker>(host, wport, token);
-      web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file),sites_file.empty()?SiteRegistry{}:SiteRegistry::load(sites_file));
+      web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file),std::move(sites));
     }
     Service service(store, catalog, state/"backups", web.get());
     net::io_context io;

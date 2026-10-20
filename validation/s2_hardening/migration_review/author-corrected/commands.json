@@ -1,0 +1,117 @@
+[
+  {
+    "label": "compile-schema6",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/tmp/bzs-independent-migration-8m6e6or_/baseline/include",
+      "-I",
+      "/tmp/bzs-independent-migration-8m6e6or_/baseline",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/create_schema6.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s1-review/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-8m6e6or_/create_schema6"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:42.525939+00:00",
+    "finished_at": "2026-10-19T14:19:48.334134+00:00",
+    "exit_code": 0,
+    "log": "compile-schema6.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "compile-upgrade",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/workspace/scratch/80f41eb198a3/bzs861/include",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_upgrade.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s2-policy-author/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-8m6e6or_/verify_upgrade"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:48.335040+00:00",
+    "finished_at": "2026-10-19T14:19:50.871274+00:00",
+    "exit_code": 0,
+    "log": "compile-upgrade.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "compile-epoch",
+    "argv": [
+      "/usr/bin/c++",
+      "-std=c++20",
+      "-I",
+      "/workspace/scratch/80f41eb198a3/bzs861/include",
+      "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_publication_epoch.cpp",
+      "/workspace/scratch/80f41eb198a3/bzs861/build-s2-policy-author/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-migration-8m6e6or_/verify_publication_epoch"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:50.871706+00:00",
+    "finished_at": "2026-10-19T14:19:54.284451+00:00",
+    "exit_code": 0,
+    "log": "compile-epoch.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "create-schema6",
+    "argv": [
+      "/tmp/bzs-independent-migration-8m6e6or_/create_schema6",
+      "/tmp/bzs-independent-migration-8m6e6or_/fixture"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:54.353146+00:00",
+    "finished_at": "2026-10-19T14:19:54.415438+00:00",
+    "exit_code": 0,
+    "log": "create-schema6.log",
+    "log_sha256": "53b9ebf6c199aa1570bcd6ee5460f7cd16d13c26aa24c54cee69b6eb5f6a7eef"
+  },
+  {
+    "label": "verify-upgrade",
+    "argv": [
+      "/tmp/bzs-independent-migration-8m6e6or_/verify_upgrade",
+      "/tmp/bzs-independent-migration-8m6e6or_/fixture",
+      "/tmp/bzs-independent-migration-8m6e6or_/upgraded"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:54.416916+00:00",
+    "finished_at": "2026-10-19T14:19:54.506690+00:00",
+    "exit_code": 0,
+    "log": "verify-upgrade.log",
+    "log_sha256": "3539bd0f7d88010b6cbfc098e2560c0960ef9809b37fd6d8d220ec70a1a2d318"
+  },
+  {
+    "label": "verify-epoch",
+    "argv": [
+      "/tmp/bzs-independent-migration-8m6e6or_/verify_publication_epoch",
+      "/tmp/bzs-independent-migration-8m6e6or_/fixture",
+      "/tmp/bzs-independent-migration-8m6e6or_/epochs"
+    ],
+    "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+    "started_at": "2026-10-19T14:19:54.507188+00:00",
+    "finished_at": "2026-10-19T14:19:55.035712+00:00",
+    "exit_code": 0,
+    "log": "verify-epoch.log",
+    "log_sha256": "f6b8839536f4fa733636a6faf4e780ac595bcc176e8eeaea3ba114694b95d626"
+  }
+]

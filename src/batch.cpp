@@ -328,9 +328,10 @@ Json Store::control_read_locked(const std::string& owner,const std::string& id,c
 
 Json Store::job_results(const std::string& owner,const std::string& id,std::int64_t offset,std::int64_t limit) {
   std::lock_guard lock(mutex_);
+  Transaction transaction(db_);refresh_site_publication_locked();
   auto kind=job_locked(owner,id).at("kind").str();
-  if(kind=="web.map")return map_results_locked(owner,id,offset,limit);
-  if(kind=="web.crawl")return crawl_results_locked(owner,id,offset,limit);
+  if(kind=="web.map") { auto result=map_results_locked(owner,id,offset,limit);transaction.commit();return result; }
+  if(kind=="web.crawl") { auto result=crawl_results_locked(owner,id,offset,limit);transaction.commit();return result; }
   require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");
   auto job=read_job_locked(owner,id);
   Sql rows(db_,"SELECT position,url,state,attempts,external_requests,content_bytes,unknown_requests,unknown_bytes,usage_unknown,snapshot_id,receipt_json,error_code FROM read_job_items WHERE job_id=? AND position>=? ORDER BY position LIMIT ?");
@@ -342,17 +343,22 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
     item.set("content_bytes",rows.num(5));item.set("unknown_requests_charged",rows.num(6));item.set("unknown_bytes_charged",rows.num(7));
     item.set("usage_unknown",rows.num(8)!=0);item.set("error_code",rows.text(11).empty()?Json():Json::string(rows.text(11)));
     if(rows.text(2)=="succeeded") {
-      Sql visible(db_,"SELECT 1 FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.owner=? AND d.deleted=0");
+      Sql visible(db_,"SELECT s.index_allowed,bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'') FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.owner=? AND d.deleted=0");
       visible.bind(1,rows.text(9));visible.bind(2,owner);
       const bool available=!rows.text(9).empty()&&visible.step();
       item.set("available",available);
-      if(available&&!rows.text(10).empty())item.set("receipt",Json::parse(rows.text(10)));
+      if(available&&!rows.text(10).empty()) {
+        auto receipt=Json::parse(rows.text(10));const auto mode=visible.num(1);
+        receipt.set("indexed",receipt.at("indexed").flag()&&visible.num(0)!=0&&mode<2);
+        auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");deployment.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");deployment.set("generation",site_publication_cached_generation_);
+        receipt.set("site_publication",deployment);item.set("receipt",receipt);
+      }
     }
     items.push(item);next=rows.num(0)+1;
   }
   Json out=Json::object();out.set("job_id",id);out.set("state",job.at("state"));out.set("partial",job.at("partial"));
   out.set("items",items);out.set("total_items",job.at("total_items"));out.set("next_offset",next);
-  out.set("has_more",next<job.at("total_items").num());return out;
+  out.set("has_more",next<job.at("total_items").num());transaction.commit();return out;
 }
 
 std::string Store::active_read_attempt(const std::string& owner,const std::string& id) {

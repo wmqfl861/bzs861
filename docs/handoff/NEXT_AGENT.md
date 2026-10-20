@@ -1,37 +1,37 @@
 # 下一位开发者的接续入口
 
-更新：2026-10-18。当前增量为 **0.1.4 S2 crawl development candidate**，从已交付 0.1.3 `8a4e0f4cc630627ffa91c49598c66fec7fb4291d` 接续。该 SHA 是输入基线，不是最终发布提交；先检查真实远端 main、当前工作区及对应 CI。
+更新：2026-10-19。当前增量为 **0.1.5 S2 crawl hardening candidate**，从已交付0.1.4 `90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63` 接续。该SHA是输入基线，不是本批发布提交；先读取真实远端main、工作区及其CI。
 
 ## 阅读顺序
 
-1. [本批交接](S2_CRAWL_20261018.md)、[当前验证说明](../../validation/s2_crawl/README.md) 和 [报告](../../validation/s2_crawl/test_report.json)。
-2. [README](../../README.md)、[开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)。
-3. [SITE_CRAWLING](../SITE_CRAWLING.md)、[SITE_DISCOVERY](../SITE_DISCOVERY.md)、[API](../API.md)、[CONFIGURATION](../CONFIGURATION.md)、[SECURITY](../SECURITY.md)。
-4. [蓝图 v1.2](../planning/development_blueprint_v1.2.md)、[切片/验收映射](../planning/slices_v1.2.json)、原规格/backlog 与 [Claude S1 接收审查](CLAUDE_S1_REVIEW_20261018.md)。
+1. [本批交接](S2_HARDENING_20261019.md)、[验证说明](../../validation/s2_hardening/README.md)、[当前报告](../../validation/s2_hardening/test_report.json)。
+2. [存量发布与升级](../SITE_PUBLICATION.md)、[正文爬取](../SITE_CRAWLING.md)、[API](../API.md)、[安全](../SECURITY.md)。
+3. [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[蓝图v1.2](../planning/development_blueprint_v1.2.md)和[计划/验收映射](../planning/slices_v1.2.json)。
+4. 原规格/backlog、[0.1.4交接](S2_CRAWL_20261018.md)与[Claude S1接收审查](CLAUDE_S1_REVIEW_20261018.md)。
 
 ## 当前边界
 
-83 包、161 验收全部保留，34 项部分实现、49 项未开始、0 项完整签收，S0/S1/S2 均未签署完成。CRAWL-01 / CRAWL-03 本批新增部分实现；QA-02、SESSION-02 尚未开始。旧随包 `implemented` 标签和测试数量都不是整包验收。
+83包、161验收、10切片全部保留，34项部分实现、49项未开始、0项完整签收。S0/S1/S2均未签署完成。CRAWL-01/03继续部分实现，QA-02、SESSION-02尚未开始；测试数量不是产品完成比例。
 
-`map.submit` 产出 `body_read=false` 的未读候选；`read_many.submit` 读取最多 20 个显式 URL；`crawl.submit` 在已审核站点范围内读取有界静态正文并保存边。正文抓取继续使用固定 BzsBot、有效 robots、精确站点清单身份与实际连接层策略。默认站点为空，17 个搜索来源仍禁用，合成 fixture 不批准生产站点。
+核心独占业务、数据库、权限、预算和调度。map产出未读候选，read_many读取显式列表，crawl递归读取受审范围内有界静态正文。默认站点空，17搜索来源禁用。robots/实际连接/精确站点配置身份、owner隔离和删除代数均继续检查。
 
-核心持久控制 frontier、请求/字节/页预算、请求租约、同源配额/冷却、map/crawl 轮转和删除屏障。未知请求保留全部预留用量，不自动重发已完成或未知跳。暂停后重启已覆盖，不得扩大为断电或长时故障验收。边的 `followed` 表示准入前沿，不表示正文读取成功。
+0.1.5站点上限持久化：显式--sites离线启动也生效，省略不能清除，空清单撤回历史登记范围，过期按核心时钟即时收紧。完整URL链与读取代际不可变，旧实例和后来放宽不能复活旧冻结内容。候选资格立即门控；物理FTS清理每事务最多128文档。旧crawl缺失完整历史链时保守撤发布，原正文/证据保留，需完整新读恢复新的表示。
 
-正文、公开摘要、当前策略与历史搜索表示分别保存。noindex 隐藏新的和旧分页中的相关结果；nosnippet/data-nosnippet 不改变 owner 显式读取的完整快照。有效限制性响应即使正文保存失败，也不能让旧索引继续暴露或被失败的宽松响应恢复。重定向链限制、历史最终 URL、站点 links_only 上限及元数据解析界限都有回归，后续入口必须接入。
+`bzs-crawl-trap-1`保存日期族/连续步数、query维度/排列/组合和重复分页完整正文观测。实际URL和同名query键值顺序不变。明确入口的豁免不传给自动重定向。每job2000/全局70000观测有界，拒绝边有版本化原因；不一致超界历史的容错夹具不能描述成正常旧版本自然输出。
 
-40 条黄金查询原文字/ID 和 20 development / 15 regression / 5 holdout 已冻结。0.1.2 云端仅两次 DNS 失败、0 HTTP 样本；本批不重复真实探测，真实来源 S0 与人工相关性仍未完成。
+真实SIGKILL覆盖Worker派发前、Worker完整回包丢失、待派发目标删除；另覆盖任务已提交但accepted回执丢失。未知跳保留整个预留，不自动重发；恢复继续未派发尾部，已提交快照/证据/边和幂等结果保持。四个边界不是任意指令、物理断电或长期压力验收。
 
-## 接续顺序
+## 下一批顺序
 
-1. 核对最终提交源码清单与 Linux/Windows Actions，先修实际失败。保留十套普通 CTest、五套原生 sanitizer 及 Windows 六套原生/HTTP 门槛；不得把跳过或非阻塞失败当通过。
-2. 保留 schema 6 对 schema 1、两种 schema 2、schema 3/4/5 的迁移、隔离拒绝、旧证据/任务与删除语义。不要手工清空队列或策略表规避容量限制；通用 GC 和独立撤销日志尚未完成。
-3. 继续 CRAWL-01 的专门 trap 策略、长期队列/容量/故障矩阵与 CRAWL-03 的完整刷新/发布验收；已有深度/查询变体保护不能替代原 FT-028/FT-029 全部要求。冻结搜索表示不得只依赖可变的当前重定向目标。
-4. 按 [S0_PROBE](../S0_PROBE.md) 在目标部署环境取得真实可用性证据，并独立审核免费/自动访问/缓存再发布与有效期。至少两个可用来源包含真实通用网页源后，仍需逐项判断全部 S1 标准。
-5. QA-02 建立真实人工 qrels、评分 runner、预冻结阈值和留出评测，区分漏标、来源贡献、解析错误与网络失败。解析回放一致性不等于相关性成绩。
-6. SESSION-02 的去重/断线重取/取消/过期/背压，以及独立撤销日志与隔离恢复继续按等效语义推进；没有撤销连续性不允许恢复服务。保留后续文档、多媒体、用户模型、私人资料、订阅与完整 Windows 交付。
+1. 检查精确发布提交的Linux/Windows CI与本批源码清单，先修实际失败。保持12套普通CTest、6个原生sanitizer及Windows7套原生/HTTP阻塞门槛；缺依赖跳过不算通过。
+2. 继续CRAWL-01的长期保留/容量/公平性故障矩阵、广泛网站trap负例，以及CRAWL-03的完整刷新/公开集合等效验收。scope水位与绑定不能在新入口被绕过，通用GC和历史清理必须保持引用、计费及撤销性质。
+3. 保留schema7对旧schema1/两种2/3/4/5/6的兼容，隔离先拒绝，旧证据/任务/删除语义不回退。已丢失的历史链不能补造；不要手工清空队列、策略或账本规避容量。
+4. 按[S0_PROBE](../S0_PROBE.md)在目标部署取得真实可用性和独立审核证据，保留免费/自动访问/缓存再发布/有效期要求。至少两个可用来源包含通用网页源后，仍需逐条判断S1标准。
+5. QA-02建立真实人工qrels、评分runner、预冻结阈值和留出评测，区分漏标、来源贡献、解析和网络失败；合成回放一致性不能替代相关性成绩。
+6. SESSION-02断线重取/去重/取消/过期/背压与独立撤销日志、隔离恢复按原等效语义推进。后续文档、多媒体、用户模型、私人资料、订阅和Windows完整交付仍保留。
 
 ## 长期约束
 
-业务与权限只维护一套 C++ 核心，HTTP/CLI/MCP 映射同一操作，Worker 不写数据库。生产代理、远程 DNS、allow_cidrs 放宽仍拒绝，回环映射仅用于显式测试。不得付费回退、绕过封禁或验证码；用户模型配置不授权网页访问内网。
+40条黄金查询原文/ID与20 development、15 regression、5 holdout冻结不变。0.1.2云端只有两次DNS失败、0HTTP观察，本批不新增真实来源或站点批准。生产代理/远程DNS/allow_cidrs放宽继续拒绝，回环映射仅限显式测试；不付费回退、不绕过封禁或验证码。
 
-原 v1.1、规格、Schema 与历史验证保留原状。规划保留全部 ID、验收文字、依赖和机制替换等效要求。私人输入、凭据、运行数据库和原 bundle 不公开。报告不预写未来自身 SHA 或未执行的 CI；发布后核验精确 commit/tree 与工作流。
+页面和站点发布水位不是独立撤销日志。没有撤销连续性，不允许解除备份隔离恢复服务。原v1.1、规格、backlog、Schema、依赖锁和历史验证保留。禁止用当前实现切片缩减原包/验收/依赖或公开凭据、数据库和私人输入。提交绑定源码与证据，发布后检查实际commit/tree与CI，不预写未来自身SHA。

@@ -1,0 +1,659 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.5",
+  "stage": "S2 crawl hardening candidate",
+  "recorded_at_utc": "2026-10-19T14:32:52.545771+00:00",
+  "result": "passed_local_gates_scope_limited_candidate",
+  "provenance": {
+    "repository": "https://github.com/wmqfl861/bzs861",
+    "base_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+    "base_tree": "b51e0f126c49727506ad2cc08ff3912d59108703",
+    "previous_version": "0.1.4",
+    "previous_report": "validation/s2_crawl/test_report.json",
+    "historical_claude_tip": "2b121fcc6bb47973a4315b6684d429651626025c",
+    "scope": "Continue the integrated published baseline; earlier Claude intake is historical provenance, not rerun product acceptance."
+  },
+  "source_binding": {
+    "file": "validation/s2_hardening/source_manifest.json",
+    "sha256": "bcd93696fc9553b4998ac66c716b0ab5460d5e9300fa82ace7ab16de9b4d4f96",
+    "file_count": 166,
+    "git_binding": "Containing Git commit binds source, report and evidence. Query exact-commit CI after publication; no future self-referential SHA is claimed."
+  },
+  "execution_binding": {
+    "manifest": "validation/s2_hardening/execution_inputs-v2.json",
+    "sha256": "921704fcfc92ca8cd128da3df3c2fa16b2612b7aa5fa35032d98695b432b5f07",
+    "input_files": 153,
+    "unchanged_through_final_commands": true,
+    "post_validation_document_paths": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/API.md",
+      "docs/CONFIGURATION.md",
+      "docs/DEVELOPMENT_STATUS.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/SECURITY.md",
+      "docs/SITE_CRAWLING.md",
+      "docs/SITE_DISCOVERY.md",
+      "docs/SITE_PUBLICATION.md",
+      "docs/handoff/NEXT_AGENT.md",
+      "docs/handoff/S2_HARDENING_20261019.md",
+      "docs/implementation_status.json",
+      "docs/planning/README.md",
+      "docs/planning/development_blueprint_v1.2.md"
+    ],
+    "debug_binary_sha256": {
+      "build-s2-hardening-review/searchd": "fd98043110b777d9bc7187209f17ea882470a2f3a9140df8350dc9a671227aa1",
+      "build-s2-hardening-review/searchctl": "187286ae06120f6f46da4746f59b73fcf89c83b7af818fe2f16803ce90d9205b",
+      "build-s2-hardening-review/bzs_tests": "abd8ef94b573107b0fb1b68df6094291e4c84fc3ecaee109f2ea84c23d05ffd8",
+      "build-s2-hardening-review/bzs_batch_tests": "a7c1325972a884088303a9f6da4c818dc2734ff20a4dfebbcc81dc51dab80ddc",
+      "build-s2-hardening-review/bzs_map_tests": "48db1b72ab6b9b0017a8e113b4b5071eac0c54b13794509e2907937eb1c0410d",
+      "build-s2-hardening-review/bzs_crawl_tests": "e3b7fb2525329eaf630438f5bf7117731325b595044e70f353ec921ece67955d",
+      "build-s2-hardening-review/bzs_site_publication_tests": "e4d06e2c0610f06d8631002f22c2c956d8db9f4acac1307644918177047a03bf",
+      "build-s2-hardening-review/bzs_contract_tests": "742edd21546008617978650f40b35b573bc4a781921d7ce9d0460027e6fe89fd",
+      "build-s2-hardening-review/CTestTestfile.cmake": "a65c6ace8e8e54f06a86651eb2461a5991332b40472d19e3f94f67d7069686c0"
+    },
+    "asan_binary_sha256": {
+      "build-s2-hardening-asan/bzs_tests": "e6319facd4d8c67551644029501cbfb2cbe4a1d7a25035e82fcea93383f7e09c",
+      "build-s2-hardening-asan/bzs_batch_tests": "f0399a2753085ee71c139c0cab8d6f3ed933b85b8888241c56e5fa17abac7249",
+      "build-s2-hardening-asan/bzs_map_tests": "09d63980e3fee733afb9c8851ff3ed78712f3fdac38dfa78f2e152dfd8a8d161",
+      "build-s2-hardening-asan/bzs_crawl_tests": "6331773381fad15aaf9909a39466a4afd897a2eeaeb96884c18f360fbda33eb2",
+      "build-s2-hardening-asan/bzs_site_publication_tests": "a1746a93080483cdd3b97605746cbda599748aa12e0f0e24efdb6ec3d3045125",
+      "build-s2-hardening-asan/bzs_contract_tests": "36e4713ba9c41c2f7cfc88df6e7af0dad64969d28fc7b2bace1c604c4257df0c",
+      "build-s2-hardening-asan/CTestTestfile.cmake": "9626a3d411e543a9fbb74ce2af587b5a908647c4d13b216e43ff73ce615ce1f4"
+    },
+    "independently_reviewed_final_core_library_sha256": "0385b54988c2c7e8794f684dc0a4db56cc88fb189cd3033dccd265d0b8fb22e7",
+    "parallel_build_scope": "Only binaries belonging to each build output directory are bound to that build. Final test records must match the executed final binary before and after."
+  },
+  "environment": {
+    "record": "environment.json",
+    "sha256": "3d3a784a6d0766f3dfbca4c6dba86ec07c0264cce9ab02ce71b6460c1e9071c0",
+    "preparation_record": "environment-preparation.json",
+    "python_editable_version": "0.1.5",
+    "build_parallelism": 1
+  },
+  "dependency_lock": {
+    "file": "tools/requirements-s1-lock.txt",
+    "sha256": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb",
+    "changed": false
+  },
+  "commands": [
+    {
+      "name": "debug-configure-release",
+      "record": "debug-configure-release-command.json",
+      "log": "debug-configure-release.log",
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build-s2-hardening-review",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.008
+    },
+    {
+      "name": "debug-build-release",
+      "record": "debug-build-release-command.json",
+      "log": "debug-build-release.log",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-s2-hardening-review",
+        "-j1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.776
+    },
+    {
+      "name": "asan-configure-release",
+      "record": "asan-configure-release-command.json",
+      "log": "asan-configure-release.log",
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "build-s2-hardening-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_SANITIZERS=ON",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.85
+    },
+    {
+      "name": "asan-build-release",
+      "record": "asan-build-release-command.json",
+      "log": "asan-build-release.log",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-s2-hardening-asan",
+        "--target",
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "-j1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.229
+    },
+    {
+      "name": "ctest-final",
+      "record": "ctest-final-command.json",
+      "log": "ctest-final.log",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "build-s2-hardening-review",
+        "--output-on-failure",
+        "-V"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 99.443
+    },
+    {
+      "name": "asan-core",
+      "record": "asan-core-command.json",
+      "log": "asan-core.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.47
+    },
+    {
+      "name": "asan-batch",
+      "record": "asan-batch-command.json",
+      "log": "asan-batch.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_batch_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.82
+    },
+    {
+      "name": "asan-map",
+      "record": "asan-map-command.json",
+      "log": "asan-map.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_map_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.447
+    },
+    {
+      "name": "asan-crawl",
+      "record": "asan-crawl-command.json",
+      "log": "asan-crawl.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_crawl_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 28.703
+    },
+    {
+      "name": "asan-site-publication",
+      "record": "asan-site-publication-command.json",
+      "log": "asan-site-publication.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_site_publication_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.377
+    },
+    {
+      "name": "asan-contracts",
+      "record": "asan-contracts-command.json",
+      "log": "asan-contracts.log",
+      "argv": [
+        "build-s2-hardening-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.201
+    },
+    {
+      "name": "planning-release",
+      "record": "planning-release-command.json",
+      "log": "planning-release.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "docs/planning/tools/plan_v1_2.py",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.084
+    },
+    {
+      "name": "plan-guard-release",
+      "record": "plan-guard-release-command.json",
+      "log": "plan-guard-release.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "tools/test_plan_guard.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.5
+    },
+    {
+      "name": "design-contracts-release",
+      "record": "design-contracts-release-command.json",
+      "log": "design-contracts-release.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "docs/planning/tools/validate_contracts.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.9
+    },
+    {
+      "name": "dependencies-release",
+      "record": "dependencies-release-command.json",
+      "log": "dependencies-release.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.603
+    },
+    {
+      "name": "launcher",
+      "record": "launcher-command.json",
+      "log": "launcher.log",
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-s1/bin/python",
+        "validation/s2_hardening/launcher_smoke.py",
+        "--server",
+        "build-s2-hardening-review/searchd"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.271
+    }
+  ],
+  "integrated_ctest": {
+    "passed_suites": 12,
+    "failed_suites": 0,
+    "skipped_suites": 0,
+    "elapsed_seconds": 99.4,
+    "log": "ctest-final.log",
+    "suites": [
+      {
+        "name": "core",
+        "passed": 81,
+        "failed": 0,
+        "assertions": 713
+      },
+      {
+        "name": "batch",
+        "passed": 18,
+        "failed": 0,
+        "assertions": 439
+      },
+      {
+        "name": "map",
+        "passed": 24,
+        "failed": 0,
+        "assertions": 462
+      },
+      {
+        "name": "crawl",
+        "passed": 51,
+        "failed": 0,
+        "assertions": 2550
+      },
+      {
+        "name": "site_publication",
+        "passed": 24,
+        "failed": 0,
+        "assertions": 285
+      },
+      {
+        "name": "contracts",
+        "passed": 55,
+        "failed": 0,
+        "retained_design_fixtures": 34,
+        "additional_native_cases": 21,
+        "assertions": 269
+      },
+      {
+        "name": "http_cli",
+        "passed": 20,
+        "failed": 0
+      },
+      {
+        "name": "e2e_web",
+        "passed": 13,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 9.3
+      },
+      {
+        "name": "e2e_map",
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 5.672
+      },
+      {
+        "name": "e2e_crawl",
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 13.646
+      },
+      {
+        "name": "e2e_crawl_recovery",
+        "passed": 8,
+        "failed": 0,
+        "errors": 0,
+        "elapsed_seconds": 25.664
+      },
+      {
+        "name": "python_worker",
+        "passed": 687,
+        "failed": 0
+      }
+    ]
+  },
+  "native_sanitizers": {
+    "address": true,
+    "undefined_behavior": true,
+    "detect_leaks": true,
+    "scope": [
+      "core",
+      "batch",
+      "map",
+      "crawl",
+      "site_publication",
+      "native_contracts"
+    ],
+    "runs": [
+      {
+        "name": "asan-core",
+        "record": "asan-core-command.json",
+        "log": "asan-core.log",
+        "exit_code": 0
+      },
+      {
+        "name": "asan-batch",
+        "record": "asan-batch-command.json",
+        "log": "asan-batch.log",
+        "exit_code": 0
+      },
+      {
+        "name": "asan-map",
+        "record": "asan-map-command.json",
+        "log": "asan-map.log",
+        "exit_code": 0
+      },
+      {
+        "name": "asan-crawl",
+        "record": "asan-crawl-command.json",
+        "log": "asan-crawl.log",
+        "exit_code": 0
+      },
+      {
+        "name": "asan-site-publication",
+        "record": "asan-site-publication-command.json",
+        "log": "asan-site-publication.log",
+        "exit_code": 0
+      },
+      {
+        "name": "asan-contracts",
+        "record": "asan-contracts-command.json",
+        "log": "asan-contracts.log",
+        "exit_code": 0
+      }
+    ],
+    "limitation": "HTTP/E2E and Python use the ordinary build; Python is not sanitizer instrumented."
+  },
+  "additional_checks": {
+    "design_contract_reference": {
+      "passed": 34,
+      "failed": 0,
+      "scope": "Overlaps retained native contract fixtures."
+    },
+    "planning": {
+      "passed_regressions": 13,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "product_acceptance_cases_executed": 0,
+      "only_current_execution_metadata_changed": true
+    },
+    "dependency_consistency": {
+      "exit_code": 0,
+      "evidence": "dependencies-release.log"
+    },
+    "launcher_lifecycle": {
+      "status": "passed",
+      "commands": 7,
+      "assertions": 18,
+      "report": "launcher_smoke.json"
+    },
+    "independent_native_review": {
+      "passed_migration_cases": 2,
+      "passed_publication_epoch_cases": 8,
+      "report": "migration_review/final-root/review.json",
+      "database_schema_rewritten_by_fixture": false,
+      "inputs_unchanged": true
+    }
+  },
+  "baseline_reproduction": {
+    "published_searchd_sha256": "b34653fccae3b0104e3e987f100469d3be06e77ac5bd127a8f16e964f4c4acf2",
+    "identity_record": "baseline-binary.json",
+    "corrected_log": "e2e-recovery-baseline-corrected.log",
+    "crash_and_ack_cases_passed": 4,
+    "offline_policy_cases_expected_failed": 4,
+    "native_supplement": "site-publication-baseline.json",
+    "interpretation": "Only four offline policy cases reproduce defects on the exact retained searchd. Four crash/ACK cases extend evidence for previously implemented recovery. The supplemental native baseline lacks a separately recorded executable hash."
+  },
+  "intermediate_attempts": {
+    "baseline_harness_initial_errors": {
+      "record": "recovery-harness-correction.json",
+      "original_log": "e2e-recovery-baseline.log",
+      "counted_as_product_defects": false
+    },
+    "first_frozen_inputs": {
+      "file": "execution_inputs.json",
+      "revision_record": "execution-revision.json",
+      "difference": "One runtime correction disables a redundant inner FTS sweep in crawl job.results. Final runtime gates bind v2."
+    },
+    "editable_package_install": {
+      "record": "package-install-final-command.json",
+      "bound_manifest": "execution_inputs.json",
+      "note": "Installation precedes the one-line native v2 revision; all Python/package inputs are identical in both manifests. Final dependency and runtime gates bind v2."
+    },
+    "independent_harness_compile_correction": "migration_review/author-final retains the initial harness type error; author-corrected and final-root both pass. See migration_review/README.md.",
+    "preparation_and_intermediate_records_retained": true
+  },
+  "artifact_integrity": {
+    "record": "artifact_integrity.json",
+    "all_final_log_and_execution_bindings_verified": true
+  },
+  "cross_review": {
+    "record": "validation/s2_hardening/independent_review.json",
+    "resolved_grouped_findings": 8,
+    "direct_independent_execution": "2 actual schema6 migration cases plus 8 publication epoch combinations on the final root library.",
+    "broad_gate_execution": "Root executed full suites and launcher; independent context reviewed logs and bindings.",
+    "full_product_signoff": false
+  },
+  "product_status": {
+    "work_packages": 83,
+    "partial": 34,
+    "not_started": 49,
+    "full_work_packages_accepted": 0,
+    "acceptance_ids_preserved": 161,
+    "full_acceptance_suite_executed": false,
+    "s0_completed": false,
+    "s1_completed": false,
+    "s2_completed": false,
+    "robots_01": "partial",
+    "map_01": "partial",
+    "crawl_01": "partial",
+    "crawl_03": "partial",
+    "qa_02": "not_started",
+    "session_02": "not_started"
+  },
+  "preserved_inputs_sha256": {
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+    "tests/golden/queries.json": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798",
+    "tests/golden/manifest.json": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "docs/planning/functional_spec_v0.3.md": "ce5e2cedaa9cb84e72a4460ac5f3e14b86ae39164e66e70a4e9eae48c85160e8",
+    "docs/planning/development_blueprint_v1.1.md": "176daad8328d91a6840a12f8b40719df4d903e4c79a0f962faae85d355d72b7d",
+    "docs/planning/requirements_and_backlog.json": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+    "tools/requirements-s1-lock.txt": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb"
+  },
+  "default_admission": {
+    "registered_sites": 0,
+    "enabled_sites": 0,
+    "registered_search_sources": 17,
+    "enabled_search_sources": 0,
+    "changed": false
+  },
+  "external_product_requests": {
+    "production_site_requests": 0,
+    "real_source_attempts": 0,
+    "paid_service_requests": 0,
+    "model_requests": 0,
+    "scope_note": "Synthetic loopback fixture HTTP is separately exercised. Dependency installation and GitHub delivery are development infrastructure operations."
+  },
+  "github_ci": {
+    "status_at_report_creation": "must_check_workflow_of_containing_commit_after_publication",
+    "linux_required": "Twelve ordinary CTest suites, six native sanitizer executables, reference contracts and planning safeguards.",
+    "windows_required": "Blocking core, batch, map, crawl, site_publication, contracts and HTTP/CLI on Windows2022.",
+    "full_windows_worker_packaging": "Deferred to S9; not claimed by native Windows CI."
+  },
+  "known_limits": [
+    "No production-site approval, live-source availability, human qrels or relevance score is inferred from synthetic fixtures.",
+    "Trap rules are finite versioned heuristics, not exhaustive website classification or approximate-body deduplication.",
+    "Exact SIGKILL/RPC/ACK boundaries are tested; arbitrary instruction power loss, disk failure and long-duration stress are not claimed.",
+    "Schema6 did not retain complete intermediate crawl site identity. Migration withdraws unverified legacy publication while preserving private body/evidence; a complete eligible new read is required.",
+    "Stale already-open Store activation is fenced; a newly opened Store explicitly activating an old disk file is a new deployment decision.",
+    "Previously admitted legacy dates/query URLs retain admission. Legacy terminal trap_policy may remain null if the scheduler never resumes it.",
+    "The overcapacity legacy fixture represents inconsistent/corrupt historical state; normal 0.1.4 request/URL bounds already limit observations to 2000.",
+    "Map remains unread discovery; body publication observations apply to crawl and explicit web.read/read_many.",
+    "Global retention is bounded without general automatic audit/frontier GC or a separate revocation log.",
+    "Byte accounting measures application-consumed decompressed response bodies, not wire/TLS/header overhead.",
+    "No full161-item product acceptance, human relevance evaluation, authorized restore-to-service, parser system sandbox, SESSION-02 or full Windows Worker packaging is claimed."
+  ],
+  "evidence_sha256": {
+    "README.md": "9e65e9c68d4fc52d9872a9c197b3774510b716e89582b1e123e13695039b0b06",
+    "artifact_integrity.json": "d8d63600e3d196b1310cc589eb772a9a508e3ac791158df137f275d5501891a8",
+    "asan-batch-command.json": "655d3b6bad11aa916f86587953d2930b351de4f73257d166a15f9e99b1134fc0",
+    "asan-batch.log": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+    "asan-build-final-command.json": "e73bca0a02a3a991a72c7c0754f0fd38646bbdb8ccb55d731087aa0c259eb4fa",
+    "asan-build-final.log": "01936b01e50c3384855da4f8250cf811d444e798b2d0c1816618f4f91fbd2e06",
+    "asan-build-release-command.json": "717fcd15c31831e417da1477d55684da39cd75fbec058fb31bd3d819e180a44d",
+    "asan-build-release.log": "864d53c260bb43bd3c045910b1af7881d3fea4c79a547c6788fef1189053a2e2",
+    "asan-configure-final-command.json": "786b6d94d25f26645e32b9af4d94d845a2e82442ba087bed718e44ba762a2b1e",
+    "asan-configure-final.log": "0095a7da9039d34930b25f9b85bb22bb2e640ed54a318f75f0abb50a778a69fd",
+    "asan-configure-release-command.json": "63d72f008cdef9a1e176a10babc77fac7a0ad8a44cf2168f40fdb3e96522abbd",
+    "asan-configure-release.log": "b4b9fdb96a1e6bd2ae9156d4d9be2a8e288caec5879d4a668737a538065d464f",
+    "asan-contracts-command.json": "b61168c7642bfbe5a0dbccae95f69c59e3006a3c01d258d8816d195ce183e6cd",
+    "asan-contracts.log": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "asan-core-command.json": "07a394b549cdaf1f14164c4715ff41340eda3f8e5bee0f427b6621984b7cee29",
+    "asan-core.log": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+    "asan-crawl-command.json": "e318594ade6e96caee21ada1fe873452bffaacee2b90255f3f18af4b3ff50d0b",
+    "asan-crawl.log": "dcb8c02bf045e3e33e93a5815368359e8ca2fb2c895695280053b82decf14d1e",
+    "asan-map-command.json": "c0be6587a85f00b8fd729565f303c62e404f57056008798cc4960e841de3e142",
+    "asan-map.log": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+    "asan-site-publication-command.json": "051c209b7c877f1dfb158f1f1c7e354f6fc2f7918b82a46f38e5ecae25e28c56",
+    "asan-site-publication.log": "3750c8d4d91ac73b034250f44c4b261704001b7f406090ab9e606a30a18f7702",
+    "baseline-binary.json": "7383b1aabf261af48d4057e085e254eabab9534f9a7fa672edb2de8c643e0ba0",
+    "ctest-final-command.json": "f40f34892926c10acdf2d0708d109d6d665445ce17ea336a6b097d307fb30fee",
+    "ctest-final.log": "ce0db2f9d4007ecd81e6dbd75d8e5a7c3ce38eff839b7c6cc7b94eb235eb3e88",
+    "debug-build-final-command.json": "5fd007438b1acdcacfc530f8180ad07aeaa2f2075671c2324be24e216feaa855",
+    "debug-build-final.log": "f583e2d068f41a20d5003f46fe3afa46bb1f4ae4ea4080eb27ea9e779f101019",
+    "debug-build-preparation-command.json": "b5b55ae6400cff8afa21fabdc83e54fcc528440ddf1c42276c2d1f6b66fc8754",
+    "debug-build-preparation.log": "b5b0aba4a8afd679f2cede30c5ec324bf1e7dc9bcc8d751414c331125ba8a6d4",
+    "debug-build-release-command.json": "05136246a04f23dfeed4cb7b0061ea90017bd06bebeddac7a9751bf1c4cce475",
+    "debug-build-release.log": "0ce106895554b9555db74426d00e39e153e2c226614891455f585b5815b11c3d",
+    "debug-configure-final-command.json": "3912a70d1c3927da0e4abbdd615eadfd120cbc9b16e95a7cba3366b133ff9c3b",
+    "debug-configure-final.log": "cd94b6ed0df869f728971b75336c292f2f106758d41c07e9bc784c9ef5c82e21",
+    "debug-configure-preparation-command.json": "a9d23e292f622942aab235683257b6932c958c28315e4a26c3459083380415c8",
+    "debug-configure-preparation.log": "dd91fb120f2fd679673c33f6ddc552fbc2d649faf0592fda9c454257c9cce84b",
+    "debug-configure-release-command.json": "3e531db2171afcec54da66bd902147eb6d29754249889a5ba02f9a716c40498d",
+    "debug-configure-release.log": "d9455827ebadc0594226ee7b65d93f93dc2bc12c84096f5188d09f68c4aa1fa3",
+    "dependencies-final-command.json": "cef8341697d5fd3aa6aeaa06d9c3acd18b2dcf4fb0b62d95e6be4188d45cc936",
+    "dependencies-final.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "dependencies-release-command.json": "882fdc70088e4f6823a76a745e858e8666a6cc030198875591d8dce3d02b741b",
+    "dependencies-release.log": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+    "design-contracts-final-command.json": "fb3451aef18de28523a3c57433dce25a2d0c9b6f491c25fabb4803b4a3e46853",
+    "design-contracts-final.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "design-contracts-release-command.json": "876ba1d1506e2a0f8f16be2b9baea19ca08ec63732a3a049f41f75b1a5b748e3",
+    "design-contracts-release.log": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+    "e2e-recovery-baseline-command.json": "3ad24ab99ed0b50fbf1e0433a32043b632150ba6201ed35940b1c0983de17171",
+    "e2e-recovery-baseline-corrected-command.json": "fffaadc48b9083259676b97f1a350f4aa9ba999d24ccc012233d11e61fac5615",
+    "e2e-recovery-baseline-corrected.log": "0ea5ace1c243bc98adc12a8c7b703121ac34cc44243c0a9fdf50a2eddc6149bc",
+    "e2e-recovery-baseline.log": "1be966d33c10ac8a21ac4a52425d0c862091c496878e23d6efdd054304c29b74",
+    "e2e_recovery_baseline_harness.py": "d96a1c6f34a5202752d4a4f87875c9c4fbb4b02ecc79ec756bd2d814fb424130",
+    "environment-preparation.json": "5cb15982679794b6af0ec8e999cf283661c929adef09de6e5ecda2c1bf9ff90d",
+    "environment.json": "3d3a784a6d0766f3dfbca4c6dba86ec07c0264cce9ab02ce71b6460c1e9071c0",
+    "execution-revision.json": "6e3974e366241ed51e639effba61a8ff0c2840731aa52a4a57a76f1ee0cfaf78",
+    "execution_inputs-v2.json": "921704fcfc92ca8cd128da3df3c2fa16b2612b7aa5fa35032d98695b432b5f07",
+    "execution_inputs.json": "7ca957c0a040b0efaa090cf92f53150b7b87b8c5ea98380f8f68c644689d2c9f",
+    "independent_review.json": "a09c0148525cfa7b3b1c14a7580bd92bd17fe5b0bed876044c6468e212ade2d6",
+    "launcher-command.json": "6687e44a4e46df0bc0136af402df060af6558e6a0c4427c8d7e87e9e1fd1e778",
+    "launcher.log": "2fb69cc30c8228a7d5ecdaa147e26d61ad47bcf7954ba3e7fc2abdfcce1aafe2",
+    "launcher_smoke.json": "4f72fe8ddcafa137893d4e16607e83471e8eff9c2e05c5b949ff55434dfac948",
+    "launcher_smoke.py": "cafa121b102c630d84b566d9c8d4bb27d321bd9a371968894125d611320a2f5e",
+    "migration_review/README.md": "d2aa8164b8e98f65a8700149b7391c94ee163a3078519d84a3366429b165bac7",
+    "migration_review/author-corrected/commands.json": "566565ba8464a2285d9fa02223b3f5d59eafb01a1f54e4f637784ac9a6bbaf6d",
+    "migration_review/author-corrected/compile-epoch.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/author-corrected/compile-schema6.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/author-corrected/compile-upgrade.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/author-corrected/create-schema6.log": "53b9ebf6c199aa1570bcd6ee5460f7cd16d13c26aa24c54cee69b6eb5f6a7eef",
+    "migration_review/author-corrected/review.json": "8078658831d52a463a9236285c01789535304fdcf9b6190ae19619ac8c37e992",
+    "migration_review/author-corrected/verify-epoch.log": "f6b8839536f4fa733636a6faf4e780ac595bcc176e8eeaea3ba114694b95d626",
+    "migration_review/author-corrected/verify-upgrade.log": "3539bd0f7d88010b6cbfc098e2560c0960ef9809b37fd6d8d220ec70a1a2d318",
+    "migration_review/author-final/commands.json": "76ca66eb0521576a204be2b0b46cba4d2869a90ad2c561647427bbec94c153ad",
+    "migration_review/author-final/compile-epoch.log": "afc5aef838d6fff80f1d88fa4197fe0673dffa1cc89e21db35f8d61de1ed2944",
+    "migration_review/author-final/compile-schema6.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/author-final/compile-upgrade.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/author-final/review.json": "45151a6003e1fd660732b0f8193e92769267b52ace323229a8d957b84e964326",
+    "migration_review/create_schema6.cpp": "b7cea147ac0f13a4b6899049ae7564c0dd2629934f5bf6c738d3d536c37ce0d1",
+    "migration_review/final-root/commands.json": "ea2cd85b62a80260b82eacb5daaf212f7b6794f7d9d31ec6198a4e638c05f9ad",
+    "migration_review/final-root/compile-epoch.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/final-root/compile-schema6.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/final-root/compile-upgrade.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "migration_review/final-root/create-schema6.log": "e1ec73551c4de7f7e1db70d842256ad968155fca462a3fec9591d1d29bbe365d",
+    "migration_review/final-root/review.json": "dfce2c64ffc11e2d6e4f5b43ac68b931193cd96cf125453f3d448d358b580b39",
+    "migration_review/final-root/verify-epoch.log": "f6b8839536f4fa733636a6faf4e780ac595bcc176e8eeaea3ba114694b95d626",
+    "migration_review/final-root/verify-upgrade.log": "3539bd0f7d88010b6cbfc098e2560c0960ef9809b37fd6d8d220ec70a1a2d318",
+    "migration_review/findings-author.json": "01eab866b85466385ad3c5b6dc4747acc5ced7e47a4c33fb7abc671852246faf",
+    "migration_review/findings.json": "d9bf4f30f0e8246212715971421f4771ca61cf5fab84c6191a00fea37454688d",
+    "migration_review/run_review.py": "739d61f80246a29de8764445fa2100350a039a6cdf678396281edbd78fa3f217",
+    "migration_review/verify_publication_epoch.cpp": "449c6d49987dc53f2599fb144f760744739e74dfc21b8e85607855abeaa290a0",
+    "migration_review/verify_upgrade.cpp": "2448194cb4afa971e636873353cfa064cd6c0a686fb8e0f27b490fb248c135b2",
+    "package-install-final-command.json": "0e8e25d061a4454c6c9e32f2c9ed850570db0f932297dd99834969efecd6f9bf",
+    "package-install-final.log": "e74ac43bdc6e1a704e2d80351150be2d6a16385dc1d7aa9ded3d0a1a6f87ae38",
+    "plan-guard-release-command.json": "2d3c0869c75849a3621c560cc6def7dcfee7dd4c9db3e39dbef4e47f42648e8f",
+    "plan-guard-release.log": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+    "planning-release-command.json": "54e6ce697336763c015f69137b56ce4a81e71c6d020fdd2a92b9863e8f35aedc",
+    "planning-release.log": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+    "recovery-harness-correction.json": "ab8f076b2bc3660c9994d3617b1455e2b2ef26e0cb6c2020feded7cf8b5ecf04",
+    "run_validation.py": "c6810c7f3c52d84c2e7e5dd1d2b20f9faf1b1a3dd4501386f968fd2b78013b6b",
+    "site-publication-baseline.cpp": "dfdd8406a0d41e31387664c7dbc3f8424963fc1fc4978d5a8e6670aa50f7bc9f",
+    "site-publication-baseline.json": "d18f6588796a7058fce8f6fbb3bcff0b4252428490b40c5bafcfffb745d3993e",
+    "site-publication-baseline.log": "6a84b307a4c15f76408bed770e514c5889ded2fa279bdae3841b185673503cb1",
+    "source_manifest.json": "bcd93696fc9553b4998ac66c716b0ab5460d5e9300fa82ace7ab16de9b4d4f96"
+  }
+}

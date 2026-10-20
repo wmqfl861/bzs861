@@ -1,0 +1,17 @@
+{
+  "baseline_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+  "baseline_tree": "b51e0f126c49727506ad2cc08ff3912d59108703",
+  "executable": "build-s1-review/searchd",
+  "sha256": "b34653fccae3b0104e3e987f100469d3be06e77ac5bd127a8f16e964f4c4acf2",
+  "identity_matches_committed_0_1_4_validation": true,
+  "harness_sha256": "a521b9007f2142264d831f728732bb64b75af7d2b4124828487413da7dfef411",
+  "scope": "Original validated 0.1.4 binary against new crash and offline site policy process fixtures; restored current system dependencies; no final source verification claim.",
+  "corrected_harness_sha256": "d96a1c6f34a5202752d4a4f87875c9c4fbb4b02ecc79ec756bd2d814fb424130",
+  "supporting_fixture_source_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+  "supporting_fixture_sha256": {
+    "tests/e2e_crawl.py": "2f6ead52d82bad53fa44ff9feea9958ee7126d0a6fc541201e02fadf3ade3899",
+    "tests/e2e_web.py": "38fd590759a53342f97d99ab5953866a50b0aa7d28898c3298d98ae22e1f8884",
+    "python/tests/fakecrawl.py": "8a500c670dd45cdff019ca7c5b67b2efba0ad99233a1e23c6f92a2abe1435e62"
+  },
+  "worker_scope": "Real worker implementation retained from 0.1.4, with current 0.1.5 Python package version metadata; core under reproduction is the exact published 0.1.4 searchd. Supporting fixtures were unchanged from the baseline when this run executed."
+}

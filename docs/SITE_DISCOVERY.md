@@ -100,4 +100,6 @@
 
 本批使用受控 `.test` 站点和真实进程验证网络请求计数、robots 拒绝、跳转范围、Sitemap/Feed/HTML、历史、重启与 MCP。测试专用回环映射不能在生产模式启用；XML 解析禁止 DTD/实体展开和外部资源读取。每个发现响应最多读取 2 MiB，解析器硬边界另限制树深、元素数和候选条目；HTTP 内容编码使用现有有界解压，`.gz` 归档不会自动展开。
 
-0.1.3 的原始发现执行证据保留在 [历史报告](../validation/s2_discovery/test_report.json)，0.1.4 的继承回归与正文增量见 [当前报告](../validation/s2_crawl/test_report.json)。没有用合成站点替代真实来源 S0，没有新增人工 qrels 或相关性质量分数。ROBOTS-01 / MAP-01 / CRAWL-01 / CRAWL-03 均按完整工作包验收要求单独判断；会话断线重取、独立撤销日志及隔离恢复继续保留。
+0.1.3 的原始发现执行证据保留在 [历史报告](../validation/s2_discovery/test_report.json)，0.1.5 的继承回归与发布/陷阱增量见 [当前报告](../validation/s2_hardening/test_report.json)。没有用合成站点替代真实来源 S0，没有新增人工 qrels 或相关性质量分数。ROBOTS-01 / MAP-01 / CRAWL-01 / CRAWL-03 均按完整工作包验收要求单独判断；会话断线重取、独立撤销日志及隔离恢复继续保留。
+
+0.1.5 在 map/crawl 派发和完成时还比较核心持久生效的清单，已创建的旧实例不能继续按旧身份自动访问。显式站点配置同时约束已存网页结果，即使核心离线启动也生效；这不改变 map 未读取候选的含义，详见 [SITE_PUBLICATION](SITE_PUBLICATION.md)。

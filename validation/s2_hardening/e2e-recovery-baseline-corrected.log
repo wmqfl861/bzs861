@@ -1,0 +1,120 @@
+test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request (__main__.CrawlRecovery.test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request) ... ok
+test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact (__main__.CrawlRecovery.test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact) ... ok
+test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch (__main__.CrawlRecovery.test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch) ... ok
+test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage (__main__.CrawlRecovery.test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage) ... ok
+test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart) ... FAIL
+test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart) ... FAIL
+test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart) ... FAIL
+test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart (__main__.CrawlRecovery.test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart) ... FAIL
+
+======================================================================
+FAIL: test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 487, in test_05_links_only_applies_to_stored_results_after_explicit_offline_restart
+    self.policy_on_offline_restart("links_only")
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 475, in policy_on_offline_restart
+    self.assertEqual(page["hits"][0]["snippet"], "")
+AssertionError: 'frontierfixtureunique' != ''
+- frontierfixtureunique
+
+
+======================================================================
+FAIL: test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 490, in test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart
+    self.policy_on_offline_restart("rejected")
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 479, in policy_on_offline_restart
+    self.assertEqual(page["hits"], [])
+AssertionError: Lists differ: [{'position': 0, 'document_id': '0098595af[428 chars]: 1}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'position': 0, 'document_id': '0098595afcd46470eaea0d8a042386d50db2e3c88f1c359b', 'snapshot_id': '6d5a92589187e0c377e3b80b4cacd7f3f7c4cd6d16456ff2', 'score': 0, 'title': 'Frontier fixture', 'url': 'http://bzs-crawl.test:32935/crawl/root', 'snippet': 'frontierfixtureunique', 'snippet_kind': 'query_highlights', 'highlights': [{'start_byte': 20, 'end_byte': 41, 'text': 'frontierfixtureunique', 'terms': ['frontierfixtureunique'], 'match_truncated': False}], 'revision': 1}
+
++ []
+- [{'document_id': '0098595afcd46470eaea0d8a042386d50db2e3c88f1c359b',
+-   'highlights': [{'end_byte': 41,
+-                   'match_truncated': False,
+-                   'start_byte': 20,
+-                   'terms': ['frontierfixtureunique'],
+-                   'text': 'frontierfixtureunique'}],
+-   'position': 0,
+-   'revision': 1,
+-   'score': 0,
+-   'snapshot_id': '6d5a92589187e0c377e3b80b4cacd7f3f7c4cd6d16456ff2',
+-   'snippet': 'frontierfixtureunique',
+-   'snippet_kind': 'query_highlights',
+-   'title': 'Frontier fixture',
+-   'url': 'http://bzs-crawl.test:32935/crawl/root'}]
+
+======================================================================
+FAIL: test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 493, in test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart
+    self.policy_on_offline_restart("expired")
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 479, in policy_on_offline_restart
+    self.assertEqual(page["hits"], [])
+AssertionError: Lists differ: [{'position': 0, 'document_id': '7fc7ef085[428 chars]: 1}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'position': 0, 'document_id': '7fc7ef0857bcfe817d9065aa7a4528bcadf80dca37a54e0c', 'snapshot_id': 'dbc947c9465bb2a5c05720d3af1956dbab15121a0d8c99b8', 'score': 0, 'title': 'Frontier fixture', 'url': 'http://bzs-crawl.test:35629/crawl/root', 'snippet': 'frontierfixtureunique', 'snippet_kind': 'query_highlights', 'highlights': [{'start_byte': 20, 'end_byte': 41, 'text': 'frontierfixtureunique', 'terms': ['frontierfixtureunique'], 'match_truncated': False}], 'revision': 1}
+
++ []
+- [{'document_id': '7fc7ef0857bcfe817d9065aa7a4528bcadf80dca37a54e0c',
+-   'highlights': [{'end_byte': 41,
+-                   'match_truncated': False,
+-                   'start_byte': 20,
+-                   'terms': ['frontierfixtureunique'],
+-                   'text': 'frontierfixtureunique'}],
+-   'position': 0,
+-   'revision': 1,
+-   'score': 0,
+-   'snapshot_id': 'dbc947c9465bb2a5c05720d3af1956dbab15121a0d8c99b8',
+-   'snippet': 'frontierfixtureunique',
+-   'snippet_kind': 'query_highlights',
+-   'title': 'Frontier fixture',
+-   'url': 'http://bzs-crawl.test:35629/crawl/root'}]
+
+======================================================================
+FAIL: test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart (__main__.CrawlRecovery.test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 496, in test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart
+    self.policy_on_offline_restart("empty")
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_crawl_recovery.py", line 479, in policy_on_offline_restart
+    self.assertEqual(page["hits"], [])
+AssertionError: Lists differ: [{'position': 0, 'document_id': '2cac74b11[428 chars]: 1}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'position': 0, 'document_id': '2cac74b11d1bca370ccac3e3932ca14e33f0335e8a4f18e5', 'snapshot_id': '86b46ff5344bf54e38f0b22d27a557a9f01a2391b9211b66', 'score': 0, 'title': 'Frontier fixture', 'url': 'http://bzs-crawl.test:42445/crawl/root', 'snippet': 'frontierfixtureunique', 'snippet_kind': 'query_highlights', 'highlights': [{'start_byte': 20, 'end_byte': 41, 'text': 'frontierfixtureunique', 'terms': ['frontierfixtureunique'], 'match_truncated': False}], 'revision': 1}
+
++ []
+- [{'document_id': '2cac74b11d1bca370ccac3e3932ca14e33f0335e8a4f18e5',
+-   'highlights': [{'end_byte': 41,
+-                   'match_truncated': False,
+-                   'start_byte': 20,
+-                   'terms': ['frontierfixtureunique'],
+-                   'text': 'frontierfixtureunique'}],
+-   'position': 0,
+-   'revision': 1,
+-   'score': 0,
+-   'snapshot_id': '86b46ff5344bf54e38f0b22d27a557a9f01a2391b9211b66',
+-   'snippet': 'frontierfixtureunique',
+-   'snippet_kind': 'query_highlights',
+-   'title': 'Frontier fixture',
+-   'url': 'http://bzs-crawl.test:42445/crawl/root'}]
+
+----------------------------------------------------------------------
+Ran 8 tests in 24.942s
+
+FAILED (failures=4)
+{"checkpoint": "before_worker_rpc", "deleted_pending_tail": false, "core_exit_code": -9, "attempt_id": "73854efd7cb1ab5514b38c072dc61a05bab7700d650237c7", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 0, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 3, "reused_job_id": "180b1f1ba9d94d11342ddee615f2e0487d514ce688c0e988"}
+{"checkpoint": "after_worker_rpc", "deleted_pending_tail": false, "core_exit_code": -9, "attempt_id": "6cee79b374a074ab1eac77337ff213ce226c698c74f29069", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 1, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 3, "reused_job_id": "9b3c9a2a9a7dbeac615ee400cae8d9fa1d030414d16eaea8"}
+{"checkpoint": "after_worker_rpc", "deleted_pending_tail": true, "core_exit_code": -9, "attempt_id": "6be2f8d5db16f3b6ba93d58f94ca250c4135c3323bb44097", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 1, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 2, "reused_job_id": "e83539a918b7691fcd97285e559105f5e6a04af61ad11881"}
+{"checkpoint": "committed_job_before_submit_ack", "core_exit_code": -9, "reused_job_id": "6fe3f8812219f08172a4b69c90f95a52d217683c24b1f8ce", "snapshots": 5, "edges": 7, "extra_http_requests_after_retry": 0, "state": "succeeded"}
+{"crawl_recovery_e2e_tests": 8, "failures": 4, "errors": 0, "seconds": 24.944, "database_mutation_by_fixture": false, "pause_or_resume_calls": 0}

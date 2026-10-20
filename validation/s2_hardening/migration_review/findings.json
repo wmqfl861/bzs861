@@ -1,0 +1,122 @@
+{
+  "version": "bzs-independent-hardening-findings-1",
+  "reviewer": "requirements_review assistant context",
+  "scope": "Read-only requirement, runtime and fixture review; independently executed narrow native harnesses. Production fixes were made by their owners.",
+  "release_gate_status": "Final root library: 2 actual schema6 migration scenarios and 8 publication-generation combinations passed with unchanged inputs. See final-root/review.json; broad root-run gates are separately classified in ../independent_review.json.",
+  "findings": [
+    {
+      "id": "RR-01",
+      "topic": "Legacy crawl current results lacked immutable intermediate site identity",
+      "status": "resolved; independently reproduced and verified",
+      "problem": "Actual schema6 A to X to B crawl snapshots store final B with empty meta.redirects. Hiding old frozen rows alone does not withdraw a new query over old current B when X falls outside a narrower deployment scope.",
+      "resolution": "Migration marks snapshots proven by existing crawl-resource foreign keys as legacy_crawl_unverified. Explicit policy activation conservatively gates those current artifacts and legacy web frozen rows. Private body and evidence remain; only a complete new read forms a new eligible representation.",
+      "evidence": [
+        "create_schema6.cpp",
+        "verify_upgrade.cpp",
+        "author-corrected/verify-upgrade.log",
+        "final-root/verify-upgrade.log"
+      ],
+      "limitation": "This preserves a safe output boundary; it does not reconstruct historical intermediate identities that schema6 did not retain. Explicit empty activation also applies when legacy crawl evidence exists."
+    },
+    {
+      "id": "RR-02",
+      "topic": "Metadata-only generation changes allowed restricted artifacts to revive",
+      "status": "resolved; independently reproduced and verified",
+      "problem": "Allow g1, rejected g2, same rejection with changed reviewer metadata g3, then a complete read at g3 and allow g4 left the old artifact above the original restriction watermark. Its indexed flag and non-FTS NOT query revived without a new allowing read.",
+      "resolution": "Immutable bindings retain captured_mode and relaxation seals the previous global generation in the corresponding history watermark. New generation or binding identity also participates in snapshot reuse equality.",
+      "evidence": [
+        "verify_publication_epoch.cpp",
+        "author-corrected/verify-epoch.log",
+        "../../../tests/site_publication.cpp",
+        "final-root/verify-epoch.log"
+      ],
+      "limitation": "An FTS-only query was insufficient to expose the original bug, because an absent physical FTS row concealed the incorrect eligibility. The independent check includes a non-FTS NOT query."
+    },
+    {
+      "id": "RR-03",
+      "topic": "Late restricted response could commit after another Store relaxed publication",
+      "status": "resolved; independently verified",
+      "problem": "Computing captured_mode only at ingestion cannot by itself identify an old g3 request when another live Store activates allowing g4 before that response returns.",
+      "resolution": "Releasing an active index or snippet restriction advances its applicable watermark to at least the activation's previous global generation, including inherited watermarks for a new narrower scope.",
+      "evidence": [
+        "verify_publication_epoch.cpp",
+        "author-corrected/verify-epoch.log",
+        "final-root/verify-epoch.log"
+      ],
+      "limitation": "The narrow native concurrency check activates another live SQLite Store inside a synthetic WorkerPort return callback. Real process crash and HTTP coverage belong to the separate release suites."
+    },
+    {
+      "id": "RR-04",
+      "topic": "Mixed import and web frozen-source semantics",
+      "status": "resolved; source cross-review and author's targeted regression",
+      "problem": "A frozen imported item at a URL could inherit a later current web representation's site restriction if pagination unconditionally met both current and frozen site modes.",
+      "resolution": "Deployment site policy is met for frozen.source_kind=web only. Frozen imports retain their own source semantics; current web and frozen web still receive site gates.",
+      "evidence": [
+        "../../../src/store.cpp",
+        "../../../tests/site_publication.cpp"
+      ],
+      "limitation": "Existing independent page-level declaration semantics are not redefined by this site-policy increment."
+    },
+    {
+      "id": "RR-05",
+      "topic": "Automatic redirect targets inherited explicit seed trap exemptions",
+      "status": "resolved; source cross-review and author's bidirectional regression",
+      "problem": "A seed's logical resource flag previously exempted its automatic redirect target from query or date trap admission.",
+      "resolution": "Only the actual original seed URL receives that exemption. A redirect target is exempt only when it independently appears in the submitted seed set; queued and legacy-bootstrap paths use the same rule.",
+      "evidence": [
+        "../../../src/map.cpp",
+        "../../../src/crawl_trap.cpp",
+        "../../../tests/crawl.cpp"
+      ],
+      "limitation": "Explicit seed exemption is limited to trap admission; scope, robots, original variant limits and all budgets remain mandatory."
+    },
+    {
+      "id": "RR-06",
+      "topic": "Exceptional legacy trap bootstrap capacity could repeatedly roll back scheduling",
+      "status": "resolved; source cross-review and author's synthetic damaged-state regression",
+      "problem": "An inconsistent legacy history exceeding bootstrap capacity could throw before committing progress and repeatedly obstruct pending scheduling.",
+      "resolution": "The exceptional capacity path commits observed samples, marks remaining pending work skipped with explicit partial reasons, and allows the next job to lease without changing known successful bodies or usage.",
+      "evidence": [
+        "../../../src/map.cpp",
+        "../../../src/crawl_trap.cpp",
+        "../../../tests/crawl.cpp"
+      ],
+      "limitation": "Normal 0.1.4 max_requests<=1000 and max_urls<=1000 already bound distinct observations to 2000. This is a synthetic inconsistent-history tolerance check, not evidence that normal baseline jobs exceed that bound."
+    },
+    {
+      "id": "RR-07",
+      "topic": "Fixture discrimination and trap documentation",
+      "status": "resolved; fixture and contract review",
+      "problem": "Deleting only an already-lost request would not prove pending-target deletion fencing, and same-date article negatives would not demonstrate preservation of distinct dated article suffixes.",
+      "resolution": "The crash fixture deletes an existing but still-pending tail through the real API during an offline restart, then checks no tail hop or HTTP. The negative article fixture varies both valid dates and unique article slugs. Legacy queued date/query admissions are explicitly documented as retained; dispatch rechecks later repeated-body evidence.",
+      "evidence": [
+        "../../../tests/e2e_crawl_recovery.py",
+        "../../../tests/e2e_crawl.py",
+        "../../../docs/SITE_CRAWLING.md"
+      ],
+      "limitation": "The lost accepted reply scenario covers a fully committed asynchronous job before client acknowledgment, not every instruction inside a database commit. Finite traps are not a universal site classifier."
+    },
+    {
+      "id": "RR-08",
+      "topic": "One transaction could execute the physical publication sweep twice",
+      "status": "resolved; root final correction confirmed by read-only call-path review and final source/library binding",
+      "problem": "job_results refreshes publication, then its sole crawl_results_locked call performed another default refresh, allowing two 128-document sweep batches inside one transaction.",
+      "resolution": "The second refresh uses sweep=false, retaining current policy checks while preserving the documented 128-document per-transaction cleanup bound.",
+      "evidence": [
+        "../../../src/batch.cpp",
+        "../../../src/crawl.cpp",
+        "../../../docs/SITE_PUBLICATION.md",
+        "final-root/review.json"
+      ],
+      "limitation": "No mirror-of-implementation test was added. The final runtime source hash and independently built library are bound by the final recorded gates."
+    }
+  ],
+  "retained_contracts": [
+    "83 work packages, 161 original acceptance mappings, 10 slices; 34 partial, 49 not started, 0 fully accepted.",
+    "Default sites, default search sources, golden fixtures, original functional specification, v1.1 blueprint, original backlog and fixed dependency lock remain byte-identical to the baseline.",
+    "A clear ordinary URL in a never-registered path retains existing explicit-read semantics; removed historical scope remains withdrawn, and ambiguous escaped paths under a registered origin are conservatively gated.",
+    "An already-created stale Store cannot overwrite a newer activation. A newly constructed Store explicitly activating a supplied manifest is still an operator deployment action.",
+    "Legacy web sessions may become empty after explicit policy activation; unverified old crawl current results require complete rereading. Body and evidence are not erased by this publication change.",
+    "No universal trap, all-instruction crash recovery, physical power-loss, cross-node fairness, external legal review, production-site activity or full work-package acceptance is claimed."
+  ]
+}

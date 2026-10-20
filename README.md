@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.4 S2 crawl development candidate。** 接续已交付的 0.1.3，增加已审核站点的有界正文前沿、页预算、持久链接边、map/crawl 任务轮转，以及刷新时立即执行的索引和摘要限制。保留 robots 准入、站点发现、来源探测、黄金查询和显式批量读取。面向 Linux、本机使用和 AI Agent；S0、S1、S2 的完整验收仍未完成。
+**状态：0.1.5 S2 crawl hardening candidate。** 接续已交付的 0.1.4，修复站点规则收紧后仍返回旧索引/摘要的问题，增加持久日期、查询组合和重复分页防护，以及真实进程崩溃/回执丢失回归。保留 robots 准入、站点发现、来源探测、黄金查询和显式批量读取。面向 Linux、本机使用和 AI Agent；S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取与发布规则](docs/SITE_CRAWLING.md) 和 [验证说明](validation/s2_crawl/README.md)；实际结果见 [本轮报告](validation/s2_crawl/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_hardening/README.md)；实际结果见 [本轮报告](validation/s2_hardening/test_report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -16,8 +16,8 @@
 | 网页读取候选实现 | worker 抓取与 Markdown 提取、快照、`cache_first / refresh / cache_only`；直接出站仅允许通过连接层检查的公网目标 |
 | 批量网页读取 | 1–20 个显式 URL、持久任务、逐项结果、暂停/恢复/取消、显式失败重试；请求/响应体预算与快照收据原子提交 |
 | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
-| 有界正文爬取 | 复用同一 robots 与单跳通道；正文前沿、页预算、边、循环/变体限制、暂停恢复、同源 map/crawl 轮转 |
-| 页面发布规则 | BzsBot / 通用 noindex、nosnippet、data-nosnippet 与响应头；独立摘要文本，当前限制覆盖新搜索和旧冻结会话 |
+| 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
+| 页面发布规则 | 页面声明与站点发布上限共同生效；显式站点配置在离线重启后也约束已存结果，旧会话不因后来放宽而恢复 |
 | 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
 | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
 | 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
@@ -129,7 +129,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮测试分为原生核心/批量/发现/爬取/合同、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_crawl/test_report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
+本轮测试分为原生核心/批量/发现/爬取/合同、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_hardening/test_report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 

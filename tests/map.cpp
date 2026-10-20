@@ -234,7 +234,7 @@ namespace {
     Temp t;Json snap,evidence,job;
     { Store s(t.path/"db");snap=s.ingest("alice",{std::string(base)+"/map/old","migration marker text","text/plain","old"});evidence=s.evidence("alice",snap.at("snapshot_id").str(),0,9);snap=s.snapshot("alice",snap.at("snapshot_id").str());
       ReadManyOptions options;job=s.read_many_submit("alice",{std::string(base)+"/map/read"},"legacy-read",options);sql(s.raw_handle(),"UPDATE content_fts SET rowid=913;");drop_map(s.raw_handle()); }
-    { Store s(t.path/"db");CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==6);CHECK(s.snapshot("alice",snap.at("snapshot_id").str()).canonical()==snap.canonical());CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).canonical()==evidence.canonical());auto current=s.job_get("alice",job.at("job_id").str());job.set("reused",Json());CHECK(current.at("kind").str()=="web.read_many");CHECK(current.at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.lease_next_read()); }
+    { Store s(t.path/"db");CHECK(scalar(s.raw_handle(),"PRAGMA user_version")==7);CHECK(s.snapshot("alice",snap.at("snapshot_id").str()).canonical()==snap.canonical());CHECK(s.evidence_get("alice",evidence.at("evidence_id").str()).canonical()==evidence.canonical());auto current=s.job_get("alice",job.at("job_id").str());job.set("reused",Json());CHECK(current.at("kind").str()=="web.read_many");CHECK(current.at("state").str()=="queued");CHECK(scalar(s.raw_handle(),"SELECT rowid FROM content_fts")==913);CHECK(s.lease_next_read()); }
   }
   TEST(schema_four_quarantine_refuses_map_ddl) {
     Temp t;{ Store s(t.path/"db");drop_map(s.raw_handle());sql(s.raw_handle(),"UPDATE settings SET value='1' WHERE key='restore_quarantine';"); }

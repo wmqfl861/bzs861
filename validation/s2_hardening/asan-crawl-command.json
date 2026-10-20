@@ -1,0 +1,73 @@
+{
+  "argv": [
+    "build-s2-hardening-asan/bzs_crawl_tests"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861",
+  "environment_overrides": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "started_at_utc": "2026-10-19T14:23:47.092786+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 28.703,
+  "log": "asan-crawl.log",
+  "log_sha256": "dcb8c02bf045e3e33e93a5815368359e8ca2fb2c895695280053b82decf14d1e",
+  "runner_sha256": "c6810c7f3c52d84c2e7e5dd1d2b20f9faf1b1a3dd4501386f968fd2b78013b6b",
+  "execution_inputs": {
+    "manifest": "validation/s2_hardening/execution_inputs-v2.json",
+    "sha256": "921704fcfc92ca8cd128da3df3c2fa16b2612b7aa5fa35032d98695b432b5f07",
+    "unchanged_before_and_after": true
+  },
+  "binaries_before_sha256": {
+    "build-s2-hardening-review/searchd": "fd98043110b777d9bc7187209f17ea882470a2f3a9140df8350dc9a671227aa1",
+    "build-s2-hardening-review/searchctl": "187286ae06120f6f46da4746f59b73fcf89c83b7af818fe2f16803ce90d9205b",
+    "build-s2-hardening-review/bzs_tests": "abd8ef94b573107b0fb1b68df6094291e4c84fc3ecaee109f2ea84c23d05ffd8",
+    "build-s2-hardening-review/bzs_batch_tests": "a7c1325972a884088303a9f6da4c818dc2734ff20a4dfebbcc81dc51dab80ddc",
+    "build-s2-hardening-review/bzs_map_tests": "48db1b72ab6b9b0017a8e113b4b5071eac0c54b13794509e2907937eb1c0410d",
+    "build-s2-hardening-review/bzs_crawl_tests": "e3b7fb2525329eaf630438f5bf7117731325b595044e70f353ec921ece67955d",
+    "build-s2-hardening-review/bzs_site_publication_tests": "e4d06e2c0610f06d8631002f22c2c956d8db9f4acac1307644918177047a03bf",
+    "build-s2-hardening-review/bzs_contract_tests": "742edd21546008617978650f40b35b573bc4a781921d7ce9d0460027e6fe89fd",
+    "build-s2-hardening-review/CTestTestfile.cmake": "a65c6ace8e8e54f06a86651eb2461a5991332b40472d19e3f94f67d7069686c0",
+    "build-s2-hardening-asan/bzs_tests": "e6319facd4d8c67551644029501cbfb2cbe4a1d7a25035e82fcea93383f7e09c",
+    "build-s2-hardening-asan/bzs_batch_tests": "f0399a2753085ee71c139c0cab8d6f3ed933b85b8888241c56e5fa17abac7249",
+    "build-s2-hardening-asan/bzs_map_tests": "09d63980e3fee733afb9c8851ff3ed78712f3fdac38dfa78f2e152dfd8a8d161",
+    "build-s2-hardening-asan/bzs_crawl_tests": "6331773381fad15aaf9909a39466a4afd897a2eeaeb96884c18f360fbda33eb2",
+    "build-s2-hardening-asan/bzs_site_publication_tests": "a1746a93080483cdd3b97605746cbda599748aa12e0f0e24efdb6ec3d3045125",
+    "build-s2-hardening-asan/bzs_contract_tests": "36e4713ba9c41c2f7cfc88df6e7af0dad64969d28fc7b2bace1c604c4257df0c",
+    "build-s2-hardening-asan/CTestTestfile.cmake": "9626a3d411e543a9fbb74ce2af587b5a908647c4d13b216e43ff73ce615ce1f4",
+    "build-s1-review/searchd": "b34653fccae3b0104e3e987f100469d3be06e77ac5bd127a8f16e964f4c4acf2",
+    "build-s1-review/searchctl": "40dcc752ff72fa20d9b863871b30a0dc42aeaabfd27c528dec4737ddf605f624",
+    "build-s1-review/bzs_tests": "627310656bda48c9636c0dd0bc3def5c814e2f8927af18f5c28ae7aa59a08c16",
+    "build-s1-review/bzs_batch_tests": "54a26e3bdb325fc3df7e75ea8e68ab77bda3c0f30d2ce99c5155c6112687e273",
+    "build-s1-review/bzs_map_tests": "ebe16129169dedf085bbce589aceb07367fe5f7bb2355d92986851d4d763eeb1",
+    "build-s1-review/bzs_crawl_tests": "f594718898ad09e371c15a27f5046994680b35ada96589b7bea784c994063c18",
+    "build-s1-review/bzs_contract_tests": "8dbfe25501923b1fda6eef7fc537a8b3256f95f7a69a259b631bf01f38517f59",
+    "build-s1-review/CTestTestfile.cmake": "3973582e73ca8846e6d1a2c6d1274cb1dbb6426ebdc126ad2ad1cdea36282f44"
+  },
+  "binaries_after_sha256": {
+    "build-s2-hardening-review/searchd": "fd98043110b777d9bc7187209f17ea882470a2f3a9140df8350dc9a671227aa1",
+    "build-s2-hardening-review/searchctl": "187286ae06120f6f46da4746f59b73fcf89c83b7af818fe2f16803ce90d9205b",
+    "build-s2-hardening-review/bzs_tests": "abd8ef94b573107b0fb1b68df6094291e4c84fc3ecaee109f2ea84c23d05ffd8",
+    "build-s2-hardening-review/bzs_batch_tests": "a7c1325972a884088303a9f6da4c818dc2734ff20a4dfebbcc81dc51dab80ddc",
+    "build-s2-hardening-review/bzs_map_tests": "48db1b72ab6b9b0017a8e113b4b5071eac0c54b13794509e2907937eb1c0410d",
+    "build-s2-hardening-review/bzs_crawl_tests": "e3b7fb2525329eaf630438f5bf7117731325b595044e70f353ec921ece67955d",
+    "build-s2-hardening-review/bzs_site_publication_tests": "e4d06e2c0610f06d8631002f22c2c956d8db9f4acac1307644918177047a03bf",
+    "build-s2-hardening-review/bzs_contract_tests": "742edd21546008617978650f40b35b573bc4a781921d7ce9d0460027e6fe89fd",
+    "build-s2-hardening-review/CTestTestfile.cmake": "a65c6ace8e8e54f06a86651eb2461a5991332b40472d19e3f94f67d7069686c0",
+    "build-s2-hardening-asan/bzs_tests": "e6319facd4d8c67551644029501cbfb2cbe4a1d7a25035e82fcea93383f7e09c",
+    "build-s2-hardening-asan/bzs_batch_tests": "f0399a2753085ee71c139c0cab8d6f3ed933b85b8888241c56e5fa17abac7249",
+    "build-s2-hardening-asan/bzs_map_tests": "09d63980e3fee733afb9c8851ff3ed78712f3fdac38dfa78f2e152dfd8a8d161",
+    "build-s2-hardening-asan/bzs_crawl_tests": "6331773381fad15aaf9909a39466a4afd897a2eeaeb96884c18f360fbda33eb2",
+    "build-s2-hardening-asan/bzs_site_publication_tests": "a1746a93080483cdd3b97605746cbda599748aa12e0f0e24efdb6ec3d3045125",
+    "build-s2-hardening-asan/bzs_contract_tests": "36e4713ba9c41c2f7cfc88df6e7af0dad64969d28fc7b2bace1c604c4257df0c",
+    "build-s2-hardening-asan/CTestTestfile.cmake": "9626a3d411e543a9fbb74ce2af587b5a908647c4d13b216e43ff73ce615ce1f4",
+    "build-s1-review/searchd": "b34653fccae3b0104e3e987f100469d3be06e77ac5bd127a8f16e964f4c4acf2",
+    "build-s1-review/searchctl": "40dcc752ff72fa20d9b863871b30a0dc42aeaabfd27c528dec4737ddf605f624",
+    "build-s1-review/bzs_tests": "627310656bda48c9636c0dd0bc3def5c814e2f8927af18f5c28ae7aa59a08c16",
+    "build-s1-review/bzs_batch_tests": "54a26e3bdb325fc3df7e75ea8e68ab77bda3c0f30d2ce99c5155c6112687e273",
+    "build-s1-review/bzs_map_tests": "ebe16129169dedf085bbce589aceb07367fe5f7bb2355d92986851d4d763eeb1",
+    "build-s1-review/bzs_crawl_tests": "f594718898ad09e371c15a27f5046994680b35ada96589b7bea784c994063c18",
+    "build-s1-review/bzs_contract_tests": "8dbfe25501923b1fda6eef7fc537a8b3256f95f7a69a259b631bf01f38517f59",
+    "build-s1-review/CTestTestfile.cmake": "3973582e73ca8846e6d1a2c6d1274cb1dbb6426ebdc126ad2ad1cdea36282f44"
+  }
+}

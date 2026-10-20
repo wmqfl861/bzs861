@@ -1,0 +1,4 @@
+/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_publication_epoch.cpp: In function ‘int main(int, char**)’:
+/workspace/scratch/80f41eb198a3/bzs861/validation/s2_hardening/migration_review/verify_publication_epoch.cpp:51:13: error: inconsistent deduction for ‘auto’: ‘const bzs::Json’ and then ‘const std::__cxx11::basic_string<char>’
+   51 |       const auto first=restricted.read("alice",request),sid=first.at("snapshot_id").str();reader.before_return={};
+      |             ^~~~
