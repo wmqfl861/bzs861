@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.9",
+  "recorded_at_utc": "2026-10-22T04:13:21.896059+00:00",
+  "scope": "CI/test-only follow-up after the first published 0.1.9 commit; original product code and all product limits are unchanged.",
+  "baseline_commit": "b88b76302e850499275b0a8ec2db366f282481f1",
+  "local_correction_commit": "ffbe9515c9c0349e0eee7a484da85dacced7ad9c",
+  "local_commit_is_not_remote_publication_sha": true,
+  "initial_github_ci": {
+    "run_id": 39718214744,
+    "url": "https://github.com/wmqfl861/bzs861/actions/runs/39718214744",
+    "head_sha": "b88b76302e850499275b0a8ec2db366f282481f1",
+    "linux": {
+      "job_id": 119625336863,
+      "conclusion": "success",
+      "ctest_passed": 19,
+      "ctest_skipped": 0,
+      "ctest_seconds": 137.05,
+      "sanitizer_executables_passed": 11,
+      "original_contract_cases_passed": 34,
+      "plan_guards_passed": 13
+    },
+    "windows": {
+      "job_id": 119625336688,
+      "conclusion": "failure",
+      "build": "success",
+      "selected_suites": 12,
+      "passed": 11,
+      "timeout": 1,
+      "skipped": 0,
+      "failed_suite": "sessions",
+      "timeout_seconds": 60.01,
+      "total_seconds": 263.77,
+      "internal_case_output_present": false,
+      "root_cause_limit": "Original output cannot identify the current child case or prove slow execution rather than a hang."
+    }
+  },
+  "changes": {
+    "execution_input_files": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "before_sha256": "bfbce74528774953d075b51f7d67dab4d38e80b872a56a32e70a6b3745eae86a",
+        "after_sha256": "47489527fb018226ebfd978e77215b8074df9cfcfa682f5dcefa720a07a30e5b"
+      },
+      {
+        "path": "CMakeLists.txt",
+        "before_sha256": "7937a0f4456e5bcf157ff1a0b74235c3f3f9bc9cc263c977a757afa1fcc479e9",
+        "after_sha256": "ac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783"
+      },
+      {
+        "path": "tests/sessions.cpp",
+        "before_sha256": "ddac3ffabf5f71718e8cdf0fc14985af0052f46be63bf9444478cd795f6103d0",
+        "after_sha256": "b4b3b9bb337d3b095d6542807581b03d99acbb9986bc6a0540226e4046d79260"
+      }
+    ],
+    "windows_suite_watchdog_seconds": {
+      "before": 60,
+      "after": 180
+    },
+    "other_platform_suite_watchdog_seconds": 60,
+    "test_diagnostics": "Flushed per-case RUN/PASS with steady-clock elapsed time; Windows CTest uses verbose output for the same 12 selected suites.",
+    "storage_fixture": "Only the 4 MiB storage/rollback fixture uses one fixed Store clock across initial open and reopen, separating storage assertions from the existing 120-second session deadline and 18-second source lease.",
+    "preserved": [
+      "21 session cases and 283 assertions",
+      "20 sources x 30 hits, original large payload sizes, actual 4 MiB checks",
+      "rollback, immutable paging/cursor, restart and byte-accounting assertions",
+      "product session deadlines, lease limits and all other runtime behavior",
+      "real deadline/crash E2E and expiration-specific native cases",
+      "Windows 12-suite selection and fail-on-nonzero behavior",
+      "Linux full tests and 11 sanitizer gates"
+    ]
+  },
+  "new_execution_inputs": {
+    "path": "ci-followup-execution-inputs.json",
+    "sha256": "73610d37d9eb2def864ea90014bf7879f7c5106b5e0333eed3a2ec259752be88",
+    "files": 188
+  },
+  "new_source_manifest": {
+    "path": "ci-followup-source-manifest.json",
+    "sha256": "b05e7e130f35511f68424e0d32e76601e996f38798e58f189da4727127f9c077",
+    "files": 195
+  },
+  "production_core_library_sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf",
+  "production_core_library_identical_to_original_freeze": true,
+  "local_focused_validation": {
+    "commands": [
+      {
+        "record": "ci-followup-debug-configure-command.json",
+        "sha256": "7c2f9942565ada47372adc8a77cba0e1479423656353114e40c924a8e29f1384",
+        "exit_code": 0,
+        "elapsed_seconds": 1.408,
+        "log": "ci-followup-debug-configure.log",
+        "log_sha256": "dc5cc3e8e5be6c8a16f91c352f726b260b76568fd86e31ccec427d123278d419"
+      },
+      {
+        "record": "ci-followup-session-build-command.json",
+        "sha256": "b568e3c16731e0be900b122653cd2ac0c479a55cf4ea1a82bd334e230152f803",
+        "exit_code": 0,
+        "elapsed_seconds": 23.267,
+        "log": "ci-followup-session-build.log",
+        "log_sha256": "9e85aedae34bf10e43922c15de84f4fedb799213632387aa1fe8aabbe03bb39f"
+      },
+      {
+        "record": "ci-followup-sessions-command.json",
+        "sha256": "368fcf6b77850c6677829ca8a50b0f1ae2e28f12165e095485692b59f37f6d8a",
+        "exit_code": 0,
+        "elapsed_seconds": 12.091,
+        "log": "ci-followup-sessions.log",
+        "log_sha256": "43caff40ae9708075a32ef981ad010fc4d34d1d97ebda1e07a2fe88b13b8801c"
+      }
+    ],
+    "ctest_suites_passed": 1,
+    "ctest_suites_failed": 0,
+    "ctest_suites_skipped": 0,
+    "ctest_seconds": 12.07,
+    "session_cases_passed": 21,
+    "assertions": 283,
+    "backpressure_case_seconds": 11.03,
+    "scope_limit": "Targeted harness/fixture verification only; not a new local full-suite or sanitizer run."
+  },
+  "reviews": {
+    "author_read_only_diagnosis": "evidence/windows-session-diagnosis/read-only-diagnosis.json",
+    "independent_patch_review": "evidence/windows-ci-initial/ci-correction-v2-review.json",
+    "independent_initial_windows_observation": "evidence/windows-ci-initial/review.json",
+    "evidence_manifest": "ci-followup-evidence.json",
+    "evidence_manifest_sha256": "37dc66f00d2a5ac0c403bd6ef46f682e45d8fafd7d900dc0159bfb4deb6a782e"
+  },
+  "historical_evidence": {
+    "final_report_sha256": "5f6a9db30ec226fc12a43f125eadc7380e3d1e0a53f6fb3abe3fb00a0c217590",
+    "delivery_audit_sha256": "7bae17b528b782f920bf58ad435ee89e7917485a237282a5dc6d69749af9b69c",
+    "preserved_without_rewriting": true,
+    "interpretation": "Original final-v2 and delivery audit bind the pre-CI publication inputs. Follow-up manifests bind the three explicitly changed build/test/workflow files."
+  },
+  "release_gate": "Read and verify the actual containing GitHub commit and its Linux and Windows workflow after publication. Neither the original failed Windows run nor this local focused run is a passing Windows result.",
+  "plan": {
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "partial": 36,
+    "not_started": 47,
+    "accepted": 0
+  }
+}

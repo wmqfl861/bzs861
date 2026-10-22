@@ -2,6 +2,7 @@
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
@@ -100,7 +101,11 @@ TEST(frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_p
       entry.set("status","ok");entry.set("hits",hits);results.set(source,entry);out.set("results",results);return out;
     }
   } worker;
-  Temp t;Store store(t.path/"db");WebService web(store,worker,SourceRegistry(manifest(20)));auto request=input("storage-bound");request.set("limit",std::int64_t{50});request.set("per_source",std::int64_t{30});
+  // This fixture checks storage backpressure and rollback, not elapsed-time
+  // expiry. Keep the same clock across reopen so slow Debug I/O cannot expire
+  // a source lease while constructing the full 4 MiB boundary.
+  const auto clock=[] { return std::int64_t{1800000000000}; };
+  Temp t;Store store(t.path/"db",clock);WebService web(store,worker,SourceRegistry(manifest(20)));auto request=input("storage-bound");request.set("limit",std::int64_t{50});request.set("per_source",std::int64_t{30});
   const auto id=web.submit_search("alice",request).at("session_id").str();execute_one(web);const auto first=store.session_get("alice",id).at("result_set_version").str();const auto page=store.session_page("alice",id,first,"",1);CHECK(page.at("has_more").flag());
   const auto cursor=page.at("next_cursor").str();const auto next=store.session_page("alice",id,first,cursor,1);std::int64_t rejected=0;
   for(int i=1;i<20;++i) {
@@ -115,7 +120,7 @@ TEST(frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_p
   // version nor a source payload that exceeds the documented 4 MiB ceiling.
   sqlite3_stmt* row=nullptr;const char* query="SELECT (SELECT COUNT(*) FROM search_versions),(SELECT COALESCE(SUM(length(CAST(hit_json AS BLOB))+length(CAST(site_bindings AS BLOB))),0) FROM search_result_rows)+(SELECT COALESCE(SUM(length(CAST(payload_json AS BLOB))),0) FROM search_stream_sources)+(SELECT length(CAST(request_json AS BLOB))+length(CAST(contracts_json AS BLOB)) FROM search_streams)";
   CHECK(sqlite3_prepare_v2(store.raw_handle(),query,-1,&row,nullptr)==SQLITE_OK);CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==20-rejected);CHECK(sqlite3_column_int64(row,1)<=4*1024*1024);sqlite3_finalize(row);
-  Store reopened(t.path/"db");CHECK(reopened.session_get("alice",id).at("unknown_source_attempts").num()==rejected);CHECK(reopened.session_page("alice",id,first,cursor,1).canonical()==next.canonical());
+  Store reopened(t.path/"db",clock);CHECK(reopened.session_get("alice",id).at("unknown_source_attempts").num()==rejected);CHECK(reopened.session_page("alice",id,first,cursor,1).canonical()==next.canonical());
 }
 TEST(delete_and_page_restriction_rechecked_without_content_in_event_log) {
   Temp t;Store store(t.path/"db"),other(t.path/"db");Worker worker;WebService web(store,worker,SourceRegistry(manifest(1)));const auto document=store.ingest("alice",{"https://results.example/0","marker","text/plain","marker"});const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);const auto version=store.session_get("alice",id).at("result_set_version").str();CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==3);
@@ -245,4 +250,21 @@ TEST(preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
   }
 }
 }
-int main() { std::size_t failed=0;for(const auto& [name,test]:tests())try { test();std::cout<<"PASS "<<name<<'\n'; }catch(const std::exception& e) { ++failed;std::cerr<<"FAIL "<<name<<": "<<e.what()<<'\n'; }std::cout<<tests().size()<<" tests, "<<assertions<<" assertions, "<<failed<<" failures\n";return failed?1:0; }
+int main() {
+  std::size_t failed=0;
+  for(const auto& [name,test]:tests()) {
+    const auto started=std::chrono::steady_clock::now();
+    std::cout<<"RUN "<<name<<'\n'<<std::flush;
+    try {
+      test();
+      const auto elapsed=std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now()-started).count();
+      std::cout<<"PASS "<<name<<" ("<<elapsed<<" ms)\n"<<std::flush;
+    } catch(const std::exception& e) {
+      ++failed;
+      std::cerr<<"FAIL "<<name<<": "<<e.what()<<'\n'<<std::flush;
+    }
+  }
+  std::cout<<tests().size()<<" tests, "<<assertions<<" assertions, "<<failed<<" failures\n";
+  return failed?1:0;
+}

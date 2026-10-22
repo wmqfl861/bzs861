@@ -1,0 +1,194 @@
+{
+  "kind": "independent-published-windows-ci-observation",
+  "recorded_at": "2026-10-22T04:05:28.138153+00:00",
+  "repo": "wmqfl861/bzs861",
+  "commit": "b88b76302e850499275b0a8ec2db366f282481f1",
+  "run_id": 39718214744,
+  "job_id": 119625336688,
+  "job_url": "https://github.com/wmqfl861/bzs861/actions/runs/39718214744/job/119625336688",
+  "job_status": "completed",
+  "job_conclusion": "failure",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1
+    },
+    {
+      "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2
+    },
+    {
+      "name": "Check out the pinned vcpkg baseline",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3
+    },
+    {
+      "name": "Install C++ dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4
+    },
+    {
+      "name": "Build",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5
+    },
+    {
+      "name": "Offline native and HTTP tests",
+      "status": "completed",
+      "conclusion": "failure",
+      "number": 6
+    },
+    {
+      "name": "Post Check out the pinned vcpkg baseline",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11
+    },
+    {
+      "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13
+    }
+  ],
+  "checkout_sha_log_context": [
+    "2026-10-22T03:41:32.0081199Z [command]\"C:\\Program Files\\Git\\bin\\git.exe\" log -1 --format=%H",
+    "2026-10-22T03:41:32.0336070Z b88b76302e850499275b0a8ec2db366f282481f1"
+  ],
+  "expected_sha_verified_in_git_log_output": true,
+  "ctest": {
+    "selected_suites": 12,
+    "passed": 11,
+    "failed": 1,
+    "timeouts": 1,
+    "skipped": 0,
+    "seconds": 263.77,
+    "suites": [
+      {
+        "position": 1,
+        "id": 1,
+        "name": "core",
+        "result": "passed",
+        "seconds": 16.84,
+        "log_line": "2026-10-22T03:58:00.0277337Z  1/12 Test  #1: core .............................   Passed   16.84 sec"
+      },
+      {
+        "position": 2,
+        "id": 2,
+        "name": "batch",
+        "result": "passed",
+        "seconds": 4.24,
+        "log_line": "2026-10-22T03:58:04.2712471Z  2/12 Test  #2: batch ............................   Passed    4.24 sec"
+      },
+      {
+        "position": 3,
+        "id": 3,
+        "name": "map",
+        "result": "passed",
+        "seconds": 6.0,
+        "log_line": "2026-10-22T03:58:10.2732241Z  3/12 Test  #3: map ..............................   Passed    6.00 sec"
+      },
+      {
+        "position": 4,
+        "id": 4,
+        "name": "crawl",
+        "result": "passed",
+        "seconds": 36.73,
+        "log_line": "2026-10-22T03:58:47.0080507Z  4/12 Test  #4: crawl ............................   Passed   36.73 sec"
+      },
+      {
+        "position": 5,
+        "id": 5,
+        "name": "site_publication",
+        "result": "passed",
+        "seconds": 32.76,
+        "log_line": "2026-10-22T03:59:19.7676825Z  5/12 Test  #5: site_publication .................   Passed   32.76 sec"
+      },
+      {
+        "position": 6,
+        "id": 6,
+        "name": "retention",
+        "result": "passed",
+        "seconds": 17.34,
+        "log_line": "2026-10-22T03:59:37.1047016Z  6/12 Test  #6: retention ........................   Passed   17.34 sec"
+      },
+      {
+        "position": 7,
+        "id": 7,
+        "name": "fairness",
+        "result": "passed",
+        "seconds": 5.39,
+        "log_line": "2026-10-22T03:59:42.5002132Z  7/12 Test  #7: fairness .........................   Passed    5.39 sec"
+      },
+      {
+        "position": 8,
+        "id": 8,
+        "name": "sessions",
+        "result": "timeout",
+        "seconds": 60.01,
+        "log_line": "2026-10-22T04:00:42.5162395Z  8/12 Test  #8: sessions .........................***Timeout  60.01 sec"
+      },
+      {
+        "position": 9,
+        "id": 9,
+        "name": "revalidation",
+        "result": "passed",
+        "seconds": 8.27,
+        "log_line": "2026-10-22T04:00:50.7882712Z  9/12 Test  #9: revalidation .....................   Passed    8.27 sec"
+      },
+      {
+        "position": 10,
+        "id": 10,
+        "name": "capacity_cycles",
+        "result": "passed",
+        "seconds": 66.07,
+        "log_line": "2026-10-22T04:01:56.8583824Z 10/12 Test #10: capacity_cycles ..................   Passed   66.07 sec"
+      },
+      {
+        "position": 11,
+        "id": 11,
+        "name": "contracts",
+        "result": "passed",
+        "seconds": 0.91,
+        "log_line": "2026-10-22T04:01:57.7737049Z 11/12 Test #11: contracts ........................   Passed    0.91 sec"
+      },
+      {
+        "position": 12,
+        "id": 12,
+        "name": "http_cli",
+        "result": "passed",
+        "seconds": 9.16,
+        "log_line": "2026-10-22T04:02:06.9301076Z 12/12 Test #12: http_cli .........................   Passed    9.16 sec"
+      }
+    ],
+    "summary_log_lines": [
+      "2026-10-22T04:02:06.9310729Z 92% tests passed, 1 tests failed out of 12",
+      "2026-10-22T04:02:06.9311426Z Total Test time (real) = 263.77 sec",
+      "2026-10-22T04:02:06.9313378Z \t  8 - sessions (Timeout)"
+    ]
+  },
+  "first_actual_failure": {
+    "suite": "sessions",
+    "kind": "ctest_timeout",
+    "seconds": 60.01,
+    "internal_case_output_present": false,
+    "inference_limit": "No child case/assertion output is present. This observation cannot establish slow execution versus a hang."
+  },
+  "raw_decoded_log_sha256": "80e539ab1817fff1c2d80d675dcfdf6169203b5494d06669fbe1a3f4bbc09db7",
+  "raw_decoded_log_bytes": 170978,
+  "sessions_excerpt_sha256": "f192f36d4d8830eb4620eb6dee029f6a8ebcb696f2445c50731d2fba3ebbc246",
+  "actions_taken": "Read-only monitoring and log fetch only; no repository edits, job reruns or new tests."
+}

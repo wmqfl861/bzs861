@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-22T04:09:32.827039+00:00",
+  "report_kind": "limited_read_only_windows_sessions_timeout_diagnosis",
+  "reviewer": "/root/session_faults",
+  "role_boundary": "This agent authored the original 4 MiB regression fixture. This record is a scoped read-only CI diagnosis, not an independent technical acceptance of its own authored fixture.",
+  "repository": "/workspace/scratch/80f41eb198a3/bzs861",
+  "published_baseline_commit": "b88b76302e850499275b0a8ec2db366f282481f1",
+  "follow_up_fix_commit_parent_reported": "ffbe9515c9c0349e0eee7a484da85dacced7ad9c",
+  "follow_up_commit_verification_scope": "Commit identity and final fixed-clock adoption were supplied by parent; this archive-only step did not inspect or execute the final commit.",
+  "scope": {
+    "actions_completed": [
+      "Read exact published tests/sessions.cpp and CMakeLists.txt using git show b88b76302e850499275b0a8ec2db366f282481f1.",
+      "Read relevant source paths in src/sessions.cpp, src/store.cpp, and src/web.cpp; git diff against the published baseline for these production paths was empty at inspection time.",
+      "Inspect bounded fixture loops, source processing, transaction rollback, clock deadlines, SQLite busy timeout, and stdout flushing.",
+      "Inspect the parent concurrent Windows timeout and flushed per-case timing edits without modifying them."
+    ],
+    "product_tests_executed": false,
+    "main_tree_files_modified_by_reviewer": false,
+    "ci_logs_independently_downloaded_or_verified": false,
+    "ci_timing_provenance": "Timings and suite outcomes below were reported by parent from the exact published commit CI.",
+    "archive_only_follow_up": true
+  },
+  "parent_reported_ci_observations": {
+    "windows_sessions": {
+      "outcome": "Timeout",
+      "elapsed_s": 60.01,
+      "configured_timeout_s": 60,
+      "subcase_stdout_present": false
+    },
+    "windows_native_suites": {
+      "total": 12,
+      "passed": 11,
+      "skipped": 0
+    },
+    "linux_sessions_elapsed_s": 9.48,
+    "linux_asan_sessions_elapsed_s_approximate": 45,
+    "comparison_suites": [
+      {
+        "suite": "core",
+        "windows_elapsed_s": 16.84,
+        "linux_elapsed_s": 2.12,
+        "windows_to_linux_ratio_approximate": 7.94
+      },
+      {
+        "suite": "capacity_cycles",
+        "windows_elapsed_s": 66.07,
+        "linux_elapsed_s": 8.03,
+        "windows_to_linux_ratio_approximate": 8.23
+      }
+    ]
+  },
+  "bounded_workload_findings": {
+    "fixture": "frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages",
+    "baseline_reference": "tests/sessions.cpp:91-119",
+    "worker_type": "In-process synthetic WorkerPort; no worker subprocess or HTTP call in this fixture.",
+    "dispatches": 20,
+    "hits_per_dispatch": 30,
+    "total_input_hits": 600,
+    "hit_fields": {
+      "url_padding_ascii_bytes": 1700,
+      "title_ascii_bytes": 512,
+      "snippet_ascii_bytes": 1024
+    },
+    "maximum_output_hits_per_version": 50,
+    "theoretical_cumulative_source_hit_visits_upper_bound": 6300,
+    "theoretical_result_row_insert_attempts_upper_bound": 980,
+    "bound_qualification": "These are upper bounds, not measured counts. Rejected source transactions are rolled back, so actual cumulative work may be lower.",
+    "processing_reference": "src/sessions.cpp:263-307",
+    "processing": "Each completion re-reads retained completed source payloads, reconstructs provenance, fuses results, checks publication/site bindings, inserts a version, and sums session storage. The 4 MiB check occurs after candidate result insertion, so rejected versions also incur processing and rollback work.",
+    "bounded_control_flow": "One initial execute_one plus a fixed loop of 19 execute_one calls. Missing lease fails a CHECK immediately; there is no retry-until-success loop.",
+    "locking_reference": "src/sessions.cpp:32-36, 311-325, 364-371",
+    "locking_observation": "On freeze rejection, stack unwinding releases the completion transaction and Store lock before execute_search invokes fail_search. No concrete same-lock recursive acquisition was found on this path.",
+    "sqlite_reference": "src/store.cpp:130-135",
+    "sqlite_busy_timeout_ms": 3000,
+    "sqlite_persistence_mode": "WAL with synchronous=FULL",
+    "source_throttle_reference": "src/web.cpp:491-501; tests/sessions.cpp:26-29",
+    "source_throttle_observation": "The fixture min_interval_ms is zero, so the bounded source politeness sleep is not entered.",
+    "finding_limit": "Static inspection found no explicit Windows-specific unbounded loop or deadlock in the inspected path; it does not prove absence of all runtime or platform faults."
+  },
+  "stdout_observability": {
+    "baseline_reference": "tests/sessions.cpp:248",
+    "finding": "The published harness prints PASS only after a case completes, using newline without an explicit flush. There is no pre-case RUN line. Missing captured stdout therefore cannot locate the timeout to the first case or prove where progress stopped.",
+    "recommended_change": "Print and flush RUN before each case and PASS after it, with steady_clock elapsed time."
+  },
+  "timeout_budget_estimate": {
+    "method": "Apply parent-reported same-job Windows/Linux slowdown ratios of core and capacity_cycles to Linux sessions elapsed time.",
+    "estimated_windows_sessions_range_s_approximate": [
+      75.3,
+      78.0
+    ],
+    "is_windows_sessions_measurement": false,
+    "inference": "The estimate exceeds the published whole-suite 60-second budget and supports a bounded Windows-only budget increase. It cannot establish the actual duration or isolate the failing subcase.",
+    "recommended_windows_timeout_s": 180,
+    "recommended_other_platform_timeout_s": 60,
+    "existing_comparator_reference": "Published CMakeLists.txt:135 already gives capacity_cycles TIMEOUT 180.",
+    "success_guaranteed": false
+  },
+  "real_clock_coupling": {
+    "baseline_store_reference": "tests/sessions.cpp:103 and 118",
+    "whole_session_deadline_ms": 120000,
+    "source_timeout_ms": 8000,
+    "source_lease_additional_ms": 10000,
+    "source_lease_duration_ms": 18000,
+    "references": [
+      "src/sessions.cpp:63",
+      "src/sessions.cpp:147-161",
+      "src/sessions.cpp:226",
+      "src/sessions.cpp:233-236",
+      "src/sessions.cpp:319-325"
+    ],
+    "risk": "A sufficiently slow runner can hit product deadlines even after the external CTest budget is raised. This would produce deadline/unknown-source behavior or assertion failures rather than an infinite wait.",
+    "recommendation": "Use a fixed controllable Store clock in this storage-only fixture, sharing the same clock for initial open and reopen.",
+    "why_scope_is_preserved": "The fixture asserts storage backpressure, transaction rollback, retained counters, and immutable result pages; it does not assert elapsed-time semantics. A fixed Store clock isolates these properties while preserving all 20 sources, 30 hits per source, the actual 4 MiB threshold, and all existing assertions. CTest and per-case steady_clock timing remain real wall-time bounds/measurements.",
+    "must_remain_unchanged": "Dedicated real deadline and fault/recovery end-to-end tests; production deadline and lease behavior.",
+    "adoption_status": "Parent reports both Store instances now share the fixed clock in ffbe9515c9c0349e0eee7a484da85dacced7ad9c, with complete fixture/assertions preserved and real deadline E2E unchanged."
+  },
+  "conclusion": {
+    "status": "bounded_workload_budget_exceeded_is_supported_hypothesis_windows_confirmation_pending",
+    "text": "Existing evidence better supports a Windows Debug workload exceeding the old 60-second suite budget than a demonstrated logic hang. A Windows-only 180-second timeout, flushed case progress/timing, and a shared fixed Store clock in the storage-only fixture are justified narrowly scoped changes. The original timeout remains a failure.",
+    "required_confirmation": "Run the corrected exact commit on Windows and inspect complete per-case output and whole-suite results. No future CI result, final Windows pass, or full product acceptance is claimed."
+  }
+}

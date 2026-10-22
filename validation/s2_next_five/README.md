@@ -2,15 +2,26 @@
 
 本目录从已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`、schema11接续。历史 `validation/s2_five_stages/` 等目录不覆盖；本轮实现与范围见 [接续计划](../../docs/handoff/S2_NEXT_FIVE_20261021.md)。五个增量是页面条件刷新、robots条件重验证、真实会话故障、外部来源消融前置、有限容量/公平性循环。
 
+## 发布后的 Windows CI 修正
+
+首次发布 `b88b76302e850499275b0a8ec2db366f282481f1` 的 Linux CI 通过；Windows 编译通过，12套中11套通过，`sessions` 在60.01秒超时，0跳过。原日志没有子用例输出，不能据此断言只是机器慢。原失败日志、独立观察、作者诊断和补丁复核在新增记录中保留。
+
+后续修正只涉及三个执行输入：Windows `sessions` 的有限超时改为180秒（其他平台仍60秒）；测试主程序刷新逐案进度和耗时；纯存储4MiB背压用例的两次Store共用固定时钟，避免无关的会话/来源期限影响；Windows工作流对原12套开启详细日志。全部21个会话用例、283条断言、20来源×30命中和实际4MiB边界保留，真实期限/故障E2E不变。产品源码和重编后的核心库字节均与原冻结版本一致。
+
+最新本地针对性结果为21项/283断言、0失败，CTest 12.07秒；它不替代新提交的完整Linux/Windows CI。先读 [ci-followup-report.json](ci-followup-report.json)，再查包含它的实际提交工作流。原 `final-v2-*`、`final-report.json`、`final-source-manifest.json` 和 `delivery-audit.json` 继续绑定首次发布前的输入与结果，不追溯改写为后续测试成绩。
+
 ## 权威入口
 
 | 文件 | 口径 |
 | --- | --- |
-| [final-report.json](final-report.json) | 最终实际命令、成绩、范围与执行输入绑定 |
+| [ci-followup-report.json](ci-followup-report.json) | 发布后Windows超时、最小测试修正、当前输入与针对性复验 |
+| [ci-followup-execution-inputs.json](ci-followup-execution-inputs.json) | 修正后的188个冻结输入，只有三个执行文件不同 |
+| [ci-followup-source-manifest.json](ci-followup-source-manifest.json) | 修正提交的195个源码/文档文件哈希 |
+| [final-report.json](final-report.json) | 首次发布前完整本地命令、成绩、范围与执行输入绑定 |
 | [final-review.json](final-review.json) | 作者/独立审查分工、发现、原失败及复验 |
 | [delivery-audit.json](delivery-audit.json) | 最终交付的独立证据核对：执行输入、归档、命令日志与成绩交叉验证 |
 | [final-v2-execution-inputs.json](final-v2-execution-inputs.json) | 188个冻结代码、测试、构建、配置、合同和文档输入 |
-| [final-source-manifest.json](final-source-manifest.json) | 最后交付的源码/文档文件哈希；与最终Git树一起绑定 |
+| [final-source-manifest.json](final-source-manifest.json) | 首次发布前的源码/文档文件哈希；由b88b763的Git树绑定 |
 | [environment.json](environment.json) | 实际工具链、依赖、Python版本与构建条件 |
 | [evidence-archive.json](evidence-archive.json) | 原作者、独立复核和准备日志的逐文件哈希 |
 | [execution-revision.json](execution-revision.json) | v1→v2只修正文档歧义，代码/测试/配置不变；旧命令保留 |
@@ -20,7 +31,7 @@
 
 `d9fba205a66b31aa89a761c3b7606cd456aaf1fa` 是本地代码冻结提交，用于本轮作者与独立复核的来源记录，不冒充GitHub发布SHA。最终发布包含相同运行代码，文件身份由冻结清单核对；本地候选提交和连接器实际创建的发布提交可以不同。包含本报告的实际远端提交及其Linux/Windows工作流须在发布后读取，不在此预写自身SHA或未来成绩。
 
-## 最终本地结果
+## 首次发布前的完整本地结果
 
 22条成功最终命令绑定同一final-v2清单：**19/19套CTest、0跳过；Python984项；11/11套原生ASan/UBSan且开启泄漏检测；34项原合同、13项计划守卫及依赖/历史保持检查通过**。完整CTest为138.33秒。初轮失败记录另保留，不计入成功命令；细项与二进制身份以final-report及原命令为准。
 

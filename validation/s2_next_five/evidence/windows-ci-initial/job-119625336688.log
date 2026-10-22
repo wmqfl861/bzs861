@@ -1,0 +1,1724 @@
+﻿2026-10-22T03:41:26.5547525Z Current runner version: '2.338.0'
+2026-10-22T03:41:26.5580963Z ##[group]Runner Image Provisioner
+2026-10-22T03:41:26.5582185Z Hosted Compute Agent
+2026-10-22T03:41:26.5583037Z Version: 20261012.601
+2026-10-22T03:41:26.5583990Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-22T03:41:26.5585228Z Build Date: 2026-10-12T17:48:21Z
+2026-10-22T03:41:26.5586356Z Worker ID: {1e966f9f-53ef-4489-b428-fe5537b884ca}
+2026-10-22T03:41:26.5587497Z Region: northcentralus
+2026-10-22T03:41:26.5588359Z Cloud: Azure
+2026-10-22T03:41:26.5589117Z ##[endgroup]
+2026-10-22T03:41:26.5591098Z ##[group]Operating System
+2026-10-22T03:41:26.5592114Z Microsoft Windows Server 2022
+2026-10-22T03:41:26.5593146Z 10.0.20348
+2026-10-22T03:41:26.5593968Z Datacenter
+2026-10-22T03:41:26.5594762Z ##[endgroup]
+2026-10-22T03:41:26.5595636Z ##[group]Runner Image
+2026-10-22T03:41:26.5596852Z Image: windows-2022
+2026-10-22T03:41:26.5597730Z Version: 20261012.333.1
+2026-10-22T03:41:26.5600093Z Included Software: https://github.com/actions/runner-images/blob/win22/20261012.333/images/windows/Windows2022-Readme.md
+2026-10-22T03:41:26.5602891Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261012.333
+2026-10-22T03:41:26.5604542Z ##[endgroup]
+2026-10-22T03:41:26.5606641Z ##[group]GITHUB_TOKEN Permissions
+2026-10-22T03:41:26.5609082Z Contents: read
+2026-10-22T03:41:26.5610045Z Metadata: read
+2026-10-22T03:41:26.5610840Z ##[endgroup]
+2026-10-22T03:41:26.5613321Z Secret source: Actions
+2026-10-22T03:41:26.5614769Z Cache mode: write
+2026-10-22T03:41:26.5615935Z Prepare workflow directory
+2026-10-22T03:41:26.5953203Z Prepare all required actions
+2026-10-22T03:41:26.5999482Z Getting action download info
+2026-10-22T03:41:26.8079711Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-22T03:41:27.0689512Z Complete job name: windows
+2026-10-22T03:41:27.2206518Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+2026-10-22T03:41:27.2207721Z with:
+2026-10-22T03:41:27.2208138Z   persist-credentials: false
+2026-10-22T03:41:27.2208633Z   repository: wmqfl861/bzs861
+2026-10-22T03:41:27.2212354Z   token: ***
+2026-10-22T03:41:27.2212747Z   ssh-strict: true
+2026-10-22T03:41:27.2213154Z   ssh-user: git
+2026-10-22T03:41:27.2213536Z   clean: true
+2026-10-22T03:41:27.2213948Z   sparse-checkout-cone-mode: true
+2026-10-22T03:41:27.2214432Z   fetch-depth: 1
+2026-10-22T03:41:27.2214840Z   fetch-tags: false
+2026-10-22T03:41:27.2215248Z   show-progress: true
+2026-10-22T03:41:27.2215672Z   lfs: false
+2026-10-22T03:41:27.2216056Z   submodules: false
+2026-10-22T03:41:27.2216469Z   set-safe-directory: true
+2026-10-22T03:41:27.2216935Z   allow-unsafe-pr-checkout: false
+2026-10-22T03:41:27.2217618Z ##[endgroup]
+2026-10-22T03:41:27.3595127Z Syncing repository: wmqfl861/bzs861
+2026-10-22T03:41:27.3596930Z ##[group]Getting Git version info
+2026-10-22T03:41:27.3597528Z Working directory is 'D:\a\bzs861\bzs861'
+2026-10-22T03:41:27.4550865Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T03:41:27.7511642Z git version 2.56.0.windows.2
+2026-10-22T03:41:27.7557545Z ##[endgroup]
+2026-10-22T03:41:27.7575395Z Temporarily overriding HOME='D:\a\_temp\57c082a9-6d25-4a99-a84f-704889dd97cf' before making global git config changes
+2026-10-22T03:41:27.7576732Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T03:41:27.7586037Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\bzs861\bzs861
+2026-10-22T03:41:27.8132513Z Deleting the contents of 'D:\a\bzs861\bzs861'
+2026-10-22T03:41:27.8138035Z ##[group]Initializing the repository
+2026-10-22T03:41:27.8147553Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\bzs861\bzs861
+2026-10-22T03:41:27.8979543Z Initialized empty Git repository in D:/a/bzs861/bzs861/.git/
+2026-10-22T03:41:27.9013946Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/wmqfl861/bzs861
+2026-10-22T03:41:27.9534456Z ##[endgroup]
+2026-10-22T03:41:27.9535417Z ##[group]Disabling automatic garbage collection
+2026-10-22T03:41:27.9542379Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-22T03:41:27.9813636Z ##[endgroup]
+2026-10-22T03:41:27.9814649Z ##[group]Setting up auth
+2026-10-22T03:41:27.9825112Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T03:41:28.0113052Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T03:41:29.4222841Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T03:41:29.4503807Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T03:41:29.9018965Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T03:41:29.9312612Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T03:41:30.3836926Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-22T03:41:30.4124885Z ##[endgroup]
+2026-10-22T03:41:30.4125527Z ##[group]Fetching the repository
+2026-10-22T03:41:30.4136476Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b88b76302e850499275b0a8ec2db366f282481f1:refs/remotes/origin/main
+2026-10-22T03:41:31.6617434Z From https://github.com/wmqfl861/bzs861
+2026-10-22T03:41:31.6618185Z  * [new ref]         b88b76302e850499275b0a8ec2db366f282481f1 -> origin/main
+2026-10-22T03:41:31.6647529Z ##[endgroup]
+2026-10-22T03:41:31.6648037Z ##[group]Determining the checkout info
+2026-10-22T03:41:31.6650217Z ##[endgroup]
+2026-10-22T03:41:31.6658551Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-22T03:41:31.7042544Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-22T03:41:31.7317021Z ##[group]Checking out the ref
+2026-10-22T03:41:31.7324281Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+2026-10-22T03:41:31.9647069Z Switched to a new branch 'main'
+2026-10-22T03:41:31.9667559Z branch 'main' set up to track 'origin/main'.
+2026-10-22T03:41:31.9704222Z ##[endgroup]
+2026-10-22T03:41:32.0081199Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-22T03:41:32.0336070Z b88b76302e850499275b0a8ec2db366f282481f1
+2026-10-22T03:41:32.0367936Z ##[group]Removing auth
+2026-10-22T03:41:32.0375309Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T03:41:32.0651707Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T03:41:32.5316684Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T03:41:32.5576408Z http.https://github.com/.extraheader
+2026-10-22T03:41:32.5615039Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-22T03:41:32.5908756Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T03:41:33.0814482Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T03:41:33.1108128Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T03:41:33.5818098Z ##[endgroup]
+2026-10-22T03:41:33.6194596Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+2026-10-22T03:41:33.6195088Z with:
+2026-10-22T03:41:33.6195309Z   repository: microsoft/vcpkg
+2026-10-22T03:41:33.6195595Z   ref: 6719fd4d4cd3b2d4575f6164da4a02f757b3b067
+2026-10-22T03:41:33.6195908Z   path: .build-tools/vcpkg
+2026-10-22T03:41:33.6196162Z   persist-credentials: false
+2026-10-22T03:41:33.6199117Z   token: ***
+2026-10-22T03:41:33.6199316Z   ssh-strict: true
+2026-10-22T03:41:33.6199528Z   ssh-user: git
+2026-10-22T03:41:33.6199715Z   clean: true
+2026-10-22T03:41:33.6199922Z   sparse-checkout-cone-mode: true
+2026-10-22T03:41:33.6200206Z   fetch-depth: 1
+2026-10-22T03:41:33.6200396Z   fetch-tags: false
+2026-10-22T03:41:33.6200597Z   show-progress: true
+2026-10-22T03:41:33.6200797Z   lfs: false
+2026-10-22T03:41:33.6200975Z   submodules: false
+2026-10-22T03:41:33.6201185Z   set-safe-directory: true
+2026-10-22T03:41:33.6201427Z   allow-unsafe-pr-checkout: false
+2026-10-22T03:41:33.6201720Z ##[endgroup]
+2026-10-22T03:41:33.7197167Z Syncing repository: microsoft/vcpkg
+2026-10-22T03:41:33.7207085Z ##[group]Getting Git version info
+2026-10-22T03:41:33.7207892Z Working directory is 'D:\a\bzs861\bzs861\.build-tools\vcpkg'
+2026-10-22T03:41:33.8061678Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T03:41:33.8328188Z git version 2.56.0.windows.2
+2026-10-22T03:41:33.8364982Z ##[endgroup]
+2026-10-22T03:41:33.8379981Z Temporarily overriding HOME='D:\a\_temp\718ac77c-5282-4f9d-b75e-cb1fb19cdd92' before making global git config changes
+2026-10-22T03:41:33.8381436Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T03:41:33.8390880Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\bzs861\bzs861\.build-tools\vcpkg
+2026-10-22T03:41:33.8671360Z ##[group]Initializing the repository
+2026-10-22T03:41:33.8679553Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\bzs861\bzs861\.build-tools\vcpkg
+2026-10-22T03:41:33.8990945Z Initialized empty Git repository in D:/a/bzs861/bzs861/.build-tools/vcpkg/.git/
+2026-10-22T03:41:33.9024481Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/microsoft/vcpkg
+2026-10-22T03:41:33.9306732Z ##[endgroup]
+2026-10-22T03:41:33.9307374Z ##[group]Disabling automatic garbage collection
+2026-10-22T03:41:33.9315790Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-22T03:41:33.9584831Z ##[endgroup]
+2026-10-22T03:41:33.9585193Z ##[group]Setting up auth
+2026-10-22T03:41:33.9595972Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T03:41:33.9873090Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T03:41:34.5043092Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T03:41:34.5322163Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T03:41:34.9733491Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T03:41:35.0021879Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T03:41:35.4632068Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-22T03:41:35.4870805Z ##[endgroup]
+2026-10-22T03:41:35.4871174Z ##[group]Fetching the repository
+2026-10-22T03:41:35.4884597Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 6719fd4d4cd3b2d4575f6164da4a02f757b3b067
+2026-10-22T03:41:36.6681533Z From https://github.com/microsoft/vcpkg
+2026-10-22T03:41:36.6682044Z  * branch              6719fd4d4cd3b2d4575f6164da4a02f757b3b067 -> FETCH_HEAD
+2026-10-22T03:41:36.6712260Z ##[endgroup]
+2026-10-22T03:41:36.6712636Z ##[group]Determining the checkout info
+2026-10-22T03:41:36.6715042Z ##[endgroup]
+2026-10-22T03:41:36.6723736Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-22T03:41:36.7030674Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-22T03:41:36.7301177Z ##[group]Checking out the ref
+2026-10-22T03:41:36.7308929Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force 6719fd4d4cd3b2d4575f6164da4a02f757b3b067
+2026-10-22T03:41:37.7639705Z Updating files:  38% (5570/14349)
+2026-10-22T03:41:37.7998372Z Updating files:  39% (5597/14349)
+2026-10-22T03:41:37.8241383Z Updating files:  40% (5740/14349)
+2026-10-22T03:41:37.8474883Z Updating files:  41% (5884/14349)
+2026-10-22T03:41:37.8721616Z Updating files:  42% (6027/14349)
+2026-10-22T03:41:37.8992564Z Updating files:  43% (6171/14349)
+2026-10-22T03:41:37.9241272Z Updating files:  44% (6314/14349)
+2026-10-22T03:41:37.9484103Z Updating files:  45% (6458/14349)
+2026-10-22T03:41:37.9723623Z Updating files:  46% (6601/14349)
+2026-10-22T03:41:37.9973705Z Updating files:  47% (6745/14349)
+2026-10-22T03:41:38.0223992Z Updating files:  48% (6888/14349)
+2026-10-22T03:41:38.0462982Z Updating files:  49% (7032/14349)
+2026-10-22T03:41:38.0702090Z Updating files:  50% (7175/14349)
+2026-10-22T03:41:38.0948345Z Updating files:  51% (7318/14349)
+2026-10-22T03:41:38.1195034Z Updating files:  52% (7462/14349)
+2026-10-22T03:41:38.1429979Z Updating files:  53% (7605/14349)
+2026-10-22T03:41:38.1663798Z Updating files:  54% (7749/14349)
+2026-10-22T03:41:38.1907104Z Updating files:  55% (7892/14349)
+2026-10-22T03:41:38.2142765Z Updating files:  56% (8036/14349)
+2026-10-22T03:41:38.2381522Z Updating files:  57% (8179/14349)
+2026-10-22T03:41:38.2627319Z Updating files:  58% (8323/14349)
+2026-10-22T03:41:38.2868971Z Updating files:  59% (8466/14349)
+2026-10-22T03:41:38.3113566Z Updating files:  60% (8610/14349)
+2026-10-22T03:41:38.3353635Z Updating files:  61% (8753/14349)
+2026-10-22T03:41:38.3601939Z Updating files:  62% (8897/14349)
+2026-10-22T03:41:38.4120763Z Updating files:  63% (9040/14349)
+2026-10-22T03:41:38.4359535Z Updating files:  64% (9184/14349)
+2026-10-22T03:41:38.4608447Z Updating files:  65% (9327/14349)
+2026-10-22T03:41:38.4863706Z Updating files:  66% (9471/14349)
+2026-10-22T03:41:38.5098206Z Updating files:  67% (9614/14349)
+2026-10-22T03:41:38.5349467Z Updating files:  68% (9758/14349)
+2026-10-22T03:41:38.5605776Z Updating files:  69% (9901/14349)
+2026-10-22T03:41:38.5852721Z Updating files:  70% (10045/14349)
+2026-10-22T03:41:38.6249983Z Updating files:  71% (10188/14349)
+2026-10-22T03:41:38.6513925Z Updating files:  72% (10332/14349)
+2026-10-22T03:41:38.6763795Z Updating files:  73% (10475/14349)
+2026-10-22T03:41:38.7002944Z Updating files:  74% (10619/14349)
+2026-10-22T03:41:38.7239167Z Updating files:  75% (10762/14349)
+2026-10-22T03:41:38.7476975Z Updating files:  76% (10906/14349)
+2026-10-22T03:41:38.7593202Z Updating files:  77% (11049/14349)
+2026-10-22T03:41:38.7715967Z Updating files:  77% (11115/14349)
+2026-10-22T03:41:38.7974970Z Updating files:  78% (11193/14349)
+2026-10-22T03:41:38.8228816Z Updating files:  79% (11336/14349)
+2026-10-22T03:41:38.8480891Z Updating files:  80% (11480/14349)
+2026-10-22T03:41:38.8713016Z Updating files:  81% (11623/14349)
+2026-10-22T03:41:38.8937068Z Updating files:  82% (11767/14349)
+2026-10-22T03:41:38.9165846Z Updating files:  83% (11910/14349)
+2026-10-22T03:41:38.9398312Z Updating files:  84% (12054/14349)
+2026-10-22T03:41:38.9675666Z Updating files:  85% (12197/14349)
+2026-10-22T03:41:38.9917430Z Updating files:  86% (12341/14349)
+2026-10-22T03:41:39.0151397Z Updating files:  87% (12484/14349)
+2026-10-22T03:41:39.0377702Z Updating files:  88% (12628/14349)
+2026-10-22T03:41:39.0599099Z Updating files:  89% (12771/14349)
+2026-10-22T03:41:39.0813839Z Updating files:  90% (12915/14349)
+2026-10-22T03:41:39.1044933Z Updating files:  91% (13058/14349)
+2026-10-22T03:41:39.1579295Z Updating files:  92% (13202/14349)
+2026-10-22T03:41:39.1807378Z Updating files:  93% (13345/14349)
+2026-10-22T03:41:39.2053649Z Updating files:  94% (13489/14349)
+2026-10-22T03:41:39.2266537Z Updating files:  95% (13632/14349)
+2026-10-22T03:41:39.2482388Z Updating files:  96% (13776/14349)
+2026-10-22T03:41:39.2688040Z Updating files:  97% (13919/14349)
+2026-10-22T03:41:39.2907476Z Updating files:  98% (14063/14349)
+2026-10-22T03:41:39.3117980Z Updating files:  99% (14206/14349)
+2026-10-22T03:41:39.3118508Z Updating files: 100% (14349/14349)
+2026-10-22T03:41:39.3118867Z Updating files: 100% (14349/14349), done.
+2026-10-22T03:41:39.3405675Z Note: switching to '6719fd4d4cd3b2d4575f6164da4a02f757b3b067'.
+2026-10-22T03:41:39.3406143Z 
+2026-10-22T03:41:39.3406481Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-22T03:41:39.3407252Z changes and commit them, and you can discard any commits you make in this
+2026-10-22T03:41:39.3408003Z state without impacting any branches by switching back to a branch.
+2026-10-22T03:41:39.3408457Z 
+2026-10-22T03:41:39.3408750Z If you want to create a new branch to retain commits you create, you may
+2026-10-22T03:41:39.3409450Z do so (now or later) by using -c with the switch command. Example:
+2026-10-22T03:41:39.3409850Z 
+2026-10-22T03:41:39.3410022Z   git switch -c <new-branch-name>
+2026-10-22T03:41:39.3410305Z 
+2026-10-22T03:41:39.3410458Z Or undo this operation with:
+2026-10-22T03:41:39.3410707Z 
+2026-10-22T03:41:39.3410778Z   git switch -
+2026-10-22T03:41:39.3410890Z 
+2026-10-22T03:41:39.3411091Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-22T03:41:39.3411401Z 
+2026-10-22T03:41:39.3411854Z HEAD is now at 6719fd4d [mingw triplets] Kept PATH out of the package ABIs (#54462)
+2026-10-22T03:41:39.3466086Z ##[endgroup]
+2026-10-22T03:41:39.3778504Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-22T03:41:39.4039867Z 6719fd4d4cd3b2d4575f6164da4a02f757b3b067
+2026-10-22T03:41:39.4074043Z ##[group]Removing auth
+2026-10-22T03:41:39.4081777Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T03:41:39.4365690Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T03:41:39.9174210Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T03:41:39.9429841Z http.https://github.com/.extraheader
+2026-10-22T03:41:39.9464094Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-22T03:41:39.9757141Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T03:41:40.4497586Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T03:41:40.4788306Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T03:41:40.9801536Z ##[endgroup]
+2026-10-22T03:41:41.0064514Z ##[group]Run & ./.build-tools/vcpkg/bootstrap-vcpkg.bat -disableMetrics
+2026-10-22T03:41:41.0065208Z [36;1m& ./.build-tools/vcpkg/bootstrap-vcpkg.bat -disableMetrics[0m
+2026-10-22T03:41:41.0065621Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T03:41:41.0066313Z [36;1m& ./.build-tools/vcpkg/vcpkg.exe install "sqlite3[fts5]:x64-windows" libxml2:x64-windows json-c:x64-windows openssl:x64-windows boost-beast:x64-windows[0m
+2026-10-22T03:41:41.0066995Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T03:41:41.0183568Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-22T03:41:41.0183932Z ##[endgroup]
+2026-10-22T03:41:44.7552045Z Downloading https://github.com/microsoft/vcpkg-tool/releases/download/2026-09-26/vcpkg.exe -> D:\a\bzs861\bzs861\.build-tools\vcpkg\vcpkg.exe... done.
+2026-10-22T03:41:44.8007028Z Validating signature... done.
+2026-10-22T03:41:44.8141565Z 
+2026-10-22T03:41:44.8302335Z vcpkg package management program version 2026-09-26-51bf87ca6e9bf3e622d84ff323bd202ab1ca0c0b
+2026-10-22T03:41:44.8303228Z 
+2026-10-22T03:41:44.8303398Z See LICENSE.txt for license information.
+2026-10-22T03:41:44.9185375Z Computing installation plan...
+2026-10-22T03:41:45.5795857Z A suitable version of cmake was not found (required v4.4.3).
+2026-10-22T03:41:45.5796633Z Downloading https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip -> cmake-4.4.3-windows-x86_64.zip
+2026-10-22T03:41:46.1435975Z Successfully downloaded cmake-4.4.3-windows-x86_64.zip
+2026-10-22T03:41:46.1436505Z Extracting cmake...
+2026-10-22T03:41:49.5631700Z The following packages will be built and installed:
+2026-10-22T03:41:49.5632154Z   * boost-algorithm:x64-windows@1.92.0
+2026-10-22T03:41:49.5632500Z   * boost-align:x64-windows@1.92.0
+2026-10-22T03:41:49.5632744Z   * boost-array:x64-windows@1.92.0
+2026-10-22T03:41:49.5633056Z   * boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0
+2026-10-22T03:41:49.5633431Z   * boost-assert:x64-windows@1.92.0
+2026-10-22T03:41:49.5633677Z     boost-beast:x64-windows@1.92.0
+2026-10-22T03:41:49.5633920Z   * boost-bind:x64-windows@1.92.0
+2026-10-22T03:41:49.5634162Z   * boost-cmake:x64-windows@1.92.0
+2026-10-22T03:41:49.5634402Z   * boost-compat:x64-windows@1.92.0
+2026-10-22T03:41:49.5634657Z   * boost-concept-check:x64-windows@1.92.0
+2026-10-22T03:41:49.5634918Z   * boost-config:x64-windows@1.92.0
+2026-10-22T03:41:49.5635163Z   * boost-container:x64-windows@1.92.0
+2026-10-22T03:41:49.5635424Z   * boost-container-hash:x64-windows@1.92.0
+2026-10-22T03:41:49.5635698Z   * boost-context:x64-windows@1.92.0
+2026-10-22T03:41:49.5635945Z   * boost-conversion:x64-windows@1.92.0
+2026-10-22T03:41:49.5636195Z   * boost-core:x64-windows@1.92.0
+2026-10-22T03:41:49.5636435Z   * boost-date-time:x64-windows@1.92.0
+2026-10-22T03:41:49.5636684Z   * boost-describe:x64-windows@1.92.0
+2026-10-22T03:41:49.5636926Z   * boost-detail:x64-windows@1.92.0
+2026-10-22T03:41:49.5637174Z   * boost-endian:x64-windows@1.92.0
+2026-10-22T03:41:49.5637413Z   * boost-exception:x64-windows@1.92.0
+2026-10-22T03:41:49.5637660Z   * boost-function:x64-windows@1.92.0
+2026-10-22T03:41:49.5637912Z   * boost-function-types:x64-windows@1.92.0
+2026-10-22T03:41:49.5638187Z   * boost-fusion:x64-windows@1.92.0
+2026-10-22T03:41:49.5638423Z   * boost-headers:x64-windows@1.92.0
+2026-10-22T03:41:49.5638664Z   * boost-integer:x64-windows@1.92.0
+2026-10-22T03:41:49.5638904Z   * boost-intrusive:x64-windows@1.92.0
+2026-10-22T03:41:49.5639145Z   * boost-io:x64-windows@1.92.0
+2026-10-22T03:41:49.5639375Z   * boost-iterator:x64-windows@1.92.0
+2026-10-22T03:41:49.5639627Z   * boost-lexical-cast:x64-windows@1.92.0
+2026-10-22T03:41:49.5639881Z   * boost-logic:x64-windows@1.92.0
+2026-10-22T03:41:49.5640111Z   * boost-move:x64-windows@1.92.0
+2026-10-22T03:41:49.5640365Z   * boost-mp11:x64-windows@1.92.0
+2026-10-22T03:41:49.5640642Z   * boost-mpl:x64-windows@1.92.0
+2026-10-22T03:41:49.5642942Z   * boost-numeric-conversion:x64-windows@1.92.0
+2026-10-22T03:41:49.5643313Z   * boost-optional:x64-windows@1.92.0
+2026-10-22T03:41:49.5643582Z   * boost-pool:x64-windows@1.92.0
+2026-10-22T03:41:49.5643825Z   * boost-predef:x64-windows@1.92.0
+2026-10-22T03:41:49.5644087Z   * boost-preprocessor:x64-windows@1.92.0
+2026-10-22T03:41:49.5644349Z   * boost-range:x64-windows@1.92.0
+2026-10-22T03:41:49.5644586Z   * boost-regex:x64-windows@1.92.0
+2026-10-22T03:41:49.5644838Z   * boost-smart-ptr:x64-windows@1.92.0
+2026-10-22T03:41:49.5645108Z   * boost-static-assert:x64-windows@1.92.0
+2026-10-22T03:41:49.5645388Z   * boost-static-string:x64-windows@1.92.0
+2026-10-22T03:41:49.5645642Z   * boost-system:x64-windows@1.92.0
+2026-10-22T03:41:49.5645898Z   * boost-throw-exception:x64-windows@1.92.0
+2026-10-22T03:41:49.5646171Z   * boost-tokenizer:x64-windows@1.92.0
+2026-10-22T03:41:49.5646432Z   * boost-tuple:x64-windows@1.92.0
+2026-10-22T03:41:49.5646673Z   * boost-type-index:x64-windows@1.92.0
+2026-10-22T03:41:49.5646946Z   * boost-type-traits:x64-windows@1.92.0
+2026-10-22T03:41:49.5647201Z   * boost-typeof:x64-windows@1.92.0
+2026-10-22T03:41:49.5647445Z   * boost-uninstall:x64-windows@1.92.0
+2026-10-22T03:41:49.5647696Z   * boost-unordered:x64-windows@1.92.0
+2026-10-22T03:41:49.5647960Z   * boost-utility:x64-windows@1.92.0
+2026-10-22T03:41:49.5648209Z   * boost-variant2:x64-windows@1.92.0
+2026-10-22T03:41:49.5648452Z   * boost-winapi:x64-windows@1.92.0
+2026-10-22T03:41:49.5648691Z     json-c:x64-windows@0.19-20260627#1
+2026-10-22T03:41:49.5648931Z   * libiconv:x64-windows@1.19
+2026-10-22T03:41:49.5649179Z     libxml2[core,iconv,zlib]:x64-windows@2.15.4
+2026-10-22T03:41:49.5649457Z     openssl:x64-windows@3.6.5#2
+2026-10-22T03:41:49.5649713Z     sqlite3[core,fts5,json1]:x64-windows@3.53.4#2
+2026-10-22T03:41:49.5650000Z   * vcpkg-boost:x64-windows@2026-08-21
+2026-10-22T03:41:49.5650252Z   * vcpkg-cmake:x64-windows@2025-08-07
+2026-10-22T03:41:49.5650520Z   * vcpkg-cmake-config:x64-windows@2026-07-21
+2026-10-22T03:41:49.5650817Z   * vcpkg-cmake-get-vars:x64-windows@2025-05-29
+2026-10-22T03:41:49.5651095Z   * vcpkg-make:x64-windows@2026-07-09#1
+2026-10-22T03:41:49.5651345Z   * zlib:x64-windows@1.3.2#2
+2026-10-22T03:41:49.5651666Z Additional packages (*) will be modified to complete this operation.
+2026-10-22T03:41:49.9059052Z Detecting compiler hash for triplet x64-windows...
+2026-10-22T03:41:58.7813348Z Compiler found: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe
+2026-10-22T03:41:58.8406641Z Restored 0 package(s) from C:\Users\runneradmin\AppData\Local\vcpkg\archives in 958 us. Use --debug to see more details.
+2026-10-22T03:41:58.8407420Z Installing 1/67 boost-uninstall:x64-windows@1.92.0...
+2026-10-22T03:41:58.8408058Z boost-uninstall:x64-windows@1.92.0 package ABI: a398b53e61e729a2dc61dda92b8736b8c795943413d3f0ebdf1ac862275363d9
+2026-10-22T03:41:58.8408688Z Building boost-uninstall:x64-windows@1.92.0...
+2026-10-22T03:41:58.8687157Z -- 
+2026-10-22T03:41:58.8688113Z Please use the following command when you need to remove all boost ports/components:
+2026-10-22T03:41:58.8689279Z     "./vcpkg remove boost-uninstall:x64-windows --recurse"
+2026-10-22T03:41:58.8689845Z 
+2026-10-22T03:41:58.8738018Z -- Skipping post-build validation due to VCPKG_POLICY_EMPTY_PACKAGE
+2026-10-22T03:41:58.8773554Z Starting submission of boost-uninstall:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:41:58.8774346Z Elapsed time to handle boost-uninstall:x64-windows: 36.7 ms
+2026-10-22T03:41:58.8774734Z Installing 2/67 vcpkg-cmake:x64-windows@2025-08-07...
+2026-10-22T03:41:58.8775321Z vcpkg-cmake:x64-windows@2025-08-07 package ABI: f428af3960f2ea145544afeb9d418b2de033be3a9ba1be38159cbd6fc2523258
+2026-10-22T03:41:58.8775873Z Building vcpkg-cmake:x64-windows@2025-08-07...
+2026-10-22T03:41:58.9088375Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake_x64-windows/share/vcpkg-cmake/vcpkg_cmake_configure.cmake
+2026-10-22T03:41:58.9097042Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake_x64-windows/share/vcpkg-cmake/vcpkg_cmake_build.cmake
+2026-10-22T03:41:58.9101725Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake_x64-windows/share/vcpkg-cmake/vcpkg_cmake_install.cmake
+2026-10-22T03:41:58.9106911Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake_x64-windows/share/vcpkg-cmake/vcpkg-port-config.cmake
+2026-10-22T03:41:58.9114206Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake_x64-windows/share/vcpkg-cmake/copyright
+2026-10-22T03:41:58.9159002Z -- Performing post-build validation
+2026-10-22T03:41:58.9205818Z Starting submission of vcpkg-cmake:x64-windows@2025-08-07 to 1 binary cache(s) in the background
+2026-10-22T03:41:58.9206713Z Elapsed time to handle vcpkg-cmake:x64-windows: 43.1 ms
+2026-10-22T03:41:58.9207350Z Installing 3/67 vcpkg-cmake-config:x64-windows@2026-07-21...
+2026-10-22T03:41:58.9208394Z vcpkg-cmake-config:x64-windows@2026-07-21 package ABI: 5ec285f9207ce07390c22b53883a83e61e502ba896e6463bf0bc2d5d8fb750ef
+2026-10-22T03:41:58.9209376Z Building vcpkg-cmake-config:x64-windows@2026-07-21...
+2026-10-22T03:41:58.9521246Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-config_x64-windows/share/vcpkg-cmake-config/vcpkg_cmake_config_fixup.cmake
+2026-10-22T03:41:58.9529314Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-config_x64-windows/share/vcpkg-cmake-config/vcpkg-port-config.cmake
+2026-10-22T03:41:58.9536168Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-config_x64-windows/share/vcpkg-cmake-config/copyright
+2026-10-22T03:41:58.9591181Z -- Skipping post-build validation due to VCPKG_POLICY_EMPTY_PACKAGE
+2026-10-22T03:41:58.9623869Z Starting submission of vcpkg-cmake-config:x64-windows@2026-07-21 to 1 binary cache(s) in the background
+2026-10-22T03:41:58.9624751Z Elapsed time to handle vcpkg-cmake-config:x64-windows: 41.8 ms
+2026-10-22T03:41:58.9625303Z Completed submission of boost-uninstall:x64-windows@1.92.0 to 1 binary cache(s) in 63.4 ms
+2026-10-22T03:41:58.9625798Z Installing 4/67 vcpkg-boost:x64-windows@2026-08-21...
+2026-10-22T03:41:58.9626341Z vcpkg-boost:x64-windows@2026-08-21 package ABI: 3f6fc7a441e76b2704b174580a7e321090788792675c7e6f3f55d6e0eb8820ab
+2026-10-22T03:41:58.9626873Z Building vcpkg-boost:x64-windows@2026-08-21...
+2026-10-22T03:41:58.9964570Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-boost_x64-windows/share/vcpkg-boost/boost-install.cmake
+2026-10-22T03:41:58.9970071Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-boost_x64-windows/share/vcpkg-boost/vcpkg-port-config.cmake
+2026-10-22T03:41:58.9975982Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-boost_x64-windows/share/vcpkg-boost/copyright
+2026-10-22T03:41:59.0047405Z -- Performing post-build validation
+2026-10-22T03:41:59.0097414Z Starting submission of vcpkg-boost:x64-windows@2026-08-21 to 1 binary cache(s) in the background
+2026-10-22T03:41:59.0098188Z Elapsed time to handle vcpkg-boost:x64-windows: 47.4 ms
+2026-10-22T03:41:59.0098798Z Completed submission of vcpkg-cmake:x64-windows@2025-08-07 to 1 binary cache(s) in 53.7 ms
+2026-10-22T03:41:59.0099410Z Installing 5/67 boost-cmake:x64-windows@1.92.0...
+2026-10-22T03:41:59.0100115Z boost-cmake:x64-windows@1.92.0 package ABI: cf9aa6eb4240e39dac5d816415537b2ce2fa5ebed838534cad89e372d602fc9a
+2026-10-22T03:41:59.0100791Z Building boost-cmake:x64-windows@1.92.0...
+2026-10-22T03:41:59.0531835Z Downloading https://github.com/boostorg/cmake/archive/boost-1.92.0.tar.gz -> boostorg-cmake-boost-1.92.0.tar.gz
+2026-10-22T03:41:59.3839622Z Successfully downloaded boostorg-cmake-boost-1.92.0.tar.gz
+2026-10-22T03:41:59.3866144Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-cmake-boost-1.92.0.tar.gz
+2026-10-22T03:41:59.5220010Z -- Applying patch 0001-vcpkg-build.patch
+2026-10-22T03:41:59.5503465Z -- Applying patch 0002-remove-prefix-and-suffix.patch
+2026-10-22T03:41:59.5766968Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-cmake/src/ost-1.92.0-bc5186e78d.clean
+2026-10-22T03:41:59.5978455Z -- Configuring x64-windows
+2026-10-22T03:41:59.6885136Z -- Building x64-windows-dbg
+2026-10-22T03:41:59.7337937Z -- Building x64-windows-rel
+2026-10-22T03:41:59.7974108Z -- Up-to-date: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build
+2026-10-22T03:41:59.7975704Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostFetch.cmake
+2026-10-22T03:41:59.7980982Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostInstall.cmake
+2026-10-22T03:41:59.7985862Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostMessage.cmake
+2026-10-22T03:41:59.7991190Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostRoot.cmake
+2026-10-22T03:41:59.7995852Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostTest.cmake
+2026-10-22T03:41:59.8000972Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost/cmake-build/BoostTestJamfile.cmake
+2026-10-22T03:41:59.8010215Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost-cmake/vcpkg-port-config.cmake
+2026-10-22T03:41:59.8014388Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost-cmake/usage
+2026-10-22T03:41:59.8095602Z Downloading https://raw.githubusercontent.com/boostorg/boost/refs/tags/boost-1.92.0/LICENSE_1_0.txt -> boost-1.92.0-LICENSE_1_0.txt
+2026-10-22T03:41:59.9100192Z Successfully downloaded boost-1.92.0-LICENSE_1_0.txt
+2026-10-22T03:41:59.9128483Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-cmake_x64-windows/share/boost-cmake/copyright
+2026-10-22T03:41:59.9193183Z -- Performing post-build validation
+2026-10-22T03:41:59.9255577Z Starting submission of boost-cmake:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:41:59.9256374Z Elapsed time to handle boost-cmake:x64-windows: 916 ms
+2026-10-22T03:41:59.9256889Z Completed submission of vcpkg-cmake-config:x64-windows@2026-07-21 to 1 binary cache(s) in 55.1 ms
+2026-10-22T03:41:59.9257502Z Completed submission of vcpkg-boost:x64-windows@2026-08-21 to 1 binary cache(s) in 47.6 ms
+2026-10-22T03:41:59.9257962Z Installing 6/67 boost-headers:x64-windows@1.92.0...
+2026-10-22T03:41:59.9258515Z boost-headers:x64-windows@1.92.0 package ABI: 3791c4fcefdd9cb75042582e73f2e87a781a372aa5cc50cd23420c0f0a695941
+2026-10-22T03:41:59.9259054Z Building boost-headers:x64-windows@1.92.0...
+2026-10-22T03:41:59.9731910Z Downloading https://github.com/boostorg/headers/archive/boost-1.92.0.tar.gz -> boostorg-headers-boost-1.92.0.tar.gz
+2026-10-22T03:42:00.2843529Z Successfully downloaded boostorg-headers-boost-1.92.0.tar.gz
+2026-10-22T03:42:00.2866972Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-headers-boost-1.92.0.tar.gz
+2026-10-22T03:42:00.4129967Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-headers/src/ost-1.92.0-9805d0a019.clean
+2026-10-22T03:42:00.4359282Z -- Configuring x64-windows
+2026-10-22T03:42:01.7276338Z -- Building x64-windows-rel
+2026-10-22T03:42:01.7810476Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-headers_x64-windows/share/boost-headers/copyright
+2026-10-22T03:42:01.7871225Z -- Performing post-build validation
+2026-10-22T03:42:01.7915187Z Starting submission of boost-headers:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:01.7916131Z Elapsed time to handle boost-headers:x64-windows: 1.9 s
+2026-10-22T03:42:01.7917245Z Completed submission of boost-cmake:x64-windows@1.92.0 to 1 binary cache(s) in 56.7 ms
+2026-10-22T03:42:01.7919146Z Installing 7/67 boost-config:x64-windows@1.92.0...
+2026-10-22T03:42:01.7920066Z boost-config:x64-windows@1.92.0 package ABI: 49d3f9ae05459dafd95392ffa61ec3363bf5cb03e1382bd4808a7f195a3a6fd5
+2026-10-22T03:42:01.7920994Z Building boost-config:x64-windows@1.92.0...
+2026-10-22T03:42:01.8372996Z Downloading https://github.com/boostorg/config/archive/boost-1.92.0.tar.gz -> boostorg-config-boost-1.92.0.tar.gz
+2026-10-22T03:42:02.1849219Z Successfully downloaded boostorg-config-boost-1.92.0.tar.gz
+2026-10-22T03:42:02.1886270Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-config-boost-1.92.0.tar.gz
+2026-10-22T03:42:02.4296603Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-config/src/ost-1.92.0-0c0276f5a9.clean
+2026-10-22T03:42:02.4528940Z -- Configuring x64-windows
+2026-10-22T03:42:03.0654477Z -- Building x64-windows-rel
+2026-10-22T03:42:03.1615999Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-config_x64-windows/share/boost-config/copyright
+2026-10-22T03:42:03.2319377Z -- Performing post-build validation
+2026-10-22T03:42:03.2849777Z Starting submission of boost-config:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:03.2850740Z Elapsed time to handle boost-config:x64-windows: 1.5 s
+2026-10-22T03:42:03.2851574Z Completed submission of boost-headers:x64-windows@1.92.0 to 1 binary cache(s) in 52.1 ms
+2026-10-22T03:42:03.2852411Z Installing 8/67 boost-assert:x64-windows@1.92.0...
+2026-10-22T03:42:03.2853452Z boost-assert:x64-windows@1.92.0 package ABI: 24be18142e7ad159d7e39badfe96b493005b15f806f23f2a3f3abfe5c355b664
+2026-10-22T03:42:03.2854209Z Building boost-assert:x64-windows@1.92.0...
+2026-10-22T03:42:03.3257561Z Downloading https://github.com/boostorg/assert/archive/boost-1.92.0.tar.gz -> boostorg-assert-boost-1.92.0.tar.gz
+2026-10-22T03:42:03.6267902Z Successfully downloaded boostorg-assert-boost-1.92.0.tar.gz
+2026-10-22T03:42:03.6292518Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-assert-boost-1.92.0.tar.gz
+2026-10-22T03:42:03.7578113Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-assert/src/ost-1.92.0-394abe8f17.clean
+2026-10-22T03:42:03.7798141Z -- Configuring x64-windows
+2026-10-22T03:42:04.4088679Z -- Building x64-windows-rel
+2026-10-22T03:42:04.4798951Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-assert_x64-windows/share/boost-assert/copyright
+2026-10-22T03:42:04.4859233Z -- Performing post-build validation
+2026-10-22T03:42:04.4921843Z Starting submission of boost-assert:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:04.4922669Z Elapsed time to handle boost-assert:x64-windows: 1.2 s
+2026-10-22T03:42:04.4923421Z Completed submission of boost-config:x64-windows@1.92.0 to 1 binary cache(s) in 82.5 ms
+2026-10-22T03:42:04.4924257Z Installing 9/67 boost-throw-exception:x64-windows@1.92.0...
+2026-10-22T03:42:04.4925331Z boost-throw-exception:x64-windows@1.92.0 package ABI: ba8893da8f1d78be101987053f2420b73deac28c7bf50b2f079c3acb06c284e9
+2026-10-22T03:42:04.4926777Z Building boost-throw-exception:x64-windows@1.92.0...
+2026-10-22T03:42:04.5377346Z Downloading https://github.com/boostorg/throw_exception/archive/boost-1.92.0.tar.gz -> boostorg-throw_exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:04.8369440Z Successfully downloaded boostorg-throw_exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:04.8394285Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-throw_exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:04.9766628Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-throw-exception/src/ost-1.92.0-bd59294578.clean
+2026-10-22T03:42:04.9998395Z -- Configuring x64-windows
+2026-10-22T03:42:05.6860619Z -- Building x64-windows-rel
+2026-10-22T03:42:05.7405161Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-throw-exception_x64-windows/share/boost-throw-exception/copyright
+2026-10-22T03:42:05.7462988Z -- Performing post-build validation
+2026-10-22T03:42:05.7521998Z Starting submission of boost-throw-exception:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:05.7522833Z Elapsed time to handle boost-throw-exception:x64-windows: 1.3 s
+2026-10-22T03:42:05.7523331Z Completed submission of boost-assert:x64-windows@1.92.0 to 1 binary cache(s) in 55.6 ms
+2026-10-22T03:42:05.7523785Z Installing 10/67 boost-array:x64-windows@1.92.0...
+2026-10-22T03:42:05.7524294Z boost-array:x64-windows@1.92.0 package ABI: 2f0f4550b56693b9fa9554171b6016e745a7694abe48f9e8d9097e97de6c9d4a
+2026-10-22T03:42:05.7524807Z Building boost-array:x64-windows@1.92.0...
+2026-10-22T03:42:05.7944030Z Downloading https://github.com/boostorg/array/archive/boost-1.92.0.tar.gz -> boostorg-array-boost-1.92.0.tar.gz
+2026-10-22T03:42:06.0848453Z Successfully downloaded boostorg-array-boost-1.92.0.tar.gz
+2026-10-22T03:42:06.0873441Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-array-boost-1.92.0.tar.gz
+2026-10-22T03:42:06.2271935Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-array/src/ost-1.92.0-93b91032f3.clean
+2026-10-22T03:42:06.2521743Z -- Configuring x64-windows
+2026-10-22T03:42:06.9069669Z -- Building x64-windows-rel
+2026-10-22T03:42:06.9630858Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-array_x64-windows/share/boost-array/copyright
+2026-10-22T03:42:06.9691159Z -- Performing post-build validation
+2026-10-22T03:42:06.9741355Z Starting submission of boost-array:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:06.9742151Z Elapsed time to handle boost-array:x64-windows: 1.2 s
+2026-10-22T03:42:06.9742669Z Completed submission of boost-throw-exception:x64-windows@1.92.0 to 1 binary cache(s) in 53.1 ms
+2026-10-22T03:42:06.9743170Z Installing 11/67 boost-core:x64-windows@1.92.0...
+2026-10-22T03:42:06.9743731Z boost-core:x64-windows@1.92.0 package ABI: bb81979370400410bcc24513b46225bdba4ec376799c7a7373f95404c3cfb2c5
+2026-10-22T03:42:06.9744228Z Building boost-core:x64-windows@1.92.0...
+2026-10-22T03:42:07.0158062Z Downloading https://github.com/boostorg/core/archive/boost-1.92.0.tar.gz -> boostorg-core-boost-1.92.0.tar.gz
+2026-10-22T03:42:07.3294680Z Successfully downloaded boostorg-core-boost-1.92.0.tar.gz
+2026-10-22T03:42:07.3324833Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-core-boost-1.92.0.tar.gz
+2026-10-22T03:42:07.5135947Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-core/src/ost-1.92.0-af2156cbbc.clean
+2026-10-22T03:42:07.5368666Z -- Configuring x64-windows
+2026-10-22T03:42:08.1771352Z -- Building x64-windows-rel
+2026-10-22T03:42:08.2611077Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-core_x64-windows/share/boost-core/copyright
+2026-10-22T03:42:08.2668332Z -- Performing post-build validation
+2026-10-22T03:42:08.2909077Z Starting submission of boost-core:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:08.2909845Z Elapsed time to handle boost-core:x64-windows: 1.3 s
+2026-10-22T03:42:08.2910320Z Completed submission of boost-array:x64-windows@1.92.0 to 1 binary cache(s) in 54.2 ms
+2026-10-22T03:42:08.2910779Z Installing 12/67 boost-bind:x64-windows@1.92.0...
+2026-10-22T03:42:08.2911301Z boost-bind:x64-windows@1.92.0 package ABI: b9871a942940ba83bb5ddf84552279bc34099084cfc7db24f70e5b26e03a97a9
+2026-10-22T03:42:08.2911826Z Building boost-bind:x64-windows@1.92.0...
+2026-10-22T03:42:08.3313294Z Downloading https://github.com/boostorg/bind/archive/boost-1.92.0.tar.gz -> boostorg-bind-boost-1.92.0.tar.gz
+2026-10-22T03:42:08.6858120Z Successfully downloaded boostorg-bind-boost-1.92.0.tar.gz
+2026-10-22T03:42:08.6884347Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-bind-boost-1.92.0.tar.gz
+2026-10-22T03:42:08.8263189Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-bind/src/ost-1.92.0-5582a80136.clean
+2026-10-22T03:42:08.8484409Z -- Configuring x64-windows
+2026-10-22T03:42:09.5136322Z -- Building x64-windows-rel
+2026-10-22T03:42:09.5754758Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-bind_x64-windows/share/boost-bind/copyright
+2026-10-22T03:42:09.5812908Z -- Performing post-build validation
+2026-10-22T03:42:09.5894316Z Starting submission of boost-bind:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:09.5895081Z Elapsed time to handle boost-bind:x64-windows: 1.3 s
+2026-10-22T03:42:09.5895540Z Completed submission of boost-core:x64-windows@1.92.0 to 1 binary cache(s) in 61.4 ms
+2026-10-22T03:42:09.5896002Z Installing 13/67 boost-preprocessor:x64-windows@1.92.0...
+2026-10-22T03:42:09.5896576Z boost-preprocessor:x64-windows@1.92.0 package ABI: ac83cdd39cee1d6eaa337b979292ddf898c86a48710c64b3ab2f6b3b51961967
+2026-10-22T03:42:09.5897145Z Building boost-preprocessor:x64-windows@1.92.0...
+2026-10-22T03:42:09.6311353Z Downloading https://github.com/boostorg/preprocessor/archive/boost-1.92.0.tar.gz -> boostorg-preprocessor-boost-1.92.0.tar.gz
+2026-10-22T03:42:10.0225793Z Successfully downloaded boostorg-preprocessor-boost-1.92.0.tar.gz
+2026-10-22T03:42:10.0279060Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-preprocessor-boost-1.92.0.tar.gz
+2026-10-22T03:42:10.2964884Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-preprocessor/src/ost-1.92.0-da2645d6a3.clean
+2026-10-22T03:42:10.3197670Z -- Configuring x64-windows
+2026-10-22T03:42:10.9074644Z -- Building x64-windows-rel
+2026-10-22T03:42:11.1566086Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-preprocessor_x64-windows/share/boost-preprocessor/copyright
+2026-10-22T03:42:11.1623459Z -- Performing post-build validation
+2026-10-22T03:42:11.2556848Z Starting submission of boost-preprocessor:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:11.2557780Z Elapsed time to handle boost-preprocessor:x64-windows: 1.7 s
+2026-10-22T03:42:11.2558379Z Completed submission of boost-bind:x64-windows@1.92.0 to 1 binary cache(s) in 55.2 ms
+2026-10-22T03:42:11.2558964Z Installing 14/67 boost-type-traits:x64-windows@1.92.0...
+2026-10-22T03:42:11.2559660Z boost-type-traits:x64-windows@1.92.0 package ABI: bd73b83235fa361f43e4d600c8809c7830f8d1f0f02bd18a699d2d08040e1450
+2026-10-22T03:42:11.2560356Z Building boost-type-traits:x64-windows@1.92.0...
+2026-10-22T03:42:11.2973927Z Downloading https://github.com/boostorg/type_traits/archive/boost-1.92.0.tar.gz -> boostorg-type_traits-boost-1.92.0.tar.gz
+2026-10-22T03:42:11.7046255Z Successfully downloaded boostorg-type_traits-boost-1.92.0.tar.gz
+2026-10-22T03:42:11.7083778Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-type_traits-boost-1.92.0.tar.gz
+2026-10-22T03:42:11.9379968Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-type-traits/src/ost-1.92.0-5d96f5169c.clean
+2026-10-22T03:42:11.9608217Z -- Configuring x64-windows
+2026-10-22T03:42:12.6021913Z -- Building x64-windows-rel
+2026-10-22T03:42:12.7409250Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-type-traits_x64-windows/share/boost-type-traits/copyright
+2026-10-22T03:42:12.7470787Z -- Performing post-build validation
+2026-10-22T03:42:12.7949016Z Starting submission of boost-type-traits:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:12.7949777Z Elapsed time to handle boost-type-traits:x64-windows: 1.5 s
+2026-10-22T03:42:12.7950320Z Completed submission of boost-preprocessor:x64-windows@1.92.0 to 1 binary cache(s) in 309 ms
+2026-10-22T03:42:12.7950844Z Installing 15/67 boost-concept-check:x64-windows@1.92.0...
+2026-10-22T03:42:12.7951447Z boost-concept-check:x64-windows@1.92.0 package ABI: e455e8d88e4c04293e94027d259eb2df7109615824e97ed2f32a46e8c6d1b6e9
+2026-10-22T03:42:12.7952041Z Building boost-concept-check:x64-windows@1.92.0...
+2026-10-22T03:42:12.8356498Z Downloading https://github.com/boostorg/concept_check/archive/boost-1.92.0.tar.gz -> boostorg-concept_check-boost-1.92.0.tar.gz
+2026-10-22T03:42:13.1300042Z Successfully downloaded boostorg-concept_check-boost-1.92.0.tar.gz
+2026-10-22T03:42:13.1325829Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-concept_check-boost-1.92.0.tar.gz
+2026-10-22T03:42:13.2660788Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-concept-check/src/ost-1.92.0-794811da14.clean
+2026-10-22T03:42:13.2879705Z -- Configuring x64-windows
+2026-10-22T03:42:13.9821514Z -- Building x64-windows-rel
+2026-10-22T03:42:14.0412301Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-concept-check_x64-windows/share/boost-concept-check/copyright
+2026-10-22T03:42:14.0469694Z -- Performing post-build validation
+2026-10-22T03:42:14.0586310Z Starting submission of boost-concept-check:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:14.0587003Z Elapsed time to handle boost-concept-check:x64-windows: 1.3 s
+2026-10-22T03:42:14.0587551Z Completed submission of boost-type-traits:x64-windows@1.92.0 to 1 binary cache(s) in 83.1 ms
+2026-10-22T03:42:14.0588070Z Installing 16/67 boost-smart-ptr:x64-windows@1.92.0...
+2026-10-22T03:42:14.0588625Z boost-smart-ptr:x64-windows@1.92.0 package ABI: 35f62ed325bc2358469505bb246b8110e861c8575f745fd771b262d62757f324
+2026-10-22T03:42:14.0589161Z Building boost-smart-ptr:x64-windows@1.92.0...
+2026-10-22T03:42:14.1011886Z Downloading https://github.com/boostorg/smart_ptr/archive/boost-1.92.0.tar.gz -> boostorg-smart_ptr-boost-1.92.0.tar.gz
+2026-10-22T03:42:14.4618535Z Successfully downloaded boostorg-smart_ptr-boost-1.92.0.tar.gz
+2026-10-22T03:42:14.4647627Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-smart_ptr-boost-1.92.0.tar.gz
+2026-10-22T03:42:14.6426308Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-smart-ptr/src/ost-1.92.0-bef44995b0.clean
+2026-10-22T03:42:14.6654319Z -- Configuring x64-windows
+2026-10-22T03:42:15.3238480Z -- Building x64-windows-rel
+2026-10-22T03:42:15.4071319Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-smart-ptr_x64-windows/share/boost-smart-ptr/copyright
+2026-10-22T03:42:15.4127800Z -- Performing post-build validation
+2026-10-22T03:42:15.4333219Z Starting submission of boost-smart-ptr:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:15.4746638Z Elapsed time to handle boost-smart-ptr:x64-windows: 1.4 s
+2026-10-22T03:42:15.4747537Z Completed submission of boost-concept-check:x64-windows@1.92.0 to 1 binary cache(s) in 55.3 ms
+2026-10-22T03:42:15.4748343Z Installing 17/67 boost-tuple:x64-windows@1.92.0...
+2026-10-22T03:42:15.4749193Z boost-tuple:x64-windows@1.92.0 package ABI: e1a8c29f923684f7b875ac596d02ed60112165592a657daf277d2afc5f478e4b
+2026-10-22T03:42:15.4750019Z Building boost-tuple:x64-windows@1.92.0...
+2026-10-22T03:42:15.4750981Z Downloading https://github.com/boostorg/tuple/archive/boost-1.92.0.tar.gz -> boostorg-tuple-boost-1.92.0.tar.gz
+2026-10-22T03:42:15.7917450Z Successfully downloaded boostorg-tuple-boost-1.92.0.tar.gz
+2026-10-22T03:42:15.7942977Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-tuple-boost-1.92.0.tar.gz
+2026-10-22T03:42:15.9240144Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-tuple/src/ost-1.92.0-b98616ebe7.clean
+2026-10-22T03:42:15.9471495Z -- Configuring x64-windows
+2026-10-22T03:42:16.6772056Z -- Building x64-windows-rel
+2026-10-22T03:42:16.7338184Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-tuple_x64-windows/share/boost-tuple/copyright
+2026-10-22T03:42:16.7396248Z -- Performing post-build validation
+2026-10-22T03:42:16.7470375Z Starting submission of boost-tuple:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:16.7471155Z Elapsed time to handle boost-tuple:x64-windows: 1.3 s
+2026-10-22T03:42:16.7472049Z Completed submission of boost-smart-ptr:x64-windows@1.92.0 to 1 binary cache(s) in 61.8 ms
+2026-10-22T03:42:16.7472549Z Installing 18/67 boost-exception:x64-windows@1.92.0...
+2026-10-22T03:42:16.7473132Z boost-exception:x64-windows@1.92.0 package ABI: d7c767a04bcda256ca25b8d123d1417df4adb6751dcf656d85bda4cae984c6ff
+2026-10-22T03:42:16.7473700Z Building boost-exception:x64-windows@1.92.0...
+2026-10-22T03:42:16.7933662Z Downloading https://github.com/boostorg/exception/archive/boost-1.92.0.tar.gz -> boostorg-exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:17.1301624Z Successfully downloaded boostorg-exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:17.1329503Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-exception-boost-1.92.0.tar.gz
+2026-10-22T03:42:17.2873298Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-exception/src/ost-1.92.0-304083abc5.clean
+2026-10-22T03:42:17.3103038Z -- Configuring x64-windows
+2026-10-22T03:42:17.9951800Z -- Building x64-windows-rel
+2026-10-22T03:42:18.0638707Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-exception_x64-windows/share/boost-exception/copyright
+2026-10-22T03:42:18.0697092Z -- Performing post-build validation
+2026-10-22T03:42:18.0824393Z Starting submission of boost-exception:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:18.0825203Z Elapsed time to handle boost-exception:x64-windows: 1.3 s
+2026-10-22T03:42:18.0825685Z Completed submission of boost-tuple:x64-windows@1.92.0 to 1 binary cache(s) in 57.2 ms
+2026-10-22T03:42:18.0826139Z Installing 19/67 boost-function:x64-windows@1.92.0...
+2026-10-22T03:42:18.0826674Z boost-function:x64-windows@1.92.0 package ABI: a1cbd7f3046af338591303ba0fa98cc125442f6bdd33d8b9daf327ea087ddb0d
+2026-10-22T03:42:18.0827204Z Building boost-function:x64-windows@1.92.0...
+2026-10-22T03:42:18.1340085Z Downloading https://github.com/boostorg/function/archive/boost-1.92.0.tar.gz -> boostorg-function-boost-1.92.0.tar.gz
+2026-10-22T03:42:18.4847320Z Successfully downloaded boostorg-function-boost-1.92.0.tar.gz
+2026-10-22T03:42:18.4873866Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-function-boost-1.92.0.tar.gz
+2026-10-22T03:42:18.6476668Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-function/src/ost-1.92.0-a495fcadc3.clean
+2026-10-22T03:42:18.6706776Z -- Configuring x64-windows
+2026-10-22T03:42:19.3309603Z -- Building x64-windows-rel
+2026-10-22T03:42:19.3886733Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-function_x64-windows/share/boost-function/copyright
+2026-10-22T03:42:19.3958552Z -- Performing post-build validation
+2026-10-22T03:42:19.4043490Z Starting submission of boost-function:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:19.4044079Z Elapsed time to handle boost-function:x64-windows: 1.3 s
+2026-10-22T03:42:19.4044560Z Completed submission of boost-exception:x64-windows@1.92.0 to 1 binary cache(s) in 61.8 ms
+2026-10-22T03:42:19.4045058Z Installing 20/67 boost-detail:x64-windows@1.92.0...
+2026-10-22T03:42:19.4045574Z boost-detail:x64-windows@1.92.0 package ABI: 569bd30d018b439034ca673cbf19cd20d0709c18368f2e4f1e64e5b9546b9253
+2026-10-22T03:42:19.4046089Z Building boost-detail:x64-windows@1.92.0...
+2026-10-22T03:42:19.4493477Z Downloading https://github.com/boostorg/detail/archive/boost-1.92.0.tar.gz -> boostorg-detail-boost-1.92.0.tar.gz
+2026-10-22T03:42:19.7584566Z Successfully downloaded boostorg-detail-boost-1.92.0.tar.gz
+2026-10-22T03:42:19.7611458Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-detail-boost-1.92.0.tar.gz
+2026-10-22T03:42:19.8976814Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-detail/src/ost-1.92.0-a20b9c701e.clean
+2026-10-22T03:42:19.9202584Z -- Configuring x64-windows
+2026-10-22T03:42:20.5849121Z -- Building x64-windows-rel
+2026-10-22T03:42:20.6492748Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-detail_x64-windows/share/boost-detail/copyright
+2026-10-22T03:42:20.6553233Z -- Performing post-build validation
+2026-10-22T03:42:20.6670992Z Starting submission of boost-detail:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:20.6671567Z Elapsed time to handle boost-detail:x64-windows: 1.3 s
+2026-10-22T03:42:20.6672039Z Completed submission of boost-function:x64-windows@1.92.0 to 1 binary cache(s) in 55 ms
+2026-10-22T03:42:20.6672494Z Installing 21/67 boost-mp11:x64-windows@1.92.0...
+2026-10-22T03:42:20.6672999Z boost-mp11:x64-windows@1.92.0 package ABI: 73b66220749c3dd7b6ebfa2964a6be5044734cd2a5ad2ae7ef760200d5e9b1a5
+2026-10-22T03:42:20.6673493Z Building boost-mp11:x64-windows@1.92.0...
+2026-10-22T03:42:20.7171849Z Downloading https://github.com/boostorg/mp11/archive/boost-1.92.0.tar.gz -> boostorg-mp11-boost-1.92.0.tar.gz
+2026-10-22T03:42:21.0517140Z Successfully downloaded boostorg-mp11-boost-1.92.0.tar.gz
+2026-10-22T03:42:21.0546069Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-mp11-boost-1.92.0.tar.gz
+2026-10-22T03:42:21.2273327Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-mp11/src/ost-1.92.0-36b235a834.clean
+2026-10-22T03:42:21.2499216Z -- Configuring x64-windows
+2026-10-22T03:42:21.8357636Z -- Building x64-windows-rel
+2026-10-22T03:42:21.9036597Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-mp11_x64-windows/share/boost-mp11/copyright
+2026-10-22T03:42:21.9093863Z -- Performing post-build validation
+2026-10-22T03:42:21.9234202Z Starting submission of boost-mp11:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:21.9234847Z Elapsed time to handle boost-mp11:x64-windows: 1.3 s
+2026-10-22T03:42:21.9235706Z Completed submission of boost-detail:x64-windows@1.92.0 to 1 binary cache(s) in 60.5 ms
+2026-10-22T03:42:21.9236177Z Installing 22/67 boost-describe:x64-windows@1.92.0...
+2026-10-22T03:42:21.9236711Z boost-describe:x64-windows@1.92.0 package ABI: 46d64ba88b4c31ad3be28e7882caa414a6aba70400dc64360d0a4d6257a93f11
+2026-10-22T03:42:21.9237297Z Building boost-describe:x64-windows@1.92.0...
+2026-10-22T03:42:21.9645903Z Downloading https://github.com/boostorg/describe/archive/boost-1.92.0.tar.gz -> boostorg-describe-boost-1.92.0.tar.gz
+2026-10-22T03:42:22.2591947Z Successfully downloaded boostorg-describe-boost-1.92.0.tar.gz
+2026-10-22T03:42:22.2617664Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-describe-boost-1.92.0.tar.gz
+2026-10-22T03:42:22.3992838Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-describe/src/ost-1.92.0-72558e303c.clean
+2026-10-22T03:42:22.4216488Z -- Configuring x64-windows
+2026-10-22T03:42:23.0361651Z -- Building x64-windows-rel
+2026-10-22T03:42:23.1006562Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-describe_x64-windows/share/boost-describe/copyright
+2026-10-22T03:42:23.1064567Z -- Performing post-build validation
+2026-10-22T03:42:23.1179067Z Starting submission of boost-describe:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:23.1179686Z Elapsed time to handle boost-describe:x64-windows: 1.2 s
+2026-10-22T03:42:23.1180162Z Completed submission of boost-mp11:x64-windows@1.92.0 to 1 binary cache(s) in 63.1 ms
+2026-10-22T03:42:23.1180628Z Installing 23/67 boost-container-hash:x64-windows@1.92.0...
+2026-10-22T03:42:23.1181203Z boost-container-hash:x64-windows@1.92.0 package ABI: cb636e99020a71bdc0b89033bd0e266b9bf47565fd77136050bb86f31fdc1c7d
+2026-10-22T03:42:23.1181759Z Building boost-container-hash:x64-windows@1.92.0...
+2026-10-22T03:42:23.1647861Z Downloading https://github.com/boostorg/container_hash/archive/boost-1.92.0.tar.gz -> boostorg-container_hash-boost-1.92.0.tar.gz
+2026-10-22T03:42:23.4616724Z Successfully downloaded boostorg-container_hash-boost-1.92.0.tar.gz
+2026-10-22T03:42:23.4643389Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-container_hash-boost-1.92.0.tar.gz
+2026-10-22T03:42:23.6031872Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-container-hash/src/ost-1.92.0-fa6aa6bddd.clean
+2026-10-22T03:42:23.6262535Z -- Configuring x64-windows
+2026-10-22T03:42:24.2663032Z -- Building x64-windows-rel
+2026-10-22T03:42:24.3303425Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-container-hash_x64-windows/share/boost-container-hash/copyright
+2026-10-22T03:42:24.3360560Z -- Performing post-build validation
+2026-10-22T03:42:24.3470366Z Starting submission of boost-container-hash:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:24.3471200Z Elapsed time to handle boost-container-hash:x64-windows: 1.2 s
+2026-10-22T03:42:24.3471718Z Completed submission of boost-describe:x64-windows@1.92.0 to 1 binary cache(s) in 56.6 ms
+2026-10-22T03:42:24.3472191Z Installing 24/67 boost-predef:x64-windows@1.92.0...
+2026-10-22T03:42:24.3472729Z boost-predef:x64-windows@1.92.0 package ABI: d72cd5257c96ff849e6a72f699686886b51f7e21c412949342bd0bda86bbe8a6
+2026-10-22T03:42:24.3473275Z Building boost-predef:x64-windows@1.92.0...
+2026-10-22T03:42:24.3889408Z Downloading https://github.com/boostorg/predef/archive/boost-1.92.0.tar.gz -> boostorg-predef-boost-1.92.0.tar.gz
+2026-10-22T03:42:24.8105462Z Successfully downloaded boostorg-predef-boost-1.92.0.tar.gz
+2026-10-22T03:42:24.8133009Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-predef-boost-1.92.0.tar.gz
+2026-10-22T03:42:24.9632900Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-predef/src/ost-1.92.0-26a0b17815.clean
+2026-10-22T03:42:24.9860381Z -- Configuring x64-windows
+2026-10-22T03:42:25.5689973Z -- Building x64-windows-rel
+2026-10-22T03:42:25.6826361Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-predef_x64-windows/share/boost-predef/copyright
+2026-10-22T03:42:25.6933031Z -- Performing post-build validation
+2026-10-22T03:42:25.7282742Z Starting submission of boost-predef:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:25.7283550Z Elapsed time to handle boost-predef:x64-windows: 1.4 s
+2026-10-22T03:42:25.7284063Z Completed submission of boost-container-hash:x64-windows@1.92.0 to 1 binary cache(s) in 53.9 ms
+2026-10-22T03:42:25.7284563Z Installing 25/67 boost-io:x64-windows@1.92.0...
+2026-10-22T03:42:25.7285071Z boost-io:x64-windows@1.92.0 package ABI: 96629d6ef6fd58ae3529d5134cad708cf2f65e4aad6acbf457ef4dda959d4877
+2026-10-22T03:42:25.7285582Z Building boost-io:x64-windows@1.92.0...
+2026-10-22T03:42:25.7727371Z Downloading https://github.com/boostorg/io/archive/boost-1.92.0.tar.gz -> boostorg-io-boost-1.92.0.tar.gz
+2026-10-22T03:42:26.0710684Z Successfully downloaded boostorg-io-boost-1.92.0.tar.gz
+2026-10-22T03:42:26.0735926Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-io-boost-1.92.0.tar.gz
+2026-10-22T03:42:26.1991171Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-io/src/ost-1.92.0-669c99572b.clean
+2026-10-22T03:42:26.2232785Z -- Configuring x64-windows
+2026-10-22T03:42:26.8664798Z -- Building x64-windows-rel
+2026-10-22T03:42:26.9232472Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-io_x64-windows/share/boost-io/copyright
+2026-10-22T03:42:26.9287774Z -- Performing post-build validation
+2026-10-22T03:42:26.9375348Z Starting submission of boost-io:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:26.9376133Z Elapsed time to handle boost-io:x64-windows: 1.2 s
+2026-10-22T03:42:26.9376609Z Completed submission of boost-predef:x64-windows@1.92.0 to 1 binary cache(s) in 70.1 ms
+2026-10-22T03:42:26.9377085Z Installing 26/67 boost-utility:x64-windows@1.92.0...
+2026-10-22T03:42:26.9377630Z boost-utility:x64-windows@1.92.0 package ABI: 8a912801ec2bb57aa32c3197e08af7986f98f830fe44f53c3fec49cc5da03e31
+2026-10-22T03:42:26.9378175Z Building boost-utility:x64-windows@1.92.0...
+2026-10-22T03:42:26.9786956Z Downloading https://github.com/boostorg/utility/archive/boost-1.92.0.tar.gz -> boostorg-utility-boost-1.92.0.tar.gz
+2026-10-22T03:42:27.3025336Z Successfully downloaded boostorg-utility-boost-1.92.0.tar.gz
+2026-10-22T03:42:27.3055259Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-utility-boost-1.92.0.tar.gz
+2026-10-22T03:42:27.4495013Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-utility/src/ost-1.92.0-09d32f4e6c.clean
+2026-10-22T03:42:27.4722589Z -- Configuring x64-windows
+2026-10-22T03:42:28.1547559Z -- Building x64-windows-rel
+2026-10-22T03:42:28.2229214Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-utility_x64-windows/share/boost-utility/copyright
+2026-10-22T03:42:28.2285325Z -- Performing post-build validation
+2026-10-22T03:42:28.2405284Z Starting submission of boost-utility:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:28.2406086Z Elapsed time to handle boost-utility:x64-windows: 1.3 s
+2026-10-22T03:42:28.2406568Z Completed submission of boost-io:x64-windows@1.92.0 to 1 binary cache(s) in 58.8 ms
+2026-10-22T03:42:28.2407017Z Installing 27/67 boost-mpl:x64-windows@1.92.0...
+2026-10-22T03:42:28.2407521Z boost-mpl:x64-windows@1.92.0 package ABI: f33d8c1ceb4aa2fd3c9322b8b8fe76a8542683f4058af449bd925904655a081a
+2026-10-22T03:42:28.2408006Z Building boost-mpl:x64-windows@1.92.0...
+2026-10-22T03:42:28.2950080Z Downloading https://github.com/boostorg/mpl/archive/boost-1.92.0.tar.gz -> boostorg-mpl-boost-1.92.0.tar.gz
+2026-10-22T03:42:28.7388901Z Successfully downloaded boostorg-mpl-boost-1.92.0.tar.gz
+2026-10-22T03:42:28.7461737Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-mpl-boost-1.92.0.tar.gz
+2026-10-22T03:42:29.1090011Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-mpl/src/ost-1.92.0-d672c09380.clean
+2026-10-22T03:42:29.1318955Z -- Configuring x64-windows
+2026-10-22T03:42:29.8184976Z -- Building x64-windows-rel
+2026-10-22T03:42:30.3048838Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-mpl_x64-windows/share/boost-mpl/copyright
+2026-10-22T03:42:30.3103021Z -- Performing post-build validation
+2026-10-22T03:42:30.5211169Z Starting submission of boost-mpl:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:30.5211995Z Elapsed time to handle boost-mpl:x64-windows: 2.3 s
+2026-10-22T03:42:30.5212569Z Completed submission of boost-utility:x64-windows@1.92.0 to 1 binary cache(s) in 63.2 ms
+2026-10-22T03:42:30.5213187Z Installing 28/67 boost-function-types:x64-windows@1.92.0...
+2026-10-22T03:42:30.5213836Z boost-function-types:x64-windows@1.92.0 package ABI: 54266d0675e0cd89e16f845a96f0c547c788b79e34eb4ddb75b45d3699cc1e66
+2026-10-22T03:42:30.5214393Z Building boost-function-types:x64-windows@1.92.0...
+2026-10-22T03:42:30.5626686Z Downloading https://github.com/boostorg/function_types/archive/boost-1.92.0.tar.gz -> boostorg-function_types-boost-1.92.0.tar.gz
+2026-10-22T03:42:30.9315598Z Successfully downloaded boostorg-function_types-boost-1.92.0.tar.gz
+2026-10-22T03:42:30.9339016Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-function_types-boost-1.92.0.tar.gz
+2026-10-22T03:42:31.0838851Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-function-types/src/ost-1.92.0-d51abf8c9e.clean
+2026-10-22T03:42:31.1062899Z -- Configuring x64-windows
+2026-10-22T03:42:31.8268996Z -- Building x64-windows-rel
+2026-10-22T03:42:31.9187481Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-function-types_x64-windows/share/boost-function-types/copyright
+2026-10-22T03:42:31.9244695Z -- Performing post-build validation
+2026-10-22T03:42:31.9492745Z Starting submission of boost-function-types:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:31.9493509Z Elapsed time to handle boost-function-types:x64-windows: 1.4 s
+2026-10-22T03:42:31.9493984Z Completed submission of boost-mpl:x64-windows@1.92.0 to 1 binary cache(s) in 205 ms
+2026-10-22T03:42:31.9495353Z Installing 29/67 boost-typeof:x64-windows@1.92.0...
+2026-10-22T03:42:31.9496005Z boost-typeof:x64-windows@1.92.0 package ABI: ba2eb8f317b84f7d4fe4f74119d6849756630ca84cf6ff17cb91caeec76a969a
+2026-10-22T03:42:31.9496518Z Building boost-typeof:x64-windows@1.92.0...
+2026-10-22T03:42:31.9934355Z Downloading https://github.com/boostorg/typeof/archive/boost-1.92.0.tar.gz -> boostorg-typeof-boost-1.92.0.tar.gz
+2026-10-22T03:42:32.2836908Z Successfully downloaded boostorg-typeof-boost-1.92.0.tar.gz
+2026-10-22T03:42:32.2859804Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-typeof-boost-1.92.0.tar.gz
+2026-10-22T03:42:32.4145067Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-typeof/src/ost-1.92.0-06a097923f.clean
+2026-10-22T03:42:32.4370108Z -- Configuring x64-windows
+2026-10-22T03:42:33.0338991Z -- Building x64-windows-rel
+2026-10-22T03:42:33.1074825Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-typeof_x64-windows/share/boost-typeof/copyright
+2026-10-22T03:42:33.1128961Z -- Performing post-build validation
+2026-10-22T03:42:33.1272077Z Starting submission of boost-typeof:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:33.1272631Z Elapsed time to handle boost-typeof:x64-windows: 1.2 s
+2026-10-22T03:42:33.1273134Z Completed submission of boost-function-types:x64-windows@1.92.0 to 1 binary cache(s) in 72.4 ms
+2026-10-22T03:42:33.1273624Z Installing 30/67 boost-fusion:x64-windows@1.92.0...
+2026-10-22T03:42:33.1274137Z boost-fusion:x64-windows@1.92.0 package ABI: 1eb432a0c2f26592726345946341d3c35ecaffe1f105704a2e6277f605250b3a
+2026-10-22T03:42:33.1274642Z Building boost-fusion:x64-windows@1.92.0...
+2026-10-22T03:42:33.1720031Z Downloading https://github.com/boostorg/fusion/archive/boost-1.92.0.tar.gz -> boostorg-fusion-boost-1.92.0.tar.gz
+2026-10-22T03:42:33.5979156Z Successfully downloaded boostorg-fusion-boost-1.92.0.tar.gz
+2026-10-22T03:42:33.6025305Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-fusion-boost-1.92.0.tar.gz
+2026-10-22T03:42:33.9158245Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-fusion/src/ost-1.92.0-ba95f1adfc.clean
+2026-10-22T03:42:33.9380766Z -- Configuring x64-windows
+2026-10-22T03:42:34.7117486Z -- Building x64-windows-rel
+2026-10-22T03:42:35.2112371Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-fusion_x64-windows/share/boost-fusion/copyright
+2026-10-22T03:42:35.2166692Z -- Performing post-build validation
+2026-10-22T03:42:35.4436468Z Starting submission of boost-fusion:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:35.4437022Z Elapsed time to handle boost-fusion:x64-windows: 2.3 s
+2026-10-22T03:42:35.4437476Z Completed submission of boost-typeof:x64-windows@1.92.0 to 1 binary cache(s) in 53.8 ms
+2026-10-22T03:42:35.4437933Z Installing 31/67 boost-optional:x64-windows@1.92.0...
+2026-10-22T03:42:35.4438521Z boost-optional:x64-windows@1.92.0 package ABI: 63158140db38e3c4ba1a379e8e71969205b3c2704e4ee36d795d0238dc5c32fc
+2026-10-22T03:42:35.4439211Z Building boost-optional:x64-windows@1.92.0...
+2026-10-22T03:42:35.4934248Z Downloading https://github.com/boostorg/optional/archive/boost-1.92.0.tar.gz -> boostorg-optional-boost-1.92.0.tar.gz
+2026-10-22T03:42:35.8621140Z Successfully downloaded boostorg-optional-boost-1.92.0.tar.gz
+2026-10-22T03:42:35.8697797Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-optional-boost-1.92.0.tar.gz
+2026-10-22T03:42:36.0409410Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-optional/src/ost-1.92.0-363039e053.clean
+2026-10-22T03:42:36.0641864Z -- Configuring x64-windows
+2026-10-22T03:42:36.7396698Z -- Building x64-windows-rel
+2026-10-22T03:42:36.8031552Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-optional_x64-windows/share/boost-optional/copyright
+2026-10-22T03:42:36.8089562Z -- Performing post-build validation
+2026-10-22T03:42:36.8243878Z Starting submission of boost-optional:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:36.8244883Z Elapsed time to handle boost-optional:x64-windows: 1.4 s
+2026-10-22T03:42:36.8245616Z Completed submission of boost-fusion:x64-windows@1.92.0 to 1 binary cache(s) in 496 ms
+2026-10-22T03:42:36.8246357Z Installing 32/67 boost-iterator:x64-windows@1.92.0...
+2026-10-22T03:42:36.8247247Z boost-iterator:x64-windows@1.92.0 package ABI: f69649b255f273cacb689cd9bbc77311dd08675c806715ff1fa7168ad5f32d12
+2026-10-22T03:42:36.8248186Z Building boost-iterator:x64-windows@1.92.0...
+2026-10-22T03:42:36.8757150Z Downloading https://github.com/boostorg/iterator/archive/boost-1.92.0.tar.gz -> boostorg-iterator-boost-1.92.0.tar.gz
+2026-10-22T03:42:37.2992540Z Successfully downloaded boostorg-iterator-boost-1.92.0.tar.gz
+2026-10-22T03:42:37.3066143Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-iterator-boost-1.92.0.tar.gz
+2026-10-22T03:42:37.4795167Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-iterator/src/ost-1.92.0-d2d0298dd5.clean
+2026-10-22T03:42:37.5022922Z -- Configuring x64-windows
+2026-10-22T03:42:38.3043171Z -- Building x64-windows-rel
+2026-10-22T03:42:38.3800465Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-iterator_x64-windows/share/boost-iterator/copyright
+2026-10-22T03:42:38.3860233Z -- Performing post-build validation
+2026-10-22T03:42:38.4064652Z Starting submission of boost-iterator:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:38.4065356Z Elapsed time to handle boost-iterator:x64-windows: 1.6 s
+2026-10-22T03:42:38.4065837Z Completed submission of boost-optional:x64-windows@1.92.0 to 1 binary cache(s) in 61.6 ms
+2026-10-22T03:42:38.4066315Z Installing 33/67 boost-conversion:x64-windows@1.92.0...
+2026-10-22T03:42:38.4066851Z boost-conversion:x64-windows@1.92.0 package ABI: 82714ef9c652002532d1841566062b54be05cfca5f44d781c5ee36bcb1ab6a9e
+2026-10-22T03:42:38.4067386Z Building boost-conversion:x64-windows@1.92.0...
+2026-10-22T03:42:38.4490381Z Downloading https://github.com/boostorg/conversion/archive/boost-1.92.0.tar.gz -> boostorg-conversion-boost-1.92.0.tar.gz
+2026-10-22T03:42:38.7874408Z Successfully downloaded boostorg-conversion-boost-1.92.0.tar.gz
+2026-10-22T03:42:38.7896390Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-conversion-boost-1.92.0.tar.gz
+2026-10-22T03:42:38.9227045Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-conversion/src/ost-1.92.0-bc9e041057.clean
+2026-10-22T03:42:38.9461291Z -- Configuring x64-windows
+2026-10-22T03:42:39.6328295Z -- Building x64-windows-rel
+2026-10-22T03:42:39.6907359Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-conversion_x64-windows/share/boost-conversion/copyright
+2026-10-22T03:42:39.6966888Z -- Performing post-build validation
+2026-10-22T03:42:39.7092907Z Starting submission of boost-conversion:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:39.7093912Z Elapsed time to handle boost-conversion:x64-windows: 1.3 s
+2026-10-22T03:42:39.7094780Z Completed submission of boost-iterator:x64-windows@1.92.0 to 1 binary cache(s) in 59.4 ms
+2026-10-22T03:42:39.7095602Z Installing 34/67 boost-regex:x64-windows@1.92.0...
+2026-10-22T03:42:39.7096507Z boost-regex:x64-windows@1.92.0 package ABI: 99aba7d30bfce22207ed47b5a84d313f4ffcb4134d969035877b3f39c43659d4
+2026-10-22T03:42:39.7097422Z Building boost-regex:x64-windows@1.92.0...
+2026-10-22T03:42:39.7572443Z Downloading https://github.com/boostorg/regex/archive/boost-1.92.0.tar.gz -> boostorg-regex-boost-1.92.0.tar.gz
+2026-10-22T03:42:40.2228158Z Successfully downloaded boostorg-regex-boost-1.92.0.tar.gz
+2026-10-22T03:42:40.2269471Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-regex-boost-1.92.0.tar.gz
+2026-10-22T03:42:40.4070102Z -- Applying patch compat.diff
+2026-10-22T03:42:40.4354668Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-regex/src/ost-1.92.0-cb29408847.clean
+2026-10-22T03:42:40.4579904Z -- Configuring x64-windows
+2026-10-22T03:42:46.8814205Z -- Building x64-windows-rel
+2026-10-22T03:42:46.9717396Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-regex_x64-windows/share/boost-regex/copyright
+2026-10-22T03:42:46.9775231Z -- Performing post-build validation
+2026-10-22T03:42:47.0018448Z Starting submission of boost-regex:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:47.0019346Z Elapsed time to handle boost-regex:x64-windows: 7.3 s
+2026-10-22T03:42:47.0020116Z Completed submission of boost-conversion:x64-windows@1.92.0 to 1 binary cache(s) in 56 ms
+2026-10-22T03:42:47.0020885Z Installing 35/67 boost-range:x64-windows@1.92.0...
+2026-10-22T03:42:47.0021774Z boost-range:x64-windows@1.92.0 package ABI: 2da5066f66745e9137b83cca87b0fb2cffd45d145583ffb4f083077565ee805e
+2026-10-22T03:42:47.0022615Z Building boost-range:x64-windows@1.92.0...
+2026-10-22T03:42:47.0522846Z Downloading https://github.com/boostorg/range/archive/boost-1.92.0.tar.gz -> boostorg-range-boost-1.92.0.tar.gz
+2026-10-22T03:42:47.5303150Z Successfully downloaded boostorg-range-boost-1.92.0.tar.gz
+2026-10-22T03:42:47.5332105Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-range-boost-1.92.0.tar.gz
+2026-10-22T03:42:47.7181899Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-range/src/ost-1.92.0-541b740c0a.clean
+2026-10-22T03:42:47.7404726Z -- Configuring x64-windows
+2026-10-22T03:42:48.5936094Z -- Building x64-windows-rel
+2026-10-22T03:42:48.7091846Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-range_x64-windows/share/boost-range/copyright
+2026-10-22T03:42:48.7146959Z -- Performing post-build validation
+2026-10-22T03:42:48.7577986Z Starting submission of boost-range:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:48.7578748Z Elapsed time to handle boost-range:x64-windows: 1.8 s
+2026-10-22T03:42:48.7579254Z Completed submission of boost-regex:x64-windows@1.92.0 to 1 binary cache(s) in 84.8 ms
+2026-10-22T03:42:48.7579735Z Installing 36/67 boost-unordered:x64-windows@1.92.0...
+2026-10-22T03:42:48.7580280Z boost-unordered:x64-windows@1.92.0 package ABI: ad3f6b2f1a56961ba256430e36a2d519e64176908b83abfa70ff98faa11af82a
+2026-10-22T03:42:48.7580827Z Building boost-unordered:x64-windows@1.92.0...
+2026-10-22T03:42:48.8043996Z Downloading https://github.com/boostorg/unordered/archive/boost-1.92.0.tar.gz -> boostorg-unordered-boost-1.92.0.tar.gz
+2026-10-22T03:42:49.3152399Z Successfully downloaded boostorg-unordered-boost-1.92.0.tar.gz
+2026-10-22T03:42:49.3316679Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-unordered-boost-1.92.0.tar.gz
+2026-10-22T03:42:49.5470361Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-unordered/src/ost-1.92.0-cac88d2b57.clean
+2026-10-22T03:42:49.5695255Z -- Configuring x64-windows
+2026-10-22T03:42:50.2651541Z -- Building x64-windows-rel
+2026-10-22T03:42:50.3605600Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-unordered_x64-windows/share/boost-unordered/copyright
+2026-10-22T03:42:50.3661132Z -- Performing post-build validation
+2026-10-22T03:42:50.3911612Z Starting submission of boost-unordered:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:50.3912212Z Elapsed time to handle boost-unordered:x64-windows: 1.6 s
+2026-10-22T03:42:50.3912682Z Completed submission of boost-range:x64-windows@1.92.0 to 1 binary cache(s) in 78.1 ms
+2026-10-22T03:42:50.3913138Z Installing 37/67 boost-algorithm:x64-windows@1.92.0...
+2026-10-22T03:42:50.3913675Z boost-algorithm:x64-windows@1.92.0 package ABI: be7762e7d5f29693cc182c3e225056ac952a1103e77d70915b4a8f7ae1e66fa4
+2026-10-22T03:42:50.3914205Z Building boost-algorithm:x64-windows@1.92.0...
+2026-10-22T03:42:50.4344057Z Downloading https://github.com/boostorg/algorithm/archive/boost-1.92.0.tar.gz -> boostorg-algorithm-boost-1.92.0.tar.gz
+2026-10-22T03:42:51.0064828Z Successfully downloaded boostorg-algorithm-boost-1.92.0.tar.gz
+2026-10-22T03:42:51.0141531Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-algorithm-boost-1.92.0.tar.gz
+2026-10-22T03:42:51.1878002Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-algorithm/src/ost-1.92.0-5e305ae1e9.clean
+2026-10-22T03:42:51.2107787Z -- Configuring x64-windows
+2026-10-22T03:42:52.1778224Z -- Building x64-windows-rel
+2026-10-22T03:42:52.2721685Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-algorithm_x64-windows/share/boost-algorithm/copyright
+2026-10-22T03:42:52.2777308Z -- Performing post-build validation
+2026-10-22T03:42:52.3054832Z Starting submission of boost-algorithm:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:52.3055448Z Elapsed time to handle boost-algorithm:x64-windows: 1.9 s
+2026-10-22T03:42:52.3055950Z Completed submission of boost-unordered:x64-windows@1.92.0 to 1 binary cache(s) in 83.4 ms
+2026-10-22T03:42:52.3056446Z Installing 38/67 boost-align:x64-windows@1.92.0...
+2026-10-22T03:42:52.3056972Z boost-align:x64-windows@1.92.0 package ABI: d870c0f2ecf7c9f04e7935bb52d13e23f039a8a2fe46a81ebb9c004d4a29cd1b
+2026-10-22T03:42:52.3057487Z Building boost-align:x64-windows@1.92.0...
+2026-10-22T03:42:52.3648418Z Downloading https://github.com/boostorg/align/archive/boost-1.92.0.tar.gz -> boostorg-align-boost-1.92.0.tar.gz
+2026-10-22T03:42:52.6768991Z Successfully downloaded boostorg-align-boost-1.92.0.tar.gz
+2026-10-22T03:42:52.6791043Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-align-boost-1.92.0.tar.gz
+2026-10-22T03:42:52.8131898Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-align/src/ost-1.92.0-060b843031.clean
+2026-10-22T03:42:52.8363901Z -- Configuring x64-windows
+2026-10-22T03:42:53.4843635Z -- Building x64-windows-rel
+2026-10-22T03:42:53.5590522Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-align_x64-windows/share/boost-align/copyright
+2026-10-22T03:42:53.5646869Z -- Performing post-build validation
+2026-10-22T03:42:53.5874381Z Starting submission of boost-align:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:53.5875134Z Elapsed time to handle boost-align:x64-windows: 1.3 s
+2026-10-22T03:42:53.5875622Z Completed submission of boost-algorithm:x64-windows@1.92.0 to 1 binary cache(s) in 69.1 ms
+2026-10-22T03:42:53.5876087Z Installing 39/67 boost-integer:x64-windows@1.92.0...
+2026-10-22T03:42:53.5876608Z boost-integer:x64-windows@1.92.0 package ABI: 0c878ffab305cc9116d56713224c5d64ed326837b9c15eeda4158c3fe5c31ce9
+2026-10-22T03:42:53.5877121Z Building boost-integer:x64-windows@1.92.0...
+2026-10-22T03:42:53.6368309Z Downloading https://github.com/boostorg/integer/archive/boost-1.92.0.tar.gz -> boostorg-integer-boost-1.92.0.tar.gz
+2026-10-22T03:42:53.9816869Z Successfully downloaded boostorg-integer-boost-1.92.0.tar.gz
+2026-10-22T03:42:53.9840277Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-integer-boost-1.92.0.tar.gz
+2026-10-22T03:42:54.1101809Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-integer/src/ost-1.92.0-9e279eff76.clean
+2026-10-22T03:42:54.1325555Z -- Configuring x64-windows
+2026-10-22T03:42:54.7783736Z -- Building x64-windows-rel
+2026-10-22T03:42:54.8388958Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-integer_x64-windows/share/boost-integer/copyright
+2026-10-22T03:42:54.8447207Z -- Performing post-build validation
+2026-10-22T03:42:54.8589270Z Starting submission of boost-integer:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:54.8590234Z Elapsed time to handle boost-integer:x64-windows: 1.3 s
+2026-10-22T03:42:54.8591036Z Completed submission of boost-align:x64-windows@1.92.0 to 1 binary cache(s) in 60.7 ms
+2026-10-22T03:42:54.8591844Z Installing 40/67 boost-winapi:x64-windows@1.92.0...
+2026-10-22T03:42:54.8593347Z boost-winapi:x64-windows@1.92.0 package ABI: ab91de3b088b251f5cb2dadd50ef11caef06ea2b450d32c3827dcc3c422401c6
+2026-10-22T03:42:54.8594312Z Building boost-winapi:x64-windows@1.92.0...
+2026-10-22T03:42:54.9073068Z Downloading https://github.com/boostorg/winapi/archive/boost-1.92.0.tar.gz -> boostorg-winapi-boost-1.92.0.tar.gz
+2026-10-22T03:42:55.3421076Z Successfully downloaded boostorg-winapi-boost-1.92.0.tar.gz
+2026-10-22T03:42:55.3446901Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-winapi-boost-1.92.0.tar.gz
+2026-10-22T03:42:55.4866541Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-winapi/src/ost-1.92.0-95f11aed58.clean
+2026-10-22T03:42:55.5083025Z -- Configuring x64-windows
+2026-10-22T03:42:56.1221129Z -- Building x64-windows-rel
+2026-10-22T03:42:56.2226541Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-winapi_x64-windows/share/boost-winapi/copyright
+2026-10-22T03:42:56.2281394Z -- Performing post-build validation
+2026-10-22T03:42:56.2682136Z Starting submission of boost-winapi:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:56.2682842Z Elapsed time to handle boost-winapi:x64-windows: 1.4 s
+2026-10-22T03:42:56.2683307Z Completed submission of boost-integer:x64-windows@1.92.0 to 1 binary cache(s) in 57.4 ms
+2026-10-22T03:42:56.2683763Z Installing 41/67 boost-pool:x64-windows@1.92.0...
+2026-10-22T03:42:56.2684278Z boost-pool:x64-windows@1.92.0 package ABI: 1f443f8dbb9b9b1b5b6447eeab77ea1ffc0ff44e343d79d00984ac951f9ce570
+2026-10-22T03:42:56.2684778Z Building boost-pool:x64-windows@1.92.0...
+2026-10-22T03:42:56.3142603Z Downloading https://github.com/boostorg/pool/archive/boost-1.92.0.tar.gz -> boostorg-pool-boost-1.92.0.tar.gz
+2026-10-22T03:42:56.7662866Z Successfully downloaded boostorg-pool-boost-1.92.0.tar.gz
+2026-10-22T03:42:56.7717357Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-pool-boost-1.92.0.tar.gz
+2026-10-22T03:42:56.9183746Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-pool/src/ost-1.92.0-ee18176e74.clean
+2026-10-22T03:42:56.9404230Z -- Configuring x64-windows
+2026-10-22T03:42:57.6580118Z -- Building x64-windows-rel
+2026-10-22T03:42:57.7200725Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-pool_x64-windows/share/boost-pool/copyright
+2026-10-22T03:42:57.7256521Z -- Performing post-build validation
+2026-10-22T03:42:57.7418123Z Starting submission of boost-pool:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:42:57.7418893Z Elapsed time to handle boost-pool:x64-windows: 1.5 s
+2026-10-22T03:42:57.7419347Z Completed submission of boost-winapi:x64-windows@1.92.0 to 1 binary cache(s) in 75.1 ms
+2026-10-22T03:42:57.7419808Z Installing 42/67 boost-context:x64-windows@1.92.0...
+2026-10-22T03:42:57.7420336Z boost-context:x64-windows@1.92.0 package ABI: 81298793d2f4a8c38ddbaca6f6f89a3234d2a14a5103b5a1acef17607f4b38bb
+2026-10-22T03:42:57.7420853Z Building boost-context:x64-windows@1.92.0...
+2026-10-22T03:42:57.7914444Z Downloading https://github.com/boostorg/context/archive/boost-1.92.0.tar.gz -> boostorg-context-boost-1.92.0.tar.gz
+2026-10-22T03:42:58.2088062Z Successfully downloaded boostorg-context-boost-1.92.0.tar.gz
+2026-10-22T03:42:58.2117805Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-context-boost-1.92.0.tar.gz
+2026-10-22T03:42:58.3726969Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-context/src/ost-1.92.0-1be114e397.clean
+2026-10-22T03:42:58.3954744Z -- Configuring x64-windows
+2026-10-22T03:42:59.4550776Z -- Building x64-windows-dbg
+2026-10-22T03:43:01.8742334Z -- Building x64-windows-rel
+2026-10-22T03:43:02.8832458Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-context_x64-windows/share/boost-context/copyright
+2026-10-22T03:43:02.8886608Z -- Performing post-build validation
+2026-10-22T03:43:02.9111387Z Starting submission of boost-context:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:02.9113111Z Elapsed time to handle boost-context:x64-windows: 5.2 s
+2026-10-22T03:43:02.9113631Z Completed submission of boost-pool:x64-windows@1.92.0 to 1 binary cache(s) in 58.6 ms
+2026-10-22T03:43:02.9114083Z Installing 43/67 boost-move:x64-windows@1.92.0...
+2026-10-22T03:43:02.9114612Z boost-move:x64-windows@1.92.0 package ABI: 0ed2da132a44931f4bb109bcca6f9a110f6f7af00ea61c7472d1c4eb840bd488
+2026-10-22T03:43:02.9115139Z Building boost-move:x64-windows@1.92.0...
+2026-10-22T03:43:02.9605489Z Downloading https://github.com/boostorg/move/archive/boost-1.92.0.tar.gz -> boostorg-move-boost-1.92.0.tar.gz
+2026-10-22T03:43:03.3161021Z Successfully downloaded boostorg-move-boost-1.92.0.tar.gz
+2026-10-22T03:43:03.3186337Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-move-boost-1.92.0.tar.gz
+2026-10-22T03:43:03.4559977Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-move/src/ost-1.92.0-1c71703b10.clean
+2026-10-22T03:43:03.4784686Z -- Configuring x64-windows
+2026-10-22T03:43:04.1170902Z -- Building x64-windows-rel
+2026-10-22T03:43:04.1915618Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-move_x64-windows/share/boost-move/copyright
+2026-10-22T03:43:04.1968831Z -- Performing post-build validation
+2026-10-22T03:43:04.2187451Z Starting submission of boost-move:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:04.2187974Z Elapsed time to handle boost-move:x64-windows: 1.3 s
+2026-10-22T03:43:04.2188429Z Completed submission of boost-context:x64-windows@1.92.0 to 1 binary cache(s) in 140 ms
+2026-10-22T03:43:04.2188884Z Installing 44/67 boost-intrusive:x64-windows@1.92.0...
+2026-10-22T03:43:04.2189429Z boost-intrusive:x64-windows@1.92.0 package ABI: 7cf93a448f4a0376b2c7dee6cfac73c9142a09c20b030fafeb40593f1f9ba280
+2026-10-22T03:43:04.2189960Z Building boost-intrusive:x64-windows@1.92.0...
+2026-10-22T03:43:04.2643588Z Downloading https://github.com/boostorg/intrusive/archive/boost-1.92.0.tar.gz -> boostorg-intrusive-boost-1.92.0.tar.gz
+2026-10-22T03:43:04.6921568Z Successfully downloaded boostorg-intrusive-boost-1.92.0.tar.gz
+2026-10-22T03:43:04.6953657Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-intrusive-boost-1.92.0.tar.gz
+2026-10-22T03:43:04.8636713Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-intrusive/src/ost-1.92.0-614bc9da4d.clean
+2026-10-22T03:43:04.8864724Z -- Configuring x64-windows
+2026-10-22T03:43:05.5566565Z -- Building x64-windows-rel
+2026-10-22T03:43:05.6544718Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-intrusive_x64-windows/share/boost-intrusive/copyright
+2026-10-22T03:43:05.6603678Z -- Performing post-build validation
+2026-10-22T03:43:05.6945273Z Starting submission of boost-intrusive:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:05.6945870Z Elapsed time to handle boost-intrusive:x64-windows: 1.5 s
+2026-10-22T03:43:05.6946399Z Completed submission of boost-move:x64-windows@1.92.0 to 1 binary cache(s) in 69.8 ms
+2026-10-22T03:43:05.6946848Z Installing 45/67 boost-container:x64-windows@1.92.0...
+2026-10-22T03:43:05.6947372Z boost-container:x64-windows@1.92.0 package ABI: 7f66d637e8939930059db43c1e272108232593a9f79c54427cc6b4250a6a876d
+2026-10-22T03:43:05.6947886Z Building boost-container:x64-windows@1.92.0...
+2026-10-22T03:43:05.7410338Z Downloading https://github.com/boostorg/container/archive/boost-1.92.0.tar.gz -> boostorg-container-boost-1.92.0.tar.gz
+2026-10-22T03:43:06.1863376Z Successfully downloaded boostorg-container-boost-1.92.0.tar.gz
+2026-10-22T03:43:06.1942535Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-container-boost-1.92.0.tar.gz
+2026-10-22T03:43:06.3978440Z -- Applying patch posix-threads.diff
+2026-10-22T03:43:06.4260692Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-container/src/ost-1.92.0-ff25501e8f.clean
+2026-10-22T03:43:06.4482789Z -- Configuring x64-windows
+2026-10-22T03:43:07.7559703Z -- Building x64-windows-dbg
+2026-10-22T03:43:08.5903328Z -- Building x64-windows-rel
+2026-10-22T03:43:09.6394770Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-container_x64-windows/share/boost-container/copyright
+2026-10-22T03:43:09.6453831Z -- Performing post-build validation
+2026-10-22T03:43:09.7010237Z Starting submission of boost-container:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:09.7010933Z Elapsed time to handle boost-container:x64-windows: 4 s
+2026-10-22T03:43:09.7011422Z Completed submission of boost-intrusive:x64-windows@1.92.0 to 1 binary cache(s) in 107 ms
+2026-10-22T03:43:09.7011915Z Installing 46/67 boost-lexical-cast:x64-windows@1.92.0...
+2026-10-22T03:43:09.7012489Z boost-lexical-cast:x64-windows@1.92.0 package ABI: 0ffc4f973032953359b0c3ae90161e4f529ba4f167a787d22eb0a94e0409c671
+2026-10-22T03:43:09.7013059Z Building boost-lexical-cast:x64-windows@1.92.0...
+2026-10-22T03:43:09.7816345Z Downloading https://github.com/boostorg/lexical_cast/archive/boost-1.92.0.tar.gz -> boostorg-lexical_cast-boost-1.92.0.tar.gz
+2026-10-22T03:43:10.1245806Z Successfully downloaded boostorg-lexical_cast-boost-1.92.0.tar.gz
+2026-10-22T03:43:10.1269918Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-lexical_cast-boost-1.92.0.tar.gz
+2026-10-22T03:43:10.2602550Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-lexical-cast/src/ost-1.92.0-58e700ee8a.clean
+2026-10-22T03:43:10.2889585Z -- Configuring x64-windows
+2026-10-22T03:43:11.0050556Z -- Building x64-windows-rel
+2026-10-22T03:43:11.0677661Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-lexical-cast_x64-windows/share/boost-lexical-cast/copyright
+2026-10-22T03:43:11.0734148Z -- Performing post-build validation
+2026-10-22T03:43:11.0902383Z Starting submission of boost-lexical-cast:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:11.0903191Z Elapsed time to handle boost-lexical-cast:x64-windows: 1.4 s
+2026-10-22T03:43:11.0903735Z Completed submission of boost-container:x64-windows@1.92.0 to 1 binary cache(s) in 212 ms
+2026-10-22T03:43:11.0904275Z Installing 47/67 boost-numeric-conversion:x64-windows@1.92.0...
+2026-10-22T03:43:11.0904926Z boost-numeric-conversion:x64-windows@1.92.0 package ABI: 0139e53f3407ecb0fbbfadcf63ac4d2d3f0ab55d782c23dfd89b776797a921af
+2026-10-22T03:43:11.0905551Z Building boost-numeric-conversion:x64-windows@1.92.0...
+2026-10-22T03:43:11.1331112Z Downloading https://github.com/boostorg/numeric_conversion/archive/boost-1.92.0.tar.gz -> boostorg-numeric_conversion-boost-1.92.0.tar.gz
+2026-10-22T03:43:11.4728478Z Successfully downloaded boostorg-numeric_conversion-boost-1.92.0.tar.gz
+2026-10-22T03:43:11.4752865Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-numeric_conversion-boost-1.92.0.tar.gz
+2026-10-22T03:43:11.6053647Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-numeric-conversion/src/ost-1.92.0-c4f959aa8e.clean
+2026-10-22T03:43:11.6292786Z -- Configuring x64-windows
+2026-10-22T03:43:12.4174767Z -- Building x64-windows-rel
+2026-10-22T03:43:12.4844574Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-numeric-conversion_x64-windows/share/boost-numeric-conversion/copyright
+2026-10-22T03:43:12.4902187Z -- Performing post-build validation
+2026-10-22T03:43:12.5090649Z Starting submission of boost-numeric-conversion:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:12.5091448Z Elapsed time to handle boost-numeric-conversion:x64-windows: 1.4 s
+2026-10-22T03:43:12.5092012Z Completed submission of boost-lexical-cast:x64-windows@1.92.0 to 1 binary cache(s) in 57.9 ms
+2026-10-22T03:43:12.5092528Z Installing 48/67 boost-static-assert:x64-windows@1.92.0...
+2026-10-22T03:43:12.5093137Z boost-static-assert:x64-windows@1.92.0 package ABI: 6fe3a7b5211808f9b5b043bc14be35adc62d439f19d4a949eb9f5b802766bb2d
+2026-10-22T03:43:12.5093980Z Building boost-static-assert:x64-windows@1.92.0...
+2026-10-22T03:43:12.5513508Z Downloading https://github.com/boostorg/static_assert/archive/boost-1.92.0.tar.gz -> boostorg-static_assert-boost-1.92.0.tar.gz
+2026-10-22T03:43:12.9092581Z Successfully downloaded boostorg-static_assert-boost-1.92.0.tar.gz
+2026-10-22T03:43:12.9114739Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-static_assert-boost-1.92.0.tar.gz
+2026-10-22T03:43:13.0430418Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-static-assert/src/ost-1.92.0-04f3234f05.clean
+2026-10-22T03:43:13.0660279Z -- Configuring x64-windows
+2026-10-22T03:43:13.7204546Z -- Building x64-windows-rel
+2026-10-22T03:43:13.7775507Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-static-assert_x64-windows/share/boost-static-assert/copyright
+2026-10-22T03:43:13.7833984Z -- Performing post-build validation
+2026-10-22T03:43:13.7972106Z Starting submission of boost-static-assert:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:13.7973158Z Elapsed time to handle boost-static-assert:x64-windows: 1.3 s
+2026-10-22T03:43:13.7974216Z Completed submission of boost-numeric-conversion:x64-windows@1.92.0 to 1 binary cache(s) in 55.8 ms
+2026-10-22T03:43:13.7975151Z Installing 49/67 boost-tokenizer:x64-windows@1.92.0...
+2026-10-22T03:43:13.7976120Z boost-tokenizer:x64-windows@1.92.0 package ABI: 318f8dcd907dd309dd9c28ea8197bd912d20d7e6c9895e982ff76cb3cd77f016
+2026-10-22T03:43:13.7977086Z Building boost-tokenizer:x64-windows@1.92.0...
+2026-10-22T03:43:13.8430174Z Downloading https://github.com/boostorg/tokenizer/archive/boost-1.92.0.tar.gz -> boostorg-tokenizer-boost-1.92.0.tar.gz
+2026-10-22T03:43:14.1977801Z Successfully downloaded boostorg-tokenizer-boost-1.92.0.tar.gz
+2026-10-22T03:43:14.1999523Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-tokenizer-boost-1.92.0.tar.gz
+2026-10-22T03:43:14.3244817Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-tokenizer/src/ost-1.92.0-13e07fb5af.clean
+2026-10-22T03:43:14.3482152Z -- Configuring x64-windows
+2026-10-22T03:43:15.2277726Z -- Building x64-windows-rel
+2026-10-22T03:43:15.2843166Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-tokenizer_x64-windows/share/boost-tokenizer/copyright
+2026-10-22T03:43:15.2905071Z -- Performing post-build validation
+2026-10-22T03:43:15.3051175Z Starting submission of boost-tokenizer:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:15.3052264Z Elapsed time to handle boost-tokenizer:x64-windows: 1.5 s
+2026-10-22T03:43:15.3053261Z Completed submission of boost-static-assert:x64-windows@1.92.0 to 1 binary cache(s) in 55.5 ms
+2026-10-22T03:43:15.3054179Z Installing 50/67 boost-date-time:x64-windows@1.92.0...
+2026-10-22T03:43:15.3055263Z boost-date-time:x64-windows@1.92.0 package ABI: b8d1009837e2335d49d99f30ccfd3de19a1ba86d721b6c0a6de419a1eda300f8
+2026-10-22T03:43:15.3056612Z Building boost-date-time:x64-windows@1.92.0...
+2026-10-22T03:43:15.3524120Z Downloading https://github.com/boostorg/date_time/archive/boost-1.92.0.tar.gz -> boostorg-date_time-boost-1.92.0.tar.gz
+2026-10-22T03:43:15.7866533Z Successfully downloaded boostorg-date_time-boost-1.92.0.tar.gz
+2026-10-22T03:43:15.7902691Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-date_time-boost-1.92.0.tar.gz
+2026-10-22T03:43:15.9659654Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-date-time/src/ost-1.92.0-966e72f7f0.clean
+2026-10-22T03:43:15.9891522Z -- Configuring x64-windows
+2026-10-22T03:43:17.5228930Z -- Building x64-windows-dbg
+2026-10-22T03:43:17.8568156Z -- Building x64-windows-rel
+2026-10-22T03:43:18.1129961Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-date-time_x64-windows/share/boost-date-time/copyright
+2026-10-22T03:43:18.1191978Z -- Performing post-build validation
+2026-10-22T03:43:18.1568891Z Starting submission of boost-date-time:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:18.1569944Z Elapsed time to handle boost-date-time:x64-windows: 2.9 s
+2026-10-22T03:43:18.1570464Z Completed submission of boost-tokenizer:x64-windows@1.92.0 to 1 binary cache(s) in 54.1 ms
+2026-10-22T03:43:18.1570940Z Installing 51/67 boost-compat:x64-windows@1.92.0...
+2026-10-22T03:43:18.1571490Z boost-compat:x64-windows@1.92.0 package ABI: 18a33f6d44099baa0d7a8cbe96502807478b01d881e65aab8b1a8998fac05bf6
+2026-10-22T03:43:18.1572030Z Building boost-compat:x64-windows@1.92.0...
+2026-10-22T03:43:18.2265808Z Downloading https://github.com/boostorg/compat/archive/boost-1.92.0.tar.gz -> boostorg-compat-boost-1.92.0.tar.gz
+2026-10-22T03:43:18.5822780Z Successfully downloaded boostorg-compat-boost-1.92.0.tar.gz
+2026-10-22T03:43:18.5845893Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-compat-boost-1.92.0.tar.gz
+2026-10-22T03:43:18.7326949Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-compat/src/ost-1.92.0-436157e8f5.clean
+2026-10-22T03:43:18.7557889Z -- Configuring x64-windows
+2026-10-22T03:43:19.4142062Z -- Building x64-windows-rel
+2026-10-22T03:43:19.4746543Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-compat_x64-windows/share/boost-compat/copyright
+2026-10-22T03:43:19.4803592Z -- Performing post-build validation
+2026-10-22T03:43:19.4970576Z Starting submission of boost-compat:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:19.4971125Z Elapsed time to handle boost-compat:x64-windows: 1.3 s
+2026-10-22T03:43:19.4971598Z Completed submission of boost-date-time:x64-windows@1.92.0 to 1 binary cache(s) in 122 ms
+2026-10-22T03:43:19.4972062Z Installing 52/67 boost-variant2:x64-windows@1.92.0...
+2026-10-22T03:43:19.4972611Z boost-variant2:x64-windows@1.92.0 package ABI: b8e35ec9427176719fad5a2e7a0a6620ccda955a0032e7826d732e9e97165238
+2026-10-22T03:43:19.4973140Z Building boost-variant2:x64-windows@1.92.0...
+2026-10-22T03:43:19.5481806Z Downloading https://github.com/boostorg/variant2/archive/boost-1.92.0.tar.gz -> boostorg-variant2-boost-1.92.0.tar.gz
+2026-10-22T03:43:19.9057656Z Successfully downloaded boostorg-variant2-boost-1.92.0.tar.gz
+2026-10-22T03:43:19.9081576Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-variant2-boost-1.92.0.tar.gz
+2026-10-22T03:43:20.0453537Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-variant2/src/ost-1.92.0-a22b7bdd33.clean
+2026-10-22T03:43:20.0690363Z -- Configuring x64-windows
+2026-10-22T03:43:20.7400386Z -- Building x64-windows-rel
+2026-10-22T03:43:20.7986804Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-variant2_x64-windows/share/boost-variant2/copyright
+2026-10-22T03:43:20.8047528Z -- Performing post-build validation
+2026-10-22T03:43:20.8209454Z Starting submission of boost-variant2:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:20.8210129Z Elapsed time to handle boost-variant2:x64-windows: 1.3 s
+2026-10-22T03:43:20.8210738Z Completed submission of boost-compat:x64-windows@1.92.0 to 1 binary cache(s) in 61.5 ms
+2026-10-22T03:43:20.8211288Z Installing 53/67 boost-system:x64-windows@1.92.0...
+2026-10-22T03:43:20.8211894Z boost-system:x64-windows@1.92.0 package ABI: 0f7ddc14660c81b81422cf4609c1f86d77718a048a7900531bdee7af0356cd3f
+2026-10-22T03:43:20.8212462Z Building boost-system:x64-windows@1.92.0...
+2026-10-22T03:43:20.8537237Z CMake Warning at scripts/cmake/vcpkg_buildpath_length_warning.cmake:4 (message):
+2026-10-22T03:43:20.8538185Z   boost-system's buildsystem uses very long paths and may fail on your
+2026-10-22T03:43:20.8538577Z   system.
+2026-10-22T03:43:20.8538678Z 
+2026-10-22T03:43:20.8538871Z   We recommend moving vcpkg to a short path such as 'C:\src\vcpkg' or using
+2026-10-22T03:43:20.8539225Z   the subst command.
+2026-10-22T03:43:20.8539431Z Call Stack (most recent call first):
+2026-10-22T03:43:20.8539782Z   ports/boost-system/portfile.cmake:3 (vcpkg_buildpath_length_warning)
+2026-10-22T03:43:20.8540500Z   scripts/ports.cmake:209 (include)
+2026-10-22T03:43:20.8540676Z 
+2026-10-22T03:43:20.8540680Z 
+2026-10-22T03:43:20.8643753Z Downloading https://github.com/boostorg/system/archive/boost-1.92.0.tar.gz -> boostorg-system-boost-1.92.0.tar.gz
+2026-10-22T03:43:21.1902730Z Successfully downloaded boostorg-system-boost-1.92.0.tar.gz
+2026-10-22T03:43:21.1928543Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-system-boost-1.92.0.tar.gz
+2026-10-22T03:43:21.3432448Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-system/src/ost-1.92.0-8071ad82cb.clean
+2026-10-22T03:43:21.3662718Z -- Configuring x64-windows
+2026-10-22T03:43:22.0876313Z -- Building x64-windows-rel
+2026-10-22T03:43:22.1597820Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-system_x64-windows/share/boost-system/copyright
+2026-10-22T03:43:22.1657440Z -- Performing post-build validation
+2026-10-22T03:43:22.1878415Z Starting submission of boost-system:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:22.1879084Z Elapsed time to handle boost-system:x64-windows: 1.4 s
+2026-10-22T03:43:22.1879550Z Completed submission of boost-variant2:x64-windows@1.92.0 to 1 binary cache(s) in 61.3 ms
+2026-10-22T03:43:22.1880084Z Installing 54/67 boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0...
+2026-10-22T03:43:22.1880783Z boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0 package ABI: bb19896e745f002152ce44163a6e45f6a5728b3c8bdffe5f738446a33feb1ffe
+2026-10-22T03:43:22.1881479Z Building boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0...
+2026-10-22T03:43:22.2341904Z Downloading https://github.com/boostorg/asio/archive/boost-1.92.0.tar.gz -> boostorg-asio-boost-1.92.0.tar.gz
+2026-10-22T03:43:22.8470233Z Successfully downloaded boostorg-asio-boost-1.92.0.tar.gz
+2026-10-22T03:43:22.8590189Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-asio-boost-1.92.0.tar.gz
+2026-10-22T03:43:23.2029079Z -- Applying patch 0001-add-options.patch
+2026-10-22T03:43:23.2323564Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-asio/src/ost-1.92.0-3a74e4d9d9.clean
+2026-10-22T03:43:23.2562025Z -- Configuring x64-windows
+2026-10-22T03:43:24.4692897Z -- Building x64-windows-rel
+2026-10-22T03:43:24.8145597Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-asio_x64-windows/share/boost-asio/copyright
+2026-10-22T03:43:24.8207032Z -- Performing post-build validation
+2026-10-22T03:43:24.9677633Z Starting submission of boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:24.9678534Z Elapsed time to handle boost-asio:x64-windows: 2.8 s
+2026-10-22T03:43:24.9679099Z Completed submission of boost-system:x64-windows@1.92.0 to 1 binary cache(s) in 65.4 ms
+2026-10-22T03:43:24.9679654Z Installing 55/67 boost-endian:x64-windows@1.92.0...
+2026-10-22T03:43:24.9680335Z boost-endian:x64-windows@1.92.0 package ABI: aa0b49cf469c663a72ddceb8a7a5c8cf7025730d3c25843c09d8137b7bb6aea1
+2026-10-22T03:43:24.9680997Z Building boost-endian:x64-windows@1.92.0...
+2026-10-22T03:43:25.0103318Z Downloading https://github.com/boostorg/endian/archive/boost-1.92.0.tar.gz -> boostorg-endian-boost-1.92.0.tar.gz
+2026-10-22T03:43:25.3343351Z Successfully downloaded boostorg-endian-boost-1.92.0.tar.gz
+2026-10-22T03:43:25.3368314Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-endian-boost-1.92.0.tar.gz
+2026-10-22T03:43:25.4850079Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-endian/src/ost-1.92.0-3f5777a277.clean
+2026-10-22T03:43:25.5084454Z -- Configuring x64-windows
+2026-10-22T03:43:26.1735366Z -- Building x64-windows-rel
+2026-10-22T03:43:26.2386112Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-endian_x64-windows/share/boost-endian/copyright
+2026-10-22T03:43:26.2443740Z -- Performing post-build validation
+2026-10-22T03:43:26.2627813Z Starting submission of boost-endian:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:26.2628432Z Elapsed time to handle boost-endian:x64-windows: 1.3 s
+2026-10-22T03:43:26.2628985Z Completed submission of boost-asio[core,deadline-timer,spawn]:x64-windows@1.92.0 to 1 binary cache(s) in 220 ms
+2026-10-22T03:43:26.2629518Z Installing 56/67 boost-logic:x64-windows@1.92.0...
+2026-10-22T03:43:26.2630037Z boost-logic:x64-windows@1.92.0 package ABI: deca8e5a6a1c6daf983285ca19b1e14bc9701806e2e4516a499c8f033cc654c5
+2026-10-22T03:43:26.2630535Z Building boost-logic:x64-windows@1.92.0...
+2026-10-22T03:43:26.3046782Z Downloading https://github.com/boostorg/logic/archive/boost-1.92.0.tar.gz -> boostorg-logic-boost-1.92.0.tar.gz
+2026-10-22T03:43:26.6143250Z Successfully downloaded boostorg-logic-boost-1.92.0.tar.gz
+2026-10-22T03:43:26.6165242Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-logic-boost-1.92.0.tar.gz
+2026-10-22T03:43:26.7509236Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-logic/src/ost-1.92.0-2be139a42c.clean
+2026-10-22T03:43:26.7740175Z -- Configuring x64-windows
+2026-10-22T03:43:27.4674025Z -- Building x64-windows-rel
+2026-10-22T03:43:27.5251670Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-logic_x64-windows/share/boost-logic/copyright
+2026-10-22T03:43:27.5311684Z -- Performing post-build validation
+2026-10-22T03:43:27.5468581Z Starting submission of boost-logic:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:27.5469404Z Elapsed time to handle boost-logic:x64-windows: 1.3 s
+2026-10-22T03:43:27.5469936Z Completed submission of boost-endian:x64-windows@1.92.0 to 1 binary cache(s) in 56.2 ms
+2026-10-22T03:43:27.5470543Z Installing 57/67 boost-static-string:x64-windows@1.92.0...
+2026-10-22T03:43:27.5471181Z boost-static-string:x64-windows@1.92.0 package ABI: 37874227ef8f747a3b51edaaf0cfc6bb5c580640aea0b7bb6c18f075c6a704e3
+2026-10-22T03:43:27.5471779Z Building boost-static-string:x64-windows@1.92.0...
+2026-10-22T03:43:27.5957338Z Downloading https://github.com/boostorg/static_string/archive/boost-1.92.0.tar.gz -> boostorg-static_string-boost-1.92.0.tar.gz
+2026-10-22T03:43:27.9848814Z Successfully downloaded boostorg-static_string-boost-1.92.0.tar.gz
+2026-10-22T03:43:27.9873068Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-static_string-boost-1.92.0.tar.gz
+2026-10-22T03:43:28.1277416Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-static-string/src/ost-1.92.0-0384a08748.clean
+2026-10-22T03:43:28.1517009Z -- Configuring x64-windows
+2026-10-22T03:43:28.9537935Z -- Building x64-windows-rel
+2026-10-22T03:43:29.0286192Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-static-string_x64-windows/share/boost-static-string/copyright
+2026-10-22T03:43:29.0348745Z -- Performing post-build validation
+2026-10-22T03:43:29.0520153Z Starting submission of boost-static-string:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:29.0520908Z Elapsed time to handle boost-static-string:x64-windows: 1.5 s
+2026-10-22T03:43:29.0521408Z Completed submission of boost-logic:x64-windows@1.92.0 to 1 binary cache(s) in 58 ms
+2026-10-22T03:43:29.0521858Z Installing 58/67 boost-type-index:x64-windows@1.92.0...
+2026-10-22T03:43:29.0522408Z boost-type-index:x64-windows@1.92.0 package ABI: c089cd9f62ff140b6d7daf53a3c64b9e0bf0322dd0e2a452d80d585bcb3f94d8
+2026-10-22T03:43:29.0522944Z Building boost-type-index:x64-windows@1.92.0...
+2026-10-22T03:43:29.0973482Z Downloading https://github.com/boostorg/type_index/archive/boost-1.92.0.tar.gz -> boostorg-type_index-boost-1.92.0.tar.gz
+2026-10-22T03:43:29.4779262Z Successfully downloaded boostorg-type_index-boost-1.92.0.tar.gz
+2026-10-22T03:43:29.4802587Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-type_index-boost-1.92.0.tar.gz
+2026-10-22T03:43:29.6122862Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-type-index/src/ost-1.92.0-abc0bdaea0.clean
+2026-10-22T03:43:29.6355560Z -- Configuring x64-windows
+2026-10-22T03:43:30.3564127Z -- Building x64-windows-rel
+2026-10-22T03:43:30.4205931Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-type-index_x64-windows/share/boost-type-index/copyright
+2026-10-22T03:43:30.4268043Z -- Performing post-build validation
+2026-10-22T03:43:30.4451849Z Starting submission of boost-type-index:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:30.4452538Z Elapsed time to handle boost-type-index:x64-windows: 1.4 s
+2026-10-22T03:43:30.4453051Z Completed submission of boost-static-string:x64-windows@1.92.0 to 1 binary cache(s) in 70.1 ms
+2026-10-22T03:43:30.4453548Z Installing 59/67 boost-beast:x64-windows@1.92.0...
+2026-10-22T03:43:30.4454069Z boost-beast:x64-windows@1.92.0 package ABI: 4b2df4fe0c18e619436e5e51b136ce4cdb4d4eb49b0c3df99a826ed66705e26b
+2026-10-22T03:43:30.4454572Z Building boost-beast:x64-windows@1.92.0...
+2026-10-22T03:43:30.4899428Z Downloading https://github.com/boostorg/beast/archive/boost-1.92.0.tar.gz -> boostorg-beast-boost-1.92.0.tar.gz
+2026-10-22T03:43:31.0049640Z Successfully downloaded boostorg-beast-boost-1.92.0.tar.gz
+2026-10-22T03:43:31.0121465Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/boostorg-beast-boost-1.92.0.tar.gz
+2026-10-22T03:43:31.3225826Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/boost-beast/src/ost-1.92.0-7116fe278a.clean
+2026-10-22T03:43:31.3462250Z -- Configuring x64-windows
+2026-10-22T03:43:32.6538315Z -- Building x64-windows-rel
+2026-10-22T03:43:32.8242713Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/boost-beast_x64-windows/share/boost-beast/copyright
+2026-10-22T03:43:32.8304715Z -- Performing post-build validation
+2026-10-22T03:43:32.8974915Z Starting submission of boost-beast:x64-windows@1.92.0 to 1 binary cache(s) in the background
+2026-10-22T03:43:32.8975475Z Elapsed time to handle boost-beast:x64-windows: 2.5 s
+2026-10-22T03:43:32.8976003Z Completed submission of boost-type-index:x64-windows@1.92.0 to 1 binary cache(s) in 57.9 ms
+2026-10-22T03:43:32.8976495Z Installing 60/67 json-c:x64-windows@0.19-20260627#1...
+2026-10-22T03:43:32.8977046Z json-c:x64-windows@0.19-20260627#1 package ABI: cf64e5409ab78e97236523c477c658c68095a0678310f23405dd04c8ff7404f3
+2026-10-22T03:43:32.8977594Z Building json-c:x64-windows@0.19-20260627#1...
+2026-10-22T03:43:32.9392962Z Downloading https://github.com/json-c/json-c/archive/json-c-0.19-20260627.tar.gz -> json-c-json-c-json-c-0.19-20260627.tar.gz
+2026-10-22T03:43:33.3627857Z Successfully downloaded json-c-json-c-json-c-0.19-20260627.tar.gz
+2026-10-22T03:43:33.3664791Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/json-c-json-c-json-c-0.19-20260627.tar.gz
+2026-10-22T03:43:33.5347752Z -- Applying patch json_object_put-leak.patch
+2026-10-22T03:43:33.5644700Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/json-c/src/9-20260627-5bea6345d8.clean
+2026-10-22T03:43:33.5869619Z -- Configuring x64-windows
+2026-10-22T03:43:46.2438349Z -- Building x64-windows-dbg
+2026-10-22T03:43:47.0117565Z -- Building x64-windows-rel
+2026-10-22T03:43:48.0633039Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/json-c_x64-windows/lib/pkgconfig/json-c.pc
+2026-10-22T03:43:48.0840398Z Downloading msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst, trying https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:43:48.7376386Z Successfully downloaded msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:43:48.7487364Z Downloading msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:43:51.5406100Z Successfully downloaded msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:43:51.5855838Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:43:51.5973847Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/json-c_x64-windows/debug/lib/pkgconfig/json-c.pc
+2026-10-22T03:43:51.6492981Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/json-c_x64-windows/share/json-c/copyright
+2026-10-22T03:43:51.6558616Z -- Performing post-build validation
+2026-10-22T03:43:51.6807053Z Starting submission of json-c:x64-windows@0.19-20260627#1 to 1 binary cache(s) in the background
+2026-10-22T03:43:51.6807666Z Elapsed time to handle json-c:x64-windows: 19 s
+2026-10-22T03:43:51.6808122Z Completed submission of boost-beast:x64-windows@1.92.0 to 1 binary cache(s) in 121 ms
+2026-10-22T03:43:51.6808623Z Installing 61/67 vcpkg-cmake-get-vars:x64-windows@2025-05-29...
+2026-10-22T03:43:51.6809250Z vcpkg-cmake-get-vars:x64-windows@2025-05-29 package ABI: fc039b1fb6072f443a56902cf7668b6974c831ca6951f12dfce1cf53bc8ad5f9
+2026-10-22T03:43:51.6809854Z Building vcpkg-cmake-get-vars:x64-windows@2025-05-29...
+2026-10-22T03:43:51.7166560Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/vcpkg_cmake_get_vars.cmake
+2026-10-22T03:43:51.7172510Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/cmake_get_vars
+2026-10-22T03:43:51.7176876Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/cmake_get_vars/CMakeLists.txt
+2026-10-22T03:43:51.7182978Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/cmake-get-vars.cmake.in
+2026-10-22T03:43:51.7188639Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/vcpkg-port-config.cmake
+2026-10-22T03:43:51.7194626Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/vcpkg-cmake-get-vars_x64-windows/share/vcpkg-cmake-get-vars/copyright
+2026-10-22T03:43:51.7250774Z -- Performing post-build validation
+2026-10-22T03:43:51.7482042Z Starting submission of vcpkg-cmake-get-vars:x64-windows@2025-05-29 to 1 binary cache(s) in the background
+2026-10-22T03:43:51.7483206Z Elapsed time to handle vcpkg-cmake-get-vars:x64-windows: 67.5 ms
+2026-10-22T03:43:51.7484004Z Installing 62/67 vcpkg-make:x64-windows@2026-07-09#1...
+2026-10-22T03:43:51.7485036Z vcpkg-make:x64-windows@2026-07-09#1 package ABI: 026e440e02afaf0a480a2c1bb8ce95c1917918117a274a75898a5f3c33e6acff
+2026-10-22T03:43:51.7486011Z Building vcpkg-make:x64-windows@2026-07-09#1...
+2026-10-22T03:43:51.7969135Z Downloading automake-1.17.tar.gz, trying https://ftpmirror.gnu.org/gnu/automake/automake-1.17.tar.gz
+2026-10-22T03:43:53.0615334Z Successfully downloaded automake-1.17.tar.gz
+2026-10-22T03:43:53.0730613Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/automake-1.17.tar.gz
+2026-10-22T03:43:53.4083025Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/vcpkg-make/src/automake-1-c362683103.clean
+2026-10-22T03:43:53.4361633Z -- Getting CMake variables for x64-windows
+2026-10-22T03:43:54.7156577Z -- Loading CMake variables from D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/vcpkg-make/cmake-get-vars_C_CXX-x64-windows.cmake.log
+2026-10-22T03:43:54.7187276Z -- x64-windows autotools triplet: x86_64-pc-mingw32 (from vcpkg)
+2026-10-22T03:43:54.7253415Z -- Performing post-build validation
+2026-10-22T03:43:54.7439469Z Starting submission of vcpkg-make:x64-windows@2026-07-09#1 to 1 binary cache(s) in the background
+2026-10-22T03:43:54.7440029Z Elapsed time to handle vcpkg-make:x64-windows: 3 s
+2026-10-22T03:43:54.7440495Z Completed submission of json-c:x64-windows@0.19-20260627#1 to 1 binary cache(s) in 182 ms
+2026-10-22T03:43:54.7441127Z Completed submission of vcpkg-cmake-get-vars:x64-windows@2025-05-29 to 1 binary cache(s) in 49.6 ms
+2026-10-22T03:43:54.7441612Z Installing 63/67 libiconv:x64-windows@1.19...
+2026-10-22T03:43:54.7442509Z libiconv:x64-windows@1.19 package ABI: 2ff09f3c1204d1beb747aaa78b26f5b6fbd0f996f5b43b9b8a0855e1ff9b015e
+2026-10-22T03:43:54.7443024Z Building libiconv:x64-windows@1.19...
+2026-10-22T03:43:54.7966009Z Downloading libiconv-1.19.tar.gz, trying https://ftpmirror.gnu.org/gnu/libiconv/libiconv-1.19.tar.gz
+2026-10-22T03:43:56.6404288Z Successfully downloaded libiconv-1.19.tar.gz
+2026-10-22T03:43:56.6644961Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/libiconv-1.19.tar.gz
+2026-10-22T03:43:56.9872787Z -- Applying patch 0002-Config-for-MSVC.patch
+2026-10-22T03:43:57.0164294Z -- Applying patch 0003-Add-export.patch
+2026-10-22T03:43:57.0445155Z -- Applying patch 0004-ModuleFileName.patch
+2026-10-22T03:43:57.0741324Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/libiconv/src/v1.19-81131afe73.clean
+2026-10-22T03:43:57.0958573Z -- Getting CMake variables for x64-windows
+2026-10-22T03:43:58.3402351Z -- Loading CMake variables from D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/libiconv/cmake-get-vars_C_CXX-x64-windows.cmake.log
+2026-10-22T03:43:58.3734841Z Downloading msys2-autoconf-wrapper-20260320-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/autoconf-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:43:58.8250920Z Successfully downloaded msys2-autoconf-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:43:58.8365780Z Downloading msys2-automake-wrapper-20260320-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/automake-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:43:59.2278401Z Successfully downloaded msys2-automake-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:43:59.2392723Z Downloading msys2-autoconf-archive-2024.10.16-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/autoconf-archive-2024.10.16-1-any.pkg.tar.zst
+2026-10-22T03:44:00.3522595Z Successfully downloaded msys2-autoconf-archive-2024.10.16-1-any.pkg.tar.zst
+2026-10-22T03:44:00.3635240Z Downloading msys2-binutils-2.47-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/binutils-2.47-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:00.8708207Z Successfully downloaded msys2-binutils-2.47-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:00.8822019Z Downloading msys2-libtool-2.6.2-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libtool-2.6.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:01.3157688Z Successfully downloaded msys2-libtool-2.6.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:01.3271477Z Downloading msys2-make-4.4.1-3-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/make-4.4.1-3-x86_64.pkg.tar.zst
+2026-10-22T03:44:01.8356393Z Successfully downloaded msys2-make-4.4.1-3-x86_64.pkg.tar.zst
+2026-10-22T03:44:01.8471929Z Downloading msys2-which-2.25-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/which-2.25-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:02.5308147Z Successfully downloaded msys2-which-2.25-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:02.5417571Z Downloading msys2-bash-5.3.020-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/bash-5.3.020-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:05.1348277Z Successfully downloaded msys2-bash-5.3.020-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:05.1458866Z Downloading msys2-coreutils-8.32-5-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/coreutils-8.32-5-x86_64.pkg.tar.zst
+2026-10-22T03:44:05.5884760Z Successfully downloaded msys2-coreutils-8.32-5-x86_64.pkg.tar.zst
+2026-10-22T03:44:05.5997533Z Downloading msys2-file-5.48-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/file-5.48-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.0875898Z Successfully downloaded msys2-file-5.48-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.0991848Z Downloading msys2-gawk-5.4.1-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/gawk-5.4.1-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.5235608Z Successfully downloaded msys2-gawk-5.4.1-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.5348298Z Downloading msys2-grep-1~3.0-7-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/grep-1~3.0-7-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.9614683Z Successfully downloaded msys2-grep-1~3.0-7-x86_64.pkg.tar.zst
+2026-10-22T03:44:06.9727508Z Downloading msys2-gzip-1.15-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/gzip-1.15-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:07.7580711Z Successfully downloaded msys2-gzip-1.15-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:07.7690640Z Downloading msys2-diffutils-3.12-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/diffutils-3.12-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:08.7338243Z Successfully downloaded msys2-diffutils-3.12-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:08.7448318Z Downloading msys2-pkgconf-3.0.7-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/pkgconf-3.0.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:09.5176889Z Successfully downloaded msys2-pkgconf-3.0.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:09.5286838Z Downloading msys2-sed-4.9-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/sed-4.9-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:09.9553042Z Successfully downloaded msys2-sed-4.9-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:09.9650424Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:44:09.9747137Z Downloading msys2-autoconf2.73-2.73-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/autoconf2.73-2.73-1-any.pkg.tar.zst
+2026-10-22T03:44:11.2285485Z Successfully downloaded msys2-autoconf2.73-2.73-1-any.pkg.tar.zst
+2026-10-22T03:44:11.2398534Z Downloading msys2-autoconf2.72-2.72-4-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/autoconf2.72-2.72-4-any.pkg.tar.zst
+2026-10-22T03:44:11.7450145Z Successfully downloaded msys2-autoconf2.72-2.72-4-any.pkg.tar.zst
+2026-10-22T03:44:11.7564263Z Downloading msys2-automake1.16-1.16.5-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/automake1.16-1.16.5-1-any.pkg.tar.zst
+2026-10-22T03:44:12.7930377Z Successfully downloaded msys2-automake1.16-1.16.5-1-any.pkg.tar.zst
+2026-10-22T03:44:12.8043828Z Downloading msys2-automake1.17-1.17-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/automake1.17-1.17-1-any.pkg.tar.zst
+2026-10-22T03:44:13.3038845Z Successfully downloaded msys2-automake1.17-1.17-1-any.pkg.tar.zst
+2026-10-22T03:44:13.3152572Z Downloading msys2-automake1.18-1.18.1-1-any.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/automake1.18-1.18.1-1-any.pkg.tar.zst
+2026-10-22T03:44:13.7357958Z Successfully downloaded msys2-automake1.18-1.18.1-1-any.pkg.tar.zst
+2026-10-22T03:44:13.7472389Z Downloading msys2-libiconv-1.19-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libiconv-1.19-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:14.2473881Z Successfully downloaded msys2-libiconv-1.19-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:14.2587534Z Downloading msys2-libintl-0.22.5-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libintl-0.22.5-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:14.9948594Z Successfully downloaded msys2-libintl-0.22.5-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:15.0058192Z Downloading msys2-zlib-1.3.2-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/zlib-1.3.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:15.4242457Z Successfully downloaded msys2-zlib-1.3.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:15.4355035Z Downloading msys2-zstd-1.5.7-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/zstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:15.8771179Z Successfully downloaded msys2-zstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:15.8880314Z Downloading msys2-findutils-4.11.0-2-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/findutils-4.11.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:16.9868810Z Successfully downloaded msys2-findutils-4.11.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:16.9984107Z Downloading msys2-tar-1.35-3-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/tar-1.35-3-x86_64.pkg.tar.zst
+2026-10-22T03:44:17.5045485Z Successfully downloaded msys2-tar-1.35-3-x86_64.pkg.tar.zst
+2026-10-22T03:44:17.5158619Z Downloading msys2-gmp-6.3.0-2-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/gmp-6.3.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.0290580Z Successfully downloaded msys2-gmp-6.3.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.0405188Z Downloading msys2-gcc-libs-15.3.0-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/gcc-libs-15.3.0-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.4852921Z Successfully downloaded msys2-gcc-libs-15.3.0-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.4966034Z Downloading msys2-libbz2-1.0.8-4-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libbz2-1.0.8-4-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.9421547Z Successfully downloaded msys2-libbz2-1.0.8-4-x86_64.pkg.tar.zst
+2026-10-22T03:44:18.9532647Z Downloading msys2-liblzma-5.8.4-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/liblzma-5.8.4-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:19.4021741Z Successfully downloaded msys2-liblzma-5.8.4-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:19.4139958Z Downloading msys2-libzstd-1.5.7-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libzstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:19.9121500Z Successfully downloaded msys2-libzstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:19.9233528Z Downloading msys2-libreadline-8.3.006-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libreadline-8.3.006-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:20.4240869Z Successfully downloaded msys2-libreadline-8.3.006-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:20.4356062Z Downloading msys2-mpfr-4.2.2-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/mpfr-4.2.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:20.8502437Z Successfully downloaded msys2-mpfr-4.2.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:20.8614507Z Downloading msys2-libpcre-8.45-5-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libpcre-8.45-5-x86_64.pkg.tar.zst
+2026-10-22T03:44:21.2775928Z Successfully downloaded msys2-libpcre-8.45-5-x86_64.pkg.tar.zst
+2026-10-22T03:44:21.2889226Z Downloading msys2-m4-1.4.21-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/m4-1.4.21-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:21.7662154Z Successfully downloaded msys2-m4-1.4.21-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:21.7774104Z Downloading msys2-perl-5.42.3-2-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/perl-5.42.3-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:22.3547084Z Successfully downloaded msys2-perl-5.42.3-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:22.3661263Z Downloading msys2-ncurses-6.6-2-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/ncurses-6.6-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:22.8762172Z Successfully downloaded msys2-ncurses-6.6-2-x86_64.pkg.tar.zst
+2026-10-22T03:44:22.8876175Z Downloading msys2-libxcrypt-4.5.2-1-x86_64.pkg.tar.zst, trying https://mirror.msys2.org/msys/x86_64/libxcrypt-4.5.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:23.3751443Z Successfully downloaded msys2-libxcrypt-4.5.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:44:23.9012238Z -- Applying patch D:/a/bzs861/bzs861/.build-tools/vcpkg/scripts/cmake/compile_wrapper_consider_clang-cl.patch
+2026-10-22T03:44:25.1679624Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/27ddd6925c777801
+2026-10-22T03:44:25.1909084Z -- Using cached msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:44:25.1987384Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:44:25.1992524Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:44:25.2040685Z -- Configuring x64-windows-dbg
+2026-10-22T03:46:13.8761154Z -- Configuring x64-windows-rel
+2026-10-22T03:47:53.6837742Z -- Using cached msys2-autoconf-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:47:53.6841638Z -- Using cached msys2-automake-wrapper-20260320-1-any.pkg.tar.zst
+2026-10-22T03:47:53.6865365Z -- Using cached msys2-autoconf-archive-2024.10.16-1-any.pkg.tar.zst
+2026-10-22T03:47:53.7092243Z -- Using cached msys2-binutils-2.47-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7110994Z -- Using cached msys2-libtool-2.6.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7133604Z -- Using cached msys2-make-4.4.1-3-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7138404Z -- Using cached msys2-which-2.25-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7232953Z -- Using cached msys2-bash-5.3.020-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7360505Z -- Using cached msys2-coreutils-8.32-5-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7381757Z -- Using cached msys2-file-5.48-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7452090Z -- Using cached msys2-gawk-5.4.1-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7466756Z -- Using cached msys2-grep-1~3.0-7-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7474828Z -- Using cached msys2-gzip-1.15-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7493460Z -- Using cached msys2-diffutils-3.12-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7501681Z -- Using cached msys2-pkgconf-3.0.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7514681Z -- Using cached msys2-sed-4.9-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7592042Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7626528Z -- Using cached msys2-autoconf2.73-2.73-1-any.pkg.tar.zst
+2026-10-22T03:47:53.7642619Z -- Using cached msys2-autoconf2.72-2.72-4-any.pkg.tar.zst
+2026-10-22T03:47:53.7665811Z -- Using cached msys2-automake1.16-1.16.5-1-any.pkg.tar.zst
+2026-10-22T03:47:53.7688670Z -- Using cached msys2-automake1.17-1.17-1-any.pkg.tar.zst
+2026-10-22T03:47:53.7712404Z -- Using cached msys2-automake1.18-1.18.1-1-any.pkg.tar.zst
+2026-10-22T03:47:53.7741533Z -- Using cached msys2-libiconv-1.19-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7748092Z -- Using cached msys2-libintl-0.22.5-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7754205Z -- Using cached msys2-zlib-1.3.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7761437Z -- Using cached msys2-zstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7786408Z -- Using cached msys2-findutils-4.11.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7818986Z -- Using cached msys2-tar-1.35-3-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7837143Z -- Using cached msys2-gmp-6.3.0-2-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7879564Z -- Using cached msys2-gcc-libs-15.3.0-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7885176Z -- Using cached msys2-libbz2-1.0.8-4-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7892258Z -- Using cached msys2-liblzma-5.8.4-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7911187Z -- Using cached msys2-libzstd-1.5.7-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7929282Z -- Using cached msys2-libreadline-8.3.006-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7947565Z -- Using cached msys2-mpfr-4.2.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7955302Z -- Using cached msys2-libpcre-8.45-5-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.7968384Z -- Using cached msys2-m4-1.4.21-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.8236379Z -- Using cached msys2-perl-5.42.3-2-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.8285977Z -- Using cached msys2-ncurses-6.6-2-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.8293433Z -- Using cached msys2-libxcrypt-4.5.2-1-x86_64.pkg.tar.zst
+2026-10-22T03:47:53.8304507Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/27ddd6925c777801
+2026-10-22T03:47:53.8538150Z -- Building/Installing x64-windows-dbg
+2026-10-22T03:47:53.8596050Z -- Making target 'all' for x64-windows-dbg
+2026-10-22T03:48:06.5197181Z -- Making target 'install' for x64-windows-dbg
+2026-10-22T03:48:11.9468035Z -- Building/Installing x64-windows-rel
+2026-10-22T03:48:11.9525767Z -- Making target 'all' for x64-windows-rel
+2026-10-22T03:48:25.5765973Z -- Making target 'install' for x64-windows-rel
+2026-10-22T03:48:31.0248995Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/libiconv_x64-windows/share/libiconv/usage
+2026-10-22T03:48:31.0329681Z -- Performing post-build validation
+2026-10-22T03:48:31.0602139Z Starting submission of libiconv:x64-windows@1.19 to 1 binary cache(s) in the background
+2026-10-22T03:48:31.0602975Z Elapsed time to handle libiconv:x64-windows: 4.6 min
+2026-10-22T03:48:31.0603633Z Completed submission of vcpkg-make:x64-windows@2026-07-09#1 to 1 binary cache(s) in 60.6 ms
+2026-10-22T03:48:31.0604144Z Installing 64/67 zlib:x64-windows@1.3.2#2...
+2026-10-22T03:48:31.0604668Z zlib:x64-windows@1.3.2#2 package ABI: f7b187d97178d555a765f221ea7b714f61a9985186d6a1f4ef49f459bbed309a
+2026-10-22T03:48:31.0605185Z Building zlib:x64-windows@1.3.2#2...
+2026-10-22T03:48:31.1076127Z Downloading https://github.com/madler/zlib/archive/v1.3.2.tar.gz -> madler-zlib-v1.3.2.tar.gz
+2026-10-22T03:48:31.5211126Z Successfully downloaded madler-zlib-v1.3.2.tar.gz
+2026-10-22T03:48:31.5285984Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/madler-zlib-v1.3.2.tar.gz
+2026-10-22T03:48:31.6902670Z -- Applying patch 0001-no-version-script-on-ohos.patch
+2026-10-22T03:48:31.7175720Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/zlib/src/v1.3.2-c19a0bfd23.clean
+2026-10-22T03:48:31.7405165Z -- Configuring x64-windows
+2026-10-22T03:48:33.8972863Z -- Building x64-windows-dbg
+2026-10-22T03:48:34.4110957Z -- Building x64-windows-rel
+2026-10-22T03:48:35.4098128Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/zlib_x64-windows/lib/pkgconfig/zlib.pc
+2026-10-22T03:48:35.4216348Z -- Using cached msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:48:35.4295634Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:48:35.4300641Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:48:35.4367497Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/zlib_x64-windows/debug/lib/pkgconfig/zlib.pc
+2026-10-22T03:48:35.4463110Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/zlib_x64-windows/share/zlib/vcpkg-cmake-wrapper.cmake
+2026-10-22T03:48:35.4474493Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/zlib_x64-windows/share/zlib/copyright
+2026-10-22T03:48:35.4526615Z -- Performing post-build validation
+2026-10-22T03:48:35.4772772Z Starting submission of zlib:x64-windows@1.3.2#2 to 1 binary cache(s) in the background
+2026-10-22T03:48:35.4773670Z Elapsed time to handle zlib:x64-windows: 4.4 s
+2026-10-22T03:48:35.4774453Z Completed submission of libiconv:x64-windows@1.19 to 1 binary cache(s) in 264 ms
+2026-10-22T03:48:35.4775261Z Installing 65/67 libxml2[core,iconv,zlib]:x64-windows@2.15.4...
+2026-10-22T03:48:35.4776369Z libxml2[core,iconv,zlib]:x64-windows@2.15.4 package ABI: 943f9bb11eae5bafe48ae8b6bffb3650a09d3e4f93af7aaa435f7f987f7bbc2d
+2026-10-22T03:48:35.4777738Z Building libxml2[core,iconv,zlib]:x64-windows@2.15.4...
+2026-10-22T03:48:35.5633074Z Downloading https://github.com/GNOME/libxml2/archive/v2.15.4.tar.gz -> GNOME-libxml2-v2.15.4.tar.gz
+2026-10-22T03:48:36.0851143Z Successfully downloaded GNOME-libxml2-v2.15.4.tar.gz
+2026-10-22T03:48:36.0976414Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/GNOME-libxml2-v2.15.4.tar.gz
+2026-10-22T03:48:36.6308225Z -- Applying patch cxx-for-icu.diff
+2026-10-22T03:48:36.6576590Z -- Applying patch disable-xml2-config.diff
+2026-10-22T03:48:36.6833416Z -- Applying patch fix_cmakelist.patch
+2026-10-22T03:48:36.7093533Z -- Applying patch fix_ios_compilation.patch
+2026-10-22T03:48:36.7377485Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/libxml2/src/v2.15.4-af70ac4ff8.clean
+2026-10-22T03:48:36.7504100Z -- Using cached msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:48:36.7579251Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:48:36.7583774Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:48:36.7902061Z -- Configuring x64-windows
+2026-10-22T03:48:39.3692974Z -- Building x64-windows-dbg
+2026-10-22T03:48:41.5965967Z -- Building x64-windows-rel
+2026-10-22T03:48:50.0285785Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/libxml2_x64-windows/lib/pkgconfig/libxml-2.0.pc
+2026-10-22T03:48:50.0354965Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/libxml2_x64-windows/debug/lib/pkgconfig/libxml-2.0.pc
+2026-10-22T03:48:50.0462752Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/libxml2_x64-windows/share/libxml2/copyright
+2026-10-22T03:48:50.0515853Z -- Performing post-build validation
+2026-10-22T03:48:50.0935443Z Starting submission of libxml2[core,iconv,zlib]:x64-windows@2.15.4 to 1 binary cache(s) in the background
+2026-10-22T03:48:50.0936088Z Elapsed time to handle libxml2:x64-windows: 15 s
+2026-10-22T03:48:50.0936554Z Completed submission of zlib:x64-windows@1.3.2#2 to 1 binary cache(s) in 136 ms
+2026-10-22T03:48:50.0937023Z Installing 66/67 openssl:x64-windows@3.6.5#2...
+2026-10-22T03:48:50.0937600Z openssl:x64-windows@3.6.5#2 package ABI: 673183270be8a722c76c2be56c46e5388a1e513f053471e2378c874d773cf1aa
+2026-10-22T03:48:50.0938130Z Building openssl:x64-windows@3.6.5#2...
+2026-10-22T03:48:50.2106074Z Downloading https://github.com/openssl/openssl/archive/openssl-3.6.5.tar.gz -> openssl-openssl-openssl-3.6.5.tar.gz
+2026-10-22T03:48:50.9343428Z Successfully downloaded openssl-openssl-openssl-3.6.5.tar.gz
+2026-10-22T03:48:51.1306033Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/openssl-openssl-openssl-3.6.5.tar.gz
+2026-10-22T03:48:52.5136380Z -- Applying patch cmake-config.patch
+2026-10-22T03:48:52.5410138Z -- Applying patch command-line-length.patch
+2026-10-22T03:48:52.5665675Z -- Applying patch script-prefix.patch
+2026-10-22T03:48:52.5919229Z -- Applying patch windows/install-layout.patch
+2026-10-22T03:48:52.6174189Z -- Applying patch windows/install-pdbs.patch
+2026-10-22T03:48:52.6437251Z -- Applying patch windows/install-programs.diff
+2026-10-22T03:48:52.6692686Z -- Applying patch unix/android-cc.patch
+2026-10-22T03:48:52.6949471Z -- Applying patch unix/move-openssldir.patch
+2026-10-22T03:48:52.7206894Z -- Applying patch unix/no-empty-dirs.patch
+2026-10-22T03:48:52.7468488Z -- Applying patch unix/no-static-libs-for-shared.patch
+2026-10-22T03:48:52.7769406Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/openssl/src/nssl-3.6.5-c2a478abe6.clean
+2026-10-22T03:48:52.7967571Z -- Getting CMake variables for x64-windows
+2026-10-22T03:48:53.9248016Z -- Loading CMake variables from D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/openssl/cmake-get-vars_C_CXX-x64-windows.cmake.log
+2026-10-22T03:48:53.9387586Z Downloading https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54221_64bit/strawberry-perl-5.42.2.1-64bit-portable.zip -> strawberry-perl-5.42.2.1-64bit-portable.zip
+2026-10-22T03:48:55.5928410Z Successfully downloaded strawberry-perl-5.42.2.1-64bit-portable.zip
+2026-10-22T03:49:01.7539489Z Downloading nasm-3.01-win64.zip, trying https://www.nasm.us/pub/nasm/releasebuilds/3.01/win64/nasm-3.01-win64.zip
+2026-10-22T03:49:02.2383478Z Successfully downloaded nasm-3.01-win64.zip
+2026-10-22T03:49:02.3914657Z -- Getting CMake variables for x64-windows
+2026-10-22T03:49:03.6188454Z Downloading jom_1_1_7.zip, trying https://download.qt.io/official_releases/jom/jom_1_1_7.zip
+2026-10-22T03:49:04.4379641Z Successfully downloaded jom_1_1_7.zip
+2026-10-22T03:49:07.3303665Z -- Prerunning x64-windows-dbg
+2026-10-22T03:49:27.0943099Z -- Building x64-windows-dbg
+2026-10-22T03:52:08.8465718Z -- Prerunning x64-windows-rel
+2026-10-22T03:52:28.3659759Z -- Building x64-windows-rel
+2026-10-22T03:55:50.0454573Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/lib/pkgconfig/libcrypto.pc
+2026-10-22T03:55:50.0459331Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/lib/pkgconfig/libssl.pc
+2026-10-22T03:55:50.0464217Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/lib/pkgconfig/openssl.pc
+2026-10-22T03:55:50.0583343Z -- Using cached msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:55:50.0661126Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:55:50.0665457Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:55:50.0865090Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/debug/lib/pkgconfig/libcrypto.pc
+2026-10-22T03:55:50.0870620Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/debug/lib/pkgconfig/libssl.pc
+2026-10-22T03:55:50.0875754Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/debug/lib/pkgconfig/openssl.pc
+2026-10-22T03:55:50.1064386Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/share/openssl/usage
+2026-10-22T03:55:50.1074479Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/openssl_x64-windows/share/openssl/copyright
+2026-10-22T03:55:50.1138352Z -- Performing post-build validation
+2026-10-22T03:55:50.2411911Z Starting submission of openssl:x64-windows@3.6.5#2 to 1 binary cache(s) in the background
+2026-10-22T03:55:50.2412932Z Elapsed time to handle openssl:x64-windows: 7 min
+2026-10-22T03:55:50.2414044Z Completed submission of libxml2[core,iconv,zlib]:x64-windows@2.15.4 to 1 binary cache(s) in 502 ms
+2026-10-22T03:55:50.2415080Z Installing 67/67 sqlite3[core,fts5,json1]:x64-windows@3.53.4#2...
+2026-10-22T03:55:50.2416240Z sqlite3[core,fts5,json1]:x64-windows@3.53.4#2 package ABI: fe6bc799630f269136e88d9a66ca0f79edd7eede101886f57d2ea683e5a4c55c
+2026-10-22T03:55:50.2417434Z Building sqlite3[core,fts5,json1]:x64-windows@3.53.4#2...
+2026-10-22T03:55:50.2818679Z Downloading https://sqlite.org/2026/sqlite-autoconf-3530400.tar.gz -> sqlite-autoconf-3530400.tar.gz
+2026-10-22T03:55:50.7891523Z Successfully downloaded sqlite-autoconf-3530400.tar.gz
+2026-10-22T03:55:50.8551143Z -- Extracting source D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/sqlite-autoconf-3530400.tar.gz
+2026-10-22T03:55:51.1454273Z -- Applying patch fix-arm-uwp.patch
+2026-10-22T03:55:51.4259197Z -- Applying patch add-config-include.patch
+2026-10-22T03:55:51.6918865Z -- Using source at D:/a/bzs861/bzs861/.build-tools/vcpkg/buildtrees/sqlite3/src/nf-3530400-891c4575fa.clean
+2026-10-22T03:55:51.7905323Z -- Configuring x64-windows
+2026-10-22T03:55:53.3980747Z -- Building x64-windows-dbg
+2026-10-22T03:55:55.0291948Z -- Building x64-windows-rel
+2026-10-22T03:56:13.2554384Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/sqlite3_x64-windows/lib/pkgconfig/sqlite3.pc
+2026-10-22T03:56:13.2674071Z -- Using cached msys2-mingw-w64-x86_64-pkgconf-1~3.0.7-1-any.pkg.tar.zst
+2026-10-22T03:56:13.2752650Z -- Using cached msys2-msys2-runtime-3.6.10-4-x86_64.pkg.tar.zst
+2026-10-22T03:56:13.2756562Z -- Using msys root at D:/a/bzs861/bzs861/.build-tools/vcpkg/downloads/tools/msys2/d5586eb050429df1
+2026-10-22T03:56:13.2835840Z -- Fixing pkgconfig file: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/sqlite3_x64-windows/debug/lib/pkgconfig/sqlite3.pc
+2026-10-22T03:56:13.3361572Z -- Installing: D:/a/bzs861/bzs861/.build-tools/vcpkg/packages/sqlite3_x64-windows/share/sqlite3/usage
+2026-10-22T03:56:13.3420904Z -- Performing post-build validation
+2026-10-22T03:56:13.3766230Z Starting submission of sqlite3[core,fts5,json1]:x64-windows@3.53.4#2 to 1 binary cache(s) in the background
+2026-10-22T03:56:13.3766931Z Elapsed time to handle sqlite3:x64-windows: 23 s
+2026-10-22T03:56:13.3936081Z Total install time: 14 min
+2026-10-22T03:56:13.3937210Z Installed contents are licensed to you by owners. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+2026-10-22T03:56:13.3939438Z Some packages did not declare an SPDX license. Check the `copyright` file for each package for more information about their licensing.
+2026-10-22T03:56:13.3940727Z Packages installed in this vcpkg installation declare the following licenses:
+2026-10-22T03:56:13.3941481Z Apache-2.0
+2026-10-22T03:56:13.3942200Z BSL-1.0
+2026-10-22T03:56:13.3942682Z MIT
+2026-10-22T03:56:13.3943024Z Zlib
+2026-10-22T03:56:13.3943304Z blessing
+2026-10-22T03:56:13.3943780Z boost-beast is compatible with built-in CMake targets of FindBoost.cmake:
+2026-10-22T03:56:13.3944367Z 
+2026-10-22T03:56:13.3944572Z     find_package(Boost REQUIRED COMPONENTS beast)
+2026-10-22T03:56:13.3950726Z     target_link_libraries(main PRIVATE Boost::beast)
+2026-10-22T03:56:13.3951212Z 
+2026-10-22T03:56:13.3951449Z or the generated cmake configs via:
+2026-10-22T03:56:13.3951769Z 
+2026-10-22T03:56:13.3952009Z     find_package(boost_beast REQUIRED CONFIG)
+2026-10-22T03:56:13.3952489Z     target_link_libraries(main PRIVATE Boost::beast)
+2026-10-22T03:56:13.3952754Z 
+2026-10-22T03:56:13.3952882Z json-c provides CMake targets:
+2026-10-22T03:56:13.3953082Z 
+2026-10-22T03:56:13.3953242Z   # this is heuristically generated, and may not be correct
+2026-10-22T03:56:13.3953620Z   find_package(json-c CONFIG REQUIRED)
+2026-10-22T03:56:13.3954007Z   target_link_libraries(main PRIVATE json-c::json-c)
+2026-10-22T03:56:13.3954235Z 
+2026-10-22T03:56:13.3954366Z json-c provides pkg-config modules:
+2026-10-22T03:56:13.3954551Z 
+2026-10-22T03:56:13.3954682Z   # A JSON implementation in C
+2026-10-22T03:56:13.3954948Z   json-c
+2026-10-22T03:56:13.3955079Z 
+2026-10-22T03:56:13.3955248Z The package libxml2 is compatible with built-in CMake targets:
+2026-10-22T03:56:13.3955535Z 
+2026-10-22T03:56:13.3955635Z     find_package(LibXml2 REQUIRED)
+2026-10-22T03:56:13.3955973Z     target_link_libraries(main PRIVATE LibXml2::LibXml2)
+2026-10-22T03:56:13.3956230Z 
+2026-10-22T03:56:13.3956359Z openssl is compatible with built-in CMake targets:
+2026-10-22T03:56:13.3956601Z 
+2026-10-22T03:56:13.3956760Z   find_package(OpenSSL REQUIRED)
+2026-10-22T03:56:13.3983448Z   target_link_libraries(main PRIVATE OpenSSL::SSL)
+2026-10-22T03:56:13.3984101Z   target_link_libraries(main PRIVATE OpenSSL::Crypto)
+2026-10-22T03:56:13.3984361Z 
+2026-10-22T03:56:13.3984687Z sqlite3 provides pkgconfig bindings.
+2026-10-22T03:56:13.3985323Z sqlite3 provides CMake targets:
+2026-10-22T03:56:13.3985592Z 
+2026-10-22T03:56:13.3985738Z     find_package(unofficial-sqlite3 CONFIG REQUIRED)
+2026-10-22T03:56:13.3986175Z     target_link_libraries(main PRIVATE unofficial::sqlite3::sqlite3)
+2026-10-22T03:56:13.3986477Z 
+2026-10-22T03:56:13.3986704Z Completed submission of openssl:x64-windows@3.6.5#2 to 1 binary cache(s) in 3.3 s
+2026-10-22T03:56:13.3987208Z Waiting for 1 remaining binary cache submissions...
+2026-10-22T03:56:13.9390725Z Completed submission of sqlite3[core,fts5,json1]:x64-windows@3.53.4#2 to 1 binary cache(s) in 562 ms (1/1)
+2026-10-22T03:56:13.9392622Z All requested installations completed successfully in: 14 min
+2026-10-22T03:56:14.0591617Z ##[group]Run cmake -S . -B build-win -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/.build-tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+2026-10-22T03:56:14.0592839Z [36;1mcmake -S . -B build-win -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:GITHUB_WORKSPACE/.build-tools/vcpkg/scripts/buildsystems/vcpkg.cmake"[0m
+2026-10-22T03:56:14.0593575Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T03:56:14.0594007Z [36;1mcmake --build build-win --config Debug --parallel 2[0m
+2026-10-22T03:56:14.0594438Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T03:56:14.0635936Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-22T03:56:14.0636364Z ##[endgroup]
+2026-10-22T03:56:14.3360083Z -- Building for: Visual Studio 17 2022
+2026-10-22T03:56:14.4742440Z -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.20348.
+2026-10-22T03:56:20.4424391Z -- The CXX compiler identification is MSVC 19.44.35229.0
+2026-10-22T03:56:20.6755436Z -- Detecting CXX compiler ABI info
+2026-10-22T03:56:21.5930997Z -- Detecting CXX compiler ABI info - done
+2026-10-22T03:56:21.6071539Z -- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe - skipped
+2026-10-22T03:56:21.6086929Z -- Detecting CXX compile features
+2026-10-22T03:56:21.6138210Z -- Detecting CXX compile features - done
+2026-10-22T03:56:21.6446876Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-10-22T03:56:23.2905661Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+2026-10-22T03:56:23.2906472Z -- Looking for pthread_create in pthreads
+2026-10-22T03:56:24.0379357Z -- Looking for pthread_create in pthreads - not found
+2026-10-22T03:56:24.0380255Z -- Looking for pthread_create in pthread
+2026-10-22T03:56:24.7730450Z -- Looking for pthread_create in pthread - not found
+2026-10-22T03:56:24.7836000Z -- Found Threads: TRUE
+2026-10-22T03:56:25.9932411Z -- Found SQLite3: D:/a/bzs861/bzs861/.build-tools/vcpkg/installed/x64-windows/include (found suitable version "3.53.4", minimum required is "3.38")
+2026-10-22T03:56:26.0213745Z -- Found OpenSSL: optimized;D:/a/bzs861/bzs861/.build-tools/vcpkg/installed/x64-windows/lib/libcrypto.lib;debug;D:/a/bzs861/bzs861/.build-tools/vcpkg/installed/x64-windows/debug/lib/libcrypto.lib (found version "3.6.5") found components: Crypto
+2026-10-22T03:56:28.0699194Z -- Found Python3: C:/hostedtoolcache/windows/Python/3.14.8/x64/python3.exe (found suitable version "3.14.8", minimum required is "3.10") found components: Interpreter
+2026-10-22T03:56:28.1392186Z -- bzs861: worker dependencies not importable by C:/hostedtoolcache/windows/Python/3.14.8/x64/python3.exe; python_worker/e2e_web will be skipped (pip install -e python[test], then -DBZS_PYTHON=<that python>)
+2026-10-22T03:56:28.1439579Z -- Configuring done (13.8s)
+2026-10-22T03:56:28.2836891Z -- Generating done (0.1s)
+2026-10-22T03:56:28.2845168Z -- Build files have been written to: D:/a/bzs861/bzs861/build-win
+2026-10-22T03:56:28.4140526Z MSBuild version 17.14.60+43b635718 for .NET Framework
+2026-10-22T03:56:28.4472476Z 
+2026-10-22T03:56:28.8257759Z   1>Checking Build System
+2026-10-22T03:56:29.0875884Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:56:29.2489197Z   json.cpp
+2026-10-22T03:56:31.7884944Z   util.cpp
+2026-10-22T03:56:33.8100467Z   query.cpp
+2026-10-22T03:56:35.8590873Z   html.cpp
+2026-10-22T03:56:37.8271791Z   tokenizer.cpp
+2026-10-22T03:56:39.8050145Z   highlight.cpp
+2026-10-22T03:56:41.9480955Z   store.cpp
+2026-10-22T03:56:44.2152536Z   sessions.cpp
+2026-10-22T03:56:46.4002271Z   publication.cpp
+2026-10-22T03:56:48.5497561Z   retention.cpp
+2026-10-22T03:56:50.6485591Z   batch.cpp
+2026-10-22T03:56:52.7401873Z   map.cpp
+2026-10-22T03:56:54.9163034Z   crawl.cpp
+2026-10-22T03:56:56.9765335Z   crawl_trap.cpp
+2026-10-22T03:56:59.0782708Z   sites.cpp
+2026-10-22T03:57:01.2550845Z   map_service.cpp
+2026-10-22T03:57:03.4696244Z   contracts.cpp
+2026-10-22T03:57:05.6247465Z   http_cache.cpp
+2026-10-22T03:57:07.6745998Z   web.cpp
+2026-10-22T03:57:10.3908992Z   service.cpp
+2026-10-22T03:57:12.6338599Z   Generating Code...
+2026-10-22T03:57:14.2748678Z   bzs_core.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_core.lib
+2026-10-22T03:57:14.3495783Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.4147937Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.4255589Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.4925316Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.4926984Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.5667023Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.5668633Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.6322142Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:14.6936524Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:15.1386289Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:15.1977386Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:15.2558801Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:15.3138784Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:15.3928050Z   batch.cpp
+2026-10-22T03:57:15.4021610Z   main.cpp
+2026-10-22T03:57:15.4624779Z   main.cpp
+2026-10-22T03:57:19.3758486Z   bzs_batch_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_batch_tests.exe
+2026-10-22T03:57:19.4359291Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\sqlite3.dll -> D:\a\bzs861\bzs861\build-win\Debug\sqlite3.dll done
+2026-10-22T03:57:19.4393697Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\libcrypto-3-x64.dll -> D:\a\bzs861\bzs861\build-win\Debug\libcrypto-3-x64.dll done
+2026-10-22T03:57:19.4407027Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\libxml2.dll -> D:\a\bzs861\bzs861\build-win\Debug\libxml2.dll done
+2026-10-22T03:57:19.4414013Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\zd.dll -> D:\a\bzs861\bzs861\build-win\Debug\zd.dll done
+2026-10-22T03:57:19.4425846Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\iconv-2.dll -> D:\a\bzs861\bzs861\build-win\Debug\iconv-2.dll done
+2026-10-22T03:57:19.4432163Z   D:\a\bzs861\bzs861\.build-tools\vcpkg\installed\x64-windows\debug\bin\json-c.dll -> D:\a\bzs861\bzs861\build-win\Debug\json-c.dll done
+2026-10-22T03:57:19.5043358Z   unit.cpp
+2026-10-22T03:57:21.7195843Z D:\a\bzs861\bzs861\apps\searchctl\main.cpp(26,29): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\a\bzs861\bzs861\build-win\searchctl.vcxproj]
+2026-10-22T03:57:23.8332708Z   bzs_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_tests.exe
+2026-10-22T03:57:23.9538252Z   sessions.cpp
+2026-10-22T03:57:28.1481400Z   bzs_session_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_session_tests.exe
+2026-10-22T03:57:28.2645285Z   retention.cpp
+2026-10-22T03:57:28.3668832Z   fairness.cpp
+2026-10-22T03:57:32.2419247Z   searchd.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\searchd.exe
+2026-10-22T03:57:32.5891715Z   bzs_fairness_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_fairness_tests.exe
+2026-10-22T03:57:32.6999221Z   searchctl.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\searchctl.exe
+2026-10-22T03:57:32.8650650Z   site_publication.cpp
+2026-10-22T03:57:32.8727187Z   revalidation.cpp
+2026-10-22T03:57:32.9598234Z   bzs_retention_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_retention_tests.exe
+2026-10-22T03:57:33.0830865Z   crawl.cpp
+2026-10-22T03:57:36.2620486Z   contracts.cpp
+2026-10-22T03:57:36.9657215Z   bzs_revalidation_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_revalidation_tests.exe
+2026-10-22T03:57:37.3315582Z   bzs_site_publication_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_site_publication_tests.exe
+2026-10-22T03:57:37.4496735Z   map.cpp
+2026-10-22T03:57:38.6259346Z   bzs_crawl_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_crawl_tests.exe
+2026-10-22T03:57:38.7471289Z   capacity_cycles.cpp
+2026-10-22T03:57:39.8366773Z   bzs_contract_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_contract_tests.exe
+2026-10-22T03:57:41.3918166Z   bzs_map_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_map_tests.exe
+2026-10-22T03:57:42.1941152Z   bzs_capacity_cycles_tests.vcxproj -> D:\a\bzs861\bzs861\build-win\Debug\bzs_capacity_cycles_tests.exe
+2026-10-22T03:57:42.2924299Z   Building Custom Rule D:/a/bzs861/bzs861/CMakeLists.txt
+2026-10-22T03:57:42.4707188Z ##[group]Run $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
+2026-10-22T03:57:42.4708628Z [36;1m$env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"[0m
+2026-10-22T03:57:42.4709902Z [36;1mctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|revalidation|capacity_cycles|http_cli)$" --output-on-failure[0m
+2026-10-22T03:57:42.4710959Z [36;1mif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }[0m
+2026-10-22T03:57:42.4750343Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-22T03:57:42.4750747Z ##[endgroup]
+2026-10-22T03:57:43.0708738Z Internal ctest changing into directory: D:/a/bzs861/bzs861/build-win
+2026-10-22T03:57:43.1574437Z Test project D:/a/bzs861/bzs861/build-win
+2026-10-22T03:57:43.1827008Z       Start  1: core
+2026-10-22T03:58:00.0277337Z  1/12 Test  #1: core .............................   Passed   16.84 sec
+2026-10-22T03:58:00.0286432Z       Start  2: batch
+2026-10-22T03:58:04.2712471Z  2/12 Test  #2: batch ............................   Passed    4.24 sec
+2026-10-22T03:58:04.2715819Z       Start  3: map
+2026-10-22T03:58:10.2732241Z  3/12 Test  #3: map ..............................   Passed    6.00 sec
+2026-10-22T03:58:10.2736290Z       Start  4: crawl
+2026-10-22T03:58:47.0080507Z  4/12 Test  #4: crawl ............................   Passed   36.73 sec
+2026-10-22T03:58:47.0084442Z       Start  5: site_publication
+2026-10-22T03:59:19.7676825Z  5/12 Test  #5: site_publication .................   Passed   32.76 sec
+2026-10-22T03:59:19.7680887Z       Start  6: retention
+2026-10-22T03:59:37.1047016Z  6/12 Test  #6: retention ........................   Passed   17.34 sec
+2026-10-22T03:59:37.1050240Z       Start  7: fairness
+2026-10-22T03:59:42.5002132Z  7/12 Test  #7: fairness .........................   Passed    5.39 sec
+2026-10-22T03:59:42.5005857Z       Start  8: sessions
+2026-10-22T04:00:42.5162395Z  8/12 Test  #8: sessions .........................***Timeout  60.01 sec
+2026-10-22T04:00:42.5162767Z 
+2026-10-22T04:00:42.5165726Z       Start  9: revalidation
+2026-10-22T04:00:50.7882712Z  9/12 Test  #9: revalidation .....................   Passed    8.27 sec
+2026-10-22T04:00:50.7886479Z       Start 10: capacity_cycles
+2026-10-22T04:01:56.8583824Z 10/12 Test #10: capacity_cycles ..................   Passed   66.07 sec
+2026-10-22T04:01:56.8587254Z       Start 11: contracts
+2026-10-22T04:01:57.7737049Z 11/12 Test #11: contracts ........................   Passed    0.91 sec
+2026-10-22T04:01:57.7740634Z       Start 12: http_cli
+2026-10-22T04:02:06.9301076Z 12/12 Test #12: http_cli .........................   Passed    9.16 sec
+2026-10-22T04:02:06.9310018Z 
+2026-10-22T04:02:06.9310729Z 92% tests passed, 1 tests failed out of 12
+2026-10-22T04:02:06.9311191Z 
+2026-10-22T04:02:06.9311426Z Total Test time (real) = 263.77 sec
+2026-10-22T04:02:06.9311793Z 
+2026-10-22T04:02:06.9311970Z The following tests FAILED:
+2026-10-22T04:02:06.9313378Z 	  8 - sessions (Timeout)
+2026-10-22T04:02:06.9318167Z Errors while running CTest
+2026-10-22T04:02:06.9860895Z ##[error]Process completed with exit code 1.
+2026-10-22T04:02:07.0141478Z Post job cleanup.
+2026-10-22T04:02:07.2102343Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T04:02:07.2376992Z git version 2.56.0.windows.2
+2026-10-22T04:02:07.2436963Z Temporarily overriding HOME='D:\a\_temp\ad5c6c88-66f7-4c3e-8c5e-e7dc39b3b04b' before making global git config changes
+2026-10-22T04:02:07.2437887Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T04:02:07.2448834Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\bzs861\bzs861\.build-tools\vcpkg
+2026-10-22T04:02:07.2761755Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T04:02:07.3075183Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T04:02:07.8222712Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T04:02:07.8538686Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T04:02:08.3873891Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T04:02:08.4182097Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T04:02:08.9530338Z Post job cleanup.
+2026-10-22T04:02:09.1563587Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-22T04:02:09.1844876Z git version 2.56.0.windows.2
+2026-10-22T04:02:09.1907169Z Temporarily overriding HOME='D:\a\_temp\1271252b-c509-41ba-8679-a315efa09ecb' before making global git config changes
+2026-10-22T04:02:09.1908042Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-22T04:02:09.1919675Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\bzs861\bzs861
+2026-10-22T04:02:09.2233984Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-22T04:02:09.2539311Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-22T04:02:09.7959991Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-22T04:02:09.8353794Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-22T04:02:10.4005511Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-22T04:02:10.4419378Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-22T04:02:10.9873431Z Cleaning up orphan processes
+2026-10-22T04:02:11.0469862Z Terminate orphan process: pid (7852) (vctip)
+2026-10-22T04:02:11.0579884Z Terminate orphan process: pid (6384) (mspdbsrv)
+2026-10-22T04:02:11.0641493Z Terminate orphan process: pid (536) (MSBuild)
+2026-10-22T04:02:11.0785128Z Terminate orphan process: pid (3976) (conhost)
+2026-10-22T04:02:11.0794411Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "review_kind": "independent-static-ci-correction-review-v2",
+  "reviewed_at_utc": "2026-10-22T04:12:20.459723+00:00",
+  "reviewer": "/root/qa_ablation",
+  "baseline_commit": "b88b76302e850499275b0a8ec2db366f282481f1",
+  "candidate_commit": "ffbe9515c9c0349e0eee7a484da85dacced7ad9c",
+  "candidate_tree": "4d6b2af912a33c06daf53f8798d7f70439487a87",
+  "scope": "Read-only comparison of the exact committed three-file CI correction; no new product tests or CI reruns executed by this reviewer.",
+  "changed_paths": [
+    ".github/workflows/ci.yml",
+    "CMakeLists.txt",
+    "tests/sessions.cpp"
+  ],
+  "file_sha256": {
+    ".github/workflows/ci.yml": {
+      "baseline": "bfbce74528774953d075b51f7d67dab4d38e80b872a56a32e70a6b3745eae86a",
+      "candidate": "47489527fb018226ebfd978e77215b8074df9cfcfa682f5dcefa720a07a30e5b"
+    },
+    "CMakeLists.txt": {
+      "baseline": "7937a0f4456e5bcf157ff1a0b74235c3f3f9bc9cc263c977a757afa1fcc479e9",
+      "candidate": "ac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783"
+    },
+    "tests/sessions.cpp": {
+      "baseline": "ddac3ffabf5f71718e8cdf0fc14985af0052f46be63bf9444478cd795f6103d0",
+      "candidate": "b4b3b9bb337d3b095d6542807581b03d99acbb9986bc6a0540226e4046d79260"
+    }
+  },
+  "checks": {
+    "only_three_expected_tracked_files_changed": true,
+    "twenty_one_test_names_and_order_identical": true,
+    "test_names": [
+      "progress_creates_immutable_versions_and_bound_stable_cursors",
+      "events_reconnect_without_duplicates_or_content_replay_and_survive_restart",
+      "cancel_mid_request_fences_late_response_and_preserves_completed_version",
+      "cancel_pending_is_zero_request_and_idempotent",
+      "lost_lease_is_not_resent_and_unknown_accounting_survives_restart",
+      "owner_isolation_invalid_options_and_version_binding",
+      "expired_events_have_explicit_recovery_and_expired_keys_never_reexecute",
+      "frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages",
+      "delete_and_page_restriction_rechecked_without_content_in_event_log",
+      "site_tightening_survives_reopen_and_later_relaxation",
+      "active_session_backpressure_and_expired_detail_reclamation",
+      "local_search_gets_durable_events_and_still_has_snapshot_paging",
+      "expired_local_sessions_release_capacity_for_web_without_local_search",
+      "fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion",
+      "source_policy_drift_stops_pending_work_and_does_not_refund_attempts",
+      "source_duplicate_provenance_keeps_best_rank_through_second_fusion",
+      "permission_epoch_invalidates_replay_and_late_completion",
+      "continuous_new_sessions_cannot_overtake_an_existing_pending_source",
+      "frozen_known_redirect_binding_survives_target_revival_and_route_change",
+      "incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker",
+      "preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read"
+    ],
+    "test_body_exactly_identical_after_only_declared_clock_and_runner_normalization": true,
+    "normalized_body_sha256": "8e8e428b9d0f1412dab289fb488f43266e527eace6d380b793180e46d50aeea8",
+    "normalization": "Exclude main runner; remove added chrono include, exact fixed-clock comment/declaration, and the fixed clock constructor argument at the initial Store and reopen of the storage fixture only.",
+    "assertions_and_existing_control_flow_identical": true,
+    "storage_fixture_dimensions_unchanged": {
+      "sources": 20,
+      "hits_per_source": 30,
+      "result_limit": 50,
+      "storage_ceiling_bytes": 4194304,
+      "payload_string_lengths": [
+        1700,
+        512,
+        1024
+      ],
+      "all_original_assertions_preserved": true
+    },
+    "storage_fixture_clock": "Fixed 1800000000000 milliseconds at initial Store and reopened Store only.",
+    "production_and_real_deadline_e2e_bytes": {
+      "src/sessions.cpp": {
+        "byte_identical": true,
+        "sha256": "51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775"
+      },
+      "tests/e2e_session_recovery.py": {
+        "byte_identical": true,
+        "sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+      }
+    },
+    "windows_ctest_selection_exit_propagation_identical": true,
+    "workflow_only_adds_verbose": true,
+    "cmake_only_changes_windows_sessions_timeout": true,
+    "windows_sessions_timeout_seconds": 180,
+    "non_windows_sessions_timeout_seconds": 60,
+    "new_runner_preserves_test_iteration_exception_failure_count_and_failure_exit": true,
+    "new_runner_outputs_run_pass_fail_with_flush_and_steady_clock_elapsed": true,
+    "skips_removed_tests_weakened_thresholds_or_assertions_added_by_patch": false,
+    "production_library_sha256_observed": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf"
+  },
+  "original_ci_evidence": {
+    "repo": "wmqfl861/bzs861",
+    "run_id": 39718214744,
+    "job_id": 119625336688,
+    "commit": "b88b76302e850499275b0a8ec2db366f282481f1",
+    "conclusion": "failure",
+    "ctest_total": 12,
+    "passed": 11,
+    "timed_out": 1,
+    "skipped": 0,
+    "sessions_timeout_seconds": 60.01,
+    "ctest_total_seconds": 263.77,
+    "raw_log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-b88b763/job-119625336688.log",
+    "raw_log_bytes": 170978,
+    "raw_log_sha256": "80e539ab1817fff1c2d80d675dcfdf6169203b5494d06669fbe1a3f4bbc09db7",
+    "decoded_connector_response": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-b88b763/job-log-response.json",
+    "session_excerpt": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-b88b763/sessions-timeout.log",
+    "review": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-b88b763/review.json",
+    "review_sha256": "1ace308ce7880d70c4d797f0a4c7713d203c96b149dfb5bde0991a21e7712219",
+    "unchanged_historical_evidence": true
+  },
+  "author_reported_local_validation": {
+    "provenance": "Parent report; not independently rerun by this reviewer.",
+    "sessions_tests": 21,
+    "assertions": 283,
+    "failures": 0,
+    "ctest_seconds": 12.07,
+    "storage_fixture_seconds": 11.03,
+    "input_manifest": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/ci-followup-execution-inputs.json"
+  },
+  "independent_test_executions_this_review": 0,
+  "assessment": {
+    "disposition": "Acceptable narrow CI/test-infrastructure correction for publication and actual CI validation.",
+    "acceptance_semantics": "All fixtures, test assertions, production code, 4 MiB quota and 20-by-30 workload preserved. The storage-only fixture now controls its time dependency; separate expiry/lease tests and real-deadline E2E remain unchanged.",
+    "observed_specific_risk_addressed": "The original pure-storage fixture used default 120-second session deadline and default 18-second source lease. Slow I/O could cross those unrelated deadlines, especially with the longer suite watchdog. A fixed clock across reopen prevents that incidental dependency only in this fixture.",
+    "observability": "Flushed RUN/PASS/FAIL and verbose CTest identify the executing case in future failures; elapsed diagnostic uses monotonic steady_clock.",
+    "remaining_conditions": [
+      "New exact-commit Windows CI must actually pass before claiming Windows success.",
+      "Original 60.01-second timeout has no inner case output; these logs do not prove slow hardware or exclude a hang.",
+      "Windows watchdog remains bounded, but hang detection can take 120 seconds longer.",
+      "Static review does not prove absence of deadlocks and does not replace runtime validation.",
+      "283 assertions is the author-reported runtime result; this reviewer verifies unchanged assertion code and 21 registrations without rerunning."
+    ]
+  }
+}
