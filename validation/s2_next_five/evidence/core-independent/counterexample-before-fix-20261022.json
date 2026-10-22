@@ -1,0 +1,18 @@
+{
+  "kind": "independent-core-counterexample",
+  "created_at": "2026-10-22T01:29:28.779537+00:00",
+  "core_candidate_commit": "28b60fdf2836407a9a9d81faa0e2a20129017bf1",
+  "execution_role": "independent_of_core_author",
+  "command": [
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-cases-28b60fd"
+  ],
+  "exit_code": 1,
+  "binary_sha256": "4d3c9e097f2e17fde08f61b217882169737e87b21fa46534097918bc0c14672a",
+  "harness_sha256": "31d665aefbd22054ef549bc10450fa8c1c2cb8512cd78fc21f9bf19205b2603f",
+  "frozen_fixture_sha256": "37808cea345fc7eba75983a1d3cfb2171e2adda827e340844f4eb9295def4c4b",
+  "linked_library_sha256_after_run": "b1c2307afd5229fd2164d85c41105e75231642100ab8a43403f27353d0de7c11",
+  "log_sha256": "1cd9f3938ff56a015ff1435227832d4c3ef76928c94ed51a17ee31a2c380e111",
+  "result": "4 passed; latest denial lost during selective job compaction permits an older rules conditional",
+  "database_mutation": "none; only public submit/execute/compact APIs and injected clock",
+  "network": "synthetic WorkerPort; no external requests"
+}

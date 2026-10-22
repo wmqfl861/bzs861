@@ -1,0 +1,28 @@
+{
+  "role": "independent_review",
+  "argv": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "python/tests/test_evaluation.py",
+    "python/tests/test_evaluation_ablation.py"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-qa-independent",
+  "started_utc": "2026-10-22T01:27:12.323536+00:00",
+  "PYTHONPATH": "/workspace/scratch/80f41eb198a3/bzs861-qa-independent/python",
+  "input_sha256": {
+    "/workspace/scratch/80f41eb198a3/bzs861-qa-independent/python/bzs/evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+    "/workspace/scratch/80f41eb198a3/bzs861-qa-independent/python/bzs/evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+    "/workspace/scratch/80f41eb198a3/bzs861-qa-independent/python/bzs/evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+    "/workspace/scratch/80f41eb198a3/bzs861-qa-independent/python/bzs/cli.py": "8c4b20c27bb8617feba0175a1b3ab26c5507788f2f7eb9cad119795d810d1433"
+  },
+  "source_head": "994d744ea0c5ce5ac96109cf63057a99dc6a9c9b",
+  "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exit_code": 0,
+  "seconds": 2.252,
+  "finished_utc": "2026-10-22T01:27:14.601169+00:00",
+  "log_sha256": "90afa5f8cff720df94804cdb447ba0eb595daf8893fe51b1be5435db9079064b"
+}

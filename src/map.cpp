@@ -1,4 +1,5 @@
 #include "bzs/store.hpp"
+#include "bzs/http_cache.hpp"
 #include "bzs/sites.hpp"
 #include "bzs/publication.hpp"
 #include "bzs/crawl_trap.hpp"
@@ -54,9 +55,11 @@ namespace {
   }
   Json cached_robots(sqlite3* db,const std::string& owner,const std::string& origin,const std::string& digest,
                      std::int64_t now,std::string* id=nullptr) {
-    Sql row(db,"SELECT id,record_json FROM robots_cache WHERE owner=? AND origin=? AND manifest_sha256=? AND fetched_at<=? AND expires_at>? ORDER BY fetched_at DESC,rowid DESC LIMIT 1");
-    row.bind(1,owner);row.bind(2,origin);row.bind(3,digest);row.bind(4,now);row.bind(5,now);
-    if(!row.step())return Json();
+    Sql row(db,"SELECT id,record_json,fetched_at,expires_at FROM robots_cache WHERE owner=? AND origin=? AND manifest_sha256=? ORDER BY fetched_at DESC,rowid DESC LIMIT 1");
+    row.bind(1,owner);row.bind(2,origin);row.bind(3,digest);
+    // A newer short-lived denial invalidates the older allowing decision even
+    // after that denial expires. Expiry means re-fetch, never roll back policy.
+    if(!row.step()||row.num(2)>now||row.num(3)<=now)return Json();
     if(id)*id=row.text(0);
     return Json::parse(row.text(1));
   }
@@ -278,7 +281,7 @@ void Store::reconcile_map_usage_locked(const MapLease& lease,std::int64_t reques
 void Store::settle_map_jobs_locked() {
   Sql rows(db_,"SELECT j.id,j.owner,m.site_id,m.manifest_sha256,m.origin,h.url,r.url,h.kind,h.attempt_id,h.lease_epoch,h.position,r.position,r.depth,r.redirect_hop,r.deletion_generation,h.request_grant,h.byte_grant FROM map_hops h JOIN jobs j ON j.id=h.job_id JOIN map_jobs m ON m.job_id=j.id JOIN map_resources r ON r.job_id=h.job_id AND r.position=h.resource_position WHERE h.state='running' AND j.lease_until<=?");
   rows.bind(1,clock_());std::vector<MapLease> stale;
-  while(rows.step())stale.push_back({rows.text(0),rows.text(1),rows.text(2),rows.text(3),rows.text(4),rows.text(5),rows.text(6),rows.text(7),rows.text(8),rows.num(9),rows.num(10),rows.num(11),rows.num(12),rows.num(13),rows.num(14),rows.num(15),rows.num(16),0,0,{}});
+  while(rows.step())stale.push_back({rows.text(0),rows.text(1),rows.text(2),rows.text(3),rows.text(4),rows.text(5),rows.text(6),rows.text(7),rows.text(8),rows.num(9),rows.num(10),rows.num(11),rows.num(12),rows.num(13),rows.num(14),rows.num(15),rows.num(16),0,0,{},0,{},{}});
   for(const auto& lease:stale) {
     reconcile_map_usage_locked(lease,-1,-1);
     Sql hop(db_,"UPDATE map_hops SET state='failed',error_code='E_EXECUTION_UNKNOWN' WHERE job_id=? AND position=?");hop.bind(1,lease.job_id);hop.bind(2,lease.position);hop.step();
@@ -380,7 +383,24 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     const auto timeout=std::min(job.num(11),job.num(2)-now);
     const auto lease_until=now+std::min(job.num(2)-now,timeout+5000);
     MapLease lease{id,owner,site->id,sites.manifest_digest(),origin,url,logical,kind,random_id(),job.num(1)+1,sequence.num(0),resource.num(0),resource.num(4),resource.num(5),resource.num(6),1,
-        std::min<std::int64_t>(job.num(10),kind=="robots"?512*1024:2*1024*1024),timeout,now+timeout,kind=="robots"?Json():robots};
+        std::min<std::int64_t>(job.num(10),kind=="robots"?512*1024:2*1024*1024),timeout,now+timeout,kind=="robots"?Json():robots,0,{},{}};
+    if(kind=="robots"&&resource.num(5)==0&&url==origin+"/robots.txt") {
+      // Examine the newest decision, including denials without validators.
+      // Never skip a newer failure to resurrect an older allowing record.
+      Sql old(db_,"SELECT id,record_json,http_cache_json FROM robots_cache WHERE owner=? AND origin=? AND manifest_sha256=? ORDER BY fetched_at DESC,rowid DESC LIMIT 1");
+      old.bind(1,owner);old.bind(2,origin);old.bind(3,sites.manifest_digest());
+      if(old.step()) {
+        const auto record=Json::parse(old.text(1));
+        if(record.at("state").str()=="rules"&&record.at("fetched_at_ms").num()<=now&&old.text(2)!="{}") {
+          try {
+            const auto cache=validate_http_cache(Json::parse(old.text(2)),url);
+            robots_id=old.text(0);robots=record;
+            lease.conditional=http_conditional(cache,sha256(owner+"\n"+robots_id+"\n"+sha256(cache.canonical())+"\n"+sha256(record.canonical())+"\n"+sites.manifest_digest()));
+            lease.robots_revalidation_base=Json::object();lease.robots_revalidation_base.set("record",record);lease.robots_revalidation_base.set("http_cache",cache);
+          } catch(const Error&) { /* A legacy or incompatible record needs a full fetch. */ }
+        }
+      }
+    }
     lease.publication_sequence=resource.num(10)<0?publication_sequence_locked():resource.num(10);
     if(kind=="page"&&resource.num(10)<0) {
       Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,logical);
@@ -395,6 +415,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
     Sql current_page(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current_page.bind(1,owner);current_page.bind(2,url);
     admission.set("publication_snapshot_id",current_page.step()?current_page.text(0):"");
     admission.set("publication_sequence",lease.publication_sequence);
+    if(!lease.conditional.is_null())admission.set("conditional",lease.conditional);
     Sql hop(db_,"INSERT INTO map_hops(job_id,position,resource_position,url,kind,attempt_id,lease_epoch,state,byte_grant,request_grant,admission_json)VALUES(?,?,?,?,?,?,?,'running',?,1,?)");
     hop.bind(1,id);hop.bind(2,lease.position);hop.bind(3,lease.resource_position);hop.bind(4,url);hop.bind(5,kind);hop.bind(6,lease.attempt_id);hop.bind(7,lease.epoch);hop.bind(8,lease.byte_grant);hop.bind(9,admission.dump());hop.step();
     const auto dispatch_sequence=next_queue_sequence(db_);
@@ -441,6 +462,7 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
   if(error.empty()&&crawl)crawl_trap_ensure(db_,lease.job_id);
   reconcile_map_usage_locked(lease,requests,bytes);
   const auto status=response.at("status").str();std::string next="succeeded";
+  bool follow_allowed=!parsed||parsed->publication.at("follow_allowed").flag();
   auto receipt=Json::object();receipt.set("status",status);receipt.set("http_status",response.at("http_status"));
   if(response.has("robots_decision"))receipt.set("robots_decision",response.at("robots_decision"));
   receipt.set("url",lease.url);receipt.set("external_requests",requests);receipt.set("content_bytes",bytes);
@@ -491,10 +513,23 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
     }
   } else if(error.empty()&&lease.kind=="robots"&&response.has("robots")) {
     auto record=response.at("robots");const auto encoded=record.dump();
+    Json cache=Json::object();
+    if(response.has("http_cache"))cache=validate_http_cache(response.at("http_cache"),lease.url);
+    if(status=="not_modified") {
+      Sql bound(db_,"SELECT admission_json FROM map_hops WHERE job_id=? AND position=?");bound.bind(1,lease.job_id);bound.bind(2,lease.position);bound.step();
+      const auto admission=Json::parse(bound.text(0));
+      require(admission.has("conditional")&&admission.at("conditional").canonical()==lease.conditional.canonical(),"E_WORKER_PROTOCOL","Robots revalidation grant changed",502);
+      Sql old(db_,"SELECT id,record_json,http_cache_json FROM robots_cache WHERE owner=? AND origin=? AND manifest_sha256=? ORDER BY fetched_at DESC,rowid DESC LIMIT 1");
+      old.bind(1,lease.owner);old.bind(2,lease.origin);old.bind(3,lease.manifest_sha256);
+      require(old.step()&&old.text(0)==admission.at("robots_cache_id").str()&&Json::parse(old.text(1)).canonical()==lease.robots_revalidation_base.at("record").canonical()&&
+              Json::parse(old.text(2)).canonical()==lease.robots_revalidation_base.at("http_cache").canonical(),"E_REVALIDATION_STALE","Robots revalidation base is no longer current",409);
+      cache=merge_http_cache(lease.robots_revalidation_base.at("http_cache"),cache);
+      receipt.set("revalidated",true);receipt.set("revalidation_base_cache_id",old.text(0));
+    }
     if(count(db_,"SELECT COUNT(*) FROM robots_cache")>=512)error="E_QUOTA";
     else {
-      auto cache_id=random_id();Sql save(db_,"INSERT INTO robots_cache(id,owner,origin,manifest_sha256,record_json,fetched_at,expires_at)VALUES(?,?,?,?,?,?,?)");
-      save.bind(1,cache_id);save.bind(2,lease.owner);save.bind(3,lease.origin);save.bind(4,lease.manifest_sha256);save.bind(5,encoded);save.bind(6,record.at("fetched_at_ms").num());save.bind(7,record.at("expires_at_ms").num());save.step();
+      auto cache_id=random_id();Sql save(db_,"INSERT INTO robots_cache(id,owner,origin,manifest_sha256,record_json,fetched_at,expires_at,http_cache_json)VALUES(?,?,?,?,?,?,?,?)");
+      save.bind(1,cache_id);save.bind(2,lease.owner);save.bind(3,lease.origin);save.bind(4,lease.manifest_sha256);save.bind(5,encoded);save.bind(6,record.at("fetched_at_ms").num());save.bind(7,record.at("expires_at_ms").num());save.bind(8,cache.canonical());save.step();
       receipt.set("robots_cache_id",cache_id);receipt.set("robots_sha256",sha256(record.canonical()));
       // Sitemap declarations are discovery documents, unlike ordinary links.
       auto maps=record.at("sitemaps");
@@ -507,8 +542,8 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         map_resource_locked(lease.job_id,lease.owner,url,"sitemap",0);
       }
     }
-    if(status!="ok"&&error.empty())error=response.at("error_code").str();
-  } else if(error.empty()&&status=="ok"&&lease.kind!="robots") {
+    if(status!="ok"&&status!="not_modified"&&error.empty())error=response.at("error_code").str();
+  } else if(error.empty()&&(status=="ok"||status=="not_modified")&&lease.kind!="robots") {
     auto discovery=response.at("discovery");
     if(discovery.at("parse_status").str()!="ok")error="E_DISCOVERY_PARSE";
     else {
@@ -536,6 +571,7 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
           if(admission.has("publication_snapshot_id"))fence.set("snapshot_id",admission.at("publication_snapshot_id"));
           page_meta.set("publication_fence",fence);
           snapshot=ingest_web_locked(lease.owner,*page,*parsed,page_meta,generation,true);
+          follow_allowed=snapshot.at("publication").at("follow_allowed").flag();
           checked(sqlite3_exec(db_,"RELEASE crawl_body",nullptr,nullptr,nullptr));
         } catch(const Error& failure) {
           checked(sqlite3_exec(db_,"ROLLBACK TO crawl_body",nullptr,nullptr,nullptr));checked(sqlite3_exec(db_,"RELEASE crawl_body",nullptr,nullptr,nullptr));
@@ -568,6 +604,7 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         }
         auto page_receipt=Json::object();page_receipt.set("snapshot_id",snapshot.at("snapshot_id"));page_receipt.set("document_id",snapshot.at("document_id"));
         page_receipt.set("final_url",lease.url);page_receipt.set("revision",snapshot.at("revision"));page_receipt.set("body_read",true);
+        if(status=="not_modified")page_receipt.set("revalidated",true);
         auto policy=Json::object();const auto stored_policy=snapshot.at("publication");for(const auto& key:stored_policy.keys())if(key!="snippet_text"&&key!="snippet_title")policy.set(key,stored_policy.at(key));
         page_receipt.set("publication",policy);
         const auto trap=crawl_trap_observe_body(db_,lease.job_id,lease.url,parsed->text);
@@ -588,7 +625,7 @@ bool Store::complete_map(const MapLease& lease,const Json& response,const SiteRe
         std::string blocked;
         CrawlTrapDecision trap;
         if(candidate.at("depth").num()>config.num(2))blocked="E_MAP_DEPTH_LIMIT";
-        if(crawl&&lease.kind=="page"&&!parsed->publication.at("follow_allowed").flag())blocked="E_NOFOLLOW";
+        if(crawl&&lease.kind=="page"&&!follow_allowed)blocked="E_NOFOLLOW";
         if(crawl&&blocked.empty()) {
           trap=crawl_trap_decide(db_,lease.job_id,url,candidate.at("parent").str());
           if(trap)blocked=trap.reason;

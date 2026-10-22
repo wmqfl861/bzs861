@@ -1,0 +1,68 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /workspace/scratch/80f41eb198a3/build-bzs-next
+[1/2] Building CXX object CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o
+FAILED: CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o 
+/usr/bin/c++ -DBZS_VERSION=\"0.1.8\" -I/workspace/scratch/80f41eb198a3/bzs861/include -g -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -MD -MT CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o -MF CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o.d -o CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o -c /workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:62:6: error: expected unqualified-id before numeric constant
+   62 | TEST(304_does_not_overwrite_a_concurrent_full_replacement){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[&](const Json&,Json r){s.ingest("alice",{url(),"new authorized import","text/plain","new"});return r;};rejects([&]{web.read("alice",read_args());},"E_REVALIDATION_STALE");CHECK(s.cached("alice",url())->at("canonical_text").str()=="new authorized import");}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:25: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                         ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:62:6: error: unable to find numeric literal operator ‘operator""_does_not_overwrite_a_concurrent_full_replacement’
+   62 | TEST(304_does_not_overwrite_a_concurrent_full_replacement){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[&](const Json&,Json r){s.ingest("alice",{url(),"new authorized import","text/plain","new"});return r;};rejects([&]{web.read("alice",read_args());},"E_REVALIDATION_STALE");CHECK(s.cached("alice",url())->at("canonical_text").str()=="new authorized import");}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:58: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                          ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:62:6: note: use ‘-fext-numeric-literals’ to enable more built-in suffixes
+   62 | TEST(304_does_not_overwrite_a_concurrent_full_replacement){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[&](const Json&,Json r){s.ingest("alice",{url(),"new authorized import","text/plain","new"});return r;};rejects([&]{web.read("alice",read_args());},"E_REVALIDATION_STALE");CHECK(s.cached("alice",url())->at("canonical_text").str()=="new authorized import");}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:58: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                          ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:62:6: error: expected unqualified-id before numeric constant
+   62 | TEST(304_does_not_overwrite_a_concurrent_full_replacement){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[&](const Json&,Json r){s.ingest("alice",{url(),"new authorized import","text/plain","new"});return r;};rejects([&]{web.read("alice",read_args());},"E_REVALIDATION_STALE");CHECK(s.cached("alice",url())->at("canonical_text").str()=="new authorized import");}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:69: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                                     ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:65:6: error: expected unqualified-id before numeric constant
+   65 | TEST(304_header_can_tighten_but_never_clear_cached_meta_directives){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[](const Json&,Json r){r.set("publication_observation",restriction("nosnippet"));return r;};auto limited=web.read("alice",read_args());CHECK(!s.snapshot("alice",limited.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());w.alter={};auto again=web.read("alice",read_args());CHECK(!s.snapshot("alice",again.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:25: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                         ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:65:6: error: unable to find numeric literal operator ‘operator""_header_can_tighten_but_never_clear_cached_meta_directives’
+   65 | TEST(304_header_can_tighten_but_never_clear_cached_meta_directives){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[](const Json&,Json r){r.set("publication_observation",restriction("nosnippet"));return r;};auto limited=web.read("alice",read_args());CHECK(!s.snapshot("alice",limited.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());w.alter={};auto again=web.read("alice",read_args());CHECK(!s.snapshot("alice",again.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:58: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                          ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:65:6: note: use ‘-fext-numeric-literals’ to enable more built-in suffixes
+   65 | TEST(304_header_can_tighten_but_never_clear_cached_meta_directives){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[](const Json&,Json r){r.set("publication_observation",restriction("nosnippet"));return r;};auto limited=web.read("alice",read_args());CHECK(!s.snapshot("alice",limited.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());w.alter={};auto again=web.read("alice",read_args());CHECK(!s.snapshot("alice",again.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:58: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                          ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:65:6: error: expected unqualified-id before numeric constant
+   65 | TEST(304_header_can_tighten_but_never_clear_cached_meta_directives){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[](const Json&,Json r){r.set("publication_observation",restriction("nosnippet"));return r;};auto limited=web.read("alice",read_args());CHECK(!s.snapshot("alice",limited.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());w.alter={};auto again=web.read("alice",read_args());CHECK(!s.snapshot("alice",again.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());}
+      |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:69: note: in definition of macro ‘TEST’
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                                                     ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:36: warning: ‘{anonymous}::register_304_header_can_tighten_but_never_clear_cached_meta_directives’ defined but not used [-Wunused-variable]
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                    ^~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:65:1: note: in expansion of macro ‘TEST’
+   65 | TEST(304_header_can_tighten_but_never_clear_cached_meta_directives){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[](const Json&,Json r){r.set("publication_observation",restriction("nosnippet"));return r;};auto limited=web.read("alice",read_args());CHECK(!s.snapshot("alice",limited.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());w.alter={};auto again=web.read("alice",read_args());CHECK(!s.snapshot("alice",again.at("snapshot_id").str()).at("publication").at("snippet_allowed").flag());}
+      | ^~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:17:36: warning: ‘{anonymous}::register_304_does_not_overwrite_a_concurrent_full_replacement’ defined but not used [-Wunused-variable]
+   17 | #define TEST(name) void name();Add register_##name(#name,name);void name()
+      |                                    ^~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/tests/revalidation.cpp:62:1: note: in expansion of macro ‘TEST’
+   62 | TEST(304_does_not_overwrite_a_concurrent_full_replacement){Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("alice",read_args());w.alter=[&](const Json&,Json r){s.ingest("alice",{url(),"new authorized import","text/plain","new"});return r;};rejects([&]{web.read("alice",read_args());},"E_REVALIDATION_STALE");CHECK(s.cached("alice",url())->at("canonical_text").str()=="new authorized import");}
+      | ^~~~
+ninja: build stopped: subcommand failed.

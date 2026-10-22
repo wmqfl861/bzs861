@@ -1,0 +1,119 @@
+test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant) ... ERROR
+test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery) ... ERROR
+test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart) ... ERROR
+test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content) ... ERROR
+test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation) ... ERROR
+test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator) ... ERROR
+
+======================================================================
+ERROR: test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+======================================================================
+ERROR: test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+======================================================================
+ERROR: test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+======================================================================
+ERROR: test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+======================================================================
+ERROR: test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+======================================================================
+ERROR: test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 136, in setUp
+    self.stack.__init__(Path(self.tmp.name), self.fixture)
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 113, in __init__
+    self.worker_port = self.spawn("worker", [CONFIG.python, "-m", "bzs.worker.server", "--port", "0",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 88, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+E_CONFIG: invalid source URL or credentials in authority
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.015s
+
+FAILED (errors=6)

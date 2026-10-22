@@ -1,0 +1,20 @@
+test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant) ... ok
+test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery) ... ok
+test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart) ... ok
+test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content) ... ok
+test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation) ... ERROR
+test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator) ... ok
+
+======================================================================
+ERROR: test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/80f41eb198a3/bzs861/tests/e2e_revalidation.py", line 237, in test_rejected_304_still_applies_new_noindex_observation
+    self.assertEqual(results["total_candidates"], 0, results)
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+KeyError: 'total_candidates'
+
+----------------------------------------------------------------------
+Ran 6 tests in 8.541s
+
+FAILED (errors=1)

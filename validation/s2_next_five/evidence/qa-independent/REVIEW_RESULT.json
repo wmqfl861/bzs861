@@ -1,0 +1,111 @@
+{
+  "artifact_sha256": {
+    "focused_tests.json": "1a2bad7509dd3d8d2b5d1534ad64d79dab7f0906a824e600c3b2c667b354aeb9",
+    "focused_tests.log": "4b6a4b31ebc9eac2bd396a4ed4f9c6107b8168afa7d5a99e0c7d04002abfcba3",
+    "frozen_inputs.json": "7846c116d45fca42de0424e361b36ad723cc2d2400e1581cc10165d794bcdba5",
+    "independent_probes_final.json": "a6a7fa948ccbc07afc6c3f26d2d38a3cd7f6f16eb67b326af986d4b1ff392384",
+    "independent_probes_final.log": "033fb2c250179ef897c71b5e827c29cc42a4963d2e60fca95af2a591d57b8fd8",
+    "independent_probes_first.json": "8824330a69af9fc5f3dc6e9624b50e48cdb6fd4c0838b50954f1a4307c837ca4",
+    "independent_probes_first.log": "4ffc8802f8d304df66e093420224afd5e7cbd98f7a8caa8de709c066ec6bb9ac",
+    "record_run.py": "affe6f33aa1910e6dbcea23ec4244a8357f6a242f4ba6b0bda74f561aa0b9eba",
+    "test_independent_ablation.py": "9a2843912b14786b67475178617e19f3bff58b8e053307ed49739ac3182cc74c"
+  },
+  "checks": [
+    {
+      "evidence": "Independent mathematical oracle includes a grade-2 document ranked twelfth in base and removed from ablation; omitting its dev-b judgment keeps 36 expected pairs and null full-group deltas.",
+      "result": "preserved",
+      "topic": "Full original query-pool IDCG and missing labels"
+    },
+    {
+      "evidence": "All three source-b2 query rows removed or changed to failed/unavailable prevent comparison and exclusive attribution even though another adapter covers every candidate; explicit empty remains known.",
+      "result": "distinct_and_blocking_as_required",
+      "topic": "Whole source absent / failed / unavailable / empty"
+    },
+    {
+      "evidence": "Known same-family adapters group together; unknown same provider/capability/service groups together, while distinct providers/services or capabilities remain distinct; independent_evidence_count stays null.",
+      "result": "no_adapter_vote_or_independence_claim",
+      "topic": "Known family and unknown service identity"
+    },
+    {
+      "evidence": "Independent digest formula agrees; changing rank positions 11/12, a failure reason, or a whole query row invalidates the existing digest; mismatched pair environment remains rejected.",
+      "result": "complete_output_and_identity_bound",
+      "topic": "External output digest and pair comparability"
+    },
+    {
+      "evidence": "Six independent cases recompute outer package hashes but still reject removed-source-only evidence, an omitted declared source identity, or incomparable pair environment before generating output.",
+      "result": "manifest_constraints_revalidated",
+      "topic": "Repacked package at freeze and run"
+    },
+    {
+      "evidence": "Setting freeze.status=frozen and clearing its blockers cannot hide an absent source or 36 unjudged pairs; quality and release remain blocked.",
+      "result": "blocked_recomputed",
+      "topic": "Unjudged labels and altered freeze status"
+    },
+    {
+      "evidence": "Known-empty external run is scored diagnostically; a missing run remains blocked with no reconstruction; a nonempty result from zero surviving sources is rejected.",
+      "result": "requires_real_explicit_empty_or_blocks",
+      "topic": "Removal of all sources"
+    },
+    {
+      "evidence": "Explicit bzs-relevance-2 migration is documented; legacy method is rejected; CLI passes optional manifest and only produces unjudged templates.",
+      "result": "covered_by_review_and_focused_suite",
+      "topic": "Method migration and actual CLI"
+    }
+  ],
+  "comparison_base": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "completed_utc": "2026-10-22T01:33:42.639819+00:00",
+  "limitations": [
+    "This is a scoped independent automated/static review of the QA module, not acceptance of QA-02, FT-042, C-14 or any development stage.",
+    "Synthetic arithmetic and fixtures only; no authentic human labels, real source outputs, holdout evidence, source approval, network probes, C++ fusion replay, or user-target performance are established.",
+    "The reviewed contract binds operator-supplied declarations and outputs; hashes do not authenticate providers, pre-execution timing, human authorship, or source independence.",
+    "Whole-repository integration, production execution, and final release evidence remain the parent task scope."
+  ],
+  "main_worktree_modified": false,
+  "outcome": "no_blocking_product_findings_in_reviewed_scope",
+  "probe_authoring_correction": {
+    "failed": 4,
+    "passed": 13,
+    "product_defect": false,
+    "reason": "Reviewer initially read status/reason from contributions.sources, while the documented report stores outcomes in contributions.source_outcomes.",
+    "resolution": "Corrected only the independent test assertion path and added all-source-removal cases. No product files changed.",
+    "retained_run": "independent_probes_first"
+  },
+  "product_edits": [],
+  "product_findings": [],
+  "review_committed_or_pushed": false,
+  "review_worktree_status": "clean",
+  "reviewed_author_commit": "6fcd691a86c11fab744f217e4b799582dcd13164",
+  "reviewed_integrated_commit": "994d744ea0c5ce5ac96109cf63057a99dc6a9c9b",
+  "reviewer_task": "/root/session_faults",
+  "role": "independent_review",
+  "runtime_scope": [
+    {
+      "files": [
+        "python/tests/test_evaluation.py",
+        "python/tests/test_evaluation_ablation.py"
+      ],
+      "pytest_seconds": 2.0,
+      "recorded_wall_seconds": 2.252,
+      "run": "focused_tests",
+      "tests_passed": 128
+    },
+    {
+      "files": [
+        "test_independent_ablation.py"
+      ],
+      "fixture_origin": "Reviewer-written independent 3-query / 12-document synthetic fixture; no import of author tests or score_ranking arithmetic oracle.",
+      "pytest_seconds": 0.33,
+      "recorded_wall_seconds": 0.586,
+      "run": "independent_probes_final",
+      "tests_passed": 20
+    }
+  ],
+  "static_review_scope": [
+    "Entire new evaluation_ablation.py and test_evaluation_ablation.py compared with 2c536e9.",
+    "evaluation.py integration changes plus runtime identity, prepare, freeze, full-pool metric scoring, system aggregation, baseline compatibility, run quality/release gates, and report output.",
+    "evaluation_format.py method version and package revalidation changes, with candidate/pool/run schema, hashes, golden projection binding, gate and label validators.",
+    "Both CLI changes: --ablation-manifest parser declaration and prepare dispatch argument.",
+    "RELEVANCE_EVALUATION.md contract and explicit non-authentication / non-replay / blocked release scope.",
+    "All seven frozen QA files verified byte-identical to author commit and unchanged after review."
+  ]
+}

@@ -162,15 +162,15 @@ TEST(robots_receipt_and_admission_each_pin_the_exact_expired_record) {
 
 TEST(expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive) {
   Temp temp;std::int64_t now=1700000000000;Store store(temp.path/"db",[&]{return now;});
-  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<10) INSERT INTO robots_cache SELECT 'expired-'||x,'alice','https://other.example','old','{}',0,1 FROM n");
-  sql(store.raw_handle(),"INSERT INTO robots_cache VALUES('fresh','alice','https://fresh.example','old','{}',0,9223372036854775807),('other-owner','bob','https://other.example','old','{}',0,1)");
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<10) INSERT INTO robots_cache(id,owner,origin,manifest_sha256,record_json,fetched_at,expires_at) SELECT 'expired-'||x,'alice','https://other.example','old','{}',0,1 FROM n");
+  sql(store.raw_handle(),"INSERT INTO robots_cache(id,owner,origin,manifest_sha256,record_json,fetched_at,expires_at) VALUES('fresh','alice','https://fresh.example','old','{}',0,9223372036854775807),('other-owner','bob','https://other.example','old','{}',0,1)");
   const auto one=store.compact_jobs("alice",1);CHECK(one.at("deleted_robots_records").num()==4);CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM robots_cache")==8);
   store.compact_jobs("alice",64);CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM robots_cache")==2);CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM robots_cache WHERE id IN ('fresh','other-owner')")==2);
 }
 
 TEST(robots_capacity_can_recover_at_admission_without_erasing_origin_accounting) {
   Temp temp;Fake f;Store store(temp.path/"db",[&]{return f.now;});WebService web(store,f,{},SiteRegistry(manifest()));const auto id=web.submit_map("alice",args()).at("job_id").str();
-  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<512) INSERT INTO robots_cache SELECT 'expired-'||x,'alice','https://other.example','old','{}',0,1 FROM n");
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<512) INSERT INTO robots_cache(id,owner,origin,manifest_sha256,record_json,fetched_at,expires_at) SELECT 'expired-'||x,'alice','https://other.example','old','{}',0,1 FROM n");
   drain(web);CHECK(f.calls==2);CHECK(store.job_get("alice",id).at("state").str()=="succeeded");CHECK(count(store.raw_handle(),"SELECT requests FROM site_request_state")==2);CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM robots_cache")==449);
 }
 
@@ -211,7 +211,7 @@ TEST(schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins) {
     Store store(temp.path/"db",[&]{return f.now;});const auto doc=store.ingest("alice",{"https://import.example/a","retention import","text/plain","import"});snapshot=doc.at("snapshot_id").str();proof=store.evidence("alice",snapshot,0,9).at("evidence_id").str();id=store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("job_id").str();store.job_control("alice",id,"pause");
     sql(store.raw_handle(),"DROP INDEX jobs_retention; DROP INDEX robots_retention; DROP INDEX map_hops_robots_admission; DROP INDEX map_hops_robots_receipt; ALTER TABLE jobs DROP COLUMN archive_json; ALTER TABLE jobs DROP COLUMN archived_at; PRAGMA user_version=8");
   }
-  Store store(temp.path/"db",[&]{return f.now;});CHECK(count(store.raw_handle(),"PRAGMA user_version")==11);CHECK(store.job_get("alice",id).at("state").str()=="paused");CHECK(store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("reused").flag());f.now+=week+86400000;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()=="retention import");CHECK(store.evidence_get("alice",proof).at("quote").str()=="retention");
+  Store store(temp.path/"db",[&]{return f.now;});CHECK(count(store.raw_handle(),"PRAGMA user_version")==12);CHECK(store.job_get("alice",id).at("state").str()=="paused");CHECK(store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("reused").flag());f.now+=week+86400000;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()=="retention import");CHECK(store.evidence_get("alice",proof).at("quote").str()=="retention");
 }
 
 TEST(permanent_key_quotas_remain_bounded_per_owner_and_globally) {
@@ -234,7 +234,7 @@ TEST(two_store_compactors_serialize_without_duplicate_summaries_or_charges) {
 TEST(compacted_backups_keep_the_restore_quarantine_gate) {
   Temp temp;std::int64_t now=1700000000000;Store store(temp.path/"db",[&]{return now;});const auto id=store.read_many_submit("alice",{"https://read.example/backup"},"backup",{}).at("job_id").str();store.job_control("alice",id,"cancel");now+=week+86400000;store.compact_jobs("alice");
   const auto backup=temp.path/"backup.db";store.backup(backup);rejects([&]{Store forbidden(backup,[&]{return now;});},"E_RESTORE_QUARANTINED",409);
-  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,"PRAGMA user_version")==11);CHECK(count(raw,"SELECT COUNT(*) FROM jobs WHERE archived_at>0")==1);CHECK(count(raw,"SELECT COUNT(*) FROM read_job_items")==0);
+  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,"PRAGMA user_version")==12);CHECK(count(raw,"SELECT COUNT(*) FROM jobs WHERE archived_at>0")==1);CHECK(count(raw,"SELECT COUNT(*) FROM read_job_items")==0);
 }
 
 TEST(rpc_is_available_offline_and_validates_raw_limit_and_unknown_parameters) {

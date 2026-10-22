@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="19"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="aa22a8ee8b7d"
+	time="138"
+	timestamp="2026-10-21T18:53:57"
+	>
+	<testcase name="core" classname="core" time="2.2623" status="run">
+		<properties/>
+		<system-out>PASS json_roundtrip
+PASS json_duplicate_keys
+PASS json_malformed
+PASS json_strict_types
+PASS json_depth_limit
+PASS json_scalar_unicode_and_ranges
+PASS utf8_boundaries
+PASS hash_and_random
+PASS metadata_urls
+PASS query_symbols
+PASS query_boolean
+PASS query_phrases
+PASS query_fields
+PASS query_quoted_directives
+PASS query_ast
+PASS query_errors
+PASS query_chinese
+PASS query_flat_conjunction
+PASS html_main_code
+PASS html_noindex
+PASS html_selected_subtree
+PASS html_hidden_ancestors
+PASS html_robots_tokens
+PASS html_guards
+PASS document_limits
+PASS store_snapshots
+PASS store_owner_isolation
+PASS store_search
+PASS store_candidate_predicate_agreement
+PASS store_updates_index
+PASS store_noindex
+PASS session_stable
+PASS session_cursor_isolation
+PASS delete_revokes_paths
+PASS evidence_boundaries
+PASS search_budget_partial
+PASS reopen_data
+PASS migrate_schema_one_preserves_records
+PASS migration_rejects_quarantined_and_newer_databases
+PASS job_idempotency
+PASS job_controls
+PASS job_lease_fencing
+PASS job_pause_fencing
+P...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="batch" classname="batch" time="0.530253" status="run">
+		<properties/>
+		<system-out>PASS ten_explicit_inputs_only_and_ordered_receipts
+PASS input_budget_validation_and_owner_scope
+PASS execution_identity_does_not_use_search_deduplication
+PASS errors_are_isolated_and_default_attempts_do_not_retry
+PASS completed_items_survive_pause_restart_resume_without_refetch
+PASS pause_or_cancel_during_fetch_fences_late_publication
+PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+PASS deletion_before_dispatch_stops_only_its_target
+PASS unknown_execution_keeps_grants_across_recovery
+PASS request_and_byte_budgets_stop_unstarted_items
+PASS lease_expiry_and_permission_changes_refuse_late_results
+PASS receipt_failure_rolls_back_snapshot_and_index
+PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+PASS noindex_and_deleted_receipts_never_resurrect_content
+PASS api_dispatch_and_fixture_jobs_coexist
+PASS deadline_near_int64_max_does_not_overflow_lease
+PASS schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index
+PASS schema_three_quarantine_is_rejected_before_new_tables
+18 b...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="map" classname="map" time="0.875353" status="run">
+		<properties/>
+		<system-out>PASS empty_sites_default_and_strict_independent_review
+PASS registry_origin_limits_and_exact_uri_identity
+PASS input_validation_idempotency_and_owner_only_jobs
+PASS robots_precedes_discovery_and_html_is_candidates_only
+PASS optional_bad_candidates_and_sitemaps_do_not_poison_valid_results
+PASS sitemap_index_children_only_are_queued_once
+PASS url_depth_and_fixed_query_variant_budgets_report_partial
+PASS history_is_owner_scoped_and_deletion_never_revives_candidates
+PASS history_alias_tombstone_remains_bound_to_original_document
+PASS each_redirect_hop_gets_new_persistent_grant_and_same_origin_scope
+PASS late_results_after_logical_or_redirect_target_deletion_are_fenced
+PASS pause_cancel_fences_dispatch_and_late_publication
+PASS completed_resources_and_robots_cache_survive_restart_without_refetch
+PASS unknown_dispatched_step_remains_charged_and_is_not_retried
+PASS robots_and_content_share_request_and_byte_totals
+PASS site_quota_is_shared_across_owners_and_persisted
+PASS site_pacing_cooldown_and_review_expiry_surviv...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="crawl" classname="crawl" time="5.30097" status="run">
+		<properties/>
+		<system-out>PASS crawl_submission_is_distinct_and_bounded
+PASS recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique
+PASS robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier
+PASS page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows
+PASS depth_and_query_variants_bound_recursive_traps
+PASS noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence
+PASS nosnippet_and_data_nosnippet_restrict_old_cursors_and_do_not_forge_offsets
+PASS empty_successful_page_keeps_the_restrictive_refresh
+PASS quota_failure_retains_restriction_observation_without_claiming_a_new_page
+PASS failed_header_observation_is_monotonic_and_keeps_failed_usage
+PASS body_redirect_uses_one_page_grant_and_propagates_policy_to_existing_redirect_reads
+PASS existing_normalized_aliases_share_publication_and_deletion_fences
+PASS shared_dispatch_is_round_robin_across_map_crawl_jobs_and_restart
+PASS pause_cancel_and_auth_epoch_fence_late_body_and_observation
+PASS restarted_unknown_body_keeps_request_byte_and_page_re...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="site_publication" classname="site_publication" time="4.70119" status="run">
+		<properties/>
+		<system-out>PASS restart_links_only_with_zero_http_restricts_stored_and_frozen_publication
+PASS restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication
+PASS restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication
+PASS disabled_removed_and_unconfigured_restart_keep_durable_restrictions
+PASS review_expiry_is_durable_without_restart_or_http_and_cannot_be_rewound
+PASS relaxation_requires_a_new_complete_artifact_and_never_revives_frozen_content
+PASS scope_shrink_preserves_the_retained_child_and_expansion_does_not_restore_retired_content
+PASS new_child_scopes_inherit_prior_ancestor_index_and_snippet_watermarks
+PASS intermediate_site_bindings_are_immutable_even_when_body_and_final_url_reuse
+PASS final_representation_retarget_does_not_release_frozen_site_constraints
+PASS import_snapshots_and_frozen_imports_do_not_inherit_deployment_rules_from_later_web_reads
+PASS stale_connections_cannot_reactivate_or_publish_using_an_older_allowing_service
+PASS inflight_allowing_response_cannot_cross...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="retention" classname="retention" time="2.15978" status="run">
+		<properties/>
+		<system-out>PASS aged_terminal_frontiers_release_the_real_512_job_cap_after_restart
+PASS the_full_deadline_window_and_clock_extremes_are_respected
+PASS unknown_read_grants_survive_compaction_and_late_callbacks_cannot_reopen_work
+PASS paused_and_pending_jobs_remain_pinned_and_maintenance_is_owner_scoped
+PASS unknown_crawl_page_grants_and_origin_charges_survive_expiry_and_compaction
+PASS robots_receipt_and_admission_each_pin_the_exact_expired_record
+PASS expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive
+PASS robots_capacity_can_recover_at_admission_without_erasing_origin_accounting
+PASS crawl_frontier_edges_traps_and_map_candidates_compact_with_original_summaries
+PASS a_storage_failure_rolls_back_the_summary_and_all_detail_deletions
+PASS compaction_never_recreates_publication_deleted_aliases_or_owner_epochs
+PASS schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins
+PASS permanent_key_quotas_remain_bounded_per_owner_and_globally
+PASS two_store_compactors_serialize_without_duplicate_...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="fairness" classname="fairness" time="0.925452" status="run">
+		<properties/>
+		<system-out>PASS read_batches_follow_submission_order_and_rotate_with_identical_timestamps
+PASS late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains
+PASS read_queue_position_survives_restart_and_owner_isolation
+PASS restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch
+PASS two_store_connections_reserve_distinct_jobs_and_rounds
+PASS paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns
+PASS continuous_new_map_jobs_do_not_starve_an_existing_frontier
+PASS new_map_jobs_have_a_strict_submission_order_at_the_same_clock
+PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+PASS worker_loop_gives_batch_and_discovery_categories_progress
+PASS calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart
+11 fairness tests, 251 assertions, 0 failures
+</system-out>
+	</testcase>
+	<testcase name="sessions" classname="sessions" time="12.127" status="run">
+		<properties/>
+		<system-out>PASS progress_creates_immutable_versions_and_bound_stable_cursors
+PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+PASS cancel_mid_request_fences_late_response_and_preserves_completed_version
+PASS cancel_pending_is_zero_request_and_idempotent
+PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+PASS owner_isolation_invalid_options_and_version_binding
+PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+PASS delete_and_page_restriction_rechecked_without_content_in_event_log
+PASS site_tightening_survives_reopen_and_later_relaxation
+PASS active_session_backpressure_and_expired_detail_reclamation
+PASS local_search_gets_durable_events_and_still_has_snapshot_paging
+PASS expired_local_sessions_release_capacity_for_web_without_local_search
+PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+PASS source_policy_drift_stops_pending_work...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="revalidation" classname="revalidation" time="1.14919" status="run">
+		<properties/>
+		<system-out>PASS direct_304_keeps_body_revision_and_evidence
+PASS batch_304_charges_one_request_and_no_body_bytes
+PASS validators_survive_restart_and_are_owner_scoped
+PASS not_modified_does_not_overwrite_a_concurrent_full_replacement
+PASS deletion_and_reimport_fence_a_304
+PASS restrictions_observed_before_304_dispatch_still_seal_old_body
+PASS not_modified_header_can_tighten_but_never_clear_cached_meta_directives
+PASS unsolicited_or_unbound_304_is_rejected_without_touching_body
+PASS http_metadata_rejects_unsafe_and_ambiguous_validators
+PASS imported_or_redirected_snapshots_do_not_grant_conditions
+PASS robots_revalidation_renews_exact_rules_and_retains_receipt_references
+PASS robots_304_cannot_replace_rules_or_admit_content_on_failure
+PASS crawl_304_rebuilds_the_new_frontier_depth_from_complete_retained_links
+PASS crawl_304_nofollow_blocks_retained_links
+PASS independent_same_snapshot_metadata_refresh_is_fenced
+PASS independent_during_request_restriction_cannot_republish_old_body
+PASS independent_304_metadata_growth_rolls_...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="capacity_cycles" classname="capacity_cycles" time="8.48784" status="run">
+		<properties/>
+		<system-out>{"cycles":3,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":0,"real_http":false,"scenario":"frontier_512_capacity_refill","simulated_elapsed_ms":1816200003,"store_reopens":6,"submissions":1533,"wall_elapsed_ms":5928}
+PASS three_full_frontier_capacity_cycles_preserve_paused_keys_and_owner_boundaries
+{"cycles":12,"fake_worker_calls":220,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":111,"read_leases":109,"real_http":false,"scenario":"continuous_arrivals_96_opportunities_per_queue","simulated_elapsed_ms":608400001,"store_reopens":13,"submissions":198,"wall_elapsed_ms":2079}
+PASS continuous_arrivals_follow_durable_round_robin_across_twelve_reopens
+{"cycles":6,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":12,"real_http":false,"scenario":"unknown_grant_recovery_and_retention","simulated_elapsed_ms":3650400006,"store_reopens":12,"submiss...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="contracts" classname="contracts" time="0.1598" status="run">
+		<properties/>
+		<system-out>PASS fixture 正常_model-config
+PASS fixture 正常_search-request
+PASS fixture 正常_source-manifest
+PASS fixture 无模型基础部署
+PASS fixture 角色继承默认profile
+PASS fixture 显式null禁用角色
+PASS fixture 默认角色并发覆盖生效
+PASS fixture 坏profile引用
+PASS fixture 错误嵌入能力
+PASS fixture 并发不能为零
+PASS fixture 隐藏付费工具被拒
+PASS fixture 坏备用模型
+PASS fixture 显式思考参数缺失
+PASS fixture file模型端点拒绝
+PASS fixture 负预算
+PASS fixture host不能配after
+PASS fixture eq不能配数组
+PASS fixture in必须配数组
+PASS fixture 非法日期
+PASS fixture 倒置时间范围
+PASS fixture 离线本地检索
+PASS fixture 离线不允许外部范围
+PASS fixture AST过深
+PASS fixture 字符串查询仍有效
+PASS fixture 查询体过大
+PASS fixture 候选源不能启用
+PASS fixture 源配置合同正例不构成真实授权
+PASS fixture 审核时间格式非法
+PASS fixture 审核过期
+PASS fixture 审核时间来自未来
+...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="http_cli" classname="http_cli" time="5.69456" status="run">
+		<properties/>
+		<system-out>test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+test_13_slow_h...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_web" classname="e2e_web" time="6.03478" status="run">
+		<properties/>
+		<system-out>test_01_capabilities (__main__.EndToEnd.test_01_capabilities) ... ok
+test_02_web_search_merges_sources (__main__.EndToEnd.test_02_web_search_merges_sources) ... ok
+test_02b_durable_session_reconnect_paging_and_restart (__main__.EndToEnd.test_02b_durable_session_reconnect_paging_and_restart) ... ok
+test_03_blocked_source_cools_down_and_others_still_answer (__main__.EndToEnd.test_03_blocked_source_cools_down_and_others_still_answer) ... ok
+test_04_read_url_extracts_and_caches (__main__.EndToEnd.test_04_read_url_extracts_and_caches) ... ok
+test_04b_robots_header_change_replaces_index_projection (__main__.EndToEnd.test_04b_robots_header_change_replaces_index_projection) ... ok
+test_05_ssrf_is_refused (__main__.EndToEnd.test_05_ssrf_is_refused) ... ok
+test_06_gbk_page_and_chinese_local_search (__main__.EndToEnd.test_06_gbk_page_and_chinese_local_search) ... ok
+test_07_find_range_and_evidence (__main__.EndToEnd.test_07_find_range_and_evidence) ... ok
+test_08_unreadable_pages_report_why (__main__.EndToEnd.test_08_un...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_map" classname="e2e_map" time="3.7414" status="run">
+		<properties/>
+		<system-out>test_01_reviewed_registry_and_all_discovery_formats_do_not_read_candidates (__main__.DiscoveryEndToEnd.test_01_reviewed_registry_and_all_discovery_formats_do_not_read_candidates) ... ok
+test_02_robots_denial_unreachable_and_rate_limit_never_dispatch_content (__main__.DiscoveryEndToEnd.test_02_robots_denial_unreachable_and_rate_limit_never_dispatch_content) ... ok
+test_03_redirects_recheck_scope_and_robots (__main__.DiscoveryEndToEnd.test_03_redirects_recheck_scope_and_robots) ... ok
+test_04_restart_reuses_persistent_rules_and_idempotent_results (__main__.DiscoveryEndToEnd.test_04_restart_reuses_persistent_rules_and_idempotent_results) ... ok
+test_05_history_is_visible_without_new_body_publication_and_xml_entities_are_blocked (__main__.DiscoveryEndToEnd.test_05_history_is_visible_without_new_body_publication_and_xml_entities_are_blocked) ... ok
+test_06_mcp_discovery_to_persistent_candidates (__main__.DiscoveryEndToEnd.test_06_mcp_discovery_to_persistent_candidates) ... ok
+test_07_native_cli_uses_the_same_map_o...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_crawl" classname="e2e_crawl" time="9.31861" status="run">
+		<properties/>
+		<system-out>test_01_recursive_bodies_edges_cycles_and_scope (__main__.CrawlEndToEnd.test_01_recursive_bodies_edges_cycles_and_scope) ... ok
+test_02_page_request_depth_variant_and_byte_budgets (__main__.CrawlEndToEnd.test_02_page_request_depth_variant_and_byte_budgets) ... ok
+test_03_noindex_refresh_fences_old_sessions_and_keeps_evidence (__main__.CrawlEndToEnd.test_03_noindex_refresh_fences_old_sessions_and_keeps_evidence) ... ok
+test_04_snippet_restrictions_apply_to_fresh_and_frozen_results (__main__.CrawlEndToEnd.test_04_snippet_restrictions_apply_to_fresh_and_frozen_results) ... ok
+test_05_empty_restrictive_response_also_withdraws_old_index (__main__.CrawlEndToEnd.test_05_empty_restrictive_response_also_withdraws_old_index) ... ok
+test_06_agent_scope_nofollow_title_and_links_only_policy (__main__.CrawlEndToEnd.test_06_agent_scope_nofollow_title_and_links_only_policy) ... ok
+test_07_robots_and_redirect_denials_never_dispatch_forbidden_bodies (__main__.CrawlEndToEnd.test_07_robots_and_redirect_denials_never_dispatch_for...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_crawl_recovery" classname="e2e_crawl_recovery" time="23.7412" status="run">
+		<properties/>
+		<system-out>test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request (__main__.CrawlRecovery.test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request) ... ok
+test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact (__main__.CrawlRecovery.test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact) ... ok
+test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch (__main__.CrawlRecovery.test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch) ... ok
+test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage (__main__.CrawlRecovery.test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage) ... ok
+test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart) ... ok
+test_06_rejected_review_applies_to_stored_results_after_explicit_offli...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_session_recovery" classname="e2e_session_recovery" time="27.52" status="run">
+		<properties/>
+		<system-out>test_01_core_crash_before_worker_reserves_unknown_without_sending_source (__main__.SessionRecovery.test_01_core_crash_before_worker_reserves_unknown_without_sending_source) ... ok
+test_02_core_crash_after_worker_reply_never_resends_unknown_source (__main__.SessionRecovery.test_02_core_crash_after_worker_reply_never_resends_unknown_source) ... ok
+test_03_worker_crash_during_http_then_restart_runs_only_pending_tail (__main__.SessionRecovery.test_03_worker_crash_during_http_then_restart_runs_only_pending_tail) ... ok
+test_04_lost_start_ack_reuses_committed_session_after_core_crash (__main__.SessionRecovery.test_04_lost_start_ack_reuses_committed_session_after_core_crash) ... ok
+test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart (__main__.SessionRecovery.test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart) ... ok
+test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="e2e_revalidation" classname="e2e_revalidation" time="8.65124" status="run">
+		<properties/>
+		<system-out>test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant) ... ok
+test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery) ... ok
+test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart) ... ok
+test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content) ... ok
+test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation) ... ok
+test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 8.556s
+
+OK
+</system-out>
+	</testcase>
+	<testcase name="python_worker" classname="python_worker" time="14.9416" status="run">
+		<properties/>
+		<system-out>........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 29%]
+........................................................................ [ 36%]
+........................................................................ [ 43%]
+........................................................................ [ 51%]
+........................................................................ [ 58%]
+........................................................................ [ 65%]
+........................................................................ [ 73%]
+........................................................................ [ 80%]
+........................................................................ [ 87%]
+...................................................................
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

@@ -1,0 +1,49 @@
+{
+  "role": "author_self_test_not_independent_acceptance",
+  "base_commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "author_commit": "f69686547ce9cdd6d7d774bd7ca593022620f14f",
+  "branch": "agent/s2-session-next-20261021",
+  "worktree": "/workspace/scratch/80f41eb198a3/bzs861-session-next",
+  "production_code_modified": false,
+  "cmake_wiring": "Parent will add e2e_session_recovery with timeout 180 and SKIP_RETURN_CODE 77",
+  "git_clean": true,
+  "files_sha256": {
+    "tests/sessions.cpp": "ddac3ffabf5f71718e8cdf0fc14985af0052f46be63bf9444478cd795f6103d0",
+    "tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "docs/SEARCH_SESSIONS.md": "94190eab6a805b3bdd9ce577d8e39a93babf68095d1ae8a048d4118b5434cd34"
+  },
+  "native_sessions": {
+    "tests": 21,
+    "assertions": 283,
+    "failures": 0,
+    "evidence": "native_sessions.json"
+  },
+  "real_process_e2e": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "evidence": "e2e_session_recovery.json",
+    "sigkill_count": 8,
+    "core_sigkills": 7,
+    "worker_sigkills": 1,
+    "database_fixture_writes": false,
+    "clock_injection": false
+  },
+  "scope": [
+    "Core crash before RPC forwarding",
+    "Core crash after Worker response before Core receipt",
+    "Worker crash during real source HTTP and restart",
+    "lost accepted web.search.start ACK and idempotent replay",
+    "cancellation fences late result, retains version/cursor/event replay after restart",
+    "real one-second deadline fences late result and stops pending tail",
+    "native accumulated 4MiB frozen storage backpressure rollback"
+  ],
+  "limits": [
+    "loopback synthetic approved fixtures only",
+    "10-minute event and 1-hour session expiry remain native controlled-clock tests",
+    "no physical power-loss or arbitrary SQLite-write crash claim",
+    "no multi-node or full acceptance claim",
+    "no source approval, version or progress-counter changes"
+  ],
+  "preliminary_candidate_correction": "Current Store::search already eagerly creates local_stream_locked; the proposed lazy-identity defect was disproved and no store.cpp change was made."
+}

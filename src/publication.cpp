@@ -420,6 +420,11 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
     }
   }
 }
+Json Store::current_publication_ceiling_locked(const std::string& owner,const std::string& url,const Json& policy) {
+  Sql current(db_,"SELECT record_json FROM document_publication WHERE owner=? AND url_key=?");
+  current.bind(1,owner);current.bind(2,key_for(url));
+  return current.step()?meet_publication(policy,Json::parse(current.text(0),8*1024*1024)):policy;
+}
 void Store::observe_policy_locked(const std::string& owner,const std::string& url,const std::string& final_url,const Json& input) {
   if(!restrictive_publication(input))return;
   const std::set<std::string> keys={key_for(url),key_for(final_url)};

@@ -1,14 +1,15 @@
 # GitHub 交付与开发历史
 
-更新：2026-10-20。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+更新：2026-10-21。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
 ## 当前增量与已交付输入
 
-当前范围为 **0.1.8 S2 五阶段集成**。本轮起点是0.1.5 `2007690c9403b8ae593101488de1adf228608284`，该输入的 [CI 39350799429](https://github.com/wmqfl861/bzs861/actions/runs/39350799429) 在开始时已核对成功。阶段一0.1.6已非强制发布为 `27966ffe61c16964c45d595e3ee2689115815217`，tree `e27f133ad3cb7647f89439cfb957e6caddec0c75` 与本地已验证树相同，对应 [CI 39431992846](https://github.com/wmqfl861/bzs861/actions/runs/39431992846)。后续完整交付继续核对最终实际提交自己的CI；不能用第一阶段通过替代集成结果。当前范围见 [五阶段计划](handoff/S2_FIVE_STAGES_20261020.md) 与 [当前报告](../validation/s2_five_stages/final-report.json)。报告只记录实际本地执行，不预写未来提交SHA或CI成功。
+当前范围为 **0.1.9 S2 五个接续增量**。本轮起点是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，tree `522c5d78fdb9e935bad976e561d92c74f20b7a12`；其 [CI 39435330847](https://github.com/wmqfl861/bzs861/actions/runs/39435330847) 已核对Linux/Windows成功。该成绩只证明基线。本轮范围见 [接续计划](handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](../validation/s2_next_five/final-report.json)，发布前报告不预写未来自身SHA或CI成功。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
-| 0.1.6 第一检查点 | `27966ffe61c16964c45d595e3ee2689115815217` | 读取顺序屏障、旧Worker完整性与独立复核；本轮后续整合的远端父检查点 |
+| 0.1.8 main | `2c536e9834c4897b0c70e3bd6651b765cc67f45e` | 上一轮五阶段集成，schema11；本轮真实输入基线 |
+| 0.1.6 第一检查点 | `27966ffe61c16964c45d595e3ee2689115815217` | 读取顺序屏障、旧Worker完整性与独立复核；历史第一阶段检查点 |
 | 0.1.5 main | `2007690c9403b8ae593101488de1adf228608284` | 持久发布约束、抓取陷阱与真实进程恢复回归 |
 | 0.1.4 main | `90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63` | 有界正文前沿、页预算、链接边、页面发布规则；tree `b51e0f126c49727506ad2cc08ff3912d59108703` |
 | 0.1.3 main | `8a4e0f4cc630627ffa91c49598c66fec7fb4291d` | 版本化 robots 准入、独立站点登记、持久有界发现、每跳预算与配置身份 |
@@ -34,6 +35,6 @@
 
 ## 证据分期
 
-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；当前五阶段为 `validation/s2_five_stages/`。旧证据不覆盖、不改名冒充新运行。
+`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；当前0.1.9接续为 `validation/s2_next_five/`。旧证据不覆盖、不改名冒充新运行。
 
 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。

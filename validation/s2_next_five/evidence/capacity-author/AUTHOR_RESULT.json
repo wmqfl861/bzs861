@@ -1,0 +1,99 @@
+{
+  "role": "author_self_test_not_independent_acceptance",
+  "base_commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "author_commit": "ee6bdde5e76ff71384f9948c5154393de6a54913",
+  "branch": "agent/s5-capacity-cycles-20261022",
+  "worktree": "/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles",
+  "production_code_modified": false,
+  "files": {
+    "tests/capacity_cycles.cpp": "e575618d6537c812c380549fe7df7c95ad4b7cfb9069f2f3488c40c565e8a539"
+  },
+  "git_clean": true,
+  "tests": 4,
+  "assertions": 4800,
+  "failures": 0,
+  "observations": [
+    {
+      "cycles": 3,
+      "fake_worker_calls": 12,
+      "fixture_sql_writes": false,
+      "long_running_throughput_evidence": false,
+      "map_leases": 12,
+      "read_leases": 0,
+      "real_http": false,
+      "scenario": "frontier_512_capacity_refill",
+      "simulated_elapsed_ms": 1816200003,
+      "store_reopens": 6,
+      "submissions": 1533,
+      "wall_elapsed_ms": 5979
+    },
+    {
+      "cycles": 12,
+      "fake_worker_calls": 220,
+      "fixture_sql_writes": false,
+      "long_running_throughput_evidence": false,
+      "map_leases": 111,
+      "read_leases": 109,
+      "real_http": false,
+      "scenario": "continuous_arrivals_96_opportunities_per_queue",
+      "simulated_elapsed_ms": 608400001,
+      "store_reopens": 13,
+      "submissions": 198,
+      "wall_elapsed_ms": 1992
+    },
+    {
+      "cycles": 6,
+      "fake_worker_calls": 12,
+      "fixture_sql_writes": false,
+      "long_running_throughput_evidence": false,
+      "map_leases": 12,
+      "read_leases": 12,
+      "real_http": false,
+      "scenario": "unknown_grant_recovery_and_retention",
+      "simulated_elapsed_ms": 3650400006,
+      "store_reopens": 12,
+      "submissions": 24,
+      "wall_elapsed_ms": 275
+    },
+    {
+      "cycles": 8,
+      "fake_worker_calls": 24,
+      "fixture_sql_writes": false,
+      "long_running_throughput_evidence": false,
+      "map_leases": 24,
+      "read_leases": 0,
+      "real_http": false,
+      "scenario": "robots_receipt_and_admission_pins",
+      "simulated_elapsed_ms": 4867200016,
+      "store_reopens": 8,
+      "submissions": 24,
+      "wall_elapsed_ms": 250
+    }
+  ],
+  "totals": {
+    "submissions": 1779,
+    "read_leases": 121,
+    "map_leases": 159,
+    "store_reopens": 39,
+    "fake_worker_calls": 268
+  },
+  "real_wall_ms": 8506,
+  "cmake_wiring": "Parent must add bzs_capacity_cycles_tests linked with bzs_core and Threads::Threads; add CTest capacity_cycles, timeout 180, sanitizer and Windows native gates.",
+  "evidence": [
+    "configure.json",
+    "configure.log",
+    "build_final.json",
+    "build_final.log",
+    "cycles_final.json",
+    "cycles_final.log",
+    "diff_check.json"
+  ],
+  "scope_limits": [
+    "Controlled-clock native public-API cycles with a Fake Worker",
+    "No SQL fixture writes, permanent-key deletion or counter resets",
+    "No real HTTP or process crashes in this suite",
+    "Store close/reopen is not physical power-loss acceptance",
+    "Simulated time advancement is not long-running throughput evidence",
+    "Conditional-refresh cycles deferred until parent integration"
+  ]
+}

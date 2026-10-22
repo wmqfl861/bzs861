@@ -1,0 +1,3 @@
+2 independent tests / 22 assertions / 2 failures
+FAIL independent_failed_response_nofollow_survives_later_304: check failed: after->at("snapshot_id").str()==initial at 26
+FAIL independent_site_reapproval_does_not_republish_retained_304_body: check failed: renewed.at("snapshot_id").str()==original.at("snapshot_id").str() at 40

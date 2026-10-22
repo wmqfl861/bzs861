@@ -1,6 +1,6 @@
 # 有界正文爬取与页面发布规则
 
-本页描述 **0.1.5** 的 `crawl.submit` 与 `crawl.edges`，对应蓝图 v1.2 的 **CRAWL-01 / CRAWL-03 部分实现**。它保留 0.1.4 的正文前沿、页预算、边与页面声明，在同一核心增加持久抓取陷阱防护和站点存量发布上限。完整工作包与 S2 尚未签收，当前证据见 [验证说明](../validation/s2_five_stages/README.md)。
+本页描述 **0.1.5** 的 `crawl.submit` 与 `crawl.edges`，对应蓝图 v1.2 的 **CRAWL-01 / CRAWL-03 部分实现**。它保留 0.1.4 的正文前沿、页预算、边与页面声明，在同一核心增加持久抓取陷阱防护和站点存量发布上限。完整工作包与 S2 尚未签收，当前证据见 [验证说明](../validation/s2_next_five/README.md)。
 
 ## 三种任务如何选择
 
@@ -119,6 +119,12 @@ schema 7 在原正文前沿、边、页记账与页面发布状态上，增加�
 
 新增 `crawl_site` 和 `crawl_edges`，复用 `get_job/job_results/control_job/read_range/search_local`；CLI 使用 `searchctl call request.json` 或 `bzs call` 调同一核心。新 crawl 工具在 SDK 转换参数之前拒绝未知字段和错误 JSON 类型，不能把 `true`、`"2"` 或显式 `null` 当作数值预算；省略可选字段才使用默认值。`scope_path` 必须以 `/` 开头，字符串 `"null"` 不能被转换成省略范围。审核、实际范围与数值上限继续由核心校验。
 
-0.1.5的受控执行范围包括递归正文与循环、页/请求/字节/深度/变体限制、每跳 robots 与重定向、暂停后重启、同源轮转、noindex 与摘要刷新、旧会话撤发布、删除别名、owner 隔离以及真正 HTTP/CLI/MCP 调用。新增实际进程用例验证专门日期/查询/重复分页规则及有限文章负例；原生测试另验证存储和租约状态机；具体运行、失败修复与精确源码见 [0.1.5 历史报告](../validation/s2_hardening/test_report.json)。本轮完整整合另见[当前验证记录](../validation/s2_five_stages/README.md)。
+0.1.5的受控执行范围包括递归正文与循环、页/请求/字节/深度/变体限制、每跳 robots 与重定向、暂停后重启、同源轮转、noindex 与摘要刷新、旧会话撤发布、删除别名、owner 隔离以及真正 HTTP/CLI/MCP 调用。新增实际进程用例验证专门日期/查询/重复分页规则及有限文章负例；原生测试另验证存储和租约状态机；具体运行、失败修复与精确源码见 [0.1.5 历史报告](../validation/s2_hardening/test_report.json)。本轮完整整合另见[当前验证记录](../validation/s2_next_five/README.md)。
 
 0.1.5 另以真正 `SIGKILL` 覆盖派发前、Worker 完整响应丢失、待派发目标删除，以及任务已提交但 accepted 回执丢失。测试等待实际租约到期，不靠数据库写入或暂停/恢复制造崩溃；核对未知预留、零重发、保留快照/证据和幂等重取。它只覆盖这些实际边界，不等于每条 SQLite 指令、物理断电或长期故障矩阵。合成站点不提供真实来源可用性或人工相关性成绩。真实 S0、QA-02、SESSION-02、系统级解析沙箱、独立撤销日志与安全恢复、跨节点调度和长期压力仍按原蓝图继续验收。
+
+## 有界条件刷新（0.1.9）
+
+完整200页面可保存私有validator绑定；仅完整保留并可重建HTML链接的页面进入crawl条件请求。304不重新解析虚构正文，而用原链接按新任务深度重建候选，仍受当前robots、站点、删除、页面发布、页/请求/字节预算和trap检查。nofollow在派发和提交时都受当前记录约束，包括失败刷新或在途观察到的限制；实际保存快照禁止follow时不派发旧链接。
+
+robots与页面的已知304各计1个HTTP请求、0正文响应字节。回包不可信、基底变化或新限制不能验证时不自动补发完整GET。redirect、缺失/截断发现集合、旧库没有validator等情况继续原完整GET路径。合同及schema12配额说明见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)；有限8轮刷新、容量上限与持续到达回归不等同真实长期吞吐验收。

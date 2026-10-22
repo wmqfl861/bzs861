@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "suite": "plan_guard",
+  "scope": "planning_tool_regression_only",
+  "product_acceptance_cases_executed": 0,
+  "generated_at_utc": "2026-10-22T01:49:44+00:00",
+  "python_version": "3.12.14",
+  "elapsed_seconds": 0.703,
+  "passed": 13,
+  "failed": 0,
+  "source_inputs_unchanged": true,
+  "temporary_case_directories_removed": true,
+  "plan_counts": {
+    "packages": 83,
+    "acceptance_mappings": 161,
+    "slices": 10
+  },
+  "input_sha256": {
+    "docs/planning/tools/plan_v1_2.py": "e3eb778ef29176bd2ca07d9d9b4dec132bf946e8afd9fa9ecca64d78298fe6ef",
+    "docs/planning/slices_v1.2.json": "f2dbe9dfe96d197fbb8b1b43e82c06238fc41d5e2384e98933fa6630c2ff89c0",
+    "docs/planning/requirements_and_backlog.json": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+    "docs/planning/development_blueprint_v1.2.md": "076a152d215ad2d109338335840ca8d3be826146c9a888f180a2450183eabaa1"
+  },
+  "runner_sha256": "4ab82c7135ca2f9739b8c42faaf4f21defad2df03843305fd0fcc013bb6bea13",
+  "cases": [
+    {
+      "case": "default_plan_copy_check",
+      "expected_exit": 0,
+      "exit": 0,
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "explicit_plan_copy_check",
+      "expected_exit": 0,
+      "exit": 0,
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "preserve_extra_metadata_and_review_states",
+      "expected_exit": 0,
+      "exit": 0,
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "reject_legacy_write_existing_copy",
+      "expected_exit": 2,
+      "exit": 2,
+      "diagnostic_checked": "--write is disabled",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "reject_legacy_write_missing_path",
+      "expected_exit": 2,
+      "exit": 2,
+      "diagnostic_checked": "--write is disabled",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "missing_mapping_array",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "plan.acceptance_mapping",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "missing_acceptance_id",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "acceptance IDs: missing=",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "duplicate_acceptance_id",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "duplicate id",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "erased_original_acceptance",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "baseline acceptance text differs",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "self_dependency_cycle",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "package dependencies contain a cycle",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "unknown_dependency",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "unknown dependency",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "missing_review_state_with_optimization",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "explicit full_work_package_accepted state required",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "duplicate_json_key",
+      "expected_exit": 1,
+      "exit": 1,
+      "diagnostic_checked": "duplicate JSON key: packages",
+      "all_case_inputs_unchanged": true,
+      "passed": true
+    }
+  ]
+}

@@ -25,6 +25,12 @@ namespace bzs {
   struct SourceDocument {
     std::string url, raw, content_type, title;
   };
+  struct RevalidationBase {
+    SourceDocument document;
+    ParsedDocument parsed;
+    Json meta,conditional;
+    std::string snapshot_id,cache_sha256,metadata_sha256;
+  };
   struct StoreOptions {
     std::int64_t max_snapshots_per_owner=200000;
     std::int64_t max_bytes_per_owner=8LL*1024*1024*1024;
@@ -47,6 +53,7 @@ namespace bzs {
     std::int64_t request_grant=1,byte_grant=0,timeout_ms=0,deadline_ms=0;
     Json robots_record;
     std::int64_t publication_sequence=0;
+    Json conditional,robots_revalidation_base;
   };
   class Store {
     sqlite3* db_=nullptr;
@@ -86,6 +93,7 @@ namespace bzs {
     std::int64_t publication_sequence_locked();
     Json publication_history_locked(const std::string& owner,const Json& urls,std::int64_t sequence);
     Json seal_publication_locked(const Json& policy,const Json& history);
+    Json current_publication_ceiling_locked(const std::string& owner,const std::string& url,const Json& policy);
     void prepare_web_publication_locked(const std::string& owner,const std::string& url,ParsedDocument& parsed,Json& meta);
     void seal_frozen_publication_locked(const std::string& owner,const std::string& document_id,const Json& history);
     Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
@@ -151,6 +159,8 @@ namespace bzs {
                     std::int64_t expected_deletion_generation);
     // Current snapshot summary for (owner,url), if any; used for read caching.
     std::optional<Json> cached(const std::string& owner, const std::string& url);
+    // Internal only: the Worker receives validators, never the retained body.
+    std::optional<RevalidationBase> revalidation_base(const std::string& owner,const std::string& url);
     Json snapshot(const std::string& owner, const std::string& snapshot_id);
     // A UTF-8-safe window of the canonical text (read_range).
     Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes);

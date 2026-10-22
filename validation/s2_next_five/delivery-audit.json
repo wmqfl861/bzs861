@@ -1,0 +1,386 @@
+{
+  "blocking_findings": [],
+  "ci_boundary": "Only the recorded local runs are verified. The workflow of the actual containing GitHub commit must still be checked after publication; no future Linux/Windows CI success is asserted.",
+  "execution_manifest_relation": "195 final source paths equal 188 frozen execution paths plus the seven explicitly listed post-validation prose/status paths; every current file hash matches.",
+  "files_written_by_this_audit": [
+    "validation/s2_next_five/delivery-audit.json"
+  ],
+  "hash_verification": {
+    "archived_evidence_files_checked": 121,
+    "distinct_current_binary_or_ctest_file_hashes_checked": 28,
+    "final_review_record_hashes_checked": 10,
+    "final_source_files_checked": 195,
+    "frozen_execution_files_checked": 188,
+    "historical_file_hashes_checked": 569,
+    "initial_failed_commands_checked": 1,
+    "successful_commands_checked": 22
+  },
+  "hash_verification_errors": [],
+  "initial_failure_handling": {
+    "failure_cause_provenance": "The executable-restoration record documents observed sessions mode 0644; the truncated initial stdout cannot independently establish all initial suite outcomes.",
+    "final_support": "The separate complete restored CTest stdout plus JUnit document all 19 suites; the initial attempt is not counted as successful.",
+    "initial_and_final_binary_byte_hashes_equal": true,
+    "initial_ctest_exit_code": 8,
+    "initial_stdout_incomplete": true,
+    "only_recorded_mode_change": "bzs_session_tests 0644 -> 0755"
+  },
+  "kind": "independent_delivery_evidence_consistency_audit",
+  "notes": [
+    "JUnit system-out is size-limited for some suites, so internal test/assertion counts were read from the complete restored CTest log; JUnit independently supports suite statuses and timings.",
+    "Original log whitespace and the original probe trailing blank line are preserved with their recorded hashes. This audit makes no claim that raw evidence passes a whitespace style check.",
+    "The audit parser initially selected single-argument sanitizer commands and therefore omitted contracts, which takes an additional fixture argument. Selection was corrected by executable path; all 11 original records, logs, environment settings and binary instrumentation markers were then verified. No evidence or product was changed."
+  ],
+  "recorded_at_utc": "2026-10-22T02:03:35.268922+00:00",
+  "review_role_boundaries": {
+    "human_acceptance": "No agent review is represented as human qrels assessment or complete product acceptance.",
+    "qa_and_migration_records": "Scoped independent reviews of other production authors retain their original roles and frozen inputs.",
+    "session_and_capacity_records": "Author self-tests remain explicitly labeled author_self_test_not_independent_acceptance.",
+    "this_auditor": "This agent authored the session/capacity fixtures and performed the original QA/migration reviews. This audit checks the root-authored delivery aggregation and evidence consistency; it does not add a second independent technical review of those own artifacts.",
+    "worker_author_core_review": "Worker author work and their independent Core integration review are separately described; the seven-case Core review is another reviewer."
+  },
+  "reviewed_input_sha256": {
+    "environment.json": "706a97a2ed2fa5c19a0f00002c82a8ff0c27c009471095ce537d5bcc94d6bbb4",
+    "evidence-archive.json": "daf0af6250de8d8f6201b0063cec7b4d4019df4a8c31fcdd1683de07fa00b69b",
+    "execution-revision.json": "9ac193570e987f775c7ab76456df83957b43099377067ae6587b68f67d3bed63",
+    "final-report.json": "5f6a9db30ec226fc12a43f125eadc7380e3d1e0a53f6fb3abe3fb00a0c217590",
+    "final-review.json": "6c6e9fd6cb350c6dbf9b1023a0c00edf3432c0695f5731384dbd5e34349209dd",
+    "final-source-manifest.json": "87b5b6fb4ebdf893461ffcd26dc4a017be4d9ea814b1c55817a892defb58dc18",
+    "final-v2-ctest-restored.log": "20f9bb78118521f04d5a78dceea6c64763b7bb16794ad5de674f13bc1d971a3e",
+    "final-v2-ctest.xml": "9dcbcb0cafd594dc51217ae4d545314f57dbc0509cd87a2abbd0df60baacec61",
+    "final-v2-executable-restoration.json": "236df0ebb06f3df98fb9717d94368a4b32bccabbf945d1fff083a8ce42faf4bc",
+    "final-v2-execution-inputs.json": "078cd1c39a5be4219c485fc298dc0882fcc4746f07f1347174ff4f590c0430ae"
+  },
+  "reviewer_task": "/root/session_faults",
+  "runtime_equivalence": {
+    "documentation_delta_paths": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/API.md",
+      "docs/DEVELOPMENT_STATUS.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/HTTP_REVALIDATION.md",
+      "docs/JOB_RETENTION.md",
+      "docs/SECURITY.md",
+      "docs/SITE_CRAWLING.md",
+      "docs/SITE_DISCOVERY.md",
+      "docs/handoff/NEXT_AGENT.md",
+      "docs/handoff/S2_NEXT_FIVE_20261021.md",
+      "docs/implementation_status.json",
+      "docs/planning/README.md",
+      "docs/planning/development_blueprint_v1.2.md",
+      "docs/planning/slices_v1.2.json"
+    ],
+    "remaining_delta": "Documentation/progress files and the new validation/s2_next_five evidence directory only.",
+    "source_config_build_test_and_workflow_diff_from_d9fba20": "empty, including tracked modes",
+    "source_diff_checked_against": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa"
+  },
+  "runtime_source_commit_local": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+  "schema_version": 1,
+  "scope": "Read-only audit of final aggregation, original logs/XML/command records, hashes and code-freeze equivalence. No product tests were executed or rerun.",
+  "status": "passed_scoped_evidence_audit_no_delivery_blocker",
+  "verified_results": {
+    "ctest_command_elapsed_seconds": 138.374,
+    "ctest_failed_suites": 0,
+    "ctest_log_elapsed_seconds": 138.33,
+    "ctest_passed_suites": 19,
+    "ctest_skipped_suites": 0,
+    "ctest_suites": [
+      {
+        "assertions": 713,
+        "failed": 0,
+        "name": "core",
+        "passed": 81,
+        "xml_elapsed_seconds": 2.2623
+      },
+      {
+        "assertions": 439,
+        "failed": 0,
+        "name": "batch",
+        "passed": 18,
+        "xml_elapsed_seconds": 0.530253
+      },
+      {
+        "assertions": 462,
+        "failed": 0,
+        "name": "map",
+        "passed": 24,
+        "xml_elapsed_seconds": 0.875353
+      },
+      {
+        "assertions": 2798,
+        "failed": 0,
+        "name": "crawl",
+        "passed": 54,
+        "xml_elapsed_seconds": 5.30097
+      },
+      {
+        "assertions": 1200,
+        "failed": 0,
+        "name": "site_publication",
+        "passed": 32,
+        "xml_elapsed_seconds": 4.70119
+      },
+      {
+        "assertions": 404,
+        "failed": 0,
+        "name": "retention",
+        "passed": 16,
+        "xml_elapsed_seconds": 2.15978
+      },
+      {
+        "assertions": 251,
+        "failed": 0,
+        "name": "fairness",
+        "passed": 11,
+        "xml_elapsed_seconds": 0.925452
+      },
+      {
+        "assertions": 283,
+        "failed": 0,
+        "name": "sessions",
+        "passed": 21,
+        "xml_elapsed_seconds": 12.127
+      },
+      {
+        "assertions": 333,
+        "failed": 0,
+        "name": "revalidation",
+        "passed": 21,
+        "xml_elapsed_seconds": 1.14919
+      },
+      {
+        "assertions": 4800,
+        "failed": 0,
+        "name": "capacity_cycles",
+        "passed": 4,
+        "xml_elapsed_seconds": 8.48784
+      },
+      {
+        "assertions": 269,
+        "failed": 0,
+        "name": "contracts",
+        "passed": 55,
+        "xml_elapsed_seconds": 0.1598
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "http_cli",
+        "passed": 20,
+        "xml_elapsed_seconds": 5.69456
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_web",
+        "passed": 14,
+        "xml_elapsed_seconds": 6.03478
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_map",
+        "passed": 9,
+        "xml_elapsed_seconds": 3.7414
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_crawl",
+        "passed": 24,
+        "xml_elapsed_seconds": 9.31861
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_crawl_recovery",
+        "passed": 8,
+        "xml_elapsed_seconds": 23.7412
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_session_recovery",
+        "passed": 6,
+        "xml_elapsed_seconds": 27.52
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "e2e_revalidation",
+        "passed": 6,
+        "xml_elapsed_seconds": 8.65124
+      },
+      {
+        "assertions": null,
+        "failed": 0,
+        "name": "python_worker",
+        "passed": 984,
+        "xml_elapsed_seconds": 14.9416
+      }
+    ],
+    "independent_evaluation_additional_probes": 20,
+    "independent_evaluation_existing_suite_rerun": 128,
+    "independent_migration": {
+      "new_schema": 12,
+      "new_version": "0.1.9",
+      "old_and_new_backup_quarantine_preserved": true,
+      "old_schema": 11,
+      "old_version": "0.1.8",
+      "unchanged_legacy_tables": 39
+    },
+    "original_design_contract_cases": 34,
+    "planning_guard_cases": 13,
+    "python_passed": 984,
+    "retained_failed_initial_commands": 1,
+    "sanitizer_executables": 11,
+    "sanitizer_failures": 0,
+    "sanitizer_records": [
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_batch_tests"
+        ],
+        "binary_sha256": "0aa604af874bd7ba8ff1fb7e2c01e602183fddb376233d6a776f2bc16275637b",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-batch-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_capacity_cycles_tests"
+        ],
+        "binary_sha256": "faf648f747c5605054e8be3e78b30f3c796e7be5f5e23714ffea175a689b1a31",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-capacity-cycles-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_contract_tests",
+          "docs/planning/validation/contract_cases.json"
+        ],
+        "binary_sha256": "38d0186b5b172bea19d2055b5e040cedcab6166c754ac4b56376dd96034aa5ed",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-contracts-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_tests"
+        ],
+        "binary_sha256": "edc3b6f583001b33e962757c91245d5ef49e09553430f2d14b40c9fc4af2823d",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-core-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_crawl_tests"
+        ],
+        "binary_sha256": "e0d35591e2fafeda48bb0836da5528b54ad5c68f1ae5a0e5eb50b5055971a4a9",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-crawl-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_fairness_tests"
+        ],
+        "binary_sha256": "c2d6f48cd085bb7c8685ac2e75fe93908e2903723ab2bb958d68c630da88c082",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-fairness-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_map_tests"
+        ],
+        "binary_sha256": "84da75039c1e978a5f959364188b322cc849c0f5317019ad725e2be6d5e220a3",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-map-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_retention_tests"
+        ],
+        "binary_sha256": "5885373219b4f9a2201f95bc1bb4d03be61c704ae99231f911143ff638a36240",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-retention-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_revalidation_tests"
+        ],
+        "binary_sha256": "7af75f7d08f2f10c220a660a84205581fa064067b5709b8533d35b0cc64a8634",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-revalidation-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_session_tests"
+        ],
+        "binary_sha256": "01c4ebbcb34847271e768e2bfc3b5ee9aefafa94c7e7648fcddd080819e95503",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-sessions-command.json"
+      },
+      {
+        "argv": [
+          "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_site_publication_tests"
+        ],
+        "binary_sha256": "169779b76e85311f66488c8d679a942fa77d24e737241f98467c2c7094104046",
+        "environment_overrides": {
+          "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+          "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+        },
+        "exit_code": 0,
+        "instrumentation_symbol_markers_present": true,
+        "record": "final-v2-asan-site-publication-command.json"
+      }
+    ],
+    "successful_final_commands": 22
+  }
+}

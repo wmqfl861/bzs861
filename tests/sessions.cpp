@@ -88,6 +88,35 @@ TEST(expired_events_have_explicit_recovery_and_expired_keys_never_reexecute) {
   rejects([&]{store.session_events("alice",id,0);},"E_EVENT_HISTORY_EXPIRED");CHECK(store.session_events("alice",id,state.at("last_event_id").num()).at("events").size()==0);CHECK(store.session_page("alice",id,state.at("result_set_version").str(),"",20).at("hits").size()==3);
   now+=3600000;rejects([&]{store.session_get("alice",id);},"E_SESSION_EXPIRED");rejects([&]{web.submit_search("alice",input());},"E_SESSION_EXPIRED");CHECK(worker.requests.size()==1);CHECK(!web.lease_search());
 }
+TEST(frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages) {
+  struct LargeWorker:WorkerPort {
+    std::int64_t requests=0;
+    Json call(const std::string&,const Json& args,int)override {
+      ++requests;const auto source=args.at("sources").at(0).str();auto out=Json::object(),results=Json::object(),entry=Json::object(),hits=Json::array();
+      for(std::int64_t i=0;i<30;++i) {
+        auto hit=Json::object();hit.set("url","https://large.example/"+source+"/"+std::string(1700,'a')+"/"+std::to_string(i));
+        hit.set("title",std::string(512,'t'));hit.set("snippet",std::string(1024,'s'));hit.set("rank",i+1);hits.push(hit);
+      }
+      entry.set("status","ok");entry.set("hits",hits);results.set(source,entry);out.set("results",results);return out;
+    }
+  } worker;
+  Temp t;Store store(t.path/"db");WebService web(store,worker,SourceRegistry(manifest(20)));auto request=input("storage-bound");request.set("limit",std::int64_t{50});request.set("per_source",std::int64_t{30});
+  const auto id=web.submit_search("alice",request).at("session_id").str();execute_one(web);const auto first=store.session_get("alice",id).at("result_set_version").str();const auto page=store.session_page("alice",id,first,"",1);CHECK(page.at("has_more").flag());
+  const auto cursor=page.at("next_cursor").str();const auto next=store.session_page("alice",id,first,cursor,1);std::int64_t rejected=0;
+  for(int i=1;i<20;++i) {
+    const auto before=store.session_get("alice",id);execute_one(web);const auto after=store.session_get("alice",id);
+    if(after.at("unknown_source_attempts").num()>before.at("unknown_source_attempts").num()) {
+      ++rejected;CHECK(after.at("error_code").str()=="E_SESSION_BACKPRESSURE");CHECK(after.at("result_set_version").str()==before.at("result_set_version").str());
+    }
+  }
+  CHECK(rejected>0);const auto final=store.session_get("alice",id);CHECK(final.at("state").str()=="completed");CHECK(final.at("dispatched_source_attempts").num()==20);CHECK(final.at("unknown_source_attempts").num()==rejected);CHECK(worker.requests==20);CHECK(!web.lease_search());
+  CHECK(store.session_page("alice",id,first,"",1).canonical()==page.canonical());CHECK(store.session_page("alice",id,first,cursor,1).canonical()==next.canonical());
+  // Read-only accounting: rejected transactions must leave neither an orphan
+  // version nor a source payload that exceeds the documented 4 MiB ceiling.
+  sqlite3_stmt* row=nullptr;const char* query="SELECT (SELECT COUNT(*) FROM search_versions),(SELECT COALESCE(SUM(length(CAST(hit_json AS BLOB))+length(CAST(site_bindings AS BLOB))),0) FROM search_result_rows)+(SELECT COALESCE(SUM(length(CAST(payload_json AS BLOB))),0) FROM search_stream_sources)+(SELECT length(CAST(request_json AS BLOB))+length(CAST(contracts_json AS BLOB)) FROM search_streams)";
+  CHECK(sqlite3_prepare_v2(store.raw_handle(),query,-1,&row,nullptr)==SQLITE_OK);CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==20-rejected);CHECK(sqlite3_column_int64(row,1)<=4*1024*1024);sqlite3_finalize(row);
+  Store reopened(t.path/"db");CHECK(reopened.session_get("alice",id).at("unknown_source_attempts").num()==rejected);CHECK(reopened.session_page("alice",id,first,cursor,1).canonical()==next.canonical());
+}
 TEST(delete_and_page_restriction_rechecked_without_content_in_event_log) {
   Temp t;Store store(t.path/"db"),other(t.path/"db");Worker worker;WebService web(store,worker,SourceRegistry(manifest(1)));const auto document=store.ingest("alice",{"https://results.example/0","marker","text/plain","marker"});const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);const auto version=store.session_get("alice",id).at("result_set_version").str();CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==3);
   other.erase("alice",document.at("document_id").str());const auto url=std::string("https://results.example/1");auto fence=other.publication_fence("alice",url);other.observe_web_publication("alice",url,url,policy(false,false),fence);

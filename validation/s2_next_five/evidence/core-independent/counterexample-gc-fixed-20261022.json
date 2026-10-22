@@ -1,0 +1,22 @@
+{
+  "kind": "independent-core-counterexample-verification",
+  "created_at": "2026-10-22T01:36:18.895417+00:00",
+  "core_candidate_commit": "28b60fdf2836407a9a9d81faa0e2a20129017bf1",
+  "execution_role": "independent_of_core_author",
+  "delta": "main working tree GC fix in src/retention.cpp; linked library includes separately announced integration deltas",
+  "command": [
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-cases-gc-fixed"
+  ],
+  "exit_code": 0,
+  "binary_sha256": "63d9ad5b69336a55627f00fa7b28bc53e54a04709aab1b53d300ea7622b9cd09",
+  "harness_sha256": "31d665aefbd22054ef549bc10450fa8c1c2cb8512cd78fc21f9bf19205b2603f",
+  "frozen_fixture_sha256": "37808cea345fc7eba75983a1d3cfb2171e2adda827e340844f4eb9295def4c4b",
+  "library_sha256_observed_before_run": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "library_sha256_observed_after_run": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "retention_cpp_sha256_after_run": "78e3eed4b5551f403659c871f63f3f2a8931a564ea77dd7d01cb8e63ff533e2b",
+  "log_sha256": "b653ea6feeca215bd957d75a5836c687b99019836d489b49bf815312335da162",
+  "result": "5 passed / 51 assertions / 0 failures",
+  "database_mutation": "none; only public submit/execute/compact APIs and injected clock",
+  "network": "synthetic WorkerPort; no external requests",
+  "limits": "binary was relinked against parent-provided GC fix library; source-tree hashes are observations and not a claim of a frozen post-fix commit"
+}

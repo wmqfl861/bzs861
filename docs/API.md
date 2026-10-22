@@ -1,4 +1,4 @@
-# searchd API（0.1.8 S2 五阶段集成）
+# searchd API（0.1.9 S2 接续增量）
 
 所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮验证记录](../validation/s2_five_stages/README.md)。
 
@@ -259,3 +259,11 @@ crawl 的 `kind=page` 回包返回受限的 `page`、`publication` 与同响应 
 `state` 与 `partial` 分别表达终结状态和覆盖完整性：发生失败跳的任务可以 `state=failed, partial=true`，其中成功条目的快照仍可读取；被有界规则截断的无失败前沿可以 `state=succeeded, partial=true`。未知请求不自动重发，幂等调用返回原任务和累计用量，不把轮询用量相加。
 
 升级后缺少可靠历史链的旧网页结果可能需要新查询或完整重读，owner 原正文和证据保留。完整配置与迁移边界见 [SITE_PUBLICATION](SITE_PUBLICATION.md)。
+
+## 页面与 robots 条件重验证（0.1.9）
+
+已有 `web.read` 刷新、`read_many.submit` 和 `crawl.submit` 内部可使用条件请求，公开参数与MCP工具不增加私有validator输入。完整且可重用的200表示由核心保存精确URI/profile、快照及缓存元数据身份；304只复用该已保存正文，提交时再核对当前表示、删除、租约和发布限制。结果/快照收据可带 `revalidated=true`，但不保证每次刷新都走304。
+
+已知304仍计1个实际HTTP请求、0正文响应字节；未知或无法解释的执行按既有保守预留结算。未经绑定、validator冲突、跳转后的304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
+
+robots过期记录仅可作为绑定旧表示重新验证，不能直接放行正文。新304必须保留相同rules/body/清单身份并取得正有效期；较新的拒绝不会因旧记录仍被引用而在回收后消失。schema12的元数据与容量记账、完整合同及保守缓存子集见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。

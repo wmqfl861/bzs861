@@ -1,0 +1,134 @@
+{
+  "schema": "bzs-conditional-worker-review-1",
+  "reviewed_at_utc": "2026-10-22T01:41:44.706925+00:00",
+  "scope": "Worker implementation, focused Python regression, and independent read-only core integration review with a frozen two-scenario C++ nofollow harness. Full native/e2e/release acceptance remains parent-owned evidence.",
+  "reviewed_core_commit": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+  "worker_commits": [
+    "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+    "98ae10d5f40bbb75db90f6e60dc4d872c004afed"
+  ],
+  "initial_review_preserved": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/integration-review.json",
+  "findings": [
+    {
+      "id": "CW-INTEGRATION-01",
+      "status": "fixed_in_core_code_freeze_commit_and_reread",
+      "finding": "Complete map page metadata is top-level http_cache; decoding only nested page omitted the validator base.",
+      "resolution": "Parent copies the top-level metadata into the page before decode_read and rejects disagreement when both copies are present.",
+      "path": "src/map_service.cpp"
+    },
+    {
+      "id": "CW-INTEGRATION-02",
+      "status": "fixed_in_core_code_freeze_commit_and_reread",
+      "finding": "Collecting the latest expired robots denial while older pinned rules remain could expose old validators after retention.",
+      "resolution": "Parent retains the newest decision until older rows can be removed, then collects the remaining singleton in a bounded additional pass.",
+      "path": "src/retention.cpp"
+    },
+    {
+      "id": "CW-INTEGRATION-03",
+      "status": "fixed_and_tested_in_worker_commit_98ae10d",
+      "finding": "Core rejected years before 1601 while Worker canonical date checking could accept earlier dates, turning a complete read into a protocol failure.",
+      "resolution": "Worker now uses the same lower year bound; 97 conditional tests passed, including two new old-date cases.",
+      "path": "python/bzs/worker/revalidation.py"
+    },
+    {
+      "id": "CW-INTEGRATION-04",
+      "status": "independently_reproduced_before_fix_and_passed_after_fix",
+      "finding": "A failed refresh with nofollow but no noindex/nosnippet can change document_publication without a publication generation tracked by publication_history_locked; a later headerless 304 could recover snapshot follow_allowed and old links.",
+      "requested_verification": "Add failed-refresh nofollow -> headerless 304 -> crawl-frontier regression, and preserve the effective current follow restriction for 304 if confirmed.",
+      "paths": [
+        "src/publication.cpp",
+        "src/store.cpp",
+        "src/map_service.cpp",
+        "src/map.cpp"
+      ],
+      "resolution": "Core meets the effective current document policy in revalidation_base and ingest_web_locked; complete_map takes follow_allowed from the actual committed snapshot. Both restrictions observed before dispatch and during 304 processing remain effective.",
+      "evidence": {
+        "before": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-before/before-fix-context.json",
+        "after": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-after/after-fix-context.json",
+        "before_exit_code": 1,
+        "after_exit_code": 0,
+        "cases": 2,
+        "direct_sql_writes": false,
+        "worker_transport": "in-process protocol fixture; this is not the real HTTP/Worker end-to-end test",
+        "final_code_freeze": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-code-freeze/code-freeze-context.json",
+        "final_code_freeze_exit_code": 0,
+        "final_code_freeze_library_sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf"
+      },
+      "code_reread": [
+        "src/publication.cpp: current_publication_ceiling_locked",
+        "src/store.cpp: revalidation_base and ingest_web_locked",
+        "src/map.cpp: complete_map committed snapshot publication and E_NOFOLLOW edge"
+      ]
+    }
+  ],
+  "positive_checks": [
+    "cached_robots selects the newest decision first and only then checks freshness; it does not skip a newer denial to admit old allowed content.",
+    "304 page commit checks owner/current snapshot/body/cache metadata identity and preserves the original body publication and site-generation boundaries.",
+    "Map 304 validates request/byte usage and robots decision, and rebuilds only retained, bounded complete discovery links.",
+    "Profile-only configuration changes remove conditions before the original GET; malformed bindings or unsupported 304 never trigger a retry.",
+    "Current document_publication is met with retained 304 policy both while preparing a base and again inside the ingest transaction.",
+    "Crawl expansion uses the committed snapshot publication.follow_allowed, so an in-flight nofollow observation blocks retained links.",
+    "The same frozen harness source, fixture and headers reproduced both nofollow cases with the old library and passed both cases after linking the fixed library."
+  ],
+  "focused_validation": [
+    {
+      "worker_commit": "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+      "counts": {
+        "tests": 343,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "junit": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/worker-focused.xml",
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/worker-focused.log",
+      "context": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/run-context.json"
+    },
+    {
+      "worker_commit": "98ae10d5f40bbb75db90f6e60dc4d872c004afed",
+      "counts": {
+        "tests": 97,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "junit": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/worker-date-alignment.xml",
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/worker-date-alignment.log",
+      "context": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/date-alignment-context.json"
+    }
+  ],
+  "independent_nofollow_validation": {
+    "before": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-before/before-fix-context.json",
+    "after": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-after/after-fix-context.json",
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "cases": 2,
+    "direct_sql_writes": false,
+    "worker_transport": "in-process protocol fixture; this is not the real HTTP/Worker end-to-end test",
+    "final_code_freeze": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-code-freeze/code-freeze-context.json",
+    "final_code_freeze_exit_code": 0,
+    "final_code_freeze_library_sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf"
+  },
+  "supported_subset_limits": [
+    "Nonempty Vary and no-store/private/no-cache/max-age=0 metadata do not establish conditional bases in this protocol version.",
+    "Redirects strip conditions; unsolicited or invalid 304 responses fail without an additional network retry.",
+    "A request-profile-only change becomes the already-authorized original full GET, not an added request.",
+    "Crawl reuse requires an unchanged exact URL with no redirect and a complete retained discovery set of at most 512 links.",
+    "Only trustworthy retained robots rules with positive original freshness can be revalidated; an expired record alone cannot authorize content.",
+    "These local protocol fixtures do not claim acceptance of the default 17 external sources or full product release readiness."
+  ],
+  "reviewed_source_sha256": {
+    "src/map_service.cpp": "e8d50fd1cc2c2b19bfa468f4e7f618ca1c6e25ba2ac2593114447635702892ca",
+    "src/map.cpp": "3311cfd623ab0c81c2236b3ff822d3864252b63ea4daf4b54c27926475c276bc",
+    "src/store.cpp": "9ec8f0b3898de2bab80976a341abdb645a952692bf05a79e549d22233601e297",
+    "src/http_cache.cpp": "5a9a784696d5b0136bf55d8d50545041554ef399afb185497a6769d3e6ed714d",
+    "src/retention.cpp": "78e3eed4b5551f403659c871f63f3f2a8931a564ea77dd7d01cb8e63ff533e2b",
+    "src/publication.cpp": "a2ed296bedc98b66c6cfd719e6751123f025ee055343a41eb364f3a20a161deb",
+    "python/bzs/worker/revalidation.py": "967a76af35fd143a28a6b46947c84356cf061b0ec05c707e0d81f7d9a85e533b",
+    "python/bzs/worker/server.py": "1928a5086e08e86d1fbfdabfd9163ec4ed432fa8295809d280082f5536c6bc34",
+    "python/bzs/worker/fetch.py": "dd1ab6dce83497ef4ffec16a9c1ecf59be20790963c08a15198e88618d14df0f",
+    "python/bzs/worker/robots.py": "e13d91be0613b58988f3b0e8ab644cc79c0b9f7449345d784f99f3bd7b9fc482",
+    "docs/HTTP_REVALIDATION.md": "7917f7cd40b0a60681e7ba46d46310ac56536e32780fa2795327f43d2238021c"
+  },
+  "followup": "No outstanding issue in this delegated scope. Final release and external GitHub publication are parent-owned actions.",
+  "finalized_at_utc": "2026-10-22T01:42:21.700374+00:00"
+}

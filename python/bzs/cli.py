@@ -322,7 +322,7 @@ def cmd_evaluation(args) -> int:
         if args.evaluation_action == "prepare":
             result = evaluation.prepare(args.queries or str(config.REPO_ROOT / "tests" / "golden" / "queries.json"),
                                         args.out, candidates_path=args.candidates, probe_path=args.probe_report,
-                                        splits=args.splits)
+                                        splits=args.splits, ablation_manifest_path=args.ablation_manifest)
             print(json.dumps(result, ensure_ascii=False, sort_keys=True))
             return 0  # A prepared, unjudged template is not a passed quality gate.
         if args.evaluation_action == "freeze":
@@ -410,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     source = e.add_mutually_exclusive_group(required=True)
     source.add_argument("--candidates", help="versioned fixed-candidate JSON input")
     source.add_argument("--probe-report", help="existing schema-2 probe_report.json with complete saved responses")
+    e.add_argument("--ablation-manifest", help="optional versioned source identities and predeclared external ablation comparisons")
     e.add_argument("--queries", help="frozen golden input or explicitly unfrozen synthetic fixture")
     e.add_argument("--splits", nargs="+", choices=("development", "regression"),
                    help="defaults to both non-holdout splits; holdout is not supported")

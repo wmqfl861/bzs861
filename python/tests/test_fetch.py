@@ -212,6 +212,45 @@ async def test_https_downgrade_drops_every_custom_header_without_network():
     assert not {"authorization", "api-key"}.intersection(key.lower() for key in calls[1][1])
 
 
+@pytest.mark.parametrize("destination", ["https://public.example/next", "https://another.example/next"])
+async def test_resource_conditions_never_follow_http_redirects(destination):
+    calls = []
+
+    class Session:
+        def request(self, method, url, **kwargs):
+            calls.append((str(url), {key.lower(): value for key, value in kwargs["headers"].items()}))
+            if len(calls) == 1:
+                return _MockResponse(url, 302, [("Location", destination)])
+            return _MockResponse(url)
+
+    fetcher = Fetcher(NetPolicy())
+    fetcher._session = Session()
+    conditions = {"If-None-Match": 'W/"first"', "If-Modified-Since": "Wed, 21 Oct 2015 07:28:00 GMT",
+                  "If-Match": '"first"', "If-Unmodified-Since": "Wed, 21 Oct 2015 07:28:00 GMT",
+                  "If-Range": '"first"'}
+    result = await fetcher.fetch("https://public.example/start", headers=conditions)
+    assert result.status == "ok" and result.external_requests == 2
+    assert all(calls[0][1][name.lower()] == value for name, value in conditions.items())
+    assert not {name.lower() for name in conditions}.intersection(calls[1][1])
+
+
+async def test_duplicate_cache_singletons_remain_detectable_for_normal_reads():
+    class Session:
+        def request(self, method, url, **kwargs):
+            return _MockResponse(url, headers=[("ETag", '"one"'), ("ETag", '"two"'),
+                                               ("Last-Modified", "first"), ("Last-Modified", "second"),
+                                               ("Cache-Control", "max-age=60"), ("Cache-Control", "no-store"),
+                                               ("Vary", "Accept"), ("Vary", "Cookie")])
+
+    fetcher = Fetcher(NetPolicy())
+    fetcher._session = Session()
+    result = await fetcher.fetch("https://public.example/page")
+    assert result.headers["etag"] == '"one"\n"two"'
+    assert result.headers["last-modified"] == "first\nsecond"
+    assert result.headers["cache-control"] == "max-age=60,no-store"
+    assert result.headers["vary"] == "Accept,Cookie"
+
+
 async def test_waiting_for_host_capacity_consumes_the_same_request_deadline():
     entered, release = asyncio.Event(), asyncio.Event()
     calls = []

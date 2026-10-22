@@ -17,6 +17,7 @@ from typing import Any
 from yarl import URL
 
 from .fetch import FetchAdmissionDenied
+from .revalidation import cache_headers, merge_cache, validate_cache
 from .sources.base import retry_after_ms
 
 POLICY_VERSION = "bzs-robots-1"
@@ -248,8 +249,9 @@ def response_record(*, origin: str, status: str, http_status: int | None,
                 ttl = MAX_CACHE_AGE_MS
     else:
         parsed.update(state="deny_all", diagnostics=["robots_unreachable_or_incomplete"])
-    # This first durable cache does not implement per-request conditional
-    # revalidation. It refuses to cache a permitting response that forbids reuse.
+    # A permitting admission record still requires a positive freshness window.
+    # Revalidation uses a separately bound complete representation; this record
+    # alone never authorizes reuse once it expires.
     if parsed["state"] != "deny_all":
         freshness = _remaining_freshness(headers, now_ms, ttl, response_delay_ms)
         if freshness <= 0:
@@ -325,13 +327,7 @@ def _remaining_freshness(headers: dict[str, str], now_ms: int, default_ms: int, 
     return max(0, lifetime - current_age)
 
 
-def require_record(record: Any, target: URL, *, now_ms: int) -> dict[str, Any]:
-    """Validate every private-record field and decide for the actual target.
-
-    Site manifest identity and review are checked separately. Only the core may
-    supply these records over the authenticated private RPC; they are never
-    accepted in the public map submission parameters.
-    """
+def _validate_record(record: Any, target: URL, *, now_ms: int, fresh: bool) -> None:
     required = {"version", "product_token", "body_sha256", "state", "rules", "sitemaps", "diagnostics",
                 "origin", "fetched_at_ms", "expires_at_ms"}
 
@@ -345,8 +341,8 @@ def require_record(record: Any, target: URL, *, now_ms: int) -> dict[str, Any]:
     if record["origin"] != str(target.origin()):
         invalid("robots record belongs to another origin")
     fetched, expires = record["fetched_at_ms"], record["expires_at_ms"]
-    if (type(fetched) is not int or type(expires) is not int or not 0 <= fetched <= now_ms < expires or
-            expires - fetched > MAX_CACHE_AGE_MS):
+    if (type(fetched) is not int or type(expires) is not int or not 0 <= fetched <= now_ms or
+            not 0 < expires - fetched <= MAX_CACHE_AGE_MS or fresh and now_ms >= expires):
         invalid("robots record is expired, from the future, or exceeds the cache lifetime")
     if not isinstance(record["body_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", record["body_sha256"]):
         invalid("robots body identity is invalid")
@@ -367,7 +363,55 @@ def require_record(record: Any, target: URL, *, now_ms: int) -> dict[str, Any]:
             invalid("robots metadata limits are invalid")
     if len(json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")) > MAX_RECORD_BYTES:
         invalid("robots record exceeds its size limit")
+
+
+def require_record(record: Any, target: URL, *, now_ms: int) -> dict[str, Any]:
+    """Validate every private-record field and decide for the actual target.
+
+    Site manifest identity and review are checked separately. Only the core may
+    supply these records over the authenticated private RPC; they are never
+    accepted in the public map submission parameters.
+    """
+    _validate_record(record, target, now_ms=now_ms, fresh=True)
     decision = rule_decision(record, target)
     if not decision["allowed"]:
         raise FetchAdmissionDenied("E_ROBOTS_DISALLOWED", "robots policy does not permit this request")
     return decision
+
+
+def validate_revalidation_base(base: Any, conditional: dict[str, str], *, origin: str, now_ms: int) -> None:
+    """Check a stored complete 200 representation without granting admission.
+
+    The old parsed record can be expired. It is deliberately separate from the
+    fresh record accepted by require_record() at content dispatch. The core must
+    also bind this pair to its original complete response and persisted identity.
+    """
+    if not isinstance(base, dict) or set(base) != {"record", "http_cache"}:
+        raise ValueError("robots_revalidation_base fields are invalid")
+    cache = validate_cache(base["http_cache"])
+    if any(cache[key] != conditional[key] for key in ("url", "request_profile", "etag", "last_modified")):
+        raise ValueError("robots_revalidation_base does not match its conditional representation")
+    try:
+        _validate_record(base["record"], URL(origin), now_ms=now_ms, fresh=False)
+    except FetchAdmissionDenied as exc:
+        raise ValueError("robots_revalidation_base record is invalid: " + str(exc)) from exc
+    if base["record"]["state"] != "rules":
+        raise ValueError("robots_revalidation_base must retain the parsed rules of a complete 200 response")
+    record = base["record"]
+    initial_freshness = _remaining_freshness(cache_headers(cache), record["fetched_at_ms"], MAX_CACHE_AGE_MS, 0)
+    if initial_freshness <= 0 or record["expires_at_ms"] - record["fetched_at_ms"] > initial_freshness:
+        raise ValueError("robots_revalidation_base did not have trustworthy positive freshness")
+
+
+def revalidated_record(base: dict, updates: dict[str, str], *, now_ms: int,
+                       response_delay_ms: int) -> dict[str, Any]:
+    """Refresh time bounds after a verified 304, keeping exactly the old rules."""
+    cache = merge_cache(base["http_cache"], updates)
+    freshness = _remaining_freshness(cache_headers(cache), now_ms, MAX_CACHE_AGE_MS, response_delay_ms)
+    if freshness <= 0:
+        raise ValueError("304 robots metadata does not establish a positive freshness window")
+    record = {**base["record"], "rules": [dict(rule) for rule in base["record"]["rules"]],
+              "sitemaps": list(base["record"]["sitemaps"]), "diagnostics": list(base["record"]["diagnostics"]),
+              "fetched_at_ms": now_ms, "expires_at_ms": now_ms + min(freshness, MAX_CACHE_AGE_MS)}
+    _validate_record(record, URL(record["origin"]), now_ms=now_ms, fresh=True)
+    return record

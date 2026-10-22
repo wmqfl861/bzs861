@@ -25,7 +25,10 @@ from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
                           extraction_restriction_observation, incomplete_publication,
                           publication_rules, restriction_observation)
-from .robots import CRAWLER_USER_AGENT, MAX_ROBOTS_BYTES, POLICY_VERSION, PRODUCT_TOKEN, require_record, response_record, rule_decision
+from .revalidation import (VERSION as REVALIDATION_VERSION, ConditionalMismatch, conditional_headers,
+                           request_profile, response_cache, validate_conditional)
+from .robots import (CRAWLER_USER_AGENT, MAX_ROBOTS_BYTES, POLICY_VERSION, PRODUCT_TOKEN, require_record,
+                     response_record, revalidated_record, rule_decision, validate_revalidation_base)
 from .sites import SiteRegistry, canonical_map_url
 from .sources import SourceSet, load_manifest
 from .sources.base import retry_after_ms
@@ -67,6 +70,7 @@ class Worker:
         return {"ok": True, "version": __version__, "extractor": EXTRACTOR, "proxy": bool(self.fetcher.proxy),
                 "adapters": sorted(self.sources.adapters) if self.sources else [],
                 "robots_policy": POLICY_VERSION, "publication_policy": PUBLICATION_VERSION,
+                "http_revalidation": REVALIDATION_VERSION,
                 "sites_manifest_sha256": self.sites.digest}
 
     async def search_multi(self, params: dict) -> dict:
@@ -84,6 +88,17 @@ class Worker:
         return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
 
     async def fetch_extract(self, params: dict) -> dict:
+        if not isinstance(params, dict):
+            raise ValueError("fetch.extract parameters must be an object")
+        conditional = None
+        if "conditional" in params:
+            if set(params) - {"url", "timeout_ms", "attempt_id", "max_requests", "max_content_bytes", "conditional"}:
+                raise ValueError("unknown conditional fetch.extract parameters")
+            conditional = validate_conditional(params["conditional"])
+            timeout = params.get("timeout_ms", 20000)
+            if (not isinstance(params.get("url"), str) or not 1 <= len(params["url"]) <= 4096 or
+                    type(timeout) is not int or not 1 <= timeout <= 60000):
+                raise ValueError("invalid conditional read identity or timeout")
         bounded = any(key in params for key in ("max_requests", "max_content_bytes", "attempt_id"))
         budget = None
         attempt_id = ""
@@ -109,7 +124,15 @@ class Worker:
             budget = FetchBudget(requests, byte_limit)
             self._read_attempts[attempt_id] = budget
         try:
-            out = await self._fetch_extract(params, budget)
+            out = await self._fetch_extract(params, budget, conditional)
+            if out.get("http_status") == 304:
+                # A bodyless result cannot provide new snippet text. Current
+                # known-site ceilings can still restrict the old snapshot.
+                observed = out.get("publication_observation", publication_rules({}))
+                ceiling = self.sites.publication_ceiling(observed, [params["url"], out.get("final_url", "")])
+                observation = extraction_restriction_observation(ceiling, "conditional_publication_ceiling")
+                if observation is not None:
+                    out["publication_observation"] = observation
             if "publication" in out:
                 out["publication"] = self.sites.publication_ceiling(
                     out["publication"], [str(params.get("url", "")), out.get("final_url", ""), *out.get("redirects", [])])
@@ -167,7 +190,8 @@ class Worker:
         request from this method can fall through the interactive-read path.
         """
         allowed = {"url", "kind", "attempt_id", "site_id", "sites_manifest_sha256", "deadline_ms", "timeout_ms",
-                   "max_content_bytes", "max_requests", "depth", "max_entries", "robots", "robots_origin", "redirect_hop"}
+                   "max_content_bytes", "max_requests", "depth", "max_entries", "robots", "robots_origin", "redirect_hop",
+                   "conditional", "robots_revalidation_base"}
         if not isinstance(params, dict) or set(params) - allowed:
             raise ValueError("unknown map.fetch parameters")
         attempt_id = self._attempt_id(params)
@@ -188,6 +212,18 @@ class Worker:
                 raise ValueError("invalid map.fetch " + key)
         if params["kind"] == "robots" and "robots" in params:
             raise ValueError("robots metadata fetch cannot supply a content admission record")
+        conditional = validate_conditional(params["conditional"]) if "conditional" in params else None
+        if conditional is not None and params["kind"] not in ("page", "robots"):
+            raise ValueError("conditional map.fetch only supports page and robots representations")
+        if "robots_revalidation_base" in params:
+            if conditional is None or params["kind"] != "robots":
+                raise ValueError("robots_revalidation_base requires a conditional robots request")
+            base = params["robots_revalidation_base"]
+            record = base.get("record") if isinstance(base, dict) else None
+            origin = record.get("origin", "") if isinstance(record, dict) else ""
+            validate_revalidation_base(base, conditional, origin=origin, now_ms=int(time.time() * 1000))
+        elif conditional is not None and params["kind"] == "robots":
+            raise ValueError("conditional robots request requires its bound complete representation")
         self._prune_attempts()
         if attempt_id in self._read_attempts:
             raise ValueError("read attempt is already running")
@@ -201,7 +237,7 @@ class Worker:
         budget = FetchBudget(1, params["max_content_bytes"])
         self._read_attempts[attempt_id] = budget
         try:
-            out = await self._map_fetch(params, budget)
+            out = await self._map_fetch(params, budget, conditional)
             out["usage"] = {"external_requests": budget.external_requests, "content_bytes": budget.content_bytes}
             return out
         finally:
@@ -209,7 +245,7 @@ class Worker:
             self._retired_attempts[attempt_id] = (asyncio.get_running_loop().time() + 120, budget.cancelled,
                                                 budget.external_requests, budget.content_bytes)
 
-    async def _map_fetch(self, params: dict, budget: FetchBudget) -> dict:
+    async def _map_fetch(self, params: dict, budget: FetchBudget, conditional: dict | None = None) -> dict:
         from .discovery import discover
 
         out = {"status": "error", "url": params["url"], "final_url": params["url"], "http_status": None}
@@ -259,6 +295,24 @@ class Worker:
                     raise FetchAdmissionDenied("E_SITE_SCOPE", "robots chain must start at the origin's /robots.txt")
             else:
                 admit_robots(target)
+            headers = self.fetcher.request_headers(
+                headers={"User-Agent": CRAWLER_USER_AGENT},
+                accept=("text/plain" if metadata else
+                        "text/html,application/xhtml+xml,application/xml,text/xml,application/rss+xml,application/atom+xml,text/plain,text/markdown,application/json"))
+            if conditional is not None:
+                if conditional["url"] != str(target):
+                    raise ConditionalMismatch("conditional URL differs from this map target")
+                if metadata:
+                    try:
+                        validate_revalidation_base(params["robots_revalidation_base"], conditional,
+                                                   origin=site["origin"], now_ms=int(time.time() * 1000))
+                    except ValueError as exc:
+                        raise ConditionalMismatch(str(exc)) from exc
+                # Configuration/profile changes use this grant's original GET
+                # to obtain a complete representation. This is not a retry.
+                if conditional["request_profile"] != request_profile(headers):
+                    conditional = None
+                headers.update(conditional_headers(conditional))
             lane = self.sites.lanes[site_id]
             await asyncio.wait_for(lane.acquire(), remaining())
             acquired = True
@@ -279,17 +333,25 @@ class Worker:
                 self.sites.require(site_id, params["sites_manifest_sha256"], actual, metadata=metadata)
                 if not metadata:
                     admit_robots(actual, dispatch=True)
+                elif conditional is not None:
+                    try:
+                        validate_revalidation_base(params["robots_revalidation_base"], conditional,
+                                                   origin=site["origin"], now_ms=int(time.time() * 1000))
+                    except ValueError as exc:
+                        raise FetchAdmissionDenied("E_CONDITIONAL_MISMATCH", str(exc)) from exc
                 self.sites.last_dispatch[site_id] = time.monotonic()
 
             response = await self.fetcher.fetch(target, timeout_s=remaining(), budget=budget,
                                                 max_bytes=min(params["max_content_bytes"], MAX_ROBOTS_BYTES if metadata else 2 * 1024 * 1024),
-                                                headers={"User-Agent": CRAWLER_USER_AGENT},
-                                                accept=("text/plain" if metadata else
-                                                        "text/html,application/xhtml+xml,application/xml,text/xml,application/rss+xml,application/atom+xml,text/plain,text/markdown,application/json"),
+                                                headers=headers,
                                                 follow_redirects=False, before_dispatch=before_dispatch)
             out.update(final_url=response.final_url or str(target), http_status=response.http_status)
             if not metadata and response.http_status is not None:
                 observation = restriction_observation(response.headers)
+                if response.http_status == 304:
+                    observation = extraction_restriction_observation(
+                        apply_redistribution(publication_rules(response.headers), site["review"]),
+                        "conditional_publication_ceiling")
                 if observation is not None:
                     # Keep this on failures as well as successes. It is a
                     # monotonic restriction, never a successful read artifact.
@@ -306,8 +368,29 @@ class Worker:
                 # discovery or robots hop cannot slip past a newly seen 429.
                 self.sites.cooldown_until[site_id] = max(self.sites.cooldown_until.get(site_id, 0), time.monotonic() + retry / 1000)
             budget.check()
-            if response.error_code.startswith(("E_SITE_", "E_ROBOTS_")):
+            if response.error_code.startswith(("E_SITE_", "E_ROBOTS_", "E_CONDITIONAL_")):
                 out["error_code"] = response.error_code
+                return out
+            if response.http_status == 304:
+                try:
+                    if (conditional is None or response.status != "not_modified" or response.redirects or
+                            response.truncated or response.body or response.content_bytes):
+                        raise ValueError("304 response has no matching complete representation grant")
+                    cache = response_cache(response.headers, url=out["final_url"],
+                                           profile=response.request_profile, conditional=conditional)
+                    if metadata:
+                        out["robots"] = revalidated_record(params["robots_revalidation_base"], cache,
+                                                            now_ms=int(time.time() * 1000),
+                                                            response_delay_ms=response.elapsed_ms)
+                    out.update(status="not_modified", binding_id=conditional["binding_id"], http_cache=cache)
+                except (ValueError, ConditionalMismatch, FetchAdmissionDenied):
+                    out["error_code"] = "E_HTTP_REVALIDATION"
+                    if metadata:
+                        # Unbound/invalid 304 is an unreachable policy, never
+                        # an implicit renewal of the old permitting record.
+                        out["robots"], _ = response_record(origin=site["origin"], status="not_modified",
+                                                          http_status=304, headers=response.headers, body=b"",
+                                                          truncated=False, now_ms=int(time.time() * 1000))
                 return out
             if response.status == "redirect":
                 if params.get("redirect_hop", 0) >= 5:
@@ -330,6 +413,8 @@ class Worker:
                     out["retry_after_ms"] = max(out.get("retry_after_ms", 0), metadata_retry)
                 if record["state"] != "deny_all":
                     out["status"] = "ok"
+                    if record["state"] == "rules" and response.http_status == 200 and not response.truncated:
+                        out.update(self._cache_metadata(response))
                 else:
                     out["error_code"] = ("E_RATE_LIMITED" if response.http_status == 429 else
                                          "E_ROBOTS_UNREACHABLE" if response.status != "ok" else "E_ROBOTS_PARSE")
@@ -375,6 +460,8 @@ class Worker:
                         out["publication_observation"] = observation
                 out.update(status="ok", page=page, publication=page["publication"],
                            discovery=page_result["discovery"])
+                if page["status"] == "ok" and response.http_status == 200:
+                    out.update(self._cache_metadata(response))
                 return out
             parsed = await asyncio.wait_for(asyncio.to_thread(discover, response.body, out["final_url"],
                                                               content_type=response.headers.get("content-type", response.content_type), kind=params["kind"],
@@ -389,6 +476,8 @@ class Worker:
             return out
         except FetchAdmissionDenied as exc:
             out["error_code"] = exc.code
+        except ConditionalMismatch:
+            out["error_code"] = "E_CONDITIONAL_MISMATCH"
         except FetchStopped as exc:
             out["error_code"] = exc.code
         except PolicyError:
@@ -399,6 +488,18 @@ class Worker:
             if acquired and lane is not None:
                 lane.release()
         return out
+
+    @staticmethod
+    def _cache_metadata(response) -> dict:
+        if response.status != "ok" or response.http_status != 200 or response.truncated:
+            return {}
+        try:
+            return {"http_cache": response_cache(response.headers, url=response.final_url,
+                                                  profile=response.request_profile)}
+        except ValueError:
+            # Full content remains usable under its existing publication
+            # policy; unsafe or absent validators simply cannot be persisted.
+            return {}
 
     @staticmethod
     def _restrict_discovery(parsed: dict, publication: dict) -> None:
@@ -454,12 +555,26 @@ class Worker:
         page["links"] = [item["url"] for item in parsed["candidates"]][:512]
         return {"page": page, "discovery": parsed}
 
-    async def _fetch_extract(self, params: dict, budget: FetchBudget | None) -> dict:
+    async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None) -> dict:
         url = str(params.get("url", ""))
         timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout_s
-        res = await self.fetcher.fetch(url, timeout_s=timeout_s, **({"budget": budget} if budget else {}))
+        headers = self.fetcher.request_headers()
+        if conditional is not None:
+            failed = {"http_status": None, "final_url": url, "redirects": [],
+                      "usage": {"external_requests": 0, "content_bytes": 0}}
+            try:
+                target = self.policy.prepare_url(url)
+            except PolicyError as exc:
+                return {**failed, "status": "blocked_by_policy", "error_code": "E_NETWORK_POLICY", "error": str(exc)}
+            if conditional["url"] != str(target):
+                return {**failed, "status": "error", "error_code": "E_CONDITIONAL_MISMATCH",
+                        "error": "conditional URL differs from this read target"}
+            if conditional["request_profile"] != request_profile(headers):
+                conditional = None
+            headers.update(conditional_headers(conditional))
+        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers, **({"budget": budget} if budget else {}))
         used_requests, used_bytes = res.external_requests, res.content_bytes
         follows = 0
         while True:
@@ -473,6 +588,16 @@ class Worker:
                     base["publication_observation"] = observation
                 if res.http_status == 206:
                     base["publication_observation"] = incomplete_publication(publication_rules(res.headers))
+            if res.http_status == 304:
+                try:
+                    if (conditional is None or res.status != "not_modified" or res.redirects or follows or
+                            res.truncated or res.body or res.content_bytes):
+                        raise ValueError("304 response has no matching complete representation grant")
+                    cache = response_cache(res.headers, url=res.final_url,
+                                           profile=res.request_profile, conditional=conditional)
+                    return {**base, "status": "not_modified", "binding_id": conditional["binding_id"], "http_cache": cache}
+                except (ValueError, ConditionalMismatch) as exc:
+                    return {**base, "status": "http_error", "error_code": "E_HTTP_REVALIDATION", "error": str(exc)}
             if res.status != "ok":
                 if res.status == "http_error" and res.body:
                     text, _ = decode_body(res.body, res.header_charset)
@@ -515,6 +640,7 @@ class Worker:
                         return {**base, "status": "timeout", "error": "request timed out",
                                 "redirect_publication_observations": observed}
                     nxt = await self.fetcher.fetch(target, timeout_s=remaining, **({"budget": budget} if budget else {}))
+                    conditional = None
                     used_requests += nxt.external_requests
                     used_bytes += nxt.content_bytes
                     nxt.redirects = res.redirects + [target] + nxt.redirects
@@ -532,7 +658,8 @@ class Worker:
                 if out["extract_status"] == "empty":
                     return {**base, **out, "status": "empty_content", "error": "no readable text",
                             "content_type": "text/html", "charset": charset, "html": html}
-                return {**base, **out, "status": "ok", "content_type": "text/html", "charset": charset, "html": html}
+                return {**base, **out, "status": "ok", "content_type": "text/html", "charset": charset, "html": html,
+                        **self._cache_metadata(res)}
             if ctype in TEXT_TYPES or ctype.startswith("text/"):
                 text, charset = decode_body(res.body, res.header_charset)
                 out = extract_text(text, res.final_url or url, ctype, res.headers)
@@ -540,7 +667,7 @@ class Worker:
                     return {**base, **out, "status": "empty_content", "error": "empty document",
                             "content_type": "text/plain", "charset": charset, "html": ""}
                 return {**base, **out, "status": "ok", "content_type": "text/plain", "charset": charset,
-                        "html": "", "warnings": warnings}
+                        "html": "", "warnings": warnings, **self._cache_metadata(res)}
             if ctype == "application/pdf":
                 return {**base, "status": "unsupported_content", "error": "PDF reading arrives in S3 (DOC-01)"}
             return {**base, "status": "unsupported_content", "error": f"content type not supported: {ctype or 'unknown'}"}

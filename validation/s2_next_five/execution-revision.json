@@ -1,0 +1,11 @@
+{
+  "old": "final-v1-execution-inputs.json",
+  "new": "final-v2-execution-inputs.json",
+  "changed_inputs": [
+    "docs/HTTP_REVALIDATION.md"
+  ],
+  "runtime_build_test_configuration_inputs_changed": false,
+  "reason": "Independent documentation review clarified that 304 must not widen authority/range/budget, while already supported retained links may be reconstructed at the new task depth. No behavior or test changed. Existing v1 logs are retained; final gates use v2.",
+  "old_sha256": "b3338f16d6a74f3fd6881b754ad9c2453117f174468e49b785dc1a31cd02c4e2",
+  "new_sha256": "078cd1c39a5be4219c485fc298dc0882fcc4746f07f1347174ff4f590c0430ae"
+}

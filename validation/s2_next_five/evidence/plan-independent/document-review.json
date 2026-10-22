@@ -1,0 +1,33 @@
+{
+  "kind": "independent-scoped-document-consistency-review",
+  "created_at": "2026-10-22T01:49:02.048444+00:00",
+  "baseline": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "plan_preservation_record_sha256": "e8497ac00f20d46c5b0cd1c6cd63bfc45ad8ce9b5097bee305fe090bacfd9580",
+  "document_sha256": {
+    "docs/DEVELOPMENT_STATUS.md": "dece866702e5624b74b61ea75fb90417ebf09c62dbdd9ddbb6d42632ffd9240c",
+    "docs/handoff/NEXT_AGENT.md": "586c5da474c4f4a6fdb29c6719098aacfcb9980872d690490987036337b82406",
+    "docs/HTTP_REVALIDATION.md": "8ffe837a62ca4138ad0a5b70c5617173e762ad9b9b48f01a92dad78b00365382",
+    "docs/planning/development_blueprint_v1.2.md": "076a152d215ad2d109338335840ca8d3be826146c9a888f180a2450183eabaa1",
+    "docs/handoff/S2_NEXT_FIVE_20261021.md": "ff03769e561c38fa8ae4a4883f0964e5a3eb7c6bc907b66b54c5c7c07deff22f",
+    "docs/implementation_status.json": "614c36b2f399c214876a9e5addd3101ee135529556f6a996d6d0d138c2382d04"
+  },
+  "findings": [
+    {
+      "id": "DOC-01",
+      "severity": "wording_ambiguity",
+      "file": "docs/HTTP_REVALIDATION.md",
+      "section": "核心负责的持久绑定，第4条",
+      "observed": "304 不扩大抓取前沿",
+      "problem": "可按当前任务深度重建已验证保留链接，frontier本身可能增长；禁止的是放宽当前权限、范围或预算。",
+      "agreed_resolution": "304 不放宽抓取权限、站点范围或预算；只使用已验证保留链接按当前任务深度重建并重新核验限制。",
+      "status": "parent_acknowledged_pending_document_edit_before_final_v2"
+    }
+  ],
+  "other_concrete_contradictions_found": false,
+  "progress_docs_reviewed_after_latest_parent_update": true,
+  "current_final_gate_status": "pending, not preclaimed passed",
+  "future_ci_preclaimed_success": false,
+  "product_tests_run_in_this_review": 0,
+  "golden_text_decoded_or_inspected": false,
+  "limits": "Read-only preservation and scoped documentation consistency. Parent will apply the wording fix and freeze final-v2; future execution metadata/CI is outside this observation."
+}

@@ -1,6 +1,6 @@
 # 当前规划与证据口径
 
-更新：2026-10-20。当前为0.1.8 [五阶段集成](../handoff/S2_FIVE_STAGES_20261020.md)，阶段一检查点0.1.6已发布。页面响应顺序、任务回收、公平调度、固定候选评测和持久会话的范围分别记录；36包部分实现、47包未开始、0包完整签收。原83包、161验收、10切片及依赖/估算/验收语义保留。
+更新：2026-10-21。当前为0.1.9 [五个接续增量](../handoff/S2_NEXT_FIVE_20261021.md)，从已发布0.1.8继续页面/robots条件重验证、真实会话故障、外部来源消融前置和重复容量/公平性循环。36包部分实现、47包未开始、0包完整签收保持；原83包、161验收、10切片及依赖/估算/验收语义保留。
 
 | 文件 | 作用 |
 |---|---|
@@ -21,4 +21,6 @@
 
 历史 0.1.5 增加明确阈值的日期、查询和重复分页防护，以及站点存量发布水位、历史表示绑定和实际崩溃/回执丢失回归，详见 [存量发布与升级](../SITE_PUBLICATION.md)。CRAWL-01/03 的广泛网站误判评估、长期恢复与公开集合等效验收仍待完成；有限启发式、四个实际故障边界与 owner 隔离搜索不能替代这些要求。0.1.8已推进QA-02的人工模板、固定候选指标、冻结输入与方法，以及SESSION-02的持久版本/事件重取；两包现在部分实现，真实标签/成绩、来源消融/留出、完整会话故障矩阵仍未验收。C-14 的完整质量冻结过程继续保留；冻结查询和合成站点测试不能代替相关性验收或真实来源 S0。当前 17 个搜索来源仍禁用，站点登记默认空。
 
-实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_five_stages/final-report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。
+实际情况见 [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[下一位接手说明](../handoff/NEXT_AGENT.md) 和 [本批测试报告](../../validation/s2_next_five/final-report.json)。[0.1.4 正文抓取报告](../../validation/s2_crawl/test_report.json)、[0.1.3 发现报告](../../validation/s2_discovery/test_report.json)、[0.1.2 报告](../../validation/s0_s2_progress/test_report.json)、[0.1.1 接收审查](../handoff/CLAUDE_S1_REVIEW_20261018.md) 与 [0.1.1 报告](../../validation/s1_review/test_report.json) 继续保留历史。
+
+0.1.9新增保守条件重验证与schema12、真实进程会话故障、来源贡献/外部消融合同及有限容量循环，完整执行与独立复核分别留档。0.1.8的“尚未实现消融/条件304”是历史状态；当前实现已推进，但真实来源消融质量证据、人工标签、长期运行和整包签收仍未满足。[上一轮报告](../../validation/s2_five_stages/final-report.json)继续保留原字节。

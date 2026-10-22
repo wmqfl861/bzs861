@@ -1,0 +1,133 @@
+Internal ctest changing into directory: /workspace/scratch/80f41eb198a3/build-bzs-next
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-bzs-next/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-bzs-next/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/80f41eb198a3/build-bzs-next/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/80f41eb198a3/build-bzs-next/DartConfiguration.tcl
+Test project /workspace/scratch/80f41eb198a3/build-bzs-next
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+      Start  1: core
+
+1: Test command: /workspace/scratch/80f41eb198a3/build-bzs-next/bzs_tests
+1: Working Directory: /workspace/scratch/80f41eb198a3/build-bzs-next
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_quoted_directives
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_selected_subtree
+1: PASS html_hidden_ancestors
+1: PASS html_robots_tokens
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS store_candidate_predicate_agreement
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS migrate_schema_one_preserves_records
+1: PASS migration_rejects_quarantined_and_newer_databases
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_target_tombstone
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: PASS tokenizer_cjk_and_symbols
+1: PASS fts_chinese_uses_index
+1: PASS bm25_ranks_relevance
+1: PASS literal_exactness
+1: PASS html_main_excludes_siblings
+1: PASS delete_keeps_unrelated_jobs_and_sessions
+1: PASS highlights_are_query_relevant_and_exact
+1: PASS revisions_pruned_and_quota_counters
+1: PASS range_windows_are_utf8_safe
+1: PASS migration_from_v1
+1: PASS dedup_and_rrf_fusion
+1: PASS public_url_policy
+1: PASS web_search_merges_and_cools_down
+1: PASS web_search_cache_spares_sources
+1: PASS iri_urls_are_encoded_for_reading
+1: PASS web_read_ingests_and_caches
+1: PASS source_admission_limits
+1: PASS migrate_both_schema_two_layouts_preserves_records
+1: PASS schema_two_quarantine_is_checked_before_migration
+1: PASS deletion_fences_survive_reimport_restart_and_clock_ties
+1: PASS web_noindex_change_is_not_hidden_by_content_reuse
+1: PASS retention_reclaims_before_quota_and_ignores_expired_pins
+1: PASS highlight_clipping_reports_only_visible_terms
+1: PASS web_read_does_not_publish_across_target_deletion
+1: PASS late_success_does_not_cancel_source_cooldown
+1: PASS web_cache_is_scoped_to_owner_and_review_validity
+1: PASS rrf_rejects_invalid_ranks_and_preserves_nondefault_ports
+1: PASS worker_success_schema_cannot_create_a_snapshot_by_default
+1: PASS malformed_source_success_is_partial_and_not_cached
+1: {"tests":81,"passed":81,"assertions":713}
+ 1/19 Test  #1: core .............................   Passed    2.49 sec
+test 2
+      Start  2: batch
+
+2: Test command: /workspace/scratch/80f41eb198a3/build-bzs-next/bzs_batch_tests
+2: Working Directory: /workspace/scratch/80f41eb198a3/build-bzs-next
+2: Test timeout computed to be: 45
+2: PASS ten_explicit_inputs_only_and_ordered_receipts
+2: PASS input_budget_validation_and_owner_scope
+2: PASS execution_identity_does_not_use_search_deduplication
+2: PASS errors_are_isolated_and_default_attempts_do_not_retry
+2: PASS completed_items_survive_pause_restart_resume_without_refetch
+2: PASS pause_or_cancel_during_fetch_fences_late_publication
+2: PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+2: PASS deletion_before_dispatch_stops_only_its_target
+2: PASS unknown_execution_keeps_grants_across_recovery
+2: PASS request_and_byte_budgets_stop_unstarted_items
+2: PASS lease_expiry_and_permission_changes_refuse_late_results
+2: PASS receipt_failure_rolls_back_snapshot_and_index
+2: PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+2: PASS noindex_and_deleted_receipts_never_resurrect_content
+2: PASS api_dispatch_and_fixture_jobs_coexist
+2: PASS deadline_near_int64_max_does_not_overflow_lease
+2: PASS schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index
+2: PASS schema_three_quarantine_is_rejected_before_new_tables
+2: 18 batch tests, 439 assertions, 0 failures
+ 2/19 Test  #2: batch ............................   Passed    0.68 sec
+test 3
+      Start  3: map
+
+3: Test command: /workspace/scratch/80f41eb198a3/build-bzs-next/bzs_map_tests
+3: Working Directory: /workspace/scratch/80f41eb198a3/build-bzs-next
+3: Test timeout computed to be: 45

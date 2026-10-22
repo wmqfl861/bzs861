@@ -1,6 +1,8 @@
 #include "bzs/store.hpp"
 #include "bzs/error.hpp"
 #include "bzs/highlight.hpp"
+#include "bzs/http_cache.hpp"
+#include "bzs/publication.hpp"
 #include "bzs/tokenizer.hpp"
 #include "bzs/sites.hpp"
 #include "bzs/util.hpp"
@@ -150,7 +152,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=11,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=12,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -452,6 +454,13 @@ namespace bzs {
  )SQL");
     }
     if(version<11) { migrate_sessions_locked();exec(db_,"PRAGMA user_version=11"); }
+    if(version<12) {
+      // Legacy robots decisions have no proven validators. They keep their
+      // existing expiry, and can only acquire cache metadata from a full 200.
+      if(!has_column(db_,"robots_cache","http_cache_json"))exec(db_,"ALTER TABLE robots_cache ADD COLUMN http_cache_json TEXT NOT NULL DEFAULT '{}';");
+      if(!has_column(db_,"snapshots","http_cache_bytes"))exec(db_,"ALTER TABLE snapshots ADD COLUMN http_cache_bytes INTEGER NOT NULL DEFAULT 0;");
+      exec(db_,"PRAGMA user_version=12;");
+    }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -522,7 +531,7 @@ namespace bzs {
   void Store::prune_locked(const std::string& document_id, const std::string& keep, std::int64_t newest_revision, const std::string& owner) {
     auto threshold=newest_revision-options_.max_revisions_per_document;
     if(threshold<1)return;
-    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB)) FROM snapshots
+    Stmt list(db_, R"SQL(SELECT id,length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB))+http_cache_bytes FROM snapshots
  WHERE document_id=? AND id!=? AND revision<=? AND id NOT IN (SELECT snapshot_id FROM evidence)
  AND id NOT IN (SELECT r.snapshot_id FROM session_rows r JOIN sessions q ON q.id=r.session_id WHERE q.expires_at>?))SQL");
     list.bind(1, document_id);
@@ -564,6 +573,10 @@ namespace bzs {
     auto representation_key=url_key;
     std::string site_bindings="{}";std::int64_t site_generation=0;
     const auto metadata=Json::parse(meta_json,8*1024*1024);
+    auto http_metadata=Json::object();
+    for(const auto* key:{"http_cache","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
+    const auto http_bytes=http_metadata.size()?static_cast<std::int64_t>(http_metadata.canonical().size()):0;
+    require(http_bytes<=16384,"E_WORKER_PROTOCOL","HTTP revalidation metadata exceeds its bound",502);
     const bool stale_publication=source_kind=="web"&&metadata.has("page_publication_stale")&&metadata.at("page_publication_stale").flag();
     const auto page_sequence=source_kind=="web"&&metadata.has("page_publication_sequence")?metadata.at("page_publication_sequence").num():0;
     bool preserve_current=false;
@@ -600,10 +613,15 @@ namespace bzs {
       if(same.step()) {
         if(source_kind=="web") {
           // Unchanged content: only fetch provenance (meta.fetched_at_ms) moves; the snapshot text stays immutable.
-          Stmt touch(db_, "UPDATE snapshots SET meta_json=? WHERE id=?");
+          Stmt accounting(db_,"SELECT s.http_cache_bytes,u.bytes FROM snapshots s JOIN usage u ON u.owner=? WHERE s.id=?");
+          accounting.bind(1,owner);accounting.bind(2,latest);require(accounting.step(),"E_STORAGE","Missing snapshot accounting",500);
+          const auto delta=http_bytes-accounting.num(0);
+          require(delta<=0||accounting.num(1)<=options_.max_bytes_per_owner-delta,"E_QUOTA","Owner snapshot quota exceeded",507);
+          Stmt touch(db_, "UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
           touch.bind(1, meta_json);
-          touch.bind(2, latest);
+          touch.bind(2, http_bytes);touch.bind(3,latest);
           touch.step();
+          if(delta)usage_add_locked(owner,delta,0);
         }
         Stmt representation(db_,"UPDATE documents SET representation_key=? WHERE id=?");representation.bind(1,representation_key);representation.bind(2,did);representation.step();
         if(parsed.publication.has("version")&&!stale_publication) {
@@ -618,7 +636,7 @@ namespace bzs {
     // Reclaim only old, unreferenced versions that this successful write would
     // supersede. A quota/insert failure rolls the deletions back with the write.
     if(!did.empty())prune_locked(did,preserve_current?latest:"",revision+1,owner);
-    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size()+(publication=="{}"?0:publication.size())+(representation_publication=="{}"?0:representation_publication.size())+(site_bindings=="{}"?0:site_bindings.size()));
+    auto bytes=static_cast<std::int64_t>(input.raw.size()+parsed.text.size()+(publication=="{}"?0:publication.size())+(representation_publication=="{}"?0:representation_publication.size())+(site_bindings=="{}"?0:site_bindings.size()))+http_bytes;
     {
       Stmt used(db_, "SELECT bytes,snapshots FROM usage WHERE owner=?");
       used.bind(1, owner);
@@ -641,7 +659,7 @@ namespace bzs {
     }
     auto sid=random_id();
     auto eid=random_id();
-    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind,publication_json,representation_publication_json,site_bindings_json,site_publication_generation) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    Stmt ins(db_, "INSERT INTO snapshots(id,extraction_id,document_id,revision,title,canonical_text,raw_content,raw_hash,content_type,parser_version,created_at,index_allowed,links_json,meta_json,source_kind,publication_json,representation_publication_json,site_bindings_json,site_publication_generation,http_cache_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
     ins.bind(1, sid);
     ins.bind(2, eid);
     ins.bind(3, did);
@@ -658,7 +676,7 @@ namespace bzs {
     ins.bind(14, meta_json);
     ins.bind(15, source_kind);
     ins.bind(16, publication);ins.bind(17,representation_publication);
-    ins.bind(18,site_bindings);ins.bind(19,site_generation);
+    ins.bind(18,site_bindings);ins.bind(19,site_generation);ins.bind(20,http_bytes);
     ins.step();
     if(preserve_current) {
       Stmt upd(db_,"UPDATE documents SET revision=revision+1 WHERE id=?");upd.bind(1,did);upd.step();
@@ -707,6 +725,32 @@ namespace bzs {
     require(input.raw.find('\0')==std::string::npos&&parsed.text.find('\0')==std::string::npos, "E_UTF8", "Worker output contains NUL", 502);
     require(allow_empty||!parsed.text.empty(), "E_PARSE_FAILED", "No readable text", 422);
     Json m=meta.is_object()?meta:Json::object();
+    require(deletion_generation_locked(owner,input.url)==expected_deletion_generation,"E_TARGET_DELETED",
+            "Document was deleted after this read started",409);
+    if(m.has("http_revalidation")) {
+      const auto binding=m.at("http_revalidation");
+      binding.allowed({"version","base_snapshot_id","base_cache_sha256","base_metadata_sha256","binding_id"});
+      require(binding.at("version").str()=="bzs-http-revalidation-1","E_WORKER_PROTOCOL","Invalid revalidation version",502);
+      Stmt base(db_,"SELECT s.id,s.meta_json,s.raw_hash,s.canonical_text,s.title,s.parser_version,s.content_type,s.links_json,s.publication_json,s.representation_publication_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=? AND d.deleted=0 AND s.source_kind='web'");
+      base.bind(1,owner);base.bind(2,input.url);
+      require(base.step()&&base.text(0)==binding.at("base_snapshot_id").str(),"E_REVALIDATION_STALE","Revalidated body is no longer current",409);
+      const auto old=Json::parse(base.text(1),8*1024*1024);
+      require(old.has("http_cache")&&sha256(old.at("http_cache").canonical())==binding.at("base_cache_sha256").str()&&
+              sha256(old.canonical())==binding.at("base_metadata_sha256").str()&&
+              sha256(owner+"\n"+base.text(0)+"\n"+sha256(old.canonical()))==binding.at("binding_id").str(),
+              "E_REVALIDATION_STALE","Revalidation base metadata changed",409);
+      require(base.text(2)==sha256(input.raw)&&base.text(3)==parsed.text&&base.text(4)==parsed.title&&base.text(5)==parsed.parser_version&&
+              base.text(6)==input.content_type&&Json::parse(base.text(7)).canonical()==parsed.links.canonical(),
+              "E_WORKER_PROTOCOL","304 cannot replace the retained body",502);
+      require(publication_covers(parsed.publication,Json::parse(base.text(8),8*1024*1024)),"E_WORKER_PROTOCOL","304 cannot relax the retained publication policy",502);
+      parsed.publication=current_publication_ceiling_locked(owner,input.url,parsed.publication);
+      if(parsed.representation_publication.has("version"))parsed.representation_publication=current_publication_ceiling_locked(owner,input.url,parsed.representation_publication);
+      parsed.index_allowed=parsed.publication.at("index_allowed").flag();
+      // This is the original body's history boundary, not the newer request's
+      // boundary. Restrictions observed before this 304 was dispatched count.
+      m.set("page_publication_sequence",old.at("page_publication_sequence"));
+      m.set("site_publication_generation",old.at("site_publication_generation"));
+    }
     SourceDocument doc=input;
     if(static_cast<std::int64_t>(doc.raw.size())>max_raw_bytes) {
       doc.raw.clear();
@@ -740,6 +784,30 @@ namespace bzs {
     j.set("fetched_at_ms", meta.has("fetched_at_ms")&&meta.at("fetched_at_ms").is_integer()?meta.at("fetched_at_ms").num():s.num(1));
     return j;
   }
+  std::optional<RevalidationBase> Store::revalidation_base(const std::string& owner,const std::string& url) {
+    std::lock_guard lock(mutex_);
+    Stmt row(db_,"SELECT s.id,s.raw_content,s.canonical_text,s.title,s.parser_version,s.content_type,s.index_allowed,s.links_json,s.meta_json,s.publication_json,s.representation_publication_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=? AND d.deleted=0 AND s.source_kind='web'");
+    row.bind(1,owner);row.bind(2,url);if(!row.step())return std::nullopt;
+    auto meta=Json::parse(row.text(8),8*1024*1024);
+    if(!meta.has("http_cache")||!meta.has("page_publication_sequence")||!meta.has("site_publication_generation")||
+       !meta.has("raw_stored")||!meta.at("raw_stored").flag()||!meta.has("final_url")||meta.at("final_url").str()!=url||
+       !meta.has("redirects")||!meta.at("redirects").is_array()||meta.at("redirects").size()!=0||
+       (meta.has("text_truncated")&&meta.at("text_truncated").flag())||
+       (meta.has("crawl_publication_urls")&&(meta.at("crawl_publication_urls").size()!=1||meta.at("crawl_publication_urls").at(std::size_t{0}).str()!=url)))return std::nullopt;
+    Json cache;
+    try { cache=validate_http_cache(meta.at("http_cache"),url); }
+    catch(const Error&) { return std::nullopt; }
+    RevalidationBase base;base.snapshot_id=row.text(0);base.cache_sha256=sha256(cache.canonical());base.metadata_sha256=sha256(meta.canonical());
+    base.document={url,row.text(1),row.text(5),row.text(3)};
+    base.parsed.title=row.text(3);base.parsed.text=row.text(2);base.parsed.parser_version=row.text(4);base.parsed.content_type=row.text(5);
+    base.parsed.index_allowed=row.num(6)!=0;base.parsed.links=Json::parse(row.text(7));
+    base.parsed.publication=Json::parse(row.text(9),8*1024*1024);base.parsed.representation_publication=Json::parse(row.text(10),8*1024*1024);
+    if(!base.parsed.publication.has("version"))return std::nullopt;
+    base.parsed.publication=current_publication_ceiling_locked(owner,url,base.parsed.publication);
+    if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,url,base.parsed.representation_publication);
+    base.parsed.index_allowed=base.parsed.publication.at("index_allowed").flag();
+    base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));return base;
+  }
   Json Store::snapshot(const std::string& owner, const std::string& id) {
     std::lock_guard lock(mutex_);
     return snapshot_locked(owner, id);
@@ -772,7 +840,7 @@ namespace bzs {
     s.bind(1, id);
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Document not found", 404);
-    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB))),0),COUNT(*) FROM snapshots WHERE document_id=?");
+    Stmt size(db_, "SELECT COALESCE(SUM(length(CAST(raw_content AS BLOB))+length(CAST(canonical_text AS BLOB))+length(CAST(CASE WHEN publication_json='{}' THEN '' ELSE publication_json END AS BLOB))+length(CAST(CASE WHEN representation_publication_json='{}' THEN '' ELSE representation_publication_json END AS BLOB))+length(CAST(CASE WHEN site_bindings_json='{}' THEN '' ELSE site_bindings_json END AS BLOB))+http_cache_bytes),0),COUNT(*) FROM snapshots WHERE document_id=?");
     size.bind(1, id);
     size.step();
     auto freed=size.num(0), count=size.num(1);

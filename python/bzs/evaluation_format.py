@@ -29,7 +29,7 @@ SHA = re.compile(r"[0-9a-f]{64}")
 IDENT = re.compile(r"[A-Za-z0-9_.:-]{1,100}")
 
 METHOD = {
-    "version": "bzs-relevance-1",
+    "version": "bzs-relevance-2",
     "scope": "fixed_candidate_relevance",
     "cutoff": 10,
     "grades": [0, 1, 2, 3],
@@ -46,7 +46,7 @@ METHOD = {
     "duplicate_urls": "reject_within_each_ranking_no_url_normalization",
     "aggregation": "macro_by_query_separate_splits",
     "holdout": "unsupported_and_excluded",
-    "source_ablation": "not_implemented",
+    "source_ablation": "optional_external_manifest_v1",
 }
 
 THRESHOLDS = (
@@ -260,7 +260,8 @@ def load_package(path: str | Path) -> tuple[dict, dict, dict, dict]:
     need(manifest["pool_sha256"] == pool_sha and manifest["method_sha256"] == method_sha,
          "E_EVAL_IDENTITY", "package file identity mismatch")
     need(canonical_json(method) == canonical_json(METHOD), "E_EVAL_METHOD", "unsupported or changed evaluation method")
-    fields(pool, {"schema_version", "kind", "dataset", "selection", "input_sha256", "input", "provenance"}, "pool")
+    pool_fields = {"schema_version", "kind", "dataset", "selection", "input_sha256", "input", "provenance"}
+    fields(pool, pool_fields | ({"source_ablation"} if "source_ablation" in pool else set()), "pool")
     integer(pool["schema_version"], "schema version", VERSION, VERSION)
     need(pool["kind"] == "bzs-evaluation-pool", "E_EVAL_SCHEMA", "unsupported pool")
     dataset = pool["dataset"]
@@ -291,6 +292,9 @@ def load_package(path: str | Path) -> tuple[dict, dict, dict, dict]:
     validate_input(pool["input"], snapshot, selection)
     digest(pool["input_sha256"], "candidate input")
     need(isinstance(pool["provenance"], dict), "E_EVAL_SCHEMA", "invalid provenance")
+    if "source_ablation" in pool:
+        from .evaluation_ablation import validate_manifest
+        validate_manifest(pool["source_ablation"], pool)
     bindings = {"package_sha256": manifest_sha, "pool_sha256": pool_sha, "method_sha256": method_sha,
                 "corpus_sha256": corpus_digest(pool)}
     return pool, method, manifest, bindings

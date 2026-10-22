@@ -1,0 +1,40 @@
+{
+  "created_at": "2026-10-22T01:39:03.145000+00:00",
+  "compile_command": [
+    "g++",
+    "-std=c++20",
+    "-g",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs861/include",
+    "-I",
+    "/usr/include/json-c",
+    "-I",
+    "/usr/include/libxml2",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-publication-cases-v2.cpp",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-publication-cases-v2"
+  ],
+  "compile_exit_code": 0,
+  "library_sha256_before_link": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "library_sha256_after_link": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "harness_sha256": "0392f261349f82727c533484fb31a5993cb76864acc5310f44f555af1f0ec0a1",
+  "binary_sha256": "ba5350049684056267ebdea4eb4694a23b0633456676bbf676ff163e87be7557",
+  "source_sha256": {
+    "src/store.cpp": "9ec8f0b3898de2bab80976a341abdb645a952692bf05a79e549d22233601e297",
+    "src/publication.cpp": "a2ed296bedc98b66c6cfd719e6751123f025ee055343a41eb364f3a20a161deb",
+    "src/map.cpp": "3311cfd623ab0c81c2236b3ff822d3864252b63ea4daf4b54c27926475c276bc",
+    "include/bzs/store.hpp": "4a449ab72009fd84803094636944bc4e729588364a34dbe800e73166f2dd4005"
+  },
+  "v1_correction": "Publication tightening can change snapshot identity; v2 verifies retained body and prior evidence, effective follow/index policy, and permits a later full 200 to restore publication.",
+  "run_exit_code": 0,
+  "log_sha256": "2e1ec82f079c10af109992fa780f1a75e0065150ccf17e5e25acc8396614a3da",
+  "execution_role": "independent_of_core_author",
+  "network": "synthetic WorkerPort; no external requests",
+  "database_mutation": "public API only; no SQL writes"
+}

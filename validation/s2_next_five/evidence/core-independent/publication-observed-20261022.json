@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-10-22T01:37:29.931779+00:00",
+  "compile_command": [
+    "g++",
+    "-std=c++20",
+    "-g",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs861/include",
+    "-I",
+    "/usr/include/json-c",
+    "-I",
+    "/usr/include/libxml2",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-publication-cases.cpp",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/core-independent/review-publication-cases-observed"
+  ],
+  "compile_exit_code": 0,
+  "library_sha256_before_link": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "library_sha256_after_link": "b84180f0aea8d83fe50fc88a18688979fce86346c7b1dd7337d24a13fac5c467",
+  "harness_sha256": "737b08d7e257f1e42d8878cdbd2818fc1163fee5dba9949d7bfd8724a2a3aae8",
+  "binary_sha256": "b98b27e9af2d2324f718347a933ddaa611729c117eb3b8c6f9af87377d64d24b",
+  "run_exit_code": 1,
+  "log_sha256": "8ad1c9e752075006fffba9acf73bd0ddcf0652d45f14e53c2a00c2f45785d1a1",
+  "execution_role": "independent_of_core_author",
+  "network": "synthetic WorkerPort; no external requests",
+  "database_mutation": "public API only; no SQL writes"
+}

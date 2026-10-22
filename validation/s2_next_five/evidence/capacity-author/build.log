@@ -1,0 +1,36 @@
+[1/22] Building CXX object CMakeFiles/bzs_capacity_cycles_tests.dir/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp.o
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp: In function ‘void {anonymous}::continuous_arrivals_follow_durable_round_robin_across_twelve_reopens()’:
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp:171:3: warning: this ‘while’ clause does not guard... [-Wmisleading-indentation]
+  171 |   while(!reads.empty())advance(reads,false);while(!maps.empty())advance(maps,true);CHECK(!h.store->lease_next_read());CHECK(!h.web->lease_map());
+      |   ^~~~~
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp:171:45: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘while’
+  171 |   while(!reads.empty())advance(reads,false);while(!maps.empty())advance(maps,true);CHECK(!h.store->lease_next_read());CHECK(!h.web->lease_map());
+      |                                             ^~~~~
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp: In function ‘int main(int, char**)’:
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp:234:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  234 |     if(argc>1&&name!=argv[1])continue;++executed;
+      |     ^~
+/workspace/scratch/80f41eb198a3/bzs861-capacity-cycles/tests/capacity_cycles.cpp:234:39: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  234 |     if(argc>1&&name!=argv[1])continue;++executed;
+      |                                       ^~
+[2/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/json.cpp.o
+[3/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/util.cpp.o
+[4/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/query.cpp.o
+[5/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/html.cpp.o
+[6/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o
+[7/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+[8/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/store.cpp.o
+[9/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+[10/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/publication.cpp.o
+[11/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/retention.cpp.o
+[12/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/batch.cpp.o
+[13/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/map.cpp.o
+[14/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+[15/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+[16/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/sites.cpp.o
+[17/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+[18/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+[19/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/web.cpp.o
+[20/22] Building CXX object core/CMakeFiles/bzs_core.dir/src/service.cpp.o
+[21/22] Linking CXX static library core/libbzs_core.a
+[22/22] Linking CXX executable bzs_capacity_cycles_tests

@@ -1,0 +1,27 @@
+{
+  "recorded_at_utc": "2026-10-22T01:31:00.092154+00:00",
+  "worker_commit": "98ae10d5f40bbb75db90f6e60dc4d872c004afed",
+  "parent_commit": "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+  "worktree_clean": true,
+  "test_result": {
+    "passed": 97,
+    "failures": 0,
+    "errors": 0,
+    "duration_seconds": 1.25
+  },
+  "change": "Match the C++ canonical HTTP-date lower year boundary (1601); add malformed grant and full-200 metadata tests.",
+  "source_sha256": {
+    "docs/HTTP_REVALIDATION.md": "7917f7cd40b0a60681e7ba46d46310ac56536e32780fa2795327f43d2238021c",
+    "python/bzs/worker/revalidation.py": "967a76af35fd143a28a6b46947c84356cf061b0ec05c707e0d81f7d9a85e533b",
+    "python/tests/test_http_revalidation.py": "be92bbb8df43a005f3f57e3c51ad5c46388faa2327906fe7ecec8c783fb5c459"
+  },
+  "evidence": [
+    "worker-date-alignment.log",
+    "worker-date-alignment.xml"
+  ],
+  "prior_focused_suite": {
+    "commit": "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+    "passed": 343,
+    "log": "worker-focused.log"
+  }
+}

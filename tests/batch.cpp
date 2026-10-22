@@ -305,7 +305,7 @@ namespace {
     }
     {
       Store store(t.path/"db");
-      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==11);
+      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==12);
       CHECK(scalar(store.raw_handle(),"SELECT rowid FROM content_fts")==index_rowid);
       CHECK(store.snapshot("alice",historic.at("snapshot_id").str()).canonical()==historic.canonical());
       CHECK(store.snapshot("alice",current.at("snapshot_id").str()).canonical()==current.canonical());

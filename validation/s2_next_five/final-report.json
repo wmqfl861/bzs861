@@ -1,0 +1,419 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.9",
+  "recorded_at_utc": "2026-10-22T01:58:14.809037+00:00",
+  "baseline": {
+    "version": "0.1.8",
+    "schema": 11,
+    "commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+    "tree": "522c5d78fdb9e935bad976e561d92c74f20b7a12",
+    "verified_historical_ci_run": 39435330847
+  },
+  "schema": 12,
+  "plan": "docs/handoff/S2_NEXT_FIVE_20261021.md",
+  "runtime_source_commit_local": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+  "execution_inputs": {
+    "path": "final-v2-execution-inputs.json",
+    "sha256": "078cd1c39a5be4219c485fc298dc0882fcc4746f07f1347174ff4f590c0430ae",
+    "count": 188,
+    "files_unchanged_at_report": true
+  },
+  "final_source_manifest": {
+    "path": "final-source-manifest.json",
+    "sha256": "87b5b6fb4ebdf893461ffcd26dc4a017be4d9ea814b1c55817a892defb58dc18",
+    "files": 195
+  },
+  "environment": {
+    "path": "environment.json",
+    "sha256": "706a97a2ed2fa5c19a0f00002c82a8ff0c27c009471095ce537d5bcc94d6bbb4"
+  },
+  "review": {
+    "path": "final-review.json",
+    "sha256": "6c6e9fd6cb350c6dbf9b1023a0c00edf3432c0695f5731384dbd5e34349209dd"
+  },
+  "result": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 19,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 138.33,
+      "command_elapsed_seconds": 138.374,
+      "log": "final-v2-ctest-restored.log",
+      "junit": "final-v2-ctest.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 81,
+          "failed": 0,
+          "elapsed_seconds": 2.2623,
+          "assertions": 713
+        },
+        {
+          "name": "batch",
+          "passed": 18,
+          "failed": 0,
+          "elapsed_seconds": 0.530253,
+          "assertions": 439
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 0.875353,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 5.30097,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 4.70119,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 2.15978,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 0.925452,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 12.127,
+          "assertions": 283
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 1.14919,
+          "assertions": 333
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 8.48784,
+          "assertions": 4800
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.1598,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 5.69456
+        },
+        {
+          "name": "e2e_web",
+          "passed": 14,
+          "failed": 0,
+          "elapsed_seconds": 6.03478
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0,
+          "elapsed_seconds": 3.7414
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 9.31861
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0,
+          "elapsed_seconds": 23.7412
+        },
+        {
+          "name": "e2e_session_recovery",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 27.52
+        },
+        {
+          "name": "e2e_revalidation",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 8.65124
+        },
+        {
+          "name": "python_worker",
+          "passed": 984,
+          "failed": 0,
+          "elapsed_seconds": 14.9416
+        }
+      ]
+    },
+    "native_sanitizer_executables": 11,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "dependencies": "No broken requirements found.",
+    "independent_final_upgrade": {
+      "old_schema": 11,
+      "new_schema": 12,
+      "legacy_tables_preserved": 39,
+      "old_snapshots": 5,
+      "old_evidence_records": 2,
+      "jobs_across_two_owners": 8,
+      "old_robots_records": 2,
+      "backup_quarantine_preserved": true,
+      "report": "evidence/schema12-migration/REVIEW_RESULT.json"
+    },
+    "successful_final_commands": 22,
+    "failed_initial_command_preserved": [
+      {
+        "record": "final-v2-ctest-command.json",
+        "record_sha256": "46cd81b8c95a6fa013386d53ae6217fca2888f8f2ab42ad316fecdb1a2e7d8a6",
+        "log": "final-v2-ctest.log",
+        "log_sha256": "9a16e5afc7b0c6a5f1661f8098ec27d7c7418eb73d31ff5d91c59ba0dd568e43",
+        "exit_code": 8,
+        "elapsed_seconds": 131.525
+      }
+    ],
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "counting_note": "Overlapping native, sanitizer, author and independent cases are not added to product acceptance."
+  },
+  "successful_commands": [
+    {
+      "record": "final-v2-asan-batch-command.json",
+      "record_sha256": "9a889474ce14d428c8d1123e5c096ce1564d53bbfbe137326755d84be6431dca",
+      "log": "final-v2-asan-batch.log",
+      "log_sha256": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+      "exit_code": 0,
+      "elapsed_seconds": 2.079
+    },
+    {
+      "record": "final-v2-asan-build-command.json",
+      "record_sha256": "8f60f4cc1cdd6fc9cfe93d3c0f6d939d19764de2cb998d7f39e3192bab451582",
+      "log": "final-v2-asan-build.log",
+      "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "exit_code": 0,
+      "elapsed_seconds": 0.022
+    },
+    {
+      "record": "final-v2-asan-capacity-cycles-command.json",
+      "record_sha256": "8c7e58a4587fad1e91aa9f90f9a63cd6047a27be95bbb53aee3941a5f467bedc",
+      "log": "final-v2-asan-capacity-cycles.log",
+      "log_sha256": "8f5133e41db8bb1ecc44949c4e3187047d8c8d74993a1d64294d791c788ff893",
+      "exit_code": 0,
+      "elapsed_seconds": 29.032
+    },
+    {
+      "record": "final-v2-asan-configure-command.json",
+      "record_sha256": "ec26852af1a9d93f78194816bec9e713c9ea5dd34457b40397923053eadb0333",
+      "log": "final-v2-asan-configure.log",
+      "log_sha256": "1f5716f7cbeb8d02971b15daa8c15ddda62bcce2ffdac5854882303ebc0cb254",
+      "exit_code": 0,
+      "elapsed_seconds": 1.194
+    },
+    {
+      "record": "final-v2-asan-contracts-command.json",
+      "record_sha256": "5996a3028b3ba7bdca74541a15fe57a6d3812a51469c6a348b0fdd8b491369ba",
+      "log": "final-v2-asan-contracts.log",
+      "log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "exit_code": 0,
+      "elapsed_seconds": 0.687
+    },
+    {
+      "record": "final-v2-asan-core-command.json",
+      "record_sha256": "9a21af63e29b161f9c669bd5890bbf91ee4034912907492e334a091163226003",
+      "log": "final-v2-asan-core.log",
+      "log_sha256": "25fbfa64669cc41bdac59a26c936717e81fb3486ebdde80db13a63cf33d4fc4f",
+      "exit_code": 0,
+      "elapsed_seconds": 5.825
+    },
+    {
+      "record": "final-v2-asan-crawl-command.json",
+      "record_sha256": "76230d5d388f87790cc029dc433e34e2f4fa5e4af57ca5e9144baa7036520508",
+      "log": "final-v2-asan-crawl.log",
+      "log_sha256": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+      "exit_code": 0,
+      "elapsed_seconds": 19.196
+    },
+    {
+      "record": "final-v2-asan-fairness-command.json",
+      "record_sha256": "1527ed052c0702acc0eacbf3a26b5fcab88bf2beae4b855a6be0151d2f2c1480",
+      "log": "final-v2-asan-fairness.log",
+      "log_sha256": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+      "exit_code": 0,
+      "elapsed_seconds": 2.837
+    },
+    {
+      "record": "final-v2-asan-map-command.json",
+      "record_sha256": "caed783781a0a13d400dac6e399c563128328d9e498cca6426efb2fb578258ad",
+      "log": "final-v2-asan-map.log",
+      "log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+      "exit_code": 0,
+      "elapsed_seconds": 2.792
+    },
+    {
+      "record": "final-v2-asan-retention-command.json",
+      "record_sha256": "ad62396316c13201c6af9158eabedd511559648df308a0cbebae88d9803dbbb9",
+      "log": "final-v2-asan-retention.log",
+      "log_sha256": "35c4e2081c04c3f5454dfcc458acdca0559f7b66c369dd14a4193ddb51eeac8e",
+      "exit_code": 0,
+      "elapsed_seconds": 6.333
+    },
+    {
+      "record": "final-v2-asan-revalidation-command.json",
+      "record_sha256": "2bb7a5407bd4de7b328d14e04a227085fc28a972698af1dad619e00701601123",
+      "log": "final-v2-asan-revalidation.log",
+      "log_sha256": "c0d73f75d254a6248d26fc440326d86a0fbaec855d1f4b5e352c5689e70318ad",
+      "exit_code": 0,
+      "elapsed_seconds": 4.38
+    },
+    {
+      "record": "final-v2-asan-sessions-command.json",
+      "record_sha256": "3c961b4d12e6b4ac5981ccf1cae32ed7dacd49125b219cbdc4b06f9ee82e9a89",
+      "log": "final-v2-asan-sessions.log",
+      "log_sha256": "f692d4928d18df151c90b3c4ca66939441f90da9440de12369a510920cf46a15",
+      "exit_code": 0,
+      "elapsed_seconds": 43.253
+    },
+    {
+      "record": "final-v2-asan-site-publication-command.json",
+      "record_sha256": "339c69284e185bab2e58eabced5bdd6f66b129de635db1ea01ecd00495f23b8a",
+      "log": "final-v2-asan-site-publication.log",
+      "log_sha256": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+      "exit_code": 0,
+      "elapsed_seconds": 15.041
+    },
+    {
+      "record": "final-v2-ctest-restored-command.json",
+      "record_sha256": "1547ffcf2e005dacdb9125ad990471c63e649aac94ef508b4bce23b237c2f4f1",
+      "log": "final-v2-ctest-restored.log",
+      "log_sha256": "20f9bb78118521f04d5a78dceea6c64763b7bb16794ad5de674f13bc1d971a3e",
+      "exit_code": 0,
+      "elapsed_seconds": 138.374
+    },
+    {
+      "record": "final-v2-debug-build-command.json",
+      "record_sha256": "d91ce8b764077d3fde6efda8730def8886074b37a2cfc117279cf062f07ffc4b",
+      "log": "final-v2-debug-build.log",
+      "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "exit_code": 0,
+      "elapsed_seconds": 0.026
+    },
+    {
+      "record": "final-v2-debug-configure-command.json",
+      "record_sha256": "c66df22ff788742e2e1732370cdad2ad23678d3a1b1d8761bcd00bb39084d4dc",
+      "log": "final-v2-debug-configure.log",
+      "log_sha256": "6a0d8ce593df3cc7a37f783f858d615036846e231936bd68693ad1ef0f7a2609",
+      "exit_code": 0,
+      "elapsed_seconds": 1.231
+    },
+    {
+      "record": "final-v2-dependencies-command.json",
+      "record_sha256": "b9a2ac79acf6651dd2e81064fd133ffc2790d80ec80ac94f123deb75671636fe",
+      "log": "final-v2-dependencies.log",
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "exit_code": 0,
+      "elapsed_seconds": 0.29
+    },
+    {
+      "record": "final-v2-design-contracts-command.json",
+      "record_sha256": "3eb5def046af214780d1cd9048b9b3ac6a961274c1da64cf6acfe16e90f81fbf",
+      "log": "final-v2-design-contracts.log",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0,
+      "elapsed_seconds": 0.44
+    },
+    {
+      "record": "final-v2-package-install-command.json",
+      "record_sha256": "8dfe69a7e966cb8aeef10a8a061ac3d9fd1066c5f62876eeef463521f73abe8a",
+      "log": "final-v2-package-install.log",
+      "log_sha256": "d43e639d69f74013c0c92ddc7c3e73be43b582d2e696453e5740c5e36a579a4f",
+      "exit_code": 0,
+      "elapsed_seconds": 0.851
+    },
+    {
+      "record": "final-v2-plan-guard-command.json",
+      "record_sha256": "fdd6d1ae4846864e22a1f6523803a48f0224852cebb2ae48b17207cd48be6d1c",
+      "log": "final-v2-plan-guard.log",
+      "log_sha256": "56871f37e47da52295ab740fc6566219efd36699410e1575e8a02d1358cc2e5e",
+      "exit_code": 0,
+      "elapsed_seconds": 0.753
+    },
+    {
+      "record": "final-v2-planning-command.json",
+      "record_sha256": "dc2f23e93f8d6798774a08f974f9b63b48f465cfb2d580c902d70e21002ef42a",
+      "log": "final-v2-planning.log",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0,
+      "elapsed_seconds": 0.05
+    },
+    {
+      "record": "final-v2-preservation-command.json",
+      "record_sha256": "a96c3f0a382c4791d0562e62d28bb0fd9cd5dadd080017881263d66a2a6e2176",
+      "log": "final-v2-preservation.log",
+      "log_sha256": "e74cba8715bdac07a6d2c5d46c4df44123ee5fc67cbbab1528a689984dcb4617",
+      "exit_code": 0,
+      "elapsed_seconds": 1.209
+    }
+  ],
+  "failed_initial_final_attempts": [
+    {
+      "record": "final-v2-ctest-command.json",
+      "record_sha256": "46cd81b8c95a6fa013386d53ae6217fca2888f8f2ab42ad316fecdb1a2e7d8a6",
+      "log": "final-v2-ctest.log",
+      "log_sha256": "9a16e5afc7b0c6a5f1661f8098ec27d7c7418eb73d31ff5d91c59ba0dd568e43",
+      "exit_code": 8,
+      "elapsed_seconds": 131.525
+    }
+  ],
+  "revision": "execution-revision.json",
+  "restoration": "final-v2-executable-restoration.json",
+  "preservation": {
+    "status": "passed",
+    "byte_preserved_files": 569,
+    "packages": 83,
+    "slices": 10,
+    "acceptance_ids": 161,
+    "status_counts": {
+      "partial": 36,
+      "not_started": 47,
+      "accepted": 0
+    },
+    "golden_content_inspected_for_tuning": false,
+    "enabled_sources": 0,
+    "registered_sites": 0
+  },
+  "boundaries": [
+    "This is five implementation increments within existing partial work packages, not five full slice acceptances.",
+    "No real source approval, target deployment availability, human qrels, real ablation quality, holdout tuning or full release gate success is claimed.",
+    "Synthetic HTTP/process recovery is not physical power loss; controlled-clock cycles are not long-duration throughput or multi-node acceptance.",
+    "Backups remain quarantined without independent revocation continuity.",
+    "Exact published SHA Linux/Windows CI must be verified after publication; this immutable pre-publication report cannot assert future results."
+  ]
+}

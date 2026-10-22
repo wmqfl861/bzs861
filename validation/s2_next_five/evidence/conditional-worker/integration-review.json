@@ -1,0 +1,57 @@
+{
+  "reviewed_at_utc": "2026-10-22T01:31:29.820255+00:00",
+  "scope": "Read-only integration review of in-progress core implementation against the committed Worker protocol; does not replace native or end-to-end test evidence.",
+  "worker_commits": [
+    "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+    "98ae10d5f40bbb75db90f6e60dc4d872c004afed"
+  ],
+  "findings": [
+    {
+      "id": "CW-INTEGRATION-01",
+      "status": "fixed_in_parent_worktree_and_reread",
+      "finding": "Complete map page metadata is top-level http_cache; decoding only nested page omitted the validator base.",
+      "resolution": "Parent copies the top-level metadata into the page before decode_read and rejects disagreement when both copies are present.",
+      "path": "src/map_service.cpp"
+    },
+    {
+      "id": "CW-INTEGRATION-02",
+      "status": "fixed_in_parent_worktree_and_reread",
+      "finding": "Collecting the latest expired robots denial while older pinned rules remain could expose old validators after retention.",
+      "resolution": "Parent retains the newest decision until older rows can be removed, then collects the remaining singleton in a bounded additional pass.",
+      "path": "src/retention.cpp"
+    },
+    {
+      "id": "CW-INTEGRATION-03",
+      "status": "fixed_and_tested_in_worker_commit_98ae10d",
+      "finding": "Core rejected years before 1601 while Worker canonical date checking could accept earlier dates, turning a complete read into a protocol failure.",
+      "resolution": "Worker now uses the same lower year bound; 97 conditional tests passed, including two new old-date cases.",
+      "path": "python/bzs/worker/revalidation.py"
+    },
+    {
+      "id": "CW-INTEGRATION-04",
+      "status": "reported_to_parent_for_followup",
+      "finding": "A failed refresh with nofollow but no noindex/nosnippet can change document_publication without a publication generation tracked by publication_history_locked; a later headerless 304 could recover snapshot follow_allowed and old links.",
+      "requested_verification": "Add failed-refresh nofollow -> headerless 304 -> crawl-frontier regression, and preserve the effective current follow restriction for 304 if confirmed.",
+      "paths": [
+        "src/publication.cpp",
+        "src/store.cpp",
+        "src/map_service.cpp",
+        "src/map.cpp"
+      ]
+    }
+  ],
+  "positive_checks": [
+    "cached_robots selects the newest decision first and only then checks freshness; it does not skip a newer denial to admit old allowed content.",
+    "304 page commit checks owner/current snapshot/body/cache metadata identity and preserves the original body publication and site-generation boundaries.",
+    "Map 304 validates request/byte usage and robots decision, and rebuilds only retained, bounded complete discovery links.",
+    "Profile-only configuration changes remove conditions before the original GET; malformed bindings or unsupported 304 never trigger a retry."
+  ],
+  "reviewed_source_sha256": {
+    "src/map_service.cpp": "e8d50fd1cc2c2b19bfa468f4e7f618ca1c6e25ba2ac2593114447635702892ca",
+    "src/map.cpp": "1fce025db9044694b3e2d5c4068f838f9fbd627b2b87f4fd513405e56cf80215",
+    "src/store.cpp": "afc336f8ea7dd2d2bf806f4d761f9a44f79e407f74c15b8141d757f9f705ab0c",
+    "src/http_cache.cpp": "745d9b3a7ba3a77f0443c79a38c5f8b4dd1871488d69a3df1a00a59979df4ce4",
+    "src/retention.cpp": "78e3eed4b5551f403659c871f63f3f2a8931a564ea77dd7d01cb8e63ff533e2b",
+    "src/publication.cpp": "6fe757d7f8c2a76daebd8da54408e17c4210ce96364f7d026ed8d65d6c204003"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "version": "0.1.9",
+  "recorded_at_utc": "2026-10-22T01:56:08.067757+00:00",
+  "status": "scoped_independent_reviews_completed_no_unresolved_product_blocker",
+  "runtime_source_commit_local": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+  "runtime_library_sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf",
+  "records": {
+    "evidence/conditional-worker/integration-review-final.json": "19f200a2eedd95c88d5e29637a997f12f36f0717194cfd5f29424ae54781a6ec",
+    "evidence/conditional-worker/nofollow-code-freeze/code-freeze-context.json": "f23d3380ee56a2dd31046f6721d08064db7acb0571b29fc1bd358ae6b64a971d",
+    "evidence/core-independent/verification-d9fba20.json": "455e1d9710c77f7b67cd95175779923fb5d4f95d9791ec248d5a9d98cccede5a",
+    "evidence/core-independent/REVIEW.md": "bba808fda1fcf006e007433fe21340448775452ef22020a59ab172d48af3c7d5",
+    "evidence/qa-independent/REVIEW_RESULT.json": "d0735a64db7226465828a446a5c3afc99ab5adb4ef84972533cf830d51a6c12c",
+    "evidence/schema12-migration/REVIEW_RESULT.json": "1cd26e7edc241e1f2f3726e2a817bbf20ccc693502ba89b6bdea987b17c63e28",
+    "evidence/plan-independent/plan-preservation.json": "e8497ac00f20d46c5b0cd1c6cd63bfc45ad8ce9b5097bee305fe090bacfd9580",
+    "evidence/plan-independent/document-review.json": "1c86083df8ec3fd862b3f163824a475a466ab963fb7db0856169cc59289fa1d5",
+    "evidence/session-author/AUTHOR_RESULT.json": "0578a2195bbddbb1d851d6ea0ea700c364474cfd7084569dd1f64421fe6f5ee5",
+    "evidence/capacity-author/AUTHOR_RESULT.json": "9542a8c3c602aa1134f27bff0b36e9555d89eaa95127eba35380514fb0e2727c"
+  },
+  "findings": [
+    {
+      "id": "page-cache-envelope",
+      "status": "fixed",
+      "detail": "Real Worker map page cache metadata was top-level; core now bridges it and rejects conflicting duplicates. Real HTTP E2E included in final gate."
+    },
+    {
+      "id": "latest-robots-decision-gc",
+      "status": "fixed_and_independently_reproduced_before_after",
+      "detail": "Selective job compaction must not collect newer denial while older allow remains pinned. Bounded old-first/head protection and replay test added."
+    },
+    {
+      "id": "current-nofollow-on-304",
+      "status": "fixed_and_independently_reproduced_before_after",
+      "detail": "Failed or in-flight nofollow is met at both base selection and ingestion; map uses actual committed follow policy. Same two-case harness passes frozen build."
+    },
+    {
+      "id": "worker-core-http-date",
+      "status": "fixed",
+      "detail": "Core and Worker share 1601 lower date bound; two Worker regressions added."
+    },
+    {
+      "id": "documentation-frontier-wording",
+      "status": "clarified_in_final_v2",
+      "detail": "304 does not widen authority/range/budget; retained complete links may be reconstructed at the current job depth. No behavior change."
+    }
+  ],
+  "independent_runs": {
+    "core": {
+      "tests": 7,
+      "assertions": 81,
+      "failed": 0
+    },
+    "worker_author_core_integration": {
+      "nofollow_cases": 2,
+      "failed": 0
+    },
+    "evaluation": {
+      "independent_synthetic_probes": 20,
+      "failed": 0,
+      "author_suite_rerun": 128
+    },
+    "actual_upgrade": {
+      "old_schema": 11,
+      "new_schema": 12,
+      "old_tables_byte_content_digests_preserved": 39,
+      "outcome": "passed",
+      "sql_business_writes": false
+    },
+    "plan": {
+      "packages": 83,
+      "slices": 10,
+      "acceptance_ids": 161,
+      "explicit_mandatory_records": 17,
+      "prior_increment_files_byte_preserved": 241
+    }
+  },
+  "authoring_corrections": [
+    "Initial native fixtures used pre-schema12 column count/future-version expectations; corrected fixtures without weakening assertions.",
+    "Initial real HTTP test terms URL was invalid and a report field name was wrong; fixed test setup/expectation and retained failures.",
+    "Independent evaluation probes corrected sources to source_outcomes; no product edit.",
+    "Independent publication probe stopped requiring stable snapshot ID when restrictive publication changes representation identity; body/evidence/policy checks retained."
+  ],
+  "limits": [
+    "No full work package or slice signoff; source availability and genuine human quality remain unverified.",
+    "Independent agents are cross-role code/test reviewers, not human qrels assessors.",
+    "Synthetic Worker/public API cases are distinct from real loopback process E2E and physical power-loss testing.",
+    "Final integrated execution and exact published SHA CI remain separate evidence."
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "additive_defaults": {
+    "robots_cache.http_cache_json": {
+      "expected": "{}",
+      "matching_old_rows": 2
+    },
+    "snapshots.http_cache_bytes": {
+      "expected": 0,
+      "matching_old_rows": 5
+    }
+  },
+  "artifact_sha256": {
+    "REPRODUCE.md": "78ccac28f6246a5c07d6726766b62466a409c5d50fd02afcf17a2d909f07db2b",
+    "actual-db/after_migration_legacy_footprints.json": "da45bd7dcda8b96f0b0346a029d0e86d62328c49a3ce84c3a8b3fb65caef5516",
+    "actual-db/new_verification.json": "a88f12f9e2b871fc358b487ce02614a8936c6b0e9f20158934a01d68f518d5cf",
+    "actual-db/old_creation.json": "b1a6b526ce66a8bec90e44261e1fa636f0a9dc95c09965e4f08de19f60db04d9",
+    "actual-db/quarantined-new-backup.db": "28af6641a85f3995382eab8ff23beeb91491a9f81b2166d7a35b0edae7c5b3c0",
+    "actual-db/quarantined-old-backup.db": "c2836bc3a89c20da57345a5470d10123e332974b95ae736f2b3ef27c4b421a0a",
+    "actual-db/store-schema11-original.db": "8572f210a19bd4c7542f5074f6fbf1ccdead5448c89e3f6b4e043cfa3efe05d6",
+    "actual-db/store.db": "d298de390141836869c634351170d116bebb6afa940b3b38d1d034d505790efb",
+    "compile_new_final.json": "972cdd0c134c2b160dc3dc2ed2d94e3c5f005a95944cc77f2c7da2863d8f107a",
+    "compile_new_final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compile_old_final.json": "7ecbdee4586d41107041490f68ef550d575600f0e3ca142150096aca62e3423d",
+    "compile_old_final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compile_old_initial.json": "d11900890a18ca6d340c6c9a1457eb173063b0b501b8c8e64f1c654ca5236197",
+    "compile_old_initial.log": "1acd6a883f0747d84bc06ae8eed57af4199063bbfd4676b25c4051487b045a45",
+    "frozen_inputs.json": "322e7e7356b8d36b29dc2395bc930c07e24e3310b760045aaad3f225d32d7a6d",
+    "libbzs_core_new.a": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf",
+    "libbzs_core_old.a": "1062844822b899e36e204da39b76968bd9e66694cb8eb5534e114a761cc7023e",
+    "migration-new": "a10b3a79928cef30e6e31b0e9a080714cbff2b8dd4d51c60e4e56f221b87e215",
+    "migration-old": "8ddcb105ec7a80cde719417e58dbb637e05ba7e9342c54f3bdadeb7510a806de",
+    "migration_driver.cpp": "21a1754bd331c1da28199ab819a0f59e713dc962bca9a1c40b6a360202642143",
+    "new_verification_first.json": "aafecd0918ef94f807a466736d09a6de7e515b92d8b560e2d1a2efe11b5af1a1",
+    "new_verification_first.log": "e42c219d311f6d4af44fee64023a39adc22a9d07200663683c80a7f744e19cc6",
+    "old_creation_first.json": "d21e304a93252618f50603345b00de899b0880910720a18c841d773c945f2219",
+    "old_creation_first.log": "0c93489f0b5329cc58e5177b95bedcbfa88d81c6a4267161dce70dec80e4b487",
+    "post_review_documentation_only.patch": "6fdd3fde5a0db0938e088ac5890e1a9f6614abaa7af5c44fe713593a8c4c595d",
+    "record_run.py": "ed623e41608af8a3804e7b5bd15602ba532db2ffed3ac01f384e8dcfff75e8ac"
+  },
+  "backup_isolation": {
+    "both_new_open_attempts_rejected": "E_RESTORE_QUARANTINED",
+    "new_backup": {
+      "restore_quarantine": "1",
+      "schema": 12
+    },
+    "old_backup_after_new_open_attempt": {
+      "restore_quarantine": "1",
+      "schema": 11
+    },
+    "old_backup_before": {
+      "restore_quarantine": "1",
+      "schema": 11
+    }
+  },
+  "comparison": {
+    "migration_source": "src/store.cpp",
+    "new_production_freeze_commit": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+    "new_runtime_version": "0.1.9",
+    "new_schema": 12,
+    "old_commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+    "old_runtime_version": "0.1.8",
+    "old_schema": 11
+  },
+  "completed_utc": "2026-10-22T01:44:41.608661+00:00",
+  "conditional_safety": {
+    "full_200_establishes_metadata_then_bound_304_keeps_revision_and_evidence": true,
+    "old_import_has_no_revalidation_base": true,
+    "old_rules_and_allow_all_not_used_as_conditional_base": true,
+    "old_web_has_no_revalidation_base": true,
+    "post_refresh_robots_and_page_304_content_bytes": 0,
+    "robots_full_200_then_bound_304_owners": 2,
+    "unbound_304_before_full_200_rejected_without_body_mutation": true
+  },
+  "execution": {
+    "actual_network_requests": 0,
+    "clock": "Controlled clock advances eight days to compact the old terminal task, then two one-hour robots TTL intervals after migration; not real-time soak.",
+    "compile_flags": "C++20, -O0 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror; no sanitizer",
+    "new_logged_assertions": 334,
+    "new_verification_seconds": 0.141,
+    "old_creation_seconds": 0.156,
+    "old_logged_assertions": 308,
+    "parallelism": "Each driver compile executed alone; no project rebuild performed by reviewer.",
+    "snapshot_assertions_note": "The JSON reports record 306/332 assertions before their two output-file checks; the final successful process logs record 308/334.",
+    "worker_fixture_calls": {
+      "new": {
+        "fetch.extract:direct conditional": 1,
+        "fetch.extract:direct unconditional": 3,
+        "map.fetch:page conditional": 2,
+        "map.fetch:page unconditional": 2,
+        "map.fetch:robots conditional": 2,
+        "map.fetch:robots unconditional": 2
+      },
+      "old": {
+        "fetch.extract:direct unconditional": 2,
+        "map.fetch:page unconditional": 2,
+        "map.fetch:robots unconditional": 2,
+        "search.multi:direct unconditional": 1
+      }
+    }
+  },
+  "input_provenance": {
+    "main_documentation_changes_present": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/API.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/HTTP_REVALIDATION.md",
+      "docs/JOB_RETENTION.md",
+      "docs/SECURITY.md",
+      "docs/SITE_CRAWLING.md",
+      "docs/SITE_DISCOVERY.md",
+      "docs/implementation_status.json",
+      "docs/planning/README.md",
+      "docs/planning/development_blueprint_v1.2.md",
+      "docs/planning/slices_v1.2.json"
+    ],
+    "new_library": {
+      "bytes": 23963140,
+      "frozen": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/libbzs_core_new.a",
+      "original": "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+      "reported_build": "code-freeze-build",
+      "reported_source_commit": "d9fba205a66b31aa89a761c3b7606cd456aaf1fa",
+      "sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf"
+    },
+    "new_production_files_reverified_after_run": true,
+    "old_db_created_by_actual_old_library": true,
+    "old_library": {
+      "bytes": 22980768,
+      "frozen": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/libbzs_core_old.a",
+      "original": "/workspace/scratch/80f41eb198a3/build-bzs-next-baseline/libbzs_core.a",
+      "sha256": "1062844822b899e36e204da39b76968bd9e66694cb8eb5534e114a761cc7023e"
+    },
+    "old_original_db_sha256": "8572f210a19bd4c7542f5074f6fbf1ccdead5448c89e3f6b4e043cfa3efe05d6",
+    "same_driver_separately_compiled_against_old_and_new_headers_and_libraries": true,
+    "schema_downgrade_or_direct_db_mutation": false,
+    "sql_observation_guard": "sqlite3_stmt_readonly on every driver SQL statement"
+  },
+  "integrity": {
+    "new": "ok",
+    "new_foreign_key_violations": 0,
+    "old": "ok",
+    "old_foreign_key_violations": 0
+  },
+  "limitations": [
+    "One synthetic but fully real old-version-created database covers the listed state combinations; this does not establish arbitrary historical database or platform coverage.",
+    "HTTP responses and source/site manifests are offline WorkerPort fixtures, not authentic external fetches or source approvals.",
+    "This verifies a completed ordinary migration, not interruption recovery, physical power-loss durability, multi-node behavior, or long-running throughput.",
+    "No product files, historical evidence, version fields or development acceptance state were changed by this review. No push was performed."
+  ],
+  "outcome": "passed_real_schema11_to_schema12_migration_and_scoped_compatibility_checks",
+  "preservation": {
+    "alice_job_states": {
+      "active-read": "running",
+      "archived": "cancelled",
+      "paused-crawl": "paused",
+      "paused-read": "paused",
+      "queued-read": "queued",
+      "terminal-crawl": "succeeded",
+      "terminal-read": "succeeded"
+    },
+    "archived_detail_access_rejected": "E_JOB_RESULTS_EXPIRED",
+    "changed_request_same_archived_key_rejected": "E_IDEMPOTENCY_CONFLICT",
+    "cross_owner_access_rejected": true,
+    "job_rows": 8,
+    "legacy_table_count": 39,
+    "local_and_web_session_state_events_versioned_pages_equal": true,
+    "local_search_hits": 4,
+    "method": "All legacy table column names, row counts and sorted row-content SHA-256 match before any post-migration business API mutations. New columns checked separately.",
+    "original_evidence_records": 2,
+    "original_snapshots": 5,
+    "permanent_idempotency_replay_preserved": true,
+    "persistent_web_search_hits": 1,
+    "robots_old_admission_references_retained": 2,
+    "robots_old_receipt_references_retained": 2,
+    "robots_old_records": 2,
+    "robots_old_states": [
+      "rules",
+      "allow_all"
+    ],
+    "terminal_receipts_and_live_reserved_accounting_equal": true,
+    "tombstone_and_delete_generation_preserved": true
+  },
+  "product_findings": [],
+  "review_process_notes": [
+    "Initial old compile succeeded with three driver-only warnings; formatting and an unused-function annotation were corrected, then both final builds passed -Werror. No product changes.",
+    "Old creation and new migration verification each passed on their first execution; the schema11 original file was copied after clean close before the new executable opened the working copy.",
+    "A report-building metadata assertion initially allowed only docs/ changes; it was corrected to include the two changed top-level Markdown documents after verifying all frozen production source hashes remained identical."
+  ],
+  "reviewer_task": "/root/session_faults",
+  "role": "independent_migration_review"
+}

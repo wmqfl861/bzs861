@@ -1,0 +1,66 @@
+{
+  "kind": "qa-ablation-author-validation",
+  "created_at": "2026-10-22T01:23:03.340384+00:00",
+  "role": "author_execution_not_independent_review",
+  "baseline_commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "worktree": "/workspace/scratch/80f41eb198a3/bzs861-qa-next",
+  "runtime": {
+    "files": {
+      "evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+      "evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+      "evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+      "golden.py": "93ceb831eb3b10de9729d5f1047029dd2c6e5e05c65a559669d3768125bd99ad",
+      "probe_format.py": "96fede0a2f755c5ab61eadfdc88f70fd89688bde05d25363b6f0391c477abe85",
+      "probe_state.py": "daca8d069117210e012c15757cbd098445b2192099f48c17e841b7ea18cb176a",
+      "replay.py": "bb74844f7276983654e7e313614e949e74b7845e858226abc3bf2bb19e653c7d"
+    },
+    "bzs_version": "0.1.8",
+    "python": "3.12.14",
+    "implementation": "CPython",
+    "os": "Linux",
+    "architecture": "x86_64"
+  },
+  "command": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "python/tests/test_evaluation.py",
+    "python/tests/test_evaluation_ablation.py"
+  ],
+  "pythonpath": "/workspace/scratch/80f41eb198a3/bzs861-qa-next/python",
+  "exit_code": 0,
+  "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/qa-author/pytest-20261022T012300Z.log",
+  "log_sha256": "264a753f1b511acb41b812da871cfe8da899461fb93137cbf29d25ea02ec6ed4",
+  "source_sha256": {
+    "python/bzs/evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+    "python/bzs/evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+    "python/bzs/evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+    "python/bzs/cli.py": "8c4b20c27bb8617feba0175a1b3ab26c5507788f2f7eb9cad119795d810d1433",
+    "python/tests/test_evaluation.py": "c35882497aebedfe15d6c531fed828c004d81dd518be97f032b628e5e09ef2de",
+    "python/tests/test_evaluation_ablation.py": "61105b605d5dd80398d7794ab53147cb5d002d342f8846f70fb60f22b9bb6816",
+    "docs/RELEVANCE_EVALUATION.md": "17e1f613e4dddc3ff5bb3c70733bf3837c01bab670d333b88f0070a92f1b7716"
+  },
+  "unchanged_original_sha256": {
+    "tests/golden/queries.json": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798",
+    "tests/golden/manifest.json": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "docs/planning/requirements_and_backlog.json": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+    "docs/planning/slices_v1.2.json": "36866c755f91c4d381d984eb6033059cd360db6b561c8e0d98b25b564fccca79",
+    "docs/implementation_status.json": "c18645ae65b77fc5b85d8022aa43f82f4afb9cd0c56314472d8de487844b49d4",
+    "python/pyproject.toml": "d57e94be2e5817d2963bcca2a734ab8e44202df377c8cd376560c1bd832f740e"
+  },
+  "scope": [
+    "predeclared external base/ablation source sets and ranking identities",
+    "fixed original pool and IDCG",
+    "source/channel and family/service attribution without independence claims",
+    "missing or failed evidence stays blocked, never empty",
+    "synthetic contract tests only; no real source availability or human quality result"
+  ],
+  "limitations": [
+    "No C++ automatic fusion export/replay connector",
+    "Operator supplied rankings, provider metadata and human declarations are not authenticated",
+    "Full release gate remains blocked",
+    "No holdout evaluation or exported original holdout content",
+    "Method version 1 packages require a new prepare/freeze under method version 2"
+  ]
+}

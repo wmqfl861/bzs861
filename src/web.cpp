@@ -1,4 +1,5 @@
 #include "bzs/web.hpp"
+#include "bzs/http_cache.hpp"
 #include "bzs/publication.hpp"
 #include "bzs/contracts.hpp"
 #include "bzs/error.hpp"
@@ -652,7 +653,7 @@ namespace bzs {
     out.set("metadata", meta.has("metadata")?meta.at("metadata"):Json::object());
     Json fetch=Json::object();
     for(const auto* k: {
-      "http_status", "content_type", "charset", "extractor", "extract_status", "warnings", "redirects", "text_truncated"
+      "http_status", "content_type", "charset", "extractor", "extract_status", "warnings", "redirects", "text_truncated", "revalidated"
     })if(meta.has(k))fetch.set(k, meta.at(k));
     out.set("fetch", fetch);
     out.set("content_trust", "untrusted_web_content");
@@ -682,6 +683,8 @@ namespace bzs {
     Json params=Json::object();
     params.set("url", url);
     params.set("timeout_ms", timeout);
+    const auto base=store_.revalidation_base(owner,url);
+    if(base)params.set("conditional",base->conditional);
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
     const auto redirect_observations=decode_redirect_observations(url,r);
     std::optional<Json> observation;
@@ -693,7 +696,7 @@ namespace bzs {
       if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
     };
     ReadArtifact artifact;
-    try { observation=decode_observation(url,r);artifact=decode_read(url,r); }
+    try { observation=decode_observation(url,r);artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r); }
     catch(...) { apply_observations();throw; }
     artifact.meta.set("publication_fence",publication_fence);
     artifact.meta.set("page_publication_sequence",publication_fence.at("publication_sequence"));
@@ -703,7 +706,7 @@ namespace bzs {
       auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
       return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
     } catch(const Error& error) {
-      if(error.code=="E_QUOTA") {
+      if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
         apply_observations();
         if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
         if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
@@ -859,7 +862,32 @@ namespace bzs {
     })if(r.has(k))meta.set(k, r.at(k));
     meta.set("redirect_publication_observations",decode_redirect_observations(url,r));
     meta.set("content_type", doc.content_type);
+    if(r.has("http_cache")) {
+      require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
+      meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
+    }
     return {std::move(doc),std::move(parsed),std::move(meta)};
+  }
+  WebService::ReadArtifact WebService::decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base) {
+    require(base.has_value(),"E_WORKER_PROTOCOL","Unsolicited 304 has no retained representation",502);
+    require(response.at("status").str()=="not_modified"&&response.at("http_status").num()==304&&
+            response.at("final_url").str()==url&&response.at("binding_id").str()==base->conditional.at("binding_id").str(),
+            "E_WORKER_PROTOCOL","304 response is not bound to its exact representation",502);
+    require(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery")&&!response.has("publication")&&
+            (!response.has("redirects")||(response.at("redirects").is_array()&&response.at("redirects").size()==0)),
+            "E_WORKER_PROTOCOL","304 cannot carry a replacement body or redirect chain",502);
+    ReadArtifact artifact{base->document,base->parsed,Json::parse(base->meta.dump(),8*1024*1024)};
+    artifact.meta.set("http_cache",merge_http_cache(base->meta.at("http_cache"),response.at("http_cache")));
+    artifact.meta.set("fetched_at_ms",store_.now());artifact.meta.set("http_status",std::int64_t{304});artifact.meta.set("revalidated",true);
+    auto bound=Json::object();bound.set("version","bzs-http-revalidation-1");bound.set("base_snapshot_id",base->snapshot_id);
+    bound.set("base_cache_sha256",base->cache_sha256);bound.set("base_metadata_sha256",base->metadata_sha256);
+    bound.set("binding_id",base->conditional.at("binding_id"));artifact.meta.set("http_revalidation",bound);
+    if(const auto observation=decode_observation(url,response)) {
+      artifact.parsed.publication=meet_publication(artifact.parsed.publication,*observation);
+      if(artifact.parsed.representation_publication.has("version"))artifact.parsed.representation_publication=meet_publication(artifact.parsed.representation_publication,*observation);
+      artifact.parsed.index_allowed=artifact.parsed.publication.at("index_allowed").flag();
+    }
+    return artifact;
   }
   Json WebService::submit_reads(const std::string& owner,const Json& args) {
     args.allowed({"urls","idempotency_key","timeout_ms","per_page_timeout_ms","max_requests","max_bytes","max_attempts"});
@@ -897,6 +925,8 @@ namespace bzs {
       params.set("url",lease.url);params.set("timeout_ms",timeout);
       params.set("max_requests",lease.request_grant);params.set("max_content_bytes",lease.byte_grant);
       params.set("attempt_id",lease.attempt_id);
+      const auto base=store_.revalidation_base(lease.owner,lease.url);
+      if(base)params.set("conditional",base->conditional);
       const auto response=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
       require(response.is_object()&&response.has("status")&&response.at("status").is_string()&&
               response.has("usage")&&response.at("usage").is_object(),
@@ -911,6 +941,7 @@ namespace bzs {
               (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
               "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
       requests=used_requests;bytes=used_bytes;
+      if(response.at("status").str()=="not_modified")require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
       redirect_observations=decode_redirect_observations(lease.url,response);
       observation=decode_observation(lease.url,response);if(observation)observed_url=normalize_iri(response.at("final_url").str());
       const auto status=response.at("status").str();
@@ -922,7 +953,7 @@ namespace bzs {
         store_.fail_read(lease,code,requests,bytes,observation?&*observation:nullptr,observed_url,&redirect_observations);
         return;
       }
-      auto artifact=decode_read(lease.url,response);
+      auto artifact=status=="not_modified"?decode_not_modified(lease.url,response,base):decode_read(lease.url,response);
       const auto& final_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:artifact.parsed.publication;
       if(restrictive_publication(final_policy)) { observation=final_policy;observed_url=artifact.meta.at("final_url").str(); }
       if(artifact.parsed.representation_publication.has("version")&&restrictive_publication(artifact.parsed.publication)) {

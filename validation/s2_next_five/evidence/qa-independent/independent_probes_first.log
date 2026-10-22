@@ -1,0 +1,92 @@
+..FFFF...........                                                        [100%]
+=================================== FAILURES ===================================
+_ test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[empty] _
+
+case = {'root': PosixPath('/tmp/pytest-of-root/pytest-9/test_whole_source_system_outco0'), 'queries': PosixPath('/tmp/pytest-...'selected': ['dev-a', 'dev-b', 'reg-a'], 'ids': ['doc-00', 'doc-01', 'doc-02', 'doc-03', 'doc-04', 'doc-05', ...], ...}
+status = 'empty'
+
+    @pytest.mark.parametrize("status", ["empty", "failed", "unavailable", "missing"])
+    def test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates(case, status):
+        if status == "missing":
+            case["input"]["runs"] = [row for row in case["input"]["runs"] if row["system_id"] != "source-b2"]
+        else:
+            for row in case["input"]["runs"]:
+                if row["system_id"] == "source-b2":
+                    row.update(status=status, document_ids=[], reason=None if status == "empty" else "independent-synthetic-failure")
+        result = evaluate(case)
+        for row in result["source_ablation"]["contributions"]:
+            source = next(s for s in row["sources"] if s["source_id"] == "b2")
+>           assert source["status"] == ("unavailable" if status == "missing" else status)
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'status'
+
+../bzs-next-five-review/qa-independent/test_independent_ablation.py:180: KeyError
+_ test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[failed] _
+
+case = {'root': PosixPath('/tmp/pytest-of-root/pytest-9/test_whole_source_system_outco1'), 'queries': PosixPath('/tmp/pytest-...'selected': ['dev-a', 'dev-b', 'reg-a'], 'ids': ['doc-00', 'doc-01', 'doc-02', 'doc-03', 'doc-04', 'doc-05', ...], ...}
+status = 'failed'
+
+    @pytest.mark.parametrize("status", ["empty", "failed", "unavailable", "missing"])
+    def test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates(case, status):
+        if status == "missing":
+            case["input"]["runs"] = [row for row in case["input"]["runs"] if row["system_id"] != "source-b2"]
+        else:
+            for row in case["input"]["runs"]:
+                if row["system_id"] == "source-b2":
+                    row.update(status=status, document_ids=[], reason=None if status == "empty" else "independent-synthetic-failure")
+        result = evaluate(case)
+        for row in result["source_ablation"]["contributions"]:
+            source = next(s for s in row["sources"] if s["source_id"] == "b2")
+>           assert source["status"] == ("unavailable" if status == "missing" else status)
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'status'
+
+../bzs-next-five-review/qa-independent/test_independent_ablation.py:180: KeyError
+_ test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[unavailable] _
+
+case = {'root': PosixPath('/tmp/pytest-of-root/pytest-9/test_whole_source_system_outco2'), 'queries': PosixPath('/tmp/pytest-...'selected': ['dev-a', 'dev-b', 'reg-a'], 'ids': ['doc-00', 'doc-01', 'doc-02', 'doc-03', 'doc-04', 'doc-05', ...], ...}
+status = 'unavailable'
+
+    @pytest.mark.parametrize("status", ["empty", "failed", "unavailable", "missing"])
+    def test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates(case, status):
+        if status == "missing":
+            case["input"]["runs"] = [row for row in case["input"]["runs"] if row["system_id"] != "source-b2"]
+        else:
+            for row in case["input"]["runs"]:
+                if row["system_id"] == "source-b2":
+                    row.update(status=status, document_ids=[], reason=None if status == "empty" else "independent-synthetic-failure")
+        result = evaluate(case)
+        for row in result["source_ablation"]["contributions"]:
+            source = next(s for s in row["sources"] if s["source_id"] == "b2")
+>           assert source["status"] == ("unavailable" if status == "missing" else status)
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'status'
+
+../bzs-next-five-review/qa-independent/test_independent_ablation.py:180: KeyError
+_ test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[missing] _
+
+case = {'root': PosixPath('/tmp/pytest-of-root/pytest-9/test_whole_source_system_outco3'), 'queries': PosixPath('/tmp/pytest-...'selected': ['dev-a', 'dev-b', 'reg-a'], 'ids': ['doc-00', 'doc-01', 'doc-02', 'doc-03', 'doc-04', 'doc-05', ...], ...}
+status = 'missing'
+
+    @pytest.mark.parametrize("status", ["empty", "failed", "unavailable", "missing"])
+    def test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates(case, status):
+        if status == "missing":
+            case["input"]["runs"] = [row for row in case["input"]["runs"] if row["system_id"] != "source-b2"]
+        else:
+            for row in case["input"]["runs"]:
+                if row["system_id"] == "source-b2":
+                    row.update(status=status, document_ids=[], reason=None if status == "empty" else "independent-synthetic-failure")
+        result = evaluate(case)
+        for row in result["source_ablation"]["contributions"]:
+            source = next(s for s in row["sources"] if s["source_id"] == "b2")
+>           assert source["status"] == ("unavailable" if status == "missing" else status)
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'status'
+
+../bzs-next-five-review/qa-independent/test_independent_ablation.py:180: KeyError
+=========================== short test summary info ============================
+FAILED ../bzs-next-five-review/qa-independent/test_independent_ablation.py::test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[empty]
+FAILED ../bzs-next-five-review/qa-independent/test_independent_ablation.py::test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[failed]
+FAILED ../bzs-next-five-review/qa-independent/test_independent_ablation.py::test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[unavailable]
+FAILED ../bzs-next-five-review/qa-independent/test_independent_ablation.py::test_whole_source_system_outcome_preserved_even_when_other_adapter_covers_candidates[missing]
+4 failed, 13 passed in 0.33s

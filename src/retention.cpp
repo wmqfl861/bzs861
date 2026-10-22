@@ -70,12 +70,25 @@ void Store::job_capacity_locked(const std::string& owner) {
 std::int64_t Store::compact_robots_locked(const std::string& owner,std::int64_t limit) {
   // Both references are indexed. A successful robots fetch pins its receipt;
   // admitted page hops pin the exact record used to authorize that request.
+  // Keep the newest decision while any older representation remains. Otherwise
+  // collecting a newer denial could expose an old, pinned validator as current.
+  // A second bounded pass collects the head after the unreferenced older rows
+  // disappear; singleton histories do not become permanent capacity leaks.
+  std::int64_t removed=0;
+  while(removed<limit) {
   Sql remove(db_,R"SQL(DELETE FROM robots_cache WHERE id IN (
  SELECT c.id FROM robots_cache c WHERE c.owner=? AND c.expires_at<=?
  AND NOT EXISTS(SELECT 1 FROM map_hops h WHERE json_extract(h.admission_json,'$.robots_cache_id')=c.id)
  AND NOT EXISTS(SELECT 1 FROM map_hops h WHERE json_extract(h.response_json,'$.robots_cache_id')=c.id)
- ORDER BY c.expires_at,c.id LIMIT ?))SQL");
-  remove.bind(1,owner);remove.bind(2,clock_());remove.bind(3,limit);remove.step();return sqlite3_changes(db_);
+ AND (EXISTS(SELECT 1 FROM robots_cache n WHERE n.owner=c.owner AND n.origin=c.origin AND n.manifest_sha256=c.manifest_sha256
+      AND (n.fetched_at>c.fetched_at OR (n.fetched_at=c.fetched_at AND n.rowid>c.rowid)))
+   OR NOT EXISTS(SELECT 1 FROM robots_cache o WHERE o.owner=c.owner AND o.origin=c.origin AND o.manifest_sha256=c.manifest_sha256
+      AND (o.fetched_at<c.fetched_at OR (o.fetched_at=c.fetched_at AND o.rowid<c.rowid))))
+ ORDER BY c.fetched_at,c.rowid LIMIT ?))SQL");
+  remove.bind(1,owner);remove.bind(2,clock_());remove.bind(3,limit-removed);remove.step();
+  const auto count=sqlite3_changes(db_);removed+=count;if(count==0)break;
+  }
+  return removed;
 }
 
 Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit) {

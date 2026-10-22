@@ -1,5 +1,6 @@
 #include "bzs/web.hpp"
 #include "bzs/error.hpp"
+#include "bzs/http_cache.hpp"
 #include "bzs/publication.hpp"
 #include "bzs/util.hpp"
 #include <algorithm>
@@ -50,6 +51,25 @@ namespace {
       protocol((source!="sitemap_index")||(!candidate.at("document").is_null()&&type=="sitemap_index"),"Sitemap-index candidate has invalid purpose");
     }
   }
+  bool reusable_links(const RevalidationBase& base) {
+    if(!base.meta.has("revalidation_discovery"))return false;
+    const auto marker=base.meta.at("revalidation_discovery");
+    return marker.is_object()&&marker.has("version")&&marker.at("version").str()=="bzs-page-links-1"&&
+      marker.has("links_sha256")&&marker.at("links_sha256").str()==sha256(base.parsed.links.canonical())&&base.parsed.links.size()<=512;
+  }
+  Json revalidated_discovery(const RevalidationBase& base,const MapLease& lease) {
+    auto record=Json::object(),candidates=Json::array();
+    for(std::size_t i=0;i<base.parsed.links.size();++i) {
+      const auto url=base.parsed.links.at(i).str();auto candidate=Json::object();
+      candidate.set("url",url);candidate.set("parent",lease.url);candidate.set("source","html");candidate.set("document",Json());
+      candidate.set("depth",lease.depth+1);const auto path=map_path(url);std::int64_t depth=0;bool component=false;
+      for(char c:path) { if(c=='/')component=false;else if(!component) { ++depth;component=true; } }
+      candidate.set("path_depth",depth);candidates.push(candidate);
+    }
+    record.set("document_url",lease.url);record.set("document_type",base.meta.at("revalidation_discovery").at("document_type"));
+    record.set("parse_status","ok");record.set("candidates",candidates);record.set("truncated",false);
+    auto diagnostics=Json::object();diagnostics.set("revalidated",true);record.set("diagnostics",diagnostics);return record;
+  }
 }
 Json WebService::submit_map(const std::string& owner,const Json& args) { return store_.map_submit(owner,args,sites_); }
 Json WebService::submit_crawl(const std::string& owner,const Json& args) { return store_.crawl_submit(owner,args,sites_); }
@@ -67,7 +87,14 @@ void WebService::execute_map(const MapLease& lease) {
     parameters.set("timeout_ms",std::min(lease.timeout_ms,remaining));parameters.set("max_content_bytes",lease.byte_grant);parameters.set("max_requests",std::int64_t{1});
     parameters.set("depth",lease.depth);parameters.set("max_entries",std::int64_t{1000});parameters.set("redirect_hop",lease.redirect_hop);
     if(lease.kind=="robots")parameters.set("robots_origin",lease.origin);else parameters.set("robots",lease.robots_record);
-    const auto response=worker_.call("map.fetch",parameters,static_cast<int>(std::min(lease.timeout_ms,remaining)+5000));
+    std::optional<RevalidationBase> base;
+    if(lease.kind=="page"&&lease.redirect_hop==0&&lease.url==lease.logical_url) {
+      base=store_.revalidation_base(lease.owner,lease.url);if(base&&!reusable_links(*base))base.reset();
+      if(base)parameters.set("conditional",base->conditional);
+    } else if(lease.kind=="robots"&&!lease.conditional.is_null()) {
+      parameters.set("conditional",lease.conditional);parameters.set("robots_revalidation_base",lease.robots_revalidation_base);
+    }
+    auto response=worker_.call("map.fetch",parameters,static_cast<int>(std::min(lease.timeout_ms,remaining)+5000));
     protocol(response.is_object(),"Map worker response must be an object");
     const auto usage=response.at("usage");usage.allowed({"external_requests","content_bytes"});
     const auto measured_requests=usage.at("external_requests").num(),measured_bytes=usage.at("content_bytes").num();
@@ -75,11 +102,12 @@ void WebService::execute_map(const MapLease& lease) {
     // Parse usage before artifact fields: a malformed result still pays for its
     // known request, while a transport/usage failure retains the entire grant.
     requests=measured_requests;bytes=measured_bytes;
-    auto status=text_field(response,"status",32);protocol(status=="ok"||status=="redirect"||status=="error","Invalid map status");
+    auto status=text_field(response,"status",32);protocol(status=="ok"||status=="not_modified"||status=="redirect"||status=="error","Invalid map status");
     protocol(text_field(response,"url",4096)==lease.url&&map_url(text_field(response,"final_url",4096))==lease.url,"Single-hop response identity changed");
     const auto http=response.at("http_status").is_null()?std::int64_t{0}:response.at("http_status").num();
     protocol(http>=0&&http<=599&&(status=="error"||http>=100),"Invalid map HTTP status");
     if(status!="error")protocol(requests==1,"Successful map exchange requires one charged request");
+    if(status=="not_modified")protocol(http==304&&bytes==0&&(lease.kind=="page"||lease.kind=="robots"),"Invalid 304 usage or purpose");
     if(status=="ok"&&lease.kind!="robots")protocol(http>=200&&http<300&&http!=206,"Successful content needs a complete 2xx response");
     if(status=="redirect") {
       protocol(http==301||http==302||http==303||http==307||http==308,"Invalid redirect HTTP status");
@@ -104,17 +132,46 @@ void WebService::execute_map(const MapLease& lease) {
     if(status=="redirect")(void)map_url(text_field(response,"redirect_url",4096));
     if(lease.kind=="robots") {
       if(response.has("robots"))robots_record(response.at("robots"),lease,store_.now());
-      else protocol(status!="ok","Successful robots fetch lacks a cache decision");
+      else protocol(status!="ok"&&status!="not_modified","Successful robots fetch lacks a cache decision");
+      if(status=="not_modified") {
+        protocol(!lease.conditional.is_null()&&!lease.robots_revalidation_base.is_null()&&
+                 text_field(response,"binding_id",64)==lease.conditional.at("binding_id").str(),"Unbound robots 304");
+        protocol(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery"),"Robots 304 cannot supply a body");
+        const auto original=lease.robots_revalidation_base.at("record"),fresh=response.at("robots");
+        for(const auto* key:{"version","product_token","body_sha256","origin","state","rules","sitemaps"})
+          protocol(original.at(key).canonical()==fresh.at(key).canonical(),"Robots 304 cannot replace the retained rules");
+        (void)merge_http_cache(lease.robots_revalidation_base.at("http_cache"),response.at("http_cache"));
+      } else if(response.has("http_cache")) {
+        protocol(status=="ok"&&http==200&&response.at("robots").at("state").str()=="rules","Only complete robots 200 rules may establish validators");
+        (void)validate_http_cache(response.at("http_cache"),lease.url);
+      }
     } else if(status=="ok")discovery_record(response.at("discovery"),lease,1000);
     std::optional<ReadArtifact> artifact;
     if(lease.kind=="page"&&status=="ok") {
       protocol(response.has("publication")&&response.has("page"),"Successful crawl lacks page/publication artifact");
-      const auto page=response.at("page");
+      auto page=Json::parse(response.at("page").dump(),8*1024*1024);
+      if(response.has("http_cache")) {
+        protocol(!page.has("http_cache")||page.at("http_cache").canonical()==response.at("http_cache").canonical(),"Crawl HTTP cache copies disagree");
+        page.set("http_cache",response.at("http_cache"));
+      }
       protocol(page.has("publication")&&page.at("publication").canonical()==response.at("publication").canonical(),"Crawl publication copies disagree");
       protocol(map_url(text_field(page,"final_url",4096))==lease.url&&page.at("http_status").num()==http,"Crawl page identity changed");
       protocol(page.has("redirects")&&page.at("redirects").is_array()&&page.at("redirects").size()==0,"Single-hop page cannot hide more redirects");
       artifact=decode_read(lease.url,page,true);
       if(observation)protocol(publication_covers(artifact->parsed.publication,*observation),"Crawl artifact would relax its response's restrictive observation");
+      const auto discovery=response.at("discovery"),candidates=discovery.at("candidates");
+      bool reusable=!discovery.at("truncated").flag()&&candidates.size()<=512&&candidates.size()==artifact->parsed.links.size()&&
+        (discovery.at("document_type").str()=="html"||discovery.at("document_type").str()=="text");
+      for(std::size_t i=0;reusable&&i<candidates.size();++i)
+        reusable=candidates.at(i).at("source").str()=="html"&&candidates.at(i).at("document").is_null()&&candidates.at(i).at("url").str()==artifact->parsed.links.at(i).str();
+      if(reusable) {
+        auto marker=Json::object();marker.set("version","bzs-page-links-1");marker.set("document_type",discovery.at("document_type"));
+        marker.set("links_sha256",sha256(artifact->parsed.links.canonical()));artifact->meta.set("revalidation_discovery",marker);
+      }
+    } else if(lease.kind=="page"&&status=="not_modified") {
+      artifact=decode_not_modified(lease.url,response,base);
+      response.set("discovery",revalidated_discovery(*base,lease));
+      discovery_record(response.at("discovery"),lease,512);
     }
     store_.complete_map(lease,response,sites_,requests,bytes,
                         artifact?&artifact->document:nullptr,artifact?&artifact->parsed:nullptr,artifact?&artifact->meta:nullptr,observation?&*observation:nullptr);

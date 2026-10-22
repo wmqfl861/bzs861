@@ -1,0 +1,48 @@
+{
+  "recorded_at_utc": "2026-10-22T01:26:28.649661+00:00",
+  "baseline_commit": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "worker_commit": "fc54276d2ee2dd638a1778f2ba779df8ec6aad56",
+  "branch": "agent/s2-conditional-worker-20261021",
+  "worktree_clean": true,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "python_executable": "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+  "module_path": "/workspace/scratch/80f41eb198a3/bzs861-conditional-worker/python/bzs/worker/revalidation.py",
+  "packages": {
+    "aiohttp": "3.14.5",
+    "lxml": "6.1.3",
+    "trafilatura": "2.3.1",
+    "pytest": "9.1.1",
+    "pytest-asyncio": "1.4.0"
+  },
+  "source_sha256": {
+    "docs/HTTP_REVALIDATION.md": "088d7340d2c12d42bc47b9d99976514a366c66e4a95dfa6fa4830eb05b8b2735",
+    "python/bzs/worker/revalidation.py": "febfa18623b66986bdfaba6258b7437b3b1b2252e0a0425d6f468dfe2f38c40b",
+    "python/bzs/worker/fetch.py": "dd1ab6dce83497ef4ffec16a9c1ecf59be20790963c08a15198e88618d14df0f",
+    "python/bzs/worker/server.py": "1928a5086e08e86d1fbfdabfd9163ec4ed432fa8295809d280082f5536c6bc34",
+    "python/bzs/worker/robots.py": "e13d91be0613b58988f3b0e8ab644cc79c0b9f7449345d784f99f3bd7b9fc482",
+    "python/tests/test_fetch.py": "3e1905e58bca1dcf27cc9bb3312553f23f09af60627459320346e82c36ffd1d7",
+    "python/tests/test_http_revalidation.py": "ddb53632bff47366eeccc810574437655ce5d53ad8d16e234ae36554aec1d649"
+  },
+  "test_result": {
+    "passed": 343,
+    "failures": 0,
+    "errors": 0,
+    "duration_seconds": 6.54,
+    "new_conditional_cases": 95
+  },
+  "tests": [
+    "tests/test_http_revalidation.py",
+    "tests/test_fetch.py",
+    "tests/test_fetch_budget.py",
+    "tests/test_map_worker.py",
+    "tests/test_crawl_worker.py",
+    "tests/test_robots.py"
+  ],
+  "network_scope": "Local in-process HTTP fixtures on loopback only; test runner requires sandbox escalation for socket binding.",
+  "limitations": [
+    "Worker-only commit; core transaction and end-to-end checks are being performed by parent task.",
+    "No external production sources or reviewed sites enabled.",
+    "No version, plan JSON, default source/site manifests or old validation evidence changed.",
+    "No GitHub push performed by this subtask."
+  ]
+}

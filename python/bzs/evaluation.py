@@ -29,7 +29,7 @@ def utc_now() -> str:
 def runtime_identity() -> dict:
     from . import __version__
     root = Path(__file__).resolve().parent
-    names = ("evaluation.py", "evaluation_format.py", "golden.py", "probe_format.py", "probe_state.py", "replay.py")
+    names = ("evaluation.py", "evaluation_format.py", "evaluation_ablation.py", "golden.py", "probe_format.py", "probe_state.py", "replay.py")
     return {"files": {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names},
             "bzs_version": __version__, "python": platform.python_version(), "implementation": platform.python_implementation(),
             "os": platform.system(), "architecture": platform.machine()}
@@ -175,7 +175,8 @@ def _probe_input(path: str, golden, selected: list[dict]) -> tuple[dict, str, di
 
 
 def prepare(queries_path: str, out_dir: str, *, candidates_path: str | None = None,
-            probe_path: str | None = None, splits: list[str] | None = None) -> dict:
+            probe_path: str | None = None, splits: list[str] | None = None,
+            ablation_manifest_path: str | None = None) -> dict:
     need((candidates_path is None) != (probe_path is None), "E_EVAL_SCHEMA", "provide exactly one candidate input or probe report")
     need(splits is None or isinstance(splits, list), "E_EVAL_SCHEMA", "splits must be an explicit list")
     golden, selected = selected_golden(queries_path, splits if splits is not None else ["development", "regression"])
@@ -190,6 +191,11 @@ def prepare(queries_path: str, out_dir: str, *, candidates_path: str | None = No
             "dataset": {"queries_sha256": golden.digest, "golden_manifest_sha256": golden.manifest_digest,
                         "frozen": golden.frozen, "version": golden.version},
             "selection": selection, "input_sha256": input_sha, "input": value, "provenance": provenance}
+    if ablation_manifest_path is not None:
+        from .evaluation_ablation import validate_manifest
+        ablation, ablation_sha = read_json(ablation_manifest_path, MAX_SMALL_BYTES)
+        pool["source_ablation"] = {"manifest_sha256": ablation_sha, "manifest": ablation}
+        validate_manifest(pool["source_ablation"], pool)
     pool_raw, method_raw = file_bytes(pool), file_bytes(METHOD)
     manifest = {"schema_version": VERSION, "kind": "bzs-evaluation-package",
                 "pool_sha256": hashlib.sha256(pool_raw).hexdigest(), "method_sha256": hashlib.sha256(method_raw).hexdigest()}
@@ -219,6 +225,9 @@ def freeze(package_dir: str, gate_path: str, out_dir: str, *, queries_path: str 
     golden_verification = verify_golden_projection(pool, queries_path)
     gate, gate_sha = read_json(gate_path, MAX_SMALL_BYTES)
     missing = validate_gate(gate, bindings)
+    if "source_ablation" in pool:
+        from .evaluation_ablation import readiness
+        missing.extend("source_ablation_" + reason for reason in readiness(pool))
     if golden_verification["status"] != "verified":
         missing.append("original_golden_not_verified")
     runtime = runtime_identity()
@@ -375,6 +384,10 @@ def run(package_dir: str, freeze_path: str, labels_path: str, out_dir: str, *, b
     labels_value, labels_sha = read_json(labels_path)
     labels = validate_labels(labels_value, pool, bindings)
     systems, coverage = _score_systems(pool, labels)
+    from .evaluation_ablation import report as ablation_report
+    source_ablation = ablation_report(pool, labels, systems)
+    if "source_ablation" in pool:
+        blocked.extend("source_ablation_" + reason for reason in source_ablation["blocked_reasons"])
     if not pool["dataset"]["frozen"]:
         blocked.append("unfrozen_query_dataset")
     if pool["input"]["origin"] != "recorded":
@@ -452,9 +465,10 @@ def run(package_dir: str, freeze_path: str, labels_path: str, out_dir: str, *, b
               "ranking_identity": pool["input"]["ranking_identity"], "input_sha256": pool["input_sha256"],
               "scope": METHOD["scope"], "network_requests": 0, "model_calls": 0,
               "quality_gate": {"status": status, "blocked_reasons": sorted(set(blocked)), "checks": checks},
-              "release_gate": {"status": "blocked", "reasons": ["holdout_evaluation_not_implemented", "source_ablation_not_implemented",
-                                                                    "hard_constraint_and_citation_evidence_not_implemented", "independent_human_review_not_authenticated"]},
-              "source_ablation": {"status": "not_implemented"}, "holdout": {"status": "not_evaluated", "included": False},
+              "release_gate": {"status": "blocked", "reasons": ["holdout_evaluation_not_implemented",
+                                      *(["source_ablation_evidence_incomplete"] if source_ablation["status"] == "blocked" else []),
+                                      "hard_constraint_and_citation_evidence_not_implemented", "independent_human_review_not_authenticated"]},
+              "source_ablation": source_ablation, "holdout": {"status": "not_evaluated", "included": False},
               "constraint_failures": None, "citation_failures": None, "coverage": coverage, "systems": systems,
               "baseline_report_sha256": gate["non_regression"]["baseline_report_sha256"]}
     markdown = ("# Fixed-candidate relevance evaluation\n\n"
@@ -463,7 +477,9 @@ def run(package_dir: str, freeze_path: str, labels_path: str, out_dir: str, *, b
                 f"synthetic: {coverage['synthetic']}. Network requests: 0.\n\n"
                 "The JSON records each split, language/category group, missing label and gate check. "
                 "Diagnostic subset means use only the explicitly reported denominator. Human identity and label truth are not authenticated. "
-                "Source ablation, holdout evaluation, hard constraints and citation correctness remain unimplemented here.\n")
+                f"External source ablation: {source_ablation['status']}. Comparisons retain the original candidate pool and IDCG; "
+                "no production ranking is replayed and contribution buckets do not prove independent evidence. "
+                "Holdout evaluation, hard constraints and citation correctness remain unimplemented here.\n")
     write_directory(out_dir, {"evaluation_report.json": file_bytes(result), "evaluation_report.md": markdown.encode("utf-8")})
     return result
 

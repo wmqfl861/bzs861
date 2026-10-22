@@ -10,7 +10,8 @@
 - `bzs evaluation freeze` 冻结包、方法、G0 声明和门槛；缺少环境、阈值或审查记录时仍保存明确 `blocked` 的冻结产物。
 - `bzs evaluation run` 使用外部提供的标签计算分组指标及预先冻结的阈值检查。未知标签不会当作 0 分，失败请求不会当作成功 empty。
 - 可比较同一语料、方法和标签下的两个排序运行；基线报告的原始 SHA-256 和容忍度必须预先写进 gate。
-- 来源消融、C++ fusion 回放、留出评测、硬条件/引用正确率和独立人审身份认证尚未在本工具实现。报告的完整 `release_gate` 始终为 `blocked`，相关失败计数为 `null`，不会填成 0。
+- 可用 `prepare --ablation-manifest` 预先绑定来源身份和外部 base/移除来源的运行配对，报告固定候选的来源归属、贡献桶及指标差值。没有外部运行时保持 blocked，不由截去基线结果来模拟消融。
+- C++ fusion 的自动导出/回放连接器、留出评测、硬条件/引用正确率和独立人审身份认证尚未在本工具实现。生产融合仍由 C++ 执行，Python 只比较提供的名次。报告的完整 `release_gate` 始终为 `blocked`，相关失败计数为 `null`，不会填成 0。
 
 首版支持固定候选相关性，不代表 QA-02、FT-042、C-14 或 S2 已完成。原工作包和增强路径继续保留。
 
@@ -52,6 +53,8 @@ probe 只有标题/摘要时，标签依据就是这份结果表示，不是未�
 
 标签绑定的 `corpus_sha256` 包含查询、文档内容、候选全集和样本 origin，不包含排序结果。排序改变时要创建新包和新 freeze；只要语料/方法完全相同，原标签可以复用。改正文、查询、候选全集或方法都会使旧标签不再匹配。
 
+当前方法版本为 `bzs-relevance-2`，其中登记可选的 `bzs-source-ablation-1` 合同。原有 nDCG/MRR/Precision 数学定义保持不变；方法身份发生变化，所以旧 `bzs-relevance-1` 包会被拒绝，需要重新 prepare/freeze 并按新方法绑定真实标签，不能将旧冻结记录当作本轮记录。候选、标签、包的 JSON schema 仍为 1。
+
 ### 固定候选输入格式
 
 顶层固定字段为 `schema_version:1`、`kind:"bzs-fixed-candidate-input"`、`queries_sha256`、`golden_manifest_sha256`、`origin`、`ranking_identity`、`documents`、`pools`、`runs`。不接受未知字段或隐式类型转换。
@@ -69,6 +72,86 @@ probe 只有标题/摘要时，标签依据就是这份结果表示，不是未�
 `status` 为 `ok/empty/failed/unavailable`。只有 ok 可以有非空结果；empty 必须为已知空结果；failed/unavailable 必须给原因。缺少 system/query 行会在报告中保留为覆盖缺口。重复文档 ID、相同证据换 ID、同一排序内重复精确 URL 都拒绝。此处不做新的 URL 规范化或生产排序去重。
 
 规范 JSON 使用 UTF-8、按键排序、紧凑分隔符、`ensure_ascii=False`、拒绝非有限数字；`evidence_sha256` 针对没有末尾换行的规范 JSON。文件身份针对文件实际字节，保留换行差异。
+
+## 来源贡献与外部消融配对
+
+这是 QA-02 的固定候选前置工具，遵守 SEARCH-03 / B-08 / C-07 的来源身份边界。它不运行生产 RRF，也不证明输入者提供的外部运行确实执行过。需要由 C++ 或已有外部导出过程先保存完整来源候选和实际 base/ablation 输出，再用下面的可选入口固定这份材料：
+
+```bash
+bzs evaluation prepare --queries tests/golden/queries.json --candidates external-candidates.json --ablation-manifest source-ablation.json --out evaluation-with-ablation
+bzs evaluation freeze --queries tests/golden/queries.json --package evaluation-with-ablation --gate reviewed-gate.json --out evaluation-with-ablation-freeze
+bzs evaluation run --queries tests/golden/queries.json --package evaluation-with-ablation --freeze evaluation-with-ablation-freeze/freeze.json --labels human-judgments.json --out evaluation-with-ablation-result
+```
+
+上述文件是需要外部实际提供的材料，不是仓库内已有真实成绩。来源审批、人类 qrels、外部排名的真实性不能靠填写一个名称或 SHA-256 获得认证；本工具不会自动采集、启用来源、补标签或执行联网消融。只有来源 top10 的 probe 记录本身不能代替融合后的 base/ablation 输出。
+
+### Manifest schema 1
+
+顶层只接受以下字段，不接受未知字段或类型转换：
+
+| 字段 | 合同 |
+|---|---|
+| `schema_version` / `kind` | 整数 `1` / `bzs-source-ablation-manifest` |
+| `input_sha256` | 本次候选输入文件的原始字节 SHA-256；必须与 prepare 实际读取的输入相同 |
+| `method` | `bzs.evaluation_ablation.METHOD` 的完整精确对象；不得改成剩余来源的池、缩小 IDCG 或跳过漏标 |
+| `sources` | 非空、有序的来源身份数组；来源顺序也固定外部运行的参与来源顺序 |
+| `base` | 完整来源集合的外部运行身份对象 |
+| `ablations` | 非空的预先声明移除计划和外部运行身份数组 |
+
+每个 `sources` 元素固定包含 `source_id`、`system_id`、`provider`、`capability`、`logical_service_id`、`index_family`、`configuration_sha256`。`system_id` 指向候选输入 `runs` 中该来源实际返回的候选次序和状态。来源 ID 和来源 system ID 都必须唯一；多个 adapter 应通过不同来源记录引用同一个稳定服务身份，不得伪造服务键来拆票。配置摘要未知时写 null，freeze/run 都会明确阻塞。
+
+贡献桶只用于说明候选归属，不实现融合权重：
+
+- 已知 `index_family` 按 **family + capability** 合并。同族两个来源返回同一证据表示时，该表示只有一个族桶归属。
+- `index_family:"unknown"` 按 **provider + capability + logical_service_id** 归属。同一服务的多个 adapter 共用桶；不同未知服务保持不同桶。
+- 同一 provider/capability/logical_service_id 不允许声明相互矛盾的 index_family。
+- 桶 ID 为 `b_` 加结构化身份对象的规范 JSON SHA-256，避免冒号等分隔字符引起碰撞。可调用 `contribution_identity(source)` 和 `contribution_bucket(source)` 取得相同身份。
+
+**检索渠道贡献不是独立证据数。** unknown 桶不能算作已证实独立索引；已知族名也仍是外部身份声明。报告的 `independent_evidence_count` 保持 null、`source_approval` 保持 false。这里按精确 URL/标题/文本表示识别文档，不能把不同片段或版本自动解释为独立网页、全文或语义独有贡献。
+
+`base` 和每个 ablation 的 `system` 对象固定包含：
+
+| 字段 | 合同 |
+|---|---|
+| `system_id` | 引用候选 `runs` 的实际外部排名；不得复用来源 system 或另一比较 system |
+| `source_ids` | base 是全部来源的原顺序；ablation 是仅去掉声明来源后的剩余顺序，允许移除后为空 |
+| `implementation` | `cpp`，或仅供显式 synthetic 输入的 `synthetic_fixture`；recorded 输入只接受 `cpp` 声明 |
+| `code_sha256` | 实际外部排名程序身份；base 与候选 ranking_identity 的代码摘要一致 |
+| `parameters_sha256` | 排名参数身份，排除本次声明移除的来源集合；base 与候选 ranking_identity 的 config 摘要一致 |
+| `environment_sha256` | 外部运行环境记录的内容摘要；它与评测程序自身的 runtime/environment 分开 |
+| `run_sha256` | 完整查询选择、参与来源次序及实际运行状态/名次的规范摘要 |
+
+配对双方的 implementation、代码、参数和环境必须相同，变化限于声明的来源集合。未知摘要允许 null，但相应配对不可评分通过，freeze 和 run 均保持 blocked。所有外部 system 必须与来源 system 分开，manifest 必须解释候选输入中每个已提供的 system；不得悄悄忽略另一个已提供来源。
+
+`run_sha256` 可使用 `external_run_digest(pool, system_id, source_ids)` 生成。此处 `pool` 至少包含 `input`（完整候选对象）和 `selection`（原黄金输入的完整所选非留出投影）。摘要对象精确为：
+
+```json
+{
+  "system_id": "external-system-id",
+  "source_ids": ["participating-source-id"],
+  "query_runs": [
+    {"query_id": "selected-query-id", "run": {"system_id": "external-system-id", "query_id": "selected-query-id", "status": "empty", "document_ids": [], "reason": null}}
+  ]
+}
+```
+
+`query_runs` 严格按完整 `selection` 顺序包含每个查询；对应记录缺失时 `run:null`。完整外部 system/query 行没有被截到前十再计算摘要。这个函数只是绑定已存在的输出和缺失状态，不生成排名；给缺失行计算了摘要也不能解除阻塞。上例只是结构说明，不能将未知/失败结果填成 empty。
+
+每个 `ablations` 元素只包含 `ablation_id`、`removal_kind`、`removed_source_ids`、`system`。`removal_kind:"source"` 恰好移除一个来源；`removal_kind:"contribution_bucket"` 必须移除一个已知族或未知稳定服务桶的**全部且仅有**来源。移除列表无重复且保留 sources 次序，不能只删同族的一个 adapter 后声称已移除该族。ID 和移除计划均不得重复。
+
+manifest 原始文件摘要及完整内容嵌入 `pool.json.source_ablation`，受 package/pool/freeze 身份约束。来源身份、配对、次序或外部输出改变后必须重新 prepare/freeze；原 gate 不能重用。冻结时间仍是操作方声明，不证明计划早于外部排名执行或任何人查看数据。没有在看到留出结果后调参的运行路径。
+
+### 贡献、指标差值与缺失证据
+
+每题来源归属来自**已提供 source runs**，为池中每个 document 记录 source IDs 和贡献桶。报告分别列出每个渠道、每个桶返回的表示数、仅该渠道/桶贡献的表示数，以及已标相关的独有表示数。source 发生失败或缺失时，不能据剩余来源断言“独有”；这些计数保持 null。池中没有任何来源归属的文档仍保留在原池并逐条列出，阻塞比较，不会被移走。
+
+只要存活来源的输出都已知，外部排名就必须只引用这些来源提供的证据；在移除某来源/族后仍返回只来自已移除来源的表示，会拒绝整个包。未完成来源则是未知，不会被当作已知空来源。
+
+指标继续复用既有固定候选评分结果，计算 **base − ablation**。nDCG 的 IDCG 和所有标签要求始终使用**原本完整冻结的每题候选池**，包括已移除来源独有的文档。正差值表示这一固定材料中移除后该指标降低；负值表示相反方向。报告不自动把差值声明为真实质量提升或给它添加事后通过阈值。
+
+每个配对按 development/regression、category、language 保留完整计划查询数、可比较数、双方状态计数和指标差值。只要组内一题缺运行、缺源归属、缺身份或缺标，该组完整指标差值为 null；`diagnostic_compared_subset` 另列明确分母的诊断均值，不能当作完整结果。
+
+未提供 manifest 时 `source_ablation` 为 blocked / missing_ablation_manifest，不阻止旧式固定候选有限门禁诊断，但完整 release gate 仍阻塞。提供 manifest 后，其未满足项也加入有限 `quality_gate.blocked_reasons`。synthetic 材料可以产生明确标记的算术诊断，仍因缺真实人类证据保持 blocked。外部材料完整且标签声明满足时，消融部分仅记为 `measured`；它不等于原 QA-02/FT-042/C-14 签收，完整 release gate 继续缺留出、约束/引用证据及独立人审认证。
 
 ## 人工标签与审查记录
 
@@ -129,4 +212,8 @@ Precision@10 的分母固定为 10，结果不足十条也不缩小分母。MRR@
 
 JSON 文件上限 64 MiB，小型 manifest/gate/freeze 上限 1 MiB，嵌套上限 32；最多 20,000 个文档、80,000 个 query/document 对、200 个 system、每题 2,000 个候选。probe 自身继续使用原有报告/响应体上限。重复键、NaN/Infinity、布尔数值、错误 Unicode、符号链接输入、非普通文件以及原输出覆盖被拒绝。
 
+可选 ablation manifest 上限 1 MiB，来源/base/ablation 的声明 system 总数不超过 200，计划的 system/query 对及来源候选归属关系分别不超过 80,000；缺失的 system 也计入计划上限。输出继续受 64 MiB 限制。
+
 `python/tests/test_evaluation.py` 使用单独合成查询和显式 synthetic 标签。测试包括手算指标、固定分母、全池 IDCG、漏标/冲突、empty/失败/未知区分、输入与软件漂移、修改查询投影后重算哈希、原文件缺失或字节变化、门槛缺失、留出拒绝、来源完整前十重放、证据损坏、无外发连接以及真实 CLI 进程的预期 blocked 退出码。这些合同测试不提供真实来源可用性、人类相关性或用户目标机器性能成绩。
+
+`python/tests/test_evaluation_ablation.py` 另外覆盖外部配对、保留原 IDCG、被移除但未标文档、同族与未知服务归属、缺源不能提高独有计数、外部 empty/failed/missing 区分、完整 query-run 摘要、移除范围/名次越界、缺身份阻塞、包冻结漂移和 CLI 未标注输出。fixture 的排名及相关性等级都是显式 synthetic；没有调用 Python RRF 或新增真实人类标签。

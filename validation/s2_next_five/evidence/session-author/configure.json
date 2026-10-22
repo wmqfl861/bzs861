@@ -1,0 +1,28 @@
+{
+  "role": "author_self_test",
+  "argv": [
+    "cmake",
+    "-S",
+    ".",
+    "-B",
+    "build-next-session",
+    "-G",
+    "Ninja",
+    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DBZS_SANITIZERS=OFF",
+    "-DBZS_REQUIRE_PYTHON_TESTS=ON",
+    "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs861-session-next",
+  "started_utc": "2026-10-22T01:11:09.074373+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/80f41eb198a3/bzs861-session-next/CMakeLists.txt": "463de3a34fcb28cff45dbc0211eb06e4595ffe2f84f98404a9c34308c6cb60e6"
+  },
+  "source_head": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "tracked_patch_sha256": "36e6636698e011ad0a4d49d85f85960c55b343f6d919f41ee46c63327bb492d5",
+  "exit_code": 0,
+  "seconds": 1.299,
+  "finished_utc": "2026-10-22T01:11:10.378923+00:00",
+  "log_sha256": "d679de32d0398a0baa38b029248382f44b1bb8f2fabb1ee63ebddcc3ddefa1dc"
+}

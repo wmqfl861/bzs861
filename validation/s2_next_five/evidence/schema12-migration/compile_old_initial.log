@@ -1,0 +1,18 @@
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp: In member function ‘bzs::Json {anonymous}::Worker::page(const bzs::Json&) const’:
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp:109:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  109 |     if(validators)value.set("http_cache",http_cache(p.at("url").str()));return value;
+      |     ^~
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp:109:73: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  109 |     if(validators)value.set("http_cache",http_cache(p.at("url").str()));return value;
+      |                                                                         ^~~~~~
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp: In member function ‘virtual bzs::Json {anonymous}::Worker::call(const std::string&, const bzs::Json&, int)’:
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp:134:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  134 |       if(validators&&!allow_all)response.set("http_cache",http_cache(p.at("url").str()));return response;
+      |       ^~
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp:134:90: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  134 |       if(validators&&!allow_all)response.set("http_cache",http_cache(p.at("url").str()));return response;
+      |                                                                                          ^~~~~~
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp: At global scope:
+/workspace/scratch/80f41eb198a3/bzs-next-five-review/schema12-migration/migration_driver.cpp:34:6: warning: ‘bzs::Json {anonymous}::load(const std::filesystem::__cxx11::path&)’ defined but not used [-Wunused-function]
+   34 | Json load(const std::filesystem::path& path) { return Json::parse(read_file(path,8*1024*1024),8*1024*1024); }
+      |      ^~~~

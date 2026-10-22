@@ -14,12 +14,15 @@ from yarl import URL
 
 from .netguard import GuardedResolver, NetPolicy, PolicyError
 from .publication import restriction_observation
+from .revalidation import request_profile
 
 DEFAULT_UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/130.0.0.0 Safari/537.36")
 _META_CHARSET = re.compile(rb"<meta[^>]{0,200}?charset=[\"']?\s*([A-Za-z0-9_\-]{2,40})", re.I)
 _ALIASES = {"gb2312": "gb18030", "gbk": "gb18030", "x-gbk": "gb18030", "big5": "big5hkscs", "utf8": "utf-8"}
-_CROSS_ORIGIN_HEADERS = frozenset(("user-agent", "accept", "accept-language"))
+_CROSS_ORIGIN_HEADERS = frozenset(("user-agent", "accept", "accept-language", "accept-encoding"))
+_RESOURCE_CONDITIONS = frozenset(("if-none-match", "if-modified-since", "if-match",
+                                  "if-unmodified-since", "if-range"))
 
 
 class FetchStopped(Exception):
@@ -81,6 +84,7 @@ class FetchResult:
     external_requests: int = 0
     content_bytes: int = 0
     error_code: str = ""
+    request_profile: str = ""
 
     @property
     def content_type(self) -> str:
@@ -152,6 +156,17 @@ class Fetcher:
             self._host_locks[host] = asyncio.Semaphore(self.per_host)
         return self._host_locks[host]
 
+    def request_headers(self, *, accept: str | None = None, headers: dict | None = None) -> dict[str, str]:
+        # Do not let the installed optional decoder set change a cached
+        # representation's request identity across worker restarts.
+        result = {"User-Agent": self.user_agent, "Accept-Language": self.accept_language,
+                  "Accept-Encoding": "gzip, deflate",
+                  "Accept": accept or "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
+        for key, value in (headers or {}).items():
+            result = {old: item for old, item in result.items() if old.lower() != key.lower()}
+            result[key] = value
+        return result
+
     async def fetch(self, url: str | URL, *, timeout_s: float = 20.0, method: str = "GET",
                     params: dict | None = None, data: dict | None = None, headers: dict | None = None,
                     max_bytes: int | None = None, accept: str | None = None,
@@ -163,10 +178,7 @@ class Fetcher:
         limit = min(max_bytes or self.max_bytes, self.max_bytes)
         result = FetchResult(status="network_error", url=str(url))
         current = url
-        req_headers = {"User-Agent": self.user_agent, "Accept-Language": self.accept_language,
-                       "Accept": accept or "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"}
-        if headers:
-            req_headers.update(headers)
+        req_headers = self.request_headers(accept=accept, headers=headers)
         try:
             for hop in range((self.max_redirects if follow_redirects else 0) + 1):
                 if budget:
@@ -207,6 +219,7 @@ class Fetcher:
                     if budget:
                         budget.dispatch()
                     result.external_requests += 1
+                    result.request_profile = request_profile(req_headers)
                     async with self._session.request(method, target, params=params if hop == 0 else None,
                                                      data=data if method == "POST" else None, headers=req_headers,
                                                      allow_redirects=False, timeout=timeout) as resp:
@@ -220,17 +233,15 @@ class Fetcher:
                         robots = resp.headers.getall("X-Robots-Tag", ())
                         if robots:
                             result.headers["x-robots-tag"] = "\n".join(robots)
-                        if not follow_redirects:
-                            cache_control = resp.headers.getall("Cache-Control", ())
-                            if cache_control:
-                                result.headers["cache-control"] = ",".join(cache_control)
-                            retry_after = resp.headers.getall("Retry-After", ())
-                            if retry_after:
-                                result.headers["retry-after"] = "\n".join(retry_after)
-                            for name in ("Age", "Date", "Expires", "Vary"):
-                                fields = resp.headers.getall(name, ())
-                                if fields:
-                                    result.headers[name.lower()] = ("," if name == "Vary" else "\n").join(fields)
+                        # Combining list-valued fields is safe; a repeated
+                        # singleton must remain detectable by the cache parser.
+                        # Apply the same rule to interactive and scheduled reads.
+                        for name in ("Cache-Control", "Vary", "Retry-After", "Age", "Date", "Expires",
+                                     "ETag", "Last-Modified", "Content-Location"):
+                            fields = resp.headers.getall(name, ())
+                            if fields:
+                                separator = "," if name in ("Cache-Control", "Vary") else "\n"
+                                result.headers[name.lower()] = separator.join(fields)
                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
                         if redirect and follow_redirects:
                             observation = restriction_observation(result.headers)
@@ -292,6 +303,11 @@ class Fetcher:
                                 result.final_url = str(resp.url)
                                 result.status = "redirect"
                                 return result
+                            # Validators name one selected representation at
+                            # one exact URI. Even a same-origin redirect is a
+                            # new resource and must not inherit those conditions.
+                            req_headers = {k: v for k, v in req_headers.items()
+                                           if k.lower() not in _RESOURCE_CONDITIONS}
                             if target.origin() != nxt.origin():
                                 # Manual redirects must not forward API keys, bearer tokens, cookies, or
                                 # future custom credential headers to another origin or a downgraded URL.
@@ -302,7 +318,8 @@ class Fetcher:
                             continue
                         result.body = b"".join(chunks)
                         result.final_url = str(resp.url)
-                        result.status = "ok" if resp.status < 400 else "http_error"
+                        result.status = ("not_modified" if resp.status == 304 else
+                                         "ok" if resp.status < 400 else "http_error")
                         return result
                 finally:
                     sem.release()

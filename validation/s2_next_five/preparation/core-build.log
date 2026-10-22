@@ -1,0 +1,53 @@
+[1/43] Building CXX object CMakeFiles/bzs_core.dir/src/json.cpp.o
+[2/43] Building CXX object CMakeFiles/bzs_core.dir/src/util.cpp.o
+[3/43] Building CXX object CMakeFiles/bzs_core.dir/src/query.cpp.o
+[4/43] Building CXX object CMakeFiles/bzs_core.dir/src/html.cpp.o
+[5/43] Building CXX object CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o
+[6/43] Building CXX object CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+[7/43] Building CXX object CMakeFiles/bzs_core.dir/src/store.cpp.o
+[8/43] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+[9/43] Building CXX object CMakeFiles/bzs_core.dir/src/publication.cpp.o
+[10/43] Building CXX object CMakeFiles/bzs_core.dir/src/retention.cpp.o
+[11/43] Building CXX object CMakeFiles/bzs_core.dir/src/batch.cpp.o
+[12/43] Building CXX object CMakeFiles/bzs_core.dir/src/map.cpp.o
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp: In member function ‘void bzs::Store::settle_map_jobs_locked()’:
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp:284:36: warning: missing initializer for member ‘bzs::MapLease::conditional’ [-Wmissing-field-initializers]
+  284 |   while(rows.step())stale.push_back({rows.text(0),rows.text(1),rows.text(2),rows.text(3),rows.text(4),rows.text(5),rows.text(6),rows.text(7),rows.text(8),rows.num(9),rows.num(10),rows.num(11),rows.num(12),rows.num(13),rows.num(14),rows.num(15),rows.num(16),0,0,{}});
+      |                     ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp:284:36: warning: missing initializer for member ‘bzs::MapLease::robots_revalidation_base’ [-Wmissing-field-initializers]
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp: In member function ‘std::optional<bzs::MapLease> bzs::Store::lease_next_map(const bzs::SiteRegistry&)’:
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp:386:129: warning: missing initializer for member ‘bzs::MapLease::conditional’ [-Wmissing-field-initializers]
+  386 |         std::min<std::int64_t>(job.num(10),kind=="robots"?512*1024:2*1024*1024),timeout,now+timeout,kind=="robots"?Json():robots};
+      |                                                                                                                                 ^
+/workspace/scratch/80f41eb198a3/bzs861/src/map.cpp:386:129: warning: missing initializer for member ‘bzs::MapLease::robots_revalidation_base’ [-Wmissing-field-initializers]
+[13/43] Building CXX object CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+[14/43] Building CXX object CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+[15/43] Building CXX object CMakeFiles/bzs_core.dir/src/sites.cpp.o
+[16/43] Building CXX object CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+[17/43] Building CXX object CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+[18/43] Building CXX object CMakeFiles/bzs_core.dir/src/http_cache.cpp.o
+[19/43] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+[20/43] Building CXX object CMakeFiles/bzs_core.dir/src/service.cpp.o
+[21/43] Linking CXX static library libbzs_core.a
+[22/43] Building CXX object CMakeFiles/searchd.dir/apps/searchd/main.cpp.o
+[23/43] Linking CXX executable searchd
+[24/43] Building CXX object CMakeFiles/searchctl.dir/apps/searchctl/main.cpp.o
+[25/43] Linking CXX executable searchctl
+[26/43] Building CXX object CMakeFiles/bzs_tests.dir/tests/unit.cpp.o
+[27/43] Linking CXX executable bzs_tests
+[28/43] Building CXX object CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o
+[29/43] Linking CXX executable bzs_batch_tests
+[30/43] Building CXX object CMakeFiles/bzs_map_tests.dir/tests/map.cpp.o
+[31/43] Linking CXX executable bzs_map_tests
+[32/43] Building CXX object CMakeFiles/bzs_crawl_tests.dir/tests/crawl.cpp.o
+[33/43] Linking CXX executable bzs_crawl_tests
+[34/43] Building CXX object CMakeFiles/bzs_site_publication_tests.dir/tests/site_publication.cpp.o
+[35/43] Linking CXX executable bzs_site_publication_tests
+[36/43] Building CXX object CMakeFiles/bzs_retention_tests.dir/tests/retention.cpp.o
+[37/43] Linking CXX executable bzs_retention_tests
+[38/43] Building CXX object CMakeFiles/bzs_fairness_tests.dir/tests/fairness.cpp.o
+[39/43] Linking CXX executable bzs_fairness_tests
+[40/43] Building CXX object CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o
+[41/43] Linking CXX executable bzs_session_tests
+[42/43] Building CXX object CMakeFiles/bzs_contract_tests.dir/tests/contracts.cpp.o
+[43/43] Linking CXX executable bzs_contract_tests

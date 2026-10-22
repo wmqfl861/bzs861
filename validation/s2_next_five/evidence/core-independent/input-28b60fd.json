@@ -1,0 +1,30 @@
+{
+  "commit": "28b60fdf2836407a9a9d81faa0e2a20129017bf1",
+  "reviewer": "qa_ablation_agent_independent_of_core_author",
+  "source_sha256": {
+    "include/bzs/http_cache.hpp": "336721347401f8b7e3551a98b0390c7f928e2cbb36feef18f0eb9a69e3cbd280",
+    "include/bzs/store.hpp": "4a187ef6caba2f3f63f1d8fa503263a24045de01fe615aefcd1643430d394360",
+    "include/bzs/web.hpp": "fac5174ea1c16a9dfdc31420756e73dca1b008c30c00f7ac7a6a9a1000a67c47",
+    "src/http_cache.cpp": "745d9b3a7ba3a77f0443c79a38c5f8b4dd1871488d69a3df1a00a59979df4ce4",
+    "src/store.cpp": "afc336f8ea7dd2d2bf806f4d761f9a44f79e407f74c15b8141d757f9f705ab0c",
+    "src/web.cpp": "73228c7b6821f3aec4c32f8c692a5958d42483b03d3012f4fed9c628312478d6",
+    "src/map.cpp": "1fce025db9044694b3e2d5c4068f838f9fbd627b2b87f4fd513405e56cf80215",
+    "src/map_service.cpp": "928b199c6c28a3ddcd49ae059a0160986ab999cf4efb21b555ac8323da916ef4",
+    "tests/revalidation.cpp": "37808cea345fc7eba75983a1d3cfb2171e2adda827e340844f4eb9295def4c4b",
+    "src/retention.cpp": "9cd0abfa74c6140bfd6d6df789b6348f9487df8d385469b21ae4d92a1b1294e8"
+  },
+  "source_matches_worktree": {
+    "include/bzs/http_cache.hpp": true,
+    "include/bzs/store.hpp": true,
+    "include/bzs/web.hpp": true,
+    "src/http_cache.cpp": true,
+    "src/store.cpp": true,
+    "src/web.cpp": true,
+    "src/map.cpp": true,
+    "src/map_service.cpp": false,
+    "tests/revalidation.cpp": false,
+    "src/retention.cpp": true
+  },
+  "linked_library": "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+  "linked_library_sha256": "57e743bcb3ce84c7acabb9f01b0e99c4162cd85626973b5c14115458d4dcb587"
+}

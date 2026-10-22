@@ -1,0 +1,65 @@
+{
+  "recorded_at_utc": "2026-10-22T01:35:18.264422+00:00",
+  "library_origin": "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+  "library_scope": "Parent confirmed this frozen build includes robots GC fix and precedes nofollow fix.",
+  "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "compile_exit_code": 0,
+  "run_exit_code": 1,
+  "expected_pre_fix_result": "REPRODUCED; the two independent scenarios both revive stored follow_allowed and issue a second request for the old child link.",
+  "direct_sql_writes": false,
+  "operations": [
+    "WebService.submit_crawl",
+    "WebService.lease_map",
+    "WebService.execute_map",
+    "WebService.read with timeout Worker response",
+    "Store.observe_web_publication for in-flight restriction",
+    "Store.cached",
+    "Store.job_get",
+    "Store.crawl_edges"
+  ],
+  "results": [
+    {
+      "scenario": "failed_nofollow_before_304",
+      "failed_refresh_error": "E_FETCH_TIMEOUT",
+      "root_request_had_conditional": true,
+      "new_requests": 2,
+      "stored_follow_allowed": true,
+      "unexpected_child_request": true,
+      "safe": false
+    },
+    {
+      "scenario": "nofollow_observed_during_304",
+      "failed_refresh_error": "",
+      "root_request_had_conditional": true,
+      "new_requests": 2,
+      "stored_follow_allowed": true,
+      "unexpected_child_request": true,
+      "safe": false
+    }
+  ],
+  "sha256": {
+    "libbzs_core.a": "b79e64f907f9a37cb26f6361b7e8014e0be44a7a8c89fcfb93966d8f45b74264",
+    "fixture_reference.cpp": "7124eb90cf7a3d6338143ae2c5d8409a8e80d1cee121ea83fd243d9bbf000d44",
+    "nofollow_harness.cpp": "133931e0071f379f1124330c300e60f6ecd16ee22e4ec61894342005fdd7476f",
+    "nofollow_harness": "50abb1fdd1e335ffae0353ac913213dd6496fc8f111f4692d7c4a327eb800b92",
+    "before-fix.log": "535a8df336990bbd9da6a216a98878fee73ec087eac83528a6023ee1c0db8377",
+    "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "headers_sha256": {
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "336721347401f8b7e3551a98b0390c7f928e2cbb36feef18f0eb9a69e3cbd280",
+    "include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "5e14e721065bae54fbd5c04afb8bd6a7bce7949fbe01b29a1d2876604c25b1eb",
+    "include/bzs/service.hpp": "7b26011bc75fef70059c4db336371e6d450bfeb8e3979233845ae2a449b76e5b",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "4a187ef6caba2f3f63f1d8fa503263a24045de01fe615aefcd1643430d394360",
+    "include/bzs/tokenizer.hpp": "e4945b4d8475000acbbb274b6fe1af9baa3779f7c5c2b29cf0c67e10add7475d",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "include/bzs/web.hpp": "fac5174ea1c16a9dfdc31420756e73dca1b008c30c00f7ac7a6a9a1000a67c47"
+  }
+}

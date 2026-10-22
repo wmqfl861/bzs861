@@ -167,7 +167,8 @@ def test_synthetic_scoring_reports_each_split_and_never_claims_human_or_release_
     assert group(result, "regression")["planned_queries"] == 1
     assert any(row["dimension"] == "language" and row["value"] == "zh" for row in result["systems"][0]["groups"])
     assert result["constraint_failures"] is None and result["citation_failures"] is None
-    assert result["source_ablation"]["status"] == "not_implemented"
+    assert result["source_ablation"]["status"] == "blocked"
+    assert result["source_ablation"]["blocked_reasons"] == ["missing_ablation_manifest"]
 
 
 def test_missing_pool_label_blocks_idcg_even_when_missing_document_was_not_returned(tmp_path):
