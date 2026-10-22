@@ -1,0 +1,14 @@
+mode=serialize threads=4 rounds=100 shared_source=ddg manifest_written_during_probe=false
+ERROR thread=3 round=0 message=Invalid number
+ERROR thread=1 round=0 message=Invalid number
+ERROR thread=0 round=0 message=Trailing data
+ERROR thread=1 round=1 message=Unescaped control character
+ERROR thread=3 round=4 message=Missing comma
+ERROR thread=0 round=4 message=Unclosed JSON string
+ERROR thread=1 round=4 message=Missing comma
+ERROR thread=2 round=5 message=JSON string expected
+ERROR thread=0 round=5 message=Missing colon
+ERROR thread=1 round=5 message=Missing colon
+ERROR thread=1 round=6 message=Missing comma
+ERROR thread=0 round=6 message=Missing comma
+calls=400 errors=196

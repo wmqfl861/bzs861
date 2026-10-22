@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.9 S2 五个接续增量。** 在已发布0.1.8上增加页面与robots条件重验证、真实会话故障回归、来源贡献与外部消融评测合同、重复容量与公平性循环。独立复核同时修复304遗忘当前nofollow及回收后复用旧robots允许记录的问题。范围见 [接续计划](docs/handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](validation/s2_next_five/final-report.json)。S0、S1、S2 的完整验收仍未完成。
+**状态：0.1.9 S2 五个接续增量。** 在已发布0.1.8上增加页面与robots条件重验证、真实会话故障回归、来源贡献与外部消融评测合同、重复容量与公平性循环。独立复核同时修复304遗忘当前nofollow及回收后复用旧robots允许记录的问题。范围见 [接续计划](docs/handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](validation/s2_next_five/json-race-report.json)。发布后根据真实CI故障同步修复共享JSON的序列化和引用计数竞争，并补入两个并发回归。S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_next_five/README.md)；实际结果见 [本轮报告](validation/s2_next_five/final-report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_next_five/README.md)；实际结果见 [本轮报告](validation/s2_next_five/json-race-report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -144,7 +144,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮测试分为原生核心/批量/发现/爬取/发布/合同/回收/公平调度/会话、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_next_five/final-report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
+本轮测试分为原生核心/批量/发现/爬取/发布/合同/回收/公平调度/会话、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_next_five/json-race-report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 

@@ -1,0 +1,53 @@
+{
+  "at_utc": "2026-10-22T04:26:50.055730+00:00",
+  "label": "unmodified c14b3c3 Json baseline",
+  "compile_command": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O1",
+    "-g",
+    "-pthread",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-source/include",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/json_shared_read_harness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-source/json.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-source/util.cpp",
+    "-ljson-c",
+    "-lcrypto",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-harness"
+  ],
+  "compile_exit_code": 0,
+  "cases": [
+    {
+      "scenario": "serialize",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": 1,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-serialize.log"
+    },
+    {
+      "scenario": "reference_aliases",
+      "threads": 4,
+      "iterations_per_thread": 2000,
+      "exit_code": -6,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-reference_aliases.log"
+    },
+    {
+      "scenario": "canonical_reads",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": -11,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-canonical_reads.log"
+    }
+  ],
+  "sha256": {
+    "json_shared_read_harness.cpp": "ea7da2ec466056e8503435f9e189d8ce170e45754371f37c73f7784749f47fb9",
+    "baseline-source/json.cpp": "b585c18acbb5f1c98c73c7e3801ea34e876f50eed2616d9ef583cce532d41826",
+    "baseline-source/util.cpp": "091cee6a65eabccee1bc9a0a6cba943ec6421000932682e4225100c73adebf8b",
+    "baseline-harness": "0dea5750088b9fe9d000c68f0d5b8588508c512f22b73d80fcd6f502c7923ec4",
+    "baseline-source/include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "baseline-source/include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "baseline-source/include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991"
+  }
+}

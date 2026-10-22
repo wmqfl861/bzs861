@@ -1,0 +1,121 @@
+{
+  "schema": "bzs-json-concurrency-independent-review-1",
+  "recorded_at_utc": "2026-10-22T04:25:05.126551+00:00",
+  "reviewed_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "scope": "Read-only root-cause/design review plus standalone immutable-JSON reader tests. No product source modifications.",
+  "published_failure_reported_by_parent": {
+    "run": 39721279784,
+    "job": 119635049811,
+    "case": "test04 lost_start_ACK",
+    "error": "HTTP 409 E_SOURCE_REVIEW Source ddg: Missing colon"
+  },
+  "root_cause": [
+    "SourceSpec::require_review calls validate_contract, whose guard_shape and deep-clone path serialize the retained shared contract.",
+    "Json::dump calls json_object_to_json_string_ext and copies from the returned native buffer without synchronization.",
+    "Disassembly of the actual local json-c serializer shows read/creation/reset of per-object printbuf and return of its buffer pointer.",
+    "The local installed json-c 0.17-1build1 uses non-atomic read-modify-write in json_object_get/put; Json::at, copy, push/set and destruction therefore can race even for logically immutable registry trees."
+  ],
+  "local_dependency": {
+    "version": "0.17-1build1",
+    "library_path": "/usr/lib/x86_64-linux-gnu/libjson-c.so.5.3.0",
+    "library_sha256": "5cb4dfc866c13becb4d447440c4efbbd4114a469e348209f6f86d9741c12661f",
+    "atomic_refcounts_observed": false,
+    "evidence_files": [
+      "json-c-get.asm",
+      "json-c-put.asm",
+      "json-c-serialization.asm",
+      "json-c-packages.txt"
+    ]
+  },
+  "upstream_primary_sources": [
+    {
+      "url": "https://json-c.github.io/json-c/json-c-0.17/doc/html/index.html",
+      "section": "Building with partial threading support",
+      "observation": "ENABLE_THREADING only makes get/put atomic, is disabled by default, and does not provide full concurrent tree access; key-hash initialization has a separate compare-and-swap path."
+    },
+    {
+      "url": "https://json-c.github.io/json-c/json-c-0.17/doc/html/json__object_8h.html",
+      "section": "Object ownership, child lookup, serializer APIs",
+      "observation": "Child lookup does not retain ownership; object/array add transfers it; put may release a tree recursively."
+    }
+  ],
+  "confirmed_shared_reader_paths": [
+    "HTTP Store::search_submit -> normalized_request -> SourceSpec::require_review occurs before Store mutex.",
+    "Background Store::lease_next_search -> SourceSpec::require_review occurs while holding Store mutex; the other path is not covered by that mutex.",
+    "WebService::enabled_sources/sources/search also call reviewed/require_review on retained contracts.",
+    "Store::search_submit contracts.push and Store::freeze_search_locked contract.at(\"review\") retain/read the same shared contract tree.",
+    "SiteSpec::require_review/approved field reads share SiteSpec.review across admission and site-description paths."
+  ],
+  "excluded_candidate": "WebService search cache stores serialized std::string and parses new independent trees in cache_get; no shared cached Json node was found there.",
+  "minimum_design": [
+    "One mutex shared across all json-c nodes/aliases, not a per-Json-wrapper or per-SourceSpec mutex.",
+    "Protect all native calls touching shared nodes and implicit retain/release: copy/get, destructor/put, lookup plus retain, get plus add/set, scalar reads, size, key iteration, dump and str.",
+    "Keep native returned buffer/string/key copying inside the mutex; no raw pointer escapes the critical section.",
+    "For a nonrecursive mutex, avoid acquiring it before calling other Json methods that acquire it. Pure local parser state can remain outside the lock when it cannot refer to published shared nodes.",
+    "Canonical may compose individually protected methods when the documented contract requires caller synchronization for concurrent mutation or multi-operation read/modify/write.",
+    "Use a process-lifetime mutex or prove initialization/destruction ordering for every Json creation path. Json::parse(\"1\") can construct a global Json before a lazily initialized ordinary mutex, making a later destructor unsafe after gate destruction.",
+    "The same C++ Json wrapper must not be assigned/moved/destroyed concurrently with use; different live handles may read a shared immutable tree."
+  ],
+  "reviewed_source_sha256": {
+    "src/json.cpp": "b585c18acbb5f1c98c73c7e3801ea34e876f50eed2616d9ef583cce532d41826",
+    "include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "src/contracts.cpp": "51d7e1f356c6443665eb634cf35201ce01f64da193841d1cc2b1ff03292bb1e0",
+    "src/web.cpp": "73228c7b6821f3aec4c32f8c692a5958d42483b03d3012f4fed9c628312478d6",
+    "src/sites.cpp": "b8e8f34baca47e732e4aa14a8369c8b171d00879426175819ea901bc828b0d49",
+    "src/sessions.cpp": "51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775",
+    "apps/searchd/main.cpp": "6b4df84c76928d6ac2f231816fcd7719fd11df84063f1e870ddf59eb4d1c68e5",
+    "CMakeLists.txt": "ac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783",
+    ".github/workflows/ci.yml": "47489527fb018226ebfd978e77215b8074df9cfcfa682f5dcefa720a07a30e5b"
+  },
+  "standalone_regression_status": "Completed: baseline failed all three independent scenarios; candidate passed the identical scenarios.",
+  "candidate_code_review": {
+    "code_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "api_header_sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "result": "No synchronization gap found for the documented shared immutable tree contract.",
+    "checked_details": [
+      "All json-c native calls outside local parsing operate under the same gate.",
+      "dump and str construct std::string before the lock_guard is destroyed; keys copies every native key while locked.",
+      "at holds lookup plus retain atomically against release; set/push retain and internal release share the gate with destruction.",
+      "Type-check helper locks finish before each method takes its own lock; no wrapper-method recursive lock path was found.",
+      "Json prvalues from factories/at use guaranteed C++20 copy elision, avoiding an accidental locked copy constructor.",
+      "Tokenizers and trees created by parse/ShapeGuard remain thread-private until return, so their native calls cannot access published shared nodes.",
+      "A process-lifetime gate avoids use after mutex destruction during global Json teardown.",
+      "Move/assignment/is_null still require the documented absence of concurrent mutation/reassignment of the same handle."
+    ],
+    "commit": "3a79f0c0d7001b9fcd8c08fc43101531733db1f4",
+    "commit_source_matches_tested_snapshot": true,
+    "commit_header_matches_tested_snapshot": true
+  },
+  "standalone_regression_evidence": {
+    "baseline": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-context.json",
+    "candidate": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-context.json"
+  },
+  "updated_at_utc": "2026-10-22T04:32:01.847801+00:00",
+  "integrated_verification_preparation": {
+    "script": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/run_integrated_verification.py",
+    "script_sha256": "c888841bfc70a8a4457c2449354f512492451350961c03af29cbdd375080f64d",
+    "linkability_check": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-linkability-context.json",
+    "state": "Completed against the parent-confirmed final archive; preparation did not access the active build archive."
+  },
+  "integrated_artifact_validation": {
+    "passed": true,
+    "context": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/integrated-context.json",
+    "core_commit": "79df58127b3458dc3b270f37e727e5d8277c8544",
+    "library_sha256": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+    "json_cpp_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "parent_build_input_manifest_reported": {
+      "source_file_count": 188,
+      "sha256": "a1a2ee1af4998dbe0605c838d0014b7a89ab1caeb62451d0c48215db97e50d49",
+      "provenance": "Parent supplied after completing 45/45 Debug build; this manifest itself was not independently rehashed by this reviewer."
+    },
+    "completed_iterations": 11200,
+    "failed_iterations": 0
+  },
+  "final_status": "Accepted within this delegated concurrency review: shared immutable tree synchronization gap fixed, independently reproduced before fix, and identical three-scenario harness passed against final integrated archive.",
+  "scope_limits": [
+    "No claim that stress tests prove the absence of every possible data race. The code review covers native wrapper accesses and the documented shared immutable tree contract.",
+    "Concurrent mutation or reassignment of the same Json handle still requires caller synchronization.",
+    "GitHub workflow rerun and full release acceptance are parent-owned gates; this review did not alter E2E fixtures or manifests."
+  ],
+  "finalized_at_utc": "2026-10-22T04:33:09.992652+00:00"
+}

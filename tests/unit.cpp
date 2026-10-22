@@ -5,6 +5,8 @@
 #include "bzs/util.hpp"
 #include <sqlite3.h>
 #include <atomic>
+#include <barrier>
+#include <exception>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -164,6 +166,38 @@ namespace {
     CHECK(!a.at("f").flag());
     CHECK(a.canonical()==R"({"a":"中文😀","b":2,"f":false,"n":null})");
     CHECK(Json::parse(a.dump()).canonical()==a.canonical());
+  }
+  TEST(json_shared_readers_preserve_serialization_and_alias_lifetimes) {
+    const auto shared=Json::parse(R"({"name":"immutable shared tree","items":[{"text":"nested value","enabled":true},42,null],"payload":{"unicode":"中文","escaped":"quote\" and slash\\","values":[1,2,3]}})");
+    const auto expected=shared.canonical();
+    constexpr std::size_t count=4;
+    std::barrier start(static_cast<std::ptrdiff_t>(count));
+    std::vector<std::exception_ptr> errors(count);
+    std::vector<std::thread> workers;
+    for(std::size_t t=0;t<count;++t)workers.emplace_back([&,t] {
+      for(int round=0;round<100;++round) {
+        start.arrive_and_wait();
+        try {
+          auto alias=shared;
+          auto child=alias.at("payload");
+          if(Json::parse(alias.dump(round%2==0)).canonical()!=expected)
+            throw std::runtime_error("Concurrent serialization changed the shared tree");
+          auto holder=Json::object(),list=Json::array();
+          holder.set("root",alias);holder.set("child",child);
+          list.push(child);list.push(alias.at("items").at(0));holder.set("list",list);
+          // Replacing a private holder's entry releases a shared child reference.
+          holder.set("child",Json::object());
+          const auto copy=Json::parse(holder.dump());
+          if(copy.at("root").canonical()!=expected||
+             copy.at("list").at(0).at("unicode").str()!="中文"||
+             !copy.at("list").at(1).at("enabled").flag())
+            throw std::runtime_error("Concurrent alias lifetime changed a retained child");
+        } catch(...) { if(!errors[t])errors[t]=std::current_exception(); }
+      }
+    });
+    for(auto& worker:workers)worker.join();
+    for(const auto& error:errors)if(error)std::rethrow_exception(error);
+    CHECK(shared.canonical()==expected);
   }
   TEST(json_duplicate_keys) {
     rejects([] {

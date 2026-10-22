@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="2"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="aa22a8ee8b7d"
+	time="14"
+	timestamp="2026-10-21T21:27:30"
+	>
+	<testcase name="core" classname="core" time="2.382" status="run">
+		<properties/>
+		<system-out>PASS json_roundtrip
+PASS json_shared_readers_preserve_serialization_and_alias_lifetimes
+PASS json_duplicate_keys
+PASS json_malformed
+PASS json_strict_types
+PASS json_depth_limit
+PASS json_scalar_unicode_and_ranges
+PASS utf8_boundaries
+PASS hash_and_random
+PASS metadata_urls
+PASS query_symbols
+PASS query_boolean
+PASS query_phrases
+PASS query_fields
+PASS query_quoted_directives
+PASS query_ast
+PASS query_errors
+PASS query_chinese
+PASS query_flat_conjunction
+PASS html_main_code
+PASS html_noindex
+PASS html_selected_subtree
+PASS html_hidden_ancestors
+PASS html_robots_tokens
+PASS html_guards
+PASS document_limits
+PASS store_snapshots
+PASS store_owner_isolation
+PASS store_search
+PASS store_candidate_predicate_agreement
+PASS store_updates_index
+PASS store_noindex
+PASS session_stable
+PASS session_cursor_isolation
+PASS delete_revokes_paths
+PASS evidence_boundaries
+PASS search_budget_partial
+PASS reopen_data
+PASS migrate_schema_one_preserves_records
+PASS migration_rejects_quarantined_and_newer_databases
+PASS job_idempoten...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="sessions" classname="sessions" time="12.0501" status="run">
+		<properties/>
+		<system-out>RUN concurrent_source_review_keeps_shared_registry_contract_valid
+PASS concurrent_source_review_keeps_shared_registry_contract_valid (130 ms)
+RUN progress_creates_immutable_versions_and_bound_stable_cursors
+PASS progress_creates_immutable_versions_and_bound_stable_cursors (57 ms)
+RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (128 ms)
+RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (38 ms)
+RUN cancel_pending_is_zero_request_and_idempotent
+PASS cancel_pending_is_zero_request_and_idempotent (22 ms)
+RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (35 ms)
+RUN owner_isolation_invalid_options_and_version_binding
+PASS owner_isolation_invalid_options_and_version_binding (20 ms)
+RUN expired_events_have_explicit_recove...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

@@ -2,10 +2,13 @@
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
+#include <barrier>
 #include <chrono>
+#include <exception>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 using namespace bzs;
 namespace {
@@ -45,6 +48,25 @@ void execute_one(WebService& web) { const auto lease=web.lease_search();CHECK(le
 Json policy(bool index,bool snippet) { auto p=Json::parse(R"({"version":"bzs-publication-1","index_allowed":true,"snippet_allowed":true,"follow_allowed":true,"snippet_text":"","snippet_title":"","directives":[],"diagnostics":[]})");p.set("index_allowed",index);p.set("snippet_allowed",snippet);return p; }
 Json site(const std::string& mode) {
   auto m=Json::parse(R"({"version":1,"sites":[{"id":"fixture-site","enabled":true,"origin":"https://results.example","path_prefixes":["/"],"review":{"status":"approved","payment_scheme":"no_payment","automated_access":"approved","checked_at":"1970-01-01T00:00:00Z","expires_at":"2999-01-01T00:00:00Z","terms_url":"https://results.example/terms","cache_policy":"allowed_with_limits","redistribution_policy":"allowed_with_limits","approved_by":"synthetic-fixture"},"limits":{"max_concurrency":1,"min_interval_ms":0,"request_quota":1000,"quota_window_seconds":86400}}]})");m.at("sites").at(0).at("review").set("redistribution_policy",mode);return m;
+}
+TEST(concurrent_source_review_keeps_shared_registry_contract_valid) {
+  const SourceRegistry registry(manifest(1));
+  const auto* source=registry.find("source0");CHECK(source!=nullptr);
+  const auto before=source->contract.canonical();
+  constexpr std::size_t count=4;
+  std::barrier start(static_cast<std::ptrdiff_t>(count));
+  std::vector<std::exception_ptr> errors(count);
+  std::vector<std::thread> workers;
+  for(std::size_t t=0;t<count;++t)workers.emplace_back([&,t] {
+    for(int round=0;round<100;++round) {
+      start.arrive_and_wait();
+      try { source->require_review(1800000000000); }
+      catch(...) { if(!errors[t])errors[t]=std::current_exception(); }
+    }
+  });
+  for(auto& worker:workers)worker.join();
+  for(const auto& error:errors)if(error)std::rethrow_exception(error);
+  CHECK(source->contract.canonical()==before);
 }
 TEST(progress_creates_immutable_versions_and_bound_stable_cursors) {
   Temp t;Store store(t.path/"db");Worker worker;WebService web(store,worker,SourceRegistry(manifest()));

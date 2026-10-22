@@ -1,0 +1,29 @@
+{
+  "phase": "baseline_bug_reproduction",
+  "utc": "2026-10-22T04:23:31.357120+00:00",
+  "argv": [
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/shared_contract_probe_baseline",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/synthetic-source-manifest.json",
+    "serialize"
+  ],
+  "cwd": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author",
+  "return_code": 1,
+  "timed_out": false,
+  "elapsed_seconds": 0.044127570999989985,
+  "inputs_sha256": {
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/shared_contract_probe.cpp": "44e21769811c0c5b23f8b747d75b1346dde30b477575393ae4310b83e2195f8f",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/shared_contract_probe_baseline": "f45cabcbd8c9af831c472d1b475182b91a4889f29e0e75502dab2f95c0d8f777",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/synthetic-source-manifest.json": "b3021b9a8d3e57ecedbb79fbab8a4d3b6b1d3cbdff42e48541e3723e972cf515",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/src/json.cpp": "b585c18acbb5f1c98c73c7e3801ea34e876f50eed2616d9ef583cce532d41826",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/src/web.cpp": "73228c7b6821f3aec4c32f8c692a5958d42483b03d3012f4fed9c628312478d6",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/src/contracts.cpp": "51d7e1f356c6443665eb634cf35201ce01f64da193841d1cc2b1ff03292bb1e0",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/src/sessions.cpp": "51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/include/bzs/json.hpp": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "/workspace/scratch/80f41eb198a3/bzs861-session-json-race/tests/e2e_web.py": "fde80303cafe6fc5bb4cee3c99c8f619bc710bb8845ae6d48ef6b871b74b7c43"
+  },
+  "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/baseline-serialize.log",
+  "log_sha256": "2fa807fc475a2a62624a83d413914b71e0d58d0d7ac53e595d99ef757bdb6cb7",
+  "library_provenance": "Existing integrated production static library. Source files in inspected bug path match exact c14b3c3 baseline; no claim of fresh baseline rebuild in this initial fast probe."
+}

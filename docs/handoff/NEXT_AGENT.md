@@ -1,10 +1,10 @@
 # 下一位开发者的接续入口
 
-更新：2026-10-21。当前范围为 **0.1.9 S2 五个接续增量**。本轮历史输入是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，schema11；当前schema12。开始时先读取真实远端main、工作区、准确源码树和该SHA的Linux/Windows CI，不能把历史输入当当前HEAD。
+更新：2026-10-22。当前范围为 **0.1.9 S2 五个接续增量**。本轮历史输入是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，schema11；当前schema12。开始时先读取真实远端main、工作区、准确源码树和该SHA的Linux/Windows CI，不能把历史输入当当前HEAD。
 
 ## 阅读顺序
 
-1. [本轮接续计划](S2_NEXT_FIVE_20261021.md)、[验证说明](../../validation/s2_next_five/README.md)、[最终报告](../../validation/s2_next_five/final-report.json)及独立复核记录。
+1. [本轮接续计划](S2_NEXT_FIVE_20261021.md)、[验证说明](../../validation/s2_next_five/README.md)、[最终报告](../../validation/s2_next_five/json-race-report.json)及独立复核记录。
 2. [条件重验证](../HTTP_REVALIDATION.md)、[会话故障](../SEARCH_SESSIONS.md)、[来源贡献与外部消融](../RELEVANCE_EVALUATION.md)。
 3. [任务保留](../JOB_RETENTION.md)、[调度](../TASK_SCHEDULING.md)、[页面发布](../SITE_PUBLICATION.md)、[正文爬取](../SITE_CRAWLING.md)、[API](../API.md)。
 4. [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[蓝图](../planning/development_blueprint_v1.2.md)、[83包/161验收映射](../planning/slices_v1.2.json)，再查原规格/backlog和历史交接。
@@ -36,3 +36,9 @@ QA-02的外部消融输入必须绑定实际base/ablation排序、来源/逻辑�
 C++独占业务、数据库、权限、预算与调度；Worker负责受限网络/解析并独立准入，MCP只映射严格参数。业务代码不直接使用POSIX/Win32；真实SIGKILL仅是Linux故障测试。页面水位、任务摘要、会话事件均不替代独立撤销journal，没有连续性证明仍隔离备份。
 
 历史validation目录、v1.1规格/backlog/schema/锁不改写；不删减工作包或验收、不公开凭据和运行数据库。发布仅到wmqfl861/bzs861，以准确父SHA非强制更新；取回实际commit/tree对齐本地，再查该SHA的Linux/Windows，不能预写未来自身SHA。
+
+## 0.1.9发布后的并发修正
+
+先读最新json-race-report、json-race-execution-inputs和json-race-source-manifest；final-report与ci-followup-report分别属于首次发布和Windows测试修正，不能替代当前输入。c14b3c3的Windows12/12通过，但Linux真实ACK恢复发现共享json-c竞争。当前统一同步native读取、序列化返回缓冲复制及全部引用生命周期，两个并发回归进入core/sessions；共享树修改和同一C++句柄重赋值需调用者同步。
+
+当前完整CTest19/19、Python984、11套sanitizer通过，core82案/714断言、sessions22案/285断言。真实恢复文件保持原字节，不能通过重试、修改断言或移除真实期限隐藏并发问题。独立同源3案及真实新建旧库升级已绑定最终库；默认沙箱网络限制的失败和允许回环后的完整成功分别留档。

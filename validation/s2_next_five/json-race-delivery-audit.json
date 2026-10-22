@@ -1,0 +1,1143 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/conditional_worker",
+  "role": "independent_read_only_delivery_evidence_audit",
+  "started_at_utc": "2026-10-22T04:53:29.791536+00:00",
+  "completed_at_utc": "2026-10-22T04:53:30.904531+00:00",
+  "result": "passed",
+  "scope": "Final integrated JSON concurrency repair evidence and stated preservation/status boundaries only; no additional product tests were executed.",
+  "reviewed_report": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-report.json",
+    "sha256": "20491de2bf2490f0b8457ba05a3fb186cee126453afad52b48c467afe84c83f6"
+  },
+  "runtime_source_commit_local": "79df58127b3458dc3b270f37e727e5d8277c8544",
+  "remote_publication_result_claimed": false,
+  "manifests": {
+    "execution_inputs": {
+      "path": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-execution-inputs.json",
+      "sha256": "a1a2ee1af4998dbe0605c838d0014b7a89ab1caeb62451d0c48215db97e50d49",
+      "files": 188
+    },
+    "final_source_manifest": {
+      "path": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-source-manifest.json",
+      "sha256": "0514e173b3835cdd36e0cf0d8021c7104f91910698c67b4759e81517e29b8e0a",
+      "files": 195
+    },
+    "evidence": {
+      "path": "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-evidence.json",
+      "sha256": "f119b0e07326cd5e21d45bf96b52d23de157ad2aa6b39341547ae18e61bb3281",
+      "files": 111
+    }
+  },
+  "production_json_cpp_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+  "production_json_hpp_sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+  "final_debug_artifacts_sha256": {
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/searchd": "b5cf7d5bdd5fe997e43e807932b01a0fb1047e07d82e151379daaf8b548f53ed",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/searchctl": "df14a8522a534436a2d66ba7a33ccf2b5a7a3ae07f1c94b94971e0b86adfebba",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_tests": "2587c8deb03450ecaceafd777cf35c6f0ebc57c9289c16c386077f64de36dfed",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_batch_tests": "7f4479715a1a577ad6a4a819473ee09a75f57352a4c5df155d2aacd16f68362d",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_map_tests": "45cc56483a6b0fd647d1d43fbd5f57b3a1f6de4da7582f18842262e0e3a92e3f",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_crawl_tests": "ea2e0fe36d7b6f3f96f3718d40deaa89d9f1c6038ca2face6e116c43ef352a2a",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_site_publication_tests": "1bb694972cbad3e22e30b056b11812a4ababfca8e6ae274410f6aa9a227b9839",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_contract_tests": "1fcbd8d5781009bd6a2f8e9646e7dc47bc38b121562e2f632eef16be384dc0a9",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_fairness_tests": "d0aab84c6afdb87af74d4c0e5ac259d311e9518dc0f8bdc4a4ac792f8dc473b6",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_retention_tests": "3d11f46013f3fde972fc0c3048816c50a58cf419d2f9918fbb78f2de838286ce",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_session_tests": "695ab37aa03b74c0b49ca041b84f67a4a0ad5ff1393a546b3936129c5082ef40",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_revalidation_tests": "3b0bd7caa0438392789e317a14496a55d150a58d4b02f222029079329ab473d6",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/bzs_capacity_cycles_tests": "717a19ddfe7a75cb172c8fd192d6b505df1d9bcad0bbf4633efed768a6884792",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next/CTestTestfile.cmake": "2e61e9bcdad33f63da54b2cbc86639098927ed34ad1894242586e3d916406355"
+  },
+  "final_sanitizer_executed_artifacts_sha256": {
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_batch_tests": "9479883fc7a649f1462ea1e43919011fd80aa1d923e600f63ed140ae190d4b89",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/libbzs_core.a": "f987389bee7414e6bd1635d6a9f75d11b3d06d9e6400348242ae8f0c0f750186",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_capacity_cycles_tests": "60aadeb537c13dee07a1f6ba7c85ed2efb8e1b5328340009b3a4435a373943dc",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_contract_tests": "c536e0d5fd259564e75188286ad8fff320c99e6a80c6b30f3fe4f8139b45870d",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_tests": "c602b21105c3dbbea4a8c7704ffd466e541b054d234c925fe17525c7c4e451d3",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_crawl_tests": "cc2e93afae1e98f9ae9f746ff6a58d2ca59cbfa651e7135712f1e988603600a9",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_fairness_tests": "2cb448305f90efe622ae42aecc7fe8289e3332f3ca652b2a493ec0bbd217c8d5",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_map_tests": "66fc3d11d74c0cd7c8d6afe6d3163046e3cc5bff8977e3d49c5cc8a73bc4c9a7",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_retention_tests": "6ffed8ff81c9fee23fec14103c25d52d05cff7c3ca236d5e003fa9ac633f4193",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_revalidation_tests": "3018cee2f53a34b88efec2b0640d49f9362ed26fd93d1df2ae754c8801d51ce2",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_session_tests": "345a4232f1982ca1575637587ff35ae7e6269df0c350d975a7c8c2f5890b9c48",
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_site_publication_tests": "4b9eecdbe3087c3cb69a5076a6211400aff04665b92caa2fbd16eb10bd59dc34"
+  },
+  "commands": [
+    {
+      "record": "json-race-asan-batch-command.json",
+      "record_sha256": "fc9a8d3b8cf4878e67342e8b5f3a73d68c340e739b1a10802adaea09b08c834f",
+      "log": "json-race-asan-batch.log",
+      "log_sha256": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+      "exit_code": 0,
+      "elapsed_seconds": 1.718,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_batch_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:44:56.562807+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-build-restored-command.json",
+      "record_sha256": "db9acaedd0913a7506c82519cf8db6331a47d9c8e2d1c5b64e03fcfad4934f10",
+      "log": "json-race-asan-build-restored.log",
+      "log_sha256": "ae5181a2bfd3a4612c1e8453fd46dc7039b1c918b57e06a00506e4717957fa3e",
+      "exit_code": 0,
+      "elapsed_seconds": 55.87,
+      "argv": [
+        "cmake",
+        "--build",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan",
+        "-j1",
+        "--target",
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "bzs_retention_tests",
+        "bzs_fairness_tests",
+        "bzs_session_tests",
+        "bzs_revalidation_tests",
+        "bzs_capacity_cycles_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:42:59.631672+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-capacity-cycles-command.json",
+      "record_sha256": "c76f7e7b9c9e250925b66106bb2a0ad60798ccbcd5e888bc13cc1f2d2ffcfebf",
+      "log": "json-race-asan-capacity-cycles.log",
+      "log_sha256": "915b3c15cb9911d079bcc1304637daaf4a12e1d1e2a226b3774e0123024bd580",
+      "exit_code": 0,
+      "elapsed_seconds": 24.791,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_capacity_cycles_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:46:35.456471+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-configure-command.json",
+      "record_sha256": "b57471d69f84923e3f6cdfa5280aa9d3cebc179e903d2283da22eef4f13e34eb",
+      "log": "json-race-asan-configure.log",
+      "log_sha256": "69445cc25af86d003feadda94eb0972f94713dacec3ebdb7f266963d7c9806d8",
+      "exit_code": 0,
+      "elapsed_seconds": 0.967,
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_SANITIZERS=ON",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "-DPython3_EXECUTABLE=/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "started_at_utc": "2026-10-22T04:32:42.315707+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-contracts-command.json",
+      "record_sha256": "ccd8a25a468cd0bfc3483232f061afc5d58581d967b7ab3141579871dfd897f5",
+      "log": "json-race-asan-contracts.log",
+      "log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "exit_code": 0,
+      "elapsed_seconds": 0.705,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "started_at_utc": "2026-10-22T04:45:37.443802+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-core-command.json",
+      "record_sha256": "6fca8223d1b9a94d0173f79cb2ed830e42e6bd828dcd88fdfc62c73c4f5c0386",
+      "log": "json-race-asan-core.log",
+      "log_sha256": "675e332fdd41b861b9b9db6af8a0a347a50801e8398b6254069a7062c6a25c53",
+      "exit_code": 0,
+      "elapsed_seconds": 5.683,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:44:49.936093+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-crawl-command.json",
+      "record_sha256": "b017c8f777477a6d891103236d07adae9d331991e5fd3e6d6d13da85357e02ae",
+      "log": "json-race-asan-crawl.log",
+      "log_sha256": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+      "exit_code": 0,
+      "elapsed_seconds": 18.422,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_crawl_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:45:02.913071+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-fairness-command.json",
+      "record_sha256": "65f1c505cde0de16cd628942a1d2ccc05d7b0f90bbba44b8ec4f9ffb87c51c1f",
+      "log": "json-race-asan-fairness.log",
+      "log_sha256": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+      "exit_code": 0,
+      "elapsed_seconds": 2.615,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_fairness_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:45:45.753347+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-map-command.json",
+      "record_sha256": "082f308ff68e0d4a63af28cb7bf008ddb6d5caee032ab5d63cbfe8f22bba6294",
+      "log": "json-race-asan-map.log",
+      "log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+      "exit_code": 0,
+      "elapsed_seconds": 2.719,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_map_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:44:59.255075+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-retention-command.json",
+      "record_sha256": "69e3b0df05add860d78a5acbc69653fd9dc59150953b34bae148f05095c8ec27",
+      "log": "json-race-asan-retention.log",
+      "log_sha256": "35c4e2081c04c3f5454dfcc458acdca0559f7b66c369dd14a4193ddb51eeac8e",
+      "exit_code": 0,
+      "elapsed_seconds": 5.66,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_retention_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:45:39.155063+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-revalidation-command.json",
+      "record_sha256": "c6558642a4f440715315064d4959cb5003cd25a3b6090b2571f11f1e29e892ca",
+      "log": "json-race-asan-revalidation.log",
+      "log_sha256": "c0d73f75d254a6248d26fc440326d86a0fbaec855d1f4b5e352c5689e70318ad",
+      "exit_code": 0,
+      "elapsed_seconds": 4.007,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_revalidation_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:46:30.505407+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-sessions-command.json",
+      "record_sha256": "ecd55723668d16f469e3e70f94546001765109c69f34f8a00893c2dad8fe0eac",
+      "log": "json-race-asan-sessions.log",
+      "log_sha256": "1433b3293927e6c3f797053a00038bd2ba812c040a48d87ad3ff92ff4fe30edc",
+      "exit_code": 0,
+      "elapsed_seconds": 40.282,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_session_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:45:49.279333+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-site-publication-command.json",
+      "record_sha256": "58f7cec45775d55fda47b0a6bc2c59c110e8f35c4d8defd76139cb9108b9e378",
+      "log": "json-race-asan-site-publication.log",
+      "log_sha256": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+      "exit_code": 0,
+      "elapsed_seconds": 14.185,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/bzs_site_publication_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:45:22.335119+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-ctest-loopback-command.json",
+      "record_sha256": "f0ee5e19fdebf43ada5f41559b9ec9cd91cab74f853ff96c59647f5724e30487",
+      "log": "json-race-ctest-loopback.log",
+      "log_sha256": "5b1b118630827d90c1d03b25da9e418d13df1226b202b28f00b76dd5fda96701",
+      "exit_code": 0,
+      "elapsed_seconds": 135.648,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run(sys.argv[1:],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True); sys.stdout.write(r.stdout); sys.exit(r.returncode)",
+        "ctest",
+        "--test-dir",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next",
+        "--output-on-failure",
+        "-V",
+        "--output-junit",
+        "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-ctest-loopback.xml"
+      ],
+      "started_at_utc": "2026-10-22T04:35:58.632359+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-debug-build-command.json",
+      "record_sha256": "b458ee35ebf783755238eb1557e6da48dab1020f88b1c0f730a18edd963cee16",
+      "log": "json-race-debug-build.log",
+      "log_sha256": "78ceee275d1692aa41f1f2b27dd304d89d967cd2ca14ccff5dfb75cee3473f84",
+      "exit_code": 0,
+      "elapsed_seconds": 80.129,
+      "argv": [
+        "cmake",
+        "--build",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next",
+        "-j1"
+      ],
+      "started_at_utc": "2026-10-22T04:30:13.669315+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-debug-configure-command.json",
+      "record_sha256": "9dce7f81c5bdeed4729bfd66122d95f730a8c44bf032d83698f78cc40afe8812",
+      "log": "json-race-debug-configure.log",
+      "log_sha256": "f17f19a211d51efcae707c77a555a7a0277399afee98ee09bddb6e26dea368d5",
+      "exit_code": 0,
+      "elapsed_seconds": 1.096,
+      "argv": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_PYTHON=/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "-DPython3_EXECUTABLE=/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "started_at_utc": "2026-10-22T04:30:11.603098+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-dependencies-command.json",
+      "record_sha256": "baec9aac0ca37249901946b3d6bfc4f309b78ee10e02b9e8b6b03d4064f5825a",
+      "log": "json-race-dependencies.log",
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "exit_code": 0,
+      "elapsed_seconds": 0.259,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "started_at_utc": "2026-10-22T04:33:04.119488+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-design-contracts-command.json",
+      "record_sha256": "cde1b7f0ff4c1ea9330aa6d25bb6738c2a5e8406c39af0be02bb0fcdd466ec12",
+      "log": "json-race-design-contracts.log",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0,
+      "elapsed_seconds": 0.403,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "docs/planning/tools/validate_contracts.py"
+      ],
+      "started_at_utc": "2026-10-22T04:33:00.084121+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-plan-guard-command.json",
+      "record_sha256": "82a20cdfe6282401103ba23aeb88d27be7aa6f23a791337f1c0b3c3f117c5647",
+      "log": "json-race-plan-guard.log",
+      "log_sha256": "15297e821c0948c614ce029af9a0f0436285091e53683981e4f7b52f99b60908",
+      "exit_code": 0,
+      "elapsed_seconds": 0.727,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "tools/test_plan_guard.py",
+        "--output",
+        "validation/s2_next_five/json-race-plan-guard.json"
+      ],
+      "started_at_utc": "2026-10-22T04:33:01.439591+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-planning-command.json",
+      "record_sha256": "d80edb6dafd819481be7cc4aeb5f320047eab9a702edf7482a9fd26f81cbbca7",
+      "log": "json-race-planning.log",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0,
+      "elapsed_seconds": 0.046,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "docs/planning/tools/plan_v1_2.py",
+        "check"
+      ],
+      "started_at_utc": "2026-10-22T04:33:03.156706+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-preservation-command.json",
+      "record_sha256": "09b233f2c54d8a5c32bfa8de059131dce73a910536f318e6a1155114052b2622",
+      "log": "json-race-preservation.log",
+      "log_sha256": "e74cba8715bdac07a6d2c5d46c4df44123ee5fc67cbbab1528a689984dcb4617",
+      "exit_code": 0,
+      "elapsed_seconds": 0.97,
+      "argv": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-next/bin/python",
+        "validation/s2_next_five/check_preservation.py"
+      ],
+      "started_at_utc": "2026-10-22T04:33:05.264496+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-asan-build-command.json",
+      "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
+      "log": "json-race-asan-build.log",
+      "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
+      "exit_code": 1,
+      "elapsed_seconds": 46.394,
+      "argv": [
+        "cmake",
+        "--build",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next-asan",
+        "-j1",
+        "--target",
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "bzs_retention_tests",
+        "bzs_fairness_tests",
+        "bzs_session_tests",
+        "bzs_revalidation_tests",
+        "bzs_capacity_cycles_tests"
+      ],
+      "started_at_utc": "2026-10-22T04:38:44.971970+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    },
+    {
+      "record": "json-race-ctest-command.json",
+      "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
+      "log": "json-race-ctest.log",
+      "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
+      "exit_code": 8,
+      "elapsed_seconds": 225.842,
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run(sys.argv[1:],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True); sys.stdout.write(r.stdout); sys.exit(r.returncode)",
+        "ctest",
+        "--test-dir",
+        "/workspace/scratch/80f41eb198a3/build-bzs-next",
+        "--output-on-failure",
+        "-V",
+        "--output-junit",
+        "/workspace/scratch/80f41eb198a3/bzs861/validation/s2_next_five/json-race-ctest.xml"
+      ],
+      "started_at_utc": "2026-10-22T04:31:43.450596+00:00",
+      "runner_sha256": "b8e47e99612144d7ec5cc95db0d1d67059ee1a3c298381e931bcd92604077d75"
+    }
+  ],
+  "checks": [
+    {
+      "check": "report_matches_parent_frozen_sha256",
+      "passed": true
+    },
+    {
+      "check": "current_head_matches_runtime_source_commit",
+      "passed": true
+    },
+    {
+      "check": "execution_inputs_all_hashes_and_count",
+      "passed": true,
+      "detail": {
+        "count": 188,
+        "mismatches": []
+      }
+    },
+    {
+      "check": "final_source_manifest_all_hashes_and_count",
+      "passed": true,
+      "detail": {
+        "count": 195,
+        "mismatches": []
+      }
+    },
+    {
+      "check": "evidence_all_hashes_and_count",
+      "passed": true,
+      "detail": {
+        "count": 111,
+        "mismatches": []
+      }
+    },
+    {
+      "check": "exact_seven_post_validation_docs",
+      "passed": true
+    },
+    {
+      "check": "only_four_runtime_files_changed_from_c14",
+      "passed": true,
+      "detail": [
+        "include/bzs/json.hpp",
+        "src/json.cpp",
+        "tests/sessions.cpp",
+        "tests/unit.cpp"
+      ]
+    },
+    {
+      "check": "source_manifest_changed_file_list_exact",
+      "passed": true
+    },
+    {
+      "check": "evidence_inventory_exact_no_unlisted_files",
+      "passed": true,
+      "detail": {
+        "roots": [
+          "json-race-artifact-independent",
+          "json-race-author",
+          "json-race-ci-c14",
+          "json-race-independent",
+          "json-race-migration-independent"
+        ]
+      }
+    },
+    {
+      "check": "all_23_command_records_accounted_for",
+      "passed": true
+    },
+    {
+      "check": "failure_lists_identical",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-batch-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-build-restored-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-capacity-cycles-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-configure-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-contracts-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-core-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-crawl-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-fairness-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-map-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-retention-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-revalidation-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-sessions-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-site-publication-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-ctest-loopback-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-debug-build-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-debug-configure-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-dependencies-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-design-contracts-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-plan-guard-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-planning-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-preservation-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-asan-build-command.json",
+      "passed": true
+    },
+    {
+      "check": "command_record_log_binding:json-race-ctest-command.json",
+      "passed": true
+    },
+    {
+      "check": "success_failure_exit_codes_exact",
+      "passed": true
+    },
+    {
+      "check": "ctest_final_debug_artifact_bytes_match",
+      "passed": true,
+      "detail": {
+        "artifacts": 15
+      }
+    },
+    {
+      "check": "failed_and_approved_loopback_runs_use_identical_debug_artifacts",
+      "passed": true
+    },
+    {
+      "check": "final_core_library_binding",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-batch-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-batch-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-batch-command.json:bzs_batch_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-batch-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-capacity-cycles-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-capacity-cycles-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-capacity-cycles-command.json:bzs_capacity_cycles_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-capacity-cycles-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-contracts-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-contracts-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-contracts-command.json:bzs_contract_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-contracts-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-core-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-core-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-core-command.json:bzs_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-core-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-crawl-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-crawl-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-crawl-command.json:bzs_crawl_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-crawl-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-fairness-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-fairness-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-fairness-command.json:bzs_fairness_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-fairness-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-map-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-map-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-map-command.json:bzs_map_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-map-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-retention-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-retention-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-retention-command.json:bzs_retention_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-retention-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-revalidation-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-revalidation-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-revalidation-command.json:bzs_revalidation_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-revalidation-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-sessions-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-sessions-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-sessions-command.json:bzs_session_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-sessions-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_command_environment_and_stability:json-race-asan-site-publication-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_no_diagnostics:json-race-asan-site-publication-command.json",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-site-publication-command.json:bzs_site_publication_tests",
+      "passed": true
+    },
+    {
+      "check": "sanitizer_executed_artifact_hash:json-race-asan-site-publication-command.json:libbzs_core.a",
+      "passed": true
+    },
+    {
+      "check": "eleven_unique_sanitizer_executables",
+      "passed": true
+    },
+    {
+      "check": "ctest_junit_19_suites_zero_failed_or_skipped",
+      "passed": true
+    },
+    {
+      "check": "ctest_log_and_elapsed_mapping",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:core",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:core",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:batch",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:batch",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:map",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:map",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:crawl",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:crawl",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:site_publication",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:site_publication",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:retention",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:retention",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:fairness",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:fairness",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:sessions",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:sessions",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:revalidation",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:revalidation",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:capacity_cycles",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:capacity_cycles",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:contracts",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:contracts",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:http_cli",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:http_cli",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_web",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_web",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_map",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_map",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_crawl",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_crawl",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_crawl_recovery",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_crawl_recovery",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_session_recovery",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_session_recovery",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:e2e_revalidation",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:e2e_revalidation",
+      "passed": true
+    },
+    {
+      "check": "suite_elapsed_and_failure:python_worker",
+      "passed": true
+    },
+    {
+      "check": "suite_case_count_from_full_raw_log:python_worker",
+      "passed": true
+    },
+    {
+      "check": "34_design_contracts",
+      "passed": true
+    },
+    {
+      "check": "13_plan_guards_no_product_acceptance",
+      "passed": true
+    },
+    {
+      "check": "planning_read_only_and_original_counts",
+      "passed": true
+    },
+    {
+      "check": "dependencies_log",
+      "passed": true
+    },
+    {
+      "check": "initial_socket_failures_and_python_timeout_retained_without_inferred_individual_outcomes",
+      "passed": true
+    },
+    {
+      "check": "observed_artifact_difference_is_only_parallel_asan_metadata",
+      "passed": true
+    },
+    {
+      "check": "invalid_asan_object_preserved_and_restored_generated_object_verified",
+      "passed": true
+    },
+    {
+      "check": "asan_repair_does_not_claim_unknown_origin",
+      "passed": true
+    },
+    {
+      "check": "same_build_command_after_single_generated_object_repair",
+      "passed": true
+    },
+    {
+      "check": "independent_three_scenarios_11200_operations",
+      "passed": true
+    },
+    {
+      "check": "independent_harness_final_library_source_bindings",
+      "passed": true
+    },
+    {
+      "check": "independent_case_raw_log:serialize",
+      "passed": true
+    },
+    {
+      "check": "independent_case_raw_log:reference_aliases",
+      "passed": true
+    },
+    {
+      "check": "independent_case_raw_log:canonical_reads",
+      "passed": true
+    },
+    {
+      "check": "fresh_schema_11_to_12_39_legacy_tables_preserved",
+      "passed": true
+    },
+    {
+      "check": "migration_exact_input_fresh_database_and_role_scope",
+      "passed": true
+    },
+    {
+      "check": "migration_backup_quarantine_and_integrity",
+      "passed": true
+    },
+    {
+      "check": "569_old_baseline_files_sha256_preserved",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "758_published_c14_validation_git_blobs_unchanged",
+      "passed": true,
+      "detail": {
+        "count": 758,
+        "excluded_index": "validation/s2_next_five/README.md",
+        "mismatches": []
+      }
+    },
+    {
+      "check": "named_historical_report_hashes_unchanged",
+      "passed": true
+    },
+    {
+      "check": "machine_status_exact_latest_result_and_pending_ci_mapping",
+      "passed": true
+    },
+    {
+      "check": "original_019_results_retained_as_history",
+      "passed": true
+    },
+    {
+      "check": "original_83_161_10_and_36_47_0_acceptance_boundaries",
+      "passed": true
+    },
+    {
+      "check": "17_sources_disabled_and_no_registered_sites",
+      "passed": true
+    },
+    {
+      "check": "original_real_session_recovery_fixture_unchanged",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:HANDOFF_START_HERE.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:README.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:docs/DEVELOPMENT_STATUS.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:docs/GITHUB_HANDOFF.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:docs/handoff/NEXT_AGENT.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:docs/handoff/S2_NEXT_FIVE_20261021.md",
+      "passed": true
+    },
+    {
+      "check": "current_report_link_in_status_doc:docs/implementation_status.json",
+      "passed": true
+    },
+    {
+      "check": "prior_c14_linux_failure_and_windows_success_backed_by_raw_logs",
+      "passed": true
+    },
+    {
+      "check": "audited_report_sources_and_archive_stable_through_read_only_audit",
+      "passed": true
+    }
+  ],
+  "blocking_findings": [],
+  "status_document_paths": [
+    "HANDOFF_START_HERE.md",
+    "README.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/GITHUB_HANDOFF.md",
+    "docs/handoff/NEXT_AGENT.md",
+    "docs/handoff/S2_NEXT_FIVE_20261021.md",
+    "docs/implementation_status.json"
+  ],
+  "retained_initial_failures": {
+    "default_sandbox_ctest": "11 native suites passed; 7 HTTP/E2E suites failed with socket EPERM; Python suite timed out with incomplete individual results. The approved-loopback rerun used identical Debug artifact bytes and frozen source.",
+    "initial_sanitizer_build": "Non-ELF generated sessions.cpp.o and original failing command/log retained. Same build command regenerated that object and relinked; origin of invalid bytes is not established."
+  },
+  "review_notes": [
+    "JUnit suite logs are truncated at 1024 bytes; case/assertion counts were checked against the full verbose raw CTest log.",
+    "Historical command artifact inventories include then-current unrelated ASan build outputs; current hashes were compared for the artifacts actually exercised by final Debug CTest and the eleven sanitizer executable runs.",
+    "The 111 archived text files span five evidence directories, including the independent ASan generated-object inspection.",
+    "The 188-file execution manifest is now independently rehashed here; the earlier frozen concurrency design review accurately said that manifest was supplied by parent at that earlier review time.",
+    "All seven allowed status documents point to the new report. Original 0.1.9 results remain explicitly historical; current machine status exactly equals the new result object.",
+    "No published historical validation file was changed except the permitted README index; 758 previous Git blobs were compared directly."
+  ],
+  "remaining_gates": [
+    "Read the Linux and Windows CI workflows for the exact commit that contains these artifacts after publication.",
+    "Existing full-product acceptance, real-source approval, human relevance and long-duration/multinode limits remain unchanged."
+  ],
+  "source_or_existing_evidence_modified": false,
+  "new_product_tests_executed": 0
+}

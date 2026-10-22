@@ -1,0 +1,25 @@
+{
+  "at_utc": "2026-10-22T04:30:15.760181+00:00",
+  "scope": "Link-only readiness check against independently frozen pre-fix archive. No regression rerun and no access to library currently being rebuilt.",
+  "command": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O1",
+    "-g",
+    "-pthread",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/baseline-source/include",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/json_shared_read_harness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-code-freeze/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/linkability-harness"
+  ],
+  "exit_code": 0,
+  "input_library": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/nofollow-code-freeze/libbzs_core.a",
+  "input_library_sha256": "27340749be005770281d50aea3cccbd50a2f2a9b768808e37fb3c9471761dfbf",
+  "harness_sha256": "ea7da2ec466056e8503435f9e189d8ce170e45754371f37c73f7784749f47fb9"
+}

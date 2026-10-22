@@ -7,10 +7,23 @@
 #include <charconv>
 #include <cmath>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <utility>
 namespace bzs {
-  Json::Json(const Json& o):p_(json_object_get(o.p_)) {
+  namespace {
+    std::mutex& json_gate() {
+      // json-c's reference counts are not atomic in every supported build,
+      // and even serialization mutates a shared object's cached print buffer.
+      // All aliases, including children retained by private containers, use
+      // one gate. Keep it alive for Json objects destroyed during static teardown.
+      static auto* const gate=new std::mutex;
+      return *gate;
+    }
+  }
+  Json::Json(const Json& o) {
+    std::lock_guard lock(json_gate());
+    p_=json_object_get(o.p_);
   }
   Json::Json(Json&& o) noexcept:p_(std::exchange(o.p_, nullptr)) {
   }
@@ -19,21 +32,27 @@ namespace bzs {
     return *this;
   }
   Json::~Json() {
+    std::lock_guard lock(json_gate());
     json_object_put(p_);
   }
   Json Json::object() {
+    std::lock_guard lock(json_gate());
     return Json(json_object_new_object());
   }
   Json Json::array() {
+    std::lock_guard lock(json_gate());
     return Json(json_object_new_array());
   }
   Json Json::string(std::string_view s) {
+    std::lock_guard lock(json_gate());
     return Json(json_object_new_string_len(s.data(), static_cast<int>(s.size())));
   }
   Json Json::integer(std::int64_t v) {
+    std::lock_guard lock(json_gate());
     return Json(json_object_new_int64(v));
   }
   Json Json::boolean(bool v) {
+    std::lock_guard lock(json_gate());
     return Json(json_object_new_boolean(v));
   }
   namespace {
@@ -194,6 +213,7 @@ namespace bzs {
   }
   std::string Json::dump(bool pretty) const {
     if(!p_) return "null";
+    std::lock_guard lock(json_gate());
     return json_object_to_json_string_ext(p_, pretty?JSON_C_TO_STRING_PRETTY:JSON_C_TO_STRING_PLAIN);
   }
   std::string Json::canonical() const {
@@ -220,55 +240,74 @@ namespace bzs {
     return dump();
   }
   bool Json::is_object()const {
+    std::lock_guard lock(json_gate());
     return json_object_is_type(p_, json_type_object);
   }
   bool Json::is_array()const {
+    std::lock_guard lock(json_gate());
     return json_object_is_type(p_, json_type_array);
   }
   bool Json::is_string()const {
+    std::lock_guard lock(json_gate());
     return json_object_is_type(p_, json_type_string);
   }
   bool Json::is_integer()const {
+    std::lock_guard lock(json_gate());
     return json_object_is_type(p_, json_type_int);
   }
   bool Json::is_bool()const {
+    std::lock_guard lock(json_gate());
     return json_object_is_type(p_, json_type_boolean);
   }
   bool Json::has(const std::string& key)const {
+    if(!is_object())return false;
+    std::lock_guard lock(json_gate());
     json_object* x=nullptr;
-    return is_object()&&json_object_object_get_ex(p_, key.c_str(), &x);
+    return json_object_object_get_ex(p_, key.c_str(), &x);
   }
   Json Json::at(const std::string& key)const {
     require(is_object(), "E_SCHEMA", "Object required");
+    std::lock_guard lock(json_gate());
     json_object* v=nullptr;
     require(json_object_object_get_ex(p_, key.c_str(), &v), "E_SCHEMA", "Missing field: "+key);
     return Json(json_object_get(v));
   }
   Json Json::at(std::size_t i)const {
     require(is_array()&&i<size(), "E_SCHEMA", "Invalid array index");
+    std::lock_guard lock(json_gate());
     return Json(json_object_get(json_object_array_get_idx(p_, i)));
   }
   std::string Json::str()const {
     require(is_string(), "E_SCHEMA", "String required");
+    std::lock_guard lock(json_gate());
     return {
       json_object_get_string(p_), static_cast<std::size_t>(json_object_get_string_len(p_))
     };
   }
   std::int64_t Json::num()const {
     require(is_integer(), "E_SCHEMA", "Integer required");
+    std::lock_guard lock(json_gate());
     return json_object_get_int64(p_);
   }
   bool Json::flag()const {
     require(is_bool(), "E_SCHEMA", "Boolean required");
+    std::lock_guard lock(json_gate());
     return json_object_get_boolean(p_)!=0;
   }
   std::size_t Json::size()const {
-    if(is_array())return json_object_array_length(p_);
-    if(is_object())return static_cast<std::size_t>(json_object_object_length(p_));
+    if(is_array()) {
+      std::lock_guard lock(json_gate());
+      return json_object_array_length(p_);
+    }
+    if(is_object()) {
+      std::lock_guard lock(json_gate());
+      return static_cast<std::size_t>(json_object_object_length(p_));
+    }
     throw Error("E_SCHEMA", "Container required");
   }
   std::vector<std::string> Json::keys()const {
     require(is_object(), "E_SCHEMA", "Object required");
+    std::lock_guard lock(json_gate());
     std::vector<std::string> out;
     json_object_object_foreach(p_, key, value) {
       (void)value;
@@ -278,10 +317,12 @@ namespace bzs {
   }
   void Json::set(const std::string& k, const Json& v) {
     require(is_object(), "E_INTERNAL", "Not an object", 500);
+    std::lock_guard lock(json_gate());
     json_object_object_add(p_, k.c_str(), json_object_get(v.p_));
   }
   void Json::push(const Json& v) {
     require(is_array(), "E_INTERNAL", "Not an array", 500);
+    std::lock_guard lock(json_gate());
     json_object_array_add(p_, json_object_get(v.p_));
   }
   void Json::allowed(std::initializer_list<std::string_view> fields)const {

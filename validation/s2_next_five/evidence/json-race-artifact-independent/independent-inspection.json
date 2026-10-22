@@ -1,0 +1,607 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-22T04:45:27.025Z",
+  "reviewer": "/root/session_faults",
+  "scope": "Read-only inspection of existing generated artifacts, preserved invalid object, frozen source and build configuration. No build, product-test execution, source edit, generated-artifact removal, or main-tree mutation by this reviewer.",
+  "runtime_source_commit": "79df58127b3458dc3b270f37e727e5d8277c8544",
+  "result": "Confirmed invalid generated sessions object; no observed missing source or build dependency. Cause of the invalid bytes remains undetermined.",
+  "initial_object_inventory": {
+    "count": 31,
+    "non_elf": [
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/sessions.cpp.o",
+        "bytes": 2097152,
+        "magic_hex": "00000000000000000000000000000000",
+        "elf": false,
+        "sha256": "47833e581ea0133a3614fed0fba667adb74d3250bd77e0f1cc2fc0609f816617",
+        "mtime_ns": 1792643936318706700
+      }
+    ],
+    "elf_count": 30,
+    "all_objects": [
+      {
+        "relative": "CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o",
+        "bytes": 4196688,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "3656b1dcd9d0695a2c4bfb67b796ec09ca5e12ba284e770724e65942cf195748",
+        "mtime_ns": 1792633523478923000
+      },
+      {
+        "relative": "CMakeFiles/bzs_retention_tests.dir/tests/retention.cpp.o",
+        "bytes": 5278808,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "b0f21af988f213a2ddc4cfbfabe650a9f006ad8061b15e10ac3222faa0be5174",
+        "mtime_ns": 1792633516046970600
+      },
+      {
+        "relative": "CMakeFiles/bzs_contract_tests.dir/tests/contracts.cpp.o",
+        "bytes": 2709448,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "762f5f3a37aaf0fa41ed1e6878167ef1f7bedaffbebf46176e63356a72074a14",
+        "mtime_ns": 1792633535558846200
+      },
+      {
+        "relative": "CMakeFiles/bzs_tests.dir/tests/unit.cpp.o",
+        "bytes": 10742216,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "e57f80a85d2a419e32f85ad4bb9aad06493a58692bf17ab706362bbd674af205",
+        "mtime_ns": 1792643970698482200
+      },
+      {
+        "relative": "CMakeFiles/bzs_site_publication_tests.dir/tests/site_publication.cpp.o",
+        "bytes": 5952328,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "01e4054691d6216cd7e90ec9abde02bce89f0ac0b97cf9e5b1c95c22a969ed59",
+        "mtime_ns": 1792633511698998300
+      },
+      {
+        "relative": "CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o",
+        "bytes": 5774096,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "7e6b76aab9afdc6eb844cce2a7502fbe8a45937e1b4a71c0b629227a9ee03a72",
+        "mtime_ns": 1792633527818895400
+      },
+      {
+        "relative": "CMakeFiles/bzs_crawl_tests.dir/tests/crawl.cpp.o",
+        "bytes": 14186192,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "30e99cbfdf00373f349d2dfe64f20479434ed78e345791c19f5de43b3e1ac5e1",
+        "mtime_ns": 1792633506723030300
+      },
+      {
+        "relative": "CMakeFiles/bzs_fairness_tests.dir/tests/fairness.cpp.o",
+        "bytes": 4280904,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "be5ed3a5f9a899ecbb6979d8dc0b477bd3a7be7b2e28f3ee684fd0ff81f421a7",
+        "mtime_ns": 1792633519810946300
+      },
+      {
+        "relative": "CMakeFiles/bzs_capacity_cycles_tests.dir/tests/capacity_cycles.cpp.o",
+        "bytes": 5015560,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "641a94dd81eded3e3556a3270031805c52d8bac0d25f7714064d8e96100334af",
+        "mtime_ns": 1792633532410866200
+      },
+      {
+        "relative": "CMakeFiles/bzs_map_tests.dir/tests/map.cpp.o",
+        "bytes": 5962728,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "c9c1c3d2463ea0e4c3ffe22c1d99c7166aeee8ed6cfad4c758428cf0c8423ae1",
+        "mtime_ns": 1792633494227110400
+      },
+      {
+        "relative": "CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o",
+        "bytes": 4370432,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "5c349e3ea2424e87352b10ee04bcc0e2a82b66ca439e2624ef11eb8480d708dd",
+        "mtime_ns": 1792633489043143000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/publication.cpp.o",
+        "bytes": 2639112,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "45bef49896b56f040eafcd9492a916400d583588f210853b0deec0b47eca6c94",
+        "mtime_ns": 1792643938514692400
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/query.cpp.o",
+        "bytes": 2126088,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "ad32bf6edceec9ae49ad5ff0d10aaacdaa399644b9de849f20b4021f6335940c",
+        "mtime_ns": 1792643928318758700
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/map.cpp.o",
+        "bytes": 2985960,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "2ea6742136c39fc55fe5d62f991b0be980e83dddef15b3c6eb345e17fcbb9eef",
+        "mtime_ns": 1792643943566659300
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/highlight.cpp.o",
+        "bytes": 1964672,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "17a672a6599c465bb291b5196baab1b9f89aca5c57e033e4528b3ad85389f11e",
+        "mtime_ns": 1792643931402738400
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/store.cpp.o",
+        "bytes": 4383904,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "cd3a9b04d50cf71e8962d1c83f4d8a028eed04d543585ac02d4d491b600362c8",
+        "mtime_ns": 1792643934506718500
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/batch.cpp.o",
+        "bytes": 1964824,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "80d6334cdfc4200c9f13b4de000946f7ffd2145c90ab24b693766c509a4440c2",
+        "mtime_ns": 1792643941222674700
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/retention.cpp.o",
+        "bytes": 1135824,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "87015029fc907b58f054526452cb271c5cdb3cd3f3aef14f6fb3e6893f80508a",
+        "mtime_ns": 1792643939650685000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o",
+        "bytes": 2143496,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "c1d13017bb8ea9c0c2680817b89941115b2821e19a6917f91948dd160b3b99a3",
+        "mtime_ns": 1792643946698639000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/map_service.cpp.o",
+        "bytes": 2052192,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "240b340780a00d496e7936ff339fbb6db47db876fcf0c34efdad5d09446c7429",
+        "mtime_ns": 1792643949894618000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/crawl.cpp.o",
+        "bytes": 988616,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "bffe4d089fe64f0f0030c74c74c32426a79bbb9e190f80fe9ba2f4715793edce",
+        "mtime_ns": 1792643944578653000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/contracts.cpp.o",
+        "bytes": 2603432,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "af701d72a84587cba454cd1845a8654351988644c1dea0242cc85488ad6595a0",
+        "mtime_ns": 1792643952290602500
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/sites.cpp.o",
+        "bytes": 1716360,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "13e773febb74886dd41dc5c5da1a625aa7dc018b3d4394671a7133085d42cd15",
+        "mtime_ns": 1792643948218629000
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/html.cpp.o",
+        "bytes": 1030280,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "f358d2f017f4925389c5ca3c76edaf32f91652e757eeb1e0d85b2ccf19ca5851",
+        "mtime_ns": 1792643929598750200
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/web.cpp.o",
+        "bytes": 7657544,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "f3d40b94dbaf74f965942e6df13b4ef38c1fa8da66f822ee402fa513b6164422",
+        "mtime_ns": 1792643959450555600
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o",
+        "bytes": 769088,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "0daae74a67e939e3aaa561bf7ba1f8f86d54d0d1f15cf1613001b63260053029",
+        "mtime_ns": 1792633441943449600
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/sessions.cpp.o",
+        "bytes": 2097152,
+        "magic_hex": "00000000000000000000000000000000",
+        "elf": false,
+        "sha256": "47833e581ea0133a3614fed0fba667adb74d3250bd77e0f1cc2fc0609f816617",
+        "mtime_ns": 1792643936318706700
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/util.cpp.o",
+        "bytes": 921840,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "48e14602f9e89fe311368711f1ef7e79c8c1e6611accdad149469e0ca00b0e30",
+        "mtime_ns": 1792633438151474400
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/service.cpp.o",
+        "bytes": 3357336,
+        "magic_hex": "7f454c46020101000000000000000000",
+        "elf": true,
+        "sha256": "f69758b86d7fbd2848c64973bf858bf272049ca5a8bf981f9bc2d89d2a668b4b",
+        "mtime_ns": 1792643962102538200
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/json.cpp.o",
+        "bytes": 1534000,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "01dfa95516468e15ae0037041153857febd93fc7a5558f80505a991bf47e9f81",
+        "mtime_ns": 1792643926502770700
+      },
+      {
+        "relative": "CMakeFiles/bzs_core.dir/src/http_cache.cpp.o",
+        "bytes": 1238696,
+        "magic_hex": "7f454c46020101030000000000000000",
+        "elf": true,
+        "sha256": "7b133aeae93f37d473dd819a6f056ad036078dc714035b566dcfbca7dfe25eec",
+        "mtime_ns": 1792643953986591500
+      }
+    ]
+  },
+  "preserved_object_inspection": {
+    "preserved_object": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid",
+    "bytes": 2097152,
+    "sha256": "47833e581ea0133a3614fed0fba667adb74d3250bd77e0f1cc2fc0609f816617",
+    "zero_bytes": 861853,
+    "distinct_byte_values": 256,
+    "first_nonzero_offset": 64,
+    "last_nonzero_offset": 2097148,
+    "first_64_bytes": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "parsers": [
+      {
+        "argv": [
+          "file",
+          "/workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid"
+        ],
+        "return_code": 0,
+        "stdout": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid: data\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "nm",
+          "--defined-only",
+          "/workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid"
+        ],
+        "return_code": 1,
+        "stdout": "",
+        "stderr": "nm: /workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid: file format not recognized\n"
+      },
+      {
+        "argv": [
+          "readelf",
+          "-h",
+          "/workspace/scratch/80f41eb198a3/bzs-next-five-review/json-race-asan-artifact/sessions.cpp.o.invalid"
+        ],
+        "return_code": 1,
+        "stdout": "",
+        "stderr": "readelf: Error: Not an ELF file - it has the wrong magic bytes at the start\n"
+      }
+    ],
+    "current_archive_member_observation": {
+      "bytes": 2903232,
+      "sha256": "fbe2df5f45614993b7e8bd45f899d4ed8cb1e341e8511b2d35f95c1211c5065d",
+      "matches_preserved_bad_object": false,
+      "return_code": 0,
+      "stderr": "",
+      "qualification": "Parent rebuilding the same generated archive concurrently; this observation binds the bytes read, not a claim that the archive stays unchanged."
+    },
+    "other_elf_object_parser_checks": [
+      {
+        "path": "CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_retention_tests.dir/tests/retention.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_contract_tests.dir/tests/contracts.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_tests.dir/tests/unit.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_site_publication_tests.dir/tests/site_publication.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_map_tests.dir/tests/map.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/publication.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/query.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/map.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/highlight.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/store.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/batch.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/retention.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/map_service.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/crawl.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/contracts.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/sites.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/html.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/web.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/sessions.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/util.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/service.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/json.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_core.dir/src/http_cache.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_crawl_tests.dir/tests/crawl.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_capacity_cycles_tests.dir/tests/capacity_cycles.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      },
+      {
+        "path": "CMakeFiles/bzs_fairness_tests.dir/tests/fairness.cpp.o",
+        "readelf_return_code": 0,
+        "readelf_stderr": "",
+        "nm_return_code": 0,
+        "nm_stderr": ""
+      }
+    ]
+  },
+  "source_and_configuration": {
+    "cmake_home_directory": "/workspace/scratch/80f41eb198a3/bzs861",
+    "build_type": "Debug",
+    "sanitizers": "ON",
+    "compiler": "/usr/bin/c++",
+    "generator": "Ninja",
+    "session_compile_input": "/workspace/scratch/80f41eb198a3/bzs861/src/sessions.cpp",
+    "session_flags": "-g -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fsanitize=address,undefined -fno-omit-frame-pointer",
+    "sessions_object_is_explicit_archive_dependency": true,
+    "index_and_worktree_source_test_build_paths_match_runtime_commit": true,
+    "frozen_input_manifest": "validation/s2_next_five/json-race-execution-inputs.json",
+    "frozen_input_manifest_sha256": "a1a2ee1af4998dbe0605c838d0014b7a89ab1caeb62451d0c48215db97e50d49",
+    "frozen_input_count": 188,
+    "mismatches": [],
+    "source_hashes": {
+      "src/sessions.cpp": "51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775",
+      "src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+      "CMakeLists.txt": "ac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783"
+    }
+  },
+  "build_log_observations": {
+    "initial_failure_log": "validation/s2_next_five/json-race-asan-build.log",
+    "initial_compile_step": "[6/41] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o",
+    "initial_archive_step": "[19/41] Linking CXX static library libbzs_core.a",
+    "initial_failed_step": "[21/41] Linking CXX executable bzs_tests",
+    "observed_errors": "Undefined references to sessions-module methods including migrate_sessions_locked, settle_searches_locked, submit_search, session_get, session_cancel and execute_search.",
+    "qualification": "The progress line and successful Ninja record do not establish how the eventual invalid file contents arose.",
+    "ninja_session_command_hash": "4f1ed00b1b42feae",
+    "original_and_regeneration_ninja_command_hash_equal": true,
+    "restoration_log": "validation/s2_next_five/json-race-asan-build-restored.log",
+    "restoration_start": [
+      "[1/23] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o",
+      "[2/23] Linking CXX static library libbzs_core.a",
+      "[3/23] Linking CXX executable bzs_tests"
+    ],
+    "restoration_actor": "Parent agent, not this reviewer."
+  },
+  "after_parent_regeneration": {
+    "object_bytes": 2903232,
+    "object_sha256": "fbe2df5f45614993b7e8bd45f899d4ed8cb1e341e8511b2d35f95c1211c5065d",
+    "elf_magic": true,
+    "defined_symbols_observed": [
+      "bzs::Store::search_submit(...)",
+      "bzs::Store::migrate_sessions_locked()"
+    ],
+    "nm_return_code": 0,
+    "preserved_bad_object_sha256": "47833e581ea0133a3614fed0fba667adb74d3250bd77e0f1cc2fc0609f816617",
+    "exact_prefix_match_after_first_64_bytes": false,
+    "differing_bytes_within_common_prefix": 6397,
+    "limitation": "The preserved bad object is not simply an exact truncated prefix of the new object; this comparison does not establish a corruption mechanism. Parent rebuilt artifacts while this read-only inspection continued."
+  },
+  "interpretation": [
+    "Initial inventory contained 31 .o files: the sessions core object was the sole non-ELF file; the other 30 had ELF magic.",
+    "The preserved bad file is not entirely zero: its first 64 bytes are zero, first nonzero byte is at offset 64, and it contains 861853 zero bytes in 2097152 total bytes.",
+    "file reports data; nm and readelf reject the preserved object's format. This is directly sufficient to explain why it cannot provide normal ELF symbol definitions.",
+    "The compiled source path, archive dependency and sanitizer flags are present, with all 188 frozen inputs matching. No source omission or configuration drift was observed.",
+    "Follow-up readelf header/section parsing and nm returned zero without diagnostics for all 31 currently available ELF objects after parent regeneration. This is a later observation, not a reinterpretation of the original failure."
+  ],
+  "cause_limits": [
+    "No evidence establishes whether the original bytes resulted from compiler/assembler behavior, process interruption, filesystem/storage behavior, external modification, resource exhaustion or another cause.",
+    "Do not relabel the initial link failure as a passing validation.",
+    "A successful rebuilt object and link do not replace the pending complete sanitizer runtime gate.",
+    "This inspection does not independently execute or certify product tests."
+  ],
+  "inspection_script_note": "The first frozen-manifest reader assumed files was an array and stopped with TypeError before doing comparisons. It was corrected to the manifest's path-to-hash mapping; the resulting check matched all 188 files. This was an inspection-script schema mistake, not a product test.",
+  "raw_configuration_readout": "33:BZS_SANITIZERS:BOOL=ON\n43:CMAKE_BUILD_TYPE:STRING=Debug\n46:CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++\n50:CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-13\n54:CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-13\n57:CMAKE_CXX_FLAGS:STRING=\n60:CMAKE_CXX_FLAGS_DEBUG:STRING=-g\n63:CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG\n66:CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG\n69:CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG\n327:CMAKE_CXX_COMPILER-ADVANCED:INTERNAL=1\n329:CMAKE_CXX_COMPILER_AR-ADVANCED:INTERNAL=1\n331:CMAKE_CXX_COMPILER_RANLIB-ADVANCED:INTERNAL=1\n333:CMAKE_CXX_FLAGS-ADVANCED:INTERNAL=1\n335:CMAKE_CXX_FLAGS_DEBUG-ADVANCED:INTERNAL=1\n337:CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1\n339:CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1\n341:CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1\n361:CMAKE_GENERATOR:INTERNAL=Ninja\n363:CMAKE_GENERATOR_INSTANCE:INTERNAL=\n365:CMAKE_GENERATOR_PLATFORM:INTERNAL=\n367:CMAKE_GENERATOR_TOOLSET:INTERNAL=\n372:CMAKE_HOME_DIRECTORY:INTERNAL=/workspace/scratch/80f41eb198a3/bzs861\n106-  OBJECT_FILE_DIR = CMakeFiles/bzs_core.dir/src\n107-\n108:build CMakeFiles/bzs_core.dir/src/sessions.cpp.o: CXX_COMPILER__bzs_core_unscanned_Debug /workspace/scratch/80f41eb198a3/bzs861/src/sessions.cpp || cmake_object_order_depends_target_bzs_core\n109-  DEFINES = -DBZS_VERSION=\\\"0.1.9\\\"\n110-  DEP_FILE = CMakeFiles/bzs_core.dir/src/sessions.cpp.o.d\n111-  FLAGS = -g -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fsanitize=address,undefined -fno-omit-frame-pointer\n112-  INCLUDES = -I/workspace/scratch/80f41eb198a3/bzs861/include -isystem /usr/include/libxml2\n113-  OBJECT_DIR = CMakeFiles/bzs_core.dir\n114-  OBJECT_FILE_DIR = CMakeFiles/bzs_core.dir/src\n115-\n116-build CMakeFiles/bzs_core.dir/src/publication.cpp.o: CXX_COMPILER__bzs_core_unscanned_Debug /workspace/scratch/80f41eb198a3/bzs861/src/publication.cpp || cmake_object_order_depends_target_bzs_core\n--\n218-# Link the static library libbzs_core.a\n219-\n220:build libbzs_core.a: CXX_STATIC_LIBRARY_LINKER__bzs_core_Debug CMakeFiles/bzs_core.dir/src/json.cpp.o CMakeFiles/bzs_core.dir/src/util.cpp.o CMakeFiles/bzs_core.dir/src/query.cpp.o CMakeFiles/bzs_core.dir/src/html.cpp.o CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o CMakeFiles/bzs_core.dir/src/highlight.cpp.o CMakeFiles/bzs_core.dir/src/store.cpp.o CMakeFiles/bzs_core.dir/src/sessions.cpp.o CMakeFiles/bzs_core.dir/src/publication.cpp.o CMakeFiles/bzs_core.dir/src/retention.cpp.o CMakeFiles/bzs_core.dir/src/batch.cpp.o CMakeFiles/bzs_core.dir/src/map.cpp.o CMakeFiles/bzs_core.dir/src/crawl.cpp.o CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o CMakeFiles/bzs_core.dir/src/sites.cpp.o CMakeFiles/bzs_core.dir/src/map_service.cpp.o CMakeFiles/bzs_core.dir/src/contracts.cpp.o CMakeFiles/bzs_core.dir/src/http_cache.cpp.o CMakeFiles/bzs_core.dir/src/web.cpp.o CMakeFiles/bzs_core.dir/src/service.cpp.o\n221-  LANGUAGE_COMPILE_FLAGS = -g\n222-  OBJECT_DIR = CMakeFiles/bzs_core.dir\n223-  POST_BUILD = :\n224-  PRE_LINK = :\n225-  TARGET_FILE = libbzs_core.a\n226-  TARGET_PDB = bzs_core.a.dbg\n227-\n228-# =============================================================================\n--\n718-build cmake_object_order_depends_target_bzs_session_tests: phony || cmake_object_order_depends_target_bzs_core\n719-\n720:build CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o: CXX_COMPILER__bzs_session_tests_unscanned_Debug /workspace/scratch/80f41eb198a3/bzs861/tests/sessions.cpp || cmake_object_order_depends_target_bzs_session_tests\n721-  DEFINES = -DBZS_VERSION=\\\"0.1.9\\\"\n722-  DEP_FILE = CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o.d\n723-  FLAGS = -g -std=c++20 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -fsanitize=address,undefined -fno-omit-frame-pointer\n724-  INCLUDES = -I/workspace/scratch/80f41eb198a3/bzs861/include\n725-  OBJECT_DIR = CMakeFiles/bzs_session_tests.dir\n726-  OBJECT_FILE_DIR = CMakeFiles/bzs_session_tests.dir/tests\n727-\n728-\nCMakeFiles/bzs_core.dir/src/sessions.cpp.o bytes=2097152 mtime=2026-10-21 21:38:56.318706770 -0700 inode=1449680\nlibbzs_core.a bytes=46074976 mtime=2026-10-21 21:39:22.758534068 -0700 inode=1444077\nCMakeFiles/bzs_core.dir/src/sessions.cpp.o: data\njson.cpp.o\nutil.cpp.o\nquery.cpp.o\nhtml.cpp.o\ntokenizer.cpp.o\nhighlight.cpp.o\nstore.cpp.o\nsessions.cpp.o\npublication.cpp.o\nretention.cpp.o\nbatch.cpp.o\nmap.cpp.o\ncrawl.cpp.o\ncrawl_trap.cpp.o\nsites.cpp.o\nmap_service.cpp.o\ncontracts.cpp.o\nhttp_cache.cpp.o\nweb.cpp.o\nservice.cpp.o\n",
+  "raw_source_readout": "79df58127b3458dc3b270f37e727e5d8277c8544\n79df58127b3458dc3b270f37e727e5d8277c8544\n51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775  src/sessions.cpp\ndc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5  src/json.cpp\nac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783  CMakeLists.txt\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-author/build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-author/build.json\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/revalidation-build-3.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/asan-preparation-configure.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/core-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/code-freeze-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/baseline-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/integrated-build-4.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/revalidation-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/revalidation-build-2.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/asan-preparation-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/integrated-build-3.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/integrated-build-2.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/environment/integrated-build-1.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/baseline-probe-build.json\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/baseline-probe-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/focused-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/fixed-probe-build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/focused-build.json\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/session-json-race-author/fixed-probe-build.json\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/capacity-author/build_final.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/capacity-author/build.log\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/capacity-author/build.json\n/workspace/scratch/80f41eb198a3/bzs-next-five-review/capacity-author/build_final.json\n"
+}

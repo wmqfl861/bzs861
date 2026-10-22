@@ -1,0 +1,505 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.9",
+  "schema": 12,
+  "recorded_at_utc": "2026-10-22T04:47:21.371582+00:00",
+  "scope": "Production shared-json-c concurrency correction after the second published candidate, retaining all five increments and original acceptance boundaries.",
+  "baseline_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "runtime_source_commit_local": "79df58127b3458dc3b270f37e727e5d8277c8544",
+  "local_commit_is_not_remote_publication_sha": true,
+  "execution_inputs": {
+    "path": "json-race-execution-inputs.json",
+    "sha256": "a1a2ee1af4998dbe0605c838d0014b7a89ab1caeb62451d0c48215db97e50d49",
+    "count": 188,
+    "files_unchanged_at_report": true
+  },
+  "final_source_manifest": {
+    "path": "json-race-source-manifest.json",
+    "sha256": "0514e173b3835cdd36e0cf0d8021c7104f91910698c67b4759e81517e29b8e0a",
+    "files": 195
+  },
+  "production_core_library_sha256": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+  "revision": "json-race-revision.json",
+  "evidence": {
+    "path": "json-race-evidence.json",
+    "sha256": "f119b0e07326cd5e21d45bf96b52d23de157ad2aa6b39341547ae18e61bb3281",
+    "files": 111
+  },
+  "result": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 19,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 135.6,
+      "command_elapsed_seconds": 135.648,
+      "log": "json-race-ctest-loopback.log",
+      "junit": "json-race-ctest-loopback.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 82,
+          "failed": 0,
+          "elapsed_seconds": 2.16847,
+          "assertions": 714
+        },
+        {
+          "name": "batch",
+          "passed": 18,
+          "failed": 0,
+          "elapsed_seconds": 0.568915,
+          "assertions": 439
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 0.821846,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 5.33333,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 4.6537,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 2.24495,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 0.864922,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 22,
+          "failed": 0,
+          "elapsed_seconds": 11.6253,
+          "assertions": 285
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 1.10418,
+          "assertions": 333
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 8.29137,
+          "assertions": 4800
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.150418,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 5.64147
+        },
+        {
+          "name": "e2e_web",
+          "passed": 14,
+          "failed": 0,
+          "elapsed_seconds": 5.6183
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0,
+          "elapsed_seconds": 3.58105
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 9.18611
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0,
+          "elapsed_seconds": 23.8156
+        },
+        {
+          "name": "e2e_session_recovery",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 27.1988
+        },
+        {
+          "name": "e2e_revalidation",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 8.59289
+        },
+        {
+          "name": "python_worker",
+          "passed": 984,
+          "failed": 0,
+          "elapsed_seconds": 14.1345
+        }
+      ]
+    },
+    "native_sanitizer_executables": 11,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "dependencies": "No broken requirements found.",
+    "independent_shared_json_regressions": {
+      "scenarios": 3,
+      "completed_operations": 11200,
+      "failures": 0,
+      "report": "evidence/json-race-independent/design-review.json",
+      "integrated_context": "evidence/json-race-independent/integrated-root-79df581/integrated-context.json"
+    },
+    "independent_final_upgrade": {
+      "old_schema": 11,
+      "new_schema": 12,
+      "legacy_tables_preserved": 39,
+      "old_snapshots": 5,
+      "old_evidence_records": 2,
+      "jobs_across_two_owners": 8,
+      "old_robots_records": 2,
+      "backup_quarantine_preserved": true,
+      "role": "Independent reexecution of the original migration driver against a freshly created old-version database and final new library.",
+      "report": "evidence/json-race-migration-independent/REVIEW_RESULT.json"
+    },
+    "successful_final_commands": 21,
+    "failed_initial_command_preserved": [
+      {
+        "record": "json-race-asan-build-command.json",
+        "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
+        "log": "json-race-asan-build.log",
+        "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
+        "exit_code": 1,
+        "elapsed_seconds": 46.394
+      },
+      {
+        "record": "json-race-ctest-command.json",
+        "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
+        "log": "json-race-ctest.log",
+        "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
+        "exit_code": 8,
+        "elapsed_seconds": 225.842
+      }
+    ],
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "counting_note": "Python cases are inside CTest; native, sanitizer, author and independent operations overlap and are not added to product acceptance."
+  },
+  "successful_commands": [
+    {
+      "record": "json-race-asan-batch-command.json",
+      "record_sha256": "fc9a8d3b8cf4878e67342e8b5f3a73d68c340e739b1a10802adaea09b08c834f",
+      "log": "json-race-asan-batch.log",
+      "log_sha256": "2fe3093df6e70373030e02ac8d0c2bf9a91ad6dbcbb7cc5236aca8ffcad17502",
+      "exit_code": 0,
+      "elapsed_seconds": 1.718
+    },
+    {
+      "record": "json-race-asan-build-restored-command.json",
+      "record_sha256": "db9acaedd0913a7506c82519cf8db6331a47d9c8e2d1c5b64e03fcfad4934f10",
+      "log": "json-race-asan-build-restored.log",
+      "log_sha256": "ae5181a2bfd3a4612c1e8453fd46dc7039b1c918b57e06a00506e4717957fa3e",
+      "exit_code": 0,
+      "elapsed_seconds": 55.87
+    },
+    {
+      "record": "json-race-asan-capacity-cycles-command.json",
+      "record_sha256": "c76f7e7b9c9e250925b66106bb2a0ad60798ccbcd5e888bc13cc1f2d2ffcfebf",
+      "log": "json-race-asan-capacity-cycles.log",
+      "log_sha256": "915b3c15cb9911d079bcc1304637daaf4a12e1d1e2a226b3774e0123024bd580",
+      "exit_code": 0,
+      "elapsed_seconds": 24.791
+    },
+    {
+      "record": "json-race-asan-configure-command.json",
+      "record_sha256": "b57471d69f84923e3f6cdfa5280aa9d3cebc179e903d2283da22eef4f13e34eb",
+      "log": "json-race-asan-configure.log",
+      "log_sha256": "69445cc25af86d003feadda94eb0972f94713dacec3ebdb7f266963d7c9806d8",
+      "exit_code": 0,
+      "elapsed_seconds": 0.967
+    },
+    {
+      "record": "json-race-asan-contracts-command.json",
+      "record_sha256": "ccd8a25a468cd0bfc3483232f061afc5d58581d967b7ab3141579871dfd897f5",
+      "log": "json-race-asan-contracts.log",
+      "log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "exit_code": 0,
+      "elapsed_seconds": 0.705
+    },
+    {
+      "record": "json-race-asan-core-command.json",
+      "record_sha256": "6fca8223d1b9a94d0173f79cb2ed830e42e6bd828dcd88fdfc62c73c4f5c0386",
+      "log": "json-race-asan-core.log",
+      "log_sha256": "675e332fdd41b861b9b9db6af8a0a347a50801e8398b6254069a7062c6a25c53",
+      "exit_code": 0,
+      "elapsed_seconds": 5.683
+    },
+    {
+      "record": "json-race-asan-crawl-command.json",
+      "record_sha256": "b017c8f777477a6d891103236d07adae9d331991e5fd3e6d6d13da85357e02ae",
+      "log": "json-race-asan-crawl.log",
+      "log_sha256": "ed0c7f39d53e19f354172c91ec4b99f162b5972a743103d61b3baf59614d6e1c",
+      "exit_code": 0,
+      "elapsed_seconds": 18.422
+    },
+    {
+      "record": "json-race-asan-fairness-command.json",
+      "record_sha256": "65f1c505cde0de16cd628942a1d2ccc05d7b0f90bbba44b8ec4f9ffb87c51c1f",
+      "log": "json-race-asan-fairness.log",
+      "log_sha256": "c9a68a112a0c7a3ffbc9987db74d7dfffee40f7bf2ec137f75bc41c9448dcd4f",
+      "exit_code": 0,
+      "elapsed_seconds": 2.615
+    },
+    {
+      "record": "json-race-asan-map-command.json",
+      "record_sha256": "082f308ff68e0d4a63af28cb7bf008ddb6d5caee032ab5d63cbfe8f22bba6294",
+      "log": "json-race-asan-map.log",
+      "log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+      "exit_code": 0,
+      "elapsed_seconds": 2.719
+    },
+    {
+      "record": "json-race-asan-retention-command.json",
+      "record_sha256": "69e3b0df05add860d78a5acbc69653fd9dc59150953b34bae148f05095c8ec27",
+      "log": "json-race-asan-retention.log",
+      "log_sha256": "35c4e2081c04c3f5454dfcc458acdca0559f7b66c369dd14a4193ddb51eeac8e",
+      "exit_code": 0,
+      "elapsed_seconds": 5.66
+    },
+    {
+      "record": "json-race-asan-revalidation-command.json",
+      "record_sha256": "c6558642a4f440715315064d4959cb5003cd25a3b6090b2571f11f1e29e892ca",
+      "log": "json-race-asan-revalidation.log",
+      "log_sha256": "c0d73f75d254a6248d26fc440326d86a0fbaec855d1f4b5e352c5689e70318ad",
+      "exit_code": 0,
+      "elapsed_seconds": 4.007
+    },
+    {
+      "record": "json-race-asan-sessions-command.json",
+      "record_sha256": "ecd55723668d16f469e3e70f94546001765109c69f34f8a00893c2dad8fe0eac",
+      "log": "json-race-asan-sessions.log",
+      "log_sha256": "1433b3293927e6c3f797053a00038bd2ba812c040a48d87ad3ff92ff4fe30edc",
+      "exit_code": 0,
+      "elapsed_seconds": 40.282
+    },
+    {
+      "record": "json-race-asan-site-publication-command.json",
+      "record_sha256": "58f7cec45775d55fda47b0a6bc2c59c110e8f35c4d8defd76139cb9108b9e378",
+      "log": "json-race-asan-site-publication.log",
+      "log_sha256": "b057d6f34eb7a84dbfb73faaaf5305f99f5d3cdc30e772a4bd92a83c63211ae9",
+      "exit_code": 0,
+      "elapsed_seconds": 14.185
+    },
+    {
+      "record": "json-race-ctest-loopback-command.json",
+      "record_sha256": "f0ee5e19fdebf43ada5f41559b9ec9cd91cab74f853ff96c59647f5724e30487",
+      "log": "json-race-ctest-loopback.log",
+      "log_sha256": "5b1b118630827d90c1d03b25da9e418d13df1226b202b28f00b76dd5fda96701",
+      "exit_code": 0,
+      "elapsed_seconds": 135.648
+    },
+    {
+      "record": "json-race-debug-build-command.json",
+      "record_sha256": "b458ee35ebf783755238eb1557e6da48dab1020f88b1c0f730a18edd963cee16",
+      "log": "json-race-debug-build.log",
+      "log_sha256": "78ceee275d1692aa41f1f2b27dd304d89d967cd2ca14ccff5dfb75cee3473f84",
+      "exit_code": 0,
+      "elapsed_seconds": 80.129
+    },
+    {
+      "record": "json-race-debug-configure-command.json",
+      "record_sha256": "9dce7f81c5bdeed4729bfd66122d95f730a8c44bf032d83698f78cc40afe8812",
+      "log": "json-race-debug-configure.log",
+      "log_sha256": "f17f19a211d51efcae707c77a555a7a0277399afee98ee09bddb6e26dea368d5",
+      "exit_code": 0,
+      "elapsed_seconds": 1.096
+    },
+    {
+      "record": "json-race-dependencies-command.json",
+      "record_sha256": "baec9aac0ca37249901946b3d6bfc4f309b78ee10e02b9e8b6b03d4064f5825a",
+      "log": "json-race-dependencies.log",
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "exit_code": 0,
+      "elapsed_seconds": 0.259
+    },
+    {
+      "record": "json-race-design-contracts-command.json",
+      "record_sha256": "cde1b7f0ff4c1ea9330aa6d25bb6738c2a5e8406c39af0be02bb0fcdd466ec12",
+      "log": "json-race-design-contracts.log",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0,
+      "elapsed_seconds": 0.403
+    },
+    {
+      "record": "json-race-plan-guard-command.json",
+      "record_sha256": "82a20cdfe6282401103ba23aeb88d27be7aa6f23a791337f1c0b3c3f117c5647",
+      "log": "json-race-plan-guard.log",
+      "log_sha256": "15297e821c0948c614ce029af9a0f0436285091e53683981e4f7b52f99b60908",
+      "exit_code": 0,
+      "elapsed_seconds": 0.727
+    },
+    {
+      "record": "json-race-planning-command.json",
+      "record_sha256": "d80edb6dafd819481be7cc4aeb5f320047eab9a702edf7482a9fd26f81cbbca7",
+      "log": "json-race-planning.log",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0,
+      "elapsed_seconds": 0.046
+    },
+    {
+      "record": "json-race-preservation-command.json",
+      "record_sha256": "09b233f2c54d8a5c32bfa8de059131dce73a910536f318e6a1155114052b2622",
+      "log": "json-race-preservation.log",
+      "log_sha256": "e74cba8715bdac07a6d2c5d46c4df44123ee5fc67cbbab1528a689984dcb4617",
+      "exit_code": 0,
+      "elapsed_seconds": 0.97
+    }
+  ],
+  "failed_initial_attempts": [
+    {
+      "record": "json-race-asan-build-command.json",
+      "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
+      "log": "json-race-asan-build.log",
+      "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
+      "exit_code": 1,
+      "elapsed_seconds": 46.394
+    },
+    {
+      "record": "json-race-ctest-command.json",
+      "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
+      "log": "json-race-ctest.log",
+      "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
+      "exit_code": 8,
+      "elapsed_seconds": 225.842
+    }
+  ],
+  "environment_retry": "json-race-loopback-environment.json",
+  "generated_object_repair": "json-race-asan-artifact.json",
+  "root_cause_and_independent_review": "evidence/json-race-independent/design-review.json",
+  "author_evidence": "evidence/json-race-author/AUTHOR_RESULT.json",
+  "prior_github_ci": {
+    "first_publication": {
+      "run_id": 39718214744,
+      "url": "https://github.com/wmqfl861/bzs861/actions/runs/39718214744",
+      "head_sha": "b88b76302e850499275b0a8ec2db366f282481f1",
+      "linux": {
+        "job_id": 119625336863,
+        "conclusion": "success",
+        "ctest_passed": 19,
+        "ctest_skipped": 0,
+        "ctest_seconds": 137.05,
+        "sanitizer_executables_passed": 11,
+        "original_contract_cases_passed": 34,
+        "plan_guards_passed": 13
+      },
+      "windows": {
+        "job_id": 119625336688,
+        "conclusion": "failure",
+        "build": "success",
+        "selected_suites": 12,
+        "passed": 11,
+        "timeout": 1,
+        "skipped": 0,
+        "failed_suite": "sessions",
+        "timeout_seconds": 60.01,
+        "total_seconds": 263.77,
+        "internal_case_output_present": false,
+        "root_cause_limit": "Original output cannot identify the current child case or prove slow execution rather than a hang."
+      }
+    },
+    "second_publication": {
+      "head_sha": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+      "run_id": 39721279784,
+      "url": "https://github.com/wmqfl861/bzs861/actions/runs/39721279784",
+      "linux": {
+        "job_id": 119635049811,
+        "conclusion": "failure",
+        "passed_suites": 18,
+        "failed_suites": 1,
+        "skipped_suites": 0,
+        "ctest_seconds": 148.85,
+        "failed_case": "test_04_lost_start_ack_reuses_committed_session_after_core_crash",
+        "error": "E_SOURCE_REVIEW: Source ddg: Missing colon",
+        "later_sanitizer_and_plan_steps": "skipped_due_to_failed_ctest",
+        "raw_log": "evidence/json-race-author/ci-linux-job-119635049811.log"
+      },
+      "windows": {
+        "job_id": 119635050132,
+        "conclusion": "success",
+        "passed_suites": 12,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "ctest_seconds": 306.74,
+        "session_cases": 21,
+        "session_assertions": 283,
+        "session_seconds": 68.56,
+        "backpressure_case_milliseconds": 60000,
+        "evidence_directory": "evidence/json-race-ci-c14"
+      },
+      "whole_workflow_conclusion": "failure_due_to_linux",
+      "new_production_fix_ci_not_implied": true
+    }
+  },
+  "preservation": {
+    "baseline_byte_preserved_files": 569,
+    "prior_published_validation_files_byte_preserved": 758,
+    "historical_reports_sha256": {
+      "final-report.json": "5f6a9db30ec226fc12a43f125eadc7380e3d1e0a53f6fb3abe3fb00a0c217590",
+      "final-review.json": "6c6e9fd6cb350c6dbf9b1023a0c00edf3432c0695f5731384dbd5e34349209dd",
+      "delivery-audit.json": "7bae17b528b782f920bf58ad435ee89e7917485a237282a5dc6d69749af9b69c",
+      "ci-followup-report.json": "67e193314a75d15283af786e9fd5172b4d930fefa14d116943808b582eb55107",
+      "ci-followup-source-manifest.json": "b05e7e130f35511f68424e0d32e76601e996f38798e58f189da4727127f9c077",
+      "ci-followup-execution-inputs.json": "73610d37d9eb2def864ea90014bf7879f7c5106b5e0333eed3a2ec259752be88"
+    },
+    "packages": 83,
+    "slices": 10,
+    "acceptance_ids": 161,
+    "status_counts": {
+      "partial": 36,
+      "not_started": 47,
+      "accepted": 0
+    },
+    "golden_content_inspected_for_tuning": false,
+    "enabled_sources": 0,
+    "registered_sites": 0
+  },
+  "boundaries": [
+    "This is five implementation increments within existing partial work packages, not five full slice acceptances.",
+    "No real source approval, target deployment availability, human qrels, real ablation quality, holdout tuning or full release gate success is claimed.",
+    "Synthetic HTTP/process recovery is not physical power loss; controlled-clock cycles are not long-duration throughput or multi-node acceptance.",
+    "Backups remain quarantined without independent revocation continuity.",
+    "Exact published SHA Linux/Windows CI must be verified after publication; this immutable pre-publication report cannot assert future results.",
+    "The Json concurrency contract covers immutable shared trees and separate alias reference lifetimes; callers synchronize mutation and concurrent use/reassignment/destruction of the same C++ handle.",
+    "The independent final migration reuses the existing author driver against a fresh old-version-created database, rather than claiming a new independently designed fixture.",
+    "The approved loopback rerun is a separate execution of unchanged inputs; the failed default-sandbox run and incomplete Python output remain preserved."
+  ]
+}

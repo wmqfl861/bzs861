@@ -1,0 +1,46 @@
+JSON 并发修复：独立审查与最终集成产物复验
+
+结论：本分工范围通过。统一 Json 层同步同时覆盖序列化缓冲和引用计数；同一冻结 harness 的三个场景在修复前均失败，在作者候选及最终集成库上均通过。
+
+输入绑定
+  原发布基线：c14b3c3c214bf9def1f8080b9125816aa0f56735
+  作者修复提交：3a79f0c0d7001b9fcd8c08fc43101531733db1f4
+  最终集成提交：79df58127b3458dc3b270f37e727e5d8277c8544
+  最终 src/json.cpp SHA256：dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5
+  最终 libbzs_core.a SHA256：f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27
+  同源 harness SHA256：ea7da2ec466056e8503435f9e189d8ce170e45754371f37c73f7784749f47fb9
+  主任务报告的 188 输入 manifest SHA256：a1a2ee1af4998dbe0605c838d0014b7a89ab1caeb62451d0c48215db97e50d49（本代理未独立重算该 manifest）
+
+根因证据
+  本地实际链接 json-c 0.17-1build1；其序列化函数重置对象私有 printbuf 并返回内部地址，get/put 使用非原子的普通读改写指令。
+  HTTP search_submit 的 normalized_request 位于 Store 锁外，可与后台 lease_next_search 的同一 contract.require_review 并发。
+  validate_contract 的 guard_shape 和深拷贝调用 input.dump；逻辑只读并不等于 native 层不写。
+  其他同类共享入口包括来源列举/搜索、会话 contracts.push/冻结结果字段读取，以及 SiteSpec.review。搜索缓存为字符串，已排除其自身共享 Json 图的候选。
+
+同步设计复核
+  一个进程生命周期 mutex 覆盖所有共享节点与别名。copy/get、dtor/put、lookup+retain、get+add 及隐式释放均使用同锁。
+  dump/str 返回的 C++ 字符串及 keys 的键名复制都在锁内完成。类型辅助检查不与方法自身锁重叠；未发现递归锁死。
+  parse/ShapeGuard 中的 tokenizer 和新树在发布前为线程私有，可不持共享 gate。canonical 组合已锁入口。
+  工厂/at 返回 prvalue 由 C++20 保证复制消除。全局 Json 退出析构使用仍有效的进程生命周期 gate。
+  合同仅承诺不可变共享树的并发读取及引用生命周期；并发修改、组合读改写、同一 Json 句柄的重赋值或生命周期需调用方同步。
+
+同源独立测试（每项 4 线程；没有重写产品 fixture）
+  serialize：每线程 400 轮。基线 509 次失败观测，退出码 1；最终库 1600 完成，0 失败，退出码 0。
+  reference_aliases：每线程 2000 轮，不做并发 dump。基线 json_object_put 引用计数断言，SIGABRT(-6)；最终库 8000 完成，0 失败，退出码 0。
+  canonical_reads：每线程 400 轮，包含字段读取及异常后继续调用。基线 SIGSEGV(-11)；最终库 1600 完成，0 失败，退出码 0。
+  最终集成共 11200 次操作完成，0 失败；来源为 integrated-root-79df581/integrated-context.json。
+
+归档入口
+  design-review.json：完整根因、同步设计、候选审查及最终输入绑定。
+  baseline-context.json / candidate-context.json：修复前与作者候选的编译输入及运行结果。
+  integrated-root-79df581/integrated-context.json：最终集成静态库的编译命令、SHA256 和三个运行结果。
+  json-c-get.asm / json-c-put.asm / json-c-serialization.asm：本地实际链接库的反汇编。
+  text-archive-manifest.json / text-archive-list.txt：可归档文本文件及校验值；二进制仅保留在工作证据中，其哈希记录于上下文。
+
+范围限制
+  代码审查和固定压力场景不等于证明不存在所有并发问题；全量验收和 GitHub CI 重跑仍由主任务完成。
+  本代理未改主树、未修改真实 E2E/来源 manifest、未推送。原失败及修正证据全部保留。
+
+官方资料
+  https://json-c.github.io/json-c/json-c-0.17/doc/html/index.html
+  https://json-c.github.io/json-c/json-c-0.17/doc/html/json__object_8h.html

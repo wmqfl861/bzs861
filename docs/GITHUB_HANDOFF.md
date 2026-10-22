@@ -1,13 +1,15 @@
 # GitHub 交付与开发历史
 
-更新：2026-10-21。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+更新：2026-10-22。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
 ## 当前增量与已交付输入
 
-当前范围为 **0.1.9 S2 五个接续增量**。本轮起点是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，tree `522c5d78fdb9e935bad976e561d92c74f20b7a12`；其 [CI 39435330847](https://github.com/wmqfl861/bzs861/actions/runs/39435330847) 已核对Linux/Windows成功。该成绩只证明基线。本轮范围见 [接续计划](handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](../validation/s2_next_five/final-report.json)，发布前报告不预写未来自身SHA或CI成功。
+当前范围为 **0.1.9 S2 五个接续增量**。本轮起点是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，tree `522c5d78fdb9e935bad976e561d92c74f20b7a12`；其 [CI 39435330847](https://github.com/wmqfl861/bzs861/actions/runs/39435330847) 已核对Linux/Windows成功。该成绩只证明基线。本轮范围见 [接续计划](handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](../validation/s2_next_five/json-race-report.json)，发布前报告不预写未来自身SHA或CI成功。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
+| 0.1.9 Windows测试修正 | `c14b3c3c214bf9def1f8080b9125816aa0f56735` | CI 39721279784：Windows12/12通过；Linux真实ACK恢复暴露JSON竞争，当前补丁修复 |
+| 0.1.9 首次发布 | `b88b76302e850499275b0a8ec2db366f282481f1` | CI 39718214744：Linux通过；Windows sessions 60秒超时，原日志保留 |
 | 0.1.8 main | `2c536e9834c4897b0c70e3bd6651b765cc67f45e` | 上一轮五阶段集成，schema11；本轮真实输入基线 |
 | 0.1.6 第一检查点 | `27966ffe61c16964c45d595e3ee2689115815217` | 读取顺序屏障、旧Worker完整性与独立复核；历史第一阶段检查点 |
 | 0.1.5 main | `2007690c9403b8ae593101488de1adf228608284` | 持久发布约束、抓取陷阱与真实进程恢复回归 |

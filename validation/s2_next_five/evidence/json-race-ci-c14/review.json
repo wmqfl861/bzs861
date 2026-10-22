@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "review_kind": "independent_published_windows_ci_observation_after_ci_correction",
+  "reviewer": "/root/qa_ablation",
+  "completed_utc": "2026-10-22T04:40:05.058487+00:00",
+  "repo": "wmqfl861/bzs861",
+  "run_id": 39721279784,
+  "job_id": 119635050132,
+  "job_url": "https://github.com/wmqfl861/bzs861/actions/runs/39721279784/job/119635050132",
+  "expected_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "observed_checkout_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "checkout_sha_verified": true,
+  "checkout_proof": [
+    "2026-10-22T04:14:47.5944842Z [command]\"C:\\Program Files\\Git\\bin\\git.exe\" log -1 --format=%H",
+    "2026-10-22T04:14:47.6249886Z c14b3c3c214bf9def1f8080b9125816aa0f56735"
+  ],
+  "job_status": "completed",
+  "job_conclusion": "success",
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1
+    },
+    {
+      "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2
+    },
+    {
+      "name": "Check out the pinned vcpkg baseline",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3
+    },
+    {
+      "name": "Install C++ dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4
+    },
+    {
+      "name": "Build",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5
+    },
+    {
+      "name": "Offline native and HTTP tests",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6
+    },
+    {
+      "name": "Post Check out the pinned vcpkg baseline",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11
+    },
+    {
+      "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13
+    }
+  ],
+  "ctest": {
+    "selected_suites": 12,
+    "passed": 12,
+    "failed": 0,
+    "timed_out": 0,
+    "skipped_or_not_run": 0,
+    "total_seconds": 306.74,
+    "cases": [
+      {
+        "ordinal": 1,
+        "total": 12,
+        "ctest_id": 1,
+        "name": "core",
+        "result": "Passed",
+        "seconds": 21.83,
+        "raw_line": "2026-10-22T04:32:50.0309280Z  1/12 Test  #1: core .............................   Passed   21.83 sec"
+      },
+      {
+        "ordinal": 2,
+        "total": 12,
+        "ctest_id": 2,
+        "name": "batch",
+        "result": "Passed",
+        "seconds": 5.2,
+        "raw_line": "2026-10-22T04:32:55.2337203Z  2/12 Test  #2: batch ............................   Passed    5.20 sec"
+      },
+      {
+        "ordinal": 3,
+        "total": 12,
+        "ctest_id": 3,
+        "name": "map",
+        "result": "Passed",
+        "seconds": 7.25,
+        "raw_line": "2026-10-22T04:33:02.4872681Z  3/12 Test  #3: map ..............................   Passed    7.25 sec"
+      },
+      {
+        "ordinal": 4,
+        "total": 12,
+        "ctest_id": 4,
+        "name": "crawl",
+        "result": "Passed",
+        "seconds": 41.67,
+        "raw_line": "2026-10-22T04:33:44.1532259Z  4/12 Test  #4: crawl ............................   Passed   41.67 sec"
+      },
+      {
+        "ordinal": 5,
+        "total": 12,
+        "ctest_id": 5,
+        "name": "site_publication",
+        "result": "Passed",
+        "seconds": 37.54,
+        "raw_line": "2026-10-22T04:34:21.6984526Z  5/12 Test  #5: site_publication .................   Passed   37.54 sec"
+      },
+      {
+        "ordinal": 6,
+        "total": 12,
+        "ctest_id": 6,
+        "name": "retention",
+        "result": "Passed",
+        "seconds": 21.27,
+        "raw_line": "2026-10-22T04:34:42.9692109Z  6/12 Test  #6: retention ........................   Passed   21.27 sec"
+      },
+      {
+        "ordinal": 7,
+        "total": 12,
+        "ctest_id": 7,
+        "name": "fairness",
+        "result": "Passed",
+        "seconds": 6.54,
+        "raw_line": "2026-10-22T04:34:49.5133323Z  7/12 Test  #7: fairness .........................   Passed    6.54 sec"
+      },
+      {
+        "ordinal": 8,
+        "total": 12,
+        "ctest_id": 8,
+        "name": "sessions",
+        "result": "Passed",
+        "seconds": 68.56,
+        "raw_line": "2026-10-22T04:35:58.0763915Z  8/12 Test  #8: sessions .........................   Passed   68.56 sec"
+      },
+      {
+        "ordinal": 9,
+        "total": 12,
+        "ctest_id": 9,
+        "name": "revalidation",
+        "result": "Passed",
+        "seconds": 9.71,
+        "raw_line": "2026-10-22T04:36:07.7913506Z  9/12 Test  #9: revalidation .....................   Passed    9.71 sec"
+      },
+      {
+        "ordinal": 10,
+        "total": 12,
+        "ctest_id": 10,
+        "name": "capacity_cycles",
+        "result": "Passed",
+        "seconds": 76.12,
+        "raw_line": "2026-10-22T04:37:23.9088415Z 10/12 Test #10: capacity_cycles ..................   Passed   76.12 sec"
+      },
+      {
+        "ordinal": 11,
+        "total": 12,
+        "ctest_id": 11,
+        "name": "contracts",
+        "result": "Passed",
+        "seconds": 0.89,
+        "raw_line": "2026-10-22T04:37:24.8023892Z 11/12 Test #11: contracts ........................   Passed    0.89 sec"
+      },
+      {
+        "ordinal": 12,
+        "total": 12,
+        "ctest_id": 12,
+        "name": "http_cli",
+        "result": "Passed",
+        "seconds": 10.1,
+        "raw_line": "2026-10-22T04:37:34.9034252Z 12/12 Test #12: http_cli .........................   Passed   10.10 sec"
+      }
+    ]
+  },
+  "sessions": {
+    "ctest_seconds": 68.56,
+    "ctest_timeout_seconds_observed": 180,
+    "registered_test_count": 21,
+    "run_count": 21,
+    "pass_count": 21,
+    "names_and_order_match_exact_commit_source": true,
+    "assertions_reported": 283,
+    "failures_reported": 0,
+    "fixture_4mib": {
+      "name": "frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages",
+      "milliseconds": 60000,
+      "raw_line": "2026-10-22T04:35:51.4815851Z 8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (60000 ms)"
+    },
+    "subcases": [
+      {
+        "name": "progress_creates_immutable_versions_and_bound_stable_cursors",
+        "milliseconds": 406,
+        "raw_line": "2026-10-22T04:34:49.9335547Z 8: PASS progress_creates_immutable_versions_and_bound_stable_cursors (406 ms)"
+      },
+      {
+        "name": "events_reconnect_without_duplicates_or_content_replay_and_survive_restart",
+        "milliseconds": 276,
+        "raw_line": "2026-10-22T04:34:50.2099002Z 8: PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (276 ms)"
+      },
+      {
+        "name": "cancel_mid_request_fences_late_response_and_preserves_completed_version",
+        "milliseconds": 293,
+        "raw_line": "2026-10-22T04:34:50.5031120Z 8: PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (293 ms)"
+      },
+      {
+        "name": "cancel_pending_is_zero_request_and_idempotent",
+        "milliseconds": 203,
+        "raw_line": "2026-10-22T04:34:50.7062436Z 8: PASS cancel_pending_is_zero_request_and_idempotent (203 ms)"
+      },
+      {
+        "name": "lost_lease_is_not_resent_and_unknown_accounting_survives_restart",
+        "milliseconds": 306,
+        "raw_line": "2026-10-22T04:34:51.0130283Z 8: PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (306 ms)"
+      },
+      {
+        "name": "owner_isolation_invalid_options_and_version_binding",
+        "milliseconds": 234,
+        "raw_line": "2026-10-22T04:34:51.2476993Z 8: PASS owner_isolation_invalid_options_and_version_binding (234 ms)"
+      },
+      {
+        "name": "expired_events_have_explicit_recovery_and_expired_keys_never_reexecute",
+        "milliseconds": 234,
+        "raw_line": "2026-10-22T04:34:51.4818577Z 8: PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (234 ms)"
+      },
+      {
+        "name": "frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages",
+        "milliseconds": 60000,
+        "raw_line": "2026-10-22T04:35:51.4815851Z 8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (60000 ms)"
+      },
+      {
+        "name": "delete_and_page_restriction_rechecked_without_content_in_event_log",
+        "milliseconds": 256,
+        "raw_line": "2026-10-22T04:35:51.7382126Z 8: PASS delete_and_page_restriction_rechecked_without_content_in_event_log (256 ms)"
+      },
+      {
+        "name": "site_tightening_survives_reopen_and_later_relaxation",
+        "milliseconds": 313,
+        "raw_line": "2026-10-22T04:35:52.0516592Z 8: PASS site_tightening_survives_reopen_and_later_relaxation (313 ms)"
+      },
+      {
+        "name": "active_session_backpressure_and_expired_detail_reclamation",
+        "milliseconds": 1024,
+        "raw_line": "2026-10-22T04:35:53.0767933Z 8: PASS active_session_backpressure_and_expired_detail_reclamation (1024 ms)"
+      },
+      {
+        "name": "local_search_gets_durable_events_and_still_has_snapshot_paging",
+        "milliseconds": 152,
+        "raw_line": "2026-10-22T04:35:53.2291445Z 8: PASS local_search_gets_durable_events_and_still_has_snapshot_paging (152 ms)"
+      },
+      {
+        "name": "expired_local_sessions_release_capacity_for_web_without_local_search",
+        "milliseconds": 829,
+        "raw_line": "2026-10-22T04:35:54.0584475Z 8: PASS expired_local_sessions_release_capacity_for_web_without_local_search (829 ms)"
+      },
+      {
+        "name": "fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion",
+        "milliseconds": 1047,
+        "raw_line": "2026-10-22T04:35:55.1064373Z 8: PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (1047 ms)"
+      },
+      {
+        "name": "source_policy_drift_stops_pending_work_and_does_not_refund_attempts",
+        "milliseconds": 256,
+        "raw_line": "2026-10-22T04:35:55.3631113Z 8: PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (256 ms)"
+      },
+      {
+        "name": "source_duplicate_provenance_keeps_best_rank_through_second_fusion",
+        "milliseconds": 222,
+        "raw_line": "2026-10-22T04:35:55.5854761Z 8: PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (222 ms)"
+      },
+      {
+        "name": "permission_epoch_invalidates_replay_and_late_completion",
+        "milliseconds": 241,
+        "raw_line": "2026-10-22T04:35:55.8264600Z 8: PASS permission_epoch_invalidates_replay_and_late_completion (241 ms)"
+      },
+      {
+        "name": "continuous_new_sessions_cannot_overtake_an_existing_pending_source",
+        "milliseconds": 343,
+        "raw_line": "2026-10-22T04:35:56.1698427Z 8: PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (343 ms)"
+      },
+      {
+        "name": "frozen_known_redirect_binding_survives_target_revival_and_route_change",
+        "milliseconds": 695,
+        "raw_line": "2026-10-22T04:35:56.8651408Z 8: PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (695 ms)"
+      },
+      {
+        "name": "incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker",
+        "milliseconds": 256,
+        "raw_line": "2026-10-22T04:35:57.1221414Z 8: PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (256 ms)"
+      },
+      {
+        "name": "preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read",
+        "milliseconds": 949,
+        "raw_line": "2026-10-22T04:35:58.0717538Z 8: PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (949 ms)"
+      }
+    ]
+  },
+  "observations": {
+    "count": 26,
+    "first_utc": "2026-10-22T04:15:41.313Z",
+    "last_utc": "2026-10-22T04:38:04.050Z",
+    "path": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-c14b3c3/observations.json"
+  },
+  "raw_log": {
+    "path": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-c14b3c3/job-119635050132.log",
+    "sha256": "459c536f3099ee74ef55afa3f6c2276b2bf3c7bd4bdf81f31f103a091c9bd9c3",
+    "bytes": 213439,
+    "decoded_characters": 213039,
+    "crlf_count": 2193,
+    "bare_lf_count": 0,
+    "preservation": "Exact connector-decoded string encoded as UTF-8 and saved with write_bytes; CRLF retained without text newline conversion.",
+    "complete_connector_response_path": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/windows-ci-c14b3c3/job-log-response.json",
+    "tool_reported_error": false
+  },
+  "other_job_statuses_from_same_final_api_response": [
+    {
+      "id": 119635049811,
+      "name": "linux",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "boundaries": [
+    "This is the actual Windows job for c14b3c3, not a claim that the whole workflow run passed. The same run Linux job has failure status.",
+    "This result precedes the later 79df581 JSON fix and cannot stand in for that final commit CI.",
+    "Original b88b763 Windows failure remains recorded separately as 11 passed / 1 timeout / 0 skipped; no historical result was overwritten.",
+    "The original failure lacked subcase output. This passing run shows sessions took 68.56 seconds and its full 4 MiB fixture took 60000 milliseconds, but does not prove the original failure had only a performance cause.",
+    "Reviewer performed read-only GitHub observation/log retrieval; no workflow rerun, cancellation or main-tree edits.",
+    "Zero skips refers to the 12 selected Windows CTest suites; the Windows job does not select all Linux-only suites."
+  ],
+  "artifact_sha256": {
+    "ctest-results-excerpt.log": "612a95b6406d44e8d23d40afceed3c9e97f77ffb0f36120b8b3205a1ea5651b9",
+    "job-119635050132.log": "459c536f3099ee74ef55afa3f6c2276b2bf3c7bd4bdf81f31f103a091c9bd9c3",
+    "job-log-response.json": "da22fdd2dca7f48881cef176a2c4dfddc626bf515e123ed2953d0d99ab66c09e",
+    "jobs-final-response.json": "0869eacd59067ea8d8f7eabf2b291650f633391cbcdf4e25197b64b029f47d5d",
+    "observations-through-042445.json": "8fadd22ad4caaa9767970d1ed05fe57108636dd2d0cc23f74a5456002f5461f2",
+    "observations.json": "0c0cd47248431b98464a1052d830ff9c083265351bbd9323753e077f1fa745e9",
+    "sessions.log": "36bdc2b110a1dcafec516f8a23d623685dbeb33e6ecef3ae51a374f6bac47ac2"
+  }
+}

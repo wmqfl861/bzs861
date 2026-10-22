@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "at_utc": "2026-10-22T04:36:30.240765+00:00",
+  "attempt_record": "json-race-ctest-command.json",
+  "failure_log": "json-race-ctest.log",
+  "failure_log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
+  "exit_code": 8,
+  "junit_attributes": {
+    "name": "Linux-c++",
+    "tests": "19",
+    "failures": "8",
+    "disabled": "0",
+    "skipped": "0",
+    "hostname": "aa22a8ee8b7d",
+    "time": "225",
+    "timestamp": "2026-10-21T21:31:43"
+  },
+  "passed_suites": [
+    "core",
+    "batch",
+    "map",
+    "crawl",
+    "site_publication",
+    "retention",
+    "fairness",
+    "sessions",
+    "revalidation",
+    "capacity_cycles",
+    "contracts"
+  ],
+  "failed_suites": [
+    "http_cli",
+    "e2e_web",
+    "e2e_map",
+    "e2e_crawl",
+    "e2e_crawl_recovery",
+    "e2e_session_recovery",
+    "e2e_revalidation",
+    "python_worker"
+  ],
+  "observed_socket_permission_errors": 14,
+  "representative_errors": [
+    "12: RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::open(implementation_type&, const protocol_type&, boost::system::error_code&)']",
+    "RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service<Protocol>::open(implementation_type&, const protocol_type&, boost::system::error_code&)']",
+    "18: PermissionError: [Errno 1] Operation not permitted",
+    "PermissionError: [Errno 1] Operation not permitted"
+  ],
+  "worker_suite_result": "Timeout at 180.11 seconds; captured pytest progress was incomplete, so individual Python outcomes are not inferred.",
+  "execution_inputs_unchanged": true,
+  "artifact_bytes_unchanged": false,
+  "action": "Preserved full original stdout, JUnit and command; same frozen source and binaries rerun under approved execution permission allowing loopback sockets. No test or product code changed.",
+  "rerun_record": "json-race-ctest-loopback-command.json",
+  "rerun_result": "Read the separate completed command record; not preclaimed here.",
+  "changed_observed_artifacts": [
+    "/workspace/scratch/80f41eb198a3/build-bzs-next-asan/CTestTestfile.cmake"
+  ],
+  "debug_execution_binary_bytes_unchanged": true,
+  "parallel_configuration_note": "ASan CMake configuration ran separately during the failed Debug CTest; its generated CTestTestfile metadata changed. No Debug executable or library bytes changed."
+}

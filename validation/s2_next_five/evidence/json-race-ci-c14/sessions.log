@@ -1,0 +1,48 @@
+2026-10-22T04:34:49.5138217Z       Start  8: sessions
+2026-10-22T04:34:49.5139557Z 8: Test command: D:\a\bzs861\bzs861\build-win\Debug\bzs_session_tests.exe
+2026-10-22T04:34:49.5140302Z 8: Working Directory: D:/a/bzs861/bzs861/build-win
+2026-10-22T04:34:49.5140677Z 8: Test timeout computed to be: 180
+2026-10-22T04:34:49.5269868Z 8: RUN progress_creates_immutable_versions_and_bound_stable_cursors
+2026-10-22T04:34:49.9335547Z 8: PASS progress_creates_immutable_versions_and_bound_stable_cursors (406 ms)
+2026-10-22T04:34:50.2098133Z 8: RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+2026-10-22T04:34:50.2099002Z 8: PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (276 ms)
+2026-10-22T04:34:50.2099819Z 8: RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+2026-10-22T04:34:50.5031120Z 8: PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (293 ms)
+2026-10-22T04:34:50.5031857Z 8: RUN cancel_pending_is_zero_request_and_idempotent
+2026-10-22T04:34:50.7062436Z 8: PASS cancel_pending_is_zero_request_and_idempotent (203 ms)
+2026-10-22T04:34:50.7062977Z 8: RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+2026-10-22T04:34:51.0130283Z 8: PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (306 ms)
+2026-10-22T04:34:51.0130846Z 8: RUN owner_isolation_invalid_options_and_version_binding
+2026-10-22T04:34:51.2476993Z 8: PASS owner_isolation_invalid_options_and_version_binding (234 ms)
+2026-10-22T04:34:51.2477586Z 8: RUN expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+2026-10-22T04:34:51.4818577Z 8: PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (234 ms)
+2026-10-22T04:34:51.4819675Z 8: RUN frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+2026-10-22T04:35:51.4815851Z 8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (60000 ms)
+2026-10-22T04:35:51.4816528Z 8: RUN delete_and_page_restriction_rechecked_without_content_in_event_log
+2026-10-22T04:35:51.7382126Z 8: PASS delete_and_page_restriction_rechecked_without_content_in_event_log (256 ms)
+2026-10-22T04:35:51.7382692Z 8: RUN site_tightening_survives_reopen_and_later_relaxation
+2026-10-22T04:35:52.0516592Z 8: PASS site_tightening_survives_reopen_and_later_relaxation (313 ms)
+2026-10-22T04:35:52.0517462Z 8: RUN active_session_backpressure_and_expired_detail_reclamation
+2026-10-22T04:35:53.0767933Z 8: PASS active_session_backpressure_and_expired_detail_reclamation (1024 ms)
+2026-10-22T04:35:53.0768613Z 8: RUN local_search_gets_durable_events_and_still_has_snapshot_paging
+2026-10-22T04:35:53.2291445Z 8: PASS local_search_gets_durable_events_and_still_has_snapshot_paging (152 ms)
+2026-10-22T04:35:53.2292006Z 8: RUN expired_local_sessions_release_capacity_for_web_without_local_search
+2026-10-22T04:35:54.0584475Z 8: PASS expired_local_sessions_release_capacity_for_web_without_local_search (829 ms)
+2026-10-22T04:35:54.0585113Z 8: RUN fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+2026-10-22T04:35:55.1064373Z 8: PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (1047 ms)
+2026-10-22T04:35:55.1065077Z 8: RUN source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+2026-10-22T04:35:55.3631113Z 8: PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (256 ms)
+2026-10-22T04:35:55.3632242Z 8: RUN source_duplicate_provenance_keeps_best_rank_through_second_fusion
+2026-10-22T04:35:55.5854761Z 8: PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (222 ms)
+2026-10-22T04:35:55.5855717Z 8: RUN permission_epoch_invalidates_replay_and_late_completion
+2026-10-22T04:35:55.8264600Z 8: PASS permission_epoch_invalidates_replay_and_late_completion (241 ms)
+2026-10-22T04:35:55.8265316Z 8: RUN continuous_new_sessions_cannot_overtake_an_existing_pending_source
+2026-10-22T04:35:56.1698427Z 8: PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (343 ms)
+2026-10-22T04:35:56.1699552Z 8: RUN frozen_known_redirect_binding_survives_target_revival_and_route_change
+2026-10-22T04:35:56.8651408Z 8: PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (695 ms)
+2026-10-22T04:35:56.8652582Z 8: RUN incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker
+2026-10-22T04:35:57.1221414Z 8: PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (256 ms)
+2026-10-22T04:35:57.1222542Z 8: RUN preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
+2026-10-22T04:35:58.0717538Z 8: PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (949 ms)
+2026-10-22T04:35:58.0737752Z 8: 21 tests, 283 assertions, 0 failures
+2026-10-22T04:35:58.0763915Z  8/12 Test  #8: sessions .........................   Passed   68.56 sec

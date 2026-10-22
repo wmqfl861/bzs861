@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-22T04:34:25.125900+00:00",
+  "project": "bzs861",
+  "baseline_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "baseline_tree": "08092aab85ecf5a9c5e67146eda204844f90372b",
+  "author_commit_local": "3a79f0c0d7001b9fcd8c08fc43101531733db1f4",
+  "integrated_commit_local": "79df58127b3458dc3b270f37e727e5d8277c8544",
+  "remote_publication_sha_not_asserted": true,
+  "execution_input_changes": [
+    {
+      "path": "include/bzs/json.hpp",
+      "before_sha256": "8f9aeb4cc3d2766a239e308d038fd9dc3610f7403d7bb04f5557768f3b4e566c",
+      "after_sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08"
+    },
+    {
+      "path": "src/json.cpp",
+      "before_sha256": "b585c18acbb5f1c98c73c7e3801ea34e876f50eed2616d9ef583cce532d41826",
+      "after_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5"
+    },
+    {
+      "path": "tests/sessions.cpp",
+      "before_sha256": "b4b3b9bb337d3b095d6542807581b03d99acbb9986bc6a0540226e4046d79260",
+      "after_sha256": "d058ee56f04c71b1301d1dcd6029c3eee98ac16cdd702b0a69b10b90ca2f1d0e"
+    },
+    {
+      "path": "tests/unit.cpp",
+      "before_sha256": "4d978dfbad9ccf8037f775812afdf2634fd1e70d97367672aeb79b7e25f102aa",
+      "after_sha256": "dee90b8af90dad49814c7d822fd3a4eca3df8d9a14fa8ee11cd47f57d095ffb9"
+    }
+  ],
+  "purpose": "Synchronize all shared immutable json-c access and alias reference lifetimes; add JSON/source-review concurrency regressions without changing the real crash/ACK/deadline fixture.",
+  "real_session_e2e_unchanged": {
+    "path": "tests/e2e_session_recovery.py",
+    "sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+  },
+  "support_contract": "Concurrent reads of otherwise immutable shared trees and separate alias lifetimes are supported. Callers synchronize shared mutations, multi-operation changes and reassignment/destruction of the same C++ handle.",
+  "previous_evidence_preserved": [
+    "final-report.json",
+    "final-review.json",
+    "delivery-audit.json",
+    "ci-followup-report.json",
+    "ci-followup-execution-inputs.json",
+    "ci-followup-source-manifest.json"
+  ],
+  "new_execution_inputs": "json-race-execution-inputs.json"
+}

@@ -2,19 +2,31 @@
 
 本目录从已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`、schema11接续。历史 `validation/s2_five_stages/` 等目录不覆盖；本轮实现与范围见 [接续计划](../../docs/handoff/S2_NEXT_FIVE_20261021.md)。五个增量是页面条件刷新、robots条件重验证、真实会话故障、外部来源消融前置、有限容量/公平性循环。
 
-## 发布后的 Windows CI 修正
+## 当前：共享JSON并发修复与完整复验
+
+c14b3c3的Windows已12/12通过（sessions68.56秒），但同次Linux在真实ACK丢失恢复中报`E_SOURCE_REVIEW: Missing colon`。独立重现确认共享json-c序列化缓冲与非原子引用计数同时存在竞争。当前统一同步共享节点的native访问、引用生命周期和返回缓冲复制，新增两个并发回归；真实故障E2E文件逐字保持。
+
+先读[json-race-report.json](json-race-report.json)、[冻结输入](json-race-execution-inputs.json)和[当前源码清单](json-race-source-manifest.json)。最终整合CTest19/19、0跳过、135.60秒，Python984、core82/714、sessions22/285；11套ASan/UBSan、34原合同、13计划守卫通过。独立同源3案11,200次操作零失败；新鲜真实旧库11→12升级再次验证39张表、默认值及隔离备份。作者、独立设计复核、最终库探针与独立迁移重跑分别归档，重叠计数不相加。
+
+默认沙箱首次禁止本地socket，保留11原生通过、HTTP/E2E失败及Worker超时的完整日志；[环境记录](json-race-loopback-environment.json)说明获准回环后同输入/同Debug产物完整重跑。新报告不隐藏失败，也不预写未来发布提交自身CI。
+
+## 历史：发布后的 Windows CI 修正
 
 首次发布 `b88b76302e850499275b0a8ec2db366f282481f1` 的 Linux CI 通过；Windows 编译通过，12套中11套通过，`sessions` 在60.01秒超时，0跳过。原日志没有子用例输出，不能据此断言只是机器慢。原失败日志、独立观察、作者诊断和补丁复核在新增记录中保留。
 
 后续修正只涉及三个执行输入：Windows `sessions` 的有限超时改为180秒（其他平台仍60秒）；测试主程序刷新逐案进度和耗时；纯存储4MiB背压用例的两次Store共用固定时钟，避免无关的会话/来源期限影响；Windows工作流对原12套开启详细日志。全部21个会话用例、283条断言、20来源×30命中和实际4MiB边界保留，真实期限/故障E2E不变。产品源码和重编后的核心库字节均与原冻结版本一致。
 
-最新本地针对性结果为21项/283断言、0失败，CTest 12.07秒；它不替代新提交的完整Linux/Windows CI。先读 [ci-followup-report.json](ci-followup-report.json)，再查包含它的实际提交工作流。原 `final-v2-*`、`final-report.json`、`final-source-manifest.json` 和 `delivery-audit.json` 继续绑定首次发布前的输入与结果，不追溯改写为后续测试成绩。
+该次历史本地针对性结果为21项/283断言、0失败，CTest 12.07秒；它不替代新提交的完整Linux/Windows CI。该次记录见 [ci-followup-report.json](ci-followup-report.json)；其实际发布c14b3c3的Windows已通过，Linux失败则由当前JSON生产修复接续。原 `final-v2-*`、`final-report.json`、`final-source-manifest.json` 和 `delivery-audit.json` 继续绑定首次发布前的输入与结果，不追溯改写为后续测试成绩。
 
 ## 权威入口
 
 | 文件 | 口径 |
 | --- | --- |
-| [ci-followup-report.json](ci-followup-report.json) | 发布后Windows超时、最小测试修正、当前输入与针对性复验 |
+| [json-race-report.json](json-race-report.json) | 当前JSON并发修复、完整最终执行、原失败与独立最终库验证 |
+| [json-race-delivery-audit.json](json-race-delivery-audit.json) | 当前最终独立交付审计：157项检查通过；逐项核对输入、产物、命令、归档和历史保持 |
+| [json-race-execution-inputs.json](json-race-execution-inputs.json)、[json-race-source-manifest.json](json-race-source-manifest.json) | 当前188执行输入和195源码/状态文件；相对c14仅4个执行文件改变 |
+| [json-race-evidence.json](json-race-evidence.json) | 并发作者/独立探针/新鲜迁移/c14 Windows原始文本证据哈希 |
+| [ci-followup-report.json](ci-followup-report.json) | 历史Windows超时、最小测试修正及当时针对性复验 |
 | [ci-followup-execution-inputs.json](ci-followup-execution-inputs.json) | 修正后的188个冻结输入，只有三个执行文件不同 |
 | [ci-followup-source-manifest.json](ci-followup-source-manifest.json) | 修正提交的195个源码/文档文件哈希 |
 | [final-report.json](final-report.json) | 首次发布前完整本地命令、成绩、范围与执行输入绑定 |
@@ -60,6 +72,8 @@
 
 按仓库README安装固定依赖，用CMake构建Debug目标并指定已安装Worker测试依赖的Python；执行完整 `ctest --output-on-failure -V`。原生sanitizer需构建CMake `asan-core`目标，保留 `ASAN_OPTIONS=detect_leaks=1:halt_on_error=1` 与 `UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1`。新增revalidation/capacity_cycles和既有9个原生目标均须执行。
 
-冻结记录器可通过 `--inputs validation/s2_next_five/final-v2-execution-inputs.json --name <新名称> -- <实际命令>` 包装执行；不能覆盖既有日志。原固定合同、只读计划校验、13项计划守卫、依赖检查与 `check_preservation.py` 一并执行。旧原文件内容与默认配置保持检查只读取字节和必要元数据，不用holdout文本调参。
+冻结记录器可通过 `--inputs validation/s2_next_five/json-race-execution-inputs.json --name <新名称> -- <实际命令>` 包装执行；不能覆盖既有日志。原固定合同、只读计划校验、13项计划守卫、依赖检查与 `check_preservation.py` 一并执行。旧原文件内容与默认配置保持检查只读取字节和必要元数据，不用holdout文本调参。
 
 首轮完整CTest返回失败，生成的debug会话测试文件实际为0644；记录权限恢复与哈希保持后重新执行完整CTest。首轮stdout与LastTest记录不完整，保留原文件，不据此推算未显示套件成绩。后续运行在内存中收齐CTest输出后一次写入日志，并保存JUnit。准确结果和命令名以最终报告为准。
+
+本次ASan首轮链接还遇到一个非ELF的生成sessions.cpp.o中间文件。保存原始失败、异常文件哈希与独立观察后，仅移除此生成文件，由相同冻结源码/配置重编并重链，再完成11套sanitizer。未根据此现象臆测编译器、内存或文件系统根因；详见[产物诊断](json-race-asan-artifact.json)。

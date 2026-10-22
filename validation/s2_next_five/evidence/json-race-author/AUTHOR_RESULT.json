@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-22T04:29:48.439708+00:00",
+  "status": "author_scoped_validation_passed_ready_for_integration",
+  "author": "/root/session_faults",
+  "baseline_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "commit": "3a79f0c0d7001b9fcd8c08fc43101531733db1f4",
+  "branch": "agent/session-json-race-20261022",
+  "worktree": "/workspace/scratch/80f41eb198a3/bzs861-session-json-race",
+  "worktree_clean": true,
+  "pushed": false,
+  "changed_paths": [
+    "include/bzs/json.hpp",
+    "src/json.cpp",
+    "tests/sessions.cpp",
+    "tests/unit.cpp"
+  ],
+  "trigger": {
+    "workflow_run": 39721279784,
+    "linux_job": 119635049811,
+    "ci_log": "ci-linux-job-119635049811.log",
+    "ci_log_sha256": "9cdcb899a3fad54ac77ed5a299852182eaa3440f2b6261f705063845a817627b",
+    "failed_case": "test_04_lost_start_ack_reuses_committed_session_after_core_crash",
+    "failed_line": 354,
+    "http_status": 409,
+    "error_code": "E_SOURCE_REVIEW",
+    "message": "Source ddg: Missing colon"
+  },
+  "root_cause": {
+    "manifest_half_write_rejected": "e2e_web.Stack writes sources.json once before Worker/Core startup. RecoveryStack.start_core and test_04 never rewrite it. Core loads SourceRegistry during startup; the failing request arrives after readiness.",
+    "shared_object_path": "After restart, background search dispatch and HTTP web.search.start replay concurrently read the same registry contract. SourceSpec::require_review -> validate_contract -> Json::parse(input.dump()) serializes a shared json-c object.",
+    "serialization_race": "json_object_to_json_string_ext mutates the object-owned print buffer. The old wrapper called it concurrently without synchronization, allowing malformed JSON to reach ShapeGuard and be wrapped as E_SOURCE_REVIEW.",
+    "reference_lifetime_race": "The actual linked json-c build has non-atomic get/put reference counts, independently inspected by conditional_worker. Copies, at(), private containers holding shared children, replacement and destruction also require common synchronization.",
+    "evidence_limit": "The exact CI scheduling is not replayed deterministically. Frozen synthetic shared-contract probes reproduce the same Missing colon family without any file rewrite, and independently expose a reference-count crash."
+  },
+  "baseline_probes": {
+    "manifest_sha256": "b3021b9a8d3e57ecedbb79fbab8a4d3b6b1d3cbdff42e48541e3723e972cf515",
+    "harness_sha256": "44e21769811c0c5b23f8b747d75b1346dde30b477575393ae4310b83e2195f8f",
+    "serialize": {
+      "threads": 4,
+      "rounds_per_thread": 100,
+      "calls": 400,
+      "errors": 196,
+      "return_code": 1,
+      "elapsed_seconds": 0.044127570999989985,
+      "includes_missing_colon": true
+    },
+    "review": {
+      "threads": 4,
+      "rounds_per_thread": 100,
+      "planned_calls": 400,
+      "completed_calls": "not counted before process crash",
+      "return_code": -11,
+      "signal": "SIGSEGV",
+      "elapsed_seconds": 0.012441620998288272
+    },
+    "library_provenance": "Existing integrated production static library. Source files in inspected bug path match exact c14b3c3 baseline; no claim of fresh baseline rebuild in this initial fast probe.",
+    "all_failures_preserved": true
+  },
+  "fix": {
+    "scope": "One Json-layer process-lifetime mutex protects shared json-c native access and refcount changes, including cached-buffer serialization until the returned std::string owns its bytes.",
+    "covered_operations": [
+      "copy get",
+      "destructor put",
+      "object/array/scalar creation",
+      "type and field reads",
+      "field/array lookup plus reference retention",
+      "str copying",
+      "keys iteration plus key copying",
+      "set/push get plus implicit release",
+      "dump buffer mutation plus result copying"
+    ],
+    "deadlock_avoidance": "Type helpers finish before entering each narrow native critical section. Factory/accessor returns are C++20 prvalues. Canonicalization composes protected entrypoints rather than holding the same mutex over recursive calls.",
+    "lifetime": "The single bounded mutex deliberately lives for the process lifetime so namespace-scope Json destruction cannot use an already-destroyed synchronization object.",
+    "contract": "Concurrent readers of otherwise immutable shared JSON trees are supported. Callers still synchronize shared-tree mutation and reassignment of the same Json wrapper; no multi-call snapshot semantics are promised.",
+    "e2e_fixture_modified": false,
+    "error_retry_or_ignore_added": false,
+    "source_review_policy_changed": false,
+    "production_deadline_changed": false
+  },
+  "author_validation": {
+    "build": "Debug, BZS_SANITIZERS=OFF, -j1; targeted bzs_tests, bzs_session_tests and searchd.",
+    "fixed_serialize_probe": {
+      "calls": 400,
+      "errors": 0,
+      "return_code": 0,
+      "elapsed_seconds": 0.052945136001653736
+    },
+    "fixed_review_probe": {
+      "calls": 400,
+      "errors": 0,
+      "return_code": 0,
+      "elapsed_seconds": 0.13284639900120965
+    },
+    "native_ctest": {
+      "suites": 2,
+      "passed": 2,
+      "skipped": 0,
+      "core_tests": 82,
+      "core_assertions": 714,
+      "sessions_tests": 22,
+      "sessions_assertions": 285,
+      "core_seconds_reported_by_ctest": 2.38,
+      "sessions_seconds_reported_by_ctest": 12.05,
+      "commands_elapsed_seconds": 14.44425828400017,
+      "xml": "focused-native.xml"
+    },
+    "new_regressions": [
+      "json_shared_readers_preserve_serialization_and_alias_lifetimes: 4 threads x 100 rounds, plain/pretty serialization, canonical read, alias copy, shared children retained/replaced in private containers. All worker exceptions propagate after join.",
+      "concurrent_source_review_keeps_shared_registry_contract_valid: 4 threads x 100 rounds against a shared immutable SourceSpec contract. Every review must succeed, and contract identity remains unchanged."
+    ],
+    "real_recovery_e2e": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "suite_seconds": 26.3,
+      "command_seconds": 27.229662172001554,
+      "core_sigkills": 7,
+      "worker_sigkills": 1,
+      "real_http": true,
+      "clock_injection": false,
+      "fixture_database_mutation": false,
+      "physical_power_loss_coverage": false,
+      "source_file_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+      "source_file_identical_to_baseline": true,
+      "observations": [
+        {
+          "test": "test_01_core_crash_before_worker_reserves_unknown_without_sending_source",
+          "crashes": [
+            {
+              "component": "searchd",
+              "exit_code": -9
+            },
+            {
+              "component": "searchd",
+              "exit_code": -9
+            }
+          ],
+          "state": "completed",
+          "dispatched_source_attempts": 2,
+          "unknown_source_attempts": 1,
+          "source_http_counts": {
+            "/bing/search": 1
+          },
+          "event_count": 3
+        },
+        {
+          "test": "test_02_core_crash_after_worker_reply_never_resends_unknown_source",
+          "crashes": [
+            {
+              "component": "searchd",
+              "exit_code": -9
+            },
+            {
+              "component": "searchd",
+              "exit_code": -9
+            }
+          ],
+          "state": "completed",
+          "dispatched_source_attempts": 2,
+          "unknown_source_attempts": 1,
+          "source_http_counts": {
+            "/ddg/html/": 1,
+            "/bing/search": 1
+          },
+          "event_count": 3
+        },
+        {
+          "test": "test_03_worker_crash_during_http_then_restart_runs_only_pending_tail",
+          "crashes": [
+            {
+              "component": "worker",
+              "exit_code": -9
+            }
+          ],
+          "state": "completed",
+          "dispatched_source_attempts": 2,
+          "unknown_source_attempts": 1,
+          "source_http_counts": {
+            "/ddg/html/": 1,
+            "/bing/search": 1
+          },
+          "event_count": 3
+        },
+        {
+          "test": "test_04_lost_start_ack_reuses_committed_session_after_core_crash",
+          "crashes": [
+            {
+              "component": "searchd",
+              "exit_code": -9
+            },
+            {
+              "component": "searchd",
+              "exit_code": -9
+            }
+          ],
+          "state": "completed",
+          "dispatched_source_attempts": 2,
+          "unknown_source_attempts": 0,
+          "source_http_counts": {
+            "/ddg/html/": 1,
+            "/bing/search": 1
+          },
+          "event_count": 3
+        },
+        {
+          "test": "test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart",
+          "crashes": [
+            {
+              "component": "searchd",
+              "exit_code": -9
+            }
+          ],
+          "state": "cancelled",
+          "dispatched_source_attempts": 2,
+          "unknown_source_attempts": 1,
+          "source_http_counts": {
+            "/ddg/html/": 1,
+            "/bing/search": 1
+          },
+          "event_count": 3
+        },
+        {
+          "test": "test_06_real_deadline_rejects_late_response_and_never_dispatches_tail",
+          "crashes": [],
+          "state": "failed",
+          "dispatched_source_attempts": 1,
+          "unknown_source_attempts": 1,
+          "source_http_counts": {
+            "/ddg/html/": 1
+          },
+          "event_count": 2
+        }
+      ]
+    },
+    "diff_check": "git diff --check passed before commit. Worktree clean after commit."
+  },
+  "independent_review": {
+    "agent": "/root/conditional_worker",
+    "report_path": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/design-review.json",
+    "code_sha256_reviewed": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "scope": "Separate static lock/lifetime review and frozen baseline/fixed serialization, refcount-only, and canonicalization probes. Counts remain in the independent report and are not combined with author test counts."
+  },
+  "frozen_source_sha256": {
+    "src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "tests/unit.cpp": "dee90b8af90dad49814c7d822fd3a4eca3df8d9a14fa8ee11cd47f57d095ffb9",
+    "tests/sessions.cpp": "d058ee56f04c71b1301d1dcd6029c3eee98ac16cdd702b0a69b10b90ca2f1d0e",
+    "src/web.cpp": "73228c7b6821f3aec4c32f8c692a5958d42483b03d3012f4fed9c628312478d6",
+    "src/contracts.cpp": "51d7e1f356c6443665eb634cf35201ce01f64da193841d1cc2b1ff03292bb1e0",
+    "src/sessions.cpp": "51e4b70d07ed09b1496068e7433eb6b8da7a49c7bceeef1e8b01ec45bb1b6775",
+    "tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "tests/e2e_web.py": "fde80303cafe6fc5bb4cee3c99c8f619bc710bb8845ae6d48ef6b871b74b7c43",
+    "tests/e2e_crawl_recovery.py": "d96a1c6f34a5202752d4a4f87875c9c4fbb4b02ecc79ec756bd2d814fb424130",
+    "apps/searchd/main.cpp": "6b4df84c76928d6ac2f231816fcd7719fd11df84063f1e870ddf59eb4d1c68e5",
+    "src/service.cpp": "1a97fd53859a0b2a40261865256999d9a13edca2f581b63073f598c06d9d86f6",
+    "CMakeLists.txt": "ac09b17796db0f1a0b2d5ce32be5a758cbf8d1bc69ddf80abd830b3d338bf783"
+  },
+  "built_artifact_sha256": {
+    "libbzs_core.a": "82fd89094e90b5bdf5f029269b102d4b3411873673baa5133d3ee74273ffa0ef",
+    "bzs_tests": "e4a14aede09347c4c02913243c1d40e30ba88b2c0272d63c7a9003b01d1fdc5c",
+    "bzs_session_tests": "91b6db4fb258a9343227ee343e5bf86cde59f473c36dfe8e03802ed1e10c9379",
+    "searchd": "1bf9847e3c838edece31a041a4a69e84f3ef474622d30a633b600d8f35dd3085"
+  },
+  "command_records": [
+    "configure.json",
+    "focused-build.json",
+    "focused-native.json",
+    "fixed-probe-build.json",
+    "fixed-serialize.json",
+    "fixed-review.json",
+    "real-session-recovery.json"
+  ],
+  "pending_parent_validation": [
+    "Complete integrated CTest gate",
+    "All 11 native ASan/UBSan suites",
+    "Contract and plan guards",
+    "Corrected exact-commit Linux and Windows GitHub CI"
+  ],
+  "limits": [
+    "No claim that full integration or future CI has already passed.",
+    "No thread-sanitizer run was performed by this author.",
+    "No long-term throughput or arbitrary concurrent mutation guarantee.",
+    "The original CI failure and baseline crash logs remain failures; they are not converted to passing results."
+  ],
+  "text_evidence_sha256": {
+    "baseline-probe-build.json": "b87616078fb7e7f67f24bc13220eab6e0247ac4783924b76ca419257e0078002",
+    "baseline-probe-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "baseline-review.json": "63b38447cabe67ea1e0f681656f8be5671c88fdd1fb3d83c1e9e6d3df468d486",
+    "baseline-review.log": "0cdc2a84d238bef9fbb96daa6da84321a58dc6fe263c2049429031fc0d27c65e",
+    "baseline-serialize.json": "baf3b2c45b45652d8444e0f50400f28e736f505c51b0ef7b11b479a6c05b6432",
+    "baseline-serialize.log": "2fa807fc475a2a62624a83d413914b71e0d58d0d7ac53e595d99ef757bdb6cb7",
+    "ci-linux-job-119635049811.log": "9cdcb899a3fad54ac77ed5a299852182eaa3440f2b6261f705063845a817627b",
+    "configure.json": "53d1f7e6e0122e1814cef1569ff94836b12a7d4e4e4826edf3fc2ece1b1988e8",
+    "configure.log": "b038877ff81e4f1a4a11ab9cac2b6d75836d928bc66b7a77d9a2260287e57a48",
+    "fixed-probe-build.json": "eef5840faac920bd9989b2c13810be2fbd4899b19c5d26c01d194deac7bb5b23",
+    "fixed-probe-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fixed-review.json": "d0b5d3d0afcb63af698c1c2fbd9d152be2ad9a36ae1dd57d5a25757b8b7d2ad2",
+    "fixed-review.log": "aaa44783d297c23b18f10415b233806200b1853bd38cd513ea87d92370bfcc69",
+    "fixed-serialize.json": "6d77b1e628f7f3e694009c78f3214afb7c55d00e4705ce631ff148fc8b961b87",
+    "fixed-serialize.log": "64031d9cb271b831ef3d920c264ac438fe142fc8be32c6856e591acf0260e1f9",
+    "focused-build.json": "ab8232803777729a758ed98b262aeca4ad97cc6b5c76e640c07d9a1ae62fab38",
+    "focused-build.log": "3600b6dbf4f7099f371a778a115b7e4a2f3e7fedea825064ae3225e3d6237610",
+    "focused-native.json": "f33d0c3de7ef1d16a7af6e94ae1a454d6e48781a3401523f9f45f1a98308647e",
+    "focused-native.log": "b483bf62f02b9906cb464ccad1ccb72a6dd69c80359012a33f45c0a2cc086aa2",
+    "focused-native.xml": "1a35f7ecc1f90a55b8ab8fddd422f75efa6c5123f806d6255a2d4067f8738b76",
+    "real-session-recovery.json": "aabbef51e3093e1f6d0b72e687b054c72aa141522b60ef2bf6afe7e69680f993",
+    "real-session-recovery.log": "f0469a0ae711bf53785841bb39996f8c0a5eeb965259d77bc78d6753c0e1ae66",
+    "record_command.py": "52d2c31409ee64190cba6f940ef7272c90e9257590897096c330cbe8a6da86cc",
+    "shared_contract_probe.cpp": "44e21769811c0c5b23f8b747d75b1346dde30b477575393ae4310b83e2195f8f",
+    "synthetic-source-manifest.json": "b3021b9a8d3e57ecedbb79fbab8a4d3b6b1d3cbdff42e48541e3723e972cf515"
+  }
+}

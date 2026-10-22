@@ -1,7 +1,7 @@
 {
   "version": "0.1.9",
   "stage": "S2 next five increments",
-  "recorded_at": "2026-10-21",
+  "recorded_at": "2026-10-22",
   "baseline": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
   "integration_inputs": {
     "main": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
@@ -44,13 +44,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s2_next_five/final-report.json",
+  "current_test_report": "validation/s2_next_five/json-race-report.json",
   "current_verification": "passed_final_integrated_local_gates_scope_limited",
   "upstream_baseline_reproduction": "Schema 11 migration uses the real published 0.1.8 library. Scoped in-progress GC/nofollow counterexamples retain actual pre-fix libraries and logs; they are not reported as failures of an old version without the new conditional feature.",
   "github_ci": "must_check_workflow_of_containing_commit_after_publication",
   "independent_review": "scoped_core_worker_qa_upgrade_and_plan_reviews_completed",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s2_next_five/final-review.json",
+  "review_record": "validation/s2_next_five/evidence/json-race-independent/design-review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -60,7 +60,9 @@
     "validation/s2_discovery/test_report.json",
     "validation/s2_crawl/test_report.json",
     "validation/s2_hardening/test_report.json",
-    "validation/s2_five_stages/final-report.json"
+    "validation/s2_five_stages/final-report.json",
+    "validation/s2_next_five/final-report.json",
+    "validation/s2_next_five/ci-followup-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -2527,86 +2529,86 @@
       "passed_suites": 19,
       "failed_suites": 0,
       "skipped_suites": 0,
-      "elapsed_seconds": 138.33,
-      "command_elapsed_seconds": 138.374,
-      "log": "final-v2-ctest-restored.log",
-      "junit": "final-v2-ctest.xml",
+      "elapsed_seconds": 135.6,
+      "command_elapsed_seconds": 135.648,
+      "log": "json-race-ctest-loopback.log",
+      "junit": "json-race-ctest-loopback.xml",
       "suites": [
         {
           "name": "core",
-          "passed": 81,
+          "passed": 82,
           "failed": 0,
-          "elapsed_seconds": 2.2623,
-          "assertions": 713
+          "elapsed_seconds": 2.16847,
+          "assertions": 714
         },
         {
           "name": "batch",
           "passed": 18,
           "failed": 0,
-          "elapsed_seconds": 0.530253,
+          "elapsed_seconds": 0.568915,
           "assertions": 439
         },
         {
           "name": "map",
           "passed": 24,
           "failed": 0,
-          "elapsed_seconds": 0.875353,
+          "elapsed_seconds": 0.821846,
           "assertions": 462
         },
         {
           "name": "crawl",
           "passed": 54,
           "failed": 0,
-          "elapsed_seconds": 5.30097,
+          "elapsed_seconds": 5.33333,
           "assertions": 2798
         },
         {
           "name": "site_publication",
           "passed": 32,
           "failed": 0,
-          "elapsed_seconds": 4.70119,
+          "elapsed_seconds": 4.6537,
           "assertions": 1200
         },
         {
           "name": "retention",
           "passed": 16,
           "failed": 0,
-          "elapsed_seconds": 2.15978,
+          "elapsed_seconds": 2.24495,
           "assertions": 404
         },
         {
           "name": "fairness",
           "passed": 11,
           "failed": 0,
-          "elapsed_seconds": 0.925452,
+          "elapsed_seconds": 0.864922,
           "assertions": 251
         },
         {
           "name": "sessions",
-          "passed": 21,
+          "passed": 22,
           "failed": 0,
-          "elapsed_seconds": 12.127,
-          "assertions": 283
+          "elapsed_seconds": 11.6253,
+          "assertions": 285
         },
         {
           "name": "revalidation",
           "passed": 21,
           "failed": 0,
-          "elapsed_seconds": 1.14919,
+          "elapsed_seconds": 1.10418,
           "assertions": 333
         },
         {
           "name": "capacity_cycles",
           "passed": 4,
           "failed": 0,
-          "elapsed_seconds": 8.48784,
+          "elapsed_seconds": 8.29137,
           "assertions": 4800
         },
         {
           "name": "contracts",
           "passed": 55,
           "failed": 0,
-          "elapsed_seconds": 0.1598,
+          "elapsed_seconds": 0.150418,
           "retained_design_fixtures": 34,
           "additional_native_cases": 21,
           "assertions": 269
@@ -2615,49 +2617,49 @@
           "name": "http_cli",
           "passed": 20,
           "failed": 0,
-          "elapsed_seconds": 5.69456
+          "elapsed_seconds": 5.64147
         },
         {
           "name": "e2e_web",
           "passed": 14,
           "failed": 0,
-          "elapsed_seconds": 6.03478
+          "elapsed_seconds": 5.6183
         },
         {
           "name": "e2e_map",
           "passed": 9,
           "failed": 0,
-          "elapsed_seconds": 3.7414
+          "elapsed_seconds": 3.58105
         },
         {
           "name": "e2e_crawl",
           "passed": 24,
           "failed": 0,
-          "elapsed_seconds": 9.31861
+          "elapsed_seconds": 9.18611
         },
         {
           "name": "e2e_crawl_recovery",
           "passed": 8,
           "failed": 0,
-          "elapsed_seconds": 23.7412
+          "elapsed_seconds": 23.8156
         },
         {
           "name": "e2e_session_recovery",
           "passed": 6,
           "failed": 0,
-          "elapsed_seconds": 27.52
+          "elapsed_seconds": 27.1988
         },
         {
           "name": "e2e_revalidation",
           "passed": 6,
           "failed": 0,
-          "elapsed_seconds": 8.65124
+          "elapsed_seconds": 8.59289
         },
         {
           "name": "python_worker",
           "passed": 984,
           "failed": 0,
-          "elapsed_seconds": 14.9416
+          "elapsed_seconds": 14.1345
         }
       ]
     },
@@ -2668,6 +2670,13 @@
     "design_contract_reference_passed": 34,
     "planning_guard_passed": 13,
     "dependencies": "No broken requirements found.",
+    "independent_shared_json_regressions": {
+      "scenarios": 3,
+      "completed_operations": 11200,
+      "failures": 0,
+      "report": "evidence/json-race-independent/design-review.json",
+      "integrated_context": "evidence/json-race-independent/integrated-root-79df581/integrated-context.json"
+    },
     "independent_final_upgrade": {
       "old_schema": 11,
       "new_schema": 12,
@@ -2677,21 +2686,30 @@
       "jobs_across_two_owners": 8,
       "old_robots_records": 2,
       "backup_quarantine_preserved": true,
-      "report": "evidence/schema12-migration/REVIEW_RESULT.json"
+      "role": "Independent reexecution of the original migration driver against a freshly created old-version database and final new library.",
+      "report": "evidence/json-race-migration-independent/REVIEW_RESULT.json"
     },
-    "successful_final_commands": 22,
+    "successful_final_commands": 21,
     "failed_initial_command_preserved": [
       {
-        "record": "final-v2-ctest-command.json",
-        "record_sha256": "46cd81b8c95a6fa013386d53ae6217fca2888f8f2ab42ad316fecdb1a2e7d8a6",
-        "log": "final-v2-ctest.log",
-        "log_sha256": "9a16e5afc7b0c6a5f1661f8098ec27d7c7418eb73d31ff5d91c59ba0dd568e43",
+        "record": "json-race-asan-build-command.json",
+        "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
+        "log": "json-race-asan-build.log",
+        "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
+        "exit_code": 1,
+        "elapsed_seconds": 46.394
+      },
+      {
+        "record": "json-race-ctest-command.json",
+        "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
+        "log": "json-race-ctest.log",
+        "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
         "exit_code": 8,
-        "elapsed_seconds": 131.525
+        "elapsed_seconds": 225.842
       }
     ],
     "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-    "counting_note": "Overlapping native, sanitizer, author and independent cases are not added to product acceptance."
+    "counting_note": "Python cases are inside CTest; native, sanitizer, author and independent operations overlap and are not added to product acceptance."
   },
   "baseline_version": "0.1.8",
   "planned_work_packages": 83,
@@ -2706,12 +2724,12 @@
   ],
   "verification_binding": {
     "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
-    "report": "validation/s2_next_five/final-report.json",
-    "execution_inputs": "validation/s2_next_five/final-v2-execution-inputs.json",
-    "source_manifest": "validation/s2_next_five/final-source-manifest.json",
-    "remote_ci": "Query the exact containing commit after publication; no future self SHA or future CI result is asserted.",
+    "report": "validation/s2_next_five/json-race-report.json",
+    "execution_inputs": "validation/s2_next_five/json-race-execution-inputs.json",
+    "source_manifest": "validation/s2_next_five/json-race-source-manifest.json",
+    "remote_ci": "Query the exact containing commit after publication; previous c14b3c3 Windows success does not establish the new commit result.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions",
-    "executed_binary_identity": "SHA-256 before and after each final command; generated session executable mode normalized without changing bytes, then full CTest rerun."
+    "executed_binary_identity": "SHA-256 before and after final commands; full permitted-loopback CTest, all native sanitizers and independent shared JSON/migration probes bind the final library."
   },
   "source_availability": {
     "status": "not_verified",
@@ -2998,5 +3016,199 @@
       "first_stage_published": "27966ffe61c16964c45d595e3ee2689115815217",
       "work_started_from": "2007690c9403b8ae593101488de1adf228608284"
     }
+  },
+  "historical_results_0_1_9_initial": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 19,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 138.33,
+      "command_elapsed_seconds": 138.374,
+      "log": "final-v2-ctest-restored.log",
+      "junit": "final-v2-ctest.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 81,
+          "failed": 0,
+          "elapsed_seconds": 2.2623,
+          "assertions": 713
+        },
+        {
+          "name": "batch",
+          "passed": 18,
+          "failed": 0,
+          "elapsed_seconds": 0.530253,
+          "assertions": 439
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 0.875353,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 5.30097,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 4.70119,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 2.15978,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 0.925452,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 12.127,
+          "assertions": 283
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 1.14919,
+          "assertions": 333
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 8.48784,
+          "assertions": 4800
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.1598,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 5.69456
+        },
+        {
+          "name": "e2e_web",
+          "passed": 14,
+          "failed": 0,
+          "elapsed_seconds": 6.03478
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0,
+          "elapsed_seconds": 3.7414
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 9.31861
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0,
+          "elapsed_seconds": 23.7412
+        },
+        {
+          "name": "e2e_session_recovery",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 27.52
+        },
+        {
+          "name": "e2e_revalidation",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 8.65124
+        },
+        {
+          "name": "python_worker",
+          "passed": 984,
+          "failed": 0,
+          "elapsed_seconds": 14.9416
+        }
+      ]
+    },
+    "native_sanitizer_executables": 11,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "dependencies": "No broken requirements found.",
+    "independent_final_upgrade": {
+      "old_schema": 11,
+      "new_schema": 12,
+      "legacy_tables_preserved": 39,
+      "old_snapshots": 5,
+      "old_evidence_records": 2,
+      "jobs_across_two_owners": 8,
+      "old_robots_records": 2,
+      "backup_quarantine_preserved": true,
+      "report": "evidence/schema12-migration/REVIEW_RESULT.json"
+    },
+    "successful_final_commands": 22,
+    "failed_initial_command_preserved": [
+      {
+        "record": "final-v2-ctest-command.json",
+        "record_sha256": "46cd81b8c95a6fa013386d53ae6217fca2888f8f2ab42ad316fecdb1a2e7d8a6",
+        "log": "final-v2-ctest.log",
+        "log_sha256": "9a16e5afc7b0c6a5f1661f8098ec27d7c7418eb73d31ff5d91c59ba0dd568e43",
+        "exit_code": 8,
+        "elapsed_seconds": 131.525
+      }
+    ],
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "counting_note": "Overlapping native, sanitizer, author and independent cases are not added to product acceptance."
+  },
+  "historical_verification_0_1_9_initial": {
+    "current_test_report": "validation/s2_next_five/final-report.json",
+    "verification_binding": {
+      "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
+      "report": "validation/s2_next_five/final-report.json",
+      "execution_inputs": "validation/s2_next_five/final-v2-execution-inputs.json",
+      "source_manifest": "validation/s2_next_five/final-source-manifest.json",
+      "remote_ci": "Query the exact containing commit after publication; no future self SHA or future CI result is asserted.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions",
+      "executed_binary_identity": "SHA-256 before and after each final command; generated session executable mode normalized without changing bytes, then full CTest rerun."
+    },
+    "review_record": "validation/s2_next_five/final-review.json"
+  },
+  "json_concurrency_followup": {
+    "baseline": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+    "local_integrated_source": "79df58127b3458dc3b270f37e727e5d8277c8544",
+    "source_commit_is_not_remote_publication_sha": true,
+    "production_library_sha256": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+    "original_real_session_e2e_unchanged": true,
+    "new_native_regression_cases": 2,
+    "historical_windows_correction": "validation/s2_next_five/ci-followup-report.json"
   }
 }

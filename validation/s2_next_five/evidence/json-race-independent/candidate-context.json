@@ -1,0 +1,83 @@
+{
+  "at_utc": "2026-10-22T04:27:22.940028+00:00",
+  "label": "session_faults candidate snapshot; same independent harness as baseline",
+  "candidate_worktree": "/workspace/scratch/80f41eb198a3/bzs861-session-json-race",
+  "candidate_base_commit": "c14b3c3c214bf9def1f8080b9125816aa0f56735",
+  "compile_command": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O1",
+    "-g",
+    "-pthread",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-source/include",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/json_shared_read_harness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-source/json.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-source/util.cpp",
+    "-ljson-c",
+    "-lcrypto",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-harness"
+  ],
+  "compile_exit_code": 0,
+  "same_harness_source": true,
+  "cases": [
+    {
+      "scenario": "serialize",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-serialize.log",
+      "result": {
+        "scenario": "serialize",
+        "threads": 4,
+        "iterations_per_thread": 400,
+        "completed": 1600,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    },
+    {
+      "scenario": "reference_aliases",
+      "threads": 4,
+      "iterations_per_thread": 2000,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-reference_aliases.log",
+      "result": {
+        "scenario": "reference_aliases",
+        "threads": 4,
+        "iterations_per_thread": 2000,
+        "completed": 8000,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    },
+    {
+      "scenario": "canonical_reads",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/candidate-canonical_reads.log",
+      "result": {
+        "scenario": "canonical_reads",
+        "threads": 4,
+        "iterations_per_thread": 400,
+        "completed": 1600,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    }
+  ],
+  "sha256": {
+    "json_shared_read_harness.cpp": "ea7da2ec466056e8503435f9e189d8ce170e45754371f37c73f7784749f47fb9",
+    "candidate-source/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "candidate-source/util.cpp": "091cee6a65eabccee1bc9a0a6cba943ec6421000932682e4225100c73adebf8b",
+    "candidate-harness": "192989a79ba34ab39d7bc5ef372516ddca3319e61741983bc2abc3afa9cb046b",
+    "candidate-source/include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "candidate-source/include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "candidate-source/include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991"
+  }
+}

@@ -1,0 +1,41 @@
+[1/41] Building CXX object CMakeFiles/bzs_core.dir/src/json.cpp.o
+[2/41] Building CXX object CMakeFiles/bzs_core.dir/src/query.cpp.o
+[3/41] Building CXX object CMakeFiles/bzs_core.dir/src/html.cpp.o
+[4/41] Building CXX object CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+[5/41] Building CXX object CMakeFiles/bzs_core.dir/src/store.cpp.o
+[6/41] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+[7/41] Building CXX object CMakeFiles/bzs_core.dir/src/publication.cpp.o
+[8/41] Building CXX object CMakeFiles/bzs_core.dir/src/retention.cpp.o
+[9/41] Building CXX object CMakeFiles/bzs_core.dir/src/batch.cpp.o
+[10/41] Building CXX object CMakeFiles/bzs_core.dir/src/map.cpp.o
+[11/41] Building CXX object CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+[12/41] Building CXX object CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+[13/41] Building CXX object CMakeFiles/bzs_core.dir/src/sites.cpp.o
+[14/41] Building CXX object CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+[15/41] Building CXX object CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+[16/41] Building CXX object CMakeFiles/bzs_core.dir/src/http_cache.cpp.o
+[17/41] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+[18/41] Building CXX object CMakeFiles/bzs_core.dir/src/service.cpp.o
+[19/41] Linking CXX static library libbzs_core.a
+[20/41] Building CXX object CMakeFiles/bzs_tests.dir/tests/unit.cpp.o
+[21/41] Linking CXX executable bzs_tests
+FAILED: bzs_tests 
+: && /usr/bin/c++ -g -fsanitize=address,undefined CMakeFiles/bzs_tests.dir/tests/unit.cpp.o -o bzs_tests  libbzs_core.a  /usr/lib/x86_64-linux-gnu/libsqlite3.so  /usr/lib/x86_64-linux-gnu/libcrypto.so  /usr/lib/x86_64-linux-gnu/libxml2.so  /usr/lib/x86_64-linux-gnu/libjson-c.so && :
+/usr/bin/ld: libbzs_core.a(store.cpp.o): in function `bzs::Store::migrate()':
+/workspace/scratch/80f41eb198a3/bzs861/src/store.cpp:456:(.text+0xcfb8): undefined reference to `bzs::Store::migrate_sessions_locked()'
+/usr/bin/ld: libbzs_core.a(store.cpp.o): in function `bzs::Store::search(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bzs::Query const&, long, long)':
+/workspace/scratch/80f41eb198a3/bzs861/src/store.cpp:878:(.text+0x34417): undefined reference to `bzs::Store::settle_searches_locked()'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/store.cpp:976:(.text+0x36fab): undefined reference to `bzs::Store::local_stream_locked(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+/usr/bin/ld: libbzs_core.a(service.cpp.o): in function `bzs::Service::dispatch(bzs::Principal const&, bzs::Json const&)':
+/workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:225:(.text+0x10eb1): undefined reference to `bzs::WebService::submit_search(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bzs::Json const&)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:228:(.text+0x11263): undefined reference to `bzs::Store::session_get(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:228:(.text+0x113c4): undefined reference to `bzs::Store::session_cancel(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:232:(.text+0x118ea): undefined reference to `bzs::Store::session_events(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, long, long)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:272:(.text+0x14792): undefined reference to `bzs::Store::session_page(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, long)'
+/usr/bin/ld: libbzs_core.a(service.cpp.o): in function `bzs::start_worker(bzs::Store&, bzs::FixtureCatalog const&, bzs::WebService*)::{lambda(std::stop_token)#1}::operator()(std::stop_token) const':
+/workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:395:(.text+0x1ca0d): undefined reference to `bzs::WebService::lease_search()'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:396:(.text+0x1cc17): undefined reference to `bzs::Store::fail_search(bzs::SearchLease const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:396:(.text+0x1cd49): undefined reference to `bzs::WebService::execute_search(bzs::SearchLease const&)'
+/usr/bin/ld: /workspace/scratch/80f41eb198a3/bzs861/src/service.cpp:397:(.text+0x1dd9b): undefined reference to `bzs::Store::fail_search(bzs::SearchLease const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+collect2: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.

@@ -7,6 +7,9 @@
 struct json_object;
 namespace bzs {
   // Owned reference to json-c data. No implicit scalar conversions or missing-key defaults.
+  // Copies retain aliases. Concurrent readers of an otherwise immutable tree
+  // are safe, including serialization and alias reference lifetimes. Callers
+  // must synchronize mutations of shared trees and reassignment of a shared Json.
   class Json {
     json_object* p_=nullptr;
     public: Json()=default;

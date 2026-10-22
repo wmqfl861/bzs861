@@ -1,0 +1,8 @@
+mode=review threads=4 rounds=100 shared_source=ddg manifest_written_during_probe=false
+ERROR thread=0 round=0 message=Source ddg: Invalid numeric value
+ERROR thread=1 round=0 message=Source ddg: Invalid numeric value
+ERROR thread=3 round=1 message=Source ddg: JSON string expected
+ERROR thread=2 round=1 message=Source ddg: JSON string expected
+ERROR thread=3 round=2 message=Source ddg: Unclosed JSON string
+ERROR thread=1 round=2 message=Source ddg: Unclosed JSON string
+ERROR thread=0 round=2 message=Source ddg: Duplicate JSON key

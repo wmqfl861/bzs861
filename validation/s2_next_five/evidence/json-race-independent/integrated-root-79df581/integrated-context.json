@@ -1,0 +1,92 @@
+{
+  "at_utc": "2026-10-22T04:32:01.782939+00:00",
+  "scope": "Independent frozen three-case harness linked to the final integrated bzs_core archive.",
+  "core_commit": "79df58127b3458dc3b270f37e727e5d8277c8544",
+  "library_origin": "/workspace/scratch/80f41eb198a3/build-bzs-next/libbzs_core.a",
+  "library_expected_sha256": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+  "library_copied_sha256": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+  "json_cpp_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+  "harness_sha256": "ea7da2ec466056e8503435f9e189d8ce170e45754371f37c73f7784749f47fb9",
+  "same_harness_as_baseline_and_candidate": true,
+  "compile_command": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O1",
+    "-g",
+    "-pthread",
+    "-I",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/source-input/include",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/json_shared_read_harness.cpp",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-o",
+    "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/integrated-harness"
+  ],
+  "compile_exit_code": 0,
+  "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "cases": [
+    {
+      "scenario": "serialize",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/serialize.log",
+      "result": {
+        "scenario": "serialize",
+        "threads": 4,
+        "iterations_per_thread": 400,
+        "completed": 1600,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    },
+    {
+      "scenario": "reference_aliases",
+      "threads": 4,
+      "iterations_per_thread": 2000,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/reference_aliases.log",
+      "result": {
+        "scenario": "reference_aliases",
+        "threads": 4,
+        "iterations_per_thread": 2000,
+        "completed": 8000,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    },
+    {
+      "scenario": "canonical_reads",
+      "threads": 4,
+      "iterations_per_thread": 400,
+      "exit_code": 0,
+      "log": "/workspace/scratch/80f41eb198a3/bzs-next-five-review/conditional-worker/session-json-race-review/integrated-root-79df581/canonical_reads.log",
+      "result": {
+        "scenario": "canonical_reads",
+        "threads": 4,
+        "iterations_per_thread": 400,
+        "completed": 1600,
+        "failures": 0,
+        "first_error": "",
+        "shutdown_probe": 7
+      }
+    }
+  ],
+  "sha256": {
+    "canonical_reads.log": "c634d65070a1389b198d5495dde87ec31d2b830709359437cf8f115bfea59dfe",
+    "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "integrated-harness": "56f6c7afe142e32a7cf88c24132cd061c1fd796be4647a91e6658a4b06901a0e",
+    "libbzs_core.a": "f879c7c5810d97aec219175274e325e98d72d8c55a0b5596f44084c2148ddd27",
+    "reference_aliases.log": "2df97b0e151f2a5dcf016e9a02bf2d1f0e11ca27f54ad433c4f541e6b1aec14d",
+    "serialize.log": "3d9e5915eb4553756e46341c697f3bef6074dd60123ac1df41595bf3025675c5",
+    "source-input/include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "source-input/include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "source-input/include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "source-input/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5"
+  }
+}
