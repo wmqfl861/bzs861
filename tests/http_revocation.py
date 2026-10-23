@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import closing
 import hashlib
 import json
 from pathlib import Path
@@ -9,6 +10,7 @@ import secrets
 import sqlite3
 import tempfile
 import unittest
+from unittest import mock
 
 import integration
 
@@ -47,7 +49,7 @@ class RevocationHTTP(unittest.TestCase):
 
     def rows(self, query):
         path = self.root / "state" / "metadata.sqlite"
-        with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as connection:
+        with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as connection:
             return connection.execute(query).fetchall()
 
     def test_administrator_only_strict_contract_and_unrelated_owner(self):
@@ -106,6 +108,43 @@ class RevocationHTTP(unittest.TestCase):
         self.assertEqual(again, repeated)
         self.assertEqual(self.ok("stats")["documents"], 0)
         self.assertEqual(self.rows("SELECT COUNT(*) FROM principal_revocations"), [(1,)])
+
+
+class RowsConnectionLifecycle(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory(prefix="bzs-revoke-rows-")
+        self.addCleanup(temp.cleanup)
+        self.root = Path(temp.name)
+        (self.root / "state").mkdir()
+        with closing(sqlite3.connect(self.root / "state" / "metadata.sqlite")) as connection:
+            connection.execute("CREATE TABLE fixture_rows (value INTEGER NOT NULL)")
+            connection.execute("INSERT INTO fixture_rows VALUES (7)")
+            connection.commit()
+        self.real_connect = sqlite3.connect
+        self.connections = []
+
+    def retain_connection(self, *args, **kwargs):
+        connection = self.real_connect(*args, **kwargs)
+        # Keep the real connection alive so garbage collection cannot hide a leak.
+        self.connections.append(connection)
+        self.addCleanup(connection.close)
+        return connection
+
+    def assert_connection_closed(self):
+        self.assertEqual(len(self.connections), 1)
+        with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed"):
+            self.connections[0].execute("SELECT 1")
+
+    def test_rows_closes_connection_after_success(self):
+        with mock.patch.object(sqlite3, "connect", side_effect=self.retain_connection):
+            self.assertEqual(RevocationHTTP.rows(self, "SELECT value FROM fixture_rows"), [(7,)])
+        self.assert_connection_closed()
+
+    def test_rows_closes_connection_after_query_exception(self):
+        with mock.patch.object(sqlite3, "connect", side_effect=self.retain_connection):
+            with self.assertRaises(sqlite3.OperationalError):
+                RevocationHTTP.rows(self, "SELECT value FROM missing_table")
+        self.assert_connection_closed()
 
 
 if __name__ == "__main__":

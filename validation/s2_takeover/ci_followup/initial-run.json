@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "repository": "wmqfl861/bzs861",
+  "run": {
+    "id": 39945994760,
+    "run_attempt": 1,
+    "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+    "head_branch": "main",
+    "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-10-23T11:25:41Z",
+    "updated_at": "2026-10-23T11:48:25Z"
+  },
+  "jobs": [
+    {
+      "id": 120388674690,
+      "name": "linux",
+      "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+      "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760/job/120388674690",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-23T11:25:43Z",
+      "completed_at": "2026-10-23T11:40:03Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-23T11:25:44Z",
+          "completed_at": "2026-10-23T11:25:45Z"
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-23T11:25:45Z",
+          "completed_at": "2026-10-23T11:25:47Z"
+        },
+        {
+          "name": "Install build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-23T11:25:47Z",
+          "completed_at": "2026-10-23T11:32:38Z"
+        },
+        {
+          "name": "Install the Python worker and pinned test dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-23T11:32:38Z",
+          "completed_at": "2026-10-23T11:32:54Z"
+        },
+        {
+          "name": "Build and test core, contracts, HTTP, worker and MCP",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-23T11:32:54Z",
+          "completed_at": "2026-10-23T11:36:30Z"
+        },
+        {
+          "name": "Address and undefined-behavior checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-23T11:36:30Z",
+          "completed_at": "2026-10-23T11:40:00Z"
+        },
+        {
+          "name": "Original contracts and planning safeguards",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-23T11:40:00Z",
+          "completed_at": "2026-10-23T11:40:01Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-23T11:40:01Z",
+          "completed_at": "2026-10-23T11:40:01Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-23T11:40:01Z",
+          "completed_at": "2026-10-23T11:40:01Z"
+        }
+      ]
+    },
+    {
+      "id": 120388675036,
+      "name": "windows",
+      "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+      "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760/job/120388675036",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-23T11:25:43Z",
+      "completed_at": "2026-10-23T11:48:24Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-23T11:25:44Z",
+          "completed_at": "2026-10-23T11:25:45Z"
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-23T11:25:45Z",
+          "completed_at": "2026-10-23T11:25:55Z"
+        },
+        {
+          "name": "Check out the pinned vcpkg baseline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-23T11:25:55Z",
+          "completed_at": "2026-10-23T11:26:02Z"
+        },
+        {
+          "name": "Install C++ dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-23T11:26:02Z",
+          "completed_at": "2026-10-23T11:40:33Z"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-23T11:40:33Z",
+          "completed_at": "2026-10-23T11:42:30Z"
+        },
+        {
+          "name": "Offline native and HTTP tests",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-10-23T11:42:30Z",
+          "completed_at": "2026-10-23T11:48:20Z"
+        },
+        {
+          "name": "Post Check out the pinned vcpkg baseline",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-23T11:48:20Z",
+          "completed_at": "2026-10-23T11:48:21Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-23T11:48:21Z",
+          "completed_at": "2026-10-23T11:48:23Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-23T11:48:23Z",
+          "completed_at": "2026-10-23T11:48:23Z"
+        }
+      ]
+    }
+  ],
+  "logs": {
+    "source": "GitHub Actions decoded job logs; fetched after both jobs completed",
+    "newline_normalization": "CRLF normalized to LF; all decoded log text retained",
+    "linux": "initial-linux.log",
+    "windows": "initial-windows.log"
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "recorded_at_utc": "2026-10-23T11:57:04.720637+00:00",
+  "scope": "Test-only follow-up for actual Windows CI SQLite handle cleanup failure; production runtime and all five increment boundaries unchanged.",
+  "baseline_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "baseline_tree": "fad2c76d98602ec076a8a0eb770ae23055deda25",
+  "correction_commit_local": "547158ea6848cb78289769ce5561a6d788d3c3e9",
+  "integration_commit_local": "770515618fff44e469f61b44eb5ca9eac17f8812",
+  "local_commits_are_not_remote_publication_shas": true,
+  "initial_github_ci": {
+    "run_id": 39945994760,
+    "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+    "url": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760",
+    "conclusion": "failure",
+    "metadata": {
+      "path": "ci_followup/initial-run.json",
+      "sha256": "ad997f195fd920e54770439544fd6be3fa48b684614245181d896703e4355ae9"
+    },
+    "linux": {
+      "job_id": 120388674690,
+      "conclusion": "success",
+      "ctest_passed_suites": 27,
+      "ctest_failed_suites": 0,
+      "ctest_skipped_suites": 0,
+      "ctest_seconds": 163.31,
+      "sanitizer_executables_passed": 15,
+      "native_cases": 413,
+      "native_assertions": 12906,
+      "original_contract_cases": 34,
+      "plan_guards": 13,
+      "log": {
+        "path": "ci_followup/initial-linux.log",
+        "sha256": "78598493e0dccc67f8616f396ee4eea58bbea756d5c34ecaceb879a1f2157687"
+      }
+    },
+    "windows": {
+      "job_id": 120388675036,
+      "conclusion": "failure",
+      "build": "success",
+      "ctest_passed_suites": 16,
+      "ctest_failed_suites": 1,
+      "ctest_skipped_suites": 0,
+      "ctest_total_suites": 17,
+      "ctest_seconds": 347.59,
+      "native_suites_passed": 15,
+      "failed_suite": "http_revocation",
+      "test_errors": 2,
+      "recorded_business_assertion_failures": 0,
+      "exception": "PermissionError [WinError 32] while unlinking metadata.sqlite in tearDown",
+      "root_cause": "sqlite3.Connection transaction context did not close the retained read connection; temporary-directory cleanup exposed the leaked handle on Windows.",
+      "log": {
+        "path": "ci_followup/initial-windows.log",
+        "sha256": "7b19d27d9d07b47296bb591251a6133bf35e2e9cbd563a4b942a6c7b77c5fc4d"
+      }
+    }
+  },
+  "changes": {
+    "only_changed_executable_input": {
+      "path": "tests/http_revocation.py",
+      "before_sha256": "5e6670393f55b63a000ec7fdd8817d21d63e79f9b9970c84608f5bda83030383",
+      "after_sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09"
+    },
+    "new_validation_scripts": [
+      "ci_followup/check_preservation.py",
+      "ci_followup_review/probe_sqlite_lifecycle.py"
+    ],
+    "fix": "Explicit contextlib.closing around the read-only SQLite connection in rows().",
+    "permanent_regressions": "Two real-connection tests retain references and require closed-handle errors after normal return and SQL exception; both run in the existing http_revocation CI suite.",
+    "http_revocation_case_count": {
+      "before": 2,
+      "after": 4
+    },
+    "preserved": "Original seven other RevocationHTTP method bodies, including both business tests and strict tearDown; production sources, build configuration, workflow, timeouts and suite selection.",
+    "suite_count_unchanged": {
+      "linux": 27,
+      "windows": 17
+    }
+  },
+  "new_execution_inputs": {
+    "path": "ci-followup-execution-inputs.json",
+    "sha256": "1f8a481a61b63bb5c4c64c1ec3178225ea402702435f55ca0f4ee8a49cc4600d",
+    "files": 224
+  },
+  "new_source_manifest": {
+    "path": "ci-followup-source-manifest.json",
+    "sha256": "a5fb96837cf9db2affaf3f8d7425485f92d404f4f7c52c5d3524734c7be4c55f",
+    "files": 215
+  },
+  "local_focused_validation": {
+    "status": "passed",
+    "commands": [
+      {
+        "record": "ci-followup-http-ctest-command.json",
+        "sha256": "d945826b90b212b595b519e0d9f3b20ddcf51c6f5af42bb5d9ad9c9628d1ad3d",
+        "argv": [
+          "ctest",
+          "--preset",
+          "dev",
+          "-R",
+          "^(http_cli|http_revocation)$",
+          "--verbose",
+          "--output-on-failure",
+          "--output-junit",
+          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/ci-followup-http-ctest.xml"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 6.005,
+        "log": "ci-followup-http-ctest.log",
+        "log_sha256": "2776bd45deb12b79b815ef949901fdab695b97496f97ded3920be1f7bf81b7ea",
+        "inputs_and_binaries_unchanged_before_and_after": true
+      },
+      {
+        "record": "ci-followup-independent-lifecycle-command.json",
+        "sha256": "764b0dbe569885ff7cdfcffe54b0018aa8a6f4f82c18c92a9bf036fb472d815e",
+        "argv": [
+          "python3",
+          "validation/s2_takeover/ci_followup_review/probe_sqlite_lifecycle.py",
+          "--repo",
+          ".",
+          "--ref",
+          "79d3463"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.227,
+        "log": "ci-followup-independent-lifecycle.log",
+        "log_sha256": "b22825f77e68063d32e4ff0febfe74af9a586379eb07709277150cde00e725dc",
+        "inputs_and_binaries_unchanged_before_and_after": true
+      },
+      {
+        "record": "ci-followup-preservation-command.json",
+        "sha256": "bcb6df1ad11ae3be9ab71bf85ca1470fde3c92173db2ec3bb0db76d68d604303",
+        "argv": [
+          "python3",
+          "validation/s2_takeover/ci_followup/check_preservation.py"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 0.185,
+        "log": "ci-followup-preservation.log",
+        "log_sha256": "76f6facfc9716f2ce80caf2deea8a99d090d29114945682eae4a853a57b13220",
+        "inputs_and_binaries_unchanged_before_and_after": true
+      }
+    ],
+    "ctest_passed_suites": 2,
+    "ctest_failed_suites": 0,
+    "ctest_skipped_suites": 0,
+    "ctest_seconds": 5.98,
+    "http_cli_cases_passed": 20,
+    "http_revocation_cases_passed": 4,
+    "independent_lifecycle_cases_passed": 2,
+    "scope_limit": "Both real loopback HTTP suites, the frozen independent lifecycle probe and preservation check only. Full local CTest/sanitizer/migration gates were not rerun for this test-only change."
+  },
+  "unchanged_production_runtime": {
+    "report": {
+      "path": "final-report.json",
+      "sha256": "24450df351273fe049035a3a4ddaa5ac154d531948ae2312c336490cb9de2521"
+    },
+    "source_manifest": {
+      "path": "final-source-manifest.json",
+      "sha256": "c4793bfd62199af763afb0237fb713c2f06dc4fd36f484085771b716caf935c7"
+    },
+    "original_execution_inputs": {
+      "path": "final-v2-execution-inputs.json",
+      "sha256": "12acb9323d54298b9cadec7b7ab2a6d114e8d009029bf4c9f9bc5c59eed86fe8"
+    },
+    "runtime_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+    "searchd_sha256": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+    "original_local_ctest_passed_suites": 27,
+    "original_local_sanitizer_passed_suites": 15,
+    "original_local_python_cases": 1049,
+    "interpretation": "These are the original frozen runtime results, not newly executed full-suite results for the changed HTTP fixture. All production sources and binary bytes remain identical."
+  },
+  "preservation": {
+    "schema_version": 1,
+    "status": "passed",
+    "baseline_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+    "baseline_tree": "fad2c76d98602ec076a8a0eb770ae23055deda25",
+    "preserved_existing_files": 1403,
+    "preserved_existing_files_manifest_sha256": "28813b9915a542f1d92bd1a6f97257fd588e643ee4d8c69245ae5acb3a05755b",
+    "preserved_existing_validation_files": 1195,
+    "preserved_existing_validation_manifest_sha256": "340588b82ce97755ca5c87c27ae0e81b7a02866bd21c503858524c28331bf602",
+    "all_existing_validation_bytes_preserved": true,
+    "production_sources_build_configuration_workflow_unchanged": true,
+    "allowed_changed_files": {
+      "HANDOFF_START_HERE.md": {
+        "before_blob": "ec6b670b87e2b238d5e89d468c27b38bd8cd1de2",
+        "after_blob": "6d3fc92cf39a8582fd8ff7f267eb5171246104f7",
+        "after_sha256": "3375b91f832a892fd656de74c458f14e2ed4929ea7d43369a88e5162877115bc"
+      },
+      "README.md": {
+        "before_blob": "2b9a8d58cbe227b23e1cd69fe63af9146fb3d418",
+        "after_blob": "30a534c33808c017417aea6a9fa08d9ceb50107b",
+        "after_sha256": "ca8d4bc65f77cb52e60ec8c1d813b69b4f6018ac91b84b5b277b39e889a1547e"
+      },
+      "docs/DEVELOPMENT_STATUS.md": {
+        "before_blob": "e73d7a2356f20ae6c20d0bf2f5525483125b8886",
+        "after_blob": "c264cefe4a51e52414a97b81a77815179f6de67b",
+        "after_sha256": "e7e79f2def0bb92658c9543647da5c2e7227813942a5e09e2b1f8d80051f2c3c"
+      },
+      "docs/GITHUB_HANDOFF.md": {
+        "before_blob": "406c5cd4ecef95bac878d135b8b890420d35ecbb",
+        "after_blob": "3cfbf7adaa6d06c4755ce8713ce1dded92b4ce42",
+        "after_sha256": "26a7addce19cd513f9768d72efcb57ad0df42e424aa58994ed60dc3b66e2e363"
+      },
+      "docs/handoff/NEXT_AGENT.md": {
+        "before_blob": "785bf1ca10ca1f52cbfa8744ff6da010d7616fcc",
+        "after_blob": "9c7f1aec22f399f333c3f04e08411f8f0348dd97",
+        "after_sha256": "587f01efd57d4fbb167deed28f64f4f26779eab542c35e7c19d5363e9c2ee8ea"
+      },
+      "docs/implementation_status.json": {
+        "before_blob": "55e228e76ee06648767ed5a1777c4dd84131f806",
+        "after_blob": "f428e1097dfeb1735696467cc041c2c1899a4833",
+        "after_sha256": "7c9d2bf32a7f2dd4ea86e98c945751ae4b037b104ad8255cb893102680cc34c5"
+      },
+      "tests/http_revocation.py": {
+        "before_blob": "bd65fa1ac249e2e96349ffc6a0ff79d58b2bf2a8",
+        "after_blob": "1043e20a5d0382dc3da3f62bcf43191eb12ae017",
+        "after_sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09"
+      }
+    },
+    "original_http_methods_byte_identical": [
+      "add_token",
+      "denied",
+      "ok",
+      "setUp",
+      "tearDown",
+      "test_administrator_only_strict_contract_and_unrelated_owner",
+      "test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation"
+    ],
+    "production_binaries_sha256": {
+      "build/libbzs_core.a": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+      "build/searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de"
+    },
+    "production_binaries_identical_to_final_v2": true,
+    "new_files_limited_to_followup_evidence": true,
+    "plan_and_acceptance_unchanged": true,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "golden_check": "Only raw-byte object hashes compared; no query inspection or tuning.",
+    "command_record": {
+      "path": "ci-followup-preservation-command.json",
+      "sha256": "bcb6df1ad11ae3be9ab71bf85ca1470fde3c92173db2ec3bb0db76d68d604303"
+    },
+    "log": {
+      "path": "ci-followup-preservation.log",
+      "sha256": "76f6facfc9716f2ce80caf2deea8a99d090d29114945682eae4a853a57b13220"
+    }
+  },
+  "review": {
+    "path": "ci-followup-review.json",
+    "sha256": "9280ea937da795fea359e89e4f5058995cfa1389564503f651cbaa096f6da330"
+  },
+  "summary_audit": "ci-followup-summary-audit.json",
+  "plan": {
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0,
+    "source_approvals_changed": false,
+    "planned_acceptance_suite_executed": false
+  },
+  "release_gate": "After publication, read the actual containing commit/tree and verify that exact SHA has completed successful Linux and Windows jobs. No future SHA or CI success is predeclared; initial failed Windows evidence remains intact."
+}

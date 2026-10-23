@@ -1,0 +1,65 @@
+{
+  "schema": "bzs-independent-ci-followup-baseline-1",
+  "recorded_at_utc": "2026-10-23T11:53:11.776170Z",
+  "reviewer": "/root/source_policy",
+  "role": "independent reviewer of revocation HTTP fixture correction; not correction author",
+  "status": "prior_failure_reproduced",
+  "source_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "source_tree": "fad2c76d98602ec076a8a0eb770ae23055deda25",
+  "actual_windows_ci": {
+    "run_id": 39945994760,
+    "job_id": 120388675036,
+    "url": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760/job/120388675036",
+    "conclusion": "failure",
+    "completed_at": "2026-10-23T11:48:24Z",
+    "build_conclusion": "success",
+    "compiler": "MSVC 19.44.35229.0",
+    "ctest_total": 17,
+    "ctest_passed": 16,
+    "ctest_failed": 1,
+    "ctest_real_seconds": 347.59,
+    "passed_native_suites": 15,
+    "passed_http_suites": [
+      "http_cli"
+    ],
+    "failed_suites": [
+      "http_revocation"
+    ],
+    "failure_location": "tests/http_revocation.py:28 tearDown -> TemporaryDirectory.cleanup -> unlink metadata.sqlite",
+    "failure_type": "PermissionError [WinError 32]",
+    "failed_http_cases": 2,
+    "recorded_business_assertion_failures": 0,
+    "raw_log_owner": "root integrator; original downloaded Windows job log is retained separately"
+  },
+  "portable_reproduction": {
+    "command": [
+      "python3",
+      "validation/s2_takeover/ci_followup_review/probe_sqlite_lifecycle.py",
+      "--repo",
+      "/workspace/scratch/e2371129386d/bzs861",
+      "--ref",
+      "a06e7e91f6a115b345ff1072095b80e15d193ad4"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "actual_exit_code": 1,
+    "expected_prior_exit_code": 1,
+    "passed": 0,
+    "failed": 2,
+    "method": "Real read-only SQLite connections retained across helper return/exception. Query outcomes stay correct, but both connections remain open until diagnostic cleanup.",
+    "windows_execution": false,
+    "platform": "Linux",
+    "python": "3.12.14",
+    "sqlite": "3.53.1",
+    "script_sha256": "dd5b025a65fdd0912438eebc2a6cc3f505f4c11008519f4f795caffede3fd7e2",
+    "evidence_file": "before-a06-lifecycle.json",
+    "evidence_sha256": "56b9755d769c48670b0f6fa03531871730a9511bf0cd8c2e19ef5d92daeb9619"
+  },
+  "review_boundary": {
+    "production_or_existing_test_edits": false,
+    "network_or_server_required_by_probe": false,
+    "prior_failure_output_to_remain_unchanged": true,
+    "followup": "Use the identical frozen probe for the correction commit and record its result in new files. A portable pass does not replace actual Windows CI."
+  }
+}

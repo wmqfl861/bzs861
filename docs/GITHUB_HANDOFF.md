@@ -8,6 +8,7 @@
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
+| 0.1.10 首次发布 | `a06e7e91f6a115b345ff1072095b80e15d193ad4` | CI 39945994760：Linux通过；Windows构建成功、16/17套通过，唯一失败为HTTP测试未关闭SQLite连接导致临时目录清理失败；原日志完整保留 |
 | 0.1.9 JSON并发修正 | `3ef86c653a2e2085848d5cdb151d66392c6af49a` | CI 39725326547：Linux/Windows成功；本轮真实输入基线、schema12 |
 | 0.1.9 Windows测试修正 | `c14b3c3c214bf9def1f8080b9125816aa0f56735` | CI 39721279784：Windows12/12通过；Linux真实ACK恢复暴露JSON竞争，当前补丁修复 |
 | 0.1.9 首次发布 | `b88b76302e850499275b0a8ec2db366f282481f1` | CI 39718214744：Linux通过；Windows sessions 60秒超时，原日志保留 |
@@ -26,6 +27,8 @@
 交付前读取远端 main 与预期旧 SHA，先完成代码、复核和实际测试，再以非强制更新发布。提交的 tree 必须与本地已验证内容相同；远端前进时先检查新差异，不覆盖未知修改。发布后获取实际 commit/tree，将本地副本对齐，并核对对应 Linux/Windows 的实际步骤和结论。
 
 当前报告由包含它的 Git 提交绑定，不预写未来自身 SHA 或未来 CI 成功。最终 SHA 与 CI 以实际发布记录为准。
+
+0.1.10首次发布之后的连接释放修正只改变tests/http_revocation.py及说明/证据，生产实现和CI门槛不变。它使用独立的[后续报告](../validation/s2_takeover/ci-followup-report.json)与冻结输入，不覆盖原final-v2。后续发布以a06e7e9为精确父提交，再核对新tree与新提交的实际Linux/Windows；原Windows失败不能记作通过。
 
 ## 原始历史为何不同
 

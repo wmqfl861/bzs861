@@ -1,0 +1,48 @@
+{
+  "scope": "Focused local loopback HTTP/CLI run; same published runtime binaries, test-only lifecycle change",
+  "baseline_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "started_at": "2026-10-23T11:53:34.571293+00:00",
+  "finished_at": "2026-10-23T11:53:40.345606+00:00",
+  "command": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/integration.py",
+    "--server",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchd",
+    "--cli",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchctl",
+    "--fixtures",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "env_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/python"
+  },
+  "inputs_before_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/integration.py": "7a963e61892e6e16204c2112af26ea16b258d87e25caaeed2dca4f323e8a99b0",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchctl": "e4331a7fc2aa8ab7d37e5db8ff53af67a0db61ed38153ea2dea86b490fed204d",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba"
+  },
+  "inputs_after_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/integration.py": "7a963e61892e6e16204c2112af26ea16b258d87e25caaeed2dca4f323e8a99b0",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+    "/workspace/scratch/e2371129386d/bzs861/build/searchctl": "e4331a7fc2aa8ab7d37e5db8ff53af67a0db61ed38153ea2dea86b490fed204d",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba"
+  },
+  "inputs_unchanged": true,
+  "exit_code": 0,
+  "log_sha256": "74136d693d118f06276e5972e7615d507bb70466b9a5abb1a457f0d58f225002"
+}

@@ -1,0 +1,29 @@
+test_rows_closes_connection_after_query_exception (http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception) ... FAIL
+test_rows_closes_connection_after_success (http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_success) ... FAIL
+
+======================================================================
+FAIL: test_rows_closes_connection_after_query_exception (http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py", line 147, in test_rows_closes_connection_after_query_exception
+    self.assert_connection_closed()
+  File "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py", line 135, in assert_connection_closed
+    with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ProgrammingError not raised
+
+======================================================================
+FAIL: test_rows_closes_connection_after_success (http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py", line 141, in test_rows_closes_connection_after_success
+    self.assert_connection_closed()
+  File "/workspace/scratch/e2371129386d/bzs861-http-revocation-cleanup/tests/http_revocation.py", line 135, in assert_connection_closed
+    with self.assertRaisesRegex(sqlite3.ProgrammingError, "closed"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ProgrammingError not raised
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.009s
+
+FAILED (failures=2)

@@ -1,6 +1,6 @@
 {
   "version": "0.1.10",
-  "stage": "S2 takeover five increments",
+  "stage": "S2 takeover five increments and Windows HTTP fixture correction",
   "recorded_at": "2026-10-23",
   "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
   "integration_inputs": {
@@ -44,13 +44,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s2_takeover/final-report.json",
-  "current_verification": "passed_final_integrated_local_gates_scope_limited",
+  "current_test_report": "validation/s2_takeover/ci-followup-report.json",
+  "current_verification": "passed_focused_fixture_followup_production_unchanged",
   "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
-  "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-  "independent_review": "scoped_component_reviews_and_final_replays_completed; full_product_signoff_not_performed",
+  "github_ci": "initial_a06e7e9_linux_passed_windows_cleanup_failed; query_exact_containing_followup_commit_after_publication",
+  "independent_review": "independent_old_code_resource_leak_reproduced_and_fixed_source_reviewed; full_product_signoff_not_performed",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s2_takeover/final-review.json",
+  "review_record": "validation/s2_takeover/ci-followup-review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -63,7 +63,8 @@
     "validation/s2_five_stages/final-report.json",
     "validation/s2_next_five/final-report.json",
     "validation/s2_next_five/ci-followup-report.json",
-    "validation/s2_next_five/json-race-report.json"
+    "validation/s2_next_five/json-race-report.json",
+    "validation/s2_takeover/final-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -2623,361 +2624,44 @@
     }
   ],
   "current_results": {
-    "status": "passed_final_integrated_local_gates_scope_limited",
+    "status": "passed_focused_fixture_followup_production_unchanged",
+    "scope": "Test-helper connection lifecycle only; original production sources, build settings and workflow unchanged.",
     "ctest": {
-      "passed_suites": 27,
+      "passed_suites": 2,
       "failed_suites": 0,
       "skipped_suites": 0,
-      "elapsed_seconds": 171.87,
-      "log": "final-v2-ctest.log",
-      "junit": "final-v2-ctest.xml",
-      "suites": [
-        {
-          "name": "core",
-          "passed": 82,
-          "failed": 0,
-          "elapsed_seconds": 2.58022,
-          "assertions": 715
-        },
-        {
-          "name": "batch",
-          "passed": 30,
-          "failed": 0,
-          "elapsed_seconds": 1.28028,
-          "assertions": 801
-        },
-        {
-          "name": "map",
-          "passed": 24,
-          "failed": 0,
-          "elapsed_seconds": 0.887491,
-          "assertions": 462
-        },
-        {
-          "name": "crawl",
-          "passed": 54,
-          "failed": 0,
-          "elapsed_seconds": 6.01861,
-          "assertions": 2798
-        },
-        {
-          "name": "site_publication",
-          "passed": 32,
-          "failed": 0,
-          "elapsed_seconds": 5.61633,
-          "assertions": 1200
-        },
-        {
-          "name": "retention",
-          "passed": 16,
-          "failed": 0,
-          "elapsed_seconds": 2.60458,
-          "assertions": 404
-        },
-        {
-          "name": "fairness",
-          "passed": 11,
-          "failed": 0,
-          "elapsed_seconds": 1.00515,
-          "assertions": 251
-        },
-        {
-          "name": "sessions",
-          "passed": 22,
-          "failed": 0,
-          "elapsed_seconds": 14.5432,
-          "assertions": 285
-        },
-        {
-          "name": "source_publication",
-          "passed": 20,
-          "failed": 0,
-          "elapsed_seconds": 0.880449,
-          "assertions": 180
-        },
-        {
-          "name": "search_modes",
-          "passed": 17,
-          "failed": 0,
-          "elapsed_seconds": 2.84434,
-          "assertions": 182
-        },
-        {
-          "name": "revalidation",
-          "passed": 21,
-          "failed": 0,
-          "elapsed_seconds": 1.26231,
-          "assertions": 333
-        },
-        {
-          "name": "revocation",
-          "passed": 12,
-          "failed": 0,
-          "elapsed_seconds": 0.25652,
-          "assertions": 146
-        },
-        {
-          "name": "capacity_cycles",
-          "passed": 4,
-          "failed": 0,
-          "elapsed_seconds": 9.13136,
-          "assertions": 4800
-        },
-        {
-          "name": "cache_freshness",
-          "passed": 13,
-          "failed": 0,
-          "elapsed_seconds": 0.269787,
-          "assertions": 80
-        },
-        {
-          "name": "contracts",
-          "passed": 55,
-          "failed": 0,
-          "elapsed_seconds": 0.174477,
-          "retained_design_fixtures": 34,
-          "additional_native_cases": 21,
-          "assertions": 269
-        },
-        {
-          "name": "http_cli",
-          "passed": 20,
-          "failed": 0,
-          "elapsed_seconds": 5.7259
-        },
-        {
-          "name": "http_revocation",
-          "passed": 2,
-          "failed": 0,
-          "elapsed_seconds": 0.188832
-        },
-        {
-          "name": "e2e_web",
-          "passed": 15,
-          "failed": 0,
-          "elapsed_seconds": 7.21564
-        },
-        {
-          "name": "e2e_map",
-          "passed": 9,
-          "failed": 0,
-          "elapsed_seconds": 4.04895
-        },
-        {
-          "name": "e2e_crawl",
-          "passed": 24,
-          "failed": 0,
-          "elapsed_seconds": 10.5745
-        },
-        {
-          "name": "e2e_crawl_recovery",
-          "passed": 8,
-          "failed": 0,
-          "elapsed_seconds": 24.2717
-        },
-        {
-          "name": "e2e_session_recovery",
-          "passed": 6,
-          "failed": 0,
-          "elapsed_seconds": 28.4059
-        },
-        {
-          "name": "e2e_revalidation",
-          "passed": 6,
-          "failed": 0,
-          "elapsed_seconds": 9.07752
-        },
-        {
-          "name": "e2e_cache_freshness",
-          "passed": 6,
-          "failed": 0,
-          "elapsed_seconds": 5.10749
-        },
-        {
-          "name": "e2e_cache_policy_review",
-          "passed": 10,
-          "failed": 0,
-          "elapsed_seconds": 8.64199
-        },
-        {
-          "name": "e2e_revocation",
-          "passed": 3,
-          "failed": 0,
-          "elapsed_seconds": 1.88546
-        },
-        {
-          "name": "python_worker",
-          "passed": 1049,
-          "failed": 0,
-          "elapsed_seconds": 17.3648
-        }
-      ]
+      "elapsed_seconds": 5.98,
+      "http_cli_cases": 20,
+      "http_revocation_cases": 4,
+      "log": "ci-followup-http-ctest.log",
+      "junit": "ci-followup-http-ctest.xml"
     },
-    "sanitizers": {
-      "passed_suites": 15,
-      "failed_suites": 0,
-      "skipped_suites": 0,
-      "elapsed_seconds": 161.37,
-      "log": "final-v2-asan.log",
-      "junit": "final-v2-asan.xml",
-      "suites": [
-        {
-          "name": "core",
-          "passed": 82,
-          "failed": 0,
-          "elapsed_seconds": 6.7969,
-          "assertions": 715
-        },
-        {
-          "name": "batch",
-          "passed": 30,
-          "failed": 0,
-          "elapsed_seconds": 3.85494,
-          "assertions": 801
-        },
-        {
-          "name": "map",
-          "passed": 24,
-          "failed": 0,
-          "elapsed_seconds": 3.33121,
-          "assertions": 462
-        },
-        {
-          "name": "crawl",
-          "passed": 54,
-          "failed": 0,
-          "elapsed_seconds": 20.8942,
-          "assertions": 2798
-        },
-        {
-          "name": "site_publication",
-          "passed": 32,
-          "failed": 0,
-          "elapsed_seconds": 16.5263,
-          "assertions": 1200
-        },
-        {
-          "name": "retention",
-          "passed": 16,
-          "failed": 0,
-          "elapsed_seconds": 6.12909,
-          "assertions": 404
-        },
-        {
-          "name": "fairness",
-          "passed": 11,
-          "failed": 0,
-          "elapsed_seconds": 3.01649,
-          "assertions": 251
-        },
-        {
-          "name": "sessions",
-          "passed": 22,
-          "failed": 0,
-          "elapsed_seconds": 52.7197,
-          "assertions": 285
-        },
-        {
-          "name": "source_publication",
-          "passed": 20,
-          "failed": 0,
-          "elapsed_seconds": 3.08362,
-          "assertions": 180
-        },
-        {
-          "name": "search_modes",
-          "passed": 17,
-          "failed": 0,
-          "elapsed_seconds": 7.04578,
-          "assertions": 182
-        },
-        {
-          "name": "revalidation",
-          "passed": 21,
-          "failed": 0,
-          "elapsed_seconds": 5.4488,
-          "assertions": 333
-        },
-        {
-          "name": "revocation",
-          "passed": 12,
-          "failed": 0,
-          "elapsed_seconds": 1.02543,
-          "assertions": 146
-        },
-        {
-          "name": "capacity_cycles",
-          "passed": 4,
-          "failed": 0,
-          "elapsed_seconds": 29.7956,
-          "assertions": 4800
-        },
-        {
-          "name": "cache_freshness",
-          "passed": 13,
-          "failed": 0,
-          "elapsed_seconds": 0.994892,
-          "assertions": 80
-        },
-        {
-          "name": "contracts",
-          "passed": 55,
-          "failed": 0,
-          "elapsed_seconds": 0.702277,
-          "retained_design_fixtures": 34,
-          "additional_native_cases": 21,
-          "assertions": 269
-        }
-      ]
+    "independent_lifecycle_probe": {
+      "passed_cases": 2,
+      "failed_cases": 0,
+      "log": "ci-followup-independent-lifecycle.log"
     },
-    "native_sanitizer_executables": 15,
-    "native_sanitizer_failures": 0,
-    "leak_detection_enabled": true,
-    "undefined_behavior_halt_enabled": true,
-    "design_contract_reference_passed": 34,
-    "planning_guard_passed": 13,
-    "planning_read_only_check": {
-      "read_only": true,
-      "structure_valid": true,
-      "packages": 83,
-      "acceptance_mappings": 161,
-      "slices": 10,
-      "planning_estimate": [
-        418,
-        720
-      ],
-      "product_acceptance_checked": false
+    "unchanged_runtime_evidence": {
+      "report": "validation/s2_takeover/final-report.json",
+      "production_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+      "searchd_sha256": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+      "original_local_ctest_suites": 27,
+      "original_local_sanitizer_suites": 15,
+      "original_local_python_cases": 1049,
+      "full_local_gates_rerun_for_test_only_followup": false
     },
-    "dependencies": "No broken requirements found.",
-    "genuine_old_library_upgrade": {
-      "old_schema": 12,
-      "new_schema": 13,
-      "legacy_tables_preserved": 39,
-      "old_preparation_assertions": 310,
-      "new_upgrade_assertions": 1184,
-      "backup_quarantine_preserved": true,
-      "probe_author_role": "shared_read_component_author; independent of source policy and principal revocation",
-      "final_executor_role": "root_integrator_replay",
-      "embedded_role_field_note": "The replay script keeps its original probe-author role string; final-v2 commands were executed by the root integrator.",
-      "report": "migration/final-v2/report.json"
+    "initial_remote_ci": {
+      "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+      "run_id": 39945994760,
+      "linux": "success",
+      "windows": "failure",
+      "windows_build": "success",
+      "windows_ctest_passed_suites": 16,
+      "windows_ctest_total_suites": 17,
+      "failed_suite": "http_revocation",
+      "failed_phase": "tearDown TemporaryDirectory.cleanup; open SQLite connection"
     },
-    "final_shared_review_replay": {
-      "cases": 3,
-      "assertions": 99,
-      "failures": 0,
-      "author_role": "source_and_modes_author_reviewing_shared_read_component",
-      "executor_role": "root_integrator_relink_and_replay",
-      "record": "review_shared_reads/final-v2/cases.json"
-    },
-    "independent_corrected_deadline_review": {
-      "cases": 4,
-      "assertions": 59,
-      "original_real_recovery_test06_passed": true,
-      "record": "search_modes_deadline_review/report.json"
-    },
-    "successful_final_commands": 12,
-    "github_ci": "Check the actual containing published commit after publication; no future SHA or CI success is asserted here.",
-    "counting_note": "Native, sanitizer, author, reviewer and integration cases overlap. Their counts are not added to the 161 planned product acceptance items."
+    "followup_remote_ci": "Must query the actual containing commit after publication; no success is predeclared."
   },
   "baseline_version": "0.1.9",
   "planned_work_packages": 83,
@@ -2988,15 +2672,17 @@
     "validation/s2_discovery/independent_review.json",
     "validation/s2_crawl/independent_review.json",
     "validation/s2_hardening/independent_review.json",
-    "validation/s2_five_stages/final-review.json"
+    "validation/s2_five_stages/final-review.json",
+    "validation/s2_takeover/final-review.json"
   ],
   "verification_binding": {
-    "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
-    "report": "validation/s2_takeover/final-report.json",
-    "source_manifest": "validation/s2_takeover/final-source-manifest.json",
-    "execution_inputs": "validation/s2_takeover/final-v2-execution-inputs.json",
-    "executed_binary_identity": "SHA-256 before and after each final command; any generated executable mode repair preserves bytes and is recorded before final gates.",
-    "remote_ci": "Query GitHub Actions for the exact containing published commit. No future self SHA or CI success is embedded.",
+    "status": "new_fixture_execution_inputs_and_evidence_bound_by_containing_git_commit",
+    "report": "validation/s2_takeover/ci-followup-report.json",
+    "source_manifest": "validation/s2_takeover/ci-followup-source-manifest.json",
+    "execution_inputs": "validation/s2_takeover/ci-followup-execution-inputs.json",
+    "historical_runtime_report": "validation/s2_takeover/final-report.json",
+    "executed_binary_identity": "Unchanged production library/searchd; before-and-after SHA-256 recorded for focused followup commands.",
+    "remote_ci": "Query GitHub Actions for the exact containing published followup commit; initial a06 Windows failure is retained and is not a passing result.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -3694,5 +3380,391 @@
     "current_verification": "passed_final_integrated_local_gates_scope_limited",
     "independent_review": "scoped_core_worker_qa_upgrade_and_plan_reviews_completed",
     "review_record": "validation/s2_next_five/evidence/json-race-independent/design-review.json"
+  },
+  "historical_verification_0_1_10_initial": {
+    "version": "0.1.10",
+    "stage": "S2 takeover five increments",
+    "recorded_at": "2026-10-23",
+    "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "baseline_version": "0.1.9",
+    "integration_inputs": {
+      "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+      "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
+      "baseline_schema": 12,
+      "schema": 13,
+      "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
+      "plan": "docs/handoff/S2_TAKEOVER_20261023.md"
+    },
+    "current_test_report": "validation/s2_takeover/final-report.json",
+    "current_verification": "passed_final_integrated_local_gates_scope_limited",
+    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+    "independent_review": "scoped_component_reviews_and_final_replays_completed; full_product_signoff_not_performed",
+    "review_record": "validation/s2_takeover/final-review.json",
+    "current_results": {
+      "status": "passed_final_integrated_local_gates_scope_limited",
+      "ctest": {
+        "passed_suites": 27,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "elapsed_seconds": 171.87,
+        "log": "final-v2-ctest.log",
+        "junit": "final-v2-ctest.xml",
+        "suites": [
+          {
+            "name": "core",
+            "passed": 82,
+            "failed": 0,
+            "elapsed_seconds": 2.58022,
+            "assertions": 715
+          },
+          {
+            "name": "batch",
+            "passed": 30,
+            "failed": 0,
+            "elapsed_seconds": 1.28028,
+            "assertions": 801
+          },
+          {
+            "name": "map",
+            "passed": 24,
+            "failed": 0,
+            "elapsed_seconds": 0.887491,
+            "assertions": 462
+          },
+          {
+            "name": "crawl",
+            "passed": 54,
+            "failed": 0,
+            "elapsed_seconds": 6.01861,
+            "assertions": 2798
+          },
+          {
+            "name": "site_publication",
+            "passed": 32,
+            "failed": 0,
+            "elapsed_seconds": 5.61633,
+            "assertions": 1200
+          },
+          {
+            "name": "retention",
+            "passed": 16,
+            "failed": 0,
+            "elapsed_seconds": 2.60458,
+            "assertions": 404
+          },
+          {
+            "name": "fairness",
+            "passed": 11,
+            "failed": 0,
+            "elapsed_seconds": 1.00515,
+            "assertions": 251
+          },
+          {
+            "name": "sessions",
+            "passed": 22,
+            "failed": 0,
+            "elapsed_seconds": 14.5432,
+            "assertions": 285
+          },
+          {
+            "name": "source_publication",
+            "passed": 20,
+            "failed": 0,
+            "elapsed_seconds": 0.880449,
+            "assertions": 180
+          },
+          {
+            "name": "search_modes",
+            "passed": 17,
+            "failed": 0,
+            "elapsed_seconds": 2.84434,
+            "assertions": 182
+          },
+          {
+            "name": "revalidation",
+            "passed": 21,
+            "failed": 0,
+            "elapsed_seconds": 1.26231,
+            "assertions": 333
+          },
+          {
+            "name": "revocation",
+            "passed": 12,
+            "failed": 0,
+            "elapsed_seconds": 0.25652,
+            "assertions": 146
+          },
+          {
+            "name": "capacity_cycles",
+            "passed": 4,
+            "failed": 0,
+            "elapsed_seconds": 9.13136,
+            "assertions": 4800
+          },
+          {
+            "name": "cache_freshness",
+            "passed": 13,
+            "failed": 0,
+            "elapsed_seconds": 0.269787,
+            "assertions": 80
+          },
+          {
+            "name": "contracts",
+            "passed": 55,
+            "failed": 0,
+            "elapsed_seconds": 0.174477,
+            "retained_design_fixtures": 34,
+            "additional_native_cases": 21,
+            "assertions": 269
+          },
+          {
+            "name": "http_cli",
+            "passed": 20,
+            "failed": 0,
+            "elapsed_seconds": 5.7259
+          },
+          {
+            "name": "http_revocation",
+            "passed": 2,
+            "failed": 0,
+            "elapsed_seconds": 0.188832
+          },
+          {
+            "name": "e2e_web",
+            "passed": 15,
+            "failed": 0,
+            "elapsed_seconds": 7.21564
+          },
+          {
+            "name": "e2e_map",
+            "passed": 9,
+            "failed": 0,
+            "elapsed_seconds": 4.04895
+          },
+          {
+            "name": "e2e_crawl",
+            "passed": 24,
+            "failed": 0,
+            "elapsed_seconds": 10.5745
+          },
+          {
+            "name": "e2e_crawl_recovery",
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds": 24.2717
+          },
+          {
+            "name": "e2e_session_recovery",
+            "passed": 6,
+            "failed": 0,
+            "elapsed_seconds": 28.4059
+          },
+          {
+            "name": "e2e_revalidation",
+            "passed": 6,
+            "failed": 0,
+            "elapsed_seconds": 9.07752
+          },
+          {
+            "name": "e2e_cache_freshness",
+            "passed": 6,
+            "failed": 0,
+            "elapsed_seconds": 5.10749
+          },
+          {
+            "name": "e2e_cache_policy_review",
+            "passed": 10,
+            "failed": 0,
+            "elapsed_seconds": 8.64199
+          },
+          {
+            "name": "e2e_revocation",
+            "passed": 3,
+            "failed": 0,
+            "elapsed_seconds": 1.88546
+          },
+          {
+            "name": "python_worker",
+            "passed": 1049,
+            "failed": 0,
+            "elapsed_seconds": 17.3648
+          }
+        ]
+      },
+      "sanitizers": {
+        "passed_suites": 15,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "elapsed_seconds": 161.37,
+        "log": "final-v2-asan.log",
+        "junit": "final-v2-asan.xml",
+        "suites": [
+          {
+            "name": "core",
+            "passed": 82,
+            "failed": 0,
+            "elapsed_seconds": 6.7969,
+            "assertions": 715
+          },
+          {
+            "name": "batch",
+            "passed": 30,
+            "failed": 0,
+            "elapsed_seconds": 3.85494,
+            "assertions": 801
+          },
+          {
+            "name": "map",
+            "passed": 24,
+            "failed": 0,
+            "elapsed_seconds": 3.33121,
+            "assertions": 462
+          },
+          {
+            "name": "crawl",
+            "passed": 54,
+            "failed": 0,
+            "elapsed_seconds": 20.8942,
+            "assertions": 2798
+          },
+          {
+            "name": "site_publication",
+            "passed": 32,
+            "failed": 0,
+            "elapsed_seconds": 16.5263,
+            "assertions": 1200
+          },
+          {
+            "name": "retention",
+            "passed": 16,
+            "failed": 0,
+            "elapsed_seconds": 6.12909,
+            "assertions": 404
+          },
+          {
+            "name": "fairness",
+            "passed": 11,
+            "failed": 0,
+            "elapsed_seconds": 3.01649,
+            "assertions": 251
+          },
+          {
+            "name": "sessions",
+            "passed": 22,
+            "failed": 0,
+            "elapsed_seconds": 52.7197,
+            "assertions": 285
+          },
+          {
+            "name": "source_publication",
+            "passed": 20,
+            "failed": 0,
+            "elapsed_seconds": 3.08362,
+            "assertions": 180
+          },
+          {
+            "name": "search_modes",
+            "passed": 17,
+            "failed": 0,
+            "elapsed_seconds": 7.04578,
+            "assertions": 182
+          },
+          {
+            "name": "revalidation",
+            "passed": 21,
+            "failed": 0,
+            "elapsed_seconds": 5.4488,
+            "assertions": 333
+          },
+          {
+            "name": "revocation",
+            "passed": 12,
+            "failed": 0,
+            "elapsed_seconds": 1.02543,
+            "assertions": 146
+          },
+          {
+            "name": "capacity_cycles",
+            "passed": 4,
+            "failed": 0,
+            "elapsed_seconds": 29.7956,
+            "assertions": 4800
+          },
+          {
+            "name": "cache_freshness",
+            "passed": 13,
+            "failed": 0,
+            "elapsed_seconds": 0.994892,
+            "assertions": 80
+          },
+          {
+            "name": "contracts",
+            "passed": 55,
+            "failed": 0,
+            "elapsed_seconds": 0.702277,
+            "retained_design_fixtures": 34,
+            "additional_native_cases": 21,
+            "assertions": 269
+          }
+        ]
+      },
+      "native_sanitizer_executables": 15,
+      "native_sanitizer_failures": 0,
+      "leak_detection_enabled": true,
+      "undefined_behavior_halt_enabled": true,
+      "design_contract_reference_passed": 34,
+      "planning_guard_passed": 13,
+      "planning_read_only_check": {
+        "read_only": true,
+        "structure_valid": true,
+        "packages": 83,
+        "acceptance_mappings": 161,
+        "slices": 10,
+        "planning_estimate": [
+          418,
+          720
+        ],
+        "product_acceptance_checked": false
+      },
+      "dependencies": "No broken requirements found.",
+      "genuine_old_library_upgrade": {
+        "old_schema": 12,
+        "new_schema": 13,
+        "legacy_tables_preserved": 39,
+        "old_preparation_assertions": 310,
+        "new_upgrade_assertions": 1184,
+        "backup_quarantine_preserved": true,
+        "probe_author_role": "shared_read_component_author; independent of source policy and principal revocation",
+        "final_executor_role": "root_integrator_replay",
+        "embedded_role_field_note": "The replay script keeps its original probe-author role string; final-v2 commands were executed by the root integrator.",
+        "report": "migration/final-v2/report.json"
+      },
+      "final_shared_review_replay": {
+        "cases": 3,
+        "assertions": 99,
+        "failures": 0,
+        "author_role": "source_and_modes_author_reviewing_shared_read_component",
+        "executor_role": "root_integrator_relink_and_replay",
+        "record": "review_shared_reads/final-v2/cases.json"
+      },
+      "independent_corrected_deadline_review": {
+        "cases": 4,
+        "assertions": 59,
+        "original_real_recovery_test06_passed": true,
+        "record": "search_modes_deadline_review/report.json"
+      },
+      "successful_final_commands": 12,
+      "github_ci": "Check the actual containing published commit after publication; no future SHA or CI success is asserted here.",
+      "counting_note": "Native, sanitizer, author, reviewer and integration cases overlap. Their counts are not added to the 161 planned product acceptance items."
+    },
+    "verification_binding": {
+      "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
+      "report": "validation/s2_takeover/final-report.json",
+      "source_manifest": "validation/s2_takeover/final-source-manifest.json",
+      "execution_inputs": "validation/s2_takeover/final-v2-execution-inputs.json",
+      "executed_binary_identity": "SHA-256 before and after each final command; any generated executable mode repair preserves bytes and is recorded before final gates.",
+      "remote_ci": "Query GitHub Actions for the exact containing published commit. No future self SHA or CI success is embedded.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    }
   }
 }

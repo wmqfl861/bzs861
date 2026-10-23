@@ -1,0 +1,66 @@
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/bzs861/build/DartConfiguration.tcl
+Test project /workspace/scratch/e2371129386d/bzs861/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 16
+    Start 16: http_cli
+
+16: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/e2371129386d/bzs861/tests/integration.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--cli" "/workspace/scratch/e2371129386d/bzs861/build/searchctl" "--fixtures" "/workspace/scratch/e2371129386d/bzs861/tests/fixtures"
+16: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+16: Test timeout computed to be: 90
+16: test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+16: test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+16: test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+16: test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+16: test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+16: test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+16: test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+16: test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+16: test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+16: test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+16: test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+16: test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+16: test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+16: test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+16: test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+16: test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+16: test_17_invalid_search_options_preserve_session_quota (__main__.Integration.test_17_invalid_search_options_preserve_session_quota) ... ok
+16: test_18_contract_validation_and_trusted_parameters (__main__.Integration.test_18_contract_validation_and_trusted_parameters) ... ok
+16: test_19_validation_does_not_enable_execution (__main__.Integration.test_19_validation_does_not_enable_execution) ... ok
+16: test_20_cli_contract_validation_and_file_limit (__main__.Integration.test_20_cli_contract_validation_and_file_limit) ... ok
+16: 
+16: ----------------------------------------------------------------------
+16: Ran 20 tests in 5.636s
+16: 
+16: OK
+1/2 Test #16: http_cli .........................   Passed    5.70 sec
+test 17
+    Start 17: http_revocation
+
+17: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/e2371129386d/bzs861/tests/http_revocation.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--cli" "/workspace/scratch/e2371129386d/bzs861/build/searchctl" "--fixtures" "/workspace/scratch/e2371129386d/bzs861/tests/fixtures"
+17: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+17: Test timeout computed to be: 90
+17: test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner) ... ok
+17: test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation) ... ok
+17: test_rows_closes_connection_after_query_exception (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception) ... ok
+17: test_rows_closes_connection_after_success (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_success) ... ok
+17: 
+17: ----------------------------------------------------------------------
+17: Ran 4 tests in 0.167s
+17: 
+17: OK
+2/2 Test #17: http_revocation ..................   Passed    0.28 sec
+
+The following tests passed:
+	http_cli
+	http_revocation
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   5.98 sec

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="2"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="e0075cf0853f"
+	time="5"
+	timestamp="2026-10-23T20:55:17"
+	>
+	<testcase name="http_cli" classname="http_cli" time="5.7028" status="run">
+		<properties/>
+		<system-out>test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+test_13_slow_h...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="http_revocation" classname="http_revocation" time="0.275744" status="run">
+		<properties/>
+		<system-out>test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner) ... ok
+test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation) ... ok
+test_rows_closes_connection_after_query_exception (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception) ... ok
+test_rows_closes_connection_after_success (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_success) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.167s
+
+OK
+</system-out>
+	</testcase>
+</testsuite>

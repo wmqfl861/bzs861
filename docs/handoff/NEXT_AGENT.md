@@ -1,6 +1,6 @@
 # 下一会话接手顺序
 
-更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[最终验证报告](../../validation/s2_takeover/final-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI，不把历史成绩当当前成功。
+更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[生产实现报告](../../validation/s2_takeover/final-report.json)、[CI后续报告](../../validation/s2_takeover/ci-followup-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI，不把历史成绩当当前成功。
 
 ## 当前基线与接口
 
@@ -12,7 +12,9 @@
 
 搜索模式只执行搜索，fast/balanced/deep返回实际配置上限与omitted_sources；所有读取/模型/浏览器预算为0。旧无mode请求的normalized JSON与幂等身份保留，不能为了扩功能悄悄改变已有key。
 
-最终本地冻结输入是validation/s2_takeover/final-v2-execution-inputs.json（222个文件）；27/27套CTest、15/15套ASan/UBSan及Python 1,049项通过，无跳过。原1秒真实截止时间E2E保持字节一致；公开参数最小1000毫秒不代表内部剩余预算也必须1000毫秒，任何仍为正的余量由绝对steady-clock期限收紧。旧mode reviewer的相反假设已在search_modes_deadline_review明确撤回。首轮失败不得删掉或改写为通过。
+生产实现的原本地冻结输入是validation/s2_takeover/final-v2-execution-inputs.json（222个文件）；27/27套CTest、15/15套ASan/UBSan及Python 1,049项通过，无跳过。原1秒真实截止时间E2E保持字节一致；公开参数最小1000毫秒不代表内部剩余预算也必须1000毫秒，任何仍为正的余量由绝对steady-clock期限收紧。旧mode reviewer的相反假设已在search_modes_deadline_review明确撤回。首轮失败不得删掉或改写为通过。
+
+首次发布a06e7e9的CI39945994760中Linux通过，Windows构建成功、16/17套通过；http_revocation两例均在清理metadata.sqlite时遇到WinError32。Python SQLite事务上下文退出不等于连接关闭，当前只修rows()显式关闭，并在同一CI测试脚本加入成功/异常两条连接释放回归。生产代码、两条撤权HTTP业务测试与严格清理保留；新冻结为ci-followup-execution-inputs.json。原v2不改写或冒充新测试输入，修正后的Windows成功必须由新提交实际工作流证明。
 
 ## 接续开发
 

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "baseline_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "baseline_tree": "fad2c76d98602ec076a8a0eb770ae23055deda25",
+  "preserved_existing_files": 1403,
+  "preserved_existing_files_manifest_sha256": "28813b9915a542f1d92bd1a6f97257fd588e643ee4d8c69245ae5acb3a05755b",
+  "preserved_existing_validation_files": 1195,
+  "preserved_existing_validation_manifest_sha256": "340588b82ce97755ca5c87c27ae0e81b7a02866bd21c503858524c28331bf602",
+  "all_existing_validation_bytes_preserved": true,
+  "production_sources_build_configuration_workflow_unchanged": true,
+  "allowed_changed_files": {
+    "HANDOFF_START_HERE.md": {
+      "before_blob": "ec6b670b87e2b238d5e89d468c27b38bd8cd1de2",
+      "after_blob": "6d3fc92cf39a8582fd8ff7f267eb5171246104f7",
+      "after_sha256": "3375b91f832a892fd656de74c458f14e2ed4929ea7d43369a88e5162877115bc"
+    },
+    "README.md": {
+      "before_blob": "2b9a8d58cbe227b23e1cd69fe63af9146fb3d418",
+      "after_blob": "30a534c33808c017417aea6a9fa08d9ceb50107b",
+      "after_sha256": "ca8d4bc65f77cb52e60ec8c1d813b69b4f6018ac91b84b5b277b39e889a1547e"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_blob": "e73d7a2356f20ae6c20d0bf2f5525483125b8886",
+      "after_blob": "c264cefe4a51e52414a97b81a77815179f6de67b",
+      "after_sha256": "e7e79f2def0bb92658c9543647da5c2e7227813942a5e09e2b1f8d80051f2c3c"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_blob": "406c5cd4ecef95bac878d135b8b890420d35ecbb",
+      "after_blob": "3cfbf7adaa6d06c4755ce8713ce1dded92b4ce42",
+      "after_sha256": "26a7addce19cd513f9768d72efcb57ad0df42e424aa58994ed60dc3b66e2e363"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_blob": "785bf1ca10ca1f52cbfa8744ff6da010d7616fcc",
+      "after_blob": "9c7f1aec22f399f333c3f04e08411f8f0348dd97",
+      "after_sha256": "587f01efd57d4fbb167deed28f64f4f26779eab542c35e7c19d5363e9c2ee8ea"
+    },
+    "docs/implementation_status.json": {
+      "before_blob": "55e228e76ee06648767ed5a1777c4dd84131f806",
+      "after_blob": "f428e1097dfeb1735696467cc041c2c1899a4833",
+      "after_sha256": "7c9d2bf32a7f2dd4ea86e98c945751ae4b037b104ad8255cb893102680cc34c5"
+    },
+    "tests/http_revocation.py": {
+      "before_blob": "bd65fa1ac249e2e96349ffc6a0ff79d58b2bf2a8",
+      "after_blob": "1043e20a5d0382dc3da3f62bcf43191eb12ae017",
+      "after_sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09"
+    }
+  },
+  "original_http_methods_byte_identical": [
+    "add_token",
+    "denied",
+    "ok",
+    "setUp",
+    "tearDown",
+    "test_administrator_only_strict_contract_and_unrelated_owner",
+    "test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation"
+  ],
+  "production_binaries_sha256": {
+    "build/libbzs_core.a": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+    "build/searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de"
+  },
+  "production_binaries_identical_to_final_v2": true,
+  "new_files_limited_to_followup_evidence": true,
+  "plan_and_acceptance_unchanged": true,
+  "status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "golden_check": "Only raw-byte object hashes compared; no query inspection or tuning."
+}

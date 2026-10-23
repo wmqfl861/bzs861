@@ -1,0 +1,51 @@
+{
+  "schema": "bzs-independent-http-rows-lifecycle-1",
+  "reviewer": "/root/source_policy",
+  "method": "retain real sqlite3.Connection references; require explicit close after normal return and SQL error",
+  "source_commit": "547158ea6848cb78289769ce5561a6d788d3c3e9",
+  "source_tree": "1cd82bb2ae4f85d6cfb830b6e4bdc44947c373dd",
+  "source_files": {
+    "tests/integration.py": {
+      "sha256": "7a963e61892e6e16204c2112af26ea16b258d87e25caaeed2dca4f323e8a99b0",
+      "bytes": 21781
+    },
+    "tests/http_revocation.py": {
+      "sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+      "bytes": 7788
+    }
+  },
+  "script_sha256": "dd5b025a65fdd0912438eebc2a6cc3f505f4c11008519f4f795caffede3fd7e2",
+  "platform": "Linux",
+  "python": "3.12.14",
+  "sqlite": "3.53.1",
+  "windows_ci_execution": false,
+  "starts_server": false,
+  "repository_files_modified": false,
+  "cases": [
+    {
+      "case": "successful_query_closes_connection",
+      "query_behavior_preserved": true,
+      "observed_exception": null,
+      "connections_retained": 1,
+      "readonly_uri_preserved": true,
+      "closed_before_diagnostic_cleanup": [
+        true
+      ],
+      "passed": true
+    },
+    {
+      "case": "query_exception_closes_connection",
+      "query_behavior_preserved": true,
+      "observed_exception": "OperationalError",
+      "connections_retained": 1,
+      "readonly_uri_preserved": true,
+      "closed_before_diagnostic_cleanup": [
+        true
+      ],
+      "passed": true
+    }
+  ],
+  "passed": 2,
+  "failed": 0,
+  "expected_exit_code": 0
+}

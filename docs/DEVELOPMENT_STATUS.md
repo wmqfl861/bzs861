@@ -37,3 +37,9 @@ schema13仅追加来源规则、主体撤权及共享请求结构。真实基线
 首轮整合的两处失败原样保留：合法1秒会话在调度时剩余不足1秒被误拒，现由内部绝对单调期限约束任意正剩余时间，原6项真实恢复E2E未修改并全部通过；另一个旧测试错误要求links_only来源发布摘要，现补齐明确允许/禁止摘要的独立fixture及双向缓存验证。独立模式审核中同样存在的错误假设已明确撤回，不能用旧报告覆盖更正后的结论。
 
 本轮发布到wmqfl861/bzs861前核对远端父SHA并非强制更新；取回真实commit/tree后再核对该SHA的Linux/Windows。不可变发布前报告不预写未来提交或未来CI结论。
+
+## 首次发布CI与测试清理修正
+
+首次发布提交 `a06e7e91f6a115b345ff1072095b80e15d193ad4` 的 [CI 39945994760](https://github.com/wmqfl861/bzs861/actions/runs/39945994760) 已完成：Linux完整27/27套CTest、15套sanitizer及原合同/计划守卫通过；Windows构建成功，15套原生与http_cli通过，http_revocation的两条业务测试均在tearDown删除metadata.sqlite时报WinError32，合计16/17套通过。完整原日志保留于validation/s2_takeover/ci_followup。
+
+根因是测试辅助函数把sqlite3连接当作自动关闭的上下文使用，实际退出只处理事务。当前修正显式关闭连接，并在成功与SQL异常两条路径保留实际连接引用，确定性验证函数退出时连接已关闭。生产代码、两条HTTP业务测试、清理错误检查、工作流及超时均保持原样。新输入、聚焦验证与独立复核见[CI后续报告](../validation/s2_takeover/ci-followup-report.json)；原final-v2报告保留为原输入的记录，未改写成修正提交的全量成绩。修正提交必须另核对自己的Linux/Windows实际CI。

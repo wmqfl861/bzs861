@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "reviewer": "/root/handoff_audit",
+  "review_mode": "Independent read-only final scope, evidence and summary consistency audit; no new tests or file edits by reviewer.",
+  "status": "passed_no_blocking_findings",
+  "baseline_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "execution_inputs": {
+    "path": "ci-followup-execution-inputs.json",
+    "sha256": "1f8a481a61b63bb5c4c64c1ec3178225ea402702435f55ca0f4ee8a49cc4600d",
+    "files": 224,
+    "all_paths_and_hashes_match": true
+  },
+  "source_manifest": {
+    "path": "ci-followup-source-manifest.json",
+    "sha256": "a5fb96837cf9db2affaf3f8d7425485f92d404f4f7c52c5d3524734c7be4c55f",
+    "files": 215,
+    "all_paths_and_hashes_match": true
+  },
+  "report_hash_references_verified": 18,
+  "preservation": {
+    "existing_files_outside_allowed_change_set": 1403,
+    "existing_validation_files": 1195,
+    "all_preserved_blob_identical": true,
+    "changed_existing_files": "Six current prose/status files and tests/http_revocation.py only.",
+    "original_http_methods_except_rows_byte_identical": 7,
+    "production_sources_build_workflow_timeouts_unchanged": true,
+    "production_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+    "searchd_sha256": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de"
+  },
+  "actual_followup_logs": {
+    "ctest_suites_passed": 2,
+    "http_cli_cases": 20,
+    "http_revocation_cases": 4,
+    "ctest_seconds": 5.98,
+    "independent_probe_passed": 2,
+    "command_records_verified": 3,
+    "all_exit_zero": true,
+    "all_frozen_inputs_and_binary_bytes_unchanged": true
+  },
+  "initial_ci": {
+    "run_id": 39945994760,
+    "checkout_and_metadata_match_baseline": true,
+    "linux": "success, 27/27 CTest and 15 sanitizer executables",
+    "windows": "Build success, 16/17 CTest; two http_revocation tearDown SQLite-handle errors retained.",
+    "initial_failure_not_relabeled_as_pass": true
+  },
+  "machine_state": {
+    "historical_fields_exactly_preserved": 14,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "old_full_runs_new_focused_runs_and_pending_remote_ci_distinguished": true
+  },
+  "inspected_new_evidence_files_before_this_summary": 29,
+  "content_review": "No runtime database, compiled binary, known credential format or private-chat marker found in the 29 inspected new evidence files.",
+  "final_remote_gate": "No new Windows or Linux success is claimed here. Verify the exact containing published commit after its actual workflow completes."
+}

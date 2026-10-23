@@ -4,13 +4,15 @@
 
 本轮从已发布0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`、schema12接续。基线的Linux/Windows [CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547) 已核对成功；最终输入须另核对自己的精确提交CI。schema13组合来源发布、主体撤权及共享请求迁移，保留0.1.9的JSON并发修复与条件重验证。
 
-本轮最终本地门禁为27/27套CTest（Python 1,049项）、15/15套ASan/UBSan，均无跳过；真实schema12→13升级与原合同/计划/历史保持检查通过。以 `final-v2` 冻结输入和本轮报告为准；首轮两处失败及修正、独立审核更正均已保留。Windows实际结果须查询包含报告的发布提交，静态CI配置审核不代替运行。
+本轮生产实现的 `final-v2` 本地门禁为27/27套CTest（Python 1,049项）、15/15套ASan/UBSan，均无跳过；真实schema12→13升级与原合同/计划/历史保持检查通过。首次发布 `a06e7e91f6a115b345ff1072095b80e15d193ad4` 的 [CI 39945994760](https://github.com/wmqfl861/bzs861/actions/runs/39945994760) 为Linux成功、Windows构建成功但测试16/17通过；唯一失败是撤权HTTP测试未显式关闭SQLite连接，导致Windows临时目录清理失败。
+
+当前追加测试辅助函数的连接释放修正，以及成功/查询异常两条资源生命周期回归；生产代码不变。新输入和聚焦验证见[CI后续报告](validation/s2_takeover/ci-followup-report.json)。原 `final-v2` 成绩只绑定原输入，原失败与修正证据全部保留；修正提交自己的Linux/Windows结果仍须按其精确SHA查询。
 
 | 入口 | 内容 |
 | --- | --- |
 | [本轮五项范围](docs/handoff/S2_TAKEOVER_20261023.md) | 接手来源、原工作包与验收映射、实施边界 |
 | [当前进度](docs/DEVELOPMENT_STATUS.md)、[机器状态](docs/implementation_status.json) | 实际实现、未完成部分和本轮验证状态 |
-| [验证说明](validation/s2_takeover/README.md)、[最终报告](validation/s2_takeover/final-report.json) | 冻结输入、命令、原失败、作者与独立复核 |
+| [验证说明](validation/s2_takeover/README.md)、[生产实现报告](validation/s2_takeover/final-report.json)、[CI后续报告](validation/s2_takeover/ci-followup-report.json) | 原v2与测试修正的输入分开冻结，保留命令、失败与独立复核 |
 | [来源发布](docs/SOURCE_PUBLICATION.md)、[主体撤权](docs/PRINCIPAL_REVOCATION.md) | 持久政策收紧、管理员入口与恢复边界 |
 | [HTTP新鲜度](docs/HTTP_FRESHNESS.md)、[共享读取](docs/SHARED_READS.md)、[搜索预设](docs/SEARCH_MODES.md) | 缓存与取消语义、预算和公开接口 |
 | [蓝图](docs/planning/development_blueprint_v1.2.md)、[切片计划](docs/planning/slices_v1.2.json) | 原83包/161验收/10切片，依赖与验收语义保留 |

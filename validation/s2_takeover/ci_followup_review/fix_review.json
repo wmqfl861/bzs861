@@ -1,0 +1,82 @@
+{
+  "schema": "bzs-independent-http-rows-fix-review-1",
+  "reviewer": "/root/source_policy",
+  "role": "independent review; not revocation/fix author",
+  "recorded_at_utc": "2026-10-23T11:55:57.460781Z",
+  "reviewed_commit": "547158ea6848cb78289769ce5561a6d788d3c3e9",
+  "reviewed_tree": "1cd82bb2ae4f85d6cfb830b6e4bdc44947c373dd",
+  "prior_commit": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+  "source_file": {
+    "path": "tests/http_revocation.py",
+    "sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+    "bytes": 7788
+  },
+  "changed_non_validation_files": [
+    "tests/http_revocation.py"
+  ],
+  "review_conclusion": "approve_minimal_fixture_fix_no_blocking_findings",
+  "lifecycle_review": {
+    "normal_return": "contextlib.closing closes the real connection after fetchall and before returning rows",
+    "query_exception": "closing releases the real connection while the original OperationalError propagates",
+    "readonly_uri_and_query_unchanged": true,
+    "transaction_note": "This helper only opens mode=ro and returns fetched rows; closing releases the read connection without changing production write transactions.",
+    "cleanup_regressions": "New test cleanups are LIFO: retained connections close before the temporary directory is removed, including a failing assertion.",
+    "no_sleep_gc_or_cleanup_suppression": true
+  },
+  "preservation": {
+    "original_methods_except_rows_ast_unchanged": {
+      "setUp": true,
+      "tearDown": true,
+      "add_token": true,
+      "ok": true,
+      "denied": true,
+      "test_administrator_only_strict_contract_and_unrelated_owner": true,
+      "test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation": true
+    },
+    "original_business_test_count": 2,
+    "business_assertions_removed": false,
+    "original_tearDown_unchanged": true,
+    "production_files_unchanged": true,
+    "ci_and_cmake_bytes_unchanged": true
+  },
+  "frozen_independent_probe": {
+    "script_sha256": "dd5b025a65fdd0912438eebc2a6cc3f505f4c11008519f4f795caffede3fd7e2",
+    "prior_exit_code": 1,
+    "prior_failed": 2,
+    "fixed_exit_code": 0,
+    "fixed_passed": 2,
+    "fixed_failed": 0,
+    "prior_evidence_unchanged": true,
+    "new_evidence": "after-547158e-lifecycle.json",
+    "new_evidence_sha256": "639d0ec7847e76f2033089446fe5476362c37d90c9c22a2244a6ebff3aac16ba"
+  },
+  "default_unittest_discovery": {
+    "count": 4,
+    "test_ids": [
+      "independently_reviewed_http_revocation.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner",
+      "independently_reviewed_http_revocation.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation",
+      "independently_reviewed_http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception",
+      "independently_reviewed_http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_success"
+    ],
+    "lifecycle_tests_in_existing_http_ci_entrypoint": true,
+    "ctest_linux_suite_count_unchanged": 27,
+    "ctest_windows_suite_count_unchanged": 17
+  },
+  "independent_new_test_execution": {
+    "scope": "RowsConnectionLifecycle only; no server started",
+    "tests_run": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true,
+    "platform": "Linux",
+    "python": "3.12.14",
+    "runner_output": "test_rows_closes_connection_after_query_exception (independently_reviewed_http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception) ... ok\ntest_rows_closes_connection_after_success (independently_reviewed_http_revocation.RowsConnectionLifecycle.test_rows_closes_connection_after_success) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.007s\n\nOK\n"
+  },
+  "execution_boundary": {
+    "full_http_server_suite_repeated_by_reviewer": false,
+    "windows_fix_execution_claimed": false,
+    "parent_integrator_and_ci_own_final_http_and_windows_gates": true,
+    "review_edits_only_new_validation_files": true
+  }
+}

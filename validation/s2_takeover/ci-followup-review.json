@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "scope": "Windows HTTP test helper lifetime correction only; no new product acceptance.",
+  "author": {
+    "agent": "/root/revocation",
+    "commit_local": "547158ea6848cb78289769ce5561a6d788d3c3e9",
+    "evidence_directory": "windows_sqlite_cleanup",
+    "role": "Correction and permanent CI regressions; author focused HTTP execution."
+  },
+  "independent_reviewer": {
+    "agent": "/root/source_policy",
+    "role": "Not revocation or correction author; old failure reproduction, frozen real-connection probe and source/test-discovery review.",
+    "baseline_review": {
+      "path": "ci_followup_review/baseline_review.json",
+      "sha256": "2cd4fab9032965f77efab085757a265f09effe3ff6546f8de44ce3b884d0f115"
+    },
+    "fix_review": {
+      "path": "ci_followup_review/fix_review.json",
+      "sha256": "7282eeaaad0c34deb05a90761812d69f2adaa0ba159f1f233bac535c32f9f95e"
+    },
+    "old_probe": {
+      "path": "ci_followup_review/before-a06-lifecycle.json",
+      "sha256": "56b9755d769c48670b0f6fa03531871730a9511bf0cd8c2e19ef5d92daeb9619"
+    },
+    "fixed_probe": {
+      "path": "ci_followup_review/after-547158e-lifecycle.json",
+      "sha256": "639d0ec7847e76f2033089446fe5476362c37d90c9c22a2244a6ebff3aac16ba"
+    },
+    "conclusion": "approve_minimal_fixture_fix_no_blocking_findings"
+  },
+  "integrator": {
+    "agent": "/root",
+    "role": "Cherry-picked exact correction, verified source identity, reran both real loopback HTTP CTest suites and independent probe with frozen inputs, checked unchanged historical evidence/runtime."
+  },
+  "scope_and_summary_audit": "ci-followup-summary-audit.json",
+  "original_business_test_methods_and_strict_cleanup_preserved": true,
+  "production_sources_build_settings_workflow_unchanged": true,
+  "known_ci_failure": "Initial a06 Windows http_revocation cleanup failure retained; it is not relabeled as a pass.",
+  "remote_followup_gate": "The exact containing published commit must complete its own Linux and Windows CI. This local review does not claim Windows execution.",
+  "full_product_independent_signoff": false
+}
