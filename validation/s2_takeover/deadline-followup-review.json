@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "scope": "Terminal deadline classification and atomic Store settlement correction only.",
+  "author": {
+    "agent": "/root/source_policy",
+    "commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+    "record": {
+      "path": "search_deadline_event_race/summary.json",
+      "sha256": "36fae5ae2eb0851b4d1b1f5c43dffee54389435661609aba19ea689025ac4f2f"
+    }
+  },
+  "independent_reviewer": {
+    "agent": "/root/handoff_audit",
+    "role": "Not the deadline-fix author; independent frozen Store probe, prior-winner controls and source review.",
+    "review": {
+      "path": "deadline_event_review/review.json",
+      "sha256": "77a2de608939d08f52c3816fea6f3267e4c381d692060e64abc4d92778dbc544"
+    },
+    "commit_binding": {
+      "path": "deadline_event_review/author-commit-binding.json",
+      "sha256": "3af9cf3bb3e89a21b58f303539d7bdab5e7ab01e14284448f4c0a7ff96e6b197"
+    },
+    "old_probe": {
+      "path": "deadline_event_review/baseline-199-v2-record.json",
+      "sha256": "7862fc63ab64ce01467d199589f2684c2809b171cfed02a3daab224e54b3e44c"
+    },
+    "corrected_author_probe": {
+      "path": "deadline_event_review/corrected-author-record.json",
+      "sha256": "0d2ca501595602a3dabc6cb59fcb9466cf1613d4997cd88bf5ff15cbc3bf09a2"
+    }
+  },
+  "integrator": {
+    "agent": "/root",
+    "role": "Exact correction integration, fresh builds, full CTest/sanitizers, old-library migration, final-library replay of unchanged independent probe, original-evidence preservation.",
+    "probe": {
+      "path": "deadline_event_review/final-integrator-replay-record.json",
+      "sha256": "22aa86df82c1758ab186cdcb5970e69b1e10a5d3f97eb8f331b4ba78911660a2"
+    }
+  },
+  "original_six_recovery_tests_unchanged": true,
+  "windows_cleanup_fix_unchanged": true,
+  "original_search_mode_test_lines_removed": 0,
+  "blocking_findings_remaining_in_reviewed_scope": [],
+  "summary_audit": "deadline-followup-summary-audit.json",
+  "full_product_independent_signoff": false,
+  "scope_limit": "Store runtime probes are distinct from WebService author tests and root real HTTP E2E; exact published Linux/Windows CI is a separate later gate."
+}

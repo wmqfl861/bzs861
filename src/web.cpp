@@ -547,7 +547,17 @@ namespace bzs {
       if(!language.empty())params.set("language", language);
       params.set("sources", ids);
       params.set("manifest_sha256",registry_.manifest_digest());
-      auto resp=worker_.call("search.multi", params, static_cast<int>(std::min<std::int64_t>(left,timeout+4000)));
+      const auto rpc_timeout=std::min<std::int64_t>(left,timeout+4000);
+      auto resp=[&] {
+        try { return worker_.call("search.multi",params,static_cast<int>(rpc_timeout)); }
+        catch(const Error& error) {
+          // The integer RPC timer can expire just before the absolute deadline.
+          // Its limiting grant determines whether this ended the entire search.
+          if(error.code=="E_WORKER_TIMEOUT"&&rpc_timeout==left)
+            throw Error("E_DEADLINE","Search deadline exhausted while waiting for Worker",408);
+          throw;
+        }
+      }();
       require(remaining()>0,"E_DEADLINE","Search deadline exhausted before response publication",408);
       require(resp.is_object()&&resp.has("results")&&resp.at("results").is_object(),"E_WORKER_PROTOCOL","Worker search response requires results object",502);
       auto results=resp.at("results");

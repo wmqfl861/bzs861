@@ -350,7 +350,12 @@ void Store::fail_search(const SearchLease& lease,const std::string& error) {
   if(!search_lease_locked(lease)) { tx.commit();return; }
   Statement source(db_,"UPDATE search_stream_sources SET state='unknown' WHERE session_id=? AND position=?");source.bind(1,lease.id);source.bind(2,lease.position);source.step();
   Statement count(db_,"SELECT COUNT(*) FROM search_stream_sources WHERE session_id=? AND state='pending'");count.bind(1,lease.id);count.step();
-  Statement update(db_,"UPDATE search_streams SET state=?,lease_until=0,unknown_requests=unknown_requests+1,error_code=? WHERE id=?");update.bind(1,count.num(0)?"queued":"completed");update.bind(2,utf8_prefix(error,128));update.bind(3,lease.id);update.step();stream_event_locked(lease.id,"source_unknown");stream_receipt_locked(lease.id);tx.commit();
+  // A monotonic/RPC deadline may end before the persisted wall clock reaches
+  // its next millisecond. Settle it once, without briefly queueing another source.
+  const bool deadline=error=="E_DEADLINE";
+  Statement update(db_,"UPDATE search_streams SET state=?,epoch=epoch+?,lease_until=0,unknown_requests=unknown_requests+1,error_code=? WHERE id=?");
+  update.bind(1,deadline?"failed":count.num(0)?"queued":"completed");update.bind(2,deadline?1:0);update.bind(3,utf8_prefix(error,128));update.bind(4,lease.id);update.step();
+  stream_event_locked(lease.id,deadline?"failed":"source_unknown");stream_receipt_locked(lease.id);tx.commit();
 }
 Json Store::session_page(const std::string& owner,const std::string& id,const std::string& version,const std::string& cursor,std::int64_t page_size) {
   require(page_size>=1&&page_size<=100,"E_SCHEMA","Page size out of range");

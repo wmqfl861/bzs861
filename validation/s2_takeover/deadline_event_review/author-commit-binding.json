@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "role": "independent_deadline_fix_reviewer",
+  "reviewer": "/root/handoff_audit",
+  "verified_at_utc": "2026-10-23T12:20:02.998033+00:00",
+  "baseline_commit": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "reviewed_author_commit": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+  "reviewed_author_parent_matches_baseline": true,
+  "corrected_capture_HEAD_at_capture": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "commit_binding_note": "Corrected library was captured before the author committed. This subsequent binding verifies exact committed production and header bytes; it does not rewrite the original execution record or claim a reviewer-built library.",
+  "old_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+  "corrected_library_sha256": "d98167aa71f9cd9efc1a048e5c9f1e5d45ab6b7267c13d2d18c65a3ef83ff41e",
+  "snapshot_libraries_and_headers_rechecked": true,
+  "headers_per_snapshot": 16,
+  "corrected_source_sha256": {
+    "src/web.cpp": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+    "src/sessions.cpp": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c"
+  },
+  "committed_production_patch_sha256": "152ae2b0f5b717f4bc42ed272a5d3be59bc5b306709be1c6a3d778e98ae17a85",
+  "committed_production_patch_matches_captured_patch": true,
+  "changed_production_paths": [
+    "src/sessions.cpp",
+    "src/web.cpp"
+  ],
+  "author_worktree_clean_at_binding": true,
+  "original_e2e_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+  "original_e2e_identical_in_refs": [
+    "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+    "93ffe39b0dc95e591cbc05500947cd5ef7bb9349"
+  ],
+  "freeze_v1_exact_original_source_preserved": true,
+  "freeze_v2_fixture_only_change": "Six explicit source-registry activation calls; product expectations unchanged.",
+  "same_v2_probe_and_runner_for_old_and_corrected": true,
+  "all_execution_records_logs_and_binaries_match_recorded_hashes": true,
+  "root_preserved_ci": {
+    "run_id": 39950116698,
+    "job_id": 120402244733,
+    "head_sha": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+    "files": {
+      "validation/s2_takeover/deadline_followup/initial-linux.log": "6482cce9dee5e6744d77292aab4cfa5db42d47fa6e0b91b6f170b64a29a4a94d",
+      "validation/s2_takeover/deadline_followup/initial-linux-job.json": "0690fef47394808667073579e6967ffa716abe9143ee32f9f1561724238c29b2"
+    },
+    "observed_expected_events": [
+      "queued",
+      "failed"
+    ],
+    "observed_actual_events": [
+      "queued",
+      "source_unknown",
+      "failed"
+    ],
+    "clock_offset_measurement_claimed": false
+  },
+  "execution_evidence_sha256": {
+    "baseline-199-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "baseline-199-probe.json": "ede20211addadd775fc09eb9c1fd14c04b1b621ff79327480a603e21469c84fc",
+    "baseline-199-record.json": "ee6900e86da93f13fa2d545d13b689ec9cbb50ade2a7fc93e163a14d7f4f6372",
+    "baseline-199-v2-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "baseline-199-v2-probe.json": "84041f822fb99ecff9d159e823d804a7d3115f9eff6c5152b213eeda3d87e875",
+    "baseline-199-v2-record.json": "7862fc63ab64ce01467d199589f2684c2809b171cfed02a3daab224e54b3e44c",
+    "corrected-author-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "corrected-author-probe.json": "0993fc7c5683cf5b666cce911d878f079bb672110ee03bc646e9c6eec3f908d4",
+    "corrected-author-record.json": "0d2ca501595602a3dabc6cb59fcb9466cf1613d4997cd88bf5ff15cbc3bf09a2",
+    "fixture-v1-missing-activation.cpp": "908fda8cb1e2c819f49ef60321eb6c1c2924d33c737a9233f592b3eff7d1649b",
+    "probe-freeze-v1.json": "4c1214557c0607e68a1345be1383cc89685eaba362e91fcddbdddb2040fbb2d3",
+    "probe-freeze-v2.json": "39f84a03150b2f86586a3bcece315a69496db6ab9d801829ad153ec7b524ad71",
+    "run_probe.py": "68ef7901df13f9818304bfd2e88b56b7c85b13a6d5ace8074c97cd1b7b03dde7",
+    "store_deadline_probe.cpp": "1ec5939ec09f505b270f4efd44445519b149d58e8b38273d4d889c822afb6425"
+  },
+  "all_binding_checks_passed": true
+}

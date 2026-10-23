@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-23 12:08:16 UTC",
+  "repository": "wmqfl861/bzs861",
+  "head_sha": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "tree": "9806386124e1998f0ff8ccd906a8e3fa7f90f3a2",
+  "run_id": 39950116698,
+  "run_attempt": 1,
+  "job": {
+    "id": 120402244733,
+    "name": "linux",
+    "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/39950116698/job/120402244733",
+    "status": "completed",
+    "conclusion": "failure",
+    "started_at": "2026-10-23T12:00:30Z",
+    "completed_at": "2026-10-23T12:05:02Z",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-23T12:00:31Z",
+        "completed_at": "2026-10-23T12:00:32Z"
+      },
+      {
+        "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-23T12:00:32Z",
+        "completed_at": "2026-10-23T12:00:34Z"
+      },
+      {
+        "name": "Install build dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-23T12:00:34Z",
+        "completed_at": "2026-10-23T12:00:48Z"
+      },
+      {
+        "name": "Install the Python worker and pinned test dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-23T12:00:48Z",
+        "completed_at": "2026-10-23T12:01:07Z"
+      },
+      {
+        "name": "Build and test core, contracts, HTTP, worker and MCP",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 5,
+        "started_at": "2026-10-23T12:01:07Z",
+        "completed_at": "2026-10-23T12:04:59Z"
+      },
+      {
+        "name": "Address and undefined-behavior checks",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 6,
+        "started_at": "2026-10-23T12:04:59Z",
+        "completed_at": "2026-10-23T12:04:59Z"
+      },
+      {
+        "name": "Original contracts and planning safeguards",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 7,
+        "started_at": "2026-10-23T12:04:59Z",
+        "completed_at": "2026-10-23T12:04:59Z"
+      },
+      {
+        "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14,
+        "started_at": "2026-10-23T12:04:59Z",
+        "completed_at": "2026-10-23T12:04:59Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2026-10-23T12:04:59Z",
+        "completed_at": "2026-10-23T12:04:59Z"
+      }
+    ]
+  },
+  "log": "initial-linux.log",
+  "log_encoding": "Complete decoded GitHub job log, normalized CRLF to LF.",
+  "ctest": {
+    "total": 27,
+    "passed": 26,
+    "failed": 1,
+    "skipped": 0,
+    "seconds": 178,
+    "failed_suite": "e2e_session_recovery",
+    "failed_case": "test_06_real_deadline_rejects_late_response_and_never_dispatches_tail",
+    "expected_events": [
+      "queued",
+      "failed"
+    ],
+    "actual_events": [
+      "queued",
+      "source_unknown",
+      "failed"
+    ]
+  },
+  "later_gates": {
+    "sanitizers": "skipped_due_to_prior_step_failure",
+    "contracts_and_plan": "skipped_due_to_prior_step_failure"
+  },
+  "windows_result": "Separate job still running at this observation; final result must be recorded separately."
+}

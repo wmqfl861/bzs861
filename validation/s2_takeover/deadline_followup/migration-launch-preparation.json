@@ -1,0 +1,12 @@
+{
+  "recorded_at_utc": "2026-10-23T12:29:43.867205+00:00",
+  "failed_attempt": "deadline-followup-migration-command.json",
+  "classification": "generated_probe_launch_preparation_failure",
+  "driver": "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-followup/old/migration-driver",
+  "mode_before": "0o644",
+  "mode_after": "0o744",
+  "sha256": "2614255b5214fbfb434c0beb51c65243720c5dd8102f7ebab50da8fdb8cc0771",
+  "bytes_unchanged": true,
+  "product_assertions_executed_in_failed_attempt": 0,
+  "explanation": "The old probe driver was 0644 at failed launch. The original replay already contains a chmod step; the record does not infer why the execute bit was absent. Preserve the failed run, restore its generated executable bit without changing bytes, then execute the unchanged replay in a fresh separate directory without parallel compilers."
+}

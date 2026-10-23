@@ -118,6 +118,72 @@ TEST(expired_durable_deadline_never_dispatches_or_publishes) {
     CHECK(state.at("state").str()=="failed");CHECK(state.at("error_code").str()=="E_DEADLINE");CHECK(state.at("result_set_version").str().empty());CHECK(!web.lease_search());
   }
 }
+Json event_kinds(Store& store,const std::string& id) {
+  auto kinds=Json::array();const auto events=store.session_events("alice",id).at("events");
+  for(std::size_t i=0;i<events.size();++i)kinds.push(events.at(i).at("kind"));
+  return kinds;
+}
+void deadline_limited_rpc_timeout(const std::string& mode) {
+  Temp t;std::int64_t now=1800000000000;Store store(t.path/"db",[&]{return now;});Worker worker;const SourceRegistry registry(manifest(2));WebService web(store,worker,registry);
+  auto request=input(mode,true);request.set("deadline_ms",std::int64_t{1000});request.set("timeout_ms",std::int64_t{1000});
+  const auto submitted=web.submit_search("alice",request);const auto id=submitted.at("session_id").str(),budget=submitted.at("effective_budget").canonical();const auto deadline=submitted.at("deadline_ms").num();
+  now+=500;const auto lease=web.lease_search();CHECK(lease);CHECK(lease->deadline_ms-now==500);
+  // A capped integer RPC timer may fire while the persisted wall clock is still
+  // one millisecond before its deadline. No sleep or business-code hook is used.
+  worker.during=[&] { now=deadline-1;throw Error("E_WORKER_TIMEOUT","deadline-limited RPC timer",504); };
+  web.execute_search(*lease);const auto before=store.session_get("alice",id),events=event_kinds(store,id);
+  CHECK(worker.requests.size()==1);CHECK(worker.timeouts.at(0)>0);CHECK(worker.timeouts.at(0)<=500);
+  CHECK(worker.timeouts.at(0)==worker.requests.at(0).at("timeout_ms").num());CHECK(now==deadline-1);
+  auto trace=Json::object();trace.set("scenario","deadline_limited_rpc_before_wall_expiry");trace.set("mode",mode.empty()?"legacy":mode);trace.set("remaining_wall_ms",deadline-now);
+  trace.set("rpc_timeout_ms",static_cast<std::int64_t>(worker.timeouts.at(0)));trace.set("state_before_expiry",before.at("state"));trace.set("events_before_expiry",events);
+  if(before.at("state").str()!="failed") { now=deadline;trace.set("events_after_wall_expiry",event_kinds(store,id)); }
+  std::cout<<trace.dump()<<'\n';
+  CHECK(before.at("state").str()=="failed");CHECK(before.at("error_code").str()=="E_DEADLINE");CHECK(events.canonical()==R"(["queued","failed"])");
+  CHECK(before.at("deadline_ms").num()==deadline);CHECK(before.at("effective_budget").canonical()==budget);CHECK(before.at("result_set_version").str().empty());
+  CHECK(before.at("dispatched_source_attempts").num()==1);CHECK(before.at("unknown_source_attempts").num()==1);CHECK(!store.search_lease_live(*lease));CHECK(!web.lease_search());
+  store.fail_search(*lease,"E_DEADLINE");store.fail_search(*lease,"E_WORKER_TIMEOUT");web.execute_search(*lease);
+  CHECK(!store.complete_search(*lease,Json::parse(R"({"results":[],"partial":false})"),registry));
+  now=deadline+1;const auto after=store.session_get("alice",id);CHECK(after.canonical()==before.canonical());CHECK(event_kinds(store,id).canonical()==events.canonical());CHECK(!web.lease_search());CHECK(worker.requests.size()==1);
+}
+TEST(legacy_deadline_limited_rpc_timeout_is_terminal_before_wall_expiry) { deadline_limited_rpc_timeout(""); }
+TEST(explicit_mode_deadline_limited_rpc_timeout_is_terminal_before_wall_expiry) { deadline_limited_rpc_timeout("fast"); }
+TEST(explicit_deadline_failure_preserves_prior_version_and_is_terminal_for_last_source) {
+  for(const std::string mode:{"","fast"}) {
+    Temp t;std::int64_t now=1800000000000,deadline=0;Worker worker;std::string id,version,page,budget;
+    {
+      Store store(t.path/"db",[&]{return now;});const SourceRegistry registry(manifest(2));WebService web(store,worker,registry);
+      auto request=input(mode,true);request.set("deadline_ms",std::int64_t{1000});const auto submitted=web.submit_search("alice",request);id=submitted.at("session_id").str();deadline=submitted.at("deadline_ms").num();budget=submitted.at("effective_budget").canonical();
+      const auto first=web.lease_search();CHECK(first);web.execute_search(*first);version=store.session_get("alice",id).at("result_set_version").str();CHECK(!version.empty());
+      page=store.session_page("alice",id,version,"",20).at("hits").canonical();const auto last=web.lease_search();CHECK(last);now=deadline-1;
+      store.fail_search(*last,"E_DEADLINE");const auto state=store.session_get("alice",id);auto trace=Json::object();trace.set("scenario","last_source_explicit_deadline");trace.set("state",state.at("state"));trace.set("events",event_kinds(store,id));std::cout<<trace.dump()<<'\n';
+      CHECK(state.at("state").str()=="failed");CHECK(state.at("error_code").str()=="E_DEADLINE");CHECK(state.at("result_set_version").str()==version);CHECK(state.at("effective_budget").canonical()==budget);CHECK(state.at("deadline_ms").num()==deadline);
+      CHECK(state.at("dispatched_source_attempts").num()==2);CHECK(state.at("unknown_source_attempts").num()==1);CHECK(event_kinds(store,id).canonical()==R"(["queued","result_version","failed"])");
+      CHECK(!store.search_lease_live(*last));CHECK(!web.lease_search());store.fail_search(*last,"E_DEADLINE");CHECK(!store.complete_search(*last,Json::parse(R"({"results":[],"partial":false})"),registry));CHECK(store.session_get("alice",id).canonical()==state.canonical());
+    }
+    now=deadline+1;Store reopened(t.path/"db",[&]{return now;});WebService web(reopened,worker,SourceRegistry(manifest(2)));const auto state=reopened.session_get("alice",id);
+    CHECK(state.at("state").str()=="failed");CHECK(state.at("unknown_source_attempts").num()==1);CHECK(state.at("dispatched_source_attempts").num()==2);CHECK(state.at("result_set_version").str()==version);CHECK(state.at("deadline_ms").num()==deadline);CHECK(state.at("effective_budget").canonical()==budget);
+    CHECK(reopened.session_page("alice",id,version,"",20).at("hits").canonical()==page);CHECK(event_kinds(reopened,id).canonical()==R"(["queued","result_version","failed"])");CHECK(!web.lease_search());CHECK(worker.requests.size()==1);
+  }
+}
+TEST(ordinary_source_errors_preserve_pending_tail_and_reject_old_deadline_callback) {
+  for(const std::string mode:{"","fast"})for(const std::string error:{"E_WORKER_TIMEOUT","E_WORKER_UNAVAILABLE"}) {
+    Temp t;std::int64_t now=1800000000000;Store store(t.path/"db",[&]{return now;});Worker worker;WebService web(store,worker,SourceRegistry(manifest(2)));
+    auto request=input(mode,true);request.set("timeout_ms",std::int64_t{1000});request.set("deadline_ms",std::int64_t{10000});const auto submitted=web.submit_search("alice",request);const auto id=submitted.at("session_id").str();const auto first=web.lease_search();CHECK(first);
+    worker.during=[&] { now+=5000;throw Error(error,"ordinary source failure",504); };web.execute_search(*first);
+    const auto unknown=store.session_get("alice",id);CHECK(unknown.at("state").str()=="queued");CHECK(unknown.at("error_code").str()==error);CHECK(unknown.at("unknown_source_attempts").num()==1);CHECK(worker.timeouts.at(0)==5000);CHECK(event_kinds(store,id).canonical()==R"(["queued","source_unknown"])");
+    worker.during={};const auto tail=web.lease_search();CHECK(tail);CHECK(tail->source_id=="source1");const auto running=store.session_get("alice",id);store.fail_search(*first,"E_DEADLINE");CHECK(store.session_get("alice",id).canonical()==running.canonical());
+    web.execute_search(*tail);const auto completed=store.session_get("alice",id);CHECK(completed.at("state").str()=="completed");CHECK(completed.at("dispatched_source_attempts").num()==2);CHECK(completed.at("unknown_source_attempts").num()==1);CHECK(completed.at("deadline_ms").num()==submitted.at("deadline_ms").num());
+    CHECK(worker.requests.size()==2);CHECK(worker.requests.at(0).at("sources").at(0).str()=="source0");CHECK(worker.requests.at(1).at("sources").at(0).str()=="source1");CHECK(event_kinds(store,id).canonical()==R"(["queued","source_unknown","completed"])");
+  }
+}
+TEST(early_unavailable_is_not_deadline_even_when_rpc_budget_is_deadline_limited) {
+  for(const std::string mode:{"","fast"}) {
+    Temp t;std::int64_t now=1800000000000;Store store(t.path/"db",[&]{return now;});Worker worker;WebService web(store,worker,SourceRegistry(manifest(2)));auto request=input(mode,true);request.set("deadline_ms",std::int64_t{1000});const auto submitted=web.submit_search("alice",request);const auto id=submitted.at("session_id").str();
+    const auto first=web.lease_search();CHECK(first);worker.during=[] { throw Error("E_WORKER_UNAVAILABLE","early disconnect",503); };web.execute_search(*first);
+    CHECK(worker.timeouts.at(0)>0);CHECK(worker.timeouts.at(0)<=1000);const auto unknown=store.session_get("alice",id);CHECK(unknown.at("state").str()=="queued");CHECK(unknown.at("error_code").str()=="E_WORKER_UNAVAILABLE");CHECK(event_kinds(store,id).canonical()==R"(["queued","source_unknown"])");
+    worker.during={};const auto tail=web.lease_search();CHECK(tail);web.execute_search(*tail);const auto completed=store.session_get("alice",id);CHECK(completed.at("state").str()=="completed");CHECK(completed.at("unknown_source_attempts").num()==1);CHECK(completed.at("dispatched_source_attempts").num()==2);CHECK(worker.requests.size()==2);
+  }
+}
 TEST(late_response_is_not_published_or_cached_after_monotonic_deadline) {
   Temp t;Store store(t.path/"db");Worker worker;WebService web(store,worker,SourceRegistry(manifest(1)));auto request=input("fast");request.set("deadline_ms",std::int64_t{1000});worker.during=[] { std::this_thread::sleep_for(std::chrono::milliseconds(1100)); };
   rejects([&]{web.search("alice",request);},"E_DEADLINE");CHECK(worker.requests.size()==1);worker.during={};CHECK(!web.search("alice",request).at("from_cache").flag());CHECK(worker.requests.size()==2);

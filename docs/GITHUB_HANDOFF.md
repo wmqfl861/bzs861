@@ -4,10 +4,11 @@
 
 ## 当前增量与已交付输入
 
-当前范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/final-report.json)，发布前报告不预写未来自身SHA或CI成功。
+当前范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/deadline-followup-report.json)，发布前报告不预写未来自身SHA或CI成功。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
+| 0.1.10 Windows HTTP清理修正 | `199eb635ca90c657dff673fbf88bed44e7c4b40b` | CI 39950116698：Linux26/27，原一秒恢复测试多出source_unknown事件；Windows17/17通过（340.84秒），撤权HTTP4/4及严格连接清理通过；本次追加截止时间生产修正，原日志保留 |
 | 0.1.10 首次发布 | `a06e7e91f6a115b345ff1072095b80e15d193ad4` | CI 39945994760：Linux通过；Windows构建成功、16/17套通过，唯一失败为HTTP测试未关闭SQLite连接导致临时目录清理失败；原日志完整保留 |
 | 0.1.9 JSON并发修正 | `3ef86c653a2e2085848d5cdb151d66392c6af49a` | CI 39725326547：Linux/Windows成功；本轮真实输入基线、schema12 |
 | 0.1.9 Windows测试修正 | `c14b3c3c214bf9def1f8080b9125816aa0f56735` | CI 39721279784：Windows12/12通过；Linux真实ACK恢复暴露JSON竞争，当前补丁修复 |
@@ -28,7 +29,9 @@
 
 当前报告由包含它的 Git 提交绑定，不预写未来自身 SHA 或未来 CI 成功。最终 SHA 与 CI 以实际发布记录为准。
 
-0.1.10首次发布之后的连接释放修正只改变tests/http_revocation.py及说明/证据，生产实现和CI门槛不变。它使用独立的[后续报告](../validation/s2_takeover/ci-followup-report.json)与冻结输入，不覆盖原final-v2。后续发布以a06e7e9为精确父提交，再核对新tree与新提交的实际Linux/Windows；原Windows失败不能记作通过。
+0.1.10首次发布之后的连接释放修正只改变tests/http_revocation.py及说明/证据，生产实现和CI门槛不变。它使用独立的[后续报告](../validation/s2_takeover/ci-followup-report.json)与冻结输入，不覆盖原final-v2。该次HTTP修正发布以a06e7e9为精确父提交，已核对199eb635的实际tree及Linux/Windows：Windows通过，Linux另有期限事件失败；原Windows失败仍原样保留。
+
+当前截止时间修正从199eb635继续，生产变更为src/web.cpp与src/sessions.cpp的超时分类和原子终态结算；追加5项search_modes原生回归及说明。新[截止时间报告](../validation/s2_takeover/deadline-followup-report.json)绑定完整重新验证，原final-v2、HTTP清理报告及全部既有validation保留。发布须以199eb635为精确父提交，核对新tree和新SHA自己的Linux/Windows；上一提交某一平台成功不代替新生产代码的运行。
 
 ## 原始历史为何不同
 

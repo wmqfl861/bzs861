@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "role": "independent_deadline_fix_reviewer",
+  "reviewer": "/root/handoff_audit",
+  "reviewed_author_commit": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+  "conclusion": "approve_narrow_fix_for_integration",
+  "blocking_findings": [],
+  "independence": "Reviewer did not author this deadline fix. Reviewer previously authored bounded shared reads and the genuine migration probe; no independent approval of those features is implied.",
+  "runtime_proof": {
+    "scope": "Store-level deterministic deadline transaction, prior transaction winners, receipt/event accounting, and persistence across reopen.",
+    "frozen_source": "probe-freeze-v2.json",
+    "baseline_record": "baseline-199-v2-record.json",
+    "corrected_record": "corrected-author-record.json",
+    "baseline": {
+      "probe_exit_code": 1,
+      "passed_cases": 4,
+      "failed_cases": 2,
+      "assertions": 65,
+      "expected_negative_control_matched": true
+    },
+    "corrected": {
+      "probe_exit_code": 0,
+      "passed_cases": 6,
+      "failed_cases": 0,
+      "assertions": 92
+    },
+    "cases": [
+      {
+        "name": "direct_deadline_terminal_once_at_wall_D_minus_1",
+        "baseline_passed": false,
+        "corrected_passed": true,
+        "corrected_assertions": 16
+      },
+      {
+        "name": "last_source_deadline_preserves_frozen_prefix",
+        "baseline_passed": false,
+        "corrected_passed": true,
+        "corrected_assertions": 18
+      },
+      {
+        "name": "cancellation_winner_is_not_overwritten",
+        "baseline_passed": true,
+        "corrected_passed": true,
+        "corrected_assertions": 12
+      },
+      {
+        "name": "principal_revocation_winner_is_not_overwritten",
+        "baseline_passed": true,
+        "corrected_passed": true,
+        "corrected_assertions": 13
+      },
+      {
+        "name": "stale_epoch_does_not_kill_current_source",
+        "baseline_passed": true,
+        "corrected_passed": true,
+        "corrected_assertions": 14
+      },
+      {
+        "name": "ordinary_timeout_preserves_unknown_and_tail",
+        "baseline_passed": true,
+        "corrected_passed": true,
+        "corrected_assertions": 19
+      }
+    ],
+    "network_requests": 0,
+    "sleeps": 0,
+    "direct_sql_mutation": false,
+    "runtime_artifacts_committed": false
+  },
+  "source_review": [
+    {
+      "path": "src/web.cpp",
+      "finding": "Only typed E_WORKER_TIMEOUT with RPC grant equal to remaining search budget maps to E_DEADLINE; earlier unavailable errors and shorter RPC grants retain fallback semantics. Post-response monotonic publication check remains."
+    },
+    {
+      "path": "src/sessions.cpp",
+      "finding": "Live-lease and auth-epoch guard precedes mutation. E_DEADLINE commits failed, increments epoch once, counts the unknown attempt once, emits one terminal failed event, and updates receipt in the same transaction."
+    },
+    {
+      "path": "src/sessions.cpp",
+      "finding": "Pending source rows, dispatched charges, frozen versions, and original persisted deadline are preserved. Terminal state prevents a pending tail from leasing."
+    },
+    {
+      "path": "src/sessions.cpp",
+      "finding": "Already committed cancellation/revocation and stale epochs reject late callbacks without overwriting their state/events or double counting. Expired live checks leave ordinary deadline settling responsible for one terminal transition."
+    }
+  ],
+  "fixture_preparation_failure": {
+    "record": "baseline-199-record.json",
+    "preserved_source": "fixture-v1-missing-activation.cpp",
+    "freeze": "probe-freeze-v1.json",
+    "passed_cases": 0,
+    "failed_cases": 6,
+    "assertions": 0,
+    "classification": "fixture setup failure, not product-regression evidence",
+    "cause": "Missing explicit source-registry activation in direct Store fixtures.",
+    "correction": "Six activation calls added before freeze v2; all product expectations retained; v1 artifacts preserved unchanged."
+  },
+  "scope_limits": [
+    "This probe does not execute WebService or Worker RPC. Transport classification is independently source-reviewed; author WebService tests and original loopback E2E are separately reported.",
+    "Separate Store instances prove already-committed transaction winners, not exhaustive thread interleavings or physical power-loss recovery.",
+    "Corrected runtime is the exact captured author library; final integrated runtime requires a new labeled replay with its own hashes.",
+    "This local review does not claim a new remote CI pass or change acceptance-package status.",
+    "Observed CI event order does not measure a submillisecond clock gap; clock-floor causality is a source-derived mechanism with deterministic controlled reproduction."
+  ],
+  "commit_binding": "author-commit-binding.json",
+  "commit_binding_sha256": "3af9cf3bb3e89a21b58f303539d7bdab5e7ab01e14284448f4c0a7ff96e6b197",
+  "original_e2e_unchanged_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+}

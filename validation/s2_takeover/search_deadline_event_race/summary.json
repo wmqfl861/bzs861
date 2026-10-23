@@ -1,0 +1,114 @@
+{
+  "role": "implementation author; independent review and integrated CI are separate",
+  "base_commit": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "production_change": [
+    "typed timeout classification when the total remaining deadline limits the RPC",
+    "atomic terminal E_DEADLINE settlement after existing lease guard"
+  ],
+  "frozen_new_test_sha256": "0f50b7c9ee75d790732f0c1695e695cedfeedf17142d82e41a1fb192bd8edca1",
+  "original_recovery_test_unchanged": true,
+  "source_sha256": {
+    "src/web.cpp": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+    "src/sessions.cpp": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c",
+    "tests/search_modes.cpp": "0f50b7c9ee75d790732f0c1695e695cedfeedf17142d82e41a1fb192bd8edca1",
+    "tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+  },
+  "debug_library_sha256": "d98167aa71f9cd9efc1a048e5c9f1e5d45ab6b7267c13d2d18c65a3ef83ff41e",
+  "results": {
+    "old_native": {
+      "tests": 22,
+      "reached_assertions": 307,
+      "failures": 3,
+      "expected_reproduction": true
+    },
+    "fixed_native": {
+      "tests": 22,
+      "assertions": 382,
+      "failures": 0
+    },
+    "existing_session_native": {
+      "tests": 22,
+      "assertions": 285,
+      "failures": 0
+    },
+    "original_real_http_deadline_case": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "original_real_http_recovery_suite": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0
+    },
+    "sandbox_attempt": {
+      "tests": 1,
+      "errors": 1,
+      "cause": "localhost fixture cannot bind in default sandbox",
+      "retained": true
+    }
+  },
+  "not_run_by_this_author": [
+    "full 27-suite CTest",
+    "ASan/UBSan",
+    "Windows"
+  ],
+  "captures": {
+    "before-build": {
+      "report": "before-build.json",
+      "report_sha256": "4387cf6b73e29ec41027a5d5dabfaba45794235984a009729dc3a9066a24e4d0",
+      "log": "before-build.log",
+      "log_sha256": "8509a0adefdf690e3106c0886b33dc4a2818ef59e2c858a36fe6ac8845944cb8",
+      "exit_code": 0
+    },
+    "before-native": {
+      "report": "before-native.json",
+      "report_sha256": "8f2557e6500d902b86304adf676598944947a46af93f8c334c660c4d90b8f113",
+      "log": "before-native.log",
+      "log_sha256": "400be34aa6bf85031ba8c335eca0a40fcf4509dd736c2d1d79a4a3f880183e3a",
+      "exit_code": 1
+    },
+    "after-build": {
+      "report": "after-build.json",
+      "report_sha256": "6255c0d006c2c7e3ad4ba36b07e8a7ea8573661cf3cfe802bff956a3b702c65f",
+      "log": "after-build.log",
+      "log_sha256": "3321b4e7c91036a6b54280d824f053eaca391dfd8fd6d846de7c8e269db932db",
+      "exit_code": 0
+    },
+    "after-native": {
+      "report": "after-native.json",
+      "report_sha256": "572000bf03d6059e4a386283ed5f4af244ff0a976c271a5a150b3e5c2d66d278",
+      "log": "after-native.log",
+      "log_sha256": "a49bd7f5ab0cb62cd3d4bf9a4e06726664bf56b8a89f2cee2f04043ec0b32b25",
+      "exit_code": 0
+    },
+    "after-sessions": {
+      "report": "after-sessions.json",
+      "report_sha256": "01bc67560275ddb6a8d6712478e4a6d26ef18800540baa112e5152763d33b090",
+      "log": "after-sessions.log",
+      "log_sha256": "00c1d6a139b8549e5ad0851e99fa2ba803c6a714ffef8cb36d8ebae7794ee57b",
+      "exit_code": 0
+    },
+    "after-original-test06": {
+      "report": "after-original-test06.json",
+      "report_sha256": "2dfd330e0579547e4937248548138c81c7834099ee7b76fd9aa63f9536516a7d",
+      "log": "after-original-test06.log",
+      "log_sha256": "50e1ab60f395765f0c54c17ebd2e505efb282770badf06712ad6f38d93f076d1",
+      "exit_code": 1
+    },
+    "after-original-test06-loopback": {
+      "report": "after-original-test06-loopback.json",
+      "report_sha256": "dbe9db1455eb06654df3b029b08f01f2704adbf6e76c022fee9c133dc12894f4",
+      "log": "after-original-test06-loopback.log",
+      "log_sha256": "1a1defdba282592952273e625fd3e332c915d45ff287b231d8ca4b0fffdc2727",
+      "exit_code": 0
+    },
+    "after-original-recovery-suite": {
+      "report": "after-original-recovery-suite.json",
+      "report_sha256": "549fd3076a1d61a5266f4b9998729a725941b7b7dcd32c50102be043cd9b8d27",
+      "log": "after-original-recovery-suite.log",
+      "log_sha256": "9d991a7c29fbefb69f9f7a5a3900ca81e9a5d0efed10250781b65fd72fc26810",
+      "exit_code": 0
+    }
+  }
+}

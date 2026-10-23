@@ -1,0 +1,13 @@
+[1/19] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+[2/19] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+[3/19] Linking CXX static library libbzs_core.a
+[4/19] Building CXX object CMakeFiles/bzs_search_mode_tests.dir/tests/search_modes.cpp.o
+[5/19] Linking CXX executable bzs_tests
+[6/19] Linking CXX executable bzs_batch_tests
+FAILED: bzs_batch_tests 
+: && /usr/bin/c++ -g -fsanitize=address,undefined CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o -o bzs_batch_tests  libbzs_core.a  /usr/lib/x86_64-linux-gnu/libsqlite3.so  /usr/lib/x86_64-linux-gnu/libcrypto.so  /usr/lib/x86_64-linux-gnu/libxml2.so  /usr/lib/x86_64-linux-gnu/libjson-c.so && :
+/usr/bin/ld: /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/Scrt1.o: in function `_start':
+(.text+0x1b): undefined reference to `main'
+collect2: error: ld returned 1 exit status
+[7/19] Linking CXX executable bzs_map_tests
+ninja: build stopped: subcommand failed.

@@ -1,0 +1,52 @@
+test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail) ... ERROR
+
+======================================================================
+ERROR: test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/python/tests/fakeweb.py", line 199, in <module>
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) > 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.157s
+
+FAILED (errors=1)
+{"session_recovery_e2e_tests": 1, "failures": 0, "errors": 1, "seconds": 0.158, "database_mutation_by_fixture": false, "clock_injection": false, "real_source_http_counts": true, "physical_power_loss_coverage": false, "observations": []}

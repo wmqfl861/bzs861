@@ -1,0 +1,367 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "role": "independent_summary_preservation_reviewer",
+  "reviewer": "/root/handoff_audit",
+  "recorded_at_utc": "2026-10-23T12:33:19.587175+00:00",
+  "status": "passed",
+  "scope": "Read-only audit of final local deadline followup evidence, current documents, source boundary, previous evidence preservation and truthful publication status. No test reruns and no production edits.",
+  "baseline_commit": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "runtime_source_commit_local": "237b9ccf77fbb26039a15c5a6cfd829d9121d9d0",
+  "reviewed_author_commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+  "publication_binding": "This audit precedes publication. The containing published commit and its actual Linux/Windows runs must be verified separately; local HEAD is not claimed as the remote release SHA.",
+  "reviewed_artifacts_sha256": {
+    "validation/s2_takeover/deadline-followup-report.json": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4",
+    "validation/s2_takeover/deadline-followup-review.json": "ff8c0dc87ed3537450875fa50bebd0c728e2a96242925830f7d7dc2e6be744b7",
+    "validation/s2_takeover/deadline-followup-source-manifest.json": "0b55d678a2f9036094d32365497d8996a9a1df8235a81e267a4e07ed8d5884d6",
+    "validation/s2_takeover/deadline-followup-execution-inputs.json": "d4b9c3bf433e3d71893a5134f13b4bcbcacfa362aa9b91d78b62af5781e185ca"
+  },
+  "machine_status_sha256": "7b966570619852154c3a24d979960c3d2bcd5bff7edf1ccc6444e91fcd41cfbd",
+  "checks": {
+    "all_1225_original_validation_blobs_present_and_identical": true,
+    "no_original_files_missing": true,
+    "only_explicit_changed_existing_paths": true,
+    "production_and_added_tests_match_reviewed_author_commit": true,
+    "native_search_modes_exactly_66_added_zero_deleted": true,
+    "native_search_modes_preserves_all_original_lines_in_order": true,
+    "original_recovery_e2e_unchanged": true,
+    "windows_http_fixture_fix_unchanged": true,
+    "original_recovery_e2e_still_matches_3ef": true,
+    "workflow_build_plan_approval_and_guard_inputs_unchanged": true,
+    "frozen_execution_input_file_identity_matches": true,
+    "all_229_frozen_inputs_match_current_bytes": true,
+    "no_extra_or_omitted_execution_inputs": true,
+    "status_acceptance_fields_and_all_feature_semantics_unchanged": true,
+    "package_status_is_37_46_0": true,
+    "seventeen_default_sources_disabled_and_sites_empty": true,
+    "source_manifest_has_exactly_current_215_nonvalidation_files": true,
+    "source_manifest_all_file_hashes_match": true,
+    "report_source_manifest_hash_matches": true,
+    "report_execution_manifest_matches": true,
+    "all_report_review_path_sha_pairs_resolve_and_match": true,
+    "command_deadline-followup-ctest": true,
+    "command_deadline-followup-asan": true,
+    "binary_identity_consistent_across_all_successful_commands": true,
+    "command_deadline-followup-contracts": true,
+    "command_deadline-followup-plan": true,
+    "command_deadline-followup-guards": true,
+    "command_deadline-followup-dependencies": true,
+    "command_deadline-followup-migration-executable": true,
+    "command_deadline-followup-independent-probe": true,
+    "command_deadline-followup-preservation": true,
+    "exactly_nine_successful_final_commands": true,
+    "all_successful_command_recorded_binaries_still_match": true,
+    "final_library_and_searchd_match_report": true,
+    "ctest_junit_matches_report": true,
+    "ctest_suite_names_and_durations_match": true,
+    "sanitizers_junit_matches_report": true,
+    "sanitizers_suite_names_and_durations_match": true,
+    "native_totals_independently_match_raw_log": true,
+    "native_per_suite_matches_report": true,
+    "python_1049_raw_log_and_report_agree": true,
+    "original_recovery_six_and_revocation_four_passed": true,
+    "leak_and_ubsan_halt_flags_preserved": true,
+    "ctest_and_asan_durations_match_complete_logs": true,
+    "migration_39_old_table_hashes_identical": true,
+    "migration_genuine_schema12_to_final_schema13": true,
+    "migration_input_library_provenance_matches": true,
+    "migration_310_and_1184_from_final_logs": true,
+    "migration_integrity_and_backup_quarantine": true,
+    "migration_record_compile-old": true,
+    "migration_record_compile-new": true,
+    "migration_record_create-old": true,
+    "migration_record_upgrade-verify": true,
+    "failed_migration_launch_retained_not_counted_as_product_assertions": true,
+    "failed_migration_log_hash_matches": true,
+    "final_migration_executor_and_author_roles_distinct": true,
+    "final_probe_matches_frozen_v2": true,
+    "final_probe_six_92_exact_final_library": true,
+    "final_probe_logs_inputs_and_binary_hashes_match": true,
+    "final_probe_executor_root_distinct_from_author": true,
+    "prior_current_fields_preserved_verbatim_in_http_history": true,
+    "all_preexisting_historical_objects_preserved": true,
+    "historical_report_and_review_lists_only_append": true,
+    "machine_current_results_equal_new_report": true,
+    "prior_ci_identity_and_failure_scopes_match": true,
+    "prior_linux_skipped_gates_not_claimed_passed": true,
+    "prior_ci_raw_logs_support_report": true,
+    "no_new_remote_ci_success_predeclared": true,
+    "failed_generated_object_build_preserved_separately": true,
+    "four_generated_execute_bit_repairs_match_byte_hashes": true,
+    "new_files_only_validation": true,
+    "no_new_runtime_database_archive_or_binary_payloads": true,
+    "no_high_confidence_private_key_or_access_token_markers_in_new_evidence": true,
+    "new_audit_does_not_modify_frozen_sources": true
+  },
+  "blocking_findings": [],
+  "source_and_preservation": {
+    "old_validation_files_verified": 1225,
+    "old_validation_blob_manifest_sha256": "0bd51633fb8b384d1f15a35cff0d4592ac9307b7eb9b3372ff0f54a80d773ce3",
+    "original_files_preserved": 1430,
+    "changed_existing_paths": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/DEVELOPMENT_STATUS.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/SEARCH_MODES.md",
+      "docs/handoff/NEXT_AGENT.md",
+      "docs/implementation_status.json",
+      "src/sessions.cpp",
+      "src/web.cpp",
+      "tests/search_modes.cpp"
+    ],
+    "source_manifest_files": 215,
+    "execution_input_files": 229,
+    "new_validation_files_before_this_audit": 99,
+    "original_e2e_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "http_revocation_sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+    "search_modes_added_lines": 66,
+    "search_modes_deleted_lines": 0,
+    "native_regression_cases_added": 5,
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0,
+    "sources_enabled": 0,
+    "source_registry_count": 17,
+    "site_registry_count": 0
+  },
+  "verified_local_results": {
+    "ctest": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "elapsed_seconds": 171.3
+    },
+    "sanitizers": {
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "elapsed_seconds": 160.4
+    },
+    "native_suites": 15,
+    "native_cases": 418,
+    "native_assertions": 13106,
+    "python_worker_cases": 1049,
+    "native_log_counts": [
+      {
+        "name": "core",
+        "cases": 82,
+        "assertions": 715
+      },
+      {
+        "name": "batch",
+        "cases": 30,
+        "assertions": 801
+      },
+      {
+        "name": "map",
+        "cases": 24,
+        "assertions": 462
+      },
+      {
+        "name": "crawl",
+        "cases": 54,
+        "assertions": 2798
+      },
+      {
+        "name": "site_publication",
+        "cases": 32,
+        "assertions": 1200
+      },
+      {
+        "name": "retention",
+        "cases": 16,
+        "assertions": 404
+      },
+      {
+        "name": "fairness",
+        "cases": 11,
+        "assertions": 251
+      },
+      {
+        "name": "sessions",
+        "cases": 22,
+        "assertions": 285
+      },
+      {
+        "name": "source_publication",
+        "cases": 20,
+        "assertions": 180
+      },
+      {
+        "name": "search_modes",
+        "cases": 22,
+        "assertions": 382
+      },
+      {
+        "name": "revalidation",
+        "cases": 21,
+        "assertions": 333
+      },
+      {
+        "name": "revocation",
+        "cases": 12,
+        "assertions": 146
+      },
+      {
+        "name": "capacity_cycles",
+        "cases": 4,
+        "assertions": 4800
+      },
+      {
+        "name": "cache_freshness",
+        "cases": 13,
+        "assertions": 80
+      },
+      {
+        "name": "contracts",
+        "cases": 55,
+        "assertions": 269
+      }
+    ],
+    "final_library_sha256": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "searchd_sha256": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+    "successful_commands": [
+      {
+        "record": "deadline-followup-ctest-command.json",
+        "sha256": "951e15dc59e9e2134f846b7a940869240a5ec90779f8a0599de25dfb9baa80ce",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-asan-command.json",
+        "sha256": "4a450835ba56030f91d584151beaa273c728fcdb3e276ae22e70bfb214510dfa",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-contracts-command.json",
+        "sha256": "91f926eba54197096b25b264680a73ff7542523700dc5fa7e404e6996de71a48",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-plan-command.json",
+        "sha256": "1011c88ac2ace82a56f2ada5111af2283fd33f2cdcd59485338c7c69601f5be3",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-guards-command.json",
+        "sha256": "597b20fe69f62a3c2d4e98fda2c3285c985f26ce8982c0201ed902658d6ff75f",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-dependencies-command.json",
+        "sha256": "b0df3ba7500fb4b6650b106ac231ad757d55e0147bb5774ae7c5582e95e1ca1f",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-migration-executable-command.json",
+        "sha256": "1cda3fb19ad46d50d0fb4df57e7c9fe2ae32d790c20d19626884b06c0df63e35",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-independent-probe-command.json",
+        "sha256": "750cce257cae9dcd47226224f257e16a025907ae27284f9f5f5ae21a7c7d4d62",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      },
+      {
+        "record": "deadline-followup-preservation-command.json",
+        "sha256": "33d4a348a26121e060878c9a475f9cd7323f09d3c470d0d00f819ef055c9df28",
+        "exit_code": 0,
+        "inputs_and_binaries_unchanged": true,
+        "verified": true
+      }
+    ],
+    "genuine_upgrade": {
+      "old_schema": 12,
+      "new_schema": 13,
+      "old_preparation_assertions": 310,
+      "new_upgrade_assertions": 1184,
+      "legacy_table_footprints_identical": 39,
+      "probe_author_role_retained": "integration_migration_verifier_shared_component_author",
+      "actual_executor": "/root",
+      "reports_author_role_is_not_the_replay_executor": true
+    },
+    "frozen_store_probe": {
+      "cases": 6,
+      "assertions": 92,
+      "executor": "/root",
+      "probe_author": "/root/handoff_audit",
+      "source_freeze": "probe-freeze-v2.json",
+      "scope": "Store transaction and persistence only; HTTP/Worker boundary is covered separately."
+    }
+  },
+  "preserved_failures_and_limits": {
+    "prior_ci": {
+      "commit": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+      "run_id": 39950116698,
+      "linux_ctest": "26/27",
+      "linux_sanitizers": "skipped",
+      "linux_contracts_and_planning": "skipped",
+      "windows_ctest": "17/17",
+      "new_release_ci": "not_yet_published_at_audit"
+    },
+    "initial_migration_launch": {
+      "outer_exit_code": 1,
+      "driver_launch_exit_code": 127,
+      "product_assertions": 0,
+      "diagnosis": "Generated old probe had mode 0644. Cause of missing execute bit not inferred; hashes, failed log and separate successful replay retained."
+    },
+    "initial_sanitizer_build": "Generated zero-byte object failure retained; archived object and successful rebuild separately recorded before input freeze.",
+    "author_and_reviewer_preparation": "Original author bind-denied attempt and reviewer missing-registry-activation fixture remain separately labeled. Expected old-code failures remain failures.",
+    "clock_inference": "CI event order establishes an intermediate source_unknown commit, not a measured submillisecond clock difference."
+  },
+  "history_preservation": {
+    "http_cleanup_current_fields_copied_verbatim": [
+      "baseline",
+      "baseline_version",
+      "current_results",
+      "current_test_report",
+      "current_verification",
+      "github_ci",
+      "independent_review",
+      "integration_inputs",
+      "recorded_at",
+      "review_record",
+      "stage",
+      "verification_binding",
+      "version"
+    ],
+    "previous_historical_objects_unchanged": [
+      "historical_results_0_1_6",
+      "historical_results_0_1_8",
+      "historical_results_0_1_9_initial",
+      "historical_verification_0_1_10_initial",
+      "historical_verification_0_1_8",
+      "historical_verification_0_1_9_final",
+      "historical_verification_0_1_9_initial"
+    ],
+    "current_results_match_report": true
+  },
+  "reference_pairs_verified": 24,
+  "publication_payload_review": {
+    "new_runtime_payloads_detected": [],
+    "high_confidence_credential_markers_detected": [],
+    "limit": "Checks cover repository evidence paths, recognizable binary/database formats and explicit credential patterns; synthetic fixture IDs and public GitHub job metadata are retained."
+  },
+  "independence_boundary": "Reviewer is independent of the deadline fix author and root integrator. Reviewer authored the frozen Store probe, earlier bounded shared reads and genuine migration probe, so final executions of those are attributed to root and are not described as independent reviews of the reviewer-authored implementation.",
+  "full_product_signoff": false
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "baseline_commit": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "baseline_tree": "9806386124e1998f0ff8ccd906a8e3fa7f90f3a2",
+  "preserved_existing_files": 1430,
+  "preserved_existing_files_manifest_sha256": "4504074366df164a3172e49e59edb57db64ec7599c4ff2818ebd9e6db3ebbe0b",
+  "preserved_existing_validation_files": 1225,
+  "preserved_existing_validation_manifest_sha256": "28f096c5facb96af6a47b3512c304fcd0c7255c9618f77a674f0fcaa55c7aba3",
+  "all_prior_validation_bytes_preserved": true,
+  "allowed_changed_files": {
+    "HANDOFF_START_HERE.md": {
+      "before_blob": "6d3fc92cf39a8582fd8ff7f267eb5171246104f7",
+      "after_blob": "a03fb9db599dcc6d9993c79596d6544f49a6b5f1",
+      "after_sha256": "f6a1fa6e118eb601f39f1b21f10f32c83f55b3538a2943dc460b109cae410493"
+    },
+    "README.md": {
+      "before_blob": "30a534c33808c017417aea6a9fa08d9ceb50107b",
+      "after_blob": "08994a0ce8af44b7567d7e94bf730ff9c27a2b10",
+      "after_sha256": "5a7fde46cd7cbb1b325afa97d8e4e95fb40e668a4e5bfc78238d031e0a48f022"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_blob": "c264cefe4a51e52414a97b81a77815179f6de67b",
+      "after_blob": "7668ea9289e55a72aecb852d3f4af9ecef8ba1b4",
+      "after_sha256": "bd218dc81b7193c6520da836907137153703b2798d20fdab2c586a1fc9f8a2b8"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_blob": "3cfbf7adaa6d06c4755ce8713ce1dded92b4ce42",
+      "after_blob": "0c60428eea39df22e41c1f1a408662977c159cea",
+      "after_sha256": "643328a9e68bf9938db194a8cf45759bfbd67d80498293b010f0130ac1802cb4"
+    },
+    "docs/SEARCH_MODES.md": {
+      "before_blob": "4b903d13b37ea84944525605d54b40b27ad069cb",
+      "after_blob": "7fd2be719c00480a0749d8c3f9a8ec6a915bc92b",
+      "after_sha256": "6ae20abeec2900e187408a1e17253d5296e172014ef95e40a63119bbb2930044"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_blob": "9c7f1aec22f399f333c3f04e08411f8f0348dd97",
+      "after_blob": "bfe4de4d4bae9926b5099d01f45eea82793c0005",
+      "after_sha256": "86d3618480bc8043074fdd42837b6da676a99a3d69afa332dbc9dedb51b1b62a"
+    },
+    "docs/implementation_status.json": {
+      "before_blob": "f428e1097dfeb1735696467cc041c2c1899a4833",
+      "after_blob": "230547d5b01a5b0ff82599e03fd5ec819547338b",
+      "after_sha256": "7b966570619852154c3a24d979960c3d2bcd5bff7edf1ccc6444e91fcd41cfbd"
+    },
+    "src/sessions.cpp": {
+      "before_blob": "27c823b2f2f00741a79735d836c538875b6967b0",
+      "after_blob": "3981b0f2d060eb44e3fc9c3c19bb185a29b73221",
+      "after_sha256": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c"
+    },
+    "src/web.cpp": {
+      "before_blob": "d1965357c42f8f8e64dd4726568024cc8f00d93c",
+      "after_blob": "1ab8d098aecc2fb56dfa94bbb1934083bee00b60",
+      "after_sha256": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69"
+    },
+    "tests/search_modes.cpp": {
+      "before_blob": "01cfc7baf1586769dc5c9f4946b6c647f87a78a0",
+      "after_blob": "8400a2dc1006ab715a1752011bc626713e062fdf",
+      "after_sha256": "0f50b7c9ee75d790732f0c1695e695cedfeedf17142d82e41a1fb192bd8edca1"
+    }
+  },
+  "production_code_changes_limited_to": [
+    "src/sessions.cpp",
+    "src/web.cpp"
+  ],
+  "original_search_mode_test_lines_removed": 0,
+  "original_recovery_e2e_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+  "reviewed_http_revocation_fixture_sha256": "da597e3cf6a75e882ce882d7224187309a02b07e3de1c35b24a5106678e7fd09",
+  "workflow_build_settings_schema_contract_fixtures_and_dependency_locks_unchanged": true,
+  "plan_and_acceptance_unchanged": true,
+  "status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "new_files_limited_to_validation_evidence": true,
+  "golden_check": "Raw byte/object hashes only; no query inspection, labeling or tuning.",
+  "current_production_binaries_sha256": {
+    "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34"
+  }
+}

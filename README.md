@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.10 接手后的五项增量。** 从已发布0.1.9继续，增加搜索来源持久发布限制、管理员主体撤权、独立HTTP缓存新鲜度、可分别取消的共享批读，以及fast/balanced/deep搜索执行预算。范围见[接手计划](docs/handoff/S2_TAKEOVER_20261023.md)，实际验证见[本轮报告](validation/s2_takeover/final-report.json)。S0、S1、S2的完整验收仍未完成。
+**状态：0.1.10 接手后的五项增量。** 从已发布0.1.9继续，增加搜索来源持久发布限制、管理员主体撤权、独立HTTP缓存新鲜度、可分别取消的共享批读，以及fast/balanced/deep搜索执行预算。范围见[接手计划](docs/handoff/S2_TAKEOVER_20261023.md)，实际验证见[当前报告](validation/s2_takeover/deadline-followup-report.json)。S0、S1、S2的完整验收仍未完成。
 
-本轮生产实现的 `final-v2` 本地验证：27/27套CTest、15/15套ASan/UBSan，Python 1,049项，均无跳过；真实schema12→13升级保留39张旧表内容。首次发布CI的Linux通过，Windows唯一失败为测试辅助函数遗留SQLite连接导致清理失败；当前已补显式关闭与两条资源释放回归，生产代码不变。原报告不改写，新输入见[CI后续报告](validation/s2_takeover/ci-followup-report.json)，修正提交的公开CI以其精确SHA对应的Actions为准。
+生产实现原 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，并根据第二次CI暴露的截止时间事件竞态，修正整体期限超时的分类与原子终态结算；原一秒E2E保持不变。旧报告和失败日志保留，最新输入与全量验证见[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)，公开CI按最新精确SHA对应的Actions核对。
 
 目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[验证说明](validation/s2_takeover/README.md)区分作者、独立反例、真实升级和最终整合输入，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
 

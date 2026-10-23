@@ -1,0 +1,36 @@
+{
+  "command": [
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "tests/e2e_session_recovery.py",
+    "--server",
+    "/workspace/scratch/e2371129386d/build-search-deadline-race/searchd",
+    "--python",
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "--repo",
+    "/workspace/scratch/e2371129386d/bzs861-search-deadline-race"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861-search-deadline-race",
+  "started_at": "2026-10-23T12:14:39.838105+00:00",
+  "finished_at": "2026-10-23T12:15:07.769772+00:00",
+  "seconds": 27.932,
+  "exit_code": 0,
+  "git_base": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+  "source_sha256": {
+    "src/web.cpp": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+    "src/sessions.cpp": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c",
+    "tests/search_modes.cpp": "0f50b7c9ee75d790732f0c1695e695cedfeedf17142d82e41a1fb192bd8edca1",
+    "tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+  },
+  "source_matches_base": {
+    "src/web.cpp": false,
+    "src/sessions.cpp": false,
+    "tests/search_modes.cpp": false,
+    "tests/e2e_session_recovery.py": true
+  },
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/scratch/e2371129386d/bzs861-search-deadline-race/python"
+  },
+  "log": "after-original-recovery-suite.log",
+  "log_sha256": "9d991a7c29fbefb69f9f7a5a3900ca81e9a5d0efed10250781b65fd72fc26810"
+}

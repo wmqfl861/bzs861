@@ -98,6 +98,13 @@ any positive millisecond remainder may be dispatched, even below the public
 an internal absolute monotonic deadline bounds its remainder without restarting
 the allowance or rounding it up. An exhausted remainder fails before dispatch. Existing
 lease, cancellation, owner, result-version, and publication fences still apply.
+When the remaining search deadline limits the RPC timer, a typed Worker timeout
+ends the search with `E_DEADLINE`. A durable session records one terminal `failed`
+event and counts the leased attempt as unknown once, even if the integer RPC
+timer fires just before the persisted wall-clock deadline. Pending sources are
+not dispatched, and earlier frozen versions remain available. A shorter source
+RPC timeout or an early unavailable Worker retains the existing `source_unknown`
+handling and may proceed to the pending tail within the original deadline.
 An in-flight dispatch uses its own monotonic clock; the persisted session
 deadline remains a wall-clock deadline. A complete cross-restart clock-rollback
 defense is not claimed by this increment.

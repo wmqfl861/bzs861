@@ -1,0 +1,54 @@
+{
+  "reviewer":"\/root\/handoff_audit",
+  "scope":"Store deadline transaction and prior-winner persistence; not transport timing or physical power loss",
+  "cases":[
+    {
+      "name":"direct_deadline_terminal_once_at_wall_D_minus_1",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    },
+    {
+      "name":"last_source_deadline_preserves_frozen_prefix",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    },
+    {
+      "name":"cancellation_winner_is_not_overwritten",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    },
+    {
+      "name":"principal_revocation_winner_is_not_overwritten",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    },
+    {
+      "name":"stale_epoch_does_not_kill_current_source",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    },
+    {
+      "name":"ordinary_timeout_preserves_unknown_and_tail",
+      "passed":false,
+      "error":"Search registry is no longer the active reviewed source manifest",
+      "assertions":0,
+      "observed":{}
+    }
+  ],
+  "passed":0,
+  "failed":6,
+  "assertions":0,
+  "network_requests":0,
+  "clock":"explicit deterministic Store wall-clock fixture; no sleeps",
+  "direct_sql_mutation_by_probe":false
+}
