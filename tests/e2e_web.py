@@ -44,7 +44,7 @@ def ready_line(proc: subprocess.Popen, log: Path, timeout: float = 20.0) -> dict
 class Stack:
     """fakeweb + worker + searchd in a temporary home."""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, source_redistribution: str | None = None):
         self.root = root
         self.procs: dict[str, subprocess.Popen] = {}
         self.logs: dict[str, object] = {}
@@ -65,7 +65,11 @@ class Stack:
         sys.path.insert(0, str(CONFIG.pydir))
         from tests import fakeweb  # noqa: E402  (python/tests/fakeweb.py)
         self.fakeweb = fakeweb
-        (root / "sources.json").write_text(json.dumps(fakeweb.manifest(self.web_port)), encoding="utf-8")
+        sources = fakeweb.manifest(self.web_port)
+        if source_redistribution is not None:
+            for source in sources["sources"]:
+                source["contract"]["review"]["redistribution_policy"] = source_redistribution
+        (root / "sources.json").write_text(json.dumps(sources), encoding="utf-8")
         self.worker_port = self.spawn("worker", [
             CONFIG.python, "-m", "bzs.worker.server", "--port", "0", "--token-file", str(root / "worker.token"),
             "--sources", str(root / "sources.json"), "--test-mode", "--allow-cidr", "127.0.0.1/32",
@@ -166,10 +170,41 @@ class EndToEnd(unittest.TestCase):
         self.assertTrue(top["url"].startswith(self.stack.url("/pages/article.html")))
         self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
         self.assertEqual(top["index_families"], 2)
-        self.assertEqual(top["snippet_kind"], "search_engine_snippet")
+        # The shared fakeweb manifest explicitly permits links only. Merging
+        # cannot turn that source grant into permission to republish snippets.
+        for hit in r["results"]:
+            self.assertEqual(hit["snippet_kind"], "publication_suppressed")
+            self.assertEqual(hit["snippet"], "")
+            self.assertEqual(hit["title"], hit["url"])
         urls = [x["url"] for x in r["results"]]
         self.assertEqual(len(urls), len(set(urls)))
         self.assertTrue(any(u.endswith("/pages/zh.html") for u in urls))
+        cached = self.ok("web.search", {"query": "resumable crawling"})
+        self.assertTrue(cached["from_cache"])
+        self.assertEqual(cached["results"], r["results"])
+
+    def test_02a_explicit_snippet_permission_preserves_search_engine_text(self):
+        # Preserve the positive snippet contract with a separate, explicitly
+        # permitting fixture. Do not loosen the shared links-only manifest.
+        with tempfile.TemporaryDirectory(prefix="bzs-e2e-snippets-") as directory:
+            stack = Stack.__new__(Stack)
+            stack.procs, stack.logs = {}, {}
+            try:
+                stack.__init__(Path(directory), source_redistribution="allowed_with_limits")
+                params = {"query": "permitted fixture snippets"}
+                status, body = stack.call("web.search", params)
+                self.assertEqual(status, 200, body)
+                top = body["result"]["results"][0]
+                self.assertEqual(top["snippet_kind"], "search_engine_snippet")
+                self.assertTrue(top["snippet"])
+                self.assertNotEqual(top["title"], top["url"])
+                self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
+                status, cached = stack.call("web.search", params)
+                self.assertEqual(status, 200, cached)
+                self.assertTrue(cached["result"]["from_cache"])
+                self.assertEqual(cached["result"]["results"], body["result"]["results"])
+            finally:
+                stack.stop()
 
     def test_02b_durable_session_reconnect_paging_and_restart(self):
         params = {"query": "session roundtrip", "sources": ["ddg", "bing", "wiki"],

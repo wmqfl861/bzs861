@@ -1,0 +1,27 @@
+{
+  "status": "preliminary_pass_not_final_release_validation",
+  "old_input_commit": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+  "new_library_sha256": "486eb891f14858f19c3db0ecd6a90e129e164b02bc8c37f8f592d6aef2bf25d9",
+  "new_library_capture_note": "Captured after parent reported the initial schema13 integrated build for f5e0373, before later cache review fixes and MODE-01; command cwd source_head is observed at command time and is not an assertion that this earlier copied library represents later cwd revisions.",
+  "old_creation_assertions": 310,
+  "new_verification_assertions": 1184,
+  "offline_new_worker_fixture_calls": 1,
+  "external_network_requests": 0,
+  "roles": {
+    "shared_read_many": "author, not independent reviewer",
+    "source_publication_and_principal_revocation_interaction": "separate component reviewer"
+  },
+  "uncaptured_setup_failures": [
+    {
+      "command": "record_run.py initial invocation",
+      "cause": "argparse.REMAINDER consumed options after the positional name; no product command ran",
+      "resolution": "All recorder options moved before name."
+    },
+    {
+      "command": "new-verify-preliminary",
+      "cause": "Compiled output retained a nonexecutable filesystem mode; PermissionError before process launch; original empty log retained",
+      "resolution": "Granted owner execute on generated binary; recorder now captures launch errors."
+    }
+  ],
+  "captured_compile_failure": "compile-new-preliminary: -Werror unused old-only helpers, fixed with [[maybe_unused]]; original compiler output retained."
+}

@@ -112,3 +112,7 @@ schema12仅在既有schema11上追加 `robots_cache.http_cache_json`（旧行默
 robots只检查同owner/origin/清单的最新记录再判断有效期，不向后搜索仍未到期的旧允许记录。回收按旧记录优先、总数有界执行：若较旧记录仍存在（尤其被活动准入/回执引用），最新决策须保留；全部旧引用退役并回收后，最新无引用过期记录也可清理，不永久泄漏缓存头。
 
 `tests/revalidation.cpp`覆盖持久绑定、同快照元数据竞争、配额回滚、nofollow与回收反例及8轮刷新；`tests/e2e_revalidation.py`通过真实Core/Worker/HTTP验证直接读取重启、批读、robots和父子页面304、错误validator、跳转条件头隔离及失败限制观察。独立复核与真实schema11升级的范围以本轮验证报告为准。
+
+## 0.1.10 独立新鲜度补充
+
+条件验证器协议仍保守，页面缓存限制改由独立`http_freshness`记录约束。没有ETag不代表允许默认缓存；no-store、no-cache、Age/Date/Expires等具体行为见[HTTP_FRESHNESS](HTTP_FRESHNESS.md)。该补充不改变304的原正文权限、删除、发布和表示身份屏障。

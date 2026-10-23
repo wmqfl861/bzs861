@@ -1,0 +1,81 @@
+{
+  "scope": "author_source_publication_increment_only",
+  "recorded_at_utc": "2026-10-23T10:26:09.594887+00:00",
+  "baseline_commit": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+  "schema": 13,
+  "source_manifest": "source-inputs.json",
+  "source_manifest_sha256": "339ceb20e92c74786f10f689a8265572d1a54458896363c6495215cc2464942b",
+  "validation": {
+    "debug": {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/workspace/scratch/e2371129386d/build-source-policy",
+        "-R",
+        "^(source_publication|sessions|core)$",
+        "-V",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "passed_suites": 3,
+      "skipped_suites": 0,
+      "log": "ctest-author.log"
+    },
+    "new_cases": {
+      "tests": 20,
+      "assertions": 180,
+      "failures": 0
+    },
+    "sanitizers": {
+      "command": [
+        "/workspace/scratch/e2371129386d/build-source-policy-asan/bzs_source_publication_tests"
+      ],
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "exit_code": 0,
+      "log": "asan-source-publication-final.log",
+      "execution": "approved_escalated_local_fixture_after_default_proc_restriction"
+    }
+  },
+  "binaries_sha256": {
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_tests": "ee132efb245227bcf9c0c02cc7ec2e74b887249385796dea569cd215319e93b0",
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_session_tests": "3e1bcd524d439a52d7b37293d0f307599e80db2702c62dde483624d0503841a4",
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_source_publication_tests": "7b03664d86678fc98abdaacc9840eab2103bbf194227fa3fa7e46f2c95d472b1",
+    "/workspace/scratch/e2371129386d/build-source-policy-asan/bzs_source_publication_tests": "4e8f4edb10c5080dbc1c0130fc05eb083a3c2ef51441a445943d3acaba4a1c72"
+  },
+  "preserved_failures": [
+    {
+      "log": "ctest-first.log",
+      "reason": "three existing schema-version assertions expected12 or considered13 future; version expectations advanced to13/14 without weakening data-preservation assertions"
+    },
+    {
+      "log": "asan-source-publication.log",
+      "reason": "default sandbox denied LeakSanitizer /proc access; full leak detection retained for approved rerun"
+    }
+  ],
+  "boundaries": [
+    "No real source approval or external source calls",
+    "No independent revocation journal or restore activation",
+    "No claim of complete CRAWL/CACHE/SESSION acceptance",
+    "Final integrated Linux/Windows and full sanitizer gates remain root responsibility"
+  ],
+  "logs_sha256": {
+    "asan-build-final.log": "25508711979696dc60013a24f03ab4290cb076307cf67fa1408a97ebb968973c",
+    "asan-build.log": "7482cb8e5c676cee23d831ca977d92335c246907b101bf79ee25d1a68f32cbc3",
+    "asan-configure.log": "592147b6f313d62277b4896d352f03b75cca2bace74bd2391232349b319c673e",
+    "asan-source-publication-final.log": "a939dac20ea6bbeb4b48fd9fbc8e01d9ff148fb9a40abfe119a10ed4b034fe1f",
+    "asan-source-publication.log": "014a313100a709180753f981171053a4f1d11362a3e7ffa12589c043ca0f7ff7",
+    "build-author.log": "1cc40ad030d2522fce756a7ec3285ce4f3514c181af6d8ada6ed7382c50f4cc9",
+    "build-expanded.log": "67fa989a542ce281bba0820a181d950c345e6a9c02f4b657470a18782c196cca",
+    "build-final.log": "c0fa1cf1f0f745284de1b63dc067acf7343b9a82c2f002d83a4b2f0da1346dc4",
+    "build-first.log": "339b8f904a7a95861b88190549149588a36dc69e3fbd53e76b2021b70b836eac",
+    "build-schema-expectations.log": "4b989eefac80cd5ffd69f12d7b1975fefc6beb0bb5a8be07dd4e7543988a4a7d",
+    "configure.log": "68128a97c8aeb31246c8e9c512556392b74f27b73d6687cd65af6ef72f744480",
+    "ctest-author.log": "a1d3c6a818e5235c7b6c5b4f7834a0092625a632bb4b52bd0f9bf5665e4cac0e",
+    "ctest-final.log": "815ded293ee96a671c4398136bb1215a2c07cfb8abb8f6f9e53f28a7655eafff",
+    "ctest-first.log": "8b15332f0b9b8e2f303095800e28b004c19ceb292245582786d5721df72febb5",
+    "ctest-schema-expectations.log": "e0b4e2b30f7c36f2e346d9dbbdab2387e6d04378a41f931fd9636754c5ce509a"
+  }
+}

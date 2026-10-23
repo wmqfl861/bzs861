@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="3"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="e0075cf0853f"
+	time="4"
+	timestamp="2026-10-23T19:24:38"
+	>
+	<testcase name="batch" classname="batch" time="1.39872" status="run">
+		<properties/>
+		<system-out>PASS ten_explicit_inputs_only_and_ordered_receipts
+PASS input_budget_validation_and_owner_scope
+PASS execution_identity_does_not_use_search_deduplication
+PASS errors_are_isolated_and_default_attempts_do_not_retry
+PASS completed_items_survive_pause_restart_resume_without_refetch
+PASS pause_or_cancel_during_fetch_fences_late_publication
+PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+PASS deletion_before_dispatch_stops_only_its_target
+PASS unknown_execution_keeps_grants_across_recovery
+PASS request_and_byte_budgets_stop_unstarted_items
+PASS lease_expiry_and_permission_changes_refuse_late_results
+PASS receipt_failure_rolls_back_snapshot_and_index
+PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+PASS noindex_and_deleted_receipts_never_resurrect_content
+PASS api_dispatch_and_fixture_jobs_coexist
+PASS deadline_near_int64_max_does_not_overflow_lease
+PASS shared_reads_dispatch_once_and_keep_individual_durable_receipts
+PASS shared_reads_cancel_or_pause_one_subscriber_without_cancelling_oth...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="retention" classname="retention" time="2.52588" status="run">
+		<properties/>
+		<system-out>PASS aged_terminal_frontiers_release_the_real_512_job_cap_after_restart
+PASS the_full_deadline_window_and_clock_extremes_are_respected
+PASS unknown_read_grants_survive_compaction_and_late_callbacks_cannot_reopen_work
+PASS paused_and_pending_jobs_remain_pinned_and_maintenance_is_owner_scoped
+PASS unknown_crawl_page_grants_and_origin_charges_survive_expiry_and_compaction
+PASS robots_receipt_and_admission_each_pin_the_exact_expired_record
+PASS expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive
+PASS robots_capacity_can_recover_at_admission_without_erasing_origin_accounting
+PASS crawl_frontier_edges_traps_and_map_candidates_compact_with_original_summaries
+PASS a_storage_failure_rolls_back_the_summary_and_all_detail_deletions
+PASS compaction_never_recreates_publication_deleted_aliases_or_owner_epochs
+PASS schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins
+PASS permanent_key_quotas_remain_bounded_per_owner_and_globally
+PASS two_store_compactors_serialize_without_duplicate_...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="fairness" classname="fairness" time="0.89754" status="run">
+		<properties/>
+		<system-out>PASS read_batches_follow_submission_order_and_rotate_with_identical_timestamps
+PASS late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains
+PASS read_queue_position_survives_restart_and_owner_isolation
+PASS restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch
+PASS two_store_connections_reserve_distinct_jobs_and_rounds
+PASS paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns
+PASS continuous_new_map_jobs_do_not_starve_an_existing_frontier
+PASS new_map_jobs_have_a_strict_submission_order_at_the_same_clock
+PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+PASS worker_loop_gives_batch_and_discovery_categories_progress
+PASS calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart
+11 fairness tests, 251 assertions, 0 failures
+</system-out>
+	</testcase>
+</testsuite>

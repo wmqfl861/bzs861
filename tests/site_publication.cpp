@@ -211,7 +211,7 @@ void schema_six(sqlite3* db) {
 TEST(schema_six_empty_unconfigured_upgrade_does_not_withdraw_unregistered_explicit_reads) {
   Temp temp;Json previous,snapshot;
   { Store store(temp.path/"db");snapshot=artifact(store,"alice","https://unregistered.example/a");previous=frozen(store);schema_six(store.raw_handle()); }
-  Store store(temp.path/"db");CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==12);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured("removed")));
+  Store store(temp.path/"db");CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==13);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured("removed")));
   CHECK(hits(store,previous).size()==1);CHECK(hits(store,frozen(store)).size()==1);CHECK(scalar(store.raw_handle(),"SELECT legacy_frozen_withdrawn FROM site_publication_state")==0);
   CHECK(store.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker canonical secret");
 }
@@ -385,7 +385,7 @@ TEST(schema_seven_inflight_read_has_an_unknown_capture_and_cannot_republish_a_le
     job_id=store.read_many_submit("alice",{a},"legacy-inflight",{}).at("job_id").str();lease=*store.lease_next_read();newer.index=false;new_web.read("alice",read_args(b));
     sql(store.raw_handle(),"ALTER TABLE document_publication DROP COLUMN index_generation; ALTER TABLE document_publication DROP COLUMN snippet_generation; ALTER TABLE session_rows DROP COLUMN snippet_suppressed; ALTER TABLE read_job_items DROP COLUMN publication_sequence; ALTER TABLE read_job_items DROP COLUMN publication_snapshot_id; ALTER TABLE map_resources DROP COLUMN publication_sequence; ALTER TABLE map_resources DROP COLUMN publication_snapshot_id; UPDATE snapshots SET meta_json=json_remove(meta_json,'$.page_publication_sequence','$.page_publication_history','$.page_publication_stale','$.publication_fence'); PRAGMA user_version=7;");
   }
-  Store reopened(temp.path/"db",[&]{return now;});WebService old_web(reopened,older,{}),new_web(reopened,newer,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==12);CHECK(scalar(reopened.raw_handle(),"SELECT COUNT(*) FROM read_job_items WHERE publication_snapshot_id='@legacy'")==1);
+  Store reopened(temp.path/"db",[&]{return now;});WebService old_web(reopened,older,{}),new_web(reopened,newer,{});CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==13);CHECK(scalar(reopened.raw_handle(),"SELECT COUNT(*) FROM read_job_items WHERE publication_snapshot_id='@legacy'")==1);
   old_web.execute_read(lease);CHECK(reopened.job_get("alice",job_id).at("state").str()=="succeeded");CHECK(hits(reopened,frozen(reopened)).size()==0);
   newer.index=true;new_web.read("alice",read_args(b));const auto current=hits(reopened,frozen(reopened));CHECK(find_url(current,a).is_null());CHECK(!find_url(current,b).is_null());CHECK(hits(reopened,previous).size()==0);CHECK(reopened.evidence_get("alice",proof.at("evidence_id").str()).at("quote").str()=="marker");
   old_web.read("alice",read_args(a));CHECK(!find_url(hits(reopened,frozen(reopened)),a).is_null());CHECK(hits(reopened,previous).size()==0);

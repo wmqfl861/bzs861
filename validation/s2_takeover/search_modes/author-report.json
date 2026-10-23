@@ -1,0 +1,91 @@
+{
+  "scope": "author_search_modes_increment_only",
+  "recorded_at_utc": "2026-10-23T10:36:33.711872+00:00",
+  "baseline_commit": "4ef083fcdc7b52fcfc703b26465f86ea989d45cb",
+  "schema": 13,
+  "status": "MODE-01 partial; search-only execution presets",
+  "source_manifest": "source-inputs.json",
+  "source_manifest_sha256": "e5c2989403ecf422d5db2b7268152aedbc787c13944245ee1bab902780d94396",
+  "validation": {
+    "debug": {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/workspace/scratch/e2371129386d/build-source-policy",
+        "-R",
+        "^(search_modes|source_publication|sessions|core)$",
+        "-V",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "passed_suites": 4,
+      "skipped_suites": 0,
+      "log": "native-final.log"
+    },
+    "new_native_cases": {
+      "tests": 13,
+      "assertions": 132,
+      "failures": 0
+    },
+    "python": {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "python/tests/test_search_modes_adapters.py",
+        "python/tests/test_mcp_sessions.py"
+      ],
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": "/workspace/scratch/e2371129386d/bzs861-source-policy/python"
+      },
+      "exit_code": 0,
+      "passed": 80,
+      "skipped": 0,
+      "log": "python-final.log"
+    },
+    "sanitizers": {
+      "command": [
+        "/workspace/scratch/e2371129386d/build-source-policy-asan/bzs_search_mode_tests"
+      ],
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "exit_code": 0,
+      "log": "asan-final.log",
+      "execution": "approved_escalated_local_fixture_for_LeakSanitizer_proc_access"
+    }
+  },
+  "binaries_sha256": {
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_tests": "ae013b165d34b4a818c08da68e8e22023130d4b6fff1d970012a667ddc84e655",
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_session_tests": "9b3934b8581793a69676a9a47d2d1908e419d5ec94150bd9e46f066c519dccdb",
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_source_publication_tests": "45f368de82a26d6d8d63d8382986280529d2fa88df687b296fab2f00c77d557b",
+    "/workspace/scratch/e2371129386d/build-source-policy/bzs_search_mode_tests": "40ccde6a59ad56feb15686fffcad722cadd0c5ab4e112c18c9d66b354f16be93",
+    "/workspace/scratch/e2371129386d/build-source-policy/searchctl": "0a7f4adaf2424056640f1149a5f940321480391cc483ed7d1f16700209ae63dd",
+    "/workspace/scratch/e2371129386d/build-source-policy-asan/bzs_search_mode_tests": "7b7dd1fb2927150c9ffd142c63b148dc0671b072bff10ba046bb8b15368351e5"
+  },
+  "preserved_failures": [],
+  "logs_sha256": {
+    "asan-build.log": "7eb32079ae696ef2c7e2b21ce25ee860960a6a404d2a6f54d6cc65833e7c3e31",
+    "asan-final.log": "a7c3dc5fe02f347fbf3a058cc8bde14be92412b9e414a1c5ad658a88b4aba02a",
+    "build-expanded.log": "97b39c33b67916b8fc25fdb2aa908d744b5c8d169414a1fe6f6b914d0cb8215a",
+    "build-final.log": "7418d58c9a7161e3575772cbeef60a26643113215badde2cfb4780391688b38c",
+    "build-first.log": "6790440288732051fbb0fc295a2cbfedff09d3f17575ce992cd1c667d664205e",
+    "native-final.log": "3aa1f255d242a2d732c8dec7e532d972a61f36060a160838ad823151a76fb72c",
+    "native-first.log": "955f13e0aa029253e351dba4afd14f484c17f0fdb22e191188ee6542eef6744b",
+    "python-final.log": "54480ad2b9bcda3fcdfd7faf2fe1d1baa62ddd302c6fd8b344c28e8893f011ff",
+    "python-first.log": "3a4b61ad27782f5d64b596e6fb361dd5e092b59a84fda6947ffeb0b03c76b1b5"
+  },
+  "boundaries": [
+    "No new source approval, real source access, automatic reads, model calls, or browser calls",
+    "Preset labels are execution ceilings, not quality evidence",
+    "Persistent global deadline remains wall-clock based; complete clock-rollback protection across restart is not claimed",
+    "Unspecified mode/max_sources preserves legacy normalized JSON and idempotency fingerprint",
+    "No schema addition beyond prior source policy schema13",
+    "Final integrated Linux/Windows and complete sanitizer gates remain root responsibility"
+  ]
+}

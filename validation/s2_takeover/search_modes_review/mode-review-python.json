@@ -1,0 +1,31 @@
+{
+  "role": "independent_mode_reviewer_shared_component_author",
+  "argv": [
+    "/usr/bin/env",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "PYTHONPATH=/workspace/scratch/e2371129386d/bzs861-source-policy/python",
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "python/tests/test_search_modes_adapters.py",
+    "python/tests/test_mcp_sessions.py"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861-source-policy",
+  "started_utc": "2026-10-23T10:41:03.412328+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-source-policy/python/bzs/mcp_server.py": "d8c5f468bd8e69333eb08c801dde343d64e9e2c0f5d7766f38a3e376f52afccf",
+    "/workspace/scratch/e2371129386d/bzs861-source-policy/python/bzs/cli.py": "43245e899e9938851656195ba526fbb5ec60e7a60398d6d20a0e86744c61466b",
+    "/workspace/scratch/e2371129386d/bzs861-source-policy/python/bzs/worker/server.py": "2f6b5e49bd5d8d92efa1301d53608b86c060fcf2c1f9b04165d7e378ff732645",
+    "/workspace/scratch/e2371129386d/bzs861-source-policy/python/tests/test_search_modes_adapters.py": "dc5f00b7467d2dcd93e66f05bc49c305c8caf135e8472f19e35ef2a73789cbe3"
+  },
+  "source_head": "81337026084de2f9d503db8fdc0099c0f75720bf",
+  "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exit_code": 0,
+  "seconds": 3.543,
+  "finished_utc": "2026-10-23T10:41:06.961098+00:00",
+  "log_sha256": "4c0fb0dbe4ea56140c958e61528caf3439ccfb50b7d54b164aa5f907a5220774"
+}

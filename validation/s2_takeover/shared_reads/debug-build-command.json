@@ -1,0 +1,17 @@
+{
+  "command": [
+    "cmake",
+    "--build",
+    "--preset",
+    "dev",
+    "--target",
+    "bzs_batch_tests",
+    "bzs_fairness_tests",
+    "bzs_retention_tests",
+    "-j",
+    "2"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.013,
+  "log": "debug-build.log"
+}

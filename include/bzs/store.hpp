@@ -72,7 +72,15 @@ namespace bzs {
     std::int64_t site_publication_manifest_generation_=0;
     bool site_publication_legacy_withdrawn_=false;
     void migrate();
+    void migrate_revocations_locked();
+    void require_principal_active_locked(const std::string& owner);
     void migrate_sessions_locked();
+    void migrate_source_publication_locked();
+    std::int64_t source_publication_manifest_generation_=0;
+    void refresh_source_publication_locked();
+    std::int64_t source_capture_locked(const SourceRegistry& registry,const Json& source_ids);
+    int source_publication_mode_locked(const std::string& source_id,std::int64_t generation,const Json* original_contract=nullptr);
+    int source_hit_mode_locked(const Json& hit,std::int64_t generation);
     void local_stream_locked(const std::string& owner,const std::string& id);
     Json stream_locked(const std::string& owner,const std::string& id);
     void stream_event_locked(const std::string& id,const std::string& kind,const std::string& version="");
@@ -112,6 +120,12 @@ namespace bzs {
     void job_capacity_locked(const std::string& owner);
     Json read_job_locked(const std::string& owner, const std::string& id);
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
+    void migrate_shared_reads_locked();
+    void attach_shared_reads_locked(const ReadLease& lease);
+    std::vector<ReadLease> shared_read_members_locked(const ReadLease& payer);
+    bool shared_read_live_locked(const ReadLease& payer);
+    void settle_shared_read_locked(const ReadLease& payer,const std::string& error,
+                                   std::int64_t requests,std::int64_t bytes,const Json* snapshot=nullptr);
     void settle_read_jobs_locked();
     void settle_read_job_locked(const std::string& id);
     bool owns_read_lease_locked(const ReadLease& lease);
@@ -142,12 +156,22 @@ namespace bzs {
     ~Store();
     Store(const Store&)=delete;
     Store& operator=(const Store&)=delete;
+    // A durable denial for a principal applies to every bearer token for that
+    // subject. Re-adding credentials never clears it. Actor authorization is
+    // checked by Service, then rechecked for concurrent revocation here.
+    void require_principal_active(const std::string& owner);
+    Json revoke_principal(const std::string& actor,const std::string& owner);
     Json ingest(const std::string& owner, const SourceDocument& input);
     // Explicit trusted configuration activation. An empty manifest retires
     // previously registered scopes; omitting activation keeps durable policy.
     // A Store opened before another activation cannot overwrite its manifest.
     std::int64_t activate_site_publication(const SiteRegistry& sites);
     std::int64_t site_publication_generation() const;
+    // Explicit registry activation is durable. Omitted registry leaves the
+    // last deployment policy in force; older Store handles cannot replace it.
+    std::int64_t activate_source_publication(const SourceRegistry& registry);
+    std::int64_t source_publication_capture(const SourceRegistry& registry,const Json& source_ids);
+    Json project_source_search(const Json& response,std::int64_t generation);
     Json publication_fence(const std::string& owner,const std::string& url);
     void observe_web_publication(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy,const Json& fence);
     // Capture before a worker read. Every deletion advances this persistent
@@ -159,6 +183,10 @@ namespace bzs {
                     std::int64_t expected_deletion_generation);
     // Current snapshot summary for (owner,url), if any; used for read caching.
     std::optional<Json> cached(const std::string& owner, const std::string& url);
+    // Fence a previously cached representation after a non-storable response.
+    // Expected metadata prevents a late failure from invalidating a newer fetch.
+    void invalidate_web_cache(const std::string& owner,const std::string& url,
+                              const std::string& snapshot_id,const std::string& metadata_sha256);
     // Internal only: the Worker receives validators, never the retained body.
     std::optional<RevalidationBase> revalidation_base(const std::string& owner,const std::string& url);
     Json snapshot(const std::string& owner, const std::string& snapshot_id);

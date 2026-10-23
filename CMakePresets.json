@@ -1,15 +1,75 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": {"major": 3, "minor": 25, "patch": 0},
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
   "configurePresets": [
-    {"name": "dev", "generator": "Ninja", "binaryDir": "${sourceDir}/build", "cacheVariables": {"CMAKE_BUILD_TYPE":"Debug", "BZS_BUILD_TESTS":"ON"}},
-    {"name": "release", "inherits":"dev", "binaryDir":"${sourceDir}/build-release", "cacheVariables":{"CMAKE_BUILD_TYPE":"Release"}},
-    {"name": "asan", "inherits":"dev", "binaryDir":"${sourceDir}/build-asan", "cacheVariables":{"BZS_SANITIZERS":"ON"}}
+    {
+      "name": "dev",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BZS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "asan",
+      "inherits": "dev",
+      "binaryDir": "${sourceDir}/build-asan",
+      "cacheVariables": {
+        "BZS_SANITIZERS": "ON"
+      }
+    }
   ],
   "buildPresets": [
-    {"name":"dev", "configurePreset":"dev"},
-    {"name":"release", "configurePreset":"release"},
-    {"name":"asan-core", "configurePreset":"asan", "targets":["bzs_tests","bzs_batch_tests","bzs_map_tests","bzs_crawl_tests","bzs_site_publication_tests","bzs_contract_tests","bzs_retention_tests","bzs_fairness_tests","bzs_session_tests","bzs_revalidation_tests","bzs_capacity_cycles_tests"]}
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "asan-core",
+      "configurePreset": "asan",
+      "targets": [
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "bzs_retention_tests",
+        "bzs_fairness_tests",
+        "bzs_session_tests",
+        "bzs_revalidation_tests",
+        "bzs_capacity_cycles_tests",
+        "bzs_revocation_tests",
+        "bzs_source_publication_tests",
+        "bzs_cache_freshness_tests",
+        "bzs_search_mode_tests"
+      ]
+    }
   ],
-  "testPresets": [{"name":"dev", "configurePreset":"dev", "output":{"outputOnFailure":true}}]
+  "testPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
 }

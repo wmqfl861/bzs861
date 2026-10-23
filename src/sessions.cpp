@@ -1,6 +1,7 @@
 #include "bzs/store.hpp"
 #include "bzs/web.hpp"
 #include "bzs/contracts.hpp"
+#include "bzs/search_modes.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
@@ -56,17 +57,17 @@ void capacity(sqlite3* db,const std::string& owner) {
   require(count.num(2)<10000&&count.num(3)<100000,"E_SESSION_BACKPRESSURE","Retained search identity capacity reached",429);
 }
 Json normalized_request(const Json& input,const SourceRegistry& registry,std::int64_t now) {
-  input.allowed({"query","sources","category","limit","per_source","language","timeout_ms","deadline_ms","idempotency_key"});
+  input.allowed({"query","sources","category","limit","per_source","language","timeout_ms","deadline_ms","idempotency_key","mode","max_sources"});
   auto out=Json::object();const auto query=required_string(input,"query",1000);require(valid_utf8(query),"E_UTF8","Query must be UTF-8");out.set("query",query);
   const auto key=required_string(input,"idempotency_key",128);require_identifier(key);out.set("idempotency_key",key);
-  out.set("limit",int_option(input,"limit",20,1,50));out.set("per_source",int_option(input,"per_source",10,1,30));
-  out.set("timeout_ms",int_option(input,"timeout_ms",8000,1000,30000));out.set("deadline_ms",int_option(input,"deadline_ms",120000,1000,600000));
+  const auto mode=search_mode(input,true);out.set("limit",mode.limit);out.set("per_source",mode.per_source);
+  out.set("timeout_ms",mode.timeout_ms);out.set("deadline_ms",mode.deadline_ms);
   if(input.has("language")) {
     auto language=required_string(input,"language",16);
     require(std::all_of(language.begin(),language.end(),[](char c){return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='-'||c=='_';}),"E_SCHEMA","Invalid language tag");out.set("language",language);
   }
   auto sources=Json::array();std::set<std::string> seen;
-  const auto add=[&](const SourceSpec& s) { s.require_review(now);if(seen.insert(s.id).second)sources.push(Json::string(s.id)); };
+  const auto add=[&](const SourceSpec& s) { if(seen.insert(s.id).second)sources.push(Json::string(s.id)); };
   if(input.has("sources")) {
     auto ids=input.at("sources");require(ids.is_array()&&ids.size()>0&&ids.size()<=20,"E_SCHEMA","Require 1..20 sources");
     for(std::size_t i=0;i<ids.size();++i) { const auto* spec=registry.find(ids.at(i).str());require(spec&&spec->enabled,"E_SCHEMA","Unknown or disabled source");add(*spec); }
@@ -74,7 +75,20 @@ Json normalized_request(const Json& input,const SourceRegistry& registry,std::in
     const auto category=input.has("category")?required_string(input,"category",32):"web";
     for(const auto& s:registry.all())if(s.enabled&&(category=="all"?s.by_default:category=="web"?(s.by_default&&(s.capability=="web"||s.capability=="encyclopedia")):s.capability==category))add(s);
   }
-  require(sources.size()>0&&sources.size()<=20,"E_SCHEMA","Require 1..20 approved sources");out.set("sources",sources);return out;
+  auto omitted=Json::array();
+  if(input.has("sources"))require(sources.size()<=static_cast<std::size_t>(mode.max_sources),"E_SCHEMA","Explicit sources exceed the selected mode source budget");
+  else if(mode.explicit_mode||mode.explicit_source_limit) {
+    auto selected=Json::array();for(std::size_t i=0;i<sources.size();++i) { if(i<static_cast<std::size_t>(mode.max_sources))selected.push(sources.at(i));else omitted.push(sources.at(i)); }sources=selected;
+  }
+  require(sources.size()>0&&sources.size()<=20,"E_SCHEMA","Require 1..20 approved sources");
+  for(std::size_t i=0;i<sources.size();++i)registry.find(sources.at(i).str())->require_review(now);
+  out.set("sources",sources);
+  if(mode.explicit_mode||mode.explicit_source_limit) {
+    if(mode.explicit_mode)out.set("mode",mode.name);
+    out.set("max_sources",mode.max_sources);
+    out.set("effective_budget",mode.budget(static_cast<std::int64_t>(sources.size())));out.set("omitted_sources",omitted);
+  }
+  return out;
 }
 }
 
@@ -129,8 +143,9 @@ void Store::local_stream_locked(const std::string& owner,const std::string& id) 
   stream.bind(1,id);stream.bind(2,owner);stream.bind(3,local.num(0));stream.bind(4,local.num(1));stream.bind(5,local.num(2));stream.bind(6,local.num(2));stream.bind(7,id);stream.step();stream_event_locked(id,"completed",id);
 }
 Json Store::stream_locked(const std::string& owner,const std::string& id) {
+  require_principal_active_locked(owner);
   require_identifier(owner);local_stream_locked(owner,id);
-  Statement s(db_,"SELECT kind,state,auth_epoch,expires_at,latest_version,next_event,used_requests,unknown_requests,error_code,deadline FROM search_streams WHERE id=? AND owner=?");s.bind(1,id);s.bind(2,owner);
+  Statement s(db_,"SELECT kind,state,auth_epoch,expires_at,latest_version,next_event,used_requests,unknown_requests,error_code,deadline,request_json FROM search_streams WHERE id=? AND owner=?");s.bind(1,id);s.bind(2,owner);
   if(!s.step()) {
     Statement old(db_,"SELECT 1 FROM search_stream_receipts WHERE id=? AND owner=?");old.bind(1,id);old.bind(2,owner);
     if(old.step())throw Error("E_SESSION_EXPIRED","Session expired; repeat the query with a new idempotency key",410);
@@ -141,6 +156,11 @@ Json Store::stream_locked(const std::string& owner,const std::string& id) {
   auto out=Json::object();out.set("session_id",id);out.set("kind",s.text(0));out.set("state",s.text(1));out.set("result_set_version",s.text(4));
   out.set("last_event_id",s.num(5)-1);out.set("expires_at_ms",s.num(3));out.set("deadline_ms",s.num(9));
   out.set("dispatched_source_attempts",s.num(6));out.set("unknown_source_attempts",s.num(7));out.set("model_calls",std::int64_t{0});
+  if(s.text(0)=="web") {
+    const auto request=Json::parse(s.text(10),16384);out.set("effective_mode",request.has("mode")?request.at("mode"):Json::string("legacy"));
+    out.set("effective_budget",request.has("effective_budget")?request.at("effective_budget"):search_mode(request,true).budget(static_cast<std::int64_t>(request.at("sources").size())));
+    out.set("omitted_sources",request.has("omitted_sources")?request.at("omitted_sources"):Json::array());
+  }
   if(!s.text(8).empty())out.set("error_code",s.text(8));
   out.set("event_retention_ms",event_ttl);out.set("max_retained_events",max_events);out.set("poll_after_ms",std::int64_t{250});return out;
 }
@@ -165,8 +185,10 @@ void Store::settle_searches_locked() {
   Statement local(db_,"DELETE FROM sessions WHERE expires_at<=?");local.bind(1,now);local.step();
 }
 Json Store::search_submit(const std::string& owner,const Json& input,const SourceRegistry& registry) {
+  (void)source_publication_capture(registry,Json::array());
   const auto request=normalized_request(input,registry,clock_());const auto encoded=request.canonical();require(encoded.size()<=16384,"E_SCHEMA","Search request too large");
-  std::lock_guard lock(mutex_);Transaction tx(db_);const auto epoch=epoch_locked(owner);settle_searches_locked();refresh_site_publication_locked();
+  std::lock_guard lock(mutex_);Transaction tx(db_);require_principal_active_locked(owner);const auto epoch=epoch_locked(owner);settle_searches_locked();refresh_site_publication_locked();
+  const auto source_generation=source_capture_locked(registry,request.at("sources"));
   const auto source_identity=search_registry_identity(registry);const auto fingerprint=sha256(encoded+"\n"+source_identity);
   Statement existing(db_,"SELECT id,fingerprint FROM search_stream_receipts WHERE owner=? AND idempotency_key=?");existing.bind(1,owner);existing.bind(2,request.at("idempotency_key").str());
   if(existing.step()) {
@@ -182,7 +204,7 @@ Json Store::search_submit(const std::string& owner,const Json& input,const Sourc
   receipt.bind(1,id);receipt.bind(2,owner);receipt.bind(3,request.at("idempotency_key").str());receipt.bind(4,fingerprint);receipt.bind(5,now);receipt.step();
   Statement add(db_,"INSERT INTO search_streams(id,owner,auth_epoch,kind,state,created_at,expires_at,deadline,request_json,manifest_sha256,contracts_json,created_delete_sequence,publication_sequence,site_generation)VALUES(?,?,?,'web','queued',?,?,?,?,?,?,?,?,?)");
   add.bind(1,id);add.bind(2,owner);add.bind(3,epoch);add.bind(4,now);add.bind(5,now+stream_ttl);add.bind(6,now+request.at("deadline_ms").num());add.bind(7,encoded);add.bind(8,source_identity);add.bind(9,contract_json);add.bind(10,delete_sequence_locked());add.bind(11,scalar(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='publication_restriction_sequence'"));add.bind(12,site_publication_cached_generation_);add.step();
-  Statement queued(db_,"UPDATE search_streams SET last_dispatch=? WHERE id=?");queued.bind(1,sequence+1);queued.bind(2,id);queued.step();
+  Statement queued(db_,"UPDATE search_streams SET last_dispatch=?,source_generation=? WHERE id=?");queued.bind(1,sequence+1);queued.bind(2,source_generation);queued.bind(3,id);queued.step();
   for(std::size_t i=0;i<ids.size();++i) { Statement source(db_,"INSERT INTO search_stream_sources(session_id,position,source_id)VALUES(?,?,?)");source.bind(1,id);source.bind(2,static_cast<std::int64_t>(i));source.bind(3,ids.at(i).str());source.step(); }
   stream_event_locked(id,"queued");auto out=stream_locked(owner,id);out.set("reused",false);tx.commit();return out;
 }
@@ -212,11 +234,11 @@ Json Store::session_cancel(const std::string& owner,const std::string& id) {
   out.set("completed_results_preserved",true);tx.commit();return out;
 }
 std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& registry) {
-  std::lock_guard lock(mutex_);Transaction tx(db_);settle_searches_locked();
+  std::lock_guard lock(mutex_);refresh_source_publication_locked();Transaction tx(db_);settle_searches_locked();
   for(std::size_t attempts=0;attempts<256;++attempts) {
-    Statement s(db_,"SELECT id,owner,epoch,manifest_sha256,request_json,deadline FROM search_streams WHERE kind='web' AND state='queued' ORDER BY last_dispatch,created_at,id LIMIT 1");if(!s.step()) { tx.commit();return std::nullopt; }
+    Statement s(db_,"SELECT id,owner,epoch,manifest_sha256,request_json,deadline,source_generation FROM search_streams WHERE kind='web' AND state='queued' ORDER BY last_dispatch,created_at,id LIMIT 1");if(!s.step()) { tx.commit();return std::nullopt; }
     const auto id=s.text(0);bool approved=s.text(3)==search_registry_identity(registry);auto request=Json::parse(s.text(4),16384);
-    if(approved)try { const auto ids=request.at("sources");for(std::size_t i=0;i<ids.size();++i) { const auto* source=registry.find(ids.at(i).str());require(source,"E_SOURCE_REVIEW","Source removed",409);source->require_review(clock_()); } }catch(const Error&) { approved=false; }
+    if(approved)try { const auto ids=request.at("sources");(void)source_capture_locked(registry,ids);for(std::size_t i=0;i<ids.size();++i) { const auto* source=registry.find(ids.at(i).str());require(source,"E_SOURCE_REVIEW","Source removed",409);source->require_review(clock_());require(source_publication_mode_locked(source->id,s.num(6))<2,"E_SOURCE_REVIEW","Source permission was withdrawn",409); } }catch(const Error&) { approved=false; }
     if(!approved) { Statement fail(db_,"UPDATE search_streams SET state='failed',error_code='E_SOURCE_POLICY_CHANGED' WHERE id=?");fail.bind(1,id);fail.step();stream_event_locked(id,"failed");stream_receipt_locked(id);continue; }
     Statement source(db_,"SELECT position,source_id FROM search_stream_sources WHERE session_id=? AND state='pending' ORDER BY position LIMIT 1");source.bind(1,id);
     if(!source.step()) { Statement done(db_,"UPDATE search_streams SET state='completed' WHERE id=?");done.bind(1,id);done.step();stream_event_locked(id,"completed");stream_receipt_locked(id);continue; }
@@ -258,7 +280,7 @@ Json Store::search_bindings_locked(const std::string& owner,const std::string& u
   auto values=Json::array();for(const auto& value:urls)values.push(Json::string(value));bindings.set("urls",values);return bindings;
 }
 std::string Store::freeze_search_locked(const std::string& id,const SourceRegistry& registry) {
-  Statement state(db_,"SELECT owner,request_json,publication_sequence,site_generation,created_delete_sequence FROM search_streams WHERE id=?");state.bind(1,id);state.step();
+  Statement state(db_,"SELECT owner,request_json,publication_sequence,site_generation,created_delete_sequence,source_generation FROM search_streams WHERE id=?");state.bind(1,id);state.step();
   const auto request=Json::parse(state.text(1),16384);std::vector<SourceHits> collected;bool partial=false;
   std::map<std::string,std::set<std::string>> contributing;
   Statement sources(db_,"SELECT source_id,state,payload_json FROM search_stream_sources WHERE session_id=? ORDER BY position");sources.bind(1,id);
@@ -290,7 +312,7 @@ std::string Store::freeze_search_locked(const std::string& id,const SourceRegist
     if(links_only) { hit.set("title",url);hit.set("snippet","");hit.set("snippet_kind","publication_suppressed"); }
     const auto key=url_key(url);auto actual=Json::array();for(const auto& value:contributing[dedup_key(url)])actual.push(Json::string(value));
     auto bindings=search_bindings_locked(state.text(0),url,actual);
-    auto mode=site_publication_mode_locked("web",bindings.dump(),state.num(3),url,"{}");
+    auto mode=std::max(source_hit_mode_locked(hit,state.num(5)),site_publication_mode_locked("web",bindings.dump(),state.num(3),url,"{}"));
     // Freeze the ceilings already in force, even when their watermarks predate
     // this session. A later complete read may enable a new version, never this one.
     const auto bound=bindings.at("urls");
@@ -310,8 +332,14 @@ std::string Store::freeze_search_locked(const std::string& id,const SourceRegist
 bool Store::complete_search(const SearchLease& lease,const Json& result,const SourceRegistry& registry) {
   require(result.is_object()&&result.has("results")&&result.at("results").is_array()&&result.at("results").size()<=50&&result.has("partial")&&result.at("partial").is_bool(),"E_WORKER_PROTOCOL","Invalid source search result",502);
   const auto payload=result.dump();require(payload.size()<=256*1024,"E_WORKER_PROTOCOL","Source result exceeds session bound",502);
-  std::lock_guard lock(mutex_);Transaction tx(db_);
+  std::lock_guard lock(mutex_);refresh_source_publication_locked();Transaction tx(db_);
   if(!search_lease_locked(lease)||search_registry_identity(registry)!=lease.manifest_sha256) { tx.commit();return false; }
+  Statement source_generation(db_,"SELECT source_generation FROM search_streams WHERE id=?");source_generation.bind(1,lease.id);source_generation.step();
+  if(source_publication_mode_locked(lease.source_id,source_generation.num(0))>=2) {
+    Statement reject(db_,"UPDATE search_streams SET state='failed',lease_until=0,error_code='E_SOURCE_POLICY_CHANGED' WHERE id=?");reject.bind(1,lease.id);reject.step();
+    Statement withdraw(db_,"UPDATE search_stream_sources SET state='cancelled' WHERE session_id=? AND state IN ('pending','running')");withdraw.bind(1,lease.id);withdraw.step();
+    stream_event_locked(lease.id,"failed");stream_receipt_locked(lease.id);tx.commit();return false;
+  }
   Statement save(db_,"UPDATE search_stream_sources SET state='completed',payload_json=? WHERE session_id=? AND position=?");save.bind(1,payload);save.bind(2,lease.id);save.bind(3,lease.position);save.step();
   Statement count(db_,"SELECT COUNT(*) FROM search_stream_sources WHERE session_id=? AND state='pending'");count.bind(1,lease.id);count.step();const auto state=count.num(0)?"queued":"completed";
   Statement update(db_,"UPDATE search_streams SET state=?,lease_until=0 WHERE id=?");update.bind(1,state);update.bind(2,lease.id);update.step();
@@ -326,12 +354,13 @@ void Store::fail_search(const SearchLease& lease,const std::string& error) {
 }
 Json Store::session_page(const std::string& owner,const std::string& id,const std::string& version,const std::string& cursor,std::int64_t page_size) {
   require(page_size>=1&&page_size<=100,"E_SCHEMA","Page size out of range");
-  std::unique_lock lock(mutex_);Transaction tx(db_);auto state=stream_locked(owner,id);
+  std::unique_lock lock(mutex_);refresh_source_publication_locked();Transaction tx(db_);auto state=stream_locked(owner,id);
   if(state.at("kind").str()=="local") { require(version.empty()||version==id,"E_RESULT_VERSION","Version does not belong to this session",400);tx.commit();lock.unlock();return page(owner,id,cursor,page_size); }
   require(!version.empty(),"E_RESULT_VERSION","A frozen result_set_version is required",400);
   Statement v(db_,"SELECT partial FROM search_versions WHERE id=? AND session_id=?");v.bind(1,version);v.bind(2,id);require(v.step(),"E_RESULT_VERSION","Version does not belong to this session",400);
-  Statement s(db_,"SELECT contracts_json,created_delete_sequence FROM search_streams WHERE id=?");s.bind(1,id);s.step();const auto contracts=Json::parse(s.text(0),128*1024);
+  Statement s(db_,"SELECT contracts_json,created_delete_sequence,source_generation FROM search_streams WHERE id=?");s.bind(1,id);s.step();const auto contracts=Json::parse(s.text(0),128*1024);
   for(std::size_t i=0;i<contracts.size();++i)try { (void)validate_contract("source-manifest",contracts.at(i),clock_()); }catch(const Error&) { throw Error("E_SESSION_INVALIDATED","Source review expired; repeat the query under current approved sources",409); }
+  for(std::size_t i=0;i<contracts.size();++i) { const auto contract=contracts.at(i);require(source_publication_mode_locked(contract.at("id").str(),s.num(2),&contract)<2,"E_SESSION_INVALIDATED","Source publication permission was withdrawn; repeat under current approved sources",409); }
   refresh_site_publication_locked();std::int64_t pos=0;
   if(!cursor.empty()) { Statement c(db_,"SELECT position FROM search_page_cursors WHERE token=? AND session_id=? AND version_id=?");c.bind(1,cursor);c.bind(2,id);c.bind(3,version);require(c.step(),"E_CURSOR","Cursor does not belong to this session and result version",400);pos=c.num(0); }
   Statement rows(db_,"SELECT position,url,url_key,hit_json,publication_sequence,site_generation,site_bindings FROM search_result_rows WHERE version_id=? AND position>=? ORDER BY position LIMIT 51");rows.bind(1,version);rows.bind(2,pos);
@@ -348,11 +377,12 @@ Json Store::session_page(const std::string& owner,const std::string& id,const st
     if(hidden)continue;
     const auto mode=std::max(site_publication_mode_locked("web",rows.text(6),rows.num(5),rows.text(1),"{}"),site_publication_mode_locked("web",current_bindings.dump(),rows.num(5),rows.text(1),"{}"));if(mode>=2)continue;snippet=snippet&&mode==0;
     if(hits.size()==static_cast<std::size_t>(page_size)) { more=true;next=rows.num(0);break; }
-    auto hit=Json::parse(rows.text(3),16384);hit.set("position",rows.num(0));hit.set("body_read",false);
+    auto hit=Json::parse(rows.text(3),16384);snippet=snippet&&source_hit_mode_locked(hit,s.num(2))==0;hit.set("position",rows.num(0));hit.set("body_read",false);
     if(!snippet) { hit.set("title",rows.text(1));hit.set("snippet","");hit.set("snippet_kind","publication_suppressed"); }
     hits.push(hit);next=rows.num(0)+1;
   }
   auto out=Json::object();out.set("session_id",id);out.set("result_set_version",version);out.set("hits",hits);out.set("has_more",more);out.set("partial",v.num(0)!=0);out.set("coverage","external_search_snippets_unread");
+  for(const auto* field:{"effective_mode","effective_budget","omitted_sources"})if(state.has(field))out.set(field,state.at(field));
   if(more) {
     Statement c(db_,"SELECT token FROM search_page_cursors WHERE version_id=? AND position=?");c.bind(1,version);c.bind(2,next);auto token=c.step()?c.text(0):random_id();
     Statement insert(db_,"INSERT OR IGNORE INTO search_page_cursors VALUES(?,?,?,?)");insert.bind(1,token);insert.bind(2,id);insert.bind(3,version);insert.bind(4,next);insert.step();out.set("next_cursor",token);
@@ -364,9 +394,15 @@ std::optional<SearchLease> WebService::lease_search() { return store_.lease_next
 void WebService::execute_search(const SearchLease& lease) {
   if(!store_.search_lease_live(lease))return;
   try {
-    auto args=Json::object();for(const auto* field:{"query","per_source","timeout_ms","language"})if(lease.request.has(field))args.set(field,lease.request.at(field));
+    const auto started=std::chrono::steady_clock::now();
+    const auto left=lease.deadline_ms-store_.now();require(left>0,"E_DEADLINE","Search deadline exhausted before dispatch",408);
+    // Public request minima validate the original grant. Its remaining time
+    // can be below one second; carry that absolute deadline separately so no
+    // public revalidation or function-call delay rounds it up or restarts it.
+    const auto deadline=started+std::chrono::milliseconds(left);
+    auto args=Json::object();for(const auto* field:{"query","per_source","timeout_ms","deadline_ms","language","mode"})if(lease.request.has(field))args.set(field,lease.request.at(field));
     args.set("limit",lease.request.at("per_source"));args.set("refresh",true);auto sources=Json::array();sources.push(Json::string(lease.source_id));args.set("sources",sources);
-    const auto result=search(lease.owner,args,true);store_.complete_search(lease,result,registry_);
+    const auto result=search(lease.owner,args,true,deadline);store_.complete_search(lease,result,registry_);
   }catch(const Error& error) { store_.fail_search(lease,error.code); }catch(...) { store_.fail_search(lease,"E_INTERNAL"); }
 }
 }

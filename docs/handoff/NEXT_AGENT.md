@@ -1,44 +1,29 @@
-# 下一位开发者的接续入口
+# 下一会话接手顺序
 
-更新：2026-10-22。当前范围为 **0.1.9 S2 五个接续增量**。本轮历史输入是已发布0.1.8 `2c536e9834c4897b0c70e3bd6651b765cc67f45e`，schema11；当前schema12。开始时先读取真实远端main、工作区、准确源码树和该SHA的Linux/Windows CI，不能把历史输入当当前HEAD。
+更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[最终验证报告](../../validation/s2_takeover/final-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI，不把历史成绩当当前成功。
 
-## 阅读顺序
+## 当前基线与接口
 
-1. [本轮接续计划](S2_NEXT_FIVE_20261021.md)、[验证说明](../../validation/s2_next_five/README.md)、[最终报告](../../validation/s2_next_five/json-race-report.json)及独立复核记录。
-2. [条件重验证](../HTTP_REVALIDATION.md)、[会话故障](../SEARCH_SESSIONS.md)、[来源贡献与外部消融](../RELEVANCE_EVALUATION.md)。
-3. [任务保留](../JOB_RETENTION.md)、[调度](../TASK_SCHEDULING.md)、[页面发布](../SITE_PUBLICATION.md)、[正文爬取](../SITE_CRAWLING.md)、[API](../API.md)。
-4. [开发进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)、[蓝图](../planning/development_blueprint_v1.2.md)、[83包/161验收映射](../planning/slices_v1.2.json)，再查原规格/backlog和历史交接。
+本轮接手基线为0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`，CI39725326547成功。当前schema13组合来源发布、主体撤权与共享批读。真实schema12建库升级的可重放探针、旧39表摘要和备份隔离证据在validation/s2_takeover/migration，不能用手造旧表或修改user_version替代。
 
-## 已有实现与不可放宽的约束
+五项合同分别见SOURCE_PUBLICATION、PRINCIPAL_REVOCATION、HTTP_FRESHNESS、SHARED_READS、SEARCH_MODES。主体撤权是持久且不可重启用的管理员操作；MCP默认不暴露，显式--admin-tools仅允许stdio。旧缓存、会话和在途提交需要重查来源/主体/页面/删除限制。来源后来放宽不恢复旧结果，主体撤权也不随来源重启用而恢复。
 
-本轮五个增量是页面304、robots重验证、真实会话故障、外部来源消融前置和有限容量/公平性循环，都属于已有partial包。83包/10切片/161验收保留，36 partial /47 not_started /0 accepted不变。
+缓存的原始限制独立于validators。no-store无新持久快照；截断证据可以保留但不作为新鲜缓存；cache_only不访问来源，无证明则拒绝。profile RPC后再检期限，提取不能重置响应年龄。共享读取只覆盖同owner且派发时已排队的兼容read_many，付款者取消不取消其余订阅，实际/未知用量只计一次。未知执行不自动重发。
 
-304绑定同owner、精确URI/profile、当前快照与完整元数据身份，沿用原完整正文发布序号/站点代际。派发与提交时合并当前publication，包括失败或在途观察到的nofollow；crawl按实际保存快照的follow决定旧链接扩张。新完整200可建立新表示，旧快照、证据和冻结会话不因此恢复。并发替换、删除、错validator、跳转后304或无绑定响应不能额外补抓绕过原授权。
+搜索模式只执行搜索，fast/balanced/deep返回实际配置上限与omitted_sources；所有读取/模型/浏览器预算为0。旧无mode请求的normalized JSON与幂等身份保留，不能为了扩功能悄悄改变已有key。
 
-robots只检查最新决策再判断新鲜度；过期rules只能作为重验证表示，不能直接放行内容。回收若仍存在较旧记录，最新拒绝必须保留；旧引用都退役后可在有界循环中一起回收。schema11旧行迁到12默认无validators、0新增元数据用量，完整200前不猜测条件身份。真实旧库升级证据与隔离backup拒绝已分别保留。
+最终本地冻结输入是validation/s2_takeover/final-v2-execution-inputs.json（222个文件）；27/27套CTest、15/15套ASan/UBSan及Python 1,049项通过，无跳过。原1秒真实截止时间E2E保持字节一致；公开参数最小1000毫秒不代表内部剩余预算也必须1000毫秒，任何仍为正的余量由绝对steady-clock期限收紧。旧mode reviewer的相反假设已在search_modes_deadline_review明确撤回。首轮失败不得删掉或改写为通过。
 
-jobs.compact只压缩至少七天后的稳定终态明细，key/指纹/计费永久保留。活动/暂停/未知预留未结算不压缩；robots准入和回执pin都生效。每owner10000/部署50000永久任务身份仍有硬上限，不能删键或重置配额、水位、调度序号绕过。持久轮转保证合格租约机会，不保证固定秒数网络完成。
+## 接续开发
 
-来源会话提供冻结版本、版本游标与元数据事件。真实故障用例覆盖Core/Worker kill、响应/ACK丢失、取消晚到和真实期限；未知执行不自动重发。在途有限RPC可结束，但取消后不得发布。4MiB背压、事件/会话到期和有限循环是对应测试范围，不称任意断电或长时验收。
+先修当前精确提交上任何真实失败，再按原蓝图扩展剩余S2工作。完整B-24仍需直接读取、crawl/search、迟到订阅与更广取消矩阵；AUTH-01仍需独立撤销journal、恢复连续性及远程多客户端隔离；MODE-01后续读取/模型能力必须有真实实现与独立预算，不可仅改标签。
 
-QA-02的外部消融输入必须绑定实际base/ablation排序、来源/逻辑服务/索引族、参数/环境与完整查询运行摘要。nDCG保持整个冻结候选池IDCG；缺源/失败/缺失不当作empty，不在Python重建生产RRF。没有真实人工标签/裁决和独立质量证据，完整release_gate保持blocked，不能AI填等级、虚构人审或看holdout再调参。
+QA-02先取得真实人工标签/裁决与目标环境证据，冻结方法/阈值后才比较质量；不得AI填人审、看holdout调参或用合成成绩冒充真实消融。S0保留真实来源审核/实测门槛；广泛长时、物理断电、跨owner集合、跨节点与依赖完整性不由有限回归代替。
 
-## 下一步
+## 验证与发布约束
 
-先核对最终提交的实际CI与冻结输入，修真实失败。新revalidation/capacity_cycles原生目标须继续在Linux ASan/UBSan和Windows阻塞门槛；e2e_session_recovery/e2e_revalidation继续在Linux完整CTest。依赖跳过不能算通过，作者候选不替代独立复核或最终整合结果。
+保留原83包/161验收/10切片、依赖、估算与验收含义；当前37部分/46未开始/0完整签收。17搜索来源默认禁用、站点为空，原黄金字节及20/15/5划分不变。业务逻辑不加入平台系统调用；Core/Worker/MCP职责不变，独立撤销连续性未证明则备份继续隔离。
 
-按原计划继续CRAWL-01/03广泛网站和长期容量/公平性、剩余HTTP缓存/共享取消B-24、公共集合等效验收。SESSION-02继续真实长时、完整故障矩阵及S5场景。QA-02接真实标签与目标环境，先冻结方法/阈值再跑可比基线，取得真实来源消融、留出、硬条件和引用证据。S0真实来源审核/实测、独立撤销连续性及隔离恢复仍是实际门槛；后续动态页、文档、模型、私人资料、订阅和Windows安装包按S0–S9推进。
+新source_publication/search_modes/cache_freshness/revocation原生目标须留在Linux sanitizer与Windows门槛；完整Linux CTest包括真实缓存/撤权HTTP及原恢复套件。缺依赖、跳过或不完整日志不能记作通过。按源文件与二进制哈希记录作者、独立、升级和最终执行，保留原失败。
 
-## 长期边界
-
-40条黄金查询原文/ID和20 development、15 regression、5 holdout保持；当前工具无留出运行开关。17来源默认禁用、站点为空，无新增批准或付费回退。合成fixture审核不是生产来源批准，0.1.2云端DNS失败不冒充本轮或用户机器结果。
-
-C++独占业务、数据库、权限、预算与调度；Worker负责受限网络/解析并独立准入，MCP只映射严格参数。业务代码不直接使用POSIX/Win32；真实SIGKILL仅是Linux故障测试。页面水位、任务摘要、会话事件均不替代独立撤销journal，没有连续性证明仍隔离备份。
-
-历史validation目录、v1.1规格/backlog/schema/锁不改写；不删减工作包或验收、不公开凭据和运行数据库。发布仅到wmqfl861/bzs861，以准确父SHA非强制更新；取回实际commit/tree对齐本地，再查该SHA的Linux/Windows，不能预写未来自身SHA。
-
-## 0.1.9发布后的并发修正
-
-先读最新json-race-report、json-race-execution-inputs和json-race-source-manifest；final-report与ci-followup-report分别属于首次发布和Windows测试修正，不能替代当前输入。c14b3c3的Windows12/12通过，但Linux真实ACK恢复发现共享json-c竞争。当前统一同步native读取、序列化返回缓冲复制及全部引用生命周期，两个并发回归进入core/sessions；共享树修改和同一C++句柄重赋值需调用者同步。
-
-当前完整CTest19/19、Python984、11套sanitizer通过，core82案/714断言、sessions22案/285断言。真实恢复文件保持原字节，不能通过重试、修改断言或移除真实期限隐藏并发问题。独立同源3案及真实新建旧库升级已绑定最终库；默认沙箱网络限制的失败和允许回环后的完整成功分别留档。
+所有历史validation、v1.1规格/backlog/schema/锁不改写；不用新的报告冒充旧运行。以准确父SHA非强制推送，远端前进先审差异；获取实际tree对齐本地，再查该SHA的Linux/Windows。公开仓库不含私人聊天、凭据、运行数据库或未批准外部原始内容。

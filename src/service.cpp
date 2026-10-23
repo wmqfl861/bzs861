@@ -1,5 +1,6 @@
 #include "bzs/service.hpp"
 #include "bzs/contracts.hpp"
+#include "bzs/search_modes.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <openssl/crypto.h>
@@ -137,7 +138,7 @@ namespace bzs {
     j.set("production_ready", false);
     Json a=Json::array();
     for(const auto*op: {
-      "capabilities", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create"
+      "capabilities", "search.modes", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create", "principal.revoke"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
       "web.search", "web.search.start", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
@@ -154,17 +155,31 @@ namespace bzs {
     return j;
   }
   Json Service::dispatch(const Principal& p, const Json& request) {
+    store_.require_principal_active(p.subject);
+    auto result=dispatch_active(p,request);
+    // A request may wait for a worker after authentication. Never release its
+    // result if a revocation committed while that request was in progress.
+    store_.require_principal_active(p.subject);
+    return result;
+  }
+  Json Service::dispatch_active(const Principal& p, const Json& request) {
     request.allowed( {
       "operation", "params"
     });
     auto op=required_string(request, "operation", 64);
     auto args=request.has("params")?request.at("params"):Json::object();
     require(args.is_object(), "E_SCHEMA", "params must be an object");
+    if(op=="principal.revoke") {
+      require(p.admin,"E_FORBIDDEN","Principal revocation requires an administrator token",403);
+      args.allowed({"subject"});
+      return store_.revoke_principal(p.subject,required_string(args,"subject",128));
+    }
     if(op=="capabilities") {
       args.allowed( {
       });
       return capabilities();
     }
+    if(op=="search.modes") { args.allowed({});return search_modes(); }
     if(op=="contract.validate") {
       args.allowed( {
         "kind", "config"

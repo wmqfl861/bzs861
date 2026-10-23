@@ -1,19 +1,19 @@
 {
-  "version": "0.1.9",
-  "stage": "S2 next five increments",
-  "recorded_at": "2026-10-22",
-  "baseline": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+  "version": "0.1.10",
+  "stage": "S2 takeover five increments",
+  "recorded_at": "2026-10-23",
+  "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
   "integration_inputs": {
-    "main": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
-    "tree": "522c5d78fdb9e935bad976e561d92c74f20b7a12",
-    "baseline_schema": 11,
-    "schema": 12,
-    "scope": "Five additional increments within existing partial work packages; original plan objects and deferred semantics preserved.",
-    "plan": "docs/handoff/S2_NEXT_FIVE_20261021.md"
+    "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
+    "baseline_schema": 12,
+    "schema": 13,
+    "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
+    "plan": "docs/handoff/S2_TAKEOVER_20261023.md"
   },
   "status_counts": {
-    "partial": 36,
-    "not_started": 47,
+    "partial": 37,
+    "not_started": 46,
     "accepted": 0
   },
   "status_legend": {
@@ -35,8 +35,8 @@
     "baseline_0_1_8_status": "已发布0.1.8的整包状态；当前增量不改变整包签收。",
     "historical_candidate_increment_0_1_8": "上一轮五阶段增量说明，仅作历史来源。"
   },
-  "partial_work_packages": 36,
-  "not_started": 47,
+  "partial_work_packages": 37,
+  "not_started": 46,
   "full_work_packages_accepted": 0,
   "milestones_accepted": [],
   "slices_accepted": [],
@@ -44,13 +44,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s2_next_five/json-race-report.json",
+  "current_test_report": "validation/s2_takeover/final-report.json",
   "current_verification": "passed_final_integrated_local_gates_scope_limited",
-  "upstream_baseline_reproduction": "Schema 11 migration uses the real published 0.1.8 library. Scoped in-progress GC/nofollow counterexamples retain actual pre-fix libraries and logs; they are not reported as failures of an old version without the new conditional feature.",
+  "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
   "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-  "independent_review": "scoped_core_worker_qa_upgrade_and_plan_reviews_completed",
+  "independent_review": "scoped_component_reviews_and_final_replays_completed; full_product_signoff_not_performed",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s2_next_five/evidence/json-race-independent/design-review.json",
+  "review_record": "validation/s2_takeover/final-review.json",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -62,7 +62,8 @@
     "validation/s2_hardening/test_report.json",
     "validation/s2_five_stages/final-report.json",
     "validation/s2_next_five/final-report.json",
-    "validation/s2_next_five/ci-followup-report.json"
+    "validation/s2_next_five/ci-followup-report.json",
+    "validation/s2_next_five/json-race-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -108,7 +109,9 @@
       "baseline_0_1_5_status": "partial",
       "historical_candidate_increment_0_1_5": "绑定0.1.5源码、真实基线失败、命令/二进制/日志及跨上下文复核；同步蓝图、计划与交接。",
       "baseline_0_1_8_status": "partial",
-      "candidate_increment": "记录0.1.9五个接续增量、作者/独立/最终执行输入与真实升级证据，保留83包/161验收语义与未完成门槛。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "记录0.1.9五个接续增量、作者/独立/最终执行输入与真实升级证据，保留83包/161验收语义与未完成门槛。",
+      "candidate_increment": "记录0.1.10接手来源、精确基线、五项范围与作者/独立审核/最终执行证据；原83包和161验收语义保留。"
     },
     {
       "feature_id": "SRC-01",
@@ -146,7 +149,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承来源登记和历史probe/replay；17条来源仍禁用、站点清单为空，本批没有真实来源或真实站点请求。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial",
+      "candidate_increment": "显式搜索来源清单激活持久发布代际；links_only、停用、删除、审核过期与身份变更约束旧搜索缓存、冻结会话和在途响应，放宽不能复活旧摘要。"
     },
     {
       "feature_id": "QA-01",
@@ -180,7 +185,9 @@
       "baseline_0_1_6_status": "partial",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "保留原40条20/15/5冻结黄金输入；新增固定候选数学/身份/漏标门控合同、持久会话/回收/公平调度与独立反例证据，作者候选、交叉复核和最终整合运行分别记录。",
-      "candidate_increment": "保持40条黄金原字节及20/15/5划分；新增条件请求真实HTTP、会话实际进程故障、有限容量循环与独立反例，合成测试不替代真实来源或人类标注。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "保持40条黄金原字节及20/15/5划分；新增条件请求真实HTTP、会话实际进程故障、有限容量循环与独立反例，合成测试不替代真实来源或人类标注。",
+      "candidate_increment": "新增真实HTTP缓存反例、撤权/Core-Worker与共享取消回归，真实0.1.9建库升级；固定黄金字节及20/15/5划分保持，有限fixture不替代完整验收。"
     },
     {
       "feature_id": "SPIKE-01",
@@ -212,7 +219,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "CORE-01",
@@ -253,7 +261,9 @@
       "historical_candidate_increment_0_1_4": "接入原生crawl及进程e2e_crawl，十套普通CTest、五套原生sanitizer；Windows新增crawl到既有阻塞门槛。",
       "baseline_0_1_5_status": "partial",
       "baseline_0_1_8_status": "partial",
-      "candidate_increment": "版本0.1.9接入revalidation、capacity_cycles原生目标及真实session/revalidation E2E；新增原生目标同时进入Linux sanitizer和Windows阻塞门槛。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "版本0.1.9接入revalidation、capacity_cycles原生目标及真实session/revalidation E2E；新增原生目标同时进入Linux sanitizer和Windows阻塞门槛。",
+      "candidate_increment": "新增来源发布、缓存新鲜度、主体撤权及搜索模式原生回归，接入既有Linux sanitizer与Windows阻塞门槛；实际成绩以本轮报告和精确SHA CI为准。"
     },
     {
       "feature_id": "CONTRACT-01",
@@ -283,7 +293,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "新增crawl.submit/crawl.edges及web.crawl任务操作；核心复核单跳正文/发布/限制观察/已知用量，HTTP/CLI/MCP共用业务。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "CONTRACT-02",
@@ -323,7 +334,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SEC-01",
@@ -365,7 +377,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "自动正文继续复核robots、精确站点身份、范围和真实连接；核心校验发布身份，独立摘要/标题，失败的限制观察只收紧；新MCP原始参数不被SDK静默扩大。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "STORE-01",
@@ -413,7 +426,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "保留阶段一schema8派发/页面水位；schema9新增永久任务摘要和robots引用索引，schema10保存队列票号，schema11保存来源会话/版本/事件。至少七天的稳定终态明细事务压缩，身份/已知未知计费/正文证据与删除发布水位保留。",
-      "candidate_increment": "schema12追加robots HTTP元数据与快照条件元数据字节记账，增长/退款及回收原子处理；真实schema11升级验证与反复容量/重开循环，不伪造旧数据库。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "schema12追加robots HTTP元数据与快照条件元数据字节记账，增长/退款及回收原子处理；真实schema11升级验证与反复容量/重开循环，不伪造旧数据库。",
+      "candidate_increment": "schema13组合来源发布、主体撤权及共享请求结构；用真实0.1.9/schema12建库升级，对旧39表旧列摘要、预算与备份隔离逐项验证。"
     },
     {
       "feature_id": "AUTH-01",
@@ -427,7 +442,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "partial_implementation",
       "retained_main_slice": "令牌摘要、用户隔离、删除与auth_epoch撤销",
-      "remaining": "完整远程多客户端权限和授权恢复仍按原工作包验收。",
+      "remaining": "真实主体撤权已实现；独立撤销journal/连续性、隔离恢复、完整远程多客户端授权矩阵仍按原验收完成。",
       "baseline_test_ids": [
         "FT-007",
         "B-15",
@@ -458,7 +473,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "正文和边沿用owner、租约、权限与逻辑/实际URL删除代际；新旧搜索按发布状态约束，owner显式快照/证据与公开摘要独立。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial",
+      "candidate_increment": "principal.revoke管理员持久撤权，幂等推进主体auth_epoch、阻断全部令牌及新旧数据访问/在途提交；MCP管理工具仅显式stdio启用，隔离恢复仍未完成。"
     },
     {
       "feature_id": "OPS-00",
@@ -485,7 +502,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "增加used/remaining/succeeded/failed/skipped_pages、边数量和正文回执，保留累计预算、partial与停止原因及实例容量边界。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "QRY-01",
@@ -513,7 +531,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "QRY-02",
@@ -540,7 +559,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SRC-02",
@@ -582,7 +602,9 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial",
+      "candidate_increment": "来源发布身份与当前审核/启用/限额检查并用；旧registry不能重新激活已退役政策，来源列表不因缺省构造意外清空。"
     },
     {
       "feature_id": "SRC-03",
@@ -609,7 +631,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SRC-04",
@@ -645,7 +668,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SEARCH-01",
@@ -672,7 +696,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SEARCH-03",
@@ -717,7 +742,8 @@
       "baseline_0_1_6_status": "partial",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "持久来源会话复用C++索引族RRF；两次融合保留真实候选URL发布贡献者，同一来源重复命中保持最优正rank；URL去重键不扩张策略身份，没有另建Python生产排序器。",
-      "candidate_increment": "外部排名运行的来源/逻辑服务/索引族身份、贡献矩阵与配对摘要验证；生产融合仍由原C++实现，评测层不复制RRF。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "外部排名运行的来源/逻辑服务/索引族身份、贡献矩阵与配对摘要验证；生产融合仍由原C++实现，评测层不复制RRF。"
     },
     {
       "feature_id": "SESSION-01",
@@ -759,7 +785,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "联网 web.search.start 逐来源生成不可变核心RRF版本；游标绑定会话/版本/位置，本地分页兼容；真实候选URL及已知链、冻结时已有及后来的删除/页面发布限制与站点水位复查，完整读取/重导入不能复活旧版本。",
-      "candidate_increment": "真实Core重启后复取冻结版本、分页/事件游标，取消后旧版本保持；新增实际4MiB冻结载荷背压与持久未知结算回归。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "真实Core重启后复取冻结版本、分页/事件游标，取消后旧版本保持；新增实际4MiB冻结载荷背压与持久未知结算回归。",
+      "candidate_increment": "冻结联网版本与来源持久发布代际绑定；来源收紧和主体撤权在重启后继续生效，后续放宽不恢复旧结果权限。"
     },
     {
       "feature_id": "READ-01",
@@ -794,7 +822,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "真实派发捕获页面序号与当前快照，较新限制/删除封住晚到的旧允许回包；逻辑/最终/中间URL均检查；已报告的截断/206/错误HTTP同样约束旧Worker兼容回包，完整后发刷新可形成新表示。",
-      "candidate_increment": "完整200形成精确URL/profile/快照/元数据绑定；304独立复用已保留正文，提交重新验证删除与当前表示，失败和无绑定304不隐式重抓。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "完整200形成精确URL/profile/快照/元数据绑定；304独立复用已保留正文，提交重新验证删除与当前表示，失败和无绑定304不隐式重抓。",
+      "candidate_increment": "所有HTTP响应独立携带原始缓存字段，完整正文按no-store/年龄/profile限制持久保存和复用；截断证据可保留但不成为新鲜缓存，失败不自动陈旧回退。"
     },
     {
       "feature_id": "READ-03",
@@ -824,7 +854,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "INDEX-01",
@@ -855,7 +886,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "INDEX-03",
@@ -887,7 +919,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "EVID-01",
@@ -920,7 +953,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "EVID-02",
@@ -950,7 +984,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "CACHE-01",
@@ -964,7 +999,7 @@
       "received_candidate_status": "partial",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "remaining": "本轮仅保守HTTP子集；通用在途合并/共享取消B-24、Vary与复杂缓存语义以及完整FT-032仍未签收。",
+      "remaining": "仅同owner兼容read_many的派发时共享；直接读取/crawl/search通用合并、迟到订阅、Vary选型、瞬时no-store读取及完整FT-032/B-24仍未签收。",
       "baseline_test_ids": [
         "FT-032",
         "B-24",
@@ -979,7 +1014,9 @@
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
       "baseline_0_1_8_status": "partial",
-      "candidate_increment": "页面和robots有界条件重验证；ETag/Last-Modified严格绑定，跳转移除条件头，304保留旧正文发布代际与当前限制；完整200更新或清除旧validator。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "页面和robots有界条件重验证；ETag/Last-Modified严格绑定，跳转移除条件头，304保留旧正文发布代际与当前限制；完整200更新或清除旧validator。",
+      "candidate_increment": "缓存指令与validator独立，收紧/失败304清除旧复用资格；同owner兼容read_many在派发时共享一次请求，单订阅取消不误停其他任务。"
     },
     {
       "feature_id": "API-00",
@@ -1023,7 +1060,8 @@
       "historical_candidate_increment_0_1_5": "沿用HTTP/CLI/MCP同一核心；job.get新增trap_policy，crawl.edges可返回结构化trap原因，正文/任务回执返回当前site_publication状态。",
       "baseline_0_1_6_status": "partial",
       "baseline_0_1_8_status": "partial",
-      "historical_candidate_increment_0_1_8": "新增 jobs.compact 与CLI/MCP映射；web.search.start/session.get/events/cancel及版本化search.page；MCP在SDK转换前保留严格原始JSON类型、未知字段拒绝，范围/owner/预算与业务语义由核心判断。"
+      "historical_candidate_increment_0_1_8": "新增 jobs.compact 与CLI/MCP映射；web.search.start/session.get/events/cancel及版本化search.page；MCP在SDK转换前保留严格原始JSON类型、未知字段拒绝，范围/owner/预算与业务语义由核心判断。",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "JOB-01",
@@ -1058,7 +1096,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "稳定终态网页任务压缩为永久8KiB内摘要，原key/指纹/计费保留，明细过期410；活动/暂停/未知预留未结算不压缩。读队列与map/crawl队列成功入队/租约后持久排队，来源会话另有有界公平队列。",
-      "candidate_increment": "已知304计1请求/0正文，未知执行仍保守计费；新增反复接纳/压缩/重启与连续到达机会公平回归，保留永久幂等键及账本。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "已知304计1请求/0正文，未知执行仍保守计费；新增反复接纳/压缩/重启与连续到达机会公平回归，保留永久幂等键及账本。",
+      "candidate_increment": "共享批读的租约/订阅取消与未知结算持久化，主体撤权不丢弃未结算预留，运行中无有效订阅者后才发送取消。"
     },
     {
       "feature_id": "BATCH-01",
@@ -1088,7 +1128,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "批量派发保存页面序号和快照身份；兼容回包的截断/206/错误状态不能恢复限制。成功提交及每项租约使用持久队尾序号；七天后稳定终态详情可压缩，原幂等键、已知/未知预算、条目统计和页统计保留。",
-      "candidate_increment": "持久批读接入同一条件刷新与事务提交；304收据、用量及旧正文限制保持，新增真实HTTP批读和重复容量回归。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "持久批读接入同一条件刷新与事务提交；304收据、用量及旧正文限制保持，新增真实HTTP批读和重复容量回归。",
+      "candidate_increment": "持久shared attempt/membership按原付款任务只计一次实际或未知用量，订阅者关联用量不累加；各自回执、取消、重启和压缩后归属保留。"
     },
     {
       "feature_id": "MAP-01",
@@ -1116,7 +1158,8 @@
       "baseline_0_1_6_status": "partial",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "map/crawl共用的持久队列以实际入队和成功租约轮转；旧终态发现明细与无引用过期robots可回收，原key、统计、计费与同源配额/冷却保留，未读候选仍不能当正文。",
-      "candidate_increment": "版本化robots条件刷新与引用pin；仅按最新决策检查有效期，不回退较老允许记录；有限循环验证准入/回执引用与任务压缩边界。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "版本化robots条件刷新与引用pin；仅按最新决策检查有效期，不回退较老允许记录；有限循环验证准入/回执引用与任务压缩边界。"
     },
     {
       "feature_id": "ROBOTS-01",
@@ -1143,7 +1186,8 @@
       "historical_candidate_increment_0_1_4": "固定BzsBot版本策略与持久准入接入crawl正文，每实际HTTP跳保留robots/站点/预算检查；不因正文入口扩大允许缓存期限。",
       "baseline_0_1_5_status": "partial",
       "baseline_0_1_8_status": "partial",
-      "candidate_increment": "完整200 rules可建立条件基底，过期规则只用于重验证、不直接准入；304绑定旧body/rules/清单并重新计算正TTL，保留最新拒绝头直到旧引用全部退役。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "完整200 rules可建立条件基底，过期规则只用于重验证、不直接准入；304绑定旧body/rules/清单并重新计算正TTL，保留最新拒绝头直到旧引用全部退役。"
     },
     {
       "feature_id": "CRAWL-01",
@@ -1173,7 +1217,8 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "保留有界正文前沿、页预算与trap；终态详情/无引用过期robots回收后容量可恢复，永久计费与水位不回退。成功入队/每跳租约取得持久票号，持续新任务不再长期越过已就绪前沿；交错、重启和正常URL负例继续回归。",
-      "candidate_increment": "完整保留HTML链接的304可在新任务深度重建有限前沿，当前nofollow封住扩张；真实HTTP父子页面及robots 304、8轮刷新/回收和容量公平性循环。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "完整保留HTML链接的304可在新任务深度重建有限前沿，当前nofollow封住扩张；真实HTTP父子页面及robots 304、8轮刷新/回收和容量公平性循环。"
     },
     {
       "feature_id": "CRAWL-03",
@@ -1204,7 +1249,9 @@
       "historical_candidate_increment_0_1_6": "阶段一：持久派发序号与独立索引/摘要限制代际；较早响应、重定向、删除与冻结表示在限制变化后保持封闭，后发完整读取可创建新表示。schema8保守升级旧在途身份。",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "阶段一修复旧允许回包跨越新页面索引/摘要限制，显式不完整兼容回包不能解冻；阶段五冻结会话绑定实际贡献者URL/已知链与既有约束，后续完整允许读/重导入不恢复旧版本。跨owner公共集合和完整条件刷新仍未签收。",
-      "candidate_increment": "304沿用原正文发布序号及站点代际，合并当前限制；失败或在途期间的nofollow不被304遗忘，noindex/nosnippet/删除与站点重新批准不能复活旧正文。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "304沿用原正文发布序号及站点代际，合并当前限制；失败或在途期间的nofollow不被304遗忘，noindex/nosnippet/删除与站点重新批准不能复活旧正文。",
+      "candidate_increment": "crawl页面同样尊重独立缓存指令，203/空正文/no-store与不支持304的策略收紧不能绕过持久化或恢复旧缓存。"
     },
     {
       "feature_id": "MODE-01",
@@ -1212,13 +1259,13 @@
       "name": "快速/均衡/深入执行预设",
       "slice": "S2",
       "v11_phase": "M1",
-      "status": "not_started",
+      "status": "partial",
       "full_work_package_accepted": false,
-      "integration_verification": "not_started",
+      "integration_verification": "see_current_report",
       "received_candidate_status": "not_started",
       "baseline_main_status": "not_started",
       "retained_main_slice": "",
-      "remaining": "按原工作包输入、输出和验收条目实现。",
+      "remaining": "仅搜索执行预设；完整FT-019、可用模型/读取/研究预算、跨重启单调期限和真实性能/质量验收仍未完成。",
       "baseline_test_ids": [
         "FT-019"
       ],
@@ -1228,7 +1275,9 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started",
+      "candidate_increment": "新增search.modes和fast/balanced/deep搜索预设，约束来源数、结果数、超时与会话期限，显式覆盖只可收紧；返回有效预算/省略来源，read/model/browser调用上限为0。"
     },
     {
       "feature_id": "BACKUP-00",
@@ -1266,7 +1315,8 @@
       "baseline_0_1_4_status": "partial",
       "historical_candidate_increment_0_1_4": "继承0.1.3实现；本批未新增本包功能，已有路径重跑范围见当前报告。",
       "baseline_0_1_5_status": "partial",
-      "baseline_0_1_8_status": "partial"
+      "baseline_0_1_8_status": "partial",
+      "baseline_0_1_9_status": "partial"
     },
     {
       "feature_id": "SESSION-02",
@@ -1304,7 +1354,9 @@
       "baseline_0_1_6_status": "not_started",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "持久联网来源队列、不可变结果版本、版本绑定游标与单调元数据事件；session.get/events/cancel 实现有界拉取、重连/去重、取消在途发布屏障、明确过期与背压，兼容本地冻结会话；MCP只映射严格核心参数。",
-      "candidate_increment": "六组真实Core/Worker进程故障：派发前/回包丢失/Worker终止/ACK丢失/取消晚到/真实期限；不注入时钟改租约，未知尝试不自动重发。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "六组真实Core/Worker进程故障：派发前/回包丢失/Worker终止/ACK丢失/取消晚到/真实期限；不注入时钟改租约，未知尝试不自动重发。",
+      "candidate_increment": "撤权阻止在途搜索迟到发布，已知/未知实际请求保持结算；模式预算只执行已实现的搜索，不扩展读取/模型能力。"
     },
     {
       "feature_id": "QA-02",
@@ -1332,7 +1384,8 @@
       "baseline_0_1_6_status": "not_started",
       "baseline_0_1_8_status": "partial",
       "historical_candidate_increment_0_1_8": "固定候选 evaluation prepare/freeze/run、未标注人工模板、精确包/语料/方法/阈值/环境身份及原黄金投影复核；计算 nDCG@10、MRR@10、Precision@10 与覆盖诊断，严格区分缺标、empty、failed 和 unavailable；有限非回归需预冻结基线与容忍度。",
-      "candidate_increment": "新增来源独有贡献诊断和外部base/ablation配对运行、完整候选池IDCG与冻结摘要核对；缺来源、失败/缺失与真正empty分开，真实人工标签和完整release_gate仍阻塞。"
+      "baseline_0_1_9_status": "partial",
+      "historical_candidate_increment_0_1_9": "新增来源独有贡献诊断和外部base/ablation配对运行、完整候选池IDCG与冻结摘要核对；缺来源、失败/缺失与真正empty分开，真实人工标签和完整release_gate仍阻塞。"
     },
     {
       "feature_id": "READ-02",
@@ -1358,7 +1411,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "DOC-01",
@@ -1384,7 +1438,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "READ-05",
@@ -1408,7 +1463,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "QRY-03",
@@ -1433,7 +1489,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "QRY-04",
@@ -1460,7 +1517,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "UI-01",
@@ -1485,7 +1543,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "MODEL-01",
@@ -1512,7 +1571,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "MODEL-02",
@@ -1538,7 +1598,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SEARCH-02",
@@ -1563,7 +1624,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "INDEX-02",
@@ -1598,7 +1660,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "EXTRACT-01",
@@ -1623,7 +1686,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "ANSWER-01",
@@ -1648,7 +1712,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "RESEARCH-01",
@@ -1673,7 +1738,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SEARCH-04",
@@ -1698,7 +1764,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "API-01",
@@ -1737,7 +1804,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "OPS-01",
@@ -1762,7 +1830,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "QRY-05",
@@ -1786,7 +1855,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "QRY-06",
@@ -1811,7 +1881,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "RANK-01",
@@ -1837,7 +1908,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "RANK-02",
@@ -1863,7 +1935,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SEARCH-05",
@@ -1889,7 +1962,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "FACET-01",
@@ -1914,7 +1988,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SRC-05",
@@ -1939,7 +2014,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "CODE-01",
@@ -1964,7 +2040,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SCHOLAR-01",
@@ -1989,7 +2066,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "PRIVATE-01",
@@ -2014,7 +2092,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "DATASET-01",
@@ -2038,7 +2117,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "READ-04",
@@ -2062,7 +2142,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "CRAWL-02",
@@ -2086,7 +2167,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SRC-06",
@@ -2110,7 +2192,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "DOC-02",
@@ -2135,7 +2218,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "IMAGE-01",
@@ -2160,7 +2244,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "IMAGE-02",
@@ -2185,7 +2270,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "AV-01",
@@ -2210,7 +2296,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "AV-02",
@@ -2235,7 +2322,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "UPDATE-01",
@@ -2259,7 +2347,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "WORKSPACE-01",
@@ -2283,7 +2372,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "PREF-01",
@@ -2308,7 +2398,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "WATCH-01",
@@ -2334,7 +2425,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "EXPORT-01",
@@ -2359,7 +2451,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "WEBHOOK-01",
@@ -2385,7 +2478,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "UI-02",
@@ -2410,7 +2504,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "OPS-02",
@@ -2445,7 +2540,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "SCALE-01",
@@ -2470,7 +2566,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "QA-03",
@@ -2495,7 +2592,8 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     },
     {
       "feature_id": "RELEASE-01",
@@ -2520,95 +2618,123 @@
       "baseline_0_1_4_status": "not_started",
       "historical_candidate_increment_0_1_4": "",
       "baseline_0_1_5_status": "not_started",
-      "baseline_0_1_8_status": "not_started"
+      "baseline_0_1_8_status": "not_started",
+      "baseline_0_1_9_status": "not_started"
     }
   ],
   "current_results": {
     "status": "passed_final_integrated_local_gates_scope_limited",
     "ctest": {
-      "passed_suites": 19,
+      "passed_suites": 27,
       "failed_suites": 0,
       "skipped_suites": 0,
-      "elapsed_seconds": 135.6,
-      "command_elapsed_seconds": 135.648,
-      "log": "json-race-ctest-loopback.log",
-      "junit": "json-race-ctest-loopback.xml",
+      "elapsed_seconds": 171.87,
+      "log": "final-v2-ctest.log",
+      "junit": "final-v2-ctest.xml",
       "suites": [
         {
           "name": "core",
           "passed": 82,
           "failed": 0,
-          "elapsed_seconds": 2.16847,
-          "assertions": 714
+          "elapsed_seconds": 2.58022,
+          "assertions": 715
         },
         {
           "name": "batch",
-          "passed": 18,
+          "passed": 30,
           "failed": 0,
-          "elapsed_seconds": 0.568915,
-          "assertions": 439
+          "elapsed_seconds": 1.28028,
+          "assertions": 801
         },
         {
           "name": "map",
           "passed": 24,
           "failed": 0,
-          "elapsed_seconds": 0.821846,
+          "elapsed_seconds": 0.887491,
           "assertions": 462
         },
         {
           "name": "crawl",
           "passed": 54,
           "failed": 0,
-          "elapsed_seconds": 5.33333,
+          "elapsed_seconds": 6.01861,
           "assertions": 2798
         },
         {
           "name": "site_publication",
           "passed": 32,
           "failed": 0,
-          "elapsed_seconds": 4.6537,
+          "elapsed_seconds": 5.61633,
           "assertions": 1200
         },
         {
           "name": "retention",
           "passed": 16,
           "failed": 0,
-          "elapsed_seconds": 2.24495,
+          "elapsed_seconds": 2.60458,
           "assertions": 404
         },
         {
           "name": "fairness",
           "passed": 11,
           "failed": 0,
-          "elapsed_seconds": 0.864922,
+          "elapsed_seconds": 1.00515,
           "assertions": 251
         },
         {
           "name": "sessions",
           "passed": 22,
           "failed": 0,
-          "elapsed_seconds": 11.6253,
+          "elapsed_seconds": 14.5432,
           "assertions": 285
+        },
+        {
+          "name": "source_publication",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 0.880449,
+          "assertions": 180
+        },
+        {
+          "name": "search_modes",
+          "passed": 17,
+          "failed": 0,
+          "elapsed_seconds": 2.84434,
+          "assertions": 182
         },
         {
           "name": "revalidation",
           "passed": 21,
           "failed": 0,
-          "elapsed_seconds": 1.10418,
+          "elapsed_seconds": 1.26231,
           "assertions": 333
+        },
+        {
+          "name": "revocation",
+          "passed": 12,
+          "failed": 0,
+          "elapsed_seconds": 0.25652,
+          "assertions": 146
         },
         {
           "name": "capacity_cycles",
           "passed": 4,
           "failed": 0,
-          "elapsed_seconds": 8.29137,
+          "elapsed_seconds": 9.13136,
           "assertions": 4800
+        },
+        {
+          "name": "cache_freshness",
+          "passed": 13,
+          "failed": 0,
+          "elapsed_seconds": 0.269787,
+          "assertions": 80
         },
         {
           "name": "contracts",
           "passed": 55,
           "failed": 0,
-          "elapsed_seconds": 0.150418,
+          "elapsed_seconds": 0.174477,
           "retained_design_fixtures": 34,
           "additional_native_cases": 21,
           "assertions": 269
@@ -2617,101 +2743,243 @@
           "name": "http_cli",
           "passed": 20,
           "failed": 0,
-          "elapsed_seconds": 5.64147
+          "elapsed_seconds": 5.7259
+        },
+        {
+          "name": "http_revocation",
+          "passed": 2,
+          "failed": 0,
+          "elapsed_seconds": 0.188832
         },
         {
           "name": "e2e_web",
-          "passed": 14,
+          "passed": 15,
           "failed": 0,
-          "elapsed_seconds": 5.6183
+          "elapsed_seconds": 7.21564
         },
         {
           "name": "e2e_map",
           "passed": 9,
           "failed": 0,
-          "elapsed_seconds": 3.58105
+          "elapsed_seconds": 4.04895
         },
         {
           "name": "e2e_crawl",
           "passed": 24,
           "failed": 0,
-          "elapsed_seconds": 9.18611
+          "elapsed_seconds": 10.5745
         },
         {
           "name": "e2e_crawl_recovery",
           "passed": 8,
           "failed": 0,
-          "elapsed_seconds": 23.8156
+          "elapsed_seconds": 24.2717
         },
         {
           "name": "e2e_session_recovery",
           "passed": 6,
           "failed": 0,
-          "elapsed_seconds": 27.1988
+          "elapsed_seconds": 28.4059
         },
         {
           "name": "e2e_revalidation",
           "passed": 6,
           "failed": 0,
-          "elapsed_seconds": 8.59289
+          "elapsed_seconds": 9.07752
+        },
+        {
+          "name": "e2e_cache_freshness",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 5.10749
+        },
+        {
+          "name": "e2e_cache_policy_review",
+          "passed": 10,
+          "failed": 0,
+          "elapsed_seconds": 8.64199
+        },
+        {
+          "name": "e2e_revocation",
+          "passed": 3,
+          "failed": 0,
+          "elapsed_seconds": 1.88546
         },
         {
           "name": "python_worker",
-          "passed": 984,
+          "passed": 1049,
           "failed": 0,
-          "elapsed_seconds": 14.1345
+          "elapsed_seconds": 17.3648
         }
       ]
     },
-    "native_sanitizer_executables": 11,
+    "sanitizers": {
+      "passed_suites": 15,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 161.37,
+      "log": "final-v2-asan.log",
+      "junit": "final-v2-asan.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 82,
+          "failed": 0,
+          "elapsed_seconds": 6.7969,
+          "assertions": 715
+        },
+        {
+          "name": "batch",
+          "passed": 30,
+          "failed": 0,
+          "elapsed_seconds": 3.85494,
+          "assertions": 801
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 3.33121,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 20.8942,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 16.5263,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 6.12909,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 3.01649,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 22,
+          "failed": 0,
+          "elapsed_seconds": 52.7197,
+          "assertions": 285
+        },
+        {
+          "name": "source_publication",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 3.08362,
+          "assertions": 180
+        },
+        {
+          "name": "search_modes",
+          "passed": 17,
+          "failed": 0,
+          "elapsed_seconds": 7.04578,
+          "assertions": 182
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 5.4488,
+          "assertions": 333
+        },
+        {
+          "name": "revocation",
+          "passed": 12,
+          "failed": 0,
+          "elapsed_seconds": 1.02543,
+          "assertions": 146
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 29.7956,
+          "assertions": 4800
+        },
+        {
+          "name": "cache_freshness",
+          "passed": 13,
+          "failed": 0,
+          "elapsed_seconds": 0.994892,
+          "assertions": 80
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.702277,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        }
+      ]
+    },
+    "native_sanitizer_executables": 15,
     "native_sanitizer_failures": 0,
     "leak_detection_enabled": true,
     "undefined_behavior_halt_enabled": true,
     "design_contract_reference_passed": 34,
     "planning_guard_passed": 13,
+    "planning_read_only_check": {
+      "read_only": true,
+      "structure_valid": true,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "planning_estimate": [
+        418,
+        720
+      ],
+      "product_acceptance_checked": false
+    },
     "dependencies": "No broken requirements found.",
-    "independent_shared_json_regressions": {
-      "scenarios": 3,
-      "completed_operations": 11200,
-      "failures": 0,
-      "report": "evidence/json-race-independent/design-review.json",
-      "integrated_context": "evidence/json-race-independent/integrated-root-79df581/integrated-context.json"
-    },
-    "independent_final_upgrade": {
-      "old_schema": 11,
-      "new_schema": 12,
+    "genuine_old_library_upgrade": {
+      "old_schema": 12,
+      "new_schema": 13,
       "legacy_tables_preserved": 39,
-      "old_snapshots": 5,
-      "old_evidence_records": 2,
-      "jobs_across_two_owners": 8,
-      "old_robots_records": 2,
+      "old_preparation_assertions": 310,
+      "new_upgrade_assertions": 1184,
       "backup_quarantine_preserved": true,
-      "role": "Independent reexecution of the original migration driver against a freshly created old-version database and final new library.",
-      "report": "evidence/json-race-migration-independent/REVIEW_RESULT.json"
+      "probe_author_role": "shared_read_component_author; independent of source policy and principal revocation",
+      "final_executor_role": "root_integrator_replay",
+      "embedded_role_field_note": "The replay script keeps its original probe-author role string; final-v2 commands were executed by the root integrator.",
+      "report": "migration/final-v2/report.json"
     },
-    "successful_final_commands": 21,
-    "failed_initial_command_preserved": [
-      {
-        "record": "json-race-asan-build-command.json",
-        "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
-        "log": "json-race-asan-build.log",
-        "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
-        "exit_code": 1,
-        "elapsed_seconds": 46.394
-      },
-      {
-        "record": "json-race-ctest-command.json",
-        "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
-        "log": "json-race-ctest.log",
-        "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
-        "exit_code": 8,
-        "elapsed_seconds": 225.842
-      }
-    ],
-    "github_ci": "must_check_workflow_of_containing_commit_after_publication",
-    "counting_note": "Python cases are inside CTest; native, sanitizer, author and independent operations overlap and are not added to product acceptance."
+    "final_shared_review_replay": {
+      "cases": 3,
+      "assertions": 99,
+      "failures": 0,
+      "author_role": "source_and_modes_author_reviewing_shared_read_component",
+      "executor_role": "root_integrator_relink_and_replay",
+      "record": "review_shared_reads/final-v2/cases.json"
+    },
+    "independent_corrected_deadline_review": {
+      "cases": 4,
+      "assertions": 59,
+      "original_real_recovery_test06_passed": true,
+      "record": "search_modes_deadline_review/report.json"
+    },
+    "successful_final_commands": 12,
+    "github_ci": "Check the actual containing published commit after publication; no future SHA or CI success is asserted here.",
+    "counting_note": "Native, sanitizer, author, reviewer and integration cases overlap. Their counts are not added to the 161 planned product acceptance items."
   },
-  "baseline_version": "0.1.8",
+  "baseline_version": "0.1.9",
   "planned_work_packages": 83,
   "s2_acceptance": "not_completed",
   "historical_review_records": [
@@ -2724,12 +2992,12 @@
   ],
   "verification_binding": {
     "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
-    "report": "validation/s2_next_five/json-race-report.json",
-    "execution_inputs": "validation/s2_next_five/json-race-execution-inputs.json",
-    "source_manifest": "validation/s2_next_five/json-race-source-manifest.json",
-    "remote_ci": "Query the exact containing commit after publication; previous c14b3c3 Windows success does not establish the new commit result.",
-    "actions_url": "https://github.com/wmqfl861/bzs861/actions",
-    "executed_binary_identity": "SHA-256 before and after final commands; full permitted-loopback CTest, all native sanitizers and independent shared JSON/migration probes bind the final library."
+    "report": "validation/s2_takeover/final-report.json",
+    "source_manifest": "validation/s2_takeover/final-source-manifest.json",
+    "execution_inputs": "validation/s2_takeover/final-v2-execution-inputs.json",
+    "executed_binary_identity": "SHA-256 before and after each final command; any generated executable mode repair preserves bytes and is recorded before final gates.",
+    "remote_ci": "Query GitHub Actions for the exact containing published commit. No future self SHA or CI success is embedded.",
+    "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
     "status": "not_verified",
@@ -3210,5 +3478,221 @@
     "original_real_session_e2e_unchanged": true,
     "new_native_regression_cases": 2,
     "historical_windows_correction": "validation/s2_next_five/ci-followup-report.json"
+  },
+  "historical_verification_0_1_9_final": {
+    "version": "0.1.9",
+    "stage": "S2 next five increments",
+    "recorded_at": "2026-10-22",
+    "baseline": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+    "baseline_version": "0.1.8",
+    "integration_inputs": {
+      "main": "2c536e9834c4897b0c70e3bd6651b765cc67f45e",
+      "tree": "522c5d78fdb9e935bad976e561d92c74f20b7a12",
+      "baseline_schema": 11,
+      "schema": 12,
+      "scope": "Five additional increments within existing partial work packages; original plan objects and deferred semantics preserved.",
+      "plan": "docs/handoff/S2_NEXT_FIVE_20261021.md"
+    },
+    "verification_binding": {
+      "status": "source_manifest_and_execution_evidence_bound_by_containing_git_commit",
+      "report": "validation/s2_next_five/json-race-report.json",
+      "execution_inputs": "validation/s2_next_five/json-race-execution-inputs.json",
+      "source_manifest": "validation/s2_next_five/json-race-source-manifest.json",
+      "remote_ci": "Query the exact containing commit after publication; previous c14b3c3 Windows success does not establish the new commit result.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions",
+      "executed_binary_identity": "SHA-256 before and after final commands; full permitted-loopback CTest, all native sanitizers and independent shared JSON/migration probes bind the final library."
+    },
+    "current_results": {
+      "status": "passed_final_integrated_local_gates_scope_limited",
+      "ctest": {
+        "passed_suites": 19,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "elapsed_seconds": 135.6,
+        "command_elapsed_seconds": 135.648,
+        "log": "json-race-ctest-loopback.log",
+        "junit": "json-race-ctest-loopback.xml",
+        "suites": [
+          {
+            "name": "core",
+            "passed": 82,
+            "failed": 0,
+            "elapsed_seconds": 2.16847,
+            "assertions": 714
+          },
+          {
+            "name": "batch",
+            "passed": 18,
+            "failed": 0,
+            "elapsed_seconds": 0.568915,
+            "assertions": 439
+          },
+          {
+            "name": "map",
+            "passed": 24,
+            "failed": 0,
+            "elapsed_seconds": 0.821846,
+            "assertions": 462
+          },
+          {
+            "name": "crawl",
+            "passed": 54,
+            "failed": 0,
+            "elapsed_seconds": 5.33333,
+            "assertions": 2798
+          },
+          {
+            "name": "site_publication",
+            "passed": 32,
+            "failed": 0,
+            "elapsed_seconds": 4.6537,
+            "assertions": 1200
+          },
+          {
+            "name": "retention",
+            "passed": 16,
+            "failed": 0,
+            "elapsed_seconds": 2.24495,
+            "assertions": 404
+          },
+          {
+            "name": "fairness",
+            "passed": 11,
+            "failed": 0,
+            "elapsed_seconds": 0.864922,
+            "assertions": 251
+          },
+          {
+            "name": "sessions",
+            "passed": 22,
+            "failed": 0,
+            "elapsed_seconds": 11.6253,
+            "assertions": 285
+          },
+          {
+            "name": "revalidation",
+            "passed": 21,
+            "failed": 0,
+            "elapsed_seconds": 1.10418,
+            "assertions": 333
+          },
+          {
+            "name": "capacity_cycles",
+            "passed": 4,
+            "failed": 0,
+            "elapsed_seconds": 8.29137,
+            "assertions": 4800
+          },
+          {
+            "name": "contracts",
+            "passed": 55,
+            "failed": 0,
+            "elapsed_seconds": 0.150418,
+            "retained_design_fixtures": 34,
+            "additional_native_cases": 21,
+            "assertions": 269
+          },
+          {
+            "name": "http_cli",
+            "passed": 20,
+            "failed": 0,
+            "elapsed_seconds": 5.64147
+          },
+          {
+            "name": "e2e_web",
+            "passed": 14,
+            "failed": 0,
+            "elapsed_seconds": 5.6183
+          },
+          {
+            "name": "e2e_map",
+            "passed": 9,
+            "failed": 0,
+            "elapsed_seconds": 3.58105
+          },
+          {
+            "name": "e2e_crawl",
+            "passed": 24,
+            "failed": 0,
+            "elapsed_seconds": 9.18611
+          },
+          {
+            "name": "e2e_crawl_recovery",
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds": 23.8156
+          },
+          {
+            "name": "e2e_session_recovery",
+            "passed": 6,
+            "failed": 0,
+            "elapsed_seconds": 27.1988
+          },
+          {
+            "name": "e2e_revalidation",
+            "passed": 6,
+            "failed": 0,
+            "elapsed_seconds": 8.59289
+          },
+          {
+            "name": "python_worker",
+            "passed": 984,
+            "failed": 0,
+            "elapsed_seconds": 14.1345
+          }
+        ]
+      },
+      "native_sanitizer_executables": 11,
+      "native_sanitizer_failures": 0,
+      "leak_detection_enabled": true,
+      "undefined_behavior_halt_enabled": true,
+      "design_contract_reference_passed": 34,
+      "planning_guard_passed": 13,
+      "dependencies": "No broken requirements found.",
+      "independent_shared_json_regressions": {
+        "scenarios": 3,
+        "completed_operations": 11200,
+        "failures": 0,
+        "report": "evidence/json-race-independent/design-review.json",
+        "integrated_context": "evidence/json-race-independent/integrated-root-79df581/integrated-context.json"
+      },
+      "independent_final_upgrade": {
+        "old_schema": 11,
+        "new_schema": 12,
+        "legacy_tables_preserved": 39,
+        "old_snapshots": 5,
+        "old_evidence_records": 2,
+        "jobs_across_two_owners": 8,
+        "old_robots_records": 2,
+        "backup_quarantine_preserved": true,
+        "role": "Independent reexecution of the original migration driver against a freshly created old-version database and final new library.",
+        "report": "evidence/json-race-migration-independent/REVIEW_RESULT.json"
+      },
+      "successful_final_commands": 21,
+      "failed_initial_command_preserved": [
+        {
+          "record": "json-race-asan-build-command.json",
+          "record_sha256": "7ba55291e6fe3216940d41623064aa5361a03962feb02df1b228121845c1eeb9",
+          "log": "json-race-asan-build.log",
+          "log_sha256": "1b936ed86367b1bd5def8a5905814eea8e783b0d1d2a259a30614a00f8436e06",
+          "exit_code": 1,
+          "elapsed_seconds": 46.394
+        },
+        {
+          "record": "json-race-ctest-command.json",
+          "record_sha256": "1838944b9559fd1d9e437ec4753db670669d0531cddbf69f8363cc51cc307802",
+          "log": "json-race-ctest.log",
+          "log_sha256": "afc11cba0b3ed67be8b959ed5a282a0783c4ea4d5cc839a3dca0d9e844ae2a33",
+          "exit_code": 8,
+          "elapsed_seconds": 225.842
+        }
+      ],
+      "github_ci": "must_check_workflow_of_containing_commit_after_publication",
+      "counting_note": "Python cases are inside CTest; native, sanitizer, author and independent operations overlap and are not added to product acceptance."
+    },
+    "current_test_report": "validation/s2_next_five/json-race-report.json",
+    "current_verification": "passed_final_integrated_local_gates_scope_limited",
+    "independent_review": "scoped_core_worker_qa_upgrade_and_plan_reviews_completed",
+    "review_record": "validation/s2_next_five/evidence/json-race-independent/design-review.json"
   }
 }

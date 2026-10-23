@@ -1,0 +1,61 @@
+{
+  "role": "independent_mode_deadline_correction_reviewer",
+  "reviewed_commit": "ff193ba1000912ce400d2ed4503917f823be0aae",
+  "reviewed_tree": "aa6cda3b5d802c8a8a155264b09877f278d8db46",
+  "fix_origin_commit": "df4c55303d4c0a17b501f8b9a3f8f00caeb0f944",
+  "fix_integrated_commit": "7fc7392",
+  "conclusion": "The confirmed positive-subsecond durable-dispatch regression is fixed for the reviewed integrated source and binaries. The previous contrary reviewer expectation is withdrawn, not rewritten.",
+  "production_source_and_binary_inputs_unchanged": true,
+  "old_review_probe_report_and_logs_unchanged": true,
+  "same_corrected_probe_before_and_after_fix": true,
+  "probe_source_sha256": "2a7c3276713314d923de62b9f9d5351f027709334a134a6ee63e7df67a8ea094",
+  "final_binary_sha256": {
+    "libbzs_core.a": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+    "searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+    "review_probe": "1c26c9b70e712cf28557950d99e28b11aa9425bac711da86ab6afdca7dc6c45e"
+  },
+  "before_fix": {
+    "cases": 4,
+    "assertions": 30,
+    "failures": 2,
+    "exit_code": 1,
+    "log": "before-fix-cases.log"
+  },
+  "after_fix": {
+    "cases": 4,
+    "assertions": 59,
+    "failures": 0,
+    "exit_code": 0,
+    "log": "final-cases.log"
+  },
+  "original_test06": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 1.611,
+    "file_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "unchanged_from_original_schema12_baseline": true,
+    "real_fixture_http_counts": {
+      "/ddg/html/": 1
+    },
+    "dispatched_source_attempts": 1,
+    "unknown_source_attempts": 1,
+    "event_count": 2,
+    "tail_source_dispatched": false,
+    "result_version_published": false,
+    "log": "final-original-test06-permitted.log",
+    "execution": "automatic approval allowed loopback-only fixture processes; no external sources"
+  },
+  "preserved_environment_failure": {
+    "log": "final-original-test06.log",
+    "cause": "Default sandbox denied binding the fake source fixture to 127.0.0.1 before any tested behavior ran",
+    "resolution": "Same command and server bytes rerun with automatically approved local loopback access"
+  },
+  "binary_permissions": "Copied searchd was granted owner/group/other execute; content SHA256 remains identical to the integrated build. No production source or main worktree modification by this reviewer.",
+  "external_network_requests": 0,
+  "limits": [
+    "This verifies the corrected deadline path and original one-second recovery case, not full MODE-01 acceptance.",
+    "The remaining review cases for mode limits, public argument types and idempotency were not rerun here; the parent owns the complete frozen v2 gate.",
+    "The reviewer authored shared read_many and does not independently sign off that component."
+  ]
+}

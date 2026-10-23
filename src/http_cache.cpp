@@ -7,6 +7,8 @@
 #include <chrono>
 #include <cctype>
 #include <set>
+#include <optional>
+#include <vector>
 #include <string_view>
 
 namespace bzs {
@@ -106,4 +108,115 @@ Json merge_http_cache(const Json& base,const Json& update) {
   for(const auto& key:fresh.keys())if(!fresh.at(key).str().empty())old.set(key,fresh.at(key));
   return validate_http_cache(old,url);
 }
+
+namespace {
+std::int64_t stamp(const std::string& value) {
+  constexpr std::array<std::string_view,12> months={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+  const auto month=std::find(months.begin(),months.end(),std::string_view(value).substr(8,3))-months.begin()+1;
+  const auto number=[&](std::size_t start,std::size_t count) { std::int64_t n=0;for(std::size_t i=start;i<start+count;++i)n=n*10+(value[i]-'0');return n; };
+  const std::chrono::year_month_day day{std::chrono::year{static_cast<int>(number(12,4))},std::chrono::month{static_cast<unsigned>(month)},std::chrono::day{static_cast<unsigned>(number(5,2))}};
+  return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::sys_days{day}.time_since_epoch()).count()+number(17,2)*3600000+number(20,2)*60000+number(23,2)*1000;
+}
+struct Controls {
+  bool valid=true,no_store=false,no_cache=false;
+  std::optional<std::int64_t> max_age;
+};
+Controls controls(const std::string& value) {
+  Controls out;std::set<std::string> seen;std::size_t start=0;
+  if(value.empty())return out;
+  // Quoted field-name lists are permitted; commas inside quotes are not separators.
+  bool quote=false,escape=false;std::vector<std::string> parts;
+  for(std::size_t i=0;i<=value.size();++i) {
+    if(i==value.size()||(!quote&&value[i]==',')) { parts.push_back(trim(value.substr(start,i-start)));start=i+1;continue; }
+    if(escape)escape=false;
+    else if(quote&&value[i]=='\\')escape=true;
+    else if(value[i]=='"')quote=!quote;
+  }
+  if(quote||escape)out.valid=false;
+  for(const auto& part:parts) {
+    const auto equal=part.find('=');auto name=trim(part.substr(0,equal));
+    std::transform(name.begin(),name.end(),name.begin(),[](unsigned char c){return static_cast<char>(std::tolower(c));});
+    const auto token=[](const std::string& text) { return !text.empty()&&std::all_of(text.begin(),text.end(),[](unsigned char c){return std::isalnum(c)||std::string_view("!#$%&'*+-.^_`|~").find(static_cast<char>(c))!=std::string_view::npos;}); };
+    if(!token(name))out.valid=false;
+    auto arg=equal==std::string::npos?std::string{}:trim(part.substr(equal+1));
+    if(equal!=std::string::npos&&!token(arg)) {
+      if(arg.size()<2||arg.front()!='"'||arg.back()!='"')out.valid=false;
+      else {bool escaped=false;for(std::size_t i=1;i+1<arg.size();++i) {if(escaped)escaped=false;else if(arg[i]=='\\')escaped=true;else if(arg[i]=='"')out.valid=false;}if(escaped)out.valid=false;}
+    }
+    if(name=="no-store")out.no_store=true;
+    if(name=="no-cache"||name=="must-understand")out.no_cache=true;
+    if(name=="max-age"||name=="s-maxage") {
+      if(!seen.insert(name).second||equal==std::string::npos)out.valid=false;
+      if(arg.size()>=2&&arg.front()=='"'&&arg.back()=='"')arg=arg.substr(1,arg.size()-2);
+      if(arg.empty()||arg.size()>12||!std::all_of(arg.begin(),arg.end(),[](char c){return c>='0'&&c<='9';})) { out.valid=false;continue; }
+      std::int64_t seconds=0;const auto parsed=std::from_chars(arg.data(),arg.data()+arg.size(),seconds);
+      if(parsed.ec!=std::errc{}) { out.valid=false;continue; }
+      // Even private owner caches honor the tighter shared-cache ceiling.
+      const auto ms=std::min<std::int64_t>(seconds,365LL*86400)*1000;
+      out.max_age=out.max_age?std::min(*out.max_age,ms):ms;
+    }
+  }
+  return out;
+}
+}
+Json validate_http_freshness(const Json& record,const std::string& url) {
+  record.allowed({"version","url","request_profile","cache_control","vary","date","age","expires","pragma","received_at_ms","response_delay_ms","invalid"});
+  protocol(record.size()==12,"Incomplete HTTP freshness record");
+  protocol(field(record,"version",64)=="bzs-http-freshness-1"&&field(record,"url",4096)==url&&!url.empty(),"HTTP freshness identity changed");
+  protocol(hex(field(record,"request_profile",64)),"Invalid HTTP freshness profile");
+  for(const auto* key:{"cache_control","vary","date","age","expires","pragma"})(void)field(record,key,4096);
+  protocol(record.at("received_at_ms").is_integer()&&record.at("received_at_ms").num()>=0&&record.at("received_at_ms").num()<=253402300799999LL,"Invalid HTTP response time");
+  protocol(record.at("response_delay_ms").is_integer()&&record.at("response_delay_ms").num()>=0&&record.at("response_delay_ms").num()<=3600000,"Invalid HTTP response delay");
+  protocol(record.at("invalid").is_bool(),"Invalid HTTP freshness validity flag");
+  return Json::parse(record.canonical());
+}
+Json merge_http_freshness(const Json& base,const Json& update) {
+  const auto url=base.at("url").str();auto old=validate_http_freshness(base,url),fresh=validate_http_freshness(update,url);
+  protocol(old.at("request_profile").str()==fresh.at("request_profile").str(),"HTTP freshness request profile changed");
+  for(const auto* key:{"cache_control","vary","date","age","expires","pragma"})if(fresh.at(key).str().empty())fresh.set(key,old.at(key));
+  return fresh;
+}
+Json http_freshness(const Json& input,std::int64_t now,std::int64_t max_age_s) {
+  auto out=Json::object();out.set("fresh",false);out.set("store_allowed",true);out.set("reason","missing_policy");
+  out.set("current_age_ms",std::int64_t{0});out.set("freshness_lifetime_ms",std::int64_t{0});
+  if(input.is_null()||!input.has("version"))return out;
+  const auto r=validate_http_freshness(input,input.at("url").str());const auto cc=controls(r.at("cache_control").str());
+  if(cc.no_store||!cc.valid||r.at("invalid").flag()) {out.set("store_allowed",false);out.set("reason",cc.no_store?"no_store":"invalid_cache_fields");return out;}
+  if(cc.no_cache) {out.set("reason","requires_validation");return out;}
+  if(!r.at("vary").str().empty()) {out.set("reason","unsupported_vary");return out;}
+  if(r.at("cache_control").str().empty()) {const auto pragma=controls(r.at("pragma").str());if(!pragma.valid||pragma.no_cache) {out.set("reason","pragma_no_cache");return out;}}
+  const auto received=r.at("received_at_ms").num();
+  if(now<received) {out.set("reason","clock_rollback");return out;}
+  auto lifetime=std::min<std::int64_t>(max_age_s,365LL*86400)*1000;
+  if(cc.max_age)lifetime=std::min(lifetime,*cc.max_age);
+  const auto date_value=r.at("date").str(),expiry=r.at("expires").str(),age_value=r.at("age").str();
+  if((!date_value.empty()&&!date(date_value))||(!expiry.empty()&&!date(expiry))) {out.set("reason","invalid_date");return out;}
+  std::int64_t age=0;
+  if(!age_value.empty()) {
+    if(age_value.size()>12||!std::all_of(age_value.begin(),age_value.end(),[](char c){return c>='0'&&c<='9';})) {out.set("reason","invalid_age");return out;}
+    const auto parsed=std::from_chars(age_value.data(),age_value.data()+age_value.size(),age);
+    if(parsed.ec!=std::errc{}) {out.set("reason","invalid_age");return out;}age*=1000;
+  }
+  const auto date_ms=date_value.empty()?received:stamp(date_value);
+  if(date_ms>received+1000) {out.set("reason","future_date");return out;}
+  const auto current_age=std::max(age+r.at("response_delay_ms").num(),std::max<std::int64_t>(0,received-date_ms))+(now-received);
+  if(!expiry.empty()) {
+    const auto expiry_ms=stamp(expiry);
+    lifetime=std::min(lifetime,std::max<std::int64_t>(0,expiry_ms-date_ms));
+    if(now>=expiry_ms) {out.set("reason","expired");out.set("current_age_ms",current_age);out.set("freshness_lifetime_ms",lifetime);return out;}
+  }
+  const bool fresh=current_age<lifetime;
+  out.set("fresh",fresh);out.set("reason",fresh?"fresh":"expired");out.set("current_age_ms",current_age);out.set("freshness_lifetime_ms",lifetime);return out;
+}
+
+bool http_response_restricts_cache(const Json& response,std::int64_t now) {
+  if(!response.has("http_freshness"))return false;
+  protocol(response.has("final_url")&&response.at("final_url").is_string(),"HTTP cache response lacks identity");
+  const auto record=validate_http_freshness(response.at("http_freshness"),response.at("final_url").str());
+  // A failed extraction or unsupported 304 must not preserve an older, more
+  // permissive freshness decision. This ceiling is independent of the caller's
+  // max_age_s, which may deliberately request a conditional refresh at age zero.
+  return !http_freshness(record,now,7*86400).at("fresh").flag();
+}
+
 }

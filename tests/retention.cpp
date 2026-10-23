@@ -211,7 +211,7 @@ TEST(schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins) {
     Store store(temp.path/"db",[&]{return f.now;});const auto doc=store.ingest("alice",{"https://import.example/a","retention import","text/plain","import"});snapshot=doc.at("snapshot_id").str();proof=store.evidence("alice",snapshot,0,9).at("evidence_id").str();id=store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("job_id").str();store.job_control("alice",id,"pause");
     sql(store.raw_handle(),"DROP INDEX jobs_retention; DROP INDEX robots_retention; DROP INDEX map_hops_robots_admission; DROP INDEX map_hops_robots_receipt; ALTER TABLE jobs DROP COLUMN archive_json; ALTER TABLE jobs DROP COLUMN archived_at; PRAGMA user_version=8");
   }
-  Store store(temp.path/"db",[&]{return f.now;});CHECK(count(store.raw_handle(),"PRAGMA user_version")==12);CHECK(store.job_get("alice",id).at("state").str()=="paused");CHECK(store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("reused").flag());f.now+=week+86400000;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()=="retention import");CHECK(store.evidence_get("alice",proof).at("quote").str()=="retention");
+  Store store(temp.path/"db",[&]{return f.now;});CHECK(count(store.raw_handle(),"PRAGMA user_version")==13);CHECK(store.job_get("alice",id).at("state").str()=="paused");CHECK(store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("reused").flag());f.now+=week+86400000;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()=="retention import");CHECK(store.evidence_get("alice",proof).at("quote").str()=="retention");
 }
 
 TEST(permanent_key_quotas_remain_bounded_per_owner_and_globally) {
@@ -234,7 +234,7 @@ TEST(two_store_compactors_serialize_without_duplicate_summaries_or_charges) {
 TEST(compacted_backups_keep_the_restore_quarantine_gate) {
   Temp temp;std::int64_t now=1700000000000;Store store(temp.path/"db",[&]{return now;});const auto id=store.read_many_submit("alice",{"https://read.example/backup"},"backup",{}).at("job_id").str();store.job_control("alice",id,"cancel");now+=week+86400000;store.compact_jobs("alice");
   const auto backup=temp.path/"backup.db";store.backup(backup);rejects([&]{Store forbidden(backup,[&]{return now;});},"E_RESTORE_QUARANTINED",409);
-  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,"PRAGMA user_version")==12);CHECK(count(raw,"SELECT COUNT(*) FROM jobs WHERE archived_at>0")==1);CHECK(count(raw,"SELECT COUNT(*) FROM read_job_items")==0);
+  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,"PRAGMA user_version")==13);CHECK(count(raw,"SELECT COUNT(*) FROM jobs WHERE archived_at>0")==1);CHECK(count(raw,"SELECT COUNT(*) FROM read_job_items")==0);
 }
 
 TEST(rpc_is_available_offline_and_validates_raw_limit_and_unknown_parameters) {

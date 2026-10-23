@@ -20,6 +20,7 @@ from aiohttp import web
 
 from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
+from .freshness import VERSION as FRESHNESS_VERSION, response_freshness
 from .fetch import DEFAULT_UA, FetchAdmissionDenied, FetchBudget, FetchStopped, Fetcher, decode_body, host_of
 from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
@@ -70,8 +71,14 @@ class Worker:
         return {"ok": True, "version": __version__, "extractor": EXTRACTOR, "proxy": bool(self.fetcher.proxy),
                 "adapters": sorted(self.sources.adapters) if self.sources else [],
                 "robots_policy": POLICY_VERSION, "publication_policy": PUBLICATION_VERSION,
-                "http_revalidation": REVALIDATION_VERSION,
+                "http_revalidation": REVALIDATION_VERSION, "http_freshness": FRESHNESS_VERSION,
                 "sites_manifest_sha256": self.sites.digest}
+
+    async def fetch_profile(self, params: dict) -> dict:
+        if not isinstance(params, dict) or params:
+            raise ValueError("fetch.profile does not accept parameters")
+        return {"version": FRESHNESS_VERSION,
+                "request_profile": request_profile(self.fetcher.request_headers())}
 
     async def search_multi(self, params: dict) -> dict:
         assert self.sources is not None
@@ -82,7 +89,12 @@ class Worker:
         query = str(params.get("query", ""))[:1000]
         ids = [str(i) for i in params.get("sources", [])][:20]
         limit = max(1, min(int(params.get("limit", 10)), 30))
-        timeout_s = max(1.0, min(float(params.get("timeout_ms", 8000)) / 1000.0, 30.0))
+        timeout_ms = params.get("timeout_ms", 8000)
+        # The core sends the remaining monotonic budget. Rounding a remainder
+        # below one second up to a full second would enlarge its deadline.
+        if type(timeout_ms) is not int or not 1 <= timeout_ms <= 30000:
+            raise ValueError("invalid search.multi timeout_ms")
+        timeout_s = timeout_ms / 1000.0
         if not query or not ids:
             raise ValueError("query and sources are required")
         return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
@@ -346,6 +358,10 @@ class Worker:
                                                 headers=headers,
                                                 follow_redirects=False, before_dispatch=before_dispatch)
             out.update(final_url=response.final_url or str(target), http_status=response.http_status)
+            # Preserve observed cache fields before extraction or conditional
+            # validation can fail. All response classes may tighten old reuse.
+            if response.http_status is not None:
+                out["http_freshness"] = response_freshness(response)
             if not metadata and response.http_status is not None:
                 observation = restriction_observation(response.headers)
                 if response.http_status == 304:
@@ -493,13 +509,15 @@ class Worker:
     def _cache_metadata(response) -> dict:
         if response.status != "ok" or response.http_status != 200 or response.truncated:
             return {}
+        # Freshness was captured immediately after fetch; parsing time must not
+        # reset the response receipt clock or erase Age's resident time.
+        result = {}
         try:
-            return {"http_cache": response_cache(response.headers, url=response.final_url,
-                                                  profile=response.request_profile)}
+            result["http_cache"] = response_cache(response.headers, url=response.final_url,
+                                                   profile=response.request_profile)
         except ValueError:
-            # Full content remains usable under its existing publication
-            # policy; unsafe or absent validators simply cannot be persisted.
-            return {}
+            pass  # The independent raw cache fields are already on the response.
+        return result
 
     @staticmethod
     def _restrict_discovery(parsed: dict, publication: dict) -> None:
@@ -580,6 +598,8 @@ class Worker:
         while True:
             base = {"http_status": res.http_status, "final_url": res.final_url or url, "redirects": res.redirects,
                     "usage": {"external_requests": used_requests, "content_bytes": used_bytes}}
+            if res.http_status is not None:
+                base["http_freshness"] = response_freshness(res)
             if res.redirect_publication_observations:
                 base["redirect_publication_observations"] = res.redirect_publication_observations
             if res.http_status is not None:
@@ -687,7 +707,7 @@ class Worker:
 
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
-               "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch}
+               "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch, "fetch.profile": worker.fetch_profile}
 
     async def rpc(request: web.Request) -> web.Response:
         auth = request.headers.get("Authorization", "")

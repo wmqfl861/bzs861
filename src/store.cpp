@@ -140,6 +140,10 @@ namespace bzs {
       Stmt state(db_,"SELECT generation,manifest_generation FROM site_publication_state WHERE singleton=1");
       require(state.step(),"E_STORAGE","Missing deployment publication state",500);
       site_publication_bound_generation_=state.num(0);site_publication_manifest_generation_=state.num(1);
+      refresh_source_publication_locked();
+      Stmt sources(db_,"SELECT manifest_generation FROM source_publication_state WHERE singleton=1");
+      require(sources.step(),"E_STORAGE","Missing source publication state",500);
+      source_publication_manifest_generation_=sources.num(0);
       publication.commit();
     }catch(...) {
       sqlite3_close(db_);
@@ -152,7 +156,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=12,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=13,"E_SCHEMA_VERSION","Database is newer than this program",409);
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -461,6 +465,10 @@ namespace bzs {
       if(!has_column(db_,"snapshots","http_cache_bytes"))exec(db_,"ALTER TABLE snapshots ADD COLUMN http_cache_bytes INTEGER NOT NULL DEFAULT 0;");
       exec(db_,"PRAGMA user_version=12;");
     }
+    if(version<13) {
+      migrate_source_publication_locked();migrate_revocations_locked();migrate_shared_reads_locked();
+      exec(db_,"PRAGMA user_version=13;");
+    }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -487,6 +495,7 @@ namespace bzs {
   std::int64_t Store::deletion_generation(const std::string& owner,const std::string& url) {
     owner_valid(owner);
     std::lock_guard lock(mutex_);
+    require_principal_active_locked(owner);
     return deletion_generation_locked(owner,url);
   }
   void Store::usage_add_locked(const std::string& owner, std::int64_t bytes, std::int64_t snapshots) {
@@ -497,6 +506,7 @@ namespace bzs {
     s.step();
   }
   Json Store::snapshot_locked(const std::string& owner, const std::string& id) {
+    require_principal_active_locked(owner);
     refresh_site_publication_locked(false);
     Stmt s(db_, R"SQL(SELECT s.id,s.extraction_id,d.id,d.url,s.title,s.canonical_text,s.raw_hash,s.content_type,
  s.parser_version,s.created_at,s.revision,s.index_allowed,s.links_json,s.meta_json,s.source_kind,s.publication_json,s.representation_publication_json,s.site_bindings_json,s.site_publication_generation
@@ -550,6 +560,7 @@ namespace bzs {
     if(!doomed.empty())usage_add_locked(owner, -freed, -static_cast<std::int64_t>(doomed.size()));
   }
   Json Store::ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind) {
+    require_principal_active_locked(owner);
     owner_valid(owner);
     refresh_site_publication_locked(false);
     auto host=metadata_host(input.url);
@@ -574,7 +585,7 @@ namespace bzs {
     std::string site_bindings="{}";std::int64_t site_generation=0;
     const auto metadata=Json::parse(meta_json,8*1024*1024);
     auto http_metadata=Json::object();
-    for(const auto* key:{"http_cache","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
+    for(const auto* key:{"http_cache","http_freshness","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
     const auto http_bytes=http_metadata.size()?static_cast<std::int64_t>(http_metadata.canonical().size()):0;
     require(http_bytes<=16384,"E_WORKER_PROTOCOL","HTTP revalidation metadata exceeds its bound",502);
     const bool stale_publication=source_kind=="web"&&metadata.has("page_publication_stale")&&metadata.at("page_publication_stale").flag();
@@ -719,6 +730,7 @@ namespace bzs {
     return out;
   }
   Json Store::ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta, std::int64_t expected_deletion_generation,bool allow_empty) {
+    require_principal_active_locked(owner);
     require(expected_deletion_generation>=0,"E_SCHEMA","Invalid deletion fence");
     metadata_host(input.url);
     require(valid_utf8(input.raw)&&valid_utf8(parsed.text)&&valid_utf8(parsed.title), "E_UTF8", "Worker output is not UTF-8", 502);
@@ -751,6 +763,9 @@ namespace bzs {
       m.set("page_publication_sequence",old.at("page_publication_sequence"));
       m.set("site_publication_generation",old.at("site_publication_generation"));
     }
+    if(m.has("http_freshness"))
+      require(http_freshness(m.at("http_freshness"),clock_(),7*86400).at("store_allowed").flag(),
+              "E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
     SourceDocument doc=input;
     if(static_cast<std::int64_t>(doc.raw.size())>max_raw_bytes) {
       doc.raw.clear();
@@ -775,6 +790,7 @@ namespace bzs {
   }
   std::optional<Json> Store::cached(const std::string& owner, const std::string& url) {
     std::lock_guard lock(mutex_);
+    require_principal_active_locked(owner);
     Stmt s(db_, "SELECT s.id,s.created_at FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=? AND d.deleted=0");
     s.bind(1, owner);
     s.bind(2, url);
@@ -784,8 +800,25 @@ namespace bzs {
     j.set("fetched_at_ms", meta.has("fetched_at_ms")&&meta.at("fetched_at_ms").is_integer()?meta.at("fetched_at_ms").num():s.num(1));
     return j;
   }
+  void Store::invalidate_web_cache(const std::string& owner,const std::string& url,
+                                   const std::string& snapshot_id,const std::string& metadata_sha256) {
+    std::lock_guard lock(mutex_);Tx tx(db_);
+    Stmt row(db_,"SELECT s.meta_json,s.http_cache_bytes FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=? AND d.deleted=0 AND s.id=? AND s.source_kind='web'");
+    row.bind(1,owner);row.bind(2,url);row.bind(3,snapshot_id);
+    if(!row.step())return;
+    const auto old=Json::parse(row.text(0),8*1024*1024);
+    if(sha256(old.canonical())!=metadata_sha256)return;
+    auto meta=Json::object(),accounted=Json::object();
+    for(const auto& key:old.keys())if(key!="http_cache"&&key!="http_freshness"&&key!="http_revalidation")meta.set(key,old.at(key));
+    if(meta.has("revalidation_discovery"))accounted.set("revalidation_discovery",meta.at("revalidation_discovery"));
+    const auto bytes=accounted.size()?static_cast<std::int64_t>(accounted.canonical().size()):0;
+    Stmt update(db_,"UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
+    update.bind(1,meta.dump());update.bind(2,bytes);update.bind(3,snapshot_id);update.step();
+    usage_add_locked(owner,bytes-row.num(1),0);tx.commit();
+  }
   std::optional<RevalidationBase> Store::revalidation_base(const std::string& owner,const std::string& url) {
     std::lock_guard lock(mutex_);
+    require_principal_active_locked(owner);
     Stmt row(db_,"SELECT s.id,s.raw_content,s.canonical_text,s.title,s.parser_version,s.content_type,s.index_allowed,s.links_json,s.meta_json,s.publication_json,s.representation_publication_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url=? AND d.deleted=0 AND s.source_kind='web'");
     row.bind(1,owner);row.bind(2,url);if(!row.step())return std::nullopt;
     auto meta=Json::parse(row.text(8),8*1024*1024);
@@ -836,6 +869,7 @@ namespace bzs {
   Json Store::erase(const std::string& owner, const std::string& id) {
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    require_principal_active_locked(owner);
     Stmt s(db_, "SELECT id FROM documents WHERE id=? AND owner=? AND deleted=0");
     s.bind(1, id);
     s.bind(2, owner);
@@ -875,6 +909,7 @@ namespace bzs {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    require_principal_active_locked(owner);
     settle_searches_locked();
     refresh_site_publication_locked();
     auto epoch=epoch_locked(owner);
@@ -981,6 +1016,7 @@ namespace bzs {
     require(page_size>=1&&page_size<=100, "E_SCHEMA", "Page size out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    require_principal_active_locked(owner);
     refresh_site_publication_locked();
     Stmt s(db_, "SELECT auth_epoch,expires_at,partial,retrieval,query_json FROM sessions WHERE id=? AND owner=?");
     s.bind(1, session_id);
@@ -1146,6 +1182,7 @@ namespace bzs {
   }
   Json Store::stats(const std::string& owner) {
     std::lock_guard lock(mutex_);
+    require_principal_active_locked(owner);
     Json out=Json::object();
     Stmt n(db_, "SELECT count(*) FROM documents WHERE owner=? AND deleted=0");
     n.bind(1, owner);
@@ -1166,6 +1203,7 @@ namespace bzs {
     return out;
   }
   Json Store::job_locked(const std::string& owner, const std::string& id) {
+    require_principal_active_locked(owner);
     if(auto archived=compacted_job_locked(owner,id))return *archived;
     Stmt s(db_, "SELECT id,fixture_id,state,epoch,attempts,max_attempts,lease_until,deadline,used_pages,result_json,error_code,kind FROM jobs WHERE id=? AND owner=?");
     s.bind(1, id);
@@ -1195,6 +1233,7 @@ namespace bzs {
     require(attempts>=1&&attempts<=5&&timeout>=100&&timeout<=3600000, "E_SCHEMA", "Invalid job limits");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    require_principal_active_locked(owner);
     auto epoch=epoch_locked(owner);
     auto fingerprint=sha256(fixture+"|"+std::to_string(attempts)+"|"+std::to_string(timeout));
     {

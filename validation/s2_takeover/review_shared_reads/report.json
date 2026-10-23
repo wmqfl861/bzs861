@@ -1,0 +1,112 @@
+{
+  "role": "independent_reviewer_of_shared_read_increment",
+  "reviewed_commit": "fbc385f545826d62df2f7a0e0a3a9935368e1d3f",
+  "author_commit": "a12d4a48801566736e18bdae7d74c74a6762a79a",
+  "production_changes": false,
+  "blocking_findings": [],
+  "reviewed_files_sha256": {
+    "src/batch.cpp": "5b9f7ec1c729f0a33866748d363dd7a5b264e7623213ad0295b470e85c89cc04",
+    "src/retention.cpp": "491a23f0d50d9aef822a695de90218c2f359244beb6c83d5c935145dd6a07c43",
+    "src/store.cpp": "034a0b18d588e8b7324e9471953829e3154fd4532f3ae81299ea1ec0a6cfeccb",
+    "src/publication.cpp": "3ad593873e5208662835b503406719cfacdec5cd6af4ae5bf42b9cce99a2847b",
+    "src/revocation.cpp": "fa19355dfebd323ed9395023e89886eeedc661de974fb36c4c8140f111e792e3",
+    "src/web.cpp": "cd7465345727d885fa37e2330279781adbf1425179630052a7c1ee82811cf3de",
+    "src/service.cpp": "3f2a7f01370bcb54d43444e1ca3f3310047229b79fc69e8a8037ec7bc6778d38",
+    "include/bzs/store.hpp": "67e224d362239899082902b61ed2848ac9e6e3354b26ff5831eeec840f99851d",
+    "tests/batch.cpp": "8dfdff1047cbc849d9750cf969624abef2205d85e0ddc7d42974ffcbac4343e3",
+    "tests/retention.cpp": "fbec7bef267be57618fdc243d66decb99ad824b7d8f34c038a370f0b6af17823"
+  },
+  "validation": {
+    "configure": {
+      "command": [
+        "cmake",
+        "-S",
+        "/workspace/scratch/e2371129386d/bzs861-review-shared",
+        "-B",
+        "/workspace/scratch/e2371129386d/build-review-shared",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DBZS_BUILD_TESTS=OFF"
+      ],
+      "exit_code": 0,
+      "log": "configure.log"
+    },
+    "core_build": {
+      "command": [
+        "cmake",
+        "--build",
+        "/workspace/scratch/e2371129386d/build-review-shared",
+        "--target",
+        "bzs_core",
+        "-j2"
+      ],
+      "exit_code": 0,
+      "log": "build.log"
+    },
+    "probe_build": {
+      "command": [
+        "c++",
+        "-std=c++20",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-I",
+        "/workspace/scratch/e2371129386d/bzs861-review-shared/include",
+        "/workspace/scratch/e2371129386d/bzs861-source-policy/validation/s2_takeover/review_shared_reads/probe.cpp",
+        "/workspace/scratch/e2371129386d/build-review-shared/libbzs_core.a",
+        "-lsqlite3",
+        "-lxml2",
+        "-lcrypto",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/e2371129386d/build-review-shared/independent_shared_read_probe"
+      ],
+      "exit_code": 0,
+      "log": "probe-build-portable.log"
+    },
+    "probes": {
+      "command": [
+        "/workspace/scratch/e2371129386d/build-review-shared/independent_shared_read_probe",
+        "/workspace/scratch/e2371129386d/bzs861-review-shared/tests/fixtures"
+      ],
+      "exit_code": 0,
+      "log": "probe-portable.log",
+      "cases": 3,
+      "assertions": 99,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "binary_sha256": {
+    "libbzs_core.a": "e63cb2ba3590e6389b9c17767a134645ae2d9f8424ca126127e3c86665ee77c3",
+    "independent_shared_read_probe": "5bf9ba47d9ddbb83abbcdb43b2735adff6ffed09d563798f815d2f182283b5b1"
+  },
+  "probe_source_sha256": "28b318833068ad28bf7467c07affb67490e9f24bbe780d29004d1acf85f08eae",
+  "logs_sha256": {
+    "build.log": "836881fec025670a96cc67e45164ef74c5af8f84d860c23800bd226e38c18ece",
+    "configure.log": "22259243b57d40803a4cfaea6445d26cb5fd36acab3dab8ab763d39f40f47573",
+    "probe-build-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "probe-build-portable.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "probe-build.log": "6f07aabedaac11ab6d73df31219e8ff1112f89c4c51adfc9bdce80d23eaac6a5",
+    "probe-final.log": "bddd5e6f6512882790a8e1b213877d36098b4221dc186991c6271ef065137b15",
+    "probe-first.log": "0afe443d1d0aa67e7b33b6190182185d126eca688ad6a22e4565e0e2dd919056",
+    "probe-portable.log": "bddd5e6f6512882790a8e1b213877d36098b4221dc186991c6271ef065137b15"
+  },
+  "preserved_failures": [
+    {
+      "log": "probe-first.log",
+      "reason": "Reviewer fixture omitted http_status while supplying explicit versioned publication, which the existing core correctly rejects. Added HTTP 200 to the fixture; no production guard changed."
+    }
+  ],
+  "boundaries": [
+    "same-owner read_many co-dispatch only",
+    "fixed integrated source revision, no production code modified",
+    "no actual external source/website calls",
+    "orderly Store restart plus controlled clock, not power-loss simulation",
+    "full final integration and platform gates remain separate"
+  ],
+  "recorded_at_utc": "2026-10-23T10:42:02.797829+00:00"
+}

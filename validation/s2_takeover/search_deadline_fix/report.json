@@ -1,0 +1,127 @@
+{
+  "role": "author_search_deadline_compatibility_correction",
+  "baseline_commit": "90b5316ee63d4cb1cb5a198e6ca97771c11b7d97",
+  "origin": "final integrated v1 unchanged e2e_session_recovery test_06 found subsecond dispatch regression",
+  "corrected_assumption": "Public minimum request budget does not impose a minimum remaining execution budget.",
+  "production_files_sha256": {
+    "include/bzs/web.hpp": "a701c9aa3144e712b1edbbef860dc401a1f30af8b7c1552d8e6fe8b05482b423",
+    "src/web.cpp": "33fe701064eff486f92b8627734197d7b622598d46c9014cccb2b03c84c96a5e",
+    "src/sessions.cpp": "375b79a7704d85002d2590e94b6c8c5cf7b55cf9ae7b795e28b20050bec5756e"
+  },
+  "regression_tests_sha256": {
+    "tests/search_modes.cpp": "73a5359e8e6ae0ad90feb16ff20ccf2ce525fbf7b118ecaf0d7ea01da641b795"
+  },
+  "original_e2e": {
+    "path": "tests/e2e_session_recovery.py",
+    "sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "identical_to_baseline_commit": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "modified": false
+  },
+  "validation": {
+    "before_fix": {
+      "command": [
+        "/workspace/scratch/e2371129386d/build-source-policy/bzs_search_mode_tests"
+      ],
+      "exit_code": 1,
+      "failed_cases": [
+        "legacy_durable_search_dispatches_with_500ms_remaining_without_extending_deadline",
+        "explicit_mode_durable_search_dispatches_with_500ms_remaining_without_extending_deadline"
+      ],
+      "log": "native-regression-before.log"
+    },
+    "build": {
+      "command": [
+        "cmake",
+        "--build",
+        "/workspace/scratch/e2371129386d/build-source-policy",
+        "--target",
+        "bzs_search_mode_tests",
+        "bzs_session_tests",
+        "searchd",
+        "-j2"
+      ],
+      "exit_code": 0,
+      "log": "build-final.log"
+    },
+    "native": {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/workspace/scratch/e2371129386d/build-source-policy",
+        "-R",
+        "^(search_modes|sessions)$",
+        "-V",
+        "--output-on-failure"
+      ],
+      "exit_code": 0,
+      "passed_suites": 2,
+      "skips": 0,
+      "mode_cases": 17,
+      "mode_assertions": 182,
+      "mode_failures": 0,
+      "log": "native-first.log"
+    },
+    "original_test06": {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+        "tests/e2e_session_recovery.py",
+        "--server",
+        "/workspace/scratch/e2371129386d/build-source-policy/searchd",
+        "--python",
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+        "--repo",
+        "/workspace/scratch/e2371129386d/bzs861-source-policy",
+        "SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail"
+      ],
+      "exit_code": 0,
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "log": "e2e-test06-first.log"
+    },
+    "original_full_recovery": {
+      "command": [
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+        "tests/e2e_session_recovery.py",
+        "--server",
+        "/workspace/scratch/e2371129386d/build-source-policy/searchd",
+        "--python",
+        "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+        "--repo",
+        "/workspace/scratch/e2371129386d/bzs861-source-policy"
+      ],
+      "exit_code": 0,
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "log": "e2e-recovery-full.log"
+    }
+  },
+  "e2e_environment": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/scratch/e2371129386d/bzs861-source-policy/python",
+    "execution": "approved local loopback fixtures"
+  },
+  "binaries_sha256": {
+    "bzs_search_mode_tests": "93c6744392067d9a76a4fa9215de68324b2b81e397d02e8f167d00eae248d4f5",
+    "bzs_session_tests": "0d3be677ff4560e1eafe8292e408f36effe97fcdaa55ab3444a3cdbac985c296",
+    "searchd": "e6936fd20e64f69153a787874603b956c6f0d7e52353993c8e348ddb97c4a07b"
+  },
+  "logs_sha256": {
+    "build-final.log": "c28f811367fed6d7f68719a340f93600065dc0ec41c6501b267ad27cf162fcd5",
+    "build-regression-before.log": "8509a0adefdf690e3106c0886b33dc4a2818ef59e2c858a36fe6ac8845944cb8",
+    "e2e-recovery-full.log": "1a44b9683d48ef30f0df08e64388ba99bfea61d2010acc06759a1889e4495a79",
+    "e2e-test06-first.log": "423f17e4b438e860a8d41503861342fe3036c0c0fadb09c27730f9e80574bf89",
+    "native-first.log": "4483ddb071623ff2866e85798bf5812221de620b0a325bd93ac7c33b5bd889ba",
+    "native-regression-before.log": "efdc7a2beb0ad70ad64091242680d8093b0bb5ff3e274f471f92645f8cdd1b59"
+  },
+  "boundaries": [
+    "No original E2E file or assertion changed",
+    "Old failed integration and review evidence must remain intact",
+    "Public JSON cannot set the internal absolute C++ deadline",
+    "No automatic retry, rounded-up second, or persistent deadline reset",
+    "Real process/RPC recovery coverage does not claim physical power-loss safety",
+    "No separate author sanitizer rerun for this correction; final integrated gates remain separate"
+  ],
+  "recorded_at_utc": "2026-10-23T10:51:26.750866+00:00"
+}

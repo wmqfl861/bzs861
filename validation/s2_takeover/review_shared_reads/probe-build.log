@@ -1,0 +1,7 @@
+validation/s2_takeover/review_shared_reads/probe.cpp: In function ‘bzs::Json {anonymous}::publication(const std::string&, bool)’:
+validation/s2_takeover/review_shared_reads/probe.cpp:22:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   22 |   if(!snippets)value.set("directives",Json::parse(R"(["nosnippet"])"));return value;
+      |   ^~
+validation/s2_takeover/review_shared_reads/probe.cpp:22:72: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   22 |   if(!snippets)value.set("directives",Json::parse(R"(["nosnippet"])"));return value;
+      |                                                                        ^~~~~~

@@ -1,0 +1,568 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "recorded_at_utc": "2026-10-23T10:59:12.943867+00:00",
+  "baseline": {
+    "version": "0.1.9",
+    "schema": 12,
+    "commit": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
+    "verified_historical_ci_run": 39725326547
+  },
+  "schema": 13,
+  "plan": {
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0,
+    "planned_acceptance_suite_executed": false
+  },
+  "runtime_source_commit_local": "c69141426260ea497440ede5f50e185ab10e19da",
+  "runtime_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+  "searchd_sha256": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+  "execution_inputs": {
+    "path": "final-v2-execution-inputs.json",
+    "sha256": "12acb9323d54298b9cadec7b7ab2a6d114e8d009029bf4c9f9bc5c59eed86fe8",
+    "files": 222,
+    "all_recorded_final_commands_unchanged_before_and_after": true,
+    "post_validation_document_paths": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/DEVELOPMENT_STATUS.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/handoff/NEXT_AGENT.md",
+      "docs/handoff/S2_TAKEOVER_20261023.md",
+      "docs/implementation_status.json"
+    ]
+  },
+  "final_source_manifest": "final-source-manifest.json",
+  "publication_binding": "The actual containing published Git commit binds this report, logs and final tree. Local input commit IDs are not claimed as remote publication SHAs.",
+  "environment": {
+    "system": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "cmake": "cmake version 3.28.3",
+    "python": "Python 3.12.14",
+    "fixture_network": "Loopback test services only; no real external source requests"
+  },
+  "review": "final-review.json",
+  "result": {
+    "status": "passed_final_integrated_local_gates_scope_limited",
+    "ctest": {
+      "passed_suites": 27,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 171.87,
+      "log": "final-v2-ctest.log",
+      "junit": "final-v2-ctest.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 82,
+          "failed": 0,
+          "elapsed_seconds": 2.58022,
+          "assertions": 715
+        },
+        {
+          "name": "batch",
+          "passed": 30,
+          "failed": 0,
+          "elapsed_seconds": 1.28028,
+          "assertions": 801
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 0.887491,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 6.01861,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 5.61633,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 2.60458,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 1.00515,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 22,
+          "failed": 0,
+          "elapsed_seconds": 14.5432,
+          "assertions": 285
+        },
+        {
+          "name": "source_publication",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 0.880449,
+          "assertions": 180
+        },
+        {
+          "name": "search_modes",
+          "passed": 17,
+          "failed": 0,
+          "elapsed_seconds": 2.84434,
+          "assertions": 182
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 1.26231,
+          "assertions": 333
+        },
+        {
+          "name": "revocation",
+          "passed": 12,
+          "failed": 0,
+          "elapsed_seconds": 0.25652,
+          "assertions": 146
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 9.13136,
+          "assertions": 4800
+        },
+        {
+          "name": "cache_freshness",
+          "passed": 13,
+          "failed": 0,
+          "elapsed_seconds": 0.269787,
+          "assertions": 80
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.174477,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        },
+        {
+          "name": "http_cli",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 5.7259
+        },
+        {
+          "name": "http_revocation",
+          "passed": 2,
+          "failed": 0,
+          "elapsed_seconds": 0.188832
+        },
+        {
+          "name": "e2e_web",
+          "passed": 15,
+          "failed": 0,
+          "elapsed_seconds": 7.21564
+        },
+        {
+          "name": "e2e_map",
+          "passed": 9,
+          "failed": 0,
+          "elapsed_seconds": 4.04895
+        },
+        {
+          "name": "e2e_crawl",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 10.5745
+        },
+        {
+          "name": "e2e_crawl_recovery",
+          "passed": 8,
+          "failed": 0,
+          "elapsed_seconds": 24.2717
+        },
+        {
+          "name": "e2e_session_recovery",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 28.4059
+        },
+        {
+          "name": "e2e_revalidation",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 9.07752
+        },
+        {
+          "name": "e2e_cache_freshness",
+          "passed": 6,
+          "failed": 0,
+          "elapsed_seconds": 5.10749
+        },
+        {
+          "name": "e2e_cache_policy_review",
+          "passed": 10,
+          "failed": 0,
+          "elapsed_seconds": 8.64199
+        },
+        {
+          "name": "e2e_revocation",
+          "passed": 3,
+          "failed": 0,
+          "elapsed_seconds": 1.88546
+        },
+        {
+          "name": "python_worker",
+          "passed": 1049,
+          "failed": 0,
+          "elapsed_seconds": 17.3648
+        }
+      ]
+    },
+    "sanitizers": {
+      "passed_suites": 15,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "elapsed_seconds": 161.37,
+      "log": "final-v2-asan.log",
+      "junit": "final-v2-asan.xml",
+      "suites": [
+        {
+          "name": "core",
+          "passed": 82,
+          "failed": 0,
+          "elapsed_seconds": 6.7969,
+          "assertions": 715
+        },
+        {
+          "name": "batch",
+          "passed": 30,
+          "failed": 0,
+          "elapsed_seconds": 3.85494,
+          "assertions": 801
+        },
+        {
+          "name": "map",
+          "passed": 24,
+          "failed": 0,
+          "elapsed_seconds": 3.33121,
+          "assertions": 462
+        },
+        {
+          "name": "crawl",
+          "passed": 54,
+          "failed": 0,
+          "elapsed_seconds": 20.8942,
+          "assertions": 2798
+        },
+        {
+          "name": "site_publication",
+          "passed": 32,
+          "failed": 0,
+          "elapsed_seconds": 16.5263,
+          "assertions": 1200
+        },
+        {
+          "name": "retention",
+          "passed": 16,
+          "failed": 0,
+          "elapsed_seconds": 6.12909,
+          "assertions": 404
+        },
+        {
+          "name": "fairness",
+          "passed": 11,
+          "failed": 0,
+          "elapsed_seconds": 3.01649,
+          "assertions": 251
+        },
+        {
+          "name": "sessions",
+          "passed": 22,
+          "failed": 0,
+          "elapsed_seconds": 52.7197,
+          "assertions": 285
+        },
+        {
+          "name": "source_publication",
+          "passed": 20,
+          "failed": 0,
+          "elapsed_seconds": 3.08362,
+          "assertions": 180
+        },
+        {
+          "name": "search_modes",
+          "passed": 17,
+          "failed": 0,
+          "elapsed_seconds": 7.04578,
+          "assertions": 182
+        },
+        {
+          "name": "revalidation",
+          "passed": 21,
+          "failed": 0,
+          "elapsed_seconds": 5.4488,
+          "assertions": 333
+        },
+        {
+          "name": "revocation",
+          "passed": 12,
+          "failed": 0,
+          "elapsed_seconds": 1.02543,
+          "assertions": 146
+        },
+        {
+          "name": "capacity_cycles",
+          "passed": 4,
+          "failed": 0,
+          "elapsed_seconds": 29.7956,
+          "assertions": 4800
+        },
+        {
+          "name": "cache_freshness",
+          "passed": 13,
+          "failed": 0,
+          "elapsed_seconds": 0.994892,
+          "assertions": 80
+        },
+        {
+          "name": "contracts",
+          "passed": 55,
+          "failed": 0,
+          "elapsed_seconds": 0.702277,
+          "retained_design_fixtures": 34,
+          "additional_native_cases": 21,
+          "assertions": 269
+        }
+      ]
+    },
+    "native_sanitizer_executables": 15,
+    "native_sanitizer_failures": 0,
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "design_contract_reference_passed": 34,
+    "planning_guard_passed": 13,
+    "planning_read_only_check": {
+      "read_only": true,
+      "structure_valid": true,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "planning_estimate": [
+        418,
+        720
+      ],
+      "product_acceptance_checked": false
+    },
+    "dependencies": "No broken requirements found.",
+    "genuine_old_library_upgrade": {
+      "old_schema": 12,
+      "new_schema": 13,
+      "legacy_tables_preserved": 39,
+      "old_preparation_assertions": 310,
+      "new_upgrade_assertions": 1184,
+      "backup_quarantine_preserved": true,
+      "probe_author_role": "shared_read_component_author; independent of source policy and principal revocation",
+      "final_executor_role": "root_integrator_replay",
+      "embedded_role_field_note": "The replay script keeps its original probe-author role string; final-v2 commands were executed by the root integrator.",
+      "report": "migration/final-v2/report.json"
+    },
+    "final_shared_review_replay": {
+      "cases": 3,
+      "assertions": 99,
+      "failures": 0,
+      "author_role": "source_and_modes_author_reviewing_shared_read_component",
+      "executor_role": "root_integrator_relink_and_replay",
+      "record": "review_shared_reads/final-v2/cases.json"
+    },
+    "independent_corrected_deadline_review": {
+      "cases": 4,
+      "assertions": 59,
+      "original_real_recovery_test06_passed": true,
+      "record": "search_modes_deadline_review/report.json"
+    },
+    "successful_final_commands": 12,
+    "github_ci": "Check the actual containing published commit after publication; no future SHA or CI success is asserted here.",
+    "counting_note": "Native, sanitizer, author, reviewer and integration cases overlap. Their counts are not added to the 161 planned product acceptance items."
+  },
+  "successful_commands": [
+    {
+      "record": "final-v2-build-debug-command.json",
+      "record_sha256": "6c14f87a44d231b2f735fec96625bc89379b5d798cb08d3fcf293c842905382c",
+      "log": "final-v2-build-debug.log",
+      "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "exit_code": 0,
+      "elapsed_seconds": 0.033
+    },
+    {
+      "record": "final-v2-build-asan-command.json",
+      "record_sha256": "4fbacf4095bcb2ba79e740b56e9519c1207565ae1f98d45a9b4f094693b48e55",
+      "log": "final-v2-build-asan.log",
+      "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "exit_code": 0,
+      "elapsed_seconds": 0.025
+    },
+    {
+      "record": "final-v2-ctest-command.json",
+      "record_sha256": "16fac27bedfb0c93316d0f370a4f3dd59a6e276ce402ef54c4abc9c1a0a868a1",
+      "log": "final-v2-ctest.log",
+      "log_sha256": "97ea9d034e23202068caae78167a010baa3a93d3c47dba432bbafa005e736c87",
+      "exit_code": 0,
+      "elapsed_seconds": 171.896
+    },
+    {
+      "record": "final-v2-asan-command.json",
+      "record_sha256": "a81b118e0b5e2054a86d6da1047a14565ea933ed472203a8bf7dba5191cf1998",
+      "log": "final-v2-asan.log",
+      "log_sha256": "53922ef76b5c01cd55652351cedee59f3e550a904f55d3142715686077e098b9",
+      "exit_code": 0,
+      "elapsed_seconds": 161.399
+    },
+    {
+      "record": "final-v2-migration-command.json",
+      "record_sha256": "246be20ab09340e29cf8bcbccbb566451c227192326ac068da009735e6e4ee64",
+      "log": "final-v2-migration.log",
+      "log_sha256": "16347d48bee2c0a91ee115e6f93b85cc77b9cdf45e9445a4b3b90cf7d92ede7f",
+      "exit_code": 0,
+      "elapsed_seconds": 5.462
+    },
+    {
+      "record": "final-v2-contracts-command.json",
+      "record_sha256": "81d1dc9b000e79b5d56bc68134c2b6b34258e6c26632b4212bbcfc3c3f79d065",
+      "log": "final-v2-contracts.log",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0,
+      "elapsed_seconds": 0.508
+    },
+    {
+      "record": "final-v2-plan-command.json",
+      "record_sha256": "ffed1b4635ce8a3d4c09ca0c523bef3f3ffbe23c9b599eee12ebfb7257382a6e",
+      "log": "final-v2-plan.log",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0,
+      "elapsed_seconds": 0.073
+    },
+    {
+      "record": "final-v2-plan-guards-command.json",
+      "record_sha256": "50ad803d9aab17acc8d7692ae6f3d3ac65ec8dcd4b27580148fbbc7270f0ad09",
+      "log": "final-v2-plan-guards.log",
+      "log_sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+      "exit_code": 0,
+      "elapsed_seconds": 0.941
+    },
+    {
+      "record": "final-v2-dependencies-command.json",
+      "record_sha256": "4438d9d54adc74adee791049fc6ca1e31a50a5c42a09b56a884c9caee2639f41",
+      "log": "final-v2-dependencies.log",
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "exit_code": 0,
+      "elapsed_seconds": 0.397
+    },
+    {
+      "record": "final-v2-preservation-command.json",
+      "record_sha256": "22a39121c66e2a9c2afebf255b85d12683886c31bae6db7efc7e0a4a80348cb1",
+      "log": "final-v2-preservation.log",
+      "log_sha256": "8b0b140ff9db2926966129af3a307c1a1f1621e2e05ea372a8d78dc303756dc6",
+      "exit_code": 0,
+      "elapsed_seconds": 2.253
+    },
+    {
+      "record": "final-v2-shared-review-compile-command.json",
+      "record_sha256": "b2e787f6c9084fdfbb2b8647b9febe1d5b3c9bcd079f143299665863b20bda7b",
+      "log": "final-v2-shared-review-compile.log",
+      "log_sha256": "063a32b1ff4d397ec558e089754fb0f89f53004964d07cd22e17f5f2286d1eba",
+      "exit_code": 0,
+      "elapsed_seconds": 2.022
+    },
+    {
+      "record": "final-v2-shared-review-command.json",
+      "record_sha256": "9c0589b913b3517bb0da3d08d272885a9f2dabc6ba3e0f8555336d6df6c4a095",
+      "log": "final-v2-shared-review.log",
+      "log_sha256": "1d46488e76e3773039fe28ecc52794481feab38b026f2c08e793c2e2b55d1fb7",
+      "exit_code": 0,
+      "elapsed_seconds": 0.234
+    }
+  ],
+  "failed_initial_final_attempts": {
+    "schema_version": 1,
+    "status": "failed_integrated_candidate_preserved",
+    "candidate_execution_inputs": "final-v1-execution-inputs.json",
+    "ctest": {
+      "suites": 27,
+      "failed_suites": [
+        "e2e_web",
+        "e2e_session_recovery"
+      ],
+      "skipped": 0,
+      "junit_sha256": "d15be2b071c164f44b52787c7ddd8a055af5ed58fd9daeb4a6c2bcedbfc22e1b",
+      "command": "final-v1-ctest-command.json",
+      "log": "final-v1-ctest.log"
+    },
+    "findings": [
+      {
+        "id": "MODE-remaining-budget",
+        "kind": "production_compatibility_regression",
+        "cause": "A legitimate 1000ms durable request usually has under 1000ms left at dispatch; new mode logic incorrectly reapplied the public minimum to remaining time.",
+        "correction": "Keep public request minimum 1000ms; pass the positive remaining allowance as a separate absolute steady-clock deadline; do not reset or round it up.",
+        "original_test_unchanged": "tests/e2e_session_recovery.py",
+        "author_evidence": "search_deadline_fix/report.json",
+        "independent_correction_evidence": "search_modes_deadline_review/report.json",
+        "local_implementation_commit": "7fc7392a8e4d84d14613c2bfbe6f2a7d363d8a95"
+      },
+      {
+        "id": "source-snippet-fixture",
+        "kind": "outdated_expectation_conflicts_with_explicit_permission",
+        "cause": "The shared fakeweb manifest explicitly grants links_only, but the old direct-search assertion required a published snippet.",
+        "correction": "Check suppressed title/snippet for every merged hit, retain merge/attribution assertions, add a separate explicitly permitted fixture with positive text assertions; verify cached output in both directions and document the contract.",
+        "production_policy_weakened": false,
+        "global_fixture_permission_changed": false,
+        "independent_evidence": "source_fixture_review/README.md",
+        "local_test_commit": "ff193ba"
+      }
+    ],
+    "other_v1_gates": "ASan 15/15, Python 1049, genuine migration, original contracts and plan checks passed on that failed candidate; they do not replace the new frozen final-v2 gates."
+  },
+  "preservation": {
+    "record": "final-v2-preservation-command.json",
+    "log": "final-v2-preservation.log",
+    "baseline_validation_and_original_spec_backlog_schema_locks_unchanged": true,
+    "golden_40_and_original_20_15_5_partition_unchanged": true,
+    "golden_content_inspected_for_tuning": false,
+    "work_package_requirements_dependencies_estimates_and_acceptance_mapping_preserved": true,
+    "only_work_package_status_change": "MODE-01 not_started to partial"
+  },
+  "boundaries": {
+    "enabled_search_sources": 0,
+    "registered_search_sources": 17,
+    "registered_sites": 0,
+    "real_source_requests": 0,
+    "new_source_approvals": 0,
+    "search_modes_scope": "search_only; read/model/browser budgets remain zero",
+    "shared_reads_scope": "Compatible same-owner read_many members queued at dispatch, maximum 32; no late joins or general direct/crawl/search merging",
+    "backups": "Remain quarantined without independent revocation continuity",
+    "complete_product_acceptance": false,
+    "human_qrels_created_or_invented": false,
+    "windows_gate": "15 native plus 2 HTTP; not complete Worker packaging validation"
+  },
+  "summary_consistency_audit": "final-summary-audit.json"
+}

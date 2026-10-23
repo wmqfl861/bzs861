@@ -1,0 +1,15 @@
+{
+  "command": [
+    "ctest",
+    "--test-dir",
+    "build",
+    "-R",
+    "^(batch|fairness|retention)$",
+    "--output-on-failure",
+    "--output-junit",
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/shared_reads/targeted.xml"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 4.357,
+  "log": "targeted.log"
+}

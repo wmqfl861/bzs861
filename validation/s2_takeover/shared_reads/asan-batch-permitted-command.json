@@ -1,0 +1,13 @@
+{
+  "command": [
+    "./build-asan/bzs_batch_tests"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 4.742,
+  "log": "asan-batch-permitted.log",
+  "environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "context": "same native binary; unrestricted test execution requested because LeakSanitizer cannot run under the sandbox ptrace supervisor"
+}

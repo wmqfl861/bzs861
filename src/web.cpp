@@ -1,5 +1,6 @@
 #include "bzs/web.hpp"
 #include "bzs/http_cache.hpp"
+#include "bzs/search_modes.hpp"
 #include "bzs/publication.hpp"
 #include "bzs/contracts.hpp"
 #include "bzs/error.hpp"
@@ -200,7 +201,7 @@ namespace bzs {
   bool SourceSpec::reviewed(std::int64_t now) const {
     try { require_review(now); return true; } catch(const Error&) { return false; }
   }
-  SourceRegistry::SourceRegistry(const Json& manifest) {
+  SourceRegistry::SourceRegistry(const Json& manifest):configured_(true) {
     try {
     manifest.allowed( {
       "version", "notes", "sources"
@@ -360,6 +361,7 @@ namespace bzs {
   }
   WebService::WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites):store_(store), worker_(worker), registry_(std::move(registry)), sites_(std::move(sites)) {
     site_publication_generation_=sites_.all().empty()?store_.site_publication_generation():store_.activate_site_publication(sites_);
+    if(registry_.configured())store_.activate_source_publication(registry_);
   }
   namespace {
     constexpr std::int64_t search_cache_ttl_ms=10*60*1000, partial_cache_ttl_ms=2*60*1000;
@@ -380,9 +382,13 @@ namespace bzs {
     usage.set("external_requests", static_cast<std::int64_t>(0));
     usage.set("model_calls", static_cast<std::int64_t>(0));
     value.set("usage", usage);
-    return value;
+    try { return store_.project_source_search(value,it->second.source_generation); }
+    catch(const Error& error) {
+      if(error.code!="E_SOURCE_POLICY_CHANGED")throw;
+      cache_.erase(it);return std::nullopt;
+    }
   }
-  void WebService::cache_put(const std::string& key, const Json& value, bool partial) {
+  void WebService::cache_put(const std::string& key, const Json& value, bool partial,std::int64_t source_generation) {
     std::lock_guard lock(cache_mutex_);
     auto now=store_.now();
     for(auto it=cache_.begin(); it!=cache_.end();)it=now-it->second.stored_at>it->second.ttl_ms?cache_.erase(it):std::next(it);
@@ -398,7 +404,7 @@ namespace bzs {
       cache_.erase(oldest);
     }
     cache_[key]= {
-      now, partial?partial_cache_ttl_ms:search_cache_ttl_ms, std::move(body)
+      now, partial?partial_cache_ttl_ms:search_cache_ttl_ms, source_generation, std::move(body)
     };
   }
   std::size_t WebService::enabled_sources() const {
@@ -430,15 +436,19 @@ namespace bzs {
     out.set("sources", list);
     return out;
   }
-  Json WebService::search(const std::string& owner, const Json& args, bool retain_publication_urls) {
+  Json WebService::search(const std::string& owner, const Json& args, bool retain_publication_urls,
+                          std::optional<std::chrono::steady_clock::time_point> internal_deadline) {
+    const auto started=std::chrono::steady_clock::now();
     args.allowed( {
-      "query", "sources", "category", "limit", "per_source", "language", "timeout_ms", "refresh"
+      "query", "sources", "category", "limit", "per_source", "language", "timeout_ms", "refresh", "mode", "max_sources", "deadline_ms"
     });
     auto query=required_string(args, "query", 1000);
     require(valid_utf8(query), "E_UTF8", "Query must be UTF-8");
-    auto limit=int_option(args, "limit", 10, 1, 50);
-    auto per_source=int_option(args, "per_source", 10, 1, 30);
-    auto timeout=int_option(args, "timeout_ms", 8000, 1000, 30000);
+    const auto mode=search_mode(args);const auto limit=mode.limit,per_source=mode.per_source;
+    const auto public_deadline=started+std::chrono::milliseconds(mode.deadline_ms);
+    const auto monotonic_deadline=internal_deadline?std::min(public_deadline,*internal_deadline):public_deadline;
+    const auto remaining=[&] { return std::chrono::duration_cast<std::chrono::milliseconds>(monotonic_deadline-std::chrono::steady_clock::now()).count(); };
+    require(remaining()>0,"E_DEADLINE","Search deadline exhausted before dispatch",408);
     auto category=args.has("category")?required_string(args, "category", 32):std::string("web");
     std::string language;
     if(args.has("language")) {
@@ -466,8 +476,14 @@ namespace bzs {
       }
       require(!selected.empty(), "E_SCHEMA", "No enabled sources for category: "+category);
     }
+    auto omitted=Json::array();
+    if(args.has("sources"))require(selected.size()<=static_cast<std::size_t>(mode.max_sources),"E_SCHEMA","Explicit sources exceed the selected mode source budget");
+    else if(mode.explicit_mode||mode.explicit_source_limit) {
+      for(std::size_t i=static_cast<std::size_t>(mode.max_sources);i<selected.size();++i)omitted.push(Json::string(selected[i]->id));
+      if(selected.size()>static_cast<std::size_t>(mode.max_sources))selected.resize(static_cast<std::size_t>(mode.max_sources));
+    }
     require(selected.size()<=20,"E_SCHEMA","Default source selection exceeds 20 sources");
-    for(const auto* source:selected)source->require_review(store_.now());
+    const auto effective_budget=mode.budget(static_cast<std::int64_t>(selected.size()));
     std::vector<std::string> selected_ids;
     for(const auto* s:selected)selected_ids.push_back(s->id);
     std::sort(selected_ids.begin(), selected_ids.end());
@@ -480,10 +496,16 @@ namespace bzs {
     Json key_sources=Json::array();
     for(const auto& id:selected_ids)key_sources.push(Json::string(id));
     key_parts.set("sources",key_sources);
+    key_parts.set("mode",mode.name);key_parts.set("budget",effective_budget);key_parts.set("omitted_sources",omitted);
+    const auto source_generation=store_.source_publication_capture(registry_,key_sources);
+    for(const auto* source:selected)source->require_review(store_.now());
     if(retain_publication_urls)key_parts.set("internal_publication_urls",true);
     auto cache_key=key_parts.dump();
     bool refresh=args.has("refresh")&&args.at("refresh").flag();
-    if(!refresh)if(auto hit=cache_get(cache_key))return *hit;
+    if(!refresh)if(auto hit=cache_get(cache_key)) {
+      require(remaining()>0,"E_DEADLINE","Search deadline exhausted before cached response publication",408);
+      return *hit;
+    }
     Json report=Json::array();
     Json ids=Json::array();
     std::vector<const SourceSpec*> admitted;
@@ -495,6 +517,7 @@ namespace bzs {
       decisions.emplace_back(s, reason);
     }
     if(wait>0) {
+      require(remaining()>wait,"E_DEADLINE","Search deadline exhausted before source admission",408);
       // Politeness gaps still open: wait once (bounded) instead of dropping those sources.
       std::this_thread::sleep_for(std::chrono::milliseconds(wait));
       for(auto& [s, reason]:decisions)
@@ -519,11 +542,13 @@ namespace bzs {
       Json params=Json::object();
       params.set("query", query);
       params.set("limit", per_source);
-      params.set("timeout_ms", timeout);
+      const auto left=remaining();require(left>0,"E_DEADLINE","Search deadline exhausted before source request",408);
+      const auto timeout=std::min<std::int64_t>(mode.timeout_ms,left);params.set("timeout_ms", timeout);
       if(!language.empty())params.set("language", language);
       params.set("sources", ids);
       params.set("manifest_sha256",registry_.manifest_digest());
-      auto resp=worker_.call("search.multi", params, static_cast<int>(timeout+4000));
+      auto resp=worker_.call("search.multi", params, static_cast<int>(std::min<std::int64_t>(left,timeout+4000)));
+      require(remaining()>0,"E_DEADLINE","Search deadline exhausted before response publication",408);
       require(resp.is_object()&&resp.has("results")&&resp.at("results").is_object(),"E_WORKER_PROTOCOL","Worker search response requires results object",502);
       auto results=resp.at("results");
       for(const auto* s:admitted) {
@@ -617,6 +642,7 @@ namespace bzs {
     usage.set("model_calls", static_cast<std::int64_t>(0));
     Json out=Json::object();
     out.set("query", query);
+    out.set("effective_mode",mode.name);out.set("effective_budget",effective_budget);out.set("omitted_sources",omitted);
     out.set("results", merged);
     out.set("result_count", static_cast<std::int64_t>(merged.size()));
     out.set("sources", report);
@@ -632,7 +658,9 @@ namespace bzs {
       auto st=report.at(i).at("status").str();
       answered=answered||st=="ok"||st=="empty";
     }
-    if(answered)cache_put(cache_key, out, partial);
+    out=store_.project_source_search(out,source_generation);
+    require(remaining()>0,"E_DEADLINE","Search deadline exhausted before response publication",408);
+    if(answered)cache_put(cache_key, out, partial,source_generation);
     return out;
   }
   Json WebService::window(const std::string& owner, const Json& snap, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at) {
@@ -674,18 +702,59 @@ namespace bzs {
     const auto publication_fence=store_.publication_fence(owner,url);
     const auto deletion_generation=publication_fence.at("generation").num();
     auto cached=store_.cached(owner, url);
+    const auto cache_status=[&] {
+      const auto meta=cached?cached->at("meta"):Json::object();
+      auto status=http_freshness(meta.has("http_freshness")?meta.at("http_freshness"):Json(),store_.now(),max_age);
+      if(!meta.has("final_url")||meta.at("final_url").str()!=url||!meta.has("redirects")||meta.at("redirects").size()!=0) {
+        status.set("fresh",false);status.set("reason","redirect_chain_not_cached");
+      }
+      return status;
+    };
+    const auto matching_profile=[&] {
+      // Local RPC only: no origin request. The worker configuration can change
+      // across restart, so a stored profile alone cannot prove a cache hit.
+      std::string current;
+      try {
+        const auto profile=worker_.call("fetch.profile",Json::object(),2000);
+        profile.allowed({"version","request_profile"});
+        require(profile.size()==2&&profile.at("version").str()=="bzs-http-freshness-1", "E_WORKER_PROTOCOL","Worker cannot prove its current cache profile",502);
+        current=profile.at("request_profile").str();
+        require(current.size()==64&&std::all_of(current.begin(),current.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),"E_WORKER_PROTOCOL","Invalid current request profile",502);
+        std::lock_guard lock(cache_mutex_);last_read_profile_=current;
+      } catch(const Error& error) {
+        if(error.code!="E_WORKER_UNAVAILABLE")throw;
+        std::lock_guard lock(cache_mutex_);current=last_read_profile_;
+        if(current.empty())throw;
+      }
+      return cached&&cached->at("meta").has("http_freshness")&&
+        current==cached->at("meta").at("http_freshness").at("request_profile").str();
+    };
     if(freshness=="cache_only") {
       require(cached.has_value(), "E_NOT_CACHED", "No stored snapshot for this URL; use freshness=cache_first or refresh", 404);
-      return window(owner, *cached, start, max_bytes, true, cached->at("fetched_at_ms").num());
+      require(cache_status().at("fresh").flag()&&matching_profile(),"E_CACHE_STALE","Stored representation requires origin validation; cache_only cannot perform network requests",409);
+      const auto current=cache_status();
+      require(current.at("fresh").flag(),"E_CACHE_STALE","Stored representation expired while checking the worker profile",409);
+      auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
     }
-    if(freshness=="cache_first"&&cached&&store_.now()-cached->at("fetched_at_ms").num()<=max_age*1000)
-      return window(owner, *cached, start, max_bytes, true, cached->at("fetched_at_ms").num());
+    if(freshness=="cache_first"&&cached&&cache_status().at("fresh").flag()&&matching_profile()) {
+      // The local profile RPC may wait long enough to cross the origin's TTL.
+      const auto current=cache_status();
+      if(current.at("fresh").flag()) {
+        auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
+      }
+    }
     Json params=Json::object();
     params.set("url", url);
     params.set("timeout_ms", timeout);
     const auto base=store_.revalidation_base(owner,url);
     if(base)params.set("conditional",base->conditional);
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
+    if(r.has("http_freshness")) {
+      const auto record=validate_http_freshness(r.at("http_freshness"),required_string(r,"final_url",4096));
+      std::lock_guard lock(cache_mutex_);last_read_profile_=record.at("request_profile").str();
+    }
+    if(cached&&http_response_restricts_cache(r,store_.now()))
+      store_.invalidate_web_cache(owner,url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
     const auto redirect_observations=decode_redirect_observations(url,r);
     std::optional<Json> observation;
     const auto apply_observations=[&] {
@@ -704,7 +773,8 @@ namespace bzs {
     const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
     try {
       auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
-      return window(owner, snap, start, max_bytes, false, artifact.meta.at("fetched_at_ms").num());
+      auto out=window(owner,snap,start,max_bytes,false,artifact.meta.at("fetched_at_ms").num());
+      out.set("cache",http_freshness(artifact.meta.has("http_freshness")?artifact.meta.at("http_freshness"):Json(),store_.now(),max_age));return out;
     } catch(const Error& error) {
       if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
         apply_observations();
@@ -862,6 +932,11 @@ namespace bzs {
     })if(r.has(k))meta.set(k, r.at(k));
     meta.set("redirect_publication_observations",decode_redirect_observations(url,r));
     meta.set("content_type", doc.content_type);
+    if(r.has("http_freshness")) {
+      const auto record=validate_http_freshness(r.at("http_freshness"),final_url);
+      require(http_freshness(record,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
+      if(!incomplete)meta.set("http_freshness",record);
+    }
     if(r.has("http_cache")) {
       require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
       meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
@@ -878,6 +953,15 @@ namespace bzs {
             "E_WORKER_PROTOCOL","304 cannot carry a replacement body or redirect chain",502);
     ReadArtifact artifact{base->document,base->parsed,Json::parse(base->meta.dump(),8*1024*1024)};
     artifact.meta.set("http_cache",merge_http_cache(base->meta.at("http_cache"),response.at("http_cache")));
+    if(response.has("http_freshness")) {
+      auto policy=validate_http_freshness(response.at("http_freshness"),url);
+      if(base->meta.has("http_freshness"))policy=merge_http_freshness(base->meta.at("http_freshness"),policy);
+      require(http_freshness(policy,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","304 policy forbids persistent reuse",409);
+      artifact.meta.set("http_freshness",policy);
+    } else {
+      // A legacy worker cannot renew an unreported response policy.
+      auto conservative=Json::object();for(const auto& key:artifact.meta.keys())if(key!="http_freshness")conservative.set(key,artifact.meta.at(key));artifact.meta=std::move(conservative);
+    }
     artifact.meta.set("fetched_at_ms",store_.now());artifact.meta.set("http_status",std::int64_t{304});artifact.meta.set("revalidated",true);
     auto bound=Json::object();bound.set("version","bzs-http-revalidation-1");bound.set("base_snapshot_id",base->snapshot_id);
     bound.set("base_cache_sha256",base->cache_sha256);bound.set("base_metadata_sha256",base->metadata_sha256);
@@ -925,6 +1009,7 @@ namespace bzs {
       params.set("url",lease.url);params.set("timeout_ms",timeout);
       params.set("max_requests",lease.request_grant);params.set("max_content_bytes",lease.byte_grant);
       params.set("attempt_id",lease.attempt_id);
+      const auto cached=store_.cached(lease.owner,lease.url);
       const auto base=store_.revalidation_base(lease.owner,lease.url);
       if(base)params.set("conditional",base->conditional);
       const auto response=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
@@ -941,6 +1026,8 @@ namespace bzs {
               (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
               "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
       requests=used_requests;bytes=used_bytes;
+      if(cached&&http_response_restricts_cache(response,store_.now()))
+        store_.invalidate_web_cache(lease.owner,lease.url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
       if(response.at("status").str()=="not_modified")require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
       redirect_observations=decode_redirect_observations(lease.url,response);
       observation=decode_observation(lease.url,response);if(observation)observed_url=normalize_iri(response.at("final_url").str());

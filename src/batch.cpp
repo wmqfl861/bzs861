@@ -30,6 +30,7 @@ namespace {
       checked(sqlite3_bind_text(statement_,i,value.data(),static_cast<int>(value.size()),SQLITE_TRANSIENT));
     }
     void bind(int i,std::int64_t value) { checked(sqlite3_bind_int64(statement_,i,value)); }
+    void null(int i) { checked(sqlite3_bind_null(statement_,i)); }
     bool step() { auto rc=sqlite3_step(statement_);checked(rc);return rc==SQLITE_ROW; }
     std::int64_t num(int i)const { return sqlite3_column_int64(statement_,i); }
     std::string text(int i)const {
@@ -65,6 +66,135 @@ namespace {
   }
 }
 
+void Store::migrate_shared_reads_locked() {
+  // Membership and the physical payer survive process failure independently of
+  // a job's current epoch. Historical attempts remain until their members' job
+  // details can be compacted; retries never overwrite their accounting.
+  checked(sqlite3_exec(db_,R"SQL(
+ CREATE TABLE IF NOT EXISTS read_shared_attempts(
+   attempt_id TEXT PRIMARY KEY,owner TEXT NOT NULL,payer_job_id TEXT NOT NULL REFERENCES jobs(id),
+   payer_position INTEGER NOT NULL,payer_epoch INTEGER NOT NULL,lease_until INTEGER NOT NULL,
+   request_grant INTEGER NOT NULL,byte_grant INTEGER NOT NULL,member_count INTEGER NOT NULL,
+   settled INTEGER NOT NULL DEFAULT 0,external_requests INTEGER NOT NULL DEFAULT -1,
+   content_bytes INTEGER NOT NULL DEFAULT -1,error_code TEXT NOT NULL DEFAULT '');
+ CREATE TABLE IF NOT EXISTS read_shared_members(
+   attempt_id TEXT NOT NULL REFERENCES read_shared_attempts(attempt_id) ON DELETE CASCADE,
+   job_id TEXT NOT NULL REFERENCES jobs(id),position INTEGER NOT NULL,lease_epoch INTEGER NOT NULL,
+   PRIMARY KEY(attempt_id,job_id,position));
+ CREATE INDEX IF NOT EXISTS read_shared_member_job ON read_shared_members(job_id,attempt_id);
+ CREATE INDEX IF NOT EXISTS read_shared_recovery ON read_shared_attempts(settled,lease_until);
+ CREATE INDEX IF NOT EXISTS read_shared_item_attempt ON read_job_items(attempt_id,state);
+ )SQL",nullptr,nullptr,nullptr));
+}
+
+void Store::attach_shared_reads_locked(const ReadLease& payer) {
+  Sql original(db_,"SELECT j.auth_epoch,j.created_delete_sequence,j.lease_until,i.publication_snapshot_id FROM jobs j JOIN read_job_items i ON i.job_id=j.id WHERE j.id=? AND i.position=? AND i.attempt_id=?");
+  original.bind(1,payer.job_id);original.bind(2,payer.input_index);original.bind(3,payer.attempt_id);
+  require(original.step(),"E_STORAGE","Shared read payer is missing",500);
+  const auto now=clock_(),auth=original.num(0),deleted=original.num(1),until=original.num(2);
+  const auto snapshot=original.text(3);
+  // Co-dispatch only the first pending item of another eligible batch. Exact
+  // URL, permission/deletion history and the immutable representation captured
+  // in this writer transaction are shared. Caller limits can only be tighter
+  // on the physical payer, never expanded to accommodate a subscriber.
+  Sql candidates(db_,R"SQL(SELECT j.id,j.epoch,j.deadline,i.position
+ FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id JOIN read_job_items i ON i.job_id=j.id
+ WHERE j.kind='web.read_many' AND j.state='queued' AND j.owner=? AND j.auth_epoch=?
+ AND j.created_delete_sequence=? AND j.deadline>=? AND j.id<>?
+ AND i.state='pending' AND i.url=? AND i.deletion_generation=? AND i.attempts<j.max_attempts
+ AND i.position=(SELECT MIN(p.position) FROM read_job_items p WHERE p.job_id=j.id AND p.state='pending')
+ AND b.max_requests-b.charged_requests>=? AND b.max_bytes-b.charged_bytes>=?
+ AND MIN(b.per_page_timeout_ms,j.deadline-?)=?
+ ORDER BY b.last_dispatch_sequence,j.created_at,j.id LIMIT 31)SQL");
+  candidates.bind(1,payer.owner);candidates.bind(2,auth);candidates.bind(3,deleted);
+  candidates.bind(4,until);candidates.bind(5,payer.job_id);candidates.bind(6,payer.url);
+  candidates.bind(7,payer.deletion_generation);candidates.bind(8,payer.request_grant);
+  candidates.bind(9,payer.byte_grant);candidates.bind(10,now);candidates.bind(11,payer.timeout_ms);
+  struct Candidate { std::string id;std::int64_t epoch,position; };
+  std::vector<Candidate> members;
+  while(candidates.step()) {
+    require(candidates.num(1)<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Lease generation exhausted",500);
+    members.push_back({candidates.text(0),candidates.num(1)+1,candidates.num(3)});
+  }
+  if(members.empty())return;
+  Sql group(db_,"INSERT INTO read_shared_attempts(attempt_id,owner,payer_job_id,payer_position,payer_epoch,lease_until,request_grant,byte_grant,member_count)VALUES(?,?,?,?,?,?,?,?,?)");
+  group.bind(1,payer.attempt_id);group.bind(2,payer.owner);group.bind(3,payer.job_id);
+  group.bind(4,payer.input_index);group.bind(5,payer.epoch);group.bind(6,until);
+  group.bind(7,payer.request_grant);group.bind(8,payer.byte_grant);
+  group.bind(9,static_cast<std::int64_t>(members.size()+1));group.step();
+  const auto record=[&](const std::string& id,std::int64_t position,std::int64_t epoch) {
+    Sql insert(db_,"INSERT INTO read_shared_members(attempt_id,job_id,position,lease_epoch)VALUES(?,?,?,?)");
+    insert.bind(1,payer.attempt_id);insert.bind(2,id);insert.bind(3,position);insert.bind(4,epoch);insert.step();
+  };
+  record(payer.job_id,payer.input_index,payer.epoch);
+  for(const auto& member:members) {
+    Sql claim(db_,"UPDATE read_job_items SET state='running',attempts=attempts+1,lease_epoch=?,attempt_id=?,request_grant=0,byte_grant=0,error_code=NULL,publication_sequence=?,publication_snapshot_id=? WHERE job_id=? AND position=?");
+    claim.bind(1,member.epoch);claim.bind(2,payer.attempt_id);claim.bind(3,payer.publication_sequence);
+    claim.bind(4,snapshot);claim.bind(5,member.id);claim.bind(6,member.position);claim.step();
+    Sql activate(db_,"UPDATE jobs SET state='running',epoch=?,attempts=attempts+1,lease_until=?,error_code=NULL WHERE id=?");
+    activate.bind(1,member.epoch);activate.bind(2,until);activate.bind(3,member.id);activate.step();
+    Sql rotate(db_,"UPDATE read_job_budgets SET last_dispatch_sequence=? WHERE job_id=?");
+    rotate.bind(1,next_queue_sequence(db_));rotate.bind(2,member.id);rotate.step();
+    record(member.id,member.position,member.epoch);
+  }
+}
+
+std::vector<ReadLease> Store::shared_read_members_locked(const ReadLease& payer) {
+  Sql group(db_,"SELECT 1 FROM read_shared_attempts WHERE attempt_id=? AND owner=? AND payer_job_id=? AND payer_position=? AND payer_epoch=? AND settled=0");
+  group.bind(1,payer.attempt_id);group.bind(2,payer.owner);group.bind(3,payer.job_id);
+  group.bind(4,payer.input_index);group.bind(5,payer.epoch);
+  if(!group.step())return {};
+  Sql rows(db_,R"SQL(SELECT j.id,j.owner,i.url,i.attempt_id,i.lease_epoch,i.position,i.deletion_generation,
+ i.request_grant,i.byte_grant,b.per_page_timeout_ms,j.deadline,i.publication_sequence
+ FROM read_shared_members m JOIN read_job_items i ON i.job_id=m.job_id AND i.position=m.position
+ JOIN jobs j ON j.id=i.job_id JOIN read_job_budgets b ON b.job_id=j.id
+ WHERE m.attempt_id=? AND i.attempt_id=m.attempt_id AND i.lease_epoch=m.lease_epoch AND i.state='running'
+ ORDER BY j.id,i.position)SQL");
+  rows.bind(1,payer.attempt_id);std::vector<ReadLease> members;
+  while(rows.step())members.push_back({rows.text(0),rows.text(1),rows.text(2),rows.text(3),rows.num(4),rows.num(5),rows.num(6),rows.num(7),rows.num(8),rows.num(9),rows.num(10),rows.num(11)});
+  require(members.size()>=2&&members.size()<=32,"E_STORAGE","Shared read membership is incomplete",500);
+  return members;
+}
+
+bool Store::shared_read_live_locked(const ReadLease& payer) {
+  for(const auto& member:shared_read_members_locked(payer))
+    if(live_read_lease_locked(member)&&deletion_generation_locked(member.owner,member.url)==member.deletion_generation)return true;
+  return false;
+}
+
+void Store::settle_shared_read_locked(const ReadLease& payer,const std::string& error,
+                                    std::int64_t requests,std::int64_t bytes,const Json* snapshot) {
+  auto members=shared_read_members_locked(payer);
+  if(members.empty())return;
+  std::vector<bool> publish;bool any=false;
+  for(const auto& member:members) {
+    const bool live=snapshot&&live_read_lease_locked(member)&&
+      deletion_generation_locked(member.owner,member.url)==member.deletion_generation;
+    publish.push_back(live);any=any||live;
+  }
+  require(!snapshot||any,"E_LEASE_EXPIRED","Shared read has no live subscriber at commit",409);
+  // The original payer remains responsible even after its own subscription is
+  // cancelled. No grant is moved, refunded twice or charged to every member.
+  reconcile_read_usage_locked(payer,requests,bytes);
+  for(std::size_t index=0;index<members.size();++index) {
+    const auto& member=members[index];
+    if(member.job_id!=payer.job_id)reconcile_read_usage_locked(member,0,0);
+    Sql done(db_,"UPDATE read_job_items SET state=?,snapshot_id=?,receipt_json=?,error_code=? WHERE job_id=? AND position=?");
+    done.bind(1,std::string(publish[index]?"succeeded":"failed"));
+    // NULL avoids creating an invalid foreign key for a cancelled subscriber.
+    if(publish[index]) {
+      done.bind(2,snapshot->at("snapshot_id").str());done.bind(3,receipt(*snapshot).dump());
+    } else {
+      done.null(2);done.null(3);
+    }
+    done.bind(4,publish[index]?std::string{}:error.empty()?std::string("E_LEASE_EXPIRED"):error);
+    done.bind(5,member.job_id);done.bind(6,member.input_index);done.step();
+  }
+  Sql settled(db_,"UPDATE read_shared_attempts SET settled=1,external_requests=?,content_bytes=?,error_code=? WHERE attempt_id=? AND settled=0");
+  settled.bind(1,requests);settled.bind(2,bytes);settled.bind(3,error);settled.bind(4,payer.attempt_id);settled.step();
+  for(const auto& member:members)settle_read_job_locked(member.job_id);
+}
+
 Json Store::read_many_submit(const std::string& owner,const std::vector<std::string>& input,
                              const std::string& key,ReadManyOptions options) {
   require_identifier(owner);
@@ -97,6 +227,7 @@ Json Store::read_many_submit(const std::string& owner,const std::vector<std::str
   auto fingerprint=sha256(parameters.canonical());
   std::lock_guard lock(mutex_);
   Transaction tx(db_);
+  require_principal_active_locked(owner);
   auto auth=epoch_locked(owner);
   {
     Sql existing(db_,"SELECT id,fingerprint,kind FROM jobs WHERE owner=? AND idempotency_key=?");
@@ -152,6 +283,18 @@ Json Store::read_job_locked(const std::string& owner,const std::string& id) {
   usage.set("reserved_requests",totals.num(9));usage.set("reserved_bytes",totals.num(10));
   usage.set("model_calls",std::int64_t{0});usage.set("accounting","known_usage_plus_conservative_grants");
   usage.set("scope","job_lifetime");
+  Sql shared(db_,R"SQL(SELECT COUNT(*),COALESCE(SUM(g.payer_job_id<>m.job_id),0),
+ COALESCE(SUM(g.settled=0),0),COALESCE(SUM(g.settled<>0 AND g.external_requests<0),0),
+ COALESCE(SUM(CASE WHEN g.settled<>0 AND g.external_requests>=0 THEN g.external_requests ELSE 0 END),0),
+ COALESCE(SUM(CASE WHEN g.settled<>0 AND g.content_bytes>=0 THEN g.content_bytes ELSE 0 END),0)
+ FROM read_shared_members m JOIN read_shared_attempts g ON g.attempt_id=m.attempt_id WHERE m.job_id=?)SQL");
+  shared.bind(1,id);shared.step();
+  auto sharing=Json::object();sharing.set("version","bzs-shared-read-1");
+  sharing.set("attempts",shared.num(0));sharing.set("subscriber_attempts",shared.num(1));
+  sharing.set("unsettled_attempts",shared.num(2));sharing.set("unknown_attempts",shared.num(3));
+  sharing.set("associated_external_requests",shared.num(4));sharing.set("associated_content_bytes",shared.num(5));
+  sharing.set("accounting","physical_usage_charged_once_to_original_payer;associated_usage_not_additive");
+  out.set("shared_reads",sharing);
   out.set("usage",usage);out.set("external_requests",totals.num(5));
   return out;
 }
@@ -186,6 +329,7 @@ bool Store::live_read_lease_locked(const ReadLease& lease) {
 }
 bool Store::read_lease_live(const ReadLease& lease) {
   std::lock_guard lock(mutex_);
+  if(!shared_read_members_locked(lease).empty())return shared_read_live_locked(lease);
   return live_read_lease_locked(lease)&&deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation;
 }
 void Store::reconcile_read_usage_locked(const ReadLease& lease,std::int64_t requests,std::int64_t bytes) {
@@ -207,6 +351,14 @@ void Store::reconcile_read_usage_locked(const ReadLease& lease,std::int64_t requ
 }
 
 void Store::settle_read_jobs_locked() {
+  Sql groups(db_,R"SQL(SELECT j.id,j.owner,i.url,i.attempt_id,i.lease_epoch,i.position,i.deletion_generation,
+ i.request_grant,i.byte_grant,b.per_page_timeout_ms,j.deadline,i.publication_sequence
+ FROM read_shared_attempts g JOIN read_job_items i ON i.job_id=g.payer_job_id AND i.position=g.payer_position
+ JOIN jobs j ON j.id=i.job_id JOIN read_job_budgets b ON b.job_id=j.id
+ WHERE g.settled=0 AND g.lease_until<=? AND i.state='running' AND i.attempt_id=g.attempt_id)SQL");
+  groups.bind(1,clock_());std::vector<ReadLease> abandoned_groups;
+  while(groups.step())abandoned_groups.push_back({groups.text(0),groups.text(1),groups.text(2),groups.text(3),groups.num(4),groups.num(5),groups.num(6),groups.num(7),groups.num(8),groups.num(9),groups.num(10),groups.num(11)});
+  for(const auto& group:abandoned_groups)settle_shared_read_locked(group,"E_EXECUTION_UNKNOWN",-1,-1);
   Sql expired(db_,"SELECT j.id,j.owner,i.url,i.attempt_id,i.lease_epoch,i.position,i.deletion_generation,i.request_grant,i.byte_grant,j.deadline FROM jobs j JOIN read_job_items i ON i.job_id=j.id WHERE j.kind='web.read_many' AND i.state='running' AND j.lease_until<=?");
   expired.bind(1,clock_());
   std::vector<ReadLease> abandoned;
@@ -254,6 +406,7 @@ std::optional<ReadLease> Store::lease_next_read() {
     Sql activate(db_,"UPDATE jobs SET state='running',epoch=?,attempts=attempts+1,lease_until=?,error_code=NULL WHERE id=?");
     // Bound the duration before adding to the clock (also valid close to INT64_MAX).
     activate.bind(1,lease.epoch);activate.bind(2,now+std::min(job.num(3)-now,timeout+5000));activate.bind(3,id);activate.step();
+    attach_shared_reads_locked(lease);
     tx.commit();return lease;
   }
 }
@@ -262,6 +415,24 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
                           const Json& meta,std::int64_t requests,std::int64_t bytes) {
   std::lock_guard lock(mutex_);Transaction tx(db_);
   if(!owns_read_lease_locked(lease)){tx.commit();return false;}
+  const auto members=shared_read_members_locked(lease);
+  if(!members.empty()) {
+    const ReadLease* publisher=nullptr;
+    for(const auto& member:members)if(live_read_lease_locked(member)&&
+        deletion_generation_locked(member.owner,member.url)==member.deletion_generation) { publisher=&member;break; }
+    if(!publisher) {
+      settle_shared_read_locked(lease,"E_LEASE_EXPIRED",requests,bytes);tx.commit();return false;
+    }
+    require(input.url==lease.url,"E_WORKER_PROTOCOL","Read result identity differs from its lease",502);
+    Sql captured(db_,"SELECT j.created_delete_sequence,j.auth_epoch,i.publication_sequence,i.publication_snapshot_id FROM jobs j JOIN read_job_items i ON i.job_id=j.id WHERE j.id=? AND i.position=?");
+    captured.bind(1,publisher->job_id);captured.bind(2,publisher->input_index);captured.step();
+    auto read_meta=Json::parse(meta.dump()),fence=Json::object();fence.set("epoch",captured.num(1));
+    fence.set("sequence",captured.num(0));fence.set("generation",publisher->deletion_generation);
+    if(captured.text(3)!="@legacy")fence.set("snapshot_id",captured.text(3));
+    read_meta.set("publication_fence",fence);read_meta.set("page_publication_sequence",captured.num(2));
+    auto snapshot=ingest_web_locked(publisher->owner,input,std::move(parsed),read_meta,publisher->deletion_generation);
+    settle_shared_read_locked(lease,"",requests,bytes,&snapshot);tx.commit();return true;
+  }
   if(!live_read_lease_locked(lease)) {
     reconcile_read_usage_locked(lease,requests,bytes);
     Sql reject(db_,"UPDATE read_job_items SET state='failed',error_code='E_LEASE_EXPIRED' WHERE job_id=? AND position=?");
@@ -285,8 +456,14 @@ void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64
   require_identifier(error);
   std::lock_guard lock(mutex_);Transaction tx(db_);
   if(owns_read_lease_locked(lease)) {
-    if((publication||redirect_observations)&&requests>0&&live_read_lease_locked(lease)&&deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation) {
-      Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
+    const auto members=shared_read_members_locked(lease);
+    const ReadLease* observer=nullptr;
+    if(members.empty()) {
+      if(live_read_lease_locked(lease)&&deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation)observer=&lease;
+    } else for(const auto& member:members)if(live_read_lease_locked(member)&&
+        deletion_generation_locked(member.owner,member.url)==member.deletion_generation) { observer=&member;break; }
+    if((publication||redirect_observations)&&requests>0&&observer) {
+      Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,observer->job_id);created.step();
       const auto apply=[&](const std::string& target,const Json& policy) {
         bool live=true;try { (void)alias_fences_locked(lease.owner,lease.url,target,created.num(0)); } catch(const Error& e) { if(e.code!="E_TARGET_DELETED")throw;live=false; }
         if(live)observe_policy_locked(lease.owner,lease.url,target,policy);
@@ -296,10 +473,13 @@ void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64
         const auto observation=redirect_observations->at(i);apply(observation.at("url").str(),observation.at("publication"));
       }
     }
-    reconcile_read_usage_locked(lease,requests,bytes);
-    Sql failed(db_,"UPDATE read_job_items SET state='failed',error_code=? WHERE job_id=? AND position=?");
-    failed.bind(1,error);failed.bind(2,lease.job_id);failed.bind(3,lease.input_index);failed.step();
-    settle_read_job_locked(lease.job_id);
+    if(!members.empty())settle_shared_read_locked(lease,error,requests,bytes);
+    else {
+      reconcile_read_usage_locked(lease,requests,bytes);
+      Sql failed(db_,"UPDATE read_job_items SET state='failed',error_code=? WHERE job_id=? AND position=?");
+      failed.bind(1,error);failed.bind(2,lease.job_id);failed.bind(3,lease.input_index);failed.step();
+      settle_read_job_locked(lease.job_id);
+    }
   }
   tx.commit();
 }
@@ -346,7 +526,7 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
   if(kind=="web.crawl") { auto result=crawl_results_locked(owner,id,offset,limit);transaction.commit();return result; }
   require(offset>=0&&offset<=20&&limit>=1&&limit<=20,"E_SCHEMA","Invalid job result window");
   auto job=read_job_locked(owner,id);
-  Sql rows(db_,"SELECT position,url,state,attempts,external_requests,content_bytes,unknown_requests,unknown_bytes,usage_unknown,snapshot_id,receipt_json,error_code FROM read_job_items WHERE job_id=? AND position>=? ORDER BY position LIMIT ?");
+  Sql rows(db_,"SELECT position,url,state,attempts,external_requests,content_bytes,unknown_requests,unknown_bytes,usage_unknown,snapshot_id,receipt_json,error_code,attempt_id FROM read_job_items WHERE job_id=? AND position>=? ORDER BY position LIMIT ?");
   rows.bind(1,id);rows.bind(2,offset);rows.bind(3,limit);
   Json items=Json::array();auto next=offset;
   while(rows.step()) {
@@ -354,6 +534,16 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
     item.set("state",rows.text(2));item.set("attempts",rows.num(3));item.set("external_requests",rows.num(4));
     item.set("content_bytes",rows.num(5));item.set("unknown_requests_charged",rows.num(6));item.set("unknown_bytes_charged",rows.num(7));
     item.set("usage_unknown",rows.num(8)!=0);item.set("error_code",rows.text(11).empty()?Json():Json::string(rows.text(11)));
+    Sql shared(db_,"SELECT payer_job_id,payer_position,member_count,settled,external_requests,content_bytes FROM read_shared_attempts WHERE attempt_id=? AND owner=?");
+    shared.bind(1,rows.text(12));shared.bind(2,owner);
+    if(shared.step()) {
+      auto sharing=Json::object();sharing.set("attempt_id",rows.text(12));sharing.set("payer_job_id",shared.text(0));
+      sharing.set("payer_input_index",shared.num(1));sharing.set("members",shared.num(2));sharing.set("settled",shared.num(3)!=0);
+      sharing.set("role",shared.text(0)==id?"payer":"subscriber");
+      sharing.set("associated_external_requests",shared.num(4)>=0?Json::integer(shared.num(4)):Json());
+      sharing.set("associated_content_bytes",shared.num(5)>=0?Json::integer(shared.num(5)):Json());
+      sharing.set("usage_unknown",shared.num(3)!=0&&shared.num(4)<0);item.set("shared_read",sharing);
+    }
     if(rows.text(2)=="succeeded") {
       Sql visible(db_,"SELECT s.index_allowed,bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'') FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.owner=? AND d.deleted=0");
       visible.bind(1,rows.text(9));visible.bind(2,owner);
@@ -376,6 +566,16 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
 std::string Store::active_read_attempt(const std::string& owner,const std::string& id) {
   std::lock_guard lock(mutex_);
   Sql item(db_,"SELECT i.attempt_id FROM read_job_items i JOIN jobs j ON j.id=i.job_id WHERE j.id=? AND j.owner=? AND i.state='running'");
-  item.bind(1,id);item.bind(2,owner);return item.step()?item.text(0):"";
+  item.bind(1,id);item.bind(2,owner);
+  if(!item.step())return "";
+  const auto attempt=item.text(0);
+  Sql group(db_,"SELECT payer_job_id,payer_position,payer_epoch FROM read_shared_attempts WHERE attempt_id=? AND owner=? AND settled=0");
+  group.bind(1,attempt);group.bind(2,owner);
+  if(group.step()) {
+    ReadLease payer;payer.job_id=group.text(0);payer.input_index=group.num(1);payer.epoch=group.num(2);
+    payer.owner=owner;payer.attempt_id=attempt;
+    if(shared_read_live_locked(payer))return "";
+  }
+  return attempt;
 }
 }

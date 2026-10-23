@@ -1,0 +1,97 @@
+Internal ctest changing into directory: /workspace/scratch/e2371129386d/build-source-policy
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Test project /workspace/scratch/e2371129386d/build-source-policy
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 8
+    Start  8: sessions
+
+8: Test command: /workspace/scratch/e2371129386d/build-source-policy/bzs_session_tests
+8: Working Directory: /workspace/scratch/e2371129386d/build-source-policy
+8: Test timeout computed to be: 60
+8: RUN concurrent_source_review_keeps_shared_registry_contract_valid
+8: PASS concurrent_source_review_keeps_shared_registry_contract_valid (137 ms)
+8: RUN progress_creates_immutable_versions_and_bound_stable_cursors
+8: PASS progress_creates_immutable_versions_and_bound_stable_cursors (109 ms)
+8: RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+8: PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (73 ms)
+8: RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+8: PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (57 ms)
+8: RUN cancel_pending_is_zero_request_and_idempotent
+8: PASS cancel_pending_is_zero_request_and_idempotent (32 ms)
+8: RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+8: PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (52 ms)
+8: RUN owner_isolation_invalid_options_and_version_binding
+8: PASS owner_isolation_invalid_options_and_version_binding (30 ms)
+8: RUN expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+8: PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (36 ms)
+8: RUN frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (13093 ms)
+8: RUN delete_and_page_restriction_rechecked_without_content_in_event_log
+8: PASS delete_and_page_restriction_rechecked_without_content_in_event_log (40 ms)
+8: RUN site_tightening_survives_reopen_and_later_relaxation
+8: PASS site_tightening_survives_reopen_and_later_relaxation (51 ms)
+8: RUN active_session_backpressure_and_expired_detail_reclamation
+8: PASS active_session_backpressure_and_expired_detail_reclamation (219 ms)
+8: RUN local_search_gets_durable_events_and_still_has_snapshot_paging
+8: PASS local_search_gets_durable_events_and_still_has_snapshot_paging (18 ms)
+8: RUN expired_local_sessions_release_capacity_for_web_without_local_search
+8: PASS expired_local_sessions_release_capacity_for_web_without_local_search (84 ms)
+8: RUN fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+8: PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (204 ms)
+8: RUN source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+8: PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (46 ms)
+8: RUN source_duplicate_provenance_keeps_best_rank_through_second_fusion
+8: PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (36 ms)
+8: RUN permission_epoch_invalidates_replay_and_late_completion
+8: PASS permission_epoch_invalidates_replay_and_late_completion (41 ms)
+8: RUN continuous_new_sessions_cannot_overtake_an_existing_pending_source
+8: PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (78 ms)
+8: RUN frozen_known_redirect_binding_survives_target_revival_and_route_change
+8: PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (123 ms)
+8: RUN incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker
+8: PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (41 ms)
+8: RUN preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
+8: PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (156 ms)
+8: 22 tests, 285 assertions, 0 failures
+1/2 Test  #8: sessions .........................   Passed   14.77 sec
+test 10
+    Start 10: search_modes
+
+10: Test command: /workspace/scratch/e2371129386d/build-source-policy/bzs_search_mode_tests
+10: Working Directory: /workspace/scratch/e2371129386d/build-source-policy
+10: Test timeout computed to be: 60
+10: PASS mode_catalog_is_offline_and_describes_actual_limits
+10: PASS omitted_mode_preserves_legacy_sync_and_session_defaults
+10: PASS all_modes_bound_actual_source_fanout_candidates_and_rpc
+10: PASS explicit_source_selection_cannot_silently_exceed_preset
+10: PASS duplicate_source_ids_do_not_consume_multiple_attempt_slots
+10: PASS overrides_can_only_tighten_every_preset_dimension
+10: PASS narrowed_override_is_the_executed_budget
+10: PASS mode_never_bypasses_source_review_or_shared_quota
+10: PASS cache_is_bound_to_mode_and_effective_overrides
+10: PASS persistent_mode_and_omissions_survive_restart_without_reexecution
+10: PASS durable_dispatch_passes_only_remaining_deadline_to_worker
+10: PASS legacy_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+10: PASS explicit_mode_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+10: PASS public_subsecond_timeout_and_deadline_remain_invalid
+10: PASS expired_durable_deadline_never_dispatches_or_publishes
+10: PASS late_response_is_not_published_or_cached_after_monotonic_deadline
+10: PASS mode_json_types_are_strict_and_unknown_modes_are_rejected
+10: 17 search mode tests, 182 assertions, 0 failures
+2/2 Test #10: search_modes .....................   Passed    2.79 sec
+
+The following tests passed:
+	sessions
+	search_modes
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  17.57 sec

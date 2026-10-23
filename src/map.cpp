@@ -159,7 +159,7 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
   parameters.set("seeds",urls);parameters.set("scope_path",scope);parameters.set("timeout_ms",timeout);parameters.set("per_request_timeout_ms",per_request);
   parameters.set("max_requests",max_requests);parameters.set("max_bytes",max_bytes);parameters.set("max_urls",max_urls);parameters.set("max_depth",max_depth);
   const auto fingerprint=sha256(parameters.canonical());
-  std::lock_guard lock(mutex_);Tx tx(db_);const auto now=clock_();site->require_review(now);const auto auth=epoch_locked(owner);
+  std::lock_guard lock(mutex_);Tx tx(db_);require_principal_active_locked(owner);const auto now=clock_();site->require_review(now);const auto auth=epoch_locked(owner);
   Sql old(db_,"SELECT id,fingerprint,kind FROM jobs WHERE owner=? AND idempotency_key=?");old.bind(1,owner);old.bind(2,key);
   if(old.step()) { require(old.text(1)==fingerprint&&old.text(2)==job_kind,"E_IDEMPOTENCY_CONFLICT","Idempotency key reused with different parameters",409);
     auto out=map_job_locked(owner,old.text(0));out.set("reused",true);tx.commit();return out; }
@@ -200,6 +200,7 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
   auto out=map_job_locked(owner,id);out.set("reused",false);tx.commit();return out;
 }
 Json Store::map_job_locked(const std::string& owner,const std::string& id) {
+  require_principal_active_locked(owner);
   if(auto archived=compacted_job_locked(owner,id))return *archived;
   Sql j(db_,"SELECT j.state,j.epoch,j.attempts,j.lease_until,j.deadline,j.error_code,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_urls,m.max_depth,m.max_requests,m.max_bytes,m.per_request_timeout_ms,m.charged_requests,m.charged_bytes,m.external_requests,m.content_bytes,m.unknown_requests,m.unknown_bytes,m.partial,m.stop_reason,j.kind,m.max_pages,m.used_pages FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.owner=? AND j.kind IN ('web.map','web.crawl')");
   j.bind(1,id);j.bind(2,owner);require(j.step(),"E_NOT_FOUND","Map job not found",404);

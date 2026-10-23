@@ -1,0 +1,7 @@
+/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/migration/migration_driver.cpp:148:6: error: ‘void {anonymous}::drain(bzs::WebService&)’ defined but not used [-Werror=unused-function]
+  148 | void drain(WebService& web) { std::size_t count=0;while(auto lease=web.lease_map()) { CHECK(++count<=20);web.execute_map(*lease); } }
+      |      ^~~~~
+/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/migration/migration_driver.cpp:97:6: error: ‘bzs::Json {anonymous}::crawl_args(const std::string&, const std::string&)’ defined but not used [-Werror=unused-function]
+   97 | Json crawl_args(const std::string& key,const std::string& target) {
+      |      ^~~~~~~~~~
+cc1plus: all warnings being treated as errors

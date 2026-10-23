@@ -118,9 +118,17 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit) {
     // watermarks, origin quotas/cooldowns and dispatch sequences. All detail
     // deletion and its preceding immutable summary share the caller's writer
     // transaction; any failure rolls the entire compaction back.
-    for(const auto* table:{"crawl_trap_edges","crawl_trap_urls","crawl_trap_policy","crawl_edges","map_hops","map_candidates","map_resources","map_jobs","read_job_items","read_job_budgets"}) {
+    for(const auto* table:{"crawl_trap_edges","crawl_trap_urls","crawl_trap_policy","crawl_edges","map_hops","map_candidates","map_resources","map_jobs","read_shared_members","read_job_items","read_job_budgets"}) {
       const auto query="DELETE FROM "+std::string(table)+" WHERE job_id=?";Sql remove(db_,query.c_str());remove.bind(1,id);remove.step();details+=sqlite3_changes(db_);
     }
+    // A compacted payer still exists as a permanent job/key summary. Keep its
+    // physical attempt attribution while any other job retains membership.
+    // At most 20 items * 5 attempts can lose their final member per job.
+    Sql shared(db_,R"SQL(DELETE FROM read_shared_attempts WHERE attempt_id IN (
+ SELECT g.attempt_id FROM read_shared_attempts g WHERE g.owner=? AND g.settled<>0
+ AND NOT EXISTS(SELECT 1 FROM read_shared_members m WHERE m.attempt_id=g.attempt_id)
+ ORDER BY g.attempt_id LIMIT 100))SQL");
+    shared.bind(1,owner);shared.step();details+=sqlite3_changes(db_);
   }
   const auto robots=compact_robots_locked(owner,std::min<std::int64_t>(64,limit*4));
   Sql count(db_,"SELECT COUNT(*) FROM jobs WHERE owner=?");count.bind(1,owner);count.step();
@@ -134,6 +142,6 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit) {
 
 Json Store::compact_jobs(const std::string& owner,std::int64_t limit) {
   require_identifier(owner);require(limit>=1&&limit<=64,"E_SCHEMA","Job compaction limit must be 1..64");
-  std::lock_guard lock(mutex_);Tx tx(db_);auto out=compact_jobs_locked(owner,limit);tx.commit();return out;
+  std::lock_guard lock(mutex_);Tx tx(db_);require_principal_active_locked(owner);auto out=compact_jobs_locked(owner,limit);tx.commit();return out;
 }
 }

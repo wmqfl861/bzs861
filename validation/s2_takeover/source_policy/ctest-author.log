@@ -1,0 +1,191 @@
+Internal ctest changing into directory: /workspace/scratch/e2371129386d/build-source-policy
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/build-source-policy/DartConfiguration.tcl
+Test project /workspace/scratch/e2371129386d/build-source-policy
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: core
+
+1: Test command: /workspace/scratch/e2371129386d/build-source-policy/bzs_tests
+1: Working Directory: /workspace/scratch/e2371129386d/build-source-policy
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_shared_readers_preserve_serialization_and_alias_lifetimes
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_quoted_directives
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_selected_subtree
+1: PASS html_hidden_ancestors
+1: PASS html_robots_tokens
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS store_candidate_predicate_agreement
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS migrate_schema_one_preserves_records
+1: PASS migration_rejects_quarantined_and_newer_databases
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_target_tombstone
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: PASS tokenizer_cjk_and_symbols
+1: PASS fts_chinese_uses_index
+1: PASS bm25_ranks_relevance
+1: PASS literal_exactness
+1: PASS html_main_excludes_siblings
+1: PASS delete_keeps_unrelated_jobs_and_sessions
+1: PASS highlights_are_query_relevant_and_exact
+1: PASS revisions_pruned_and_quota_counters
+1: PASS range_windows_are_utf8_safe
+1: PASS migration_from_v1
+1: PASS dedup_and_rrf_fusion
+1: PASS public_url_policy
+1: PASS web_search_merges_and_cools_down
+1: PASS web_search_cache_spares_sources
+1: PASS iri_urls_are_encoded_for_reading
+1: PASS web_read_ingests_and_caches
+1: PASS source_admission_limits
+1: PASS migrate_both_schema_two_layouts_preserves_records
+1: PASS schema_two_quarantine_is_checked_before_migration
+1: PASS deletion_fences_survive_reimport_restart_and_clock_ties
+1: PASS web_noindex_change_is_not_hidden_by_content_reuse
+1: PASS retention_reclaims_before_quota_and_ignores_expired_pins
+1: PASS highlight_clipping_reports_only_visible_terms
+1: PASS web_read_does_not_publish_across_target_deletion
+1: PASS late_success_does_not_cancel_source_cooldown
+1: PASS web_cache_is_scoped_to_owner_and_review_validity
+1: PASS rrf_rejects_invalid_ranks_and_preserves_nondefault_ports
+1: PASS worker_success_schema_cannot_create_a_snapshot_by_default
+1: PASS malformed_source_success_is_partial_and_not_cached
+1: {"tests":82,"passed":82,"assertions":714}
+1/3 Test #1: core .............................   Passed    2.51 sec
+test 8
+    Start 8: sessions
+
+8: Test command: /workspace/scratch/e2371129386d/build-source-policy/bzs_session_tests
+8: Working Directory: /workspace/scratch/e2371129386d/build-source-policy
+8: Test timeout computed to be: 60
+8: RUN concurrent_source_review_keeps_shared_registry_contract_valid
+8: PASS concurrent_source_review_keeps_shared_registry_contract_valid (129 ms)
+8: RUN progress_creates_immutable_versions_and_bound_stable_cursors
+8: PASS progress_creates_immutable_versions_and_bound_stable_cursors (93 ms)
+8: RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+8: PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (65 ms)
+8: RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+8: PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (59 ms)
+8: RUN cancel_pending_is_zero_request_and_idempotent
+8: PASS cancel_pending_is_zero_request_and_idempotent (29 ms)
+8: RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+8: PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (56 ms)
+8: RUN owner_isolation_invalid_options_and_version_binding
+8: PASS owner_isolation_invalid_options_and_version_binding (36 ms)
+8: RUN expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+8: PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (37 ms)
+8: RUN frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (13025 ms)
+8: RUN delete_and_page_restriction_rechecked_without_content_in_event_log
+8: PASS delete_and_page_restriction_rechecked_without_content_in_event_log (39 ms)
+8: RUN site_tightening_survives_reopen_and_later_relaxation
+8: PASS site_tightening_survives_reopen_and_later_relaxation (61 ms)
+8: RUN active_session_backpressure_and_expired_detail_reclamation
+8: PASS active_session_backpressure_and_expired_detail_reclamation (216 ms)
+8: RUN local_search_gets_durable_events_and_still_has_snapshot_paging
+8: PASS local_search_gets_durable_events_and_still_has_snapshot_paging (19 ms)
+8: RUN expired_local_sessions_release_capacity_for_web_without_local_search
+8: PASS expired_local_sessions_release_capacity_for_web_without_local_search (89 ms)
+8: RUN fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+8: PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (205 ms)
+8: RUN source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+8: PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (42 ms)
+8: RUN source_duplicate_provenance_keeps_best_rank_through_second_fusion
+8: PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (39 ms)
+8: RUN permission_epoch_invalidates_replay_and_late_completion
+8: PASS permission_epoch_invalidates_replay_and_late_completion (44 ms)
+8: RUN continuous_new_sessions_cannot_overtake_an_existing_pending_source
+8: PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (80 ms)
+8: RUN frozen_known_redirect_binding_survives_target_revival_and_route_change
+8: PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (125 ms)
+8: RUN incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker
+8: PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (40 ms)
+8: RUN preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
+8: PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (150 ms)
+8: 22 tests, 285 assertions, 0 failures
+2/3 Test #8: sessions .........................   Passed   14.70 sec
+test 9
+    Start 9: source_publication
+
+9: Test command: /workspace/scratch/e2371129386d/build-source-policy/bzs_source_publication_tests
+9: Working Directory: /workspace/scratch/e2371129386d/build-source-policy
+9: Test timeout computed to be: 60
+9: PASS disabling_source_withdraws_existing_frozen_page
+9: PASS links_only_source_suppresses_existing_frozen_snippets
+9: PASS direct_search_enforces_current_links_only_review
+9: PASS cache_replay_cannot_restore_snippets_after_temporary_restriction
+9: PASS withdrawn_cached_response_is_replaced_only_by_new_authorized_attempt
+9: PASS frozen_links_only_survives_reopen_and_later_relaxation
+9: PASS explicit_empty_registry_retires_source_but_omission_preserves_it
+9: PASS disabled_source_remains_withdrawn_after_reopen_and_reenable
+9: PASS expiry_persists_even_when_page_rejection_and_clock_rollback_follow
+9: PASS renewal_after_unobserved_expiry_does_not_revive_old_results
+9: PASS stale_store_cannot_replace_more_recent_source_manifest
+9: PASS inflight_direct_response_keeps_intervening_snippet_ceiling
+9: PASS inflight_direct_response_cannot_cross_withdrawal_and_reenable
+9: PASS inflight_frozen_response_keeps_intervening_snippet_ceiling
+9: PASS queued_session_cannot_dispatch_after_withdrawal_and_reenable
+9: PASS source_endpoint_change_with_same_id_withdraws_only_old_results
+9: PASS restriction_preserves_frozen_rank_and_cursor_identity
+9: PASS rejected_expired_search_commits_withdrawal_before_clock_rollback
+9: PASS one_restricted_contributor_suppresses_fused_content
+9: PASS withdrawal_of_unrelated_source_preserves_frozen_allowed_results
+9: 20 source publication tests, 180 assertions, 0 failures
+3/3 Test #9: source_publication ...............   Passed    1.09 sec
+
+The following tests passed:
+	core
+	sessions
+	source_publication
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =  18.30 sec

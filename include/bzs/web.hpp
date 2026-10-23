@@ -2,6 +2,7 @@
 #include "bzs/json.hpp"
 #include "bzs/store.hpp"
 #include "bzs/sites.hpp"
+#include <chrono>
 #include <filesystem>
 #include <map>
 #include <mutex>
@@ -38,6 +39,7 @@ namespace bzs {
   class SourceRegistry {
     std::vector<SourceSpec> specs_;
     std::string manifest_digest_;
+    bool configured_=false;
     public: SourceRegistry()=default;
     explicit SourceRegistry(const Json& manifest);
     static SourceRegistry load(const std::filesystem::path& file);
@@ -46,6 +48,9 @@ namespace bzs {
     }
     const SourceSpec* find(const std::string& id) const;
     const std::string& manifest_digest() const { return manifest_digest_; }
+    bool configured() const { return configured_; }
+    // Stable reviewed-source publication identity; excludes ranking-only settings.
+    Json publication_manifest() const;
   };
   struct SourceHit {
     std::string url, title, snippet;
@@ -65,13 +70,16 @@ namespace bzs {
     std::int64_t site_publication_generation_=0;
     // Short-lived cache of identical searches (ADR-0003): spares scraped engines repeated agent queries.
     struct CachedSearch {
-      std::int64_t stored_at=0, ttl_ms=0;
+      std::int64_t stored_at=0, ttl_ms=0, source_generation=0;
       std::string body;
     };
     std::mutex cache_mutex_;
     std::map<std::string, CachedSearch> cache_;
+    // Last verified configuration within this core process. A temporarily
+    // unavailable worker cannot change the representation selected by callers.
+    std::string last_read_profile_;
     std::optional<Json> cache_get(const std::string& key);
-    void cache_put(const std::string& key, const Json& value, bool partial);
+    void cache_put(const std::string& key, const Json& value, bool partial,std::int64_t source_generation);
     struct ReadArtifact {
       SourceDocument document;
       ParsedDocument parsed;
@@ -84,7 +92,8 @@ namespace bzs {
     ReadArtifact decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base);
     Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
-    Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false);
+    Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false,
+                std::optional<std::chrono::steady_clock::time_point> internal_deadline=std::nullopt);
     Json submit_search(const std::string& owner,const Json& args);
     std::optional<SearchLease> lease_search();
     void execute_search(const SearchLease& lease);

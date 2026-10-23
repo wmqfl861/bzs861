@@ -173,6 +173,8 @@ def ensure_running(cfg: config.Config) -> None:
 
 def cmd_mcp(args) -> int:
     from .mcp_server import main as mcp_main
+    if args.admin_tools and args.transport != "stdio":
+        return mcp_main(["--transport", args.transport, "--admin-tools"])
     if not args.no_autostart and not os.environ.get("BZS_CORE_URL"):
         try:
             # stdout belongs to the MCP protocol: route startup messages to stderr.
@@ -184,6 +186,8 @@ def cmd_mcp(args) -> int:
         except (FileNotFoundError, RuntimeError, SystemExit) as exc:
             print(f"bzs: autostart failed: {exc}", file=sys.stderr)
     extra = ["--insecure-no-auth"] if args.insecure_no_auth else []
+    if args.admin_tools:
+        extra.append("--admin-tools")
     return mcp_main(["--transport", args.transport, "--port", str(args.port), *extra])
 
 
@@ -245,10 +249,39 @@ def cmd_jobs_compact(args) -> int:
     return 0
 
 
+def cmd_revoke_principal(args) -> int:
+    cfg = config.load()
+    try:
+        result = _client(cfg).call_sync("principal.revoke", {"subject": args.subject})
+    except CoreError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_search_modes(args) -> int:
+    cfg = config.load()
+    try:
+        result = _client(cfg).call_sync("search.modes", {})
+    except CoreError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_search(args) -> int:
     cfg = config.load()
     try:
-        r = _client(cfg).call_sync("web.search", {"query": " ".join(args.query), "limit": args.limit, "category": args.category})
+        params = {"query": " ".join(args.query), "category": args.category}
+        for key in ("limit", "mode", "max_sources", "per_source", "timeout_ms", "deadline_ms", "sources"):
+            value = getattr(args, key, None)
+            if value is not None:
+                params[key] = value
+        if args.refresh:
+            params["refresh"] = True
+        r = _client(cfg).call_sync("web.search", params)
     except CoreError as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -256,6 +289,10 @@ def cmd_search(args) -> int:
         found = ", ".join(f"{s['source_id']}#{s['rank']}" for s in x["sources"])
         print(f"{x['rank']:>2}. {x['title']}\n    {x['url']}\n    {x['snippet'][:160]}\n    [{found}]")
     print("sources: " + "; ".join(f"{s['source_id']}={s['status']}" for s in r["sources"]))
+    if "effective_mode" in r:
+        print("mode: " + r["effective_mode"] + "; budget: " + json.dumps(r.get("effective_budget", {}), ensure_ascii=False, sort_keys=True))
+        if r.get("omitted_sources"):
+            print("omitted by source budget: " + ", ".join(r["omitted_sources"]))
     if not r["results"]:
         failed = [s for s in r["sources"] if s["status"] not in ("ok", "empty")]
         if failed and len(failed) == len(r["sources"]):
@@ -355,6 +392,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--transport", choices=("stdio", "streamable-http"), default="stdio")
     p.add_argument("--port", type=int, default=8612)
     p.add_argument("--no-autostart", action="store_true")
+    p.add_argument("--admin-tools", action="store_true", help="explicit principal management tools, stdio only")
     p.add_argument("--insecure-no-auth", action="store_true", help="removed: HTTP transport always requires client tokens")
     p.set_defaults(fn=cmd_mcp)
     p = sub.add_parser("mcp-token", help="manage per-client tokens for the MCP HTTP transport")
@@ -366,6 +404,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("operation")
     p.add_argument("params", nargs="?")
     p.set_defaults(fn=cmd_call)
+    p = sub.add_parser("revoke-principal", help="permanently revoke another core principal (administrator only)")
+    p.add_argument("subject")
+    p.set_defaults(fn=cmd_revoke_principal)
     p = sub.add_parser("jobs", help="manage owned job history")
     jobs = p.add_subparsers(dest="jobs_action", required=True)
     compact = jobs.add_parser("compact", help="delete eligible settled terminal details after the core's minimum 7-day retention",
@@ -374,10 +415,18 @@ def main(argv: list[str] | None = None) -> int:
                              "Active and paused jobs remain. Repeating this command may compact the next eligible batch.")
     compact.add_argument("--limit", type=int, default=16, help="maximum jobs in this batch, 1..64 (default: 16; validated by the core)")
     compact.set_defaults(fn=cmd_jobs_compact)
+    sub.add_parser("search-modes", help="inspect source-only fast/balanced/deep search budgets").set_defaults(fn=cmd_search_modes)
     p = sub.add_parser("search", help="web search from the terminal")
     p.add_argument("query", nargs="+")
-    p.add_argument("--limit", type=int, default=10)
+    p.add_argument("--limit", type=int)
     p.add_argument("--category", default="web")
+    p.add_argument("--mode", choices=("fast", "balanced", "deep"))
+    p.add_argument("--max-sources", type=int)
+    p.add_argument("--per-source", type=int)
+    p.add_argument("--timeout-ms", type=int)
+    p.add_argument("--deadline-ms", type=int)
+    p.add_argument("--source", action="append", dest="sources", help="explicit source ID; repeat to select several")
+    p.add_argument("--refresh", action="store_true")
     p.set_defaults(fn=cmd_search)
     p = sub.add_parser("read", help="read a URL from the terminal")
     p.add_argument("url")

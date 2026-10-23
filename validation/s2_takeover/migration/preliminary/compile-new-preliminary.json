@@ -1,0 +1,39 @@
+{
+  "role": "integration_migration_verifier_shared_component_author",
+  "argv": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wshadow",
+    "-Werror",
+    "-DBZS_MIGRATION_NEW=1",
+    "-I/workspace/scratch/e2371129386d/bzs861-migration-run/preliminary-include",
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/migration/migration_driver.cpp",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/libbzs_core-preliminary.a",
+    "-lsqlite3",
+    "-lxml2",
+    "-ljson-c",
+    "-lcrypto",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/migration-new-preliminary"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861",
+  "started_utc": "2026-10-23T10:32:04.435678+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/migration/migration_driver.cpp": "17aba1de7ed4661fc42b46581a126c32c2c49cee69d68450a4d679cb294c26f8",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/libbzs_core-preliminary.a": "486eb891f14858f19c3db0ecd6a90e129e164b02bc8c37f8f592d6aef2bf25d9"
+  },
+  "source_head": "f5e03730337de9eaf7f68132a40d64005efe1d57",
+  "tracked_patch_sha256": "9b5d554f81e9fec41a3384b51b844d4a6ceb6e6b72dacaaab156e873d1c9732b",
+  "exit_code": 1,
+  "seconds": 1.768,
+  "finished_utc": "2026-10-23T10:32:06.241630+00:00",
+  "log_sha256": "34e444302d998cade2cf85798c47888ae4a4a81f484feb0decd96fec20a03e43"
+}

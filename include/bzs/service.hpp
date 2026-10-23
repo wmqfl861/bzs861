@@ -34,6 +34,7 @@ namespace bzs {
     const FixtureCatalog& fixtures_;
     std::filesystem::path backup_root_;
     WebService* web_=nullptr;
+    Json dispatch_active(const Principal& principal,const Json& request);
     public: Service(Store& store, const FixtureCatalog& fixtures, std::filesystem::path backup_root, WebService* web=nullptr) :store_(store), fixtures_(fixtures), backup_root_(std::move(backup_root)), web_(web) {
     }
     Json dispatch(const Principal& principal, const Json& request);

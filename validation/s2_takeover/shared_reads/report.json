@@ -1,0 +1,133 @@
+{
+  "scope": "author shared-read increment; limited read_many co-dispatch, not full CACHE-01/B-24 acceptance",
+  "base_commit": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+  "binding": "source hashes below; eventual containing commit binds this report, no future CI claimed",
+  "schema": {
+    "from": 12,
+    "to": 13,
+    "new_tables": [
+      "read_shared_attempts",
+      "read_shared_members"
+    ],
+    "genuine_old_library_upgrade": "pending final integrated-library validation by parent"
+  },
+  "implementation_limits": [
+    "same owner, precise URL and compatible authority/deletion/history/budget/timeout",
+    "at most 32 already queued subscribers at physical dispatch",
+    "no late arrival subscription; no direct read/map/crawl/search merging",
+    "only original payer charged; follower associated usage is not additional physical cost",
+    "unknown execution does not auto-retry; no independent revocation-journal claim"
+  ],
+  "source_sha256": {
+    "include/bzs/store.hpp": "c9477dc7c93468c010f5d3345129cf29388d6bd698c62f5b5ede6ff67662ff92",
+    "src/store.cpp": "916414ecaaccaa1a00bcb6492ff25e41119f21dc84428d9ff53bd8a93fb94d82",
+    "src/batch.cpp": "6bc9be2f86bf38f764fe6b3fac30ad8e8c301993233d27fb386c309eba944919",
+    "src/retention.cpp": "4a196ea69fe04d017ff5c462e49e566bd4efb714c29b882d0181eb1cdd01be8c",
+    "tests/batch.cpp": "8dfdff1047cbc849d9750cf969624abef2205d85e0ddc7d42974ffcbac4343e3",
+    "tests/retention.cpp": "fbec7bef267be57618fdc243d66decb99ad824b7d8f34c038a370f0b6af17823",
+    "docs/SHARED_READS.md": "9ed15a2ad47d4fb7496032d992e973467f71336996978909738977ae783638ce"
+  },
+  "binary_sha256": {
+    "build/libbzs_core.a": "b347c42c6ce1e4f1dbd04aee5c408751ce32c87252685149979b80ebe47d6ca1",
+    "build/bzs_batch_tests": "90c36c220166ae7084c9a9fda7a425eedab06618cf03f76d245ae4bc8445d052",
+    "build/bzs_retention_tests": "59d6b88ef23f92d6485021fdfd60d0833d8e288361c8b707c075f59138c8565a",
+    "build/bzs_fairness_tests": "6088520eb286d6eaaf685c186a5e19a2a16d7f86bebaeebd528c52087b917d69",
+    "build-asan/libbzs_core.a": "017d73fc51ddc39bff840d6d885f401a363f92e73fc40de6ef36e72823213e58",
+    "build-asan/bzs_batch_tests": "f498298eeede6b895245dabd534ce059c3048f101f05c7db0dc433f873c350ef"
+  },
+  "commands": {
+    "asan-batch-command.json": {
+      "command": [
+        "./build-asan/bzs_batch_tests"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 3.346,
+      "log": "asan-batch.log",
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      }
+    },
+    "asan-batch-permitted-command.json": {
+      "command": [
+        "./build-asan/bzs_batch_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.742,
+      "log": "asan-batch-permitted.log",
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+      },
+      "context": "same native binary; unrestricted test execution requested because LeakSanitizer cannot run under the sandbox ptrace supervisor"
+    },
+    "debug-build-command.json": {
+      "command": [
+        "cmake",
+        "--build",
+        "--preset",
+        "dev",
+        "--target",
+        "bzs_batch_tests",
+        "bzs_fairness_tests",
+        "bzs_retention_tests",
+        "-j",
+        "2"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.013,
+      "log": "debug-build.log"
+    },
+    "targeted-command.json": {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "build",
+        "-R",
+        "^(batch|fairness|retention)$",
+        "--output-on-failure",
+        "--output-junit",
+        "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/shared_reads/targeted.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.357,
+      "log": "targeted.log"
+    }
+  },
+  "results": {
+    "debug": {
+      "batch_cases": 30,
+      "batch_assertions": 801,
+      "retention_cases": 16,
+      "retention_assertions": 404,
+      "fairness_cases": 11,
+      "fairness_assertions": 251,
+      "failed_suites": 0,
+      "skipped_suites": 0
+    },
+    "sanitizer": {
+      "batch_cases": 30,
+      "batch_assertions": 801,
+      "failed_cases": 0,
+      "detect_leaks": true,
+      "initial_sandbox_run": "LeakSanitizer ptrace-supervisor incompatibility; original failure retained",
+      "permitted_run": "passed; same candidate binary"
+    },
+    "new_behavior_cases": 12,
+    "github_ci": "not run for this author candidate"
+  },
+  "environment": {
+    "os": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0"
+  },
+  "logs_sha256": {
+    "targeted-detail.log": "6235c3ab05605208422e417d5ff48d6ea16abc99dc5995dba569deb26b62d433",
+    "asan-batch-permitted.log": "7985cfe9c4841672f342015b9ca68f195c2dfa16cdee56e871ed6c83728e4c07",
+    "targeted.log": "d7ccb7bcd169337802e7e625ecb585b0c27098929417cffd052597157ed7eac1",
+    "debug-build.log": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+    "initial-targeted.log": "11ee5849b072319a77f14561687f4205634330fb8ae11066ee985ef24745552e",
+    "asan-batch.log": "87d9a204a12098a57b4d855e48bdb90b6ede21d4714739fe19d0055611c3d450",
+    "targeted.xml": "6b936483afd9264177389d8c00555fb6df807a8daa314d706c20e63148197683",
+    "initial-targeted.xml": "bcc7d4610cd68538bcd43a4faebbf714ec08a5dbe06ec5742a6408b4970bb095"
+  }
+}

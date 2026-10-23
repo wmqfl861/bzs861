@@ -1,4 +1,4 @@
-# searchd API（0.1.9 S2 接续增量）
+# searchd API（0.1.10 接手续作）
 
 所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮验证记录](../validation/s2_five_stages/README.md)。
 
@@ -24,7 +24,7 @@
 
 | 操作 | params | 边界 |
 |---|---|---|
-| `web.search` | `query`；可选 `sources`（来源 ID 数组）、`category`、`limit`、`per_source`、`language`、`timeout_ms` | 多源并发、状态、去重与索引族融合；只执行已审核且启用的来源 |
+| `web.search` | `query`；可选 `sources`（来源 ID 数组）、`category`、`limit`、`per_source`、`language`、`timeout_ms`、`deadline_ms`、`mode`、`max_sources` | 多源并发、状态、去重与索引族融合；只执行已审核且启用的来源 |
 | `web.read` | `url`；可选 `freshness`、`max_age_s`、`max_bytes`、`start_byte`、`timeout_ms` | 公网读取和快照；不因来源结果或 MCP 调用自动放宽出站规则 |
 | `web.sources` | `{}` | 运行来源清单、审核/启用、冷却和请求状态；列出不等于可执行 |
 
@@ -36,7 +36,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 ### 搜索结果
 
-`results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族；摘要标记 `snippet_kind=search_engine_snippet`，不能作为已读正文。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
+`results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
 
 索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。已支持的 site 条件在结果中复核；其余未支持条件不能静默丢弃。
 
@@ -48,7 +48,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
-`cache_first` 使用期限内缓存，`refresh` 重新获取，`cache_only` 不联网、无缓存则明确报错。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
+`cache_first` 仅复用按响应指令/年龄和当前请求profile证明新鲜的完整表示；`refresh` 显式刷新；`cache_only` 不访问来源，无快照报`E_NOT_CACHED`、需要验证报`E_CACHE_STALE`。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
 
 ## 持久联网搜索会话
 
@@ -267,3 +267,15 @@ crawl 的 `kind=page` 回包返回受限的 `page`、`publication` 与同响应 
 已知304仍计1个实际HTTP请求、0正文响应字节；未知或无法解释的执行按既有保守预留结算。未经绑定、validator冲突、跳转后的304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
 
 robots过期记录仅可作为绑定旧表示重新验证，不能直接放行正文。新304必须保留相同rules/body/清单身份并取得正有效期；较新的拒绝不会因旧记录仍被引用而在回收后消失。schema12的元数据与容量记账、完整合同及保守缓存子集见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。
+
+## 0.1.10 接口与持久状态
+
+`search.modes`接收空参数，离线返回fast/balanced/deep预算。`web.search`和`web.search.start`可选`mode`、`max_sources`与更紧的现有预算字段，返回`effective_mode/effective_budget/omitted_sources`；显式sources超上限拒绝，默认选择按清单顺序截断并报告。无mode保持旧默认和持久幂等身份。具体上限和单调/持久期限边界见[搜索预设](SEARCH_MODES.md)，所有自动读取/模型/浏览器预算为0。
+
+管理员操作`principal.revoke`只接受`subject`，持久阻断该主体的全部令牌、新旧数据访问和在途发布；重复撤权幂等，自我撤权拒绝，现阶段没有重新启用接口。CLI为`revoke-principal SUBJECT`；MCP默认不暴露，只有stdio显式`--admin-tools`可启用。HTTP MCP共享Core凭据的入口拒绝此开关。权限与计费细节见[主体撤权](PRINCIPAL_REVOCATION.md)。
+
+同owner兼容`read_many`在派发事务中可共享一次实际请求。各订阅者保持独立任务身份/回执与取消，原付款者承担实际或未知用量，订阅者`associated_*`仅表示关联，不是可相加的消耗。压缩后归属仍保留。范围限于最多32个派发时已有的成员，详见[共享读取](SHARED_READS.md)。
+
+原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；no-store因本接口总返回持久快照而报`E_CACHE_POLICY`，不会先落盘再删除。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
+
+schema13在12基础上组合来源发布规则、主体撤权和共享读取结构，保留原数据与账本。来源清单显式激活持久政策，旧缓存/冻结会话与在途来源回复每次重查；后续放宽不复活旧摘要。真实旧库升级、旧HTTP字段默认不新鲜、备份继续隔离的实际证据见当前报告；版本号不等于所有历史路径或安全恢复已经验收。

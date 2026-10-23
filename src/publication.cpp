@@ -445,12 +445,13 @@ void Store::observe_policy_locked(const std::string& owner,const std::string& ur
   }
 }
 Json Store::publication_fence(const std::string& owner,const std::string& url) {
-  std::lock_guard lock(mutex_);auto fence=Json::object();fence.set("epoch",epoch_locked(owner));fence.set("sequence",delete_sequence_locked());fence.set("generation",deletion_generation_locked(owner,url));fence.set("publication_sequence",publication_sequence_locked());
+  std::lock_guard lock(mutex_);require_principal_active_locked(owner);auto fence=Json::object();fence.set("epoch",epoch_locked(owner));fence.set("sequence",delete_sequence_locked());fence.set("generation",deletion_generation_locked(owner,url));fence.set("publication_sequence",publication_sequence_locked());
   Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,url);fence.set("snapshot_id",current.step()?current.text(0):"");return fence;
 }
 void Store::observe_web_publication(const std::string& owner,const std::string& url,const std::string& final_url,const Json& policy,const Json& fence) {
   std::lock_guard lock(mutex_);checked(sqlite3_exec(db_,"BEGIN IMMEDIATE",nullptr,nullptr,nullptr));
   try {
+    require_principal_active_locked(owner);
     if(epoch_locked(owner)==fence.at("epoch").num()&&deletion_generation_locked(owner,url)==fence.at("generation").num()) {
       bool live=true;try { (void)alias_fences_locked(owner,url,final_url,fence.at("sequence").num()); } catch(const Error& error) { if(error.code!="E_TARGET_DELETED")throw;live=false; }
       if(live)observe_policy_locked(owner,url,final_url,policy);

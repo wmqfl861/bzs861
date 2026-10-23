@@ -1,8 +1,11 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.9 S2 五个接续增量。** 在已发布0.1.8上增加页面与robots条件重验证、真实会话故障回归、来源贡献与外部消融评测合同、重复容量与公平性循环。独立复核同时修复304遗忘当前nofollow及回收后复用旧robots允许记录的问题。范围见 [接续计划](docs/handoff/S2_NEXT_FIVE_20261021.md) 与 [当前报告](validation/s2_next_five/json-race-report.json)。发布后根据真实CI故障同步修复共享JSON的序列化和引用计数竞争，并补入两个并发回归。S0、S1、S2 的完整验收仍未完成。
+**状态：0.1.10 接手后的五项增量。** 从已发布0.1.9继续，增加搜索来源持久发布限制、管理员主体撤权、独立HTTP缓存新鲜度、可分别取消的共享批读，以及fast/balanced/deep搜索执行预算。范围见[接手计划](docs/handoff/S2_TAKEOVER_20261023.md)，实际验证见[本轮报告](validation/s2_takeover/final-report.json)。S0、S1、S2的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批边界见 [正文爬取](docs/SITE_CRAWLING.md)、[存量发布与升级](docs/SITE_PUBLICATION.md) 和 [验证说明](validation/s2_next_five/README.md)；实际结果见 [本轮报告](validation/s2_next_five/json-race-report.json)，远端 CI 以对应提交的 [Actions](https://github.com/wmqfl861/bzs861/actions) 为准。0.1.4 的 [正文抓取交接](docs/handoff/S2_CRAWL_20261018.md)、0.1.3 的 [站点发现交接](docs/handoff/S2_DISCOVERY_20261018.md)、0.1.2 的 [黄金集与探测交接](docs/handoff/S0_GOLDEN_20261018.md) 与 Claude 的 [S1 接收审查](docs/handoff/CLAUDE_S1_REVIEW_20261018.md) 保留为历史来源。
+本轮最终本地验证：27/27套CTest、15/15套ASan/UBSan，Python 1,049项，均无跳过；真实schema12→13升级保留39张旧表内容。首轮失败与修正证据完整保留，公开CI以实际发布提交的Actions为准。
+
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[验证说明](validation/s2_takeover/README.md)区分作者、独立反例、真实升级和最终整合输入，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
+
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -13,11 +16,13 @@
 | 本地导入、搜索与证据 | 保留显式 HTML/TXT 导入、不可变快照、冻结分页、UTF-8 字节定位、原文查找、用户隔离和权限复核 |
 | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
 | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
-| 网页读取候选实现 | worker 抓取与 Markdown 提取、快照、`cache_first / refresh / cache_only`；完整表示可条件刷新，304复用旧正文并重查当前限制；直接出站仅允许通过连接层检查的公网目标 |
-| 批量网页读取 | 1–20 个显式 URL、持久任务、逐项结果、暂停/恢复/取消、显式失败重试；请求/响应体预算与快照收据原子提交 |
+| 网页读取候选实现 | 缓存指令独立于validator；完整表示按年龄/profile复用或条件刷新，no-store无新持久快照，cache_only陈旧则拒绝；直接出站仍受连接层策略限制 |
+| 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务在派发时共享一次读取，逐订阅取消和一次计费，收据原子提交 |
 | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
 | 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
 | 页面发布规则 | 页面声明与站点发布上限共同生效；显式站点配置在离线重启后也约束已存结果，旧会话不因后来放宽而恢复 |
+| 来源发布与主体撤权 | 来源收紧、停用、移除、过期与主体撤权约束旧缓存/会话/在途响应；放宽来源不恢复旧摘要，撤权需要管理员 |
+| 搜索执行模式 | 可查看fast/balanced/deep来源数、候选数和期限上限；覆盖只可收紧，报告省略来源；只搜索，不自动读取或调用模型 |
 | 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
 | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
 | 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
@@ -27,7 +32,7 @@
 | 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结、来源贡献与外部消融配对；固定全池IDCG，缺失/失败不当空结果，完整质量门禁仍阻塞 |
 | 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
 
-尚未交付动态 JS 页面、PDF/Office、完整爬虫工作包、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留；36 包部分实现、47 包未开始、0 包完整签收，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
+尚未交付动态 JS 页面、PDF/Office、完整爬虫工作包、模型规划/向量检索/研究、远程多客户端发布和 Windows 安装包。**83 个工作包、161 项验收 ID** 全部保留；37 包部分实现、46 包未开始、0 包完整签收，见 [蓝图 v1.2](docs/planning/development_blueprint_v1.2.md) 和 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
 ## 架构
 
@@ -66,7 +71,8 @@ bzs call contract.validate '{"kind":"model-config","config":{"policy":{"allow_re
 正常联网搜索需完成来源审核、实测并显式启用。读取命令只接受符合出站策略的公开目标：
 
 ```bash
-bzs search "断点续爬 实现"
+bzs search-modes
+bzs search "断点续爬 实现" --mode balanced
 bzs read https://zh.wikipedia.org/wiki/网络爬虫
 ```
 

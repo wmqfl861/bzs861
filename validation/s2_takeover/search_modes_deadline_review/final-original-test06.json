@@ -1,0 +1,30 @@
+{
+  "role": "independent_mode_deadline_correction_reviewer",
+  "argv": [
+    "/usr/bin/env",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "PYTHONPATH=/workspace/scratch/e2371129386d/bzs861/python",
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py",
+    "--server",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/searchd",
+    "--python",
+    "/workspace/scratch/80f41eb198a3/.venv-bzs-continuation/bin/python",
+    "--repo",
+    "/workspace/scratch/e2371129386d/bzs861",
+    "SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861",
+  "started_utc": "2026-10-23T10:53:57.913933+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/searchd": "1a0c3c37e51b6ac08597d3df83e306a7852620bc0dc532b4f801ad35fc36a1de",
+    "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5"
+  },
+  "source_head": "ff193ba1000912ce400d2ed4503917f823be0aae",
+  "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exit_code": 1,
+  "seconds": 1.114,
+  "finished_utc": "2026-10-23T10:53:59.065014+00:00",
+  "log_sha256": "47f26f31fdd9aae0f155c82127f30d2a56f81ea7fd5503b6d32bacc50bc3a5d9"
+}

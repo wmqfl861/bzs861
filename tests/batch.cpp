@@ -285,6 +285,193 @@ namespace {
     now=std::numeric_limits<std::int64_t>::max();web.execute_read(*lease);CHECK(worker.reads.empty());
     CHECK(store.stats("alice").at("snapshots").num()==0);
   }
+  TEST(shared_reads_dispatch_once_and_keep_individual_durable_receipts) {
+    Temp t;std::int64_t now=1000000;Fake worker;std::string first,second,attempt;
+    {
+      Store store(t.path/"db",[&]{return now;});WebService web(store,worker,{});
+      first=web.submit_reads("alice",args(urls(2),"shared-first")).at("job_id").str();
+      second=web.submit_reads("alice",args(urls(2),"shared-second")).at("job_id").str();
+      auto lease=store.lease_next_read();CHECK(lease);CHECK(lease->job_id==first);attempt=lease->attempt_id;
+      CHECK(store.job_get("alice",second).at("state").str()=="running");CHECK(!store.lease_next_read());
+      CHECK(store.job_get("alice",first).at("budget").at("charged_requests").num()==18);
+      CHECK(store.job_get("alice",second).at("budget").at("charged_requests").num()==0);
+      web.execute_read(*lease);CHECK(worker.reads.size()==1);CHECK(store.stats("alice").at("snapshots").num()==1);
+      auto a=item(store,first),b=item(store,second);
+      CHECK(a.at("receipt").at("snapshot_id").str()==b.at("receipt").at("snapshot_id").str());
+      CHECK(a.at("shared_read").at("role").str()=="payer");CHECK(b.at("shared_read").at("role").str()=="subscriber");
+      CHECK(b.at("shared_read").at("attempt_id").str()==attempt);CHECK(b.at("shared_read").at("payer_job_id").str()==first);
+      CHECK(b.at("shared_read").at("associated_external_requests").num()==1);
+    }
+    {
+      Store store(t.path/"db",[&]{return now;});WebService web(store,worker,{});drain(store,web);
+      CHECK(worker.reads==urls(2));CHECK(store.stats("alice").at("snapshots").num()==2);
+      CHECK(store.job_get("alice",first).at("state").str()=="succeeded");CHECK(store.job_get("alice",second).at("state").str()=="succeeded");
+      CHECK(store.job_get("alice",first).at("usage").at("external_requests").num()==2);
+      CHECK(store.job_get("alice",second).at("usage").at("external_requests").num()==0);
+      CHECK(store.job_get("alice",second).at("shared_reads").at("subscriber_attempts").num()==2);
+      CHECK(store.job_get("alice",second).at("shared_reads").at("associated_external_requests").num()==2);
+      CHECK(item(store,second).at("shared_read").at("attempt_id").str()==attempt);
+    }
+  }
+  TEST(shared_reads_cancel_or_pause_one_subscriber_without_cancelling_others) {
+    for(bool payer:{false,true})for(const std::string action:{"cancel","pause"}) {
+      Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+      FixtureCatalog fixtures(BZS_FIXTURE_DIR);Service service(store,fixtures,t.path/"backups",&web);
+      auto first=web.submit_reads("alice",args(urls(1),"payer")).at("job_id").str();
+      auto second=web.submit_reads("alice",args(urls(1),"subscriber")).at("job_id").str();
+      auto stopped=payer?first:second,active=payer?second:first;
+      worker.response=[&](const Json& p) {
+        auto control=Json::object();control.set("job_id",stopped);control.set("action",action);
+        service.dispatch({"alice",false},req("job.control",control));CHECK(worker.cancellations.empty());return Fake::ok(p);
+      };
+      drain(store,web);CHECK(worker.reads.size()==1);CHECK(worker.cancellations.empty());
+      CHECK(store.stats("alice").at("snapshots").num()==1);CHECK(item(store,active).at("state").str()=="succeeded");
+      CHECK(item(store,stopped).at("state").str()=="failed");CHECK(!item(store,stopped).has("receipt"));
+      CHECK(store.job_get("alice",stopped).at("state").str()==(action=="pause"?"paused":"cancelled"));
+      CHECK(store.job_get("alice",first).at("budget").at("charged_requests").num()==1);
+      CHECK(store.job_get("alice",second).at("budget").at("charged_requests").num()==0);
+    }
+  }
+  TEST(shared_reads_last_subscriber_cancel_stops_worker_and_rejects_late_body) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    FixtureCatalog fixtures(BZS_FIXTURE_DIR);Service service(store,fixtures,t.path/"backups",&web);
+    auto first=web.submit_reads("alice",args(urls(1),"cancel-payer")).at("job_id").str();
+    auto second=web.submit_reads("alice",args(urls(1),"cancel-subscriber")).at("job_id").str();
+    worker.response=[&](const Json& p) {
+      for(const auto& id:{first,second}) {
+        auto control=Json::object();control.set("job_id",id);control.set("action","cancel");
+        service.dispatch({"alice",false},req("job.control",control));
+      }
+      CHECK(worker.cancellations.size()==1);CHECK(worker.cancellations[0]==p.at("attempt_id").str());return Fake::ok(p);
+    };
+    drain(store,web);CHECK(worker.reads.size()==1);CHECK(store.stats("alice").at("snapshots").num()==0);
+    CHECK(store.job_get("alice",first).at("state").str()=="cancelled");CHECK(store.job_get("alice",second).at("state").str()=="cancelled");
+    CHECK(store.job_get("alice",first).at("usage").at("external_requests").num()==1);
+    CHECK(store.job_get("alice",second).at("usage").at("external_requests").num()==0);
+  }
+  TEST(shared_reads_cancelled_payer_before_worker_start_still_serves_live_member) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    auto first=web.submit_reads("alice",args(urls(1),"early-payer")).at("job_id").str();
+    auto second=web.submit_reads("alice",args(urls(1),"early-member")).at("job_id").str();
+    auto lease=store.lease_next_read();CHECK(lease);store.job_control("alice",first,"cancel");
+    CHECK(store.read_lease_live(*lease));CHECK(store.active_read_attempt("alice",first).empty());
+    web.execute_read(*lease);CHECK(worker.reads.size()==1);CHECK(item(store,second).at("state").str()=="succeeded");
+    CHECK(store.job_get("alice",first).at("budget").at("charged_requests").num()==1);
+  }
+  TEST(shared_reads_owner_uri_deadline_timeout_and_budget_boundaries) {
+    for(const std::string difference:{"owner","uri","deadline","timeout","requests","bytes","order"}) {
+      Temp t;std::int64_t now=1000000;Store store(t.path/"db",[&]{return now;});Fake worker;WebService web(store,worker,{});
+      web.submit_reads("alice",args(urls(1),"boundary-first"));auto input=urls(1);auto p=args(input,"boundary-second");
+      auto owner=difference=="owner"?"bob":"alice";
+      if(difference=="uri")p=args({urls(1)[0]+"?utm_source=two"},"boundary-second");
+      if(difference=="deadline")p.set("timeout_ms",std::int64_t{1000});
+      if(difference=="timeout")p.set("per_page_timeout_ms",std::int64_t{1000});
+      if(difference=="requests")p.set("max_requests",std::int64_t{1});
+      if(difference=="bytes")p.set("max_bytes",std::int64_t{100});
+      if(difference=="order")p=args({urls(2)[1],urls(1)[0]},"boundary-second");
+      auto second=web.submit_reads(owner,p).at("job_id").str();auto lease=store.lease_next_read();CHECK(lease);
+      CHECK(store.job_get(owner,second).at("state").str()=="queued");web.execute_read(*lease);drain(store,web);
+      CHECK(worker.reads.size()==(difference=="order"?3U:2U));
+    }
+  }
+  TEST(shared_reads_recovery_marks_one_physical_unknown_and_never_auto_retries) {
+    Temp t;std::int64_t now=1000000;Fake worker;std::string first,second;ReadLease old;
+    {
+      Store store(t.path/"db",[&]{return now;});WebService web(store,worker,{});
+      auto a=args(urls(1),"unknown-payer"),b=args(urls(1),"unknown-member");a.set("max_attempts",std::int64_t{2});b.set("max_attempts",std::int64_t{2});
+      first=web.submit_reads("alice",a).at("job_id").str();second=web.submit_reads("alice",b).at("job_id").str();old=*store.lease_next_read();
+      store.job_control("alice",first,"cancel");
+    }
+    now+=26000;
+    {
+      Store store(t.path/"db",[&]{return now;});WebService web(store,worker,{});drain(store,web);CHECK(worker.reads.empty());
+      CHECK(store.job_get("alice",first).at("state").str()=="cancelled");CHECK(store.job_get("alice",second).at("state").str()=="failed");
+      CHECK(store.job_get("alice",first).at("usage").at("unknown_requests_charged").num()==18);
+      CHECK(store.job_get("alice",second).at("usage").at("unknown_requests_charged").num()==0);
+      CHECK(item(store,second).at("shared_read").at("usage_unknown").flag());
+      CHECK(store.job_get("alice",second).at("shared_reads").at("unknown_attempts").num()==1);
+      store.job_control("alice",second,"retry_failed");drain(store,web);CHECK(worker.reads.size()==1);
+      CHECK(store.job_get("alice",second).at("budget").at("charged_requests").num()==1);
+      CHECK(store.job_get("alice",second).at("shared_reads").at("unknown_attempts").num()==1);
+      SourceDocument late{old.url,"late content","text/plain","late"};
+      CHECK(!store.complete_read(old,late,parse_document(late.raw,late.content_type),Json::object(),1,12));
+    }
+  }
+  TEST(shared_reads_deletion_and_revoked_epoch_fence_all_subscribers) {
+    for(bool deletion:{false,true}) {
+      Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+      auto old=store.ingest("alice",{urls(1)[0],"before","text/plain","before"});
+      auto first=web.submit_reads("alice",args(urls(1),"fence-payer")).at("job_id").str();
+      auto second=web.submit_reads("alice",args(urls(1),"fence-member")).at("job_id").str();
+      worker.response=[&](const Json& p) {
+        if(deletion)store.erase("alice",old.at("document_id").str());else sql(store.raw_handle(),"UPDATE subjects SET epoch=epoch+1 WHERE owner='alice';");
+        return Fake::ok(p);
+      };
+      drain(store,web);CHECK(worker.reads.size()==1);CHECK(item(store,first).at("state").str()=="failed");CHECK(item(store,second).at("state").str()=="failed");
+      CHECK(!item(store,second).has("receipt"));CHECK(store.job_get("alice",first).at("budget").at("charged_requests").num()==1);
+      CHECK(store.job_get("alice",second).at("budget").at("charged_requests").num()==0);
+    }
+  }
+  TEST(shared_reads_receipt_failure_rolls_back_every_subscriber_and_snapshot) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    auto first=web.submit_reads("alice",args(urls(1),"atomic-payer")).at("job_id").str();
+    auto second=web.submit_reads("alice",args(urls(1),"atomic-member")).at("job_id").str();
+    sql(store.raw_handle(),"CREATE TRIGGER shared_receipt_failure BEFORE UPDATE OF state ON read_job_items WHEN NEW.state='succeeded' BEGIN SELECT RAISE(ABORT,'shared receipt unavailable'); END;");
+    drain(store,web);CHECK(worker.reads.size()==1);CHECK(store.stats("alice").at("snapshots").num()==0);
+    CHECK(item(store,first).at("error_code").str()=="E_STORAGE");CHECK(item(store,second).at("error_code").str()=="E_STORAGE");
+    CHECK(store.job_get("alice",first).at("budget").at("charged_requests").num()==1);
+    CHECK(store.job_get("alice",second).at("budget").at("charged_requests").num()==0);
+    CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_attempts WHERE settled=1 AND external_requests=1")==1);
+  }
+  TEST(shared_reads_compaction_preserves_payer_attribution_until_last_member) {
+    Temp t;std::int64_t now=1000000;Store store(t.path/"db",[&]{return now;});Fake worker;WebService web(store,worker,{});
+    auto first=web.submit_reads("alice",args(urls(1),"compact-payer")).at("job_id").str();
+    auto second=web.submit_reads("alice",args(urls(1),"compact-member")).at("job_id").str();drain(store,web);
+    now+=8LL*24*60*60*1000;CHECK(store.compact_jobs("alice",1).at("compacted_jobs").num()==1);
+    CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_attempts")==1);CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_members")==1);
+    auto a=store.job_get("alice",first),b=store.job_get("alice",second);CHECK(a.has("retention")!=b.has("retention"));
+    const auto remaining=a.has("retention")?second:first;CHECK(item(store,remaining).at("shared_read").at("payer_job_id").str()==first);
+    CHECK(store.compact_jobs("alice",1).at("compacted_jobs").num()==1);
+    CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_attempts")==0);CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_members")==0);
+    CHECK(store.job_get("alice",first).at("usage").at("external_requests").num()==1);
+    CHECK(store.job_get("alice",second).at("shared_reads").at("subscriber_attempts").num()==1);
+  }
+  TEST(shared_reads_bound_membership_and_do_not_attach_after_dispatch) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    std::vector<std::string> jobs;for(int i=0;i<34;++i)jobs.push_back(web.submit_reads("alice",args(urls(1),"bounded-"+std::to_string(i))).at("job_id").str());
+    auto lease=store.lease_next_read();CHECK(lease);CHECK(item(store,jobs[0]).at("shared_read").at("members").num()==32);
+    CHECK(store.job_get("alice",jobs[32]).at("state").str()=="queued");
+    auto late=web.submit_reads("alice",args(urls(1),"late-member")).at("job_id").str();
+    CHECK(store.job_get("alice",late).at("state").str()=="queued");web.execute_read(*lease);drain(store,web);
+    CHECK(worker.reads.size()==2);CHECK(store.job_get("alice",late).at("state").str()=="succeeded");
+  }
+  TEST(shared_reads_two_store_connections_cannot_dispatch_the_same_group_twice) {
+    Temp t;std::int64_t now=1000000;Store first(t.path/"db",[&]{return now;}),second(t.path/"db",[&]{return now;});
+    Fake worker;WebService web(first,worker,{});
+    auto payer=first.read_many_submit("alice",urls(1),"connection-payer",{}).at("job_id").str();
+    auto member=second.read_many_submit("alice",urls(1),"connection-member",{}).at("job_id").str();
+    auto lease=first.lease_next_read();CHECK(lease);CHECK(!second.lease_next_read());
+    second.job_control("alice",payer,"cancel");CHECK(second.active_read_attempt("alice",payer).empty());
+    web.execute_read(*lease);CHECK(worker.reads.size()==1);CHECK(item(second,member).at("state").str()=="succeeded");
+    CHECK(second.job_get("alice",payer).at("state").str()=="cancelled");CHECK(!second.lease_next_read());
+  }
+  TEST(shared_reads_known_failure_and_pre_dispatch_cancel_do_not_create_free_retries) {
+    for(bool before:{false,true}) {
+      Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+      auto payer=web.submit_reads("alice",args(urls(1),"failure-payer")).at("job_id").str();
+      auto member=web.submit_reads("alice",args(urls(1),"failure-member")).at("job_id").str();
+      auto lease=store.lease_next_read();CHECK(lease);
+      if(before) { store.job_control("alice",payer,"cancel");store.job_control("alice",member,"cancel"); }
+      else worker.response=[](const Json& p) { auto r=Fake::ok(p);r.set("status","http_error");return r; };
+      web.execute_read(*lease);CHECK(!store.lease_next_read());CHECK(worker.reads.size()==(before?0U:1U));
+      CHECK(store.stats("alice").at("snapshots").num()==0);
+      CHECK(store.job_get("alice",payer).at("budget").at("charged_requests").num()==(before?0:1));
+      CHECK(store.job_get("alice",member).at("budget").at("charged_requests").num()==0);
+      CHECK(store.job_get("alice",member).at("shared_reads").at("unsettled_attempts").num()==0);
+      CHECK(item(store,payer).at("error_code").str()==(before?"E_LEASE_EXPIRED":"E_FETCH_HTTP"));
+      CHECK(item(store,member).at("error_code").str()==(before?"E_LEASE_EXPIRED":"E_FETCH_HTTP"));
+    }
+  }
   TEST(schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index) {
     Temp t;Json historic,current,evidence,job,page;std::string session;
     std::int64_t index_rowid=0;
@@ -305,7 +492,7 @@ namespace {
     }
     {
       Store store(t.path/"db");
-      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==12);
+      CHECK(scalar(store.raw_handle(),"PRAGMA user_version")==13);
       CHECK(scalar(store.raw_handle(),"SELECT rowid FROM content_fts")==index_rowid);
       CHECK(store.snapshot("alice",historic.at("snapshot_id").str()).canonical()==historic.canonical());
       CHECK(store.snapshot("alice",current.at("snapshot_id").str()).canonical()==current.canonical());

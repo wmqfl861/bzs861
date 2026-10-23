@@ -1,0 +1,35 @@
+[1/28] Building CXX object CMakeFiles/bzs_core.dir/src/json.cpp.o
+[2/28] Building CXX object CMakeFiles/bzs_core.dir/src/util.cpp.o
+[3/28] Building CXX object CMakeFiles/bzs_core.dir/src/html.cpp.o
+[4/28] Building CXX object CMakeFiles/bzs_core.dir/src/query.cpp.o
+[5/28] Building CXX object CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o
+[6/28] Building CXX object CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+[7/28] Building CXX object CMakeFiles/bzs_core.dir/src/store.cpp.o
+[8/28] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+[9/28] Building CXX object CMakeFiles/bzs_core.dir/src/source_publication.cpp.o
+[10/28] Building CXX object CMakeFiles/bzs_core.dir/src/publication.cpp.o
+[11/28] Building CXX object CMakeFiles/bzs_core.dir/src/retention.cpp.o
+[12/28] Building CXX object CMakeFiles/bzs_core.dir/src/batch.cpp.o
+[13/28] Building CXX object CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+[14/28] Building CXX object CMakeFiles/bzs_core.dir/src/map.cpp.o
+[15/28] Building CXX object CMakeFiles/bzs_core.dir/src/sites.cpp.o
+[16/28] Building CXX object CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+[17/28] Building CXX object CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+[18/28] Building CXX object CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+[19/28] Building CXX object CMakeFiles/bzs_core.dir/src/http_cache.cpp.o
+[20/28] Building CXX object CMakeFiles/bzs_core.dir/src/service.cpp.o
+[21/28] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+[22/28] Linking CXX static library libbzs_core.a
+[23/28] Building CXX object CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o
+[24/28] Linking CXX executable bzs_session_tests
+[25/28] Building CXX object CMakeFiles/bzs_tests.dir/tests/unit.cpp.o
+[26/28] Building CXX object CMakeFiles/bzs_source_publication_tests.dir/tests/source_publication.cpp.o
+/workspace/scratch/e2371129386d/bzs861-source-policy/tests/source_publication.cpp: In function ‘int main(int, char**)’:
+/workspace/scratch/e2371129386d/bzs861-source-policy/tests/source_publication.cpp:60:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   60 |     if(argc>1&&name!=argv[1])continue;++executed;
+      |     ^~
+/workspace/scratch/e2371129386d/bzs861-source-policy/tests/source_publication.cpp:60:39: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   60 |     if(argc>1&&name!=argv[1])continue;++executed;
+      |                                       ^~
+[27/28] Linking CXX executable bzs_tests
+[28/28] Linking CXX executable bzs_source_publication_tests

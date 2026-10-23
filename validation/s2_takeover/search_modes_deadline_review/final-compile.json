@@ -1,0 +1,40 @@
+{
+  "role": "independent_mode_deadline_correction_reviewer",
+  "argv": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wshadow",
+    "-Werror",
+    "-DBZS_FIXTURE_DIR=\"/workspace/scratch/e2371129386d/bzs861/fixtures\"",
+    "-I/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/include",
+    "-I/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final",
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/search_modes_deadline_review/deadline_cases.cpp",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/libbzs_core.a",
+    "-lsqlite3",
+    "-lxml2",
+    "-ljson-c",
+    "-lcrypto",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/probe"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861",
+  "started_utc": "2026-10-23T10:53:46.136530+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/search_modes_deadline_review/deadline_cases.cpp": "2a7c3276713314d923de62b9f9d5351f027709334a134a6ee63e7df67a8ea094",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/deadline-final/libbzs_core.a": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785"
+  },
+  "source_head": "ff193ba1000912ce400d2ed4503917f823be0aae",
+  "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exit_code": 0,
+  "seconds": 2.725,
+  "finished_utc": "2026-10-23T10:53:48.895640+00:00",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

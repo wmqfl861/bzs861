@@ -1,0 +1,40 @@
+{
+  "role": "independent_mode_reviewer_shared_component_author",
+  "argv": [
+    "/usr/bin/c++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-Wconversion",
+    "-Wshadow",
+    "-Werror",
+    "-DBZS_FIXTURE_DIR=\"/workspace/scratch/e2371129386d/bzs861-source-policy/fixtures\"",
+    "-I/workspace/scratch/e2371129386d/bzs861-source-policy/include",
+    "-I/workspace/scratch/e2371129386d/bzs861-source-policy/tests",
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/search_modes_review/reviewer_cases.cpp",
+    "/workspace/scratch/e2371129386d/build-source-policy/libbzs_core.a",
+    "-lsqlite3",
+    "-lxml2",
+    "-ljson-c",
+    "-lcrypto",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/e2371129386d/bzs861-migration-run/mode-review"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861-source-policy",
+  "started_utc": "2026-10-23T10:40:42.846976+00:00",
+  "PYTHONPATH": null,
+  "input_sha256": {
+    "/workspace/scratch/e2371129386d/bzs861-shared-reads/validation/s2_takeover/search_modes_review/reviewer_cases.cpp": "db3ed1160832818d4673491079307515a52cb56ffa551d82d254dc7cf016d456",
+    "/workspace/scratch/e2371129386d/build-source-policy/libbzs_core.a": "7f8766840573801ab51e01fbfdcb2881c79b80608596ac87321df4b2a4675bc7"
+  },
+  "source_head": "81337026084de2f9d503db8fdc0099c0f75720bf",
+  "tracked_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "exit_code": 0,
+  "seconds": 2.382,
+  "finished_utc": "2026-10-23T10:40:45.264933+00:00",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

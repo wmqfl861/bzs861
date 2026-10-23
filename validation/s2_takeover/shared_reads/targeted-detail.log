@@ -1,0 +1,108 @@
+Start testing: Oct 23 19:26 JST
+----------------------------------------------------------
+2/19 Testing: batch
+2/19 Test: batch
+Command: "/workspace/scratch/e2371129386d/bzs861-shared-reads/build/bzs_batch_tests"
+Directory: /workspace/scratch/e2371129386d/bzs861-shared-reads/build
+"batch" start time: Oct 23 19:26 JST
+Output:
+----------------------------------------------------------
+PASS ten_explicit_inputs_only_and_ordered_receipts
+PASS input_budget_validation_and_owner_scope
+PASS execution_identity_does_not_use_search_deduplication
+PASS errors_are_isolated_and_default_attempts_do_not_retry
+PASS completed_items_survive_pause_restart_resume_without_refetch
+PASS pause_or_cancel_during_fetch_fences_late_publication
+PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+PASS deletion_before_dispatch_stops_only_its_target
+PASS unknown_execution_keeps_grants_across_recovery
+PASS request_and_byte_budgets_stop_unstarted_items
+PASS lease_expiry_and_permission_changes_refuse_late_results
+PASS receipt_failure_rolls_back_snapshot_and_index
+PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+PASS noindex_and_deleted_receipts_never_resurrect_content
+PASS api_dispatch_and_fixture_jobs_coexist
+PASS deadline_near_int64_max_does_not_overflow_lease
+PASS shared_reads_dispatch_once_and_keep_individual_durable_receipts
+PASS shared_reads_cancel_or_pause_one_subscriber_without_cancelling_others
+PASS shared_reads_last_subscriber_cancel_stops_worker_and_rejects_late_body
+PASS shared_reads_cancelled_payer_before_worker_start_still_serves_live_member
+PASS shared_reads_owner_uri_deadline_timeout_and_budget_boundaries
+PASS shared_reads_recovery_marks_one_physical_unknown_and_never_auto_retries
+PASS shared_reads_deletion_and_revoked_epoch_fence_all_subscribers
+PASS shared_reads_receipt_failure_rolls_back_every_subscriber_and_snapshot
+PASS shared_reads_compaction_preserves_payer_attribution_until_last_member
+PASS shared_reads_bound_membership_and_do_not_attach_after_dispatch
+PASS shared_reads_two_store_connections_cannot_dispatch_the_same_group_twice
+PASS shared_reads_known_failure_and_pre_dispatch_cancel_do_not_create_free_retries
+PASS schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index
+PASS schema_three_quarantine_is_rejected_before_new_tables
+30 batch tests, 801 assertions, 0 failures
+<end of output>
+Test time =   1.25 sec
+----------------------------------------------------------
+Test Passed.
+"batch" end time: Oct 23 19:26 JST
+"batch" time elapsed: 00:00:01
+----------------------------------------------------------
+
+6/19 Testing: retention
+6/19 Test: retention
+Command: "/workspace/scratch/e2371129386d/bzs861-shared-reads/build/bzs_retention_tests"
+Directory: /workspace/scratch/e2371129386d/bzs861-shared-reads/build
+"retention" start time: Oct 23 19:26 JST
+Output:
+----------------------------------------------------------
+PASS aged_terminal_frontiers_release_the_real_512_job_cap_after_restart
+PASS the_full_deadline_window_and_clock_extremes_are_respected
+PASS unknown_read_grants_survive_compaction_and_late_callbacks_cannot_reopen_work
+PASS paused_and_pending_jobs_remain_pinned_and_maintenance_is_owner_scoped
+PASS unknown_crawl_page_grants_and_origin_charges_survive_expiry_and_compaction
+PASS robots_receipt_and_admission_each_pin_the_exact_expired_record
+PASS expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive
+PASS robots_capacity_can_recover_at_admission_without_erasing_origin_accounting
+PASS crawl_frontier_edges_traps_and_map_candidates_compact_with_original_summaries
+PASS a_storage_failure_rolls_back_the_summary_and_all_detail_deletions
+PASS compaction_never_recreates_publication_deleted_aliases_or_owner_epochs
+PASS schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins
+PASS permanent_key_quotas_remain_bounded_per_owner_and_globally
+PASS two_store_compactors_serialize_without_duplicate_summaries_or_charges
+PASS compacted_backups_keep_the_restore_quarantine_gate
+PASS rpc_is_available_offline_and_validates_raw_limit_and_unknown_parameters
+16 retention tests, 404 assertions, 0 failures
+<end of output>
+Test time =   2.20 sec
+----------------------------------------------------------
+Test Passed.
+"retention" end time: Oct 23 19:26 JST
+"retention" time elapsed: 00:00:02
+----------------------------------------------------------
+
+7/19 Testing: fairness
+7/19 Test: fairness
+Command: "/workspace/scratch/e2371129386d/bzs861-shared-reads/build/bzs_fairness_tests"
+Directory: /workspace/scratch/e2371129386d/bzs861-shared-reads/build
+"fairness" start time: Oct 23 19:26 JST
+Output:
+----------------------------------------------------------
+PASS read_batches_follow_submission_order_and_rotate_with_identical_timestamps
+PASS late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains
+PASS read_queue_position_survives_restart_and_owner_isolation
+PASS restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch
+PASS two_store_connections_reserve_distinct_jobs_and_rounds
+PASS paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns
+PASS continuous_new_map_jobs_do_not_starve_an_existing_frontier
+PASS new_map_jobs_have_a_strict_submission_order_at_the_same_clock
+PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+PASS worker_loop_gives_batch_and_discovery_categories_progress
+PASS calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart
+11 fairness tests, 251 assertions, 0 failures
+<end of output>
+Test time =   0.90 sec
+----------------------------------------------------------
+Test Passed.
+"fairness" end time: Oct 23 19:26 JST
+"fairness" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 23 19:26 JST

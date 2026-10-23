@@ -1,0 +1,26 @@
+{
+  "finding": "Withdraw prior no-blocker review conclusion for the durable deadline path; confirmed compatibility regression",
+  "incorrect_case": "review_subsecond_persistent_remainder_never_calls_worker",
+  "incorrect_assumption": "The public 1000 ms request minimum also applies to a previously admitted request remaining allowance",
+  "correct_requirement": "Positive 1..999 ms remaining allowance may dispatch; never enlarge, round up, reset or publish after the granted deadline",
+  "discovery": "Original full CTest e2e_session_recovery test_06 at f03dc7f did not reach the after-Worker gate",
+  "prior_review_commit": "9218552898106f1dbf1fce4ee1ab397bf8de455b",
+  "preserved_prior_evidence_sha256": {
+    "reviewer_cases.cpp": "db3ed1160832818d4673491079307515a52cb56ffa551d82d254dc7cf016d456",
+    "report.json": "7e537072f351386de3e540472a93870a58c54751e1e7dc12af1877e9e7b0b082",
+    "mode-review-cases.json": "9657a884fa95bee28492c181745725cbfc1998b4801cb110bc408c3e99951748",
+    "mode-review-cases.log": "b35b57411d3504d73a6a5ae9c48bad1862d22ab82e0df673d656e570077a7714"
+  },
+  "original_full_ctest_log": "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/final-v1-ctest.log",
+  "original_full_ctest_log_sha256": "f44c52a8ca50adbde1107e25b4c82f096898e054d4a2869a25423d986d0a67eb",
+  "original_test_sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+  "original_test_matches_schema12_baseline": true,
+  "before_fix_corrected_probe": {
+    "tests": 4,
+    "failures": 2,
+    "assertions": 30,
+    "log": "before-fix-cases.log"
+  },
+  "reviewer_responsibility": "The reviewer owns the incorrect initial test expectation. Historical evidence is retained; new results do not rewrite it.",
+  "excerpt_normalization": "Trailing whitespace removed from the derived excerpt only; the original full CTest log is unchanged and its exact SHA256 is recorded."
+}

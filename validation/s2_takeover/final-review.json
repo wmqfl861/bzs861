@@ -1,0 +1,83 @@
+{
+  "version": "0.1.10",
+  "recorded_at_utc": "2026-10-23T10:59:12.943867+00:00",
+  "status": "scoped_independent_reviews_and_final_replays_completed; full_product_signoff_not_performed",
+  "runtime_source_commit_local": "c69141426260ea497440ede5f50e185ab10e19da",
+  "runtime_library_sha256": "2db27c784e150282bcee6f7bf2a2c1f2f0921af8bbe31e99f791130e49339785",
+  "records": [
+    {
+      "component": "source publication",
+      "author": "source_policy agent",
+      "author_record": "source_policy/author-report.json",
+      "independent_scope": "Source withdrawal/regrant and principal revocation interactions; genuine old-library upgrade",
+      "independent_probe_author": "handoff_audit agent, author of shared reads",
+      "record": "migration/preliminary/summary.json",
+      "final_replay": "migration/final-v2/report.json"
+    },
+    {
+      "component": "principal revocation",
+      "author": "revocation agent",
+      "author_record": "revocation/README.md",
+      "independent_scope": "Source policy and principal epoch interaction; old grants and backup quarantine",
+      "independent_probe_author": "handoff_audit agent",
+      "record": "migration/preliminary/summary.json"
+    },
+    {
+      "component": "HTTP cache freshness",
+      "author": "root integrator",
+      "reviewer": "revocation agent",
+      "scope": "Real HTTP status/body/duplicate-header policy counterexamples, profile-expiry race, response age across extraction",
+      "record": "cache_review/README.md",
+      "final_replay": "final-v2-ctest.log and final-v2-asan.log"
+    },
+    {
+      "component": "shared batch reads",
+      "author": "handoff_audit agent",
+      "author_record": "shared_reads/report.json",
+      "reviewer": "source_policy agent",
+      "record": "review_shared_reads/report.json",
+      "final_integrator_replay": "review_shared_reads/final-v2/cases.json"
+    },
+    {
+      "component": "search modes",
+      "author": "source_policy agent",
+      "author_record": "search_modes/author-report.json",
+      "reviewer": "handoff_audit agent",
+      "initial_record": "search_modes_review/report.json",
+      "correction": "The initial subsecond no-dispatch assertion and corresponding no-blocker conclusion were wrong and are explicitly withdrawn.",
+      "corrected_record": "search_modes_deadline_review/report.json",
+      "author_fix_record": "search_deadline_fix/report.json"
+    },
+    {
+      "component": "source snippet fixture correction",
+      "author": "root integrator",
+      "reviewer": "revocation agent",
+      "record": "source_fixture_review/README.md",
+      "independent_real_http_cases": 2,
+      "production_policy_relaxed": false,
+      "global_fixture_permission_changed": false
+    },
+    {
+      "component": "CI wiring",
+      "author": "root integrator",
+      "reviewer": "source_policy agent",
+      "record": "ci_static_review.json",
+      "scope": "Static set equality 27 Linux / 15 sanitizer / 17 Windows, current-repo E2E paths; not an actual Windows execution"
+    }
+  ],
+  "findings_and_corrections": [
+    "Independent HTTP probes caught missing no-store handling for 203/error/empty crawl responses, stale reuse after restrictive failed 304, duplicate Pragma loss and response-age reset during parsing. Fixed with permanent native/Python/HTTP regressions; original failing evidence remains.",
+    "Cache profile lookup can cross expiry. Recheck after RPC; keep parser/profile identity bound and refuse stale cache-only access.",
+    "First integrated CTest found a genuine 1-second durable-search compatibility regression. Original E2E stayed byte-identical; positive remaining time now uses a separate absolute steady-clock deadline.",
+    "First integrated CTest also exposed an old assertion expecting snippets from links_only fixture sources. The test now checks permission projection and has a separate explicitly permitted positive fixture, both including cache hits.",
+    "Generated executable mode repairs changed no binary bytes; pre-v2-file-modes.json records the single sanitizer revalidation executable repair."
+  ],
+  "blocking_findings_remaining_in_tested_scope": [],
+  "limits": [
+    "Component authors, independent reviewers and final integrator replays are distinguished; this is not complete independent product acceptance.",
+    "The old mode reviewer case remains as historical evidence and must not be treated as the corrected contract.",
+    "Real-source approval, human qrels, universal shared cancellation, independent revocation continuity, long-duration and complete Windows Worker packaging remain unaccepted.",
+    "Actual Windows/Linux remote CI is checked only after a real publication commit exists."
+  ],
+  "summary_consistency_audit": "final-summary-audit.json"
+}

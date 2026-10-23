@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "status": "failed_integrated_candidate_preserved",
+  "candidate_execution_inputs": "final-v1-execution-inputs.json",
+  "ctest": {
+    "suites": 27,
+    "failed_suites": [
+      "e2e_web",
+      "e2e_session_recovery"
+    ],
+    "skipped": 0,
+    "junit_sha256": "d15be2b071c164f44b52787c7ddd8a055af5ed58fd9daeb4a6c2bcedbfc22e1b",
+    "command": "final-v1-ctest-command.json",
+    "log": "final-v1-ctest.log"
+  },
+  "findings": [
+    {
+      "id": "MODE-remaining-budget",
+      "kind": "production_compatibility_regression",
+      "cause": "A legitimate 1000ms durable request usually has under 1000ms left at dispatch; new mode logic incorrectly reapplied the public minimum to remaining time.",
+      "correction": "Keep public request minimum 1000ms; pass the positive remaining allowance as a separate absolute steady-clock deadline; do not reset or round it up.",
+      "original_test_unchanged": "tests/e2e_session_recovery.py",
+      "author_evidence": "search_deadline_fix/report.json",
+      "independent_correction_evidence": "search_modes_deadline_review/report.json",
+      "local_implementation_commit": "7fc7392a8e4d84d14613c2bfbe6f2a7d363d8a95"
+    },
+    {
+      "id": "source-snippet-fixture",
+      "kind": "outdated_expectation_conflicts_with_explicit_permission",
+      "cause": "The shared fakeweb manifest explicitly grants links_only, but the old direct-search assertion required a published snippet.",
+      "correction": "Check suppressed title/snippet for every merged hit, retain merge/attribution assertions, add a separate explicitly permitted fixture with positive text assertions; verify cached output in both directions and document the contract.",
+      "production_policy_weakened": false,
+      "global_fixture_permission_changed": false,
+      "independent_evidence": "source_fixture_review/README.md",
+      "local_test_commit": "ff193ba"
+    }
+  ],
+  "other_v1_gates": "ASan 15/15, Python 1049, genuine migration, original contracts and plan checks passed on that failed candidate; they do not replace the new frozen final-v2 gates."
+}

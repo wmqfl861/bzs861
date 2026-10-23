@@ -1,0 +1,457 @@
+{
+  "schema": "bzs-ci-static-review-1",
+  "review_date": "2026-10-23",
+  "report_created_at_utc": "2026-10-23T10:57:40.887669Z",
+  "classification": "static_review_not_ci_execution",
+  "reviewer": {
+    "agent": "/root/source_policy",
+    "role": "independent review of final integration CI wiring and Windows portability",
+    "implementation_role_disclosure": "The reviewer authored the source publication and search mode increments; this report reviews CI integration and portability and does not claim independent revalidation of those business implementations."
+  },
+  "reviewed_commit": "ff193ba1000912ce400d2ed4503917f823be0aae",
+  "reviewed_tree": "aa6cda3b5d802c8a8a155264b09877f278d8db46",
+  "initial_review_commit": "7fc7392a8e4d84d14613c2bfbe6f2a7d363d8a95",
+  "reviewed_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_blob": "49924a2fffe54159969e6e5c7ef6a79972ee3e4b",
+      "sha256": "f161f06fc04fd19e52343943bf0188309894f11b2f7689c0cc753b4a9025d05d",
+      "bytes": 4424
+    },
+    {
+      "path": "CMakePresets.json",
+      "git_blob": "8f11aaaec57700fd625be34812b3927852342e5f",
+      "sha256": "0cee3fd0b9a72875b2535840da0dec13f17ab65b86d8fc5b8236b5f0a188aac2",
+      "bytes": 1568
+    },
+    {
+      "path": "CMakeLists.txt",
+      "git_blob": "3c26d04d621b3210c55774feb04bfc6551e8e268",
+      "sha256": "dddb18ab670377751e915d2e64c7c7097a79b78abcc440e3c1c26b08f469f022",
+      "bytes": 14886
+    },
+    {
+      "path": "src/source_publication.cpp",
+      "git_blob": "87300a4ccb7124825a1127bd89e6b4ddf91cdb06",
+      "sha256": "fd5e87388959ca59e5a7f46795b21ced95f72f65a642ff39ccf12ce3f9ddadb6",
+      "bytes": 11585
+    },
+    {
+      "path": "src/search_modes.cpp",
+      "git_blob": "264ae5168d87077bfad9fc2e3fd9d910765ba65a",
+      "sha256": "9754751f7e0ea091e1cf22cb7959bf5399784998b1ebfe36f2e6150828c242fc",
+      "bytes": 3139
+    },
+    {
+      "path": "src/revocation.cpp",
+      "git_blob": "79abc48c45566273db3936fdf3a69287959aa556",
+      "sha256": "fa19355dfebd323ed9395023e89886eeedc661de974fb36c4c8140f111e792e3",
+      "bytes": 7456
+    },
+    {
+      "path": "src/http_cache.cpp",
+      "git_blob": "521fed267ce853592810cd95e192aebb64803597",
+      "sha256": "571915113ff36d283db3192d898266e234cf777a740dfce744bae618d9105f35",
+      "bytes": 14905
+    },
+    {
+      "path": "src/web.cpp",
+      "git_blob": "d1965357c42f8f8e64dd4726568024cc8f00d93c",
+      "sha256": "da7c0069fde0809023b8a20fcf579dfead5432f256c1163a52504f563162ba19",
+      "bytes": 62866
+    },
+    {
+      "path": "src/service.cpp",
+      "git_blob": "23985bc627203442b877390d1235c8afd1f5fd37",
+      "sha256": "3f2a7f01370bcb54d43444e1ca3f3310047229b79fc69e8a8037ec7bc6778d38",
+      "bytes": 17606
+    },
+    {
+      "path": "src/util.cpp",
+      "git_blob": "87b898f2a1ad7dc4c0cd04d7cb71de85d4793986",
+      "sha256": "091cee6a65eabccee1bc9a0a6cba943ec6421000932682e4225100c73adebf8b",
+      "bytes": 5410
+    },
+    {
+      "path": "include/bzs/web.hpp",
+      "git_blob": "1fa58ee606004bb50b9c02059f1ed631f2646672",
+      "sha256": "68e2959787d80cd2a7c1c54e3cd255164e9f523557aa1f62f1037e698530f627",
+      "bytes": 5547
+    },
+    {
+      "path": "include/bzs/search_modes.hpp",
+      "git_blob": "2f957a3488173b6017187ae3857c417617e209bc",
+      "sha256": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+      "bytes": 429
+    },
+    {
+      "path": "include/bzs/http_cache.hpp",
+      "git_blob": "bc53a0a9c69dc14d5c6a5daa9b267cfc36896659",
+      "sha256": "158ea18dc0e672ad3a9bc35b3ec4ccfd9b57c065e15f1f7b1c430b0ee9f076d3",
+      "bytes": 891
+    },
+    {
+      "path": "include/bzs/json.hpp",
+      "git_blob": "02503c1ff5077695cba595c8f52304a28a1098ac",
+      "sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+      "bytes": 2401
+    },
+    {
+      "path": "include/bzs/store.hpp",
+      "git_blob": "d9c4c8ec0d9925d12ef5dbb0f06cfe21a6cb5cd4",
+      "sha256": "67e224d362239899082902b61ed2848ac9e6e3354b26ff5831eeec840f99851d",
+      "bytes": 17224
+    },
+    {
+      "path": "tests/source_publication.cpp",
+      "git_blob": "e709318dd9b93682e1e3453bd974f0150a60c782",
+      "sha256": "5cb8c22ca37b8e5db0966db03c13accaad1ec56974e76daf61336c2b1eda32f6",
+      "bytes": 17499
+    },
+    {
+      "path": "tests/search_modes.cpp",
+      "git_blob": "01cfc7baf1586769dc5c9f4946b6c647f87a78a0",
+      "sha256": "73a5359e8e6ae0ad90feb16ff20ccf2ce525fbf7b118ecaf0d7ea01da641b795",
+      "bytes": 16044
+    },
+    {
+      "path": "tests/revocation.cpp",
+      "git_blob": "7f0b764cc070fc26596937b02f0e49622690ca81",
+      "sha256": "b161dd3383e4023006ca3cfce3d252a8e788f96b0fff31d514486221d76ab46d",
+      "bytes": 15470
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "git_blob": "8c7bdbe0f9a3e22762f63df1d3460411760f2ed7",
+      "sha256": "317924e552960abad8238ef3af2439fb36b23d31e830f945fec70a96ebdb0efd",
+      "bytes": 8931
+    },
+    {
+      "path": "tests/http_revocation.py",
+      "git_blob": "bd65fa1ac249e2e96349ffc6a0ff79d58b2bf2a8",
+      "sha256": "5e6670393f55b63a000ec7fdd8817d21d63e79f9b9970c84608f5bda83030383",
+      "bytes": 5976
+    },
+    {
+      "path": "tests/integration.py",
+      "git_blob": "9cd26170438879a27f0a58563c5effff1d6fde43",
+      "sha256": "7a963e61892e6e16204c2112af26ea16b258d87e25caaeed2dca4f323e8a99b0",
+      "bytes": 21781
+    },
+    {
+      "path": "tests/e2e_revalidation.py",
+      "git_blob": "dfb6a7c1be8db62a2ce9420ebcb686169dae54ef",
+      "sha256": "e0eb40504897482e22c414dba31b8950672d070fa364019091a4729211cbe1bc",
+      "bytes": 12212
+    },
+    {
+      "path": "tests/e2e_web.py",
+      "git_blob": "c7eb8d62f5be2a87c52d143639edffc385364b48",
+      "sha256": "68fec875519846092327c40e56ed56ef61ea182e197857e6d19fcc963b4ab6f6",
+      "bytes": 30551
+    },
+    {
+      "path": "validation/s2_takeover/cache_review/probe_http_policy.py",
+      "git_blob": "ff67aba179f8e8d107256c676237f8bfc522ae08",
+      "sha256": "f77cc64af1bf9cb48e0d9c96076d4cabb1c3416dfc1c01bed5b29bd2674447df",
+      "bytes": 8502
+    }
+  ],
+  "commit_boundary": {
+    "same_bytes_between_initial_and_final_read_commit": [
+      ".github/workflows/ci.yml",
+      "CMakePresets.json",
+      "CMakeLists.txt",
+      "src/source_publication.cpp",
+      "src/search_modes.cpp",
+      "src/revocation.cpp",
+      "src/http_cache.cpp",
+      "src/web.cpp",
+      "src/service.cpp",
+      "src/util.cpp",
+      "include/bzs/web.hpp",
+      "include/bzs/search_modes.hpp",
+      "include/bzs/http_cache.hpp",
+      "include/bzs/json.hpp",
+      "include/bzs/store.hpp",
+      "tests/source_publication.cpp",
+      "tests/search_modes.cpp",
+      "tests/revocation.cpp",
+      "tests/cache_freshness.cpp",
+      "tests/http_revocation.py",
+      "tests/integration.py",
+      "tests/e2e_revalidation.py",
+      "validation/s2_takeover/cache_review/probe_http_policy.py"
+    ],
+    "changed_files_in_review_scope": [
+      "tests/e2e_web.py"
+    ],
+    "note": "CI configuration, four added native suites, cache policy review probe and production additions are unchanged between these commits. tests/e2e_web.py has the separately recorded source-grant fixture correction; its final reviewed bytes are hashed in this report. This review does not claim to have executed that correction."
+  },
+  "generated_artifact_cross_check": {
+    "path": "build/CTestTestfile.cmake",
+    "provenance": "Existing generated file in parent worktree, read only; this review did not configure or rebuild it. Its source test-name set was compared again while recording this report.",
+    "captured_at_utc": "2026-10-23T10:57:40.887669Z",
+    "sha256": "33a4b88356127b44f06cf535416f74456da6a589e8ab0698c3b59073fff10f0a",
+    "unique_test_count": 27,
+    "matches_reviewed_source_names": true
+  },
+  "test_sets": {
+    "linux_dev": {
+      "count": 27,
+      "names": [
+        "core",
+        "batch",
+        "map",
+        "crawl",
+        "site_publication",
+        "retention",
+        "fairness",
+        "sessions",
+        "source_publication",
+        "search_modes",
+        "revalidation",
+        "revocation",
+        "capacity_cycles",
+        "cache_freshness",
+        "contracts",
+        "http_cli",
+        "http_revocation",
+        "e2e_web",
+        "e2e_map",
+        "e2e_crawl",
+        "e2e_crawl_recovery",
+        "e2e_session_recovery",
+        "e2e_revalidation",
+        "e2e_cache_freshness",
+        "e2e_cache_policy_review",
+        "e2e_revocation",
+        "python_worker"
+      ],
+      "partition": {
+        "native": [
+          "core",
+          "batch",
+          "map",
+          "crawl",
+          "site_publication",
+          "retention",
+          "fairness",
+          "sessions",
+          "source_publication",
+          "search_modes",
+          "revalidation",
+          "revocation",
+          "capacity_cycles",
+          "cache_freshness",
+          "contracts"
+        ],
+        "http": [
+          "http_cli",
+          "http_revocation"
+        ],
+        "worker_e2e": [
+          "e2e_web",
+          "e2e_map",
+          "e2e_crawl",
+          "e2e_crawl_recovery",
+          "e2e_session_recovery",
+          "e2e_revalidation",
+          "e2e_cache_freshness",
+          "e2e_cache_policy_review",
+          "e2e_revocation"
+        ],
+        "python_and_adapters": [
+          "python_worker"
+        ]
+      },
+      "invocation": "ctest --preset dev",
+      "filter": null
+    },
+    "native_test_to_program": {
+      "core": "bzs_tests",
+      "batch": "bzs_batch_tests",
+      "map": "bzs_map_tests",
+      "crawl": "bzs_crawl_tests",
+      "site_publication": "bzs_site_publication_tests",
+      "retention": "bzs_retention_tests",
+      "fairness": "bzs_fairness_tests",
+      "sessions": "bzs_session_tests",
+      "source_publication": "bzs_source_publication_tests",
+      "search_modes": "bzs_search_mode_tests",
+      "revalidation": "bzs_revalidation_tests",
+      "revocation": "bzs_revocation_tests",
+      "capacity_cycles": "bzs_capacity_cycles_tests",
+      "cache_freshness": "bzs_cache_freshness_tests",
+      "contracts": "bzs_contract_tests"
+    },
+    "linux_asan": {
+      "count": 15,
+      "preset": "asan-core",
+      "build_targets": [
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "bzs_retention_tests",
+        "bzs_fairness_tests",
+        "bzs_session_tests",
+        "bzs_revalidation_tests",
+        "bzs_capacity_cycles_tests",
+        "bzs_revocation_tests",
+        "bzs_source_publication_tests",
+        "bzs_cache_freshness_tests",
+        "bzs_search_mode_tests"
+      ],
+      "workflow_programs": [
+        "bzs_tests",
+        "bzs_batch_tests",
+        "bzs_map_tests",
+        "bzs_crawl_tests",
+        "bzs_site_publication_tests",
+        "bzs_contract_tests",
+        "bzs_retention_tests",
+        "bzs_fairness_tests",
+        "bzs_session_tests",
+        "bzs_revalidation_tests",
+        "bzs_revocation_tests",
+        "bzs_source_publication_tests",
+        "bzs_cache_freshness_tests",
+        "bzs_search_mode_tests",
+        "bzs_capacity_cycles_tests"
+      ],
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+      "contract_argument": "docs/planning/validation/contract_cases.json"
+    },
+    "windows": {
+      "count": 17,
+      "native_count": 15,
+      "http_count": 2,
+      "names": [
+        "core",
+        "batch",
+        "map",
+        "crawl",
+        "site_publication",
+        "contracts",
+        "retention",
+        "fairness",
+        "sessions",
+        "source_publication",
+        "search_modes",
+        "cache_freshness",
+        "revalidation",
+        "revocation",
+        "capacity_cycles",
+        "http_cli",
+        "http_revocation"
+      ],
+      "configuration": "Debug",
+      "runner": "windows-2022",
+      "worker_e2e_included": false,
+      "worker_packaging_validated_by_this_scope": false
+    }
+  },
+  "static_set_checks": {
+    "linux_unique_test_count_is_27": true,
+    "linux_partition_is_15_native_2_http_9_worker_e2e_1_python": true,
+    "generated_ctest_matches_source_registration": true,
+    "asan_build_targets_match_all_native_programs": true,
+    "asan_run_commands_match_all_native_programs": true,
+    "windows_exactly_all_native_plus_two_http": true,
+    "windows_has_no_unknown_test_names": true,
+    "linux_dev_ctest_is_unfiltered": true,
+    "linux_requires_python_dependencies": true,
+    "new_four_native_in_all_three_scopes": true,
+    "cache_review_e2e_registered": true
+  },
+  "cache_review_e2e": {
+    "test": "e2e_cache_policy_review",
+    "cmake_registration_line": 214,
+    "script": "validation/s2_takeover/cache_review/probe_http_policy.py",
+    "arguments": {
+      "server": "$<TARGET_FILE:searchd>",
+      "python": "${BZS_PYTHON}",
+      "repo": "${CMAKE_CURRENT_SOURCE_DIR}"
+    },
+    "timeout_seconds": 180,
+    "skip_return_code": 77,
+    "linux_included": true,
+    "windows_included": false,
+    "runtime_dependency_gate": "Linux configures with BZS_REQUIRE_PYTHON_TESTS=ON; import failure for pytest, aiohttp, lxml, trafilatura or mcp makes configuration fail.",
+    "path_inspection": "The probe derives ROOT from __file__.parents[3], adds ROOT/tests for imports, takes --repo/--python/--server from CMake, and assigns the current config to e2e_revalidation and e2e_web. No fixed reviewer checkout or binary path was found."
+  },
+  "portability_observations": [
+    {
+      "id": "cxx20_and_deadline_headers",
+      "classification": "nonblocking_static_observation",
+      "paths": [
+        "CMakeLists.txt",
+        "include/bzs/web.hpp",
+        "src/web.cpp"
+      ],
+      "observation": "C++20 is required; the new internal deadline uses std::optional<std::chrono::steady_clock::time_point> and web.hpp directly includes chrono and optional."
+    },
+    {
+      "id": "date_and_integer_portability",
+      "classification": "nonblocking_static_observation",
+      "paths": [
+        "src/http_cache.cpp",
+        "src/search_modes.cpp",
+        "src/source_publication.cpp",
+        "src/revocation.cpp"
+      ],
+      "observation": "Reviewed additions use standard C++20 calendar facilities and explicit int64_t budget fields. No new unguarded POSIX API or obvious 32-bit Windows long truncation was found."
+    },
+    {
+      "id": "windows_http_runtime_scope",
+      "classification": "nonblocking_static_observation",
+      "paths": [
+        "tests/http_revocation.py",
+        "tests/integration.py",
+        ".github/workflows/ci.yml",
+        "src/service.cpp"
+      ],
+      "observation": "The added HTTP suite uses stdlib Python and the existing no_worker server fixture. Paths and process termination use portable APIs. The POSIX stat permission check remains guarded out on Windows; workflow configures vcpkg Debug DLL paths and checks command exit codes."
+    }
+  ],
+  "findings": [
+    {
+      "id": "CI-STATIC-001",
+      "severity": "low",
+      "blocking": false,
+      "path": "tests/source_publication.cpp",
+      "lines": [
+        82,
+        96,
+        108
+      ],
+      "observation": "std::tie is used without a direct #include <tuple>; the translation unit currently relies on transitive standard-library includes.",
+      "recommendation": "Add a direct <tuple> include during normal source maintenance.",
+      "validation_status": "Static include-hygiene observation only; no MSVC compile failure was observed or reproduced.",
+      "source_modified_by_review": false
+    }
+  ],
+  "outcome": {
+    "status": "no_blocking_static_findings",
+    "blocking_findings": 0,
+    "low_severity_findings": 1
+  },
+  "execution_boundary": {
+    "review_actions": [
+      "read versioned source and configuration",
+      "compare test-name and binary-target sets with a local Python analysis",
+      "read existing generated CTest registration"
+    ],
+    "cmake_configure_executed": false,
+    "build_executed": false,
+    "native_or_e2e_tests_executed": false,
+    "windows_executed": false,
+    "github_ci_run_verified": false,
+    "production_or_test_source_modified": false,
+    "note": "Scheduled coverage is not a passing-run claim. Actual Linux, sanitizer and Windows execution evidence belongs to the final gates and GitHub CI; this report only records static observations."
+  }
+}

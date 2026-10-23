@@ -1,0 +1,43 @@
+test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner) ... ERROR
+test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation) ... ERROR
+
+======================================================================
+ERROR: test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/http_revocation.py", line 20, in setUp
+    self.server = integration.RunningServer(self.root, no_worker=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/integration.py", line 44, in start
+    self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding='utf-8')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+PermissionError: [Errno 13] Permission denied: '/workspace/scratch/e2371129386d/build-revocation/searchd'
+
+======================================================================
+ERROR: test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/http_revocation.py", line 20, in setUp
+    self.server = integration.RunningServer(self.root, no_worker=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/e2371129386d/bzs861-revocation/tests/integration.py", line 44, in start
+    self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding='utf-8')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+PermissionError: [Errno 13] Permission denied: '/workspace/scratch/e2371129386d/build-revocation/searchd'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.006s
+
+FAILED (errors=2)

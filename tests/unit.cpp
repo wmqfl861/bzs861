@@ -628,7 +628,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==12);
+    CHECK(database_scalar(path, "PRAGMA user_version")==13);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -651,11 +651,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=13;");
+    database_exec(future, "PRAGMA user_version=14;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==13);
+    CHECK(database_scalar(future, "PRAGMA user_version")==14);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -1233,11 +1233,11 @@ namespace {
     CHECK(r.at("content").at("text").str().find("中文正文")!=std::string::npos);
     CHECK(r.at("content_trust").str()=="untrusted_web_content");
     auto again=web.read("a", obj(R"({"url":"https://site.example/start"})"));
-    CHECK(again.at("from_cache").flag());
-    CHECK(fetches==1);
+    CHECK(!again.at("from_cache").flag());
+    CHECK(fetches==2);
     now+=8LL*86400*1000;
     web.read("a", obj(R"({"url":"https://site.example/start"})"));
-    CHECK(fetches==2);
+    CHECK(fetches==3);
     auto local=s.search("a", q("中文正文"));
     CHECK(local.at("frozen_count").num()==1);
     CHECK(s.snapshot("a", r.at("snapshot_id").str()).at("content_origin").str()=="web_fetch_untrusted");
@@ -1250,7 +1250,7 @@ namespace {
     rejects([&] {
       web.read("a", obj(R"({"url":"http://169.254.169.254/latest/meta-data"})"));
     }, "E_URL_BLOCKED");
-    CHECK(fetches==3);
+    CHECK(fetches==4);
   }
   TEST(source_admission_limits) {
     Temp t;
@@ -1320,7 +1320,7 @@ namespace {
         CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
         if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
       }
-      CHECK(database_scalar(path,"PRAGMA user_version")==12);
+      CHECK(database_scalar(path,"PRAGMA user_version")==13);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
     }

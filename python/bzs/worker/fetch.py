@@ -236,11 +236,11 @@ class Fetcher:
                         # Combining list-valued fields is safe; a repeated
                         # singleton must remain detectable by the cache parser.
                         # Apply the same rule to interactive and scheduled reads.
-                        for name in ("Cache-Control", "Vary", "Retry-After", "Age", "Date", "Expires",
+                        for name in ("Cache-Control", "Pragma", "Vary", "Retry-After", "Age", "Date", "Expires",
                                      "ETag", "Last-Modified", "Content-Location"):
                             fields = resp.headers.getall(name, ())
                             if fields:
-                                separator = "," if name in ("Cache-Control", "Vary") else "\n"
+                                separator = "," if name in ("Cache-Control", "Pragma", "Vary") else "\n"
                                 result.headers[name.lower()] = separator.join(fields)
                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
                         if redirect and follow_redirects:

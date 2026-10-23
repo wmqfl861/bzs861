@@ -94,6 +94,7 @@ void WebService::execute_map(const MapLease& lease) {
     } else if(lease.kind=="robots"&&!lease.conditional.is_null()) {
       parameters.set("conditional",lease.conditional);parameters.set("robots_revalidation_base",lease.robots_revalidation_base);
     }
+    const auto cached=lease.kind=="page"?store_.cached(lease.owner,lease.logical_url):std::optional<Json>();
     auto response=worker_.call("map.fetch",parameters,static_cast<int>(std::min(lease.timeout_ms,remaining)+5000));
     protocol(response.is_object(),"Map worker response must be an object");
     const auto usage=response.at("usage");usage.allowed({"external_requests","content_bytes"});
@@ -129,6 +130,8 @@ void WebService::execute_map(const MapLease& lease) {
     // Header policy is independently usable after identity, usage and robots
     // admission are bound, even if the later discovery/body record is invalid.
     observation=lease.kind=="page"?decode_observation(lease.url,response):std::optional<Json>();
+    if(cached&&http_response_restricts_cache(response,store_.now()))
+      store_.invalidate_web_cache(lease.owner,lease.logical_url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
     if(status=="redirect")(void)map_url(text_field(response,"redirect_url",4096));
     if(lease.kind=="robots") {
       if(response.has("robots"))robots_record(response.at("robots"),lease,store_.now());
@@ -157,6 +160,7 @@ void WebService::execute_map(const MapLease& lease) {
       protocol(page.has("publication")&&page.at("publication").canonical()==response.at("publication").canonical(),"Crawl publication copies disagree");
       protocol(map_url(text_field(page,"final_url",4096))==lease.url&&page.at("http_status").num()==http,"Crawl page identity changed");
       protocol(page.has("redirects")&&page.at("redirects").is_array()&&page.at("redirects").size()==0,"Single-hop page cannot hide more redirects");
+      if(response.has("http_freshness"))page.set("http_freshness",response.at("http_freshness"));
       artifact=decode_read(lease.url,page,true);
       if(observation)protocol(publication_covers(artifact->parsed.publication,*observation),"Crawl artifact would relax its response's restrictive observation");
       const auto discovery=response.at("discovery"),candidates=discovery.at("candidates");
