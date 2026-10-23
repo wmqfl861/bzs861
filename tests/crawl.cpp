@@ -4,6 +4,7 @@
 #include "bzs/util.hpp"
 #include "bzs/crawl_trap.hpp"
 #include <sqlite3.h>
+#include <chrono>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -677,6 +678,18 @@ namespace {
 
 }
 int main() {
-  std::size_t failures=0;for(const auto& [name,test]:tests()) { try { test();std::cout<<"PASS "<<name<<'\n'; }catch(const std::exception& error) { ++failures;std::cerr<<"FAIL "<<name<<": "<<error.what()<<'\n'; } }
+  std::cout<<std::unitbuf;
+  std::size_t failures=0;
+  for(const auto& [name,test]:tests()) {
+    std::cout<<"RUN "<<name<<'\n';
+    const auto started=std::chrono::steady_clock::now();
+    try {
+      test();
+      const auto elapsed=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-started).count();
+      std::cout<<"PASS "<<name<<" ("<<elapsed<<" ms)\n";
+    } catch(const std::exception& error) {
+      ++failures;std::cerr<<"FAIL "<<name<<": "<<error.what()<<'\n';
+    }
+  }
   std::cout<<tests().size()<<" crawl tests, "<<assertions<<" assertions, "<<failures<<" failures\n";return failures?1:0;
 }

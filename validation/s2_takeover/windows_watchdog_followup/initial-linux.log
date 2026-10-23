@@ -1,0 +1,1475 @@
+﻿2026-10-23T12:34:39.8161340Z Current runner version: '2.338.0'
+2026-10-23T12:34:39.8186761Z ##[group]Runner Image Provisioner
+2026-10-23T12:34:39.8187686Z Hosted Compute Agent
+2026-10-23T12:34:39.8188308Z Version: 20261012.601
+2026-10-23T12:34:39.8189348Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-23T12:34:39.8190134Z Build Date: 2026-10-12T17:48:21Z
+2026-10-23T12:34:39.8190881Z Worker ID: {dd35d60c-7451-4fbe-8d1d-16b41fa032bf}
+2026-10-23T12:34:39.8191664Z Region: westus
+2026-10-23T12:34:39.8192262Z Cloud: Azure
+2026-10-23T12:34:39.8192934Z ##[endgroup]
+2026-10-23T12:34:39.8194518Z ##[group]Operating System
+2026-10-23T12:34:39.8195220Z Ubuntu
+2026-10-23T12:34:39.8195840Z 24.04.5
+2026-10-23T12:34:39.8196358Z LTS
+2026-10-23T12:34:39.8196916Z ##[endgroup]
+2026-10-23T12:34:39.8197514Z ##[group]Runner Image
+2026-10-23T12:34:39.8198131Z Image: ubuntu-24.04
+2026-10-23T12:34:39.8199047Z Version: 20261012.334.1
+2026-10-23T12:34:39.8200293Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-23T12:34:39.8201958Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-23T12:34:39.8202924Z ##[endgroup]
+2026-10-23T12:34:39.8204131Z ##[group]GITHUB_TOKEN Permissions
+2026-10-23T12:34:39.8206521Z Contents: read
+2026-10-23T12:34:39.8207269Z Metadata: read
+2026-10-23T12:34:39.8207829Z ##[endgroup]
+2026-10-23T12:34:39.8210375Z Secret source: Actions
+2026-10-23T12:34:39.8211372Z Cache mode: write
+2026-10-23T12:34:39.8212185Z Prepare workflow directory
+2026-10-23T12:34:39.8576007Z Prepare all required actions
+2026-10-23T12:34:39.8651637Z Getting action download info
+2026-10-23T12:34:40.2142464Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-23T12:34:40.4280626Z Complete job name: linux
+2026-10-23T12:34:40.5176589Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+2026-10-23T12:34:40.5177806Z with:
+2026-10-23T12:34:40.5178303Z   persist-credentials: false
+2026-10-23T12:34:40.5179356Z   repository: wmqfl861/bzs861
+2026-10-23T12:34:40.5183337Z   token: ***
+2026-10-23T12:34:40.5183792Z   ssh-strict: true
+2026-10-23T12:34:40.5184252Z   ssh-user: git
+2026-10-23T12:34:40.5184691Z   clean: true
+2026-10-23T12:34:40.5185146Z   sparse-checkout-cone-mode: true
+2026-10-23T12:34:40.5185676Z   fetch-depth: 1
+2026-10-23T12:34:40.5186119Z   fetch-tags: false
+2026-10-23T12:34:40.5186579Z   show-progress: true
+2026-10-23T12:34:40.5187042Z   lfs: false
+2026-10-23T12:34:40.5187469Z   submodules: false
+2026-10-23T12:34:40.5187932Z   set-safe-directory: true
+2026-10-23T12:34:40.5188615Z   allow-unsafe-pr-checkout: false
+2026-10-23T12:34:40.5189499Z ##[endgroup]
+2026-10-23T12:34:40.6215611Z Syncing repository: wmqfl861/bzs861
+2026-10-23T12:34:40.6218751Z ##[group]Getting Git version info
+2026-10-23T12:34:40.6219977Z Working directory is '/home/runner/work/bzs861/bzs861'
+2026-10-23T12:34:40.6221556Z [command]/usr/bin/git version
+2026-10-23T12:34:40.6300198Z git version 2.55.0
+2026-10-23T12:34:40.6332582Z ##[endgroup]
+2026-10-23T12:34:40.6349318Z Temporarily overriding HOME='/home/runner/work/_temp/f1d2fbb4-35d8-4b33-a68f-da769ce1409f' before making global git config changes
+2026-10-23T12:34:40.6351745Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-23T12:34:40.6359875Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bzs861/bzs861
+2026-10-23T12:34:40.6412109Z Deleting the contents of '/home/runner/work/bzs861/bzs861'
+2026-10-23T12:34:40.6420219Z ##[group]Initializing the repository
+2026-10-23T12:34:40.6424040Z [command]/usr/bin/git init /home/runner/work/bzs861/bzs861
+2026-10-23T12:34:40.6530640Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-23T12:34:40.6532405Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-23T12:34:40.6533958Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-23T12:34:40.6535284Z hint: call:
+2026-10-23T12:34:40.6535707Z hint:
+2026-10-23T12:34:40.6536252Z hint: 	git config --global init.defaultBranch <name>
+2026-10-23T12:34:40.6536907Z hint:
+2026-10-23T12:34:40.6537528Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-23T12:34:40.6538797Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-23T12:34:40.6539584Z hint:
+2026-10-23T12:34:40.6540014Z hint: 	git branch -m <name>
+2026-10-23T12:34:40.6540506Z hint:
+2026-10-23T12:34:40.6541150Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-23T12:34:40.6546577Z Initialized empty Git repository in /home/runner/work/bzs861/bzs861/.git/
+2026-10-23T12:34:40.6559013Z [command]/usr/bin/git remote add origin https://github.com/wmqfl861/bzs861
+2026-10-23T12:34:40.6609922Z ##[endgroup]
+2026-10-23T12:34:40.6611666Z ##[group]Disabling automatic garbage collection
+2026-10-23T12:34:40.6613634Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-23T12:34:40.6648936Z ##[endgroup]
+2026-10-23T12:34:40.6650290Z ##[group]Setting up auth
+2026-10-23T12:34:40.6658097Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-23T12:34:40.6692656Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-23T12:34:40.7096528Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-23T12:34:40.7141347Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-23T12:34:40.7371972Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-23T12:34:40.7410488Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-23T12:34:40.7637310Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-23T12:34:40.7679193Z ##[endgroup]
+2026-10-23T12:34:40.7680196Z ##[group]Fetching the repository
+2026-10-23T12:34:40.7690125Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fcb58e4679a5bbdff17319b7b4ebff7019733eab:refs/remotes/origin/main
+2026-10-23T12:34:42.8579686Z From https://github.com/wmqfl861/bzs861
+2026-10-23T12:34:42.8580964Z  * [new ref]         fcb58e4679a5bbdff17319b7b4ebff7019733eab -> origin/main
+2026-10-23T12:34:42.8584710Z ##[endgroup]
+2026-10-23T12:34:42.8585669Z ##[group]Determining the checkout info
+2026-10-23T12:34:42.8586729Z ##[endgroup]
+2026-10-23T12:34:42.8593906Z [command]/usr/bin/git sparse-checkout disable
+2026-10-23T12:34:42.8647773Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-23T12:34:42.8680437Z ##[group]Checking out the ref
+2026-10-23T12:34:42.8684279Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-23T12:34:42.9668231Z Switched to a new branch 'main'
+2026-10-23T12:34:42.9672449Z branch 'main' set up to track 'origin/main'.
+2026-10-23T12:34:42.9684161Z ##[endgroup]
+2026-10-23T12:34:42.9730191Z [command]/usr/bin/git log -1 --format=%H
+2026-10-23T12:34:42.9757305Z fcb58e4679a5bbdff17319b7b4ebff7019733eab
+2026-10-23T12:34:42.9767957Z ##[group]Removing auth
+2026-10-23T12:34:42.9773018Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-23T12:34:42.9809894Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-23T12:34:43.0061294Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-23T12:34:43.0092628Z http.https://github.com/.extraheader
+2026-10-23T12:34:43.0101970Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-23T12:34:43.0142733Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-23T12:34:43.0370818Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-23T12:34:43.0406309Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-23T12:34:43.0629463Z ##[endgroup]
+2026-10-23T12:34:43.0874081Z ##[group]Run sudo apt-get update
+2026-10-23T12:34:43.0875335Z [36;1msudo apt-get update[0m
+2026-10-23T12:34:43.0877748Z [36;1msudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev python3-venv[0m
+2026-10-23T12:34:43.1135479Z shell: /usr/bin/bash -e {0}
+2026-10-23T12:34:43.1136618Z ##[endgroup]
+2026-10-23T12:34:43.2070815Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-23T12:34:43.2340546Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-23T12:34:43.2349923Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-23T12:34:43.2391065Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-23T12:34:43.2420416Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-23T12:34:43.2440651Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-23T12:34:43.3561981Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [640 kB]
+2026-10-23T12:34:43.3708313Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-23T12:34:43.3730761Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [576 kB]
+2026-10-23T12:34:43.4130178Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1400 kB]
+2026-10-23T12:34:43.4206529Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-23T12:34:43.4225479Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+2026-10-23T12:34:43.4331173Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-23T12:34:43.4361559Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-23T12:34:43.4426443Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-23T12:34:43.5208276Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-23T12:34:43.5267343Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-23T12:34:43.5291878Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-23T12:34:43.5364256Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-23T12:34:43.5840117Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-23T12:34:43.5919493Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-23T12:34:46.6514979Z Fetched 12.5 MB in 1s (10.1 MB/s)
+2026-10-23T12:34:47.6059932Z Reading package lists...
+2026-10-23T12:34:47.6365695Z Reading package lists...
+2026-10-23T12:34:47.8613830Z Building dependency tree...
+2026-10-23T12:34:47.8621002Z Reading state information...
+2026-10-23T12:34:48.0094212Z g++ is already the newest version (4:13.2.0-7ubuntu1).
+2026-10-23T12:34:48.0094989Z libsqlite3-dev is already the newest version (3.45.1-1ubuntu2.8).
+2026-10-23T12:34:48.0095635Z libxml2-dev is already the newest version (2.9.14+dfsg-1.3ubuntu3.10).
+2026-10-23T12:34:48.0097091Z libxml2-dev set to manually installed.
+2026-10-23T12:34:48.0097616Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+2026-10-23T12:34:48.0098147Z python3-venv is already the newest version (3.12.3-0ubuntu2.1).
+2026-10-23T12:34:48.0099031Z The following additional packages will be installed:
+2026-10-23T12:34:48.0100231Z   cmake-data libboost1.83-dev libjsoncpp25 librhash0
+2026-10-23T12:34:48.0107118Z Suggested packages:
+2026-10-23T12:34:48.0107837Z   cmake-doc cmake-format elpa-cmake-mode libboost-doc libboost1.83-doc
+2026-10-23T12:34:48.0108793Z   libboost-atomic1.83-dev libboost-chrono1.83-dev libboost-container1.83-dev
+2026-10-23T12:34:48.0110018Z   libboost-context1.83-dev libboost-contract1.83-dev
+2026-10-23T12:34:48.0110817Z   libboost-coroutine1.83-dev libboost-date-time1.83-dev
+2026-10-23T12:34:48.0111472Z   libboost-exception1.83-dev libboost-fiber1.83-dev
+2026-10-23T12:34:48.0111981Z   libboost-filesystem1.83-dev libboost-graph-parallel1.83-dev
+2026-10-23T12:34:48.0112747Z   libboost-graph1.83-dev libboost-iostreams1.83-dev libboost-json1.83-dev
+2026-10-23T12:34:48.0113515Z   libboost-locale1.83-dev libboost-log1.83-dev libboost-math1.83-dev
+2026-10-23T12:34:48.0114199Z   libboost-mpi-python1.83-dev libboost-mpi1.83-dev libboost-nowide1.83-dev
+2026-10-23T12:34:48.0114781Z   libboost-numpy1.83-dev libboost-program-options1.83-dev
+2026-10-23T12:34:48.0115735Z   libboost-python1.83-dev libboost-random1.83-dev libboost-regex1.83-dev
+2026-10-23T12:34:48.0116666Z   libboost-serialization1.83-dev libboost-stacktrace1.83-dev
+2026-10-23T12:34:48.0117566Z   libboost-system1.83-dev libboost-test1.83-dev libboost-thread1.83-dev
+2026-10-23T12:34:48.0118731Z   libboost-timer1.83-dev libboost-type-erasure1.83-dev libboost-url1.83-dev
+2026-10-23T12:34:48.0119347Z   libboost-wave1.83-dev libboost1.83-tools-dev libmpfrc++-dev libntl-dev
+2026-10-23T12:34:48.0284962Z The following NEW packages will be installed:
+2026-10-23T12:34:48.0287269Z   cmake cmake-data libboost-dev libboost1.83-dev libjson-c-dev libjsoncpp25
+2026-10-23T12:34:48.0293532Z   librhash0 ninja-build
+2026-10-23T12:34:48.0475148Z 0 upgraded, 8 newly installed, 0 to remove and 99 not upgraded.
+2026-10-23T12:34:48.0476006Z Need to get 24.5 MB of archives.
+2026-10-23T12:34:48.0476722Z After this operation, 211 MB of additional disk space will be used.
+2026-10-23T12:34:48.0477581Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-23T12:34:48.1374099Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libjsoncpp25 amd64 1.9.5-6build1 [82.8 kB]
+2026-10-23T12:34:48.2409906Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 librhash0 amd64 1.4.3-3build1 [129 kB]
+2026-10-23T12:34:48.3546284Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 cmake-data all 3.28.3-1build7 [2155 kB]
+2026-10-23T12:34:49.0897513Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 cmake amd64 3.28.3-1build7 [11.2 MB]
+2026-10-23T12:34:52.7927832Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libboost1.83-dev amd64 1.83.0-2.1ubuntu3.2 [10.7 MB]
+2026-10-23T12:34:56.2275819Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libboost-dev amd64 1.83.0.1ubuntu2 [4308 B]
+2026-10-23T12:34:56.3065433Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+2026-10-23T12:34:56.4182165Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libjson-c-dev amd64 0.17-1build1 [63.6 kB]
+2026-10-23T12:34:56.6943282Z Fetched 24.5 MB in 8s (2916 kB/s)
+2026-10-23T12:34:56.7156308Z Selecting previously unselected package libjsoncpp25:amd64.
+2026-10-23T12:34:56.7426136Z (Reading database ... 
+2026-10-23T12:34:56.7426690Z (Reading database ... 5%
+2026-10-23T12:34:56.7426961Z (Reading database ... 10%
+2026-10-23T12:34:56.7427205Z (Reading database ... 15%
+2026-10-23T12:34:56.7427479Z (Reading database ... 20%
+2026-10-23T12:34:56.7427830Z (Reading database ... 25%
+2026-10-23T12:34:56.7428225Z (Reading database ... 30%
+2026-10-23T12:34:56.7429163Z (Reading database ... 35%
+2026-10-23T12:34:56.7429602Z (Reading database ... 40%
+2026-10-23T12:34:56.7430021Z (Reading database ... 45%
+2026-10-23T12:34:56.7430411Z (Reading database ... 50%
+2026-10-23T12:34:56.7470831Z (Reading database ... 55%
+2026-10-23T12:34:56.8578928Z (Reading database ... 60%
+2026-10-23T12:34:57.0647564Z (Reading database ... 65%
+2026-10-23T12:34:57.2673860Z (Reading database ... 70%
+2026-10-23T12:34:57.4700698Z (Reading database ... 75%
+2026-10-23T12:34:57.5733688Z (Reading database ... 80%
+2026-10-23T12:34:57.7687202Z (Reading database ... 85%
+2026-10-23T12:34:57.8904050Z (Reading database ... 90%
+2026-10-23T12:34:58.0400455Z (Reading database ... 95%
+2026-10-23T12:34:58.0401467Z (Reading database ... 100%
+2026-10-23T12:34:58.0401982Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-23T12:34:58.0443027Z Preparing to unpack .../0-libjsoncpp25_1.9.5-6build1_amd64.deb ...
+2026-10-23T12:34:58.0481112Z Unpacking libjsoncpp25:amd64 (1.9.5-6build1) ...
+2026-10-23T12:34:58.0716070Z Selecting previously unselected package librhash0:amd64.
+2026-10-23T12:34:58.0841813Z Preparing to unpack .../1-librhash0_1.4.3-3build1_amd64.deb ...
+2026-10-23T12:34:58.0869141Z Unpacking librhash0:amd64 (1.4.3-3build1) ...
+2026-10-23T12:34:58.1087797Z Selecting previously unselected package cmake-data.
+2026-10-23T12:34:58.1213044Z Preparing to unpack .../2-cmake-data_3.28.3-1build7_all.deb ...
+2026-10-23T12:34:58.1282952Z Unpacking cmake-data (3.28.3-1build7) ...
+2026-10-23T12:34:58.6538808Z Selecting previously unselected package cmake.
+2026-10-23T12:34:58.6675137Z Preparing to unpack .../3-cmake_3.28.3-1build7_amd64.deb ...
+2026-10-23T12:34:58.6688094Z Unpacking cmake (3.28.3-1build7) ...
+2026-10-23T12:34:58.8256313Z Selecting previously unselected package libboost1.83-dev:amd64.
+2026-10-23T12:34:58.8383423Z Preparing to unpack .../4-libboost1.83-dev_1.83.0-2.1ubuntu3.2_amd64.deb ...
+2026-10-23T12:34:58.8393513Z Unpacking libboost1.83-dev:amd64 (1.83.0-2.1ubuntu3.2) ...
+2026-10-23T12:35:01.3776141Z Selecting previously unselected package libboost-dev:amd64.
+2026-10-23T12:35:01.3962328Z Preparing to unpack .../5-libboost-dev_1.83.0.1ubuntu2_amd64.deb ...
+2026-10-23T12:35:01.3971262Z Unpacking libboost-dev:amd64 (1.83.0.1ubuntu2) ...
+2026-10-23T12:35:01.4157296Z Selecting previously unselected package ninja-build.
+2026-10-23T12:35:01.4296432Z Preparing to unpack .../6-ninja-build_1.11.1-2_amd64.deb ...
+2026-10-23T12:35:01.4303648Z Unpacking ninja-build (1.11.1-2) ...
+2026-10-23T12:35:01.4542596Z Selecting previously unselected package libjson-c-dev:amd64.
+2026-10-23T12:35:01.4681983Z Preparing to unpack .../7-libjson-c-dev_0.17-1build1_amd64.deb ...
+2026-10-23T12:35:01.4689124Z Unpacking libjson-c-dev:amd64 (0.17-1build1) ...
+2026-10-23T12:35:01.5114704Z Setting up libboost1.83-dev:amd64 (1.83.0-2.1ubuntu3.2) ...
+2026-10-23T12:35:01.5133088Z Setting up libjson-c-dev:amd64 (0.17-1build1) ...
+2026-10-23T12:35:01.5155368Z Setting up ninja-build (1.11.1-2) ...
+2026-10-23T12:35:01.5172873Z Setting up libjsoncpp25:amd64 (1.9.5-6build1) ...
+2026-10-23T12:35:01.5189621Z Setting up librhash0:amd64 (1.4.3-3build1) ...
+2026-10-23T12:35:01.5207216Z Setting up cmake-data (3.28.3-1build7) ...
+2026-10-23T12:35:01.5265723Z Setting up libboost-dev:amd64 (1.83.0.1ubuntu2) ...
+2026-10-23T12:35:01.5281268Z Setting up cmake (3.28.3-1build7) ...
+2026-10-23T12:35:01.5303334Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-23T12:35:01.5323191Z Not building database; man-db/auto-update is not 'true'.
+2026-10-23T12:35:01.5334077Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-23T12:35:02.1832202Z 
+2026-10-23T12:35:02.1832784Z Running kernel seems to be up-to-date.
+2026-10-23T12:35:02.1833164Z 
+2026-10-23T12:35:02.1833305Z No services need to be restarted.
+2026-10-23T12:35:02.1833539Z 
+2026-10-23T12:35:02.1833668Z No containers need to be restarted.
+2026-10-23T12:35:02.1833885Z 
+2026-10-23T12:35:02.1834043Z No user sessions are running outdated binaries.
+2026-10-23T12:35:02.1834629Z 
+2026-10-23T12:35:02.1834887Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-23T12:35:03.1460616Z ##[group]Run python3 -m venv .venv
+2026-10-23T12:35:03.1460960Z [36;1mpython3 -m venv .venv[0m
+2026-10-23T12:35:03.1461347Z [36;1m.venv/bin/python -m pip install -r tools/requirements-s1-lock.txt[0m
+2026-10-23T12:35:03.1461899Z [36;1m.venv/bin/python -m pip install --no-deps --no-build-isolation -e "python[test]"[0m
+2026-10-23T12:35:03.1462350Z [36;1m.venv/bin/python -m pip check[0m
+2026-10-23T12:35:03.1528125Z shell: /usr/bin/bash -e {0}
+2026-10-23T12:35:03.1528620Z ##[endgroup]
+2026-10-23T12:35:06.4739346Z Collecting aiohappyeyeballs==2.7.1 (from -r tools/requirements-s1-lock.txt (line 3))
+2026-10-23T12:35:06.5030987Z   Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl.metadata (5.9 kB)
+2026-10-23T12:35:07.0997836Z Collecting aiohttp==3.14.5 (from -r tools/requirements-s1-lock.txt (line 4))
+2026-10-23T12:35:07.1028128Z   Downloading aiohttp-3.14.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+2026-10-23T12:35:07.1199672Z Collecting aiosignal==1.4.0 (from -r tools/requirements-s1-lock.txt (line 5))
+2026-10-23T12:35:07.1223510Z   Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+2026-10-23T12:35:07.1616037Z Collecting annotated-types==0.8.0 (from -r tools/requirements-s1-lock.txt (line 6))
+2026-10-23T12:35:07.1645053Z   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+2026-10-23T12:35:07.1946063Z Collecting anyio==4.15.1 (from -r tools/requirements-s1-lock.txt (line 7))
+2026-10-23T12:35:07.1973370Z   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+2026-10-23T12:35:07.2190276Z Collecting attrs==26.1.0 (from -r tools/requirements-s1-lock.txt (line 8))
+2026-10-23T12:35:07.2216080Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-10-23T12:35:07.2425602Z Collecting babel==2.18.0 (from -r tools/requirements-s1-lock.txt (line 9))
+2026-10-23T12:35:07.2449711Z   Downloading babel-2.18.0-py3-none-any.whl.metadata (2.2 kB)
+2026-10-23T12:35:07.2706353Z Collecting certifi==2026.7.22 (from -r tools/requirements-s1-lock.txt (line 10))
+2026-10-23T12:35:07.2732100Z   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+2026-10-23T12:35:07.3980233Z Collecting cffi==2.1.1 (from -r tools/requirements-s1-lock.txt (line 11))
+2026-10-23T12:35:07.4006762Z   Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+2026-10-23T12:35:07.5469936Z Collecting charset-normalizer==3.5.2 (from -r tools/requirements-s1-lock.txt (line 12))
+2026-10-23T12:35:07.5497679Z   Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+2026-10-23T12:35:07.5542395Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 16.1 MB/s eta 0:00:00
+2026-10-23T12:35:07.5802420Z Collecting click==8.5.0 (from -r tools/requirements-s1-lock.txt (line 13))
+2026-10-23T12:35:07.5826260Z   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+2026-10-23T12:35:07.6035529Z Collecting courlan==1.4.0 (from -r tools/requirements-s1-lock.txt (line 14))
+2026-10-23T12:35:07.6058044Z   Downloading courlan-1.4.0-py3-none-any.whl.metadata (18 kB)
+2026-10-23T12:35:07.8612068Z Collecting cryptography==50.0.2 (from -r tools/requirements-s1-lock.txt (line 15))
+2026-10-23T12:35:07.8642848Z   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+2026-10-23T12:35:07.8815286Z Collecting cssselect==1.6.0 (from -r tools/requirements-s1-lock.txt (line 16))
+2026-10-23T12:35:07.8841770Z   Downloading cssselect-1.6.0-py3-none-any.whl.metadata (2.4 kB)
+2026-10-23T12:35:07.9056792Z Collecting dateparser==1.4.3 (from -r tools/requirements-s1-lock.txt (line 17))
+2026-10-23T12:35:07.9083932Z   Downloading dateparser-1.4.3-py3-none-any.whl.metadata (25 kB)
+2026-10-23T12:35:08.0256851Z Collecting frozenlist==1.8.0 (from -r tools/requirements-s1-lock.txt (line 18))
+2026-10-23T12:35:08.0285692Z   Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+2026-10-23T12:35:08.0450710Z Collecting h11==0.16.0 (from -r tools/requirements-s1-lock.txt (line 19))
+2026-10-23T12:35:08.0474015Z   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-10-23T12:35:08.0731970Z Collecting htmldate==1.11.0 (from -r tools/requirements-s1-lock.txt (line 20))
+2026-10-23T12:35:08.0757884Z   Downloading htmldate-1.11.0-py3-none-any.whl.metadata (9.8 kB)
+2026-10-23T12:35:08.0952847Z Collecting httpcore2==2.13.1 (from -r tools/requirements-s1-lock.txt (line 21))
+2026-10-23T12:35:08.0979064Z   Downloading httpcore2-2.13.1-py3-none-any.whl.metadata (26 kB)
+2026-10-23T12:35:08.1164749Z Collecting httpx2==2.13.1 (from -r tools/requirements-s1-lock.txt (line 22))
+2026-10-23T12:35:08.1192546Z   Downloading httpx2-2.13.1-py3-none-any.whl.metadata (9.8 kB)
+2026-10-23T12:35:08.1395623Z Collecting idna==3.20 (from -r tools/requirements-s1-lock.txt (line 23))
+2026-10-23T12:35:08.1421603Z   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+2026-10-23T12:35:08.1565175Z Collecting iniconfig==2.3.1 (from -r tools/requirements-s1-lock.txt (line 24))
+2026-10-23T12:35:08.1588389Z   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+2026-10-23T12:35:08.1926214Z Collecting jsonschema==4.26.0 (from -r tools/requirements-s1-lock.txt (line 25))
+2026-10-23T12:35:08.1950942Z   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+2026-10-23T12:35:08.2137775Z Collecting jsonschema-specifications==2025.9.1 (from -r tools/requirements-s1-lock.txt (line 26))
+2026-10-23T12:35:08.2169206Z   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-10-23T12:35:08.2318336Z Collecting jusText==3.0.2 (from -r tools/requirements-s1-lock.txt (line 27))
+2026-10-23T12:35:08.2341781Z   Downloading justext-3.0.2-py2.py3-none-any.whl.metadata (7.3 kB)
+2026-10-23T12:35:08.5155978Z Collecting lxml==6.1.3 (from -r tools/requirements-s1-lock.txt (line 28))
+2026-10-23T12:35:08.5185371Z   Downloading lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+2026-10-23T12:35:08.5347870Z Collecting lxml_html_clean==0.4.5 (from -r tools/requirements-s1-lock.txt (line 29))
+2026-10-23T12:35:08.5372366Z   Downloading lxml_html_clean-0.4.5-py3-none-any.whl.metadata (2.4 kB)
+2026-10-23T12:35:08.5659590Z Collecting mcp==2.3.0 (from -r tools/requirements-s1-lock.txt (line 30))
+2026-10-23T12:35:08.5683588Z   Downloading mcp-2.3.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-23T12:35:08.5830761Z Collecting mcp-types==2.3.0 (from -r tools/requirements-s1-lock.txt (line 31))
+2026-10-23T12:35:08.5856672Z   Downloading mcp_types-2.3.0-py3-none-any.whl.metadata (1.9 kB)
+2026-10-23T12:35:08.9460959Z Collecting multidict==7.1.0 (from -r tools/requirements-s1-lock.txt (line 32))
+2026-10-23T12:35:08.9489983Z   Downloading multidict-7.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (6.2 kB)
+2026-10-23T12:35:08.9815283Z Collecting opentelemetry-api==1.45.1 (from -r tools/requirements-s1-lock.txt (line 33))
+2026-10-23T12:35:08.9840129Z   Downloading opentelemetry_api-1.45.1-py3-none-any.whl.metadata (1.4 kB)
+2026-10-23T12:35:09.0098546Z Collecting packaging==26.3 (from -r tools/requirements-s1-lock.txt (line 34))
+2026-10-23T12:35:09.0126145Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+2026-10-23T12:35:09.0325505Z Collecting pluggy==1.7.0 (from -r tools/requirements-s1-lock.txt (line 35))
+2026-10-23T12:35:09.0350487Z   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+2026-10-23T12:35:09.1155016Z Collecting propcache==0.5.4 (from -r tools/requirements-s1-lock.txt (line 36))
+2026-10-23T12:35:09.1185009Z   Downloading propcache-0.5.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (25 kB)
+2026-10-23T12:35:09.1364401Z Collecting pycparser==3.11 (from -r tools/requirements-s1-lock.txt (line 37))
+2026-10-23T12:35:09.1390959Z   Downloading pycparser-3.11-py3-none-any.whl.metadata (8.2 kB)
+2026-10-23T12:35:09.2846543Z Collecting pydantic==2.14.1 (from -r tools/requirements-s1-lock.txt (line 38))
+2026-10-23T12:35:09.2872799Z   Downloading pydantic-2.14.1-py3-none-any.whl.metadata (133 kB)
+2026-10-23T12:35:09.2925034Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 133.0/133.0 kB 41.8 MB/s eta 0:00:00
+2026-10-23T12:35:10.1434857Z Collecting pydantic_core==2.50.1 (from -r tools/requirements-s1-lock.txt (line 39))
+2026-10-23T12:35:10.1462805Z   Downloading pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+2026-10-23T12:35:10.1741555Z Collecting Pygments==2.21.0 (from -r tools/requirements-s1-lock.txt (line 40))
+2026-10-23T12:35:10.1764984Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+2026-10-23T12:35:10.1994130Z Collecting PyJWT==2.15.1 (from -r tools/requirements-s1-lock.txt (line 41))
+2026-10-23T12:35:10.2017622Z   Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+2026-10-23T12:35:10.2603262Z Collecting pytest==9.1.1 (from -r tools/requirements-s1-lock.txt (line 42))
+2026-10-23T12:35:10.2631544Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+2026-10-23T12:35:10.2928117Z Collecting pytest-asyncio==1.4.0 (from -r tools/requirements-s1-lock.txt (line 43))
+2026-10-23T12:35:10.2953112Z   Downloading pytest_asyncio-1.4.0-py3-none-any.whl.metadata (4.1 kB)
+2026-10-23T12:35:10.3145631Z Collecting python-dateutil==2.9.0.post0 (from -r tools/requirements-s1-lock.txt (line 44))
+2026-10-23T12:35:10.3168514Z   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+2026-10-23T12:35:10.3367663Z Collecting python-multipart==0.0.32 (from -r tools/requirements-s1-lock.txt (line 45))
+2026-10-23T12:35:10.3396746Z   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+2026-10-23T12:35:10.3880331Z Collecting pytz==2026.5 (from -r tools/requirements-s1-lock.txt (line 46))
+2026-10-23T12:35:10.3905488Z   Downloading pytz-2026.5-py2.py3-none-any.whl.metadata (22 kB)
+2026-10-23T12:35:10.4275856Z Collecting referencing==0.37.0 (from -r tools/requirements-s1-lock.txt (line 47))
+2026-10-23T12:35:10.4300167Z   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-10-23T12:35:10.9645181Z Collecting regex==2026.9.29 (from -r tools/requirements-s1-lock.txt (line 48))
+2026-10-23T12:35:10.9672393Z   Downloading regex-2026.9.29-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+2026-10-23T12:35:10.9708814Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.6/40.6 kB 16.5 MB/s eta 0:00:00
+2026-10-23T12:35:11.2727540Z Collecting rpds-py==2026.9.1 (from -r tools/requirements-s1-lock.txt (line 49))
+2026-10-23T12:35:11.2756577Z   Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-10-23T12:35:11.5490268Z Collecting setuptools==84.0.0 (from -r tools/requirements-s1-lock.txt (line 50))
+2026-10-23T12:35:11.5517628Z   Downloading setuptools-84.0.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-23T12:35:11.5700846Z Collecting six==1.17.0 (from -r tools/requirements-s1-lock.txt (line 51))
+2026-10-23T12:35:11.5726791Z   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-10-23T12:35:11.6007832Z Collecting sse-starlette==3.5.0 (from -r tools/requirements-s1-lock.txt (line 52))
+2026-10-23T12:35:11.6032660Z   Downloading sse_starlette-3.5.0-py3-none-any.whl.metadata (15 kB)
+2026-10-23T12:35:11.6494736Z Collecting starlette==1.8.0 (from -r tools/requirements-s1-lock.txt (line 53))
+2026-10-23T12:35:11.6520267Z   Downloading starlette-1.8.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-23T12:35:11.6827788Z Collecting tld==0.13.2 (from -r tools/requirements-s1-lock.txt (line 54))
+2026-10-23T12:35:11.6852765Z   Downloading tld-0.13.2-py2.py3-none-any.whl.metadata (11 kB)
+2026-10-23T12:35:11.7133754Z Collecting trafilatura==2.3.1 (from -r tools/requirements-s1-lock.txt (line 55))
+2026-10-23T12:35:11.7161306Z   Downloading trafilatura-2.3.1-py3-none-any.whl.metadata (13 kB)
+2026-10-23T12:35:11.7339298Z Collecting truststore==0.10.5 (from -r tools/requirements-s1-lock.txt (line 56))
+2026-10-23T12:35:11.7364119Z   Downloading truststore-0.10.5-py3-none-any.whl.metadata (4.5 kB)
+2026-10-23T12:35:11.7511757Z Collecting typing-inspection==0.4.4 (from -r tools/requirements-s1-lock.txt (line 57))
+2026-10-23T12:35:11.7538409Z   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+2026-10-23T12:35:11.7774592Z Collecting typing_extensions==4.16.0 (from -r tools/requirements-s1-lock.txt (line 58))
+2026-10-23T12:35:11.7803112Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+2026-10-23T12:35:11.8022681Z Collecting tzlocal==5.4.4 (from -r tools/requirements-s1-lock.txt (line 59))
+2026-10-23T12:35:11.8047125Z   Downloading tzlocal-5.4.4-py3-none-any.whl.metadata (7.7 kB)
+2026-10-23T12:35:11.8469926Z Collecting urllib3==2.8.0 (from -r tools/requirements-s1-lock.txt (line 60))
+2026-10-23T12:35:11.8496929Z   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+2026-10-23T12:35:11.8891679Z Collecting uvicorn==0.54.0 (from -r tools/requirements-s1-lock.txt (line 61))
+2026-10-23T12:35:11.8918189Z   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+2026-10-23T12:35:12.1876836Z Collecting yarl==1.25.1 (from -r tools/requirements-s1-lock.txt (line 62))
+2026-10-23T12:35:12.1907816Z   Downloading yarl-1.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (111 kB)
+2026-10-23T12:35:12.1952785Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 111.6/111.6 kB 45.1 MB/s eta 0:00:00
+2026-10-23T12:35:12.9548847Z Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+2026-10-23T12:35:12.9592744Z Downloading aiohttp-3.14.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.9 MB)
+2026-10-23T12:35:12.9742235Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 145.7 MB/s eta 0:00:00
+2026-10-23T12:35:12.9764225Z Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+2026-10-23T12:35:12.9804037Z Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+2026-10-23T12:35:12.9843866Z Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+2026-10-23T12:35:12.9883098Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 132.1/132.1 kB 56.5 MB/s eta 0:00:00
+2026-10-23T12:35:12.9905561Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-10-23T12:35:12.9940799Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 31.2 MB/s eta 0:00:00
+2026-10-23T12:35:12.9964763Z Downloading babel-2.18.0-py3-none-any.whl (10.2 MB)
+2026-10-23T12:35:13.0649911Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 153.2 MB/s eta 0:00:00
+2026-10-23T12:35:13.0674476Z Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+2026-10-23T12:35:13.0717030Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 53.2 MB/s eta 0:00:00
+2026-10-23T12:35:13.0742749Z Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+2026-10-23T12:35:13.0785510Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 221.8/221.8 kB 80.2 MB/s eta 0:00:00
+2026-10-23T12:35:13.0814687Z Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+2026-10-23T12:35:13.0860414Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 257.6/257.6 kB 84.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.0884321Z Downloading click-8.5.0-py3-none-any.whl (125 kB)
+2026-10-23T12:35:13.0921733Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 125.3/125.3 kB 55.1 MB/s eta 0:00:00
+2026-10-23T12:35:13.0943447Z Downloading courlan-1.4.0-py3-none-any.whl (34 kB)
+2026-10-23T12:35:13.0986988Z Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+2026-10-23T12:35:13.1321430Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 150.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.1347756Z Downloading cssselect-1.6.0-py3-none-any.whl (22 kB)
+2026-10-23T12:35:13.1392381Z Downloading dateparser-1.4.3-py3-none-any.whl (322 kB)
+2026-10-23T12:35:13.1443982Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 322.4/322.4 kB 93.6 MB/s eta 0:00:00
+2026-10-23T12:35:13.1468877Z Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (242 kB)
+2026-10-23T12:35:13.1513089Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 242.4/242.4 kB 85.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.1535898Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-10-23T12:35:13.1578885Z Downloading htmldate-1.11.0-py3-none-any.whl (33 kB)
+2026-10-23T12:35:13.1620329Z Downloading httpcore2-2.13.1-py3-none-any.whl (83 kB)
+2026-10-23T12:35:13.1658559Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 83.4/83.4 kB 35.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.1683212Z Downloading httpx2-2.13.1-py3-none-any.whl (95 kB)
+2026-10-23T12:35:13.1722657Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 95.6/95.6 kB 40.3 MB/s eta 0:00:00
+2026-10-23T12:35:13.1745151Z Downloading idna-3.20-py3-none-any.whl (69 kB)
+2026-10-23T12:35:13.1782680Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 30.6 MB/s eta 0:00:00
+2026-10-23T12:35:13.1806413Z Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+2026-10-23T12:35:13.1846706Z Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+2026-10-23T12:35:13.1882993Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.6/90.6 kB 41.1 MB/s eta 0:00:00
+2026-10-23T12:35:13.1905719Z Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-10-23T12:35:13.1945249Z Downloading justext-3.0.2-py2.py3-none-any.whl (837 kB)
+2026-10-23T12:35:13.2029609Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 837.9/837.9 kB 126.0 MB/s eta 0:00:00
+2026-10-23T12:35:13.2056018Z Downloading lxml-6.1.3-cp312-cp312-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+2026-10-23T12:35:13.2425048Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 149.3 MB/s eta 0:00:00
+2026-10-23T12:35:13.2450634Z Downloading lxml_html_clean-0.4.5-py3-none-any.whl (14 kB)
+2026-10-23T12:35:13.2492866Z Downloading mcp-2.3.0-py3-none-any.whl (368 kB)
+2026-10-23T12:35:13.2547843Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 368.7/368.7 kB 95.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.2572457Z Downloading mcp_types-2.3.0-py3-none-any.whl (69 kB)
+2026-10-23T12:35:13.2611094Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.1/69.1 kB 27.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.2643466Z Downloading multidict-7.1.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (483 kB)
+2026-10-23T12:35:13.2708083Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 483.0/483.0 kB 101.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.2735066Z Downloading opentelemetry_api-1.45.1-py3-none-any.whl (60 kB)
+2026-10-23T12:35:13.2774163Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.3/60.3 kB 25.0 MB/s eta 0:00:00
+2026-10-23T12:35:13.2799656Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+2026-10-23T12:35:13.2840480Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 130.0/130.0 kB 50.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.2863057Z Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+2026-10-23T12:35:13.2910588Z Downloading propcache-0.5.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (250 kB)
+2026-10-23T12:35:13.2955561Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 250.4/250.4 kB 86.2 MB/s eta 0:00:00
+2026-10-23T12:35:13.2980698Z Downloading pycparser-3.11-py3-none-any.whl (51 kB)
+2026-10-23T12:35:13.3014665Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.2/51.2 kB 23.9 MB/s eta 0:00:00
+2026-10-23T12:35:13.3043065Z Downloading pydantic-2.14.1-py3-none-any.whl (488 kB)
+2026-10-23T12:35:13.3105083Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 488.1/488.1 kB 108.0 MB/s eta 0:00:00
+2026-10-23T12:35:13.3131499Z Downloading pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+2026-10-23T12:35:13.3300960Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 141.4 MB/s eta 0:00:00
+2026-10-23T12:35:13.3324202Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+2026-10-23T12:35:13.3431187Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 138.6 MB/s eta 0:00:00
+2026-10-23T12:35:13.3454144Z Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+2026-10-23T12:35:13.3495664Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+2026-10-23T12:35:13.3550519Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 386.5/386.5 kB 98.7 MB/s eta 0:00:00
+2026-10-23T12:35:13.3574896Z Downloading pytest_asyncio-1.4.0-py3-none-any.whl (16 kB)
+2026-10-23T12:35:13.3616203Z Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+2026-10-23T12:35:13.3662454Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 73.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.3685476Z Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+2026-10-23T12:35:13.3725652Z Downloading pytz-2026.5-py2.py3-none-any.whl (506 kB)
+2026-10-23T12:35:13.3790926Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 506.3/506.3 kB 112.3 MB/s eta 0:00:00
+2026-10-23T12:35:13.3817062Z Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-10-23T12:35:13.3859806Z Downloading regex-2026.9.29-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+2026-10-23T12:35:13.3943385Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.8/807.8 kB 121.9 MB/s eta 0:00:00
+2026-10-23T12:35:13.3971230Z Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (371 kB)
+2026-10-23T12:35:13.4023504Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 371.3/371.3 kB 105.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.4049456Z Downloading setuptools-84.0.0-py3-none-any.whl (818 kB)
+2026-10-23T12:35:13.4130974Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 818.2/818.2 kB 127.9 MB/s eta 0:00:00
+2026-10-23T12:35:13.4157074Z Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+2026-10-23T12:35:13.4202829Z Downloading sse_starlette-3.5.0-py3-none-any.whl (17 kB)
+2026-10-23T12:35:13.4243407Z Downloading starlette-1.8.0-py3-none-any.whl (79 kB)
+2026-10-23T12:35:13.4280178Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.6/79.6 kB 34.8 MB/s eta 0:00:00
+2026-10-23T12:35:13.4305025Z Downloading tld-0.13.2-py2.py3-none-any.whl (296 kB)
+2026-10-23T12:35:13.4355183Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 296.7/296.7 kB 92.5 MB/s eta 0:00:00
+2026-10-23T12:35:13.4381950Z Downloading trafilatura-2.3.1-py3-none-any.whl (158 kB)
+2026-10-23T12:35:13.4422245Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 158.7/158.7 kB 63.6 MB/s eta 0:00:00
+2026-10-23T12:35:13.4448014Z Downloading truststore-0.10.5-py3-none-any.whl (19 kB)
+2026-10-23T12:35:13.4503973Z Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+2026-10-23T12:35:13.4555528Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+2026-10-23T12:35:13.4658643Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 6.9 MB/s eta 0:00:00
+2026-10-23T12:35:13.4666281Z Downloading tzlocal-5.4.4-py3-none-any.whl (18 kB)
+2026-10-23T12:35:13.4718833Z Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+2026-10-23T12:35:13.4771284Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.7/135.7 kB 42.1 MB/s eta 0:00:00
+2026-10-23T12:35:13.4806419Z Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+2026-10-23T12:35:13.4869011Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.4/87.4 kB 17.1 MB/s eta 0:00:00
+2026-10-23T12:35:13.4895228Z Downloading yarl-1.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (117 kB)
+2026-10-23T12:35:13.4934264Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 117.0/117.0 kB 48.0 MB/s eta 0:00:00
+2026-10-23T12:35:13.8415441Z Installing collected packages: pytz, urllib3, tzlocal, typing_extensions, truststore, tld, six, setuptools, rpds-py, regex, python-multipart, PyJWT, Pygments, pycparser, propcache, pluggy, packaging, multidict, lxml, iniconfig, idna, h11, frozenlist, cssselect, click, charset-normalizer, certifi, babel, attrs, annotated-types, aiohappyeyeballs, yarl, uvicorn, typing-inspection, referencing, python-dateutil, pytest, pydantic_core, opentelemetry-api, lxml_html_clean, httpcore2, courlan, cffi, anyio, aiosignal, starlette, pytest-asyncio, pydantic, jsonschema-specifications, httpx2, dateparser, cryptography, aiohttp, sse-starlette, mcp-types, jusText, jsonschema, htmldate, trafilatura, mcp
+2026-10-23T12:35:18.9030068Z Successfully installed PyJWT-2.15.1 Pygments-2.21.0 aiohappyeyeballs-2.7.1 aiohttp-3.14.5 aiosignal-1.4.0 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 babel-2.18.0 certifi-2026.7.22 cffi-2.1.1 charset-normalizer-3.5.2 click-8.5.0 courlan-1.4.0 cryptography-50.0.2 cssselect-1.6.0 dateparser-1.4.3 frozenlist-1.8.0 h11-0.16.0 htmldate-1.11.0 httpcore2-2.13.1 httpx2-2.13.1 idna-3.20 iniconfig-2.3.1 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 jusText-3.0.2 lxml-6.1.3 lxml_html_clean-0.4.5 mcp-2.3.0 mcp-types-2.3.0 multidict-7.1.0 opentelemetry-api-1.45.1 packaging-26.3 pluggy-1.7.0 propcache-0.5.4 pycparser-3.11 pydantic-2.14.1 pydantic_core-2.50.1 pytest-9.1.1 pytest-asyncio-1.4.0 python-dateutil-2.9.0.post0 python-multipart-0.0.32 pytz-2026.5 referencing-0.37.0 regex-2026.9.29 rpds-py-2026.9.1 setuptools-84.0.0 six-1.17.0 sse-starlette-3.5.0 starlette-1.8.0 tld-0.13.2 trafilatura-2.3.1 truststore-0.10.5 typing-inspection-0.4.4 typing_extensions-4.16.0 tzlocal-5.4.4 urllib3-2.8.0 uvicorn-0.54.0 yarl-1.25.1
+2026-10-23T12:35:20.4473916Z Obtaining file:///home/runner/work/bzs861/bzs861/python
+2026-10-23T12:35:20.4494039Z   Checking if build backend supports build_editable: started
+2026-10-23T12:35:20.5815265Z   Checking if build backend supports build_editable: finished with status 'done'
+2026-10-23T12:35:20.5823239Z   Preparing editable metadata (pyproject.toml): started
+2026-10-23T12:35:20.8254381Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+2026-10-23T12:35:20.8496044Z Checking if build backend supports build_editable: started
+2026-10-23T12:35:20.9809669Z Checking if build backend supports build_editable: finished with status 'done'
+2026-10-23T12:35:20.9815292Z Building wheels for collected packages: bzs861
+2026-10-23T12:35:20.9824357Z   Building editable for bzs861 (pyproject.toml): started
+2026-10-23T12:35:21.2613803Z   Building editable for bzs861 (pyproject.toml): finished with status 'done'
+2026-10-23T12:35:21.2620597Z   Created wheel for bzs861: filename=bzs861-0.1.10-0.editable-py3-none-any.whl size=3080 sha256=44b3bc1d61e5892cdfd1e4ca86e8399a8d1d129510e30447aadf4e5283e516aa
+2026-10-23T12:35:21.2622030Z   Stored in directory: /tmp/pip-ephem-wheel-cache-qc2n839o/wheels/13/5c/e2/f967e099be3f5859ee71fb6b8ffcdc78b299e1566a6daae500
+2026-10-23T12:35:21.2641372Z Successfully built bzs861
+2026-10-23T12:35:21.2643665Z Installing collected packages: bzs861
+2026-10-23T12:35:21.2804959Z Successfully installed bzs861-0.1.10
+2026-10-23T12:35:21.8551322Z No broken requirements found.
+2026-10-23T12:35:21.9021152Z ##[group]Run cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
+2026-10-23T12:35:21.9021863Z [36;1mcmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON[0m
+2026-10-23T12:35:21.9022329Z [36;1mcmake --build --preset dev -j 2[0m
+2026-10-23T12:35:21.9022615Z [36;1mctest --preset dev[0m
+2026-10-23T12:35:21.9085059Z shell: /usr/bin/bash -e {0}
+2026-10-23T12:35:21.9085319Z ##[endgroup]
+2026-10-23T12:35:23.8587298Z Preset CMake variables:
+2026-10-23T12:35:23.8587600Z 
+2026-10-23T12:35:23.8587757Z   BZS_BUILD_TESTS="ON"
+2026-10-23T12:35:23.8588065Z   CMAKE_BUILD_TYPE="Debug"
+2026-10-23T12:35:23.8588235Z 
+2026-10-23T12:35:23.8588533Z -- The CXX compiler identification is GNU 13.3.0
+2026-10-23T12:35:24.0902763Z -- Detecting CXX compiler ABI info
+2026-10-23T12:35:24.3574075Z -- Detecting CXX compiler ABI info - done
+2026-10-23T12:35:24.3742263Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-10-23T12:35:24.3789167Z -- Detecting CXX compile features
+2026-10-23T12:35:24.3853986Z -- Detecting CXX compile features - done
+2026-10-23T12:35:24.4399322Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-10-23T12:35:24.6839320Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-10-23T12:35:24.6950973Z -- Found Threads: TRUE
+2026-10-23T12:35:24.8029570Z -- Found SQLite3: /usr/include (found suitable version "3.45.1", minimum required is "3.38")
+2026-10-23T12:35:24.8656130Z -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.14")
+2026-10-23T12:35:24.9096621Z -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13") found components: Crypto
+2026-10-23T12:35:25.1432054Z -- Found Python3: /usr/bin/python3.12 (found suitable version "3.12.3", minimum required is "3.10") found components: Interpreter
+2026-10-23T12:35:26.2734333Z -- Configuring done (3.7s)
+2026-10-23T12:35:26.3089347Z -- Generating done (0.0s)
+2026-10-23T12:35:26.3093897Z -- Build files have been written to: /home/runner/work/bzs861/bzs861/build
+2026-10-23T12:35:28.2830636Z [1/58] Building CXX object CMakeFiles/bzs_core.dir/src/json.cpp.o
+2026-10-23T12:35:28.2981430Z [2/58] Building CXX object CMakeFiles/bzs_core.dir/src/util.cpp.o
+2026-10-23T12:35:29.3866006Z [3/58] Building CXX object CMakeFiles/bzs_core.dir/src/query.cpp.o
+2026-10-23T12:35:29.5857021Z [4/58] Building CXX object CMakeFiles/bzs_core.dir/src/html.cpp.o
+2026-10-23T12:35:30.1520963Z [5/58] Building CXX object CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o
+2026-10-23T12:35:30.7216966Z [6/58] Building CXX object CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+2026-10-23T12:35:31.5773894Z [7/58] Building CXX object CMakeFiles/bzs_core.dir/src/revocation.cpp.o
+2026-10-23T12:35:32.0632160Z [8/58] Building CXX object CMakeFiles/bzs_core.dir/src/store.cpp.o
+2026-10-23T12:35:33.4267125Z [9/58] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+2026-10-23T12:35:33.7856954Z [10/58] Building CXX object CMakeFiles/bzs_core.dir/src/publication.cpp.o
+2026-10-23T12:35:34.4040451Z [11/58] Building CXX object CMakeFiles/bzs_core.dir/src/search_modes.cpp.o
+2026-10-23T12:35:34.9221348Z [12/58] Building CXX object CMakeFiles/bzs_core.dir/src/source_publication.cpp.o
+2026-10-23T12:35:35.3493804Z [13/58] Building CXX object CMakeFiles/bzs_core.dir/src/retention.cpp.o
+2026-10-23T12:35:36.6589764Z [14/58] Building CXX object CMakeFiles/bzs_core.dir/src/batch.cpp.o
+2026-10-23T12:35:36.8043046Z [15/58] Building CXX object CMakeFiles/bzs_core.dir/src/map.cpp.o
+2026-10-23T12:35:37.5380422Z [16/58] Building CXX object CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+2026-10-23T12:35:38.3346178Z [17/58] Building CXX object CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+2026-10-23T12:35:39.0532143Z [18/58] Building CXX object CMakeFiles/bzs_core.dir/src/sites.cpp.o
+2026-10-23T12:35:39.8973041Z [19/58] Building CXX object CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+2026-10-23T12:35:40.8029637Z [20/58] Building CXX object CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+2026-10-23T12:35:41.3149176Z [21/58] Building CXX object CMakeFiles/bzs_core.dir/src/http_cache.cpp.o
+2026-10-23T12:35:43.1551677Z [22/58] Building CXX object CMakeFiles/bzs_core.dir/src/service.cpp.o
+2026-10-23T12:35:44.1828268Z [23/58] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+2026-10-23T12:35:45.0287663Z [24/58] Linking CXX static library libbzs_core.a
+2026-10-23T12:35:54.2821407Z [25/58] Building CXX object CMakeFiles/searchctl.dir/apps/searchctl/main.cpp.o
+2026-10-23T12:35:55.8873738Z [26/58] Building CXX object CMakeFiles/searchd.dir/apps/searchd/main.cpp.o
+2026-10-23T12:35:58.7264381Z [27/58] Building CXX object CMakeFiles/bzs_tests.dir/tests/unit.cpp.o
+2026-10-23T12:35:58.9209141Z [28/58] Building CXX object CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o
+2026-10-23T12:36:01.7393478Z [29/58] Building CXX object CMakeFiles/bzs_map_tests.dir/tests/map.cpp.o
+2026-10-23T12:36:04.6061715Z [30/58] Building CXX object CMakeFiles/bzs_site_publication_tests.dir/tests/site_publication.cpp.o
+2026-10-23T12:36:04.8567321Z [31/58] Building CXX object CMakeFiles/bzs_crawl_tests.dir/tests/crawl.cpp.o
+2026-10-23T12:36:07.1115982Z [32/58] Building CXX object CMakeFiles/bzs_fairness_tests.dir/tests/fairness.cpp.o
+2026-10-23T12:36:07.2304818Z [33/58] Building CXX object CMakeFiles/bzs_retention_tests.dir/tests/retention.cpp.o
+2026-10-23T12:36:09.0916709Z [34/58] Building CXX object CMakeFiles/bzs_source_publication_tests.dir/tests/source_publication.cpp.o
+2026-10-23T12:36:09.6037866Z [35/58] Building CXX object CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o
+2026-10-23T12:36:11.5880008Z [36/58] Building CXX object CMakeFiles/bzs_search_mode_tests.dir/tests/search_modes.cpp.o
+2026-10-23T12:36:12.3445516Z [37/58] Building CXX object CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o
+2026-10-23T12:36:13.6461426Z [38/58] Building CXX object CMakeFiles/bzs_revocation_tests.dir/tests/revocation.cpp.o
+2026-10-23T12:36:14.7971556Z [39/58] Building CXX object CMakeFiles/bzs_capacity_cycles_tests.dir/tests/capacity_cycles.cpp.o
+2026-10-23T12:36:15.4224785Z [40/58] Building CXX object CMakeFiles/bzs_cache_freshness_tests.dir/tests/cache_freshness.cpp.o
+2026-10-23T12:36:15.7983017Z [41/58] Linking CXX executable searchd
+2026-10-23T12:36:15.9914940Z [42/58] Linking CXX executable searchctl
+2026-10-23T12:36:16.2519114Z [43/58] Linking CXX executable bzs_tests
+2026-10-23T12:36:16.5026934Z [44/58] Linking CXX executable bzs_batch_tests
+2026-10-23T12:36:16.5264630Z [45/58] Building CXX object CMakeFiles/bzs_contract_tests.dir/tests/contracts.cpp.o
+2026-10-23T12:36:16.7610980Z [46/58] Linking CXX executable bzs_map_tests
+2026-10-23T12:36:16.7774874Z [47/58] Linking CXX executable bzs_crawl_tests
+2026-10-23T12:36:17.0001580Z [48/58] Linking CXX executable bzs_site_publication_tests
+2026-10-23T12:36:17.0312107Z [49/58] Linking CXX executable bzs_retention_tests
+2026-10-23T12:36:17.2496295Z [50/58] Linking CXX executable bzs_fairness_tests
+2026-10-23T12:36:17.2714421Z [51/58] Linking CXX executable bzs_session_tests
+2026-10-23T12:36:17.4882586Z [52/58] Linking CXX executable bzs_source_publication_tests
+2026-10-23T12:36:17.5144513Z [53/58] Linking CXX executable bzs_search_mode_tests
+2026-10-23T12:36:17.7337851Z [54/58] Linking CXX executable bzs_revalidation_tests
+2026-10-23T12:36:17.7623859Z [55/58] Linking CXX executable bzs_revocation_tests
+2026-10-23T12:36:17.9809660Z [56/58] Linking CXX executable bzs_capacity_cycles_tests
+2026-10-23T12:36:17.9932041Z [57/58] Linking CXX executable bzs_cache_freshness_tests
+2026-10-23T12:36:18.0756311Z [58/58] Linking CXX executable bzs_contract_tests
+2026-10-23T12:36:18.7747957Z Test project /home/runner/work/bzs861/bzs861/build
+2026-10-23T12:36:18.8456201Z       Start  1: core
+2026-10-23T12:36:21.3806856Z  1/27 Test  #1: core .............................   Passed    2.53 sec
+2026-10-23T12:36:21.4304389Z       Start  2: batch
+2026-10-23T12:36:22.9277714Z  2/27 Test  #2: batch ............................   Passed    1.50 sec
+2026-10-23T12:36:22.9279549Z       Start  3: map
+2026-10-23T12:36:23.9273192Z  3/27 Test  #3: map ..............................   Passed    1.00 sec
+2026-10-23T12:36:23.9274510Z       Start  4: crawl
+2026-10-23T12:36:30.2790758Z  4/27 Test  #4: crawl ............................   Passed    6.35 sec
+2026-10-23T12:36:30.2792739Z       Start  5: site_publication
+2026-10-23T12:36:35.5713407Z  5/27 Test  #5: site_publication .................   Passed    5.29 sec
+2026-10-23T12:36:35.5715071Z       Start  6: retention
+2026-10-23T12:36:37.9760752Z  6/27 Test  #6: retention ........................   Passed    2.40 sec
+2026-10-23T12:36:37.9762849Z       Start  7: fairness
+2026-10-23T12:36:38.9648187Z  7/27 Test  #7: fairness .........................   Passed    0.99 sec
+2026-10-23T12:36:38.9650023Z       Start  8: sessions
+2026-10-23T12:36:53.7294077Z  8/27 Test  #8: sessions .........................   Passed   14.76 sec
+2026-10-23T12:36:53.7295811Z       Start  9: source_publication
+2026-10-23T12:36:54.7098624Z  9/27 Test  #9: source_publication ...............   Passed    0.98 sec
+2026-10-23T12:36:54.7100354Z       Start 10: search_modes
+2026-10-23T12:36:58.1961539Z 10/27 Test #10: search_modes .....................   Passed    3.49 sec
+2026-10-23T12:36:58.1963752Z       Start 11: revalidation
+2026-10-23T12:36:59.5529869Z 11/27 Test #11: revalidation .....................   Passed    1.36 sec
+2026-10-23T12:36:59.5531973Z       Start 12: revocation
+2026-10-23T12:36:59.8749473Z 12/27 Test #12: revocation .......................   Passed    0.32 sec
+2026-10-23T12:36:59.8751146Z       Start 13: capacity_cycles
+2026-10-23T12:37:09.2020684Z 13/27 Test #13: capacity_cycles ..................   Passed    9.33 sec
+2026-10-23T12:37:09.2022650Z       Start 14: cache_freshness
+2026-10-23T12:37:09.5155254Z 14/27 Test #14: cache_freshness ..................   Passed    0.31 sec
+2026-10-23T12:37:09.5156696Z       Start 15: contracts
+2026-10-23T12:37:09.6901494Z 15/27 Test #15: contracts ........................   Passed    0.17 sec
+2026-10-23T12:37:09.6903487Z       Start 16: http_cli
+2026-10-23T12:37:15.4771046Z 16/27 Test #16: http_cli .........................   Passed    5.79 sec
+2026-10-23T12:37:15.4773010Z       Start 17: http_revocation
+2026-10-23T12:37:15.7569995Z 17/27 Test #17: http_revocation ..................   Passed    0.28 sec
+2026-10-23T12:37:15.7572337Z       Start 18: e2e_web
+2026-10-23T12:37:23.8339871Z 18/27 Test #18: e2e_web ..........................   Passed    8.08 sec
+2026-10-23T12:37:23.8342003Z       Start 19: e2e_map
+2026-10-23T12:37:28.4419928Z 19/27 Test #19: e2e_map ..........................   Passed    4.61 sec
+2026-10-23T12:37:28.4421662Z       Start 20: e2e_crawl
+2026-10-23T12:37:38.9831805Z 20/27 Test #20: e2e_crawl ........................   Passed   10.54 sec
+2026-10-23T12:37:38.9833929Z       Start 21: e2e_crawl_recovery
+2026-10-23T12:38:04.2028961Z 21/27 Test #21: e2e_crawl_recovery ...............   Passed   25.22 sec
+2026-10-23T12:38:04.2031208Z       Start 22: e2e_session_recovery
+2026-10-23T12:38:33.0812513Z 22/27 Test #22: e2e_session_recovery .............   Passed   28.88 sec
+2026-10-23T12:38:33.0814146Z       Start 23: e2e_revalidation
+2026-10-23T12:38:42.3033855Z 23/27 Test #23: e2e_revalidation .................   Passed    9.22 sec
+2026-10-23T12:38:42.3035652Z       Start 24: e2e_cache_freshness
+2026-10-23T12:38:47.4867313Z 24/27 Test #24: e2e_cache_freshness ..............   Passed    5.18 sec
+2026-10-23T12:38:47.4868262Z       Start 25: e2e_cache_policy_review
+2026-10-23T12:38:56.5802727Z 25/27 Test #25: e2e_cache_policy_review ..........   Passed    9.09 sec
+2026-10-23T12:38:56.5804663Z       Start 26: e2e_revocation
+2026-10-23T12:38:58.8721325Z 26/27 Test #26: e2e_revocation ...................   Passed    2.29 sec
+2026-10-23T12:38:58.8723130Z       Start 27: python_worker
+2026-10-23T12:39:17.1982451Z 27/27 Test #27: python_worker ....................   Passed   18.33 sec
+2026-10-23T12:39:17.1987006Z 
+2026-10-23T12:39:17.1987256Z 100% tests passed, 0 tests failed out of 27
+2026-10-23T12:39:17.1987507Z 
+2026-10-23T12:39:17.1987914Z Total Test time (real) = 178.42 sec
+2026-10-23T12:39:17.2373427Z ##[group]Run cmake --preset asan -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
+2026-10-23T12:39:17.2374171Z [36;1mcmake --preset asan -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON[0m
+2026-10-23T12:39:17.2374664Z [36;1mcmake --build --preset asan-core -j 2[0m
+2026-10-23T12:39:17.2374976Z [36;1m./build-asan/bzs_tests[0m
+2026-10-23T12:39:17.2375245Z [36;1m./build-asan/bzs_batch_tests[0m
+2026-10-23T12:39:17.2375509Z [36;1m./build-asan/bzs_map_tests[0m
+2026-10-23T12:39:17.2375776Z [36;1m./build-asan/bzs_crawl_tests[0m
+2026-10-23T12:39:17.2376059Z [36;1m./build-asan/bzs_site_publication_tests[0m
+2026-10-23T12:39:17.2376492Z [36;1m./build-asan/bzs_contract_tests docs/planning/validation/contract_cases.json[0m
+2026-10-23T12:39:17.2376919Z [36;1m./build-asan/bzs_retention_tests[0m
+2026-10-23T12:39:17.2377201Z [36;1m./build-asan/bzs_fairness_tests[0m
+2026-10-23T12:39:17.2377479Z [36;1m./build-asan/bzs_session_tests[0m
+2026-10-23T12:39:17.2377795Z [36;1m./build-asan/bzs_revalidation_tests[0m
+2026-10-23T12:39:17.2378092Z [36;1m./build-asan/bzs_revocation_tests[0m
+2026-10-23T12:39:17.2378734Z [36;1m./build-asan/bzs_source_publication_tests[0m
+2026-10-23T12:39:17.2379072Z [36;1m./build-asan/bzs_cache_freshness_tests[0m
+2026-10-23T12:39:17.2379377Z [36;1m./build-asan/bzs_search_mode_tests[0m
+2026-10-23T12:39:17.2379684Z [36;1m./build-asan/bzs_capacity_cycles_tests[0m
+2026-10-23T12:39:17.2442797Z shell: /usr/bin/bash -e {0}
+2026-10-23T12:39:17.2443051Z env:
+2026-10-23T12:39:17.2443276Z   ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+2026-10-23T12:39:17.2443617Z   UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+2026-10-23T12:39:17.2443909Z ##[endgroup]
+2026-10-23T12:39:17.3084391Z Preset CMake variables:
+2026-10-23T12:39:17.3084712Z 
+2026-10-23T12:39:17.3084870Z   BZS_BUILD_TESTS="ON"
+2026-10-23T12:39:17.3085249Z   BZS_SANITIZERS="ON"
+2026-10-23T12:39:17.3085629Z   CMAKE_BUILD_TYPE="Debug"
+2026-10-23T12:39:17.3085888Z 
+2026-10-23T12:39:17.3086142Z -- The CXX compiler identification is GNU 13.3.0
+2026-10-23T12:39:17.3172910Z -- Detecting CXX compiler ABI info
+2026-10-23T12:39:17.3752317Z -- Detecting CXX compiler ABI info - done
+2026-10-23T12:39:17.3922418Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-10-23T12:39:17.3925999Z -- Detecting CXX compile features
+2026-10-23T12:39:17.3932644Z -- Detecting CXX compile features - done
+2026-10-23T12:39:17.4029068Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-10-23T12:39:17.4707635Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-10-23T12:39:17.4717067Z -- Found Threads: TRUE
+2026-10-23T12:39:17.5054494Z -- Found SQLite3: /usr/include (found suitable version "3.45.1", minimum required is "3.38")
+2026-10-23T12:39:17.5410004Z -- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.14")
+2026-10-23T12:39:17.5770797Z -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.13") found components: Crypto
+2026-10-23T12:39:17.7246025Z -- Found Python3: /usr/bin/python3.12 (found suitable version "3.12.3", minimum required is "3.10") found components: Interpreter
+2026-10-23T12:39:18.7114140Z -- Configuring done (1.5s)
+2026-10-23T12:39:18.7397676Z -- Generating done (0.0s)
+2026-10-23T12:39:18.7402397Z -- Build files have been written to: /home/runner/work/bzs861/bzs861/build-asan
+2026-10-23T12:39:20.1363327Z [1/54] Building CXX object CMakeFiles/bzs_core.dir/src/util.cpp.o
+2026-10-23T12:39:20.2612982Z [2/54] Building CXX object CMakeFiles/bzs_core.dir/src/json.cpp.o
+2026-10-23T12:39:21.4349130Z [3/54] Building CXX object CMakeFiles/bzs_core.dir/src/html.cpp.o
+2026-10-23T12:39:21.8750739Z [4/54] Building CXX object CMakeFiles/bzs_core.dir/src/query.cpp.o
+2026-10-23T12:39:22.3371763Z [5/54] Building CXX object CMakeFiles/bzs_core.dir/src/tokenizer.cpp.o
+2026-10-23T12:39:23.5757473Z [6/54] Building CXX object CMakeFiles/bzs_core.dir/src/highlight.cpp.o
+2026-10-23T12:39:24.5787620Z [7/54] Building CXX object CMakeFiles/bzs_core.dir/src/revocation.cpp.o
+2026-10-23T12:39:25.4687837Z [8/54] Building CXX object CMakeFiles/bzs_core.dir/src/store.cpp.o
+2026-10-23T12:39:27.1897017Z [9/54] Building CXX object CMakeFiles/bzs_core.dir/src/sessions.cpp.o
+2026-10-23T12:39:27.9287076Z [10/54] Building CXX object CMakeFiles/bzs_core.dir/src/publication.cpp.o
+2026-10-23T12:39:28.6594692Z [11/54] Building CXX object CMakeFiles/bzs_core.dir/src/search_modes.cpp.o
+2026-10-23T12:39:29.0799940Z [12/54] Building CXX object CMakeFiles/bzs_core.dir/src/source_publication.cpp.o
+2026-10-23T12:39:29.7902972Z [13/54] Building CXX object CMakeFiles/bzs_core.dir/src/retention.cpp.o
+2026-10-23T12:39:31.4917289Z [14/54] Building CXX object CMakeFiles/bzs_core.dir/src/batch.cpp.o
+2026-10-23T12:39:32.1577346Z [15/54] Building CXX object CMakeFiles/bzs_core.dir/src/map.cpp.o
+2026-10-23T12:39:32.5434681Z [16/54] Building CXX object CMakeFiles/bzs_core.dir/src/crawl.cpp.o
+2026-10-23T12:39:34.2802863Z [17/54] Building CXX object CMakeFiles/bzs_core.dir/src/crawl_trap.cpp.o
+2026-10-23T12:39:34.4255821Z [18/54] Building CXX object CMakeFiles/bzs_core.dir/src/sites.cpp.o
+2026-10-23T12:39:36.3956853Z [19/54] Building CXX object CMakeFiles/bzs_core.dir/src/map_service.cpp.o
+2026-10-23T12:39:36.9444126Z [20/54] Building CXX object CMakeFiles/bzs_core.dir/src/contracts.cpp.o
+2026-10-23T12:39:38.2773167Z [21/54] Building CXX object CMakeFiles/bzs_core.dir/src/http_cache.cpp.o
+2026-10-23T12:39:40.9475899Z [22/54] Building CXX object CMakeFiles/bzs_core.dir/src/service.cpp.o
+2026-10-23T12:39:42.8913559Z [23/54] Building CXX object CMakeFiles/bzs_core.dir/src/web.cpp.o
+2026-10-23T12:39:43.1535703Z [24/54] Linking CXX static library libbzs_core.a
+2026-10-23T12:39:48.4377415Z [25/54] Building CXX object CMakeFiles/bzs_batch_tests.dir/tests/batch.cpp.o
+2026-10-23T12:39:49.4385042Z [26/54] Building CXX object CMakeFiles/bzs_tests.dir/tests/unit.cpp.o
+2026-10-23T12:39:53.3558632Z [27/54] Building CXX object CMakeFiles/bzs_map_tests.dir/tests/map.cpp.o
+2026-10-23T12:39:58.5454064Z [28/54] Building CXX object CMakeFiles/bzs_site_publication_tests.dir/tests/site_publication.cpp.o
+2026-10-23T12:40:00.8729523Z [29/54] Building CXX object CMakeFiles/bzs_crawl_tests.dir/tests/crawl.cpp.o
+2026-10-23T12:40:03.0740669Z [30/54] Building CXX object CMakeFiles/bzs_retention_tests.dir/tests/retention.cpp.o
+2026-10-23T12:40:04.4222677Z [31/54] Building CXX object CMakeFiles/bzs_fairness_tests.dir/tests/fairness.cpp.o
+2026-10-23T12:40:07.1717778Z [32/54] Building CXX object CMakeFiles/bzs_source_publication_tests.dir/tests/source_publication.cpp.o
+2026-10-23T12:40:07.3654793Z [33/54] Building CXX object CMakeFiles/bzs_session_tests.dir/tests/sessions.cpp.o
+2026-10-23T12:40:11.3742761Z [34/54] Building CXX object CMakeFiles/bzs_search_mode_tests.dir/tests/search_modes.cpp.o
+2026-10-23T12:40:12.1295060Z [35/54] Building CXX object CMakeFiles/bzs_revalidation_tests.dir/tests/revalidation.cpp.o
+2026-10-23T12:40:14.4432470Z [36/54] Building CXX object CMakeFiles/bzs_revocation_tests.dir/tests/revocation.cpp.o
+2026-10-23T12:40:16.4212577Z [37/54] Building CXX object CMakeFiles/bzs_capacity_cycles_tests.dir/tests/capacity_cycles.cpp.o
+2026-10-23T12:40:16.8815510Z [38/54] Building CXX object CMakeFiles/bzs_cache_freshness_tests.dir/tests/cache_freshness.cpp.o
+2026-10-23T12:40:17.5288950Z [39/54] Linking CXX executable bzs_tests
+2026-10-23T12:40:17.8667254Z [40/54] Linking CXX executable bzs_batch_tests
+2026-10-23T12:40:18.2049379Z [41/54] Linking CXX executable bzs_map_tests
+2026-10-23T12:40:18.5605597Z [42/54] Linking CXX executable bzs_crawl_tests
+2026-10-23T12:40:18.8813580Z [43/54] Linking CXX executable bzs_site_publication_tests
+2026-10-23T12:40:19.0630673Z [44/54] Building CXX object CMakeFiles/bzs_contract_tests.dir/tests/contracts.cpp.o
+2026-10-23T12:40:19.2181829Z [45/54] Linking CXX executable bzs_retention_tests
+2026-10-23T12:40:19.4036112Z [46/54] Linking CXX executable bzs_fairness_tests
+2026-10-23T12:40:19.5338633Z [47/54] Linking CXX executable bzs_session_tests
+2026-10-23T12:40:19.7204415Z [48/54] Linking CXX executable bzs_source_publication_tests
+2026-10-23T12:40:19.8712996Z [49/54] Linking CXX executable bzs_search_mode_tests
+2026-10-23T12:40:20.0471124Z [50/54] Linking CXX executable bzs_revalidation_tests
+2026-10-23T12:40:20.2026165Z [51/54] Linking CXX executable bzs_revocation_tests
+2026-10-23T12:40:20.3779740Z [52/54] Linking CXX executable bzs_capacity_cycles_tests
+2026-10-23T12:40:20.5122538Z [53/54] Linking CXX executable bzs_cache_freshness_tests
+2026-10-23T12:40:20.5180857Z [54/54] Linking CXX executable bzs_contract_tests
+2026-10-23T12:40:26.9702394Z PASS json_roundtrip
+2026-10-23T12:40:26.9703442Z PASS json_shared_readers_preserve_serialization_and_alias_lifetimes
+2026-10-23T12:40:26.9704495Z PASS json_duplicate_keys
+2026-10-23T12:40:26.9705141Z PASS json_malformed
+2026-10-23T12:40:26.9705650Z PASS json_strict_types
+2026-10-23T12:40:26.9706185Z PASS json_depth_limit
+2026-10-23T12:40:26.9706722Z PASS json_scalar_unicode_and_ranges
+2026-10-23T12:40:26.9707299Z PASS utf8_boundaries
+2026-10-23T12:40:26.9707731Z PASS hash_and_random
+2026-10-23T12:40:26.9708198Z PASS metadata_urls
+2026-10-23T12:40:26.9708858Z PASS query_symbols
+2026-10-23T12:40:26.9709312Z PASS query_boolean
+2026-10-23T12:40:26.9709712Z PASS query_phrases
+2026-10-23T12:40:26.9710154Z PASS query_fields
+2026-10-23T12:40:26.9710586Z PASS query_quoted_directives
+2026-10-23T12:40:26.9711061Z PASS query_ast
+2026-10-23T12:40:26.9711513Z PASS query_errors
+2026-10-23T12:40:26.9711930Z PASS query_chinese
+2026-10-23T12:40:26.9712369Z PASS query_flat_conjunction
+2026-10-23T12:40:26.9712861Z PASS html_main_code
+2026-10-23T12:40:26.9713307Z PASS html_noindex
+2026-10-23T12:40:26.9713724Z PASS html_selected_subtree
+2026-10-23T12:40:26.9714213Z PASS html_hidden_ancestors
+2026-10-23T12:40:26.9714718Z PASS html_robots_tokens
+2026-10-23T12:40:26.9715184Z PASS html_guards
+2026-10-23T12:40:26.9715644Z PASS document_limits
+2026-10-23T12:40:26.9716088Z PASS store_snapshots
+2026-10-23T12:40:26.9716532Z PASS store_owner_isolation
+2026-10-23T12:40:26.9716933Z PASS store_search
+2026-10-23T12:40:26.9717284Z PASS store_candidate_predicate_agreement
+2026-10-23T12:40:26.9717737Z PASS store_updates_index
+2026-10-23T12:40:26.9718082Z PASS store_noindex
+2026-10-23T12:40:26.9718567Z PASS session_stable
+2026-10-23T12:40:26.9718922Z PASS session_cursor_isolation
+2026-10-23T12:40:26.9719307Z PASS delete_revokes_paths
+2026-10-23T12:40:26.9719684Z PASS evidence_boundaries
+2026-10-23T12:40:26.9720438Z PASS search_budget_partial
+2026-10-23T12:40:26.9720811Z PASS reopen_data
+2026-10-23T12:40:26.9721174Z PASS migrate_schema_one_preserves_records
+2026-10-23T12:40:26.9721711Z PASS migration_rejects_quarantined_and_newer_databases
+2026-10-23T12:40:26.9722204Z PASS job_idempotency
+2026-10-23T12:40:26.9722520Z PASS job_controls
+2026-10-23T12:40:26.9722823Z PASS job_lease_fencing
+2026-10-23T12:40:26.9723150Z PASS job_pause_fencing
+2026-10-23T12:40:26.9723489Z PASS job_budgets
+2026-10-23T12:40:26.9723810Z PASS job_target_tombstone
+2026-10-23T12:40:26.9724169Z PASS job_restart
+2026-10-23T12:40:26.9724499Z PASS job_concurrent_claim
+2026-10-23T12:40:26.9724875Z PASS backup_quarantine
+2026-10-23T12:40:26.9725228Z PASS fixture_source_boundary
+2026-10-23T12:40:26.9725597Z PASS service_capabilities
+2026-10-23T12:40:26.9725942Z PASS admin_backup
+2026-10-23T12:40:26.9726250Z PASS auth_validation
+2026-10-23T12:40:26.9726584Z PASS tokenizer_cjk_and_symbols
+2026-10-23T12:40:26.9726965Z PASS fts_chinese_uses_index
+2026-10-23T12:40:26.9727337Z PASS bm25_ranks_relevance
+2026-10-23T12:40:26.9727686Z PASS literal_exactness
+2026-10-23T12:40:26.9728041Z PASS html_main_excludes_siblings
+2026-10-23T12:40:26.9728647Z PASS delete_keeps_unrelated_jobs_and_sessions
+2026-10-23T12:40:26.9729143Z PASS highlights_are_query_relevant_and_exact
+2026-10-23T12:40:26.9729633Z PASS revisions_pruned_and_quota_counters
+2026-10-23T12:40:26.9730087Z PASS range_windows_are_utf8_safe
+2026-10-23T12:40:26.9730491Z PASS migration_from_v1
+2026-10-23T12:40:26.9730843Z PASS dedup_and_rrf_fusion
+2026-10-23T12:40:26.9731209Z PASS public_url_policy
+2026-10-23T12:40:26.9731848Z PASS web_search_merges_and_cools_down
+2026-10-23T12:40:26.9732316Z PASS web_search_cache_spares_sources
+2026-10-23T12:40:26.9732763Z PASS iri_urls_are_encoded_for_reading
+2026-10-23T12:40:26.9733198Z PASS web_read_ingests_and_caches
+2026-10-23T12:40:26.9733613Z PASS source_admission_limits
+2026-10-23T12:40:26.9734055Z PASS migrate_both_schema_two_layouts_preserves_records
+2026-10-23T12:40:26.9734653Z PASS schema_two_quarantine_is_checked_before_migration
+2026-10-23T12:40:26.9735276Z PASS deletion_fences_survive_reimport_restart_and_clock_ties
+2026-10-23T12:40:26.9735934Z PASS web_noindex_change_is_not_hidden_by_content_reuse
+2026-10-23T12:40:26.9736548Z PASS retention_reclaims_before_quota_and_ignores_expired_pins
+2026-10-23T12:40:26.9737207Z PASS highlight_clipping_reports_only_visible_terms
+2026-10-23T12:40:26.9737754Z PASS web_read_does_not_publish_across_target_deletion
+2026-10-23T12:40:26.9738293Z PASS late_success_does_not_cancel_source_cooldown
+2026-10-23T12:40:26.9739055Z PASS web_cache_is_scoped_to_owner_and_review_validity
+2026-10-23T12:40:26.9739688Z PASS rrf_rejects_invalid_ranks_and_preserves_nondefault_ports
+2026-10-23T12:40:26.9740373Z PASS worker_success_schema_cannot_create_a_snapshot_by_default
+2026-10-23T12:40:26.9741026Z PASS malformed_source_success_is_partial_and_not_cached
+2026-10-23T12:40:26.9741578Z {"tests":82,"passed":82,"assertions":715}
+2026-10-23T12:40:30.8004075Z PASS ten_explicit_inputs_only_and_ordered_receipts
+2026-10-23T12:40:30.8005064Z PASS input_budget_validation_and_owner_scope
+2026-10-23T12:40:30.8005948Z PASS execution_identity_does_not_use_search_deduplication
+2026-10-23T12:40:30.8006901Z PASS errors_are_isolated_and_default_attempts_do_not_retry
+2026-10-23T12:40:30.8007896Z PASS completed_items_survive_pause_restart_resume_without_refetch
+2026-10-23T12:40:30.8009119Z PASS pause_or_cancel_during_fetch_fences_late_publication
+2026-10-23T12:40:30.8009881Z PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+2026-10-23T12:40:30.8010641Z PASS deletion_before_dispatch_stops_only_its_target
+2026-10-23T12:40:30.8011242Z PASS unknown_execution_keeps_grants_across_recovery
+2026-10-23T12:40:30.8011894Z PASS request_and_byte_budgets_stop_unstarted_items
+2026-10-23T12:40:30.8012568Z PASS lease_expiry_and_permission_changes_refuse_late_results
+2026-10-23T12:40:30.8013282Z PASS receipt_failure_rolls_back_snapshot_and_index
+2026-10-23T12:40:30.8014455Z PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+2026-10-23T12:40:30.8015246Z PASS noindex_and_deleted_receipts_never_resurrect_content
+2026-10-23T12:40:30.8015916Z PASS api_dispatch_and_fixture_jobs_coexist
+2026-10-23T12:40:30.8016499Z PASS deadline_near_int64_max_does_not_overflow_lease
+2026-10-23T12:40:30.8017264Z PASS shared_reads_dispatch_once_and_keep_individual_durable_receipts
+2026-10-23T12:40:30.8018203Z PASS shared_reads_cancel_or_pause_one_subscriber_without_cancelling_others
+2026-10-23T12:40:30.8019378Z PASS shared_reads_last_subscriber_cancel_stops_worker_and_rejects_late_body
+2026-10-23T12:40:30.8020231Z PASS shared_reads_cancelled_payer_before_worker_start_still_serves_live_member
+2026-10-23T12:40:30.8021047Z PASS shared_reads_owner_uri_deadline_timeout_and_budget_boundaries
+2026-10-23T12:40:30.8021791Z PASS shared_reads_recovery_marks_one_physical_unknown_and_never_auto_retries
+2026-10-23T12:40:30.8022565Z PASS shared_reads_deletion_and_revoked_epoch_fence_all_subscribers
+2026-10-23T12:40:30.8023357Z PASS shared_reads_receipt_failure_rolls_back_every_subscriber_and_snapshot
+2026-10-23T12:40:30.8024166Z PASS shared_reads_compaction_preserves_payer_attribution_until_last_member
+2026-10-23T12:40:30.8024894Z PASS shared_reads_bound_membership_and_do_not_attach_after_dispatch
+2026-10-23T12:40:30.8025621Z PASS shared_reads_two_store_connections_cannot_dispatch_the_same_group_twice
+2026-10-23T12:40:30.8026446Z PASS shared_reads_known_failure_and_pre_dispatch_cancel_do_not_create_free_retries
+2026-10-23T12:40:30.8027471Z PASS schema_three_additive_migration_keeps_snapshots_evidence_jobs_and_index
+2026-10-23T12:40:30.8028213Z PASS schema_three_quarantine_is_rejected_before_new_tables
+2026-10-23T12:40:30.8028971Z 30 batch tests, 801 assertions, 0 failures
+2026-10-23T12:40:33.4771196Z PASS empty_sites_default_and_strict_independent_review
+2026-10-23T12:40:33.4771742Z PASS registry_origin_limits_and_exact_uri_identity
+2026-10-23T12:40:33.4772133Z PASS input_validation_idempotency_and_owner_only_jobs
+2026-10-23T12:40:33.4772543Z PASS robots_precedes_discovery_and_html_is_candidates_only
+2026-10-23T12:40:33.4772964Z PASS optional_bad_candidates_and_sitemaps_do_not_poison_valid_results
+2026-10-23T12:40:33.4773360Z PASS sitemap_index_children_only_are_queued_once
+2026-10-23T12:40:33.4773718Z PASS url_depth_and_fixed_query_variant_budgets_report_partial
+2026-10-23T12:40:33.4774129Z PASS history_is_owner_scoped_and_deletion_never_revives_candidates
+2026-10-23T12:40:33.4774547Z PASS history_alias_tombstone_remains_bound_to_original_document
+2026-10-23T12:40:33.4774989Z PASS each_redirect_hop_gets_new_persistent_grant_and_same_origin_scope
+2026-10-23T12:40:33.4775447Z PASS late_results_after_logical_or_redirect_target_deletion_are_fenced
+2026-10-23T12:40:33.4775857Z PASS pause_cancel_fences_dispatch_and_late_publication
+2026-10-23T12:40:33.4776267Z PASS completed_resources_and_robots_cache_survive_restart_without_refetch
+2026-10-23T12:40:33.4776716Z PASS unknown_dispatched_step_remains_charged_and_is_not_retried
+2026-10-23T12:40:33.4777118Z PASS robots_and_content_share_request_and_byte_totals
+2026-10-23T12:40:33.4777459Z PASS site_quota_is_shared_across_owners_and_persisted
+2026-10-23T12:40:33.4777828Z PASS site_pacing_cooldown_and_review_expiry_survive_warm_cache
+2026-10-23T12:40:33.4778258Z PASS protocol_binding_and_unknown_usage_do_not_publish_candidates
+2026-10-23T12:40:33.4779117Z PASS candidate_commit_and_hop_receipt_are_one_transaction
+2026-10-23T12:40:33.4779510Z PASS negative_robots_cache_stops_content_even_during_cooldown
+2026-10-23T12:40:33.4779961Z PASS predispatch_error_preserves_null_status_and_zero_request_accounting
+2026-10-23T12:40:33.4780416Z PASS global_robots_retention_limit_stops_before_network_dispatch
+2026-10-23T12:40:33.4780882Z PASS schema_four_migration_preserves_old_read_jobs_snapshots_evidence_and_index
+2026-10-23T12:40:33.4781304Z PASS schema_four_quarantine_refuses_map_ddl
+2026-10-23T12:40:33.4781592Z 24 map tests, 462 assertions, 0 failures
+2026-10-23T12:40:53.0394875Z PASS crawl_submission_is_distinct_and_bounded
+2026-10-23T12:40:53.0395671Z PASS recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique
+2026-10-23T12:40:53.0396632Z PASS robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier
+2026-10-23T12:40:53.0397687Z PASS page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows
+2026-10-23T12:40:53.0398876Z PASS depth_and_query_variants_bound_recursive_traps
+2026-10-23T12:40:53.0399676Z PASS noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence
+2026-10-23T12:40:53.0400391Z PASS nosnippet_and_data_nosnippet_restrict_old_cursors_and_do_not_forge_offsets
+2026-10-23T12:40:53.0400970Z PASS empty_successful_page_keeps_the_restrictive_refresh
+2026-10-23T12:40:53.0401524Z PASS quota_failure_retains_restriction_observation_without_claiming_a_new_page
+2026-10-23T12:40:53.0402126Z PASS failed_header_observation_is_monotonic_and_keeps_failed_usage
+2026-10-23T12:40:53.0402774Z PASS body_redirect_uses_one_page_grant_and_propagates_policy_to_existing_redirect_reads
+2026-10-23T12:40:53.0403451Z PASS existing_normalized_aliases_share_publication_and_deletion_fences
+2026-10-23T12:40:53.0404071Z PASS shared_dispatch_is_round_robin_across_map_crawl_jobs_and_restart
+2026-10-23T12:40:53.0404618Z PASS pause_cancel_and_auth_epoch_fence_late_body_and_observation
+2026-10-23T12:40:53.0405212Z PASS restarted_unknown_body_keeps_request_byte_and_page_reservations_without_retry
+2026-10-23T12:40:53.0405818Z PASS known_zero_http_refusal_refunds_page_and_request_grant
+2026-10-23T12:40:53.0406402Z PASS body_policy_index_edges_and_hop_receipt_commit_atomically
+2026-10-23T12:40:53.0407144Z PASS edge_capacity_stops_enqueue_before_an_unrecorded_body
+2026-10-23T12:40:53.0407721Z PASS schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity
+2026-10-23T12:40:53.0408537Z PASS schema_five_quarantine_rejects_before_new_publication_ddl
+2026-10-23T12:40:53.0409149Z PASS crawl_late_body_cannot_undo_a_newer_direct_page_restriction_or_replace_fresh_current
+2026-10-23T12:40:53.0409808Z PASS crawl_logical_refresh_sequence_survives_redirect_pause_and_restart
+2026-10-23T12:40:53.0410500Z PASS schema_seven_redirected_crawl_keeps_an_unknown_logical_capture_restricted_after_upgrade
+2026-10-23T12:40:53.0411168Z PASS links_only_publication_ceiling_survives_direct_and_batch_refresh
+2026-10-23T12:40:53.0411795Z PASS candidate_registry_without_optional_redistribution_does_not_break_explicit_read
+2026-10-23T12:40:53.0412454Z PASS empty_meta_only_explicit_and_batch_reads_retract_without_a_new_snapshot
+2026-10-23T12:40:53.0413114Z PASS success_protocol_rejects_partial_error_http_and_hidden_redirects_with_known_usage
+2026-10-23T12:40:53.0413717Z PASS allowing_page_cannot_clear_its_own_noindex_observation
+2026-10-23T12:40:53.0414340Z PASS redirect_observation_survives_pause_restart_and_cannot_be_relaxed_by_target
+2026-10-23T12:40:53.0414995Z PASS frozen_representation_is_immutable_across_retarget_and_same_content_reuse
+2026-10-23T12:40:53.0415614Z PASS independent_store_connections_cannot_double_reserve_the_same_origin
+2026-10-23T12:40:53.0416293Z PASS explicit_redirect_rules_are_versioned_for_logical_url_without_restricting_final_target
+2026-10-23T12:40:53.0416951Z PASS redirect_restriction_on_failed_or_quota_limited_read_does_not_relabel_target
+2026-10-23T12:40:53.0417487Z PASS intermediate_redirect_observations_are_bound_and_late_batch_results_are_fenced
+2026-10-23T12:40:53.0417987Z PASS truncated_read_cannot_supply_an_allowing_versioned_publication
+2026-10-23T12:40:53.0418725Z PASS refused_redirect_tail_keeps_only_actual_public_response_policy
+2026-10-23T12:40:53.0419234Z PASS ordinary_read_requoting_and_escaped_paths_keep_actual_hop_restrictions
+2026-10-23T12:40:53.0419747Z PASS crawl_rejected_redirect_target_still_applies_its_admitted_response_header
+2026-10-23T12:40:53.0420243Z PASS trap_policy_is_versioned_separately_from_map_and_pins_finite_limits
+2026-10-23T12:40:53.0420722Z PASS consecutive_calendar_days_include_leap_day_and_survive_pause_restart
+2026-10-23T12:40:53.0421424Z PASS calendar_fanout_is_bounded_across_different_parents_and_keeps_other_documents
+2026-10-23T12:40:53.0421982Z PASS finite_dates_unique_article_slugs_versions_and_invalid_dates_are_not_calendar_stops
+2026-10-23T12:40:53.0422512Z PASS calendar_month_and_backward_navigation_have_their_own_sequence_bound
+2026-10-23T12:40:53.0423010Z PASS query_permutations_decode_only_for_analysis_and_keep_repeated_value_order
+2026-10-23T12:40:53.0423522Z PASS parameter_combinations_stop_across_pagination_paths_before_generic_limits
+2026-10-23T12:40:53.0424014Z PASS query_dimension_bounds_count_distinct_keys_and_all_repeated_pairs
+2026-10-23T12:40:53.0424498Z PASS changing_pagination_urls_with_identical_bodies_close_only_their_family
+2026-10-23T12:40:53.0425018Z PASS queued_repeated_pages_keep_all_parent_reasons_after_restart_and_other_job_runs
+2026-10-23T12:40:53.0425581Z PASS explicit_pagination_seeds_are_read_after_family_limit_without_false_partial_coverage
+2026-10-23T12:40:53.0426159Z PASS duplicate_nonpagination_bodies_and_distinct_pagination_bodies_remain_readable
+2026-10-23T12:40:53.0426692Z PASS discovered_redirect_target_is_checked_before_the_next_physical_request
+2026-10-23T12:40:53.0427180Z PASS schema_six_live_job_bootstraps_body_traps_and_preserves_idempotency
+2026-10-23T12:40:53.0427682Z PASS seed_redirect_is_automatic_navigation_unless_target_is_itself_an_explicit_seed
+2026-10-23T12:40:53.0428202Z PASS oversized_legacy_observations_settle_once_without_starving_another_job
+2026-10-23T12:40:53.1286322Z 54 crawl tests, 2798 assertions, 0 failures
+2026-10-23T12:41:09.2656533Z PASS restart_links_only_with_zero_http_restricts_stored_and_frozen_publication
+2026-10-23T12:41:09.2657192Z PASS restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication
+2026-10-23T12:41:09.2657764Z PASS restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication
+2026-10-23T12:41:09.2658314Z PASS disabled_removed_and_unconfigured_restart_keep_durable_restrictions
+2026-10-23T12:41:09.2659224Z PASS review_expiry_is_durable_without_restart_or_http_and_cannot_be_rewound
+2026-10-23T12:41:09.2659771Z PASS relaxation_requires_a_new_complete_artifact_and_never_revives_frozen_content
+2026-10-23T12:41:09.2660343Z PASS scope_shrink_preserves_the_retained_child_and_expansion_does_not_restore_retired_content
+2026-10-23T12:41:09.2660894Z PASS new_child_scopes_inherit_prior_ancestor_index_and_snippet_watermarks
+2026-10-23T12:41:09.2661405Z PASS intermediate_site_bindings_are_immutable_even_when_body_and_final_url_reuse
+2026-10-23T12:41:09.2661927Z PASS final_representation_retarget_does_not_release_frozen_site_constraints
+2026-10-23T12:41:09.2662479Z PASS import_snapshots_and_frozen_imports_do_not_inherit_deployment_rules_from_later_web_reads
+2026-10-23T12:41:09.2663054Z PASS stale_connections_cannot_reactivate_or_publish_using_an_older_allowing_service
+2026-10-23T12:41:09.2663572Z PASS inflight_allowing_response_cannot_cross_a_tighten_then_relax_epoch
+2026-10-23T12:41:09.2664094Z PASS sql_candidate_limits_and_counts_exclude_withdrawn_rows_before_bounded_sweep_finishes
+2026-10-23T12:41:09.2664653Z PASS escaped_and_requoted_paths_cannot_bypass_a_registered_origin_ceiling
+2026-10-23T12:41:09.2665159Z PASS history_capacity_failure_is_atomic_and_does_not_discard_restriction_watermarks
+2026-10-23T12:41:09.2665690Z PASS site_tightening_cannot_revive_an_inflight_deleted_owner_document
+2026-10-23T12:41:09.2666208Z PASS schema_six_empty_unconfigured_upgrade_does_not_withdraw_unregistered_explicit_reads
+2026-10-23T12:41:09.2666762Z PASS schema_six_first_managed_activation_withdraws_only_legacy_web_frozen_rows
+2026-10-23T12:41:09.2667318Z PASS schema_six_unverified_crawl_current_requires_complete_reread_after_explicit_activation
+2026-10-23T12:41:09.2667856Z PASS schema_six_quarantine_is_checked_before_deployment_policy_migration
+2026-10-23T12:41:09.2668591Z PASS read_many_receipts_recheck_current_deployment_policy_without_new_requests
+2026-10-23T12:41:09.2669192Z PASS artifacts_captured_while_restricted_do_not_publish_after_an_unrelated_generation_and_later_allow
+2026-10-23T12:41:09.2670019Z PASS inflight_restricted_response_cannot_borrow_a_later_allowing_generation
+2026-10-23T12:41:09.2670519Z PASS refresh_order_fences_direct_and_bounded_reads_across_all_known_aliases
+2026-10-23T12:41:09.2671039Z PASS legacy_allowing_responses_are_permanently_sealed_after_a_new_snippet_restriction
+2026-10-23T12:41:09.2671576Z PASS identical_failed_header_observations_each_fence_a_new_inflight_allow
+2026-10-23T12:41:09.2672055Z PASS late_alias_response_keeps_a_later_logical_retarget_and_its_frozen_row
+2026-10-23T12:41:09.2672577Z PASS deletion_fences_cover_final_and_intermediate_aliases_for_direct_and_bounded_reads
+2026-10-23T12:41:09.2673080Z PASS bounded_read_dispatch_fence_survives_a_new_store_connection
+2026-10-23T12:41:09.2673577Z PASS schema_seven_inflight_read_has_an_unknown_capture_and_cannot_republish_a_legacy_alias
+2026-10-23T12:41:09.2674147Z PASS compatibility_responses_cannot_relax_restrictions_with_incomplete_http_bodies
+2026-10-23T12:41:09.2674618Z 32 site publication tests, 1200 assertions, 0 failures
+2026-10-23T12:41:10.1456001Z PASS fixture 正常_model-config
+2026-10-23T12:41:10.1456387Z PASS fixture 正常_search-request
+2026-10-23T12:41:10.1456685Z PASS fixture 正常_source-manifest
+2026-10-23T12:41:10.1456988Z PASS fixture 无模型基础部署
+2026-10-23T12:41:10.1457501Z PASS fixture 角色继承默认profile
+2026-10-23T12:41:10.1457817Z PASS fixture 显式null禁用角色
+2026-10-23T12:41:10.1458083Z PASS fixture 默认角色并发覆盖生效
+2026-10-23T12:41:10.1458584Z PASS fixture 坏profile引用
+2026-10-23T12:41:10.1458870Z PASS fixture 错误嵌入能力
+2026-10-23T12:41:10.1459106Z PASS fixture 并发不能为零
+2026-10-23T12:41:10.1459687Z PASS fixture 隐藏付费工具被拒
+2026-10-23T12:41:10.1459935Z PASS fixture 坏备用模型
+2026-10-23T12:41:10.1460170Z PASS fixture 显式思考参数缺失
+2026-10-23T12:41:10.1460411Z PASS fixture file模型端点拒绝
+2026-10-23T12:41:10.1460647Z PASS fixture 负预算
+2026-10-23T12:41:10.1460880Z PASS fixture host不能配after
+2026-10-23T12:41:10.1461141Z PASS fixture eq不能配数组
+2026-10-23T12:41:10.1461374Z PASS fixture in必须配数组
+2026-10-23T12:41:10.1461630Z PASS fixture 非法日期
+2026-10-23T12:41:10.1461860Z PASS fixture 倒置时间范围
+2026-10-23T12:41:10.1462090Z PASS fixture 离线本地检索
+2026-10-23T12:41:10.1462319Z PASS fixture 离线不允许外部范围
+2026-10-23T12:41:10.1462553Z PASS fixture AST过深
+2026-10-23T12:41:10.1462787Z PASS fixture 字符串查询仍有效
+2026-10-23T12:41:10.1463021Z PASS fixture 查询体过大
+2026-10-23T12:41:10.1463247Z PASS fixture 候选源不能启用
+2026-10-23T12:41:10.1463501Z PASS fixture 源配置合同正例不构成真实授权
+2026-10-23T12:41:10.1463756Z PASS fixture 审核时间格式非法
+2026-10-23T12:41:10.1463980Z PASS fixture 审核过期
+2026-10-23T12:41:10.1464203Z PASS fixture 审核时间来自未来
+2026-10-23T12:41:10.1464464Z PASS fixture 启用源缺逻辑服务身份
+2026-10-23T12:41:10.1464702Z PASS fixture 限額缺窗口
+2026-10-23T12:41:10.1464923Z PASS fixture 配额窗口完整
+2026-10-23T12:41:10.1465147Z PASS fixture file来源拒绝
+2026-10-23T12:41:10.1465399Z PASS normalization_is_pure_and_defaults_are_explicit
+2026-10-23T12:41:10.1465729Z PASS no_model_and_explicit_disabled_roles
+2026-10-23T12:41:10.1466048Z PASS role_inheritance_does_not_mutate_sibling_limits
+2026-10-23T12:41:10.1466393Z PASS model_structure_and_policy_are_strict
+2026-10-23T12:41:10.1466699Z PASS profile_and_role_limits_use_trusted_ceilings
+2026-10-23T12:41:10.1467065Z PASS unused_profiles_still_validate_reasoning_and_references
+2026-10-23T12:41:10.1467456Z PASS specialized_roles_require_explicit_suitable_profiles
+2026-10-23T12:41:10.1467818Z PASS endpoint_structure_is_checked_without_network
+2026-10-23T12:41:10.1468178Z PASS source_validation_does_not_invent_review_or_activation
+2026-10-23T12:41:10.1468813Z PASS source_structural_and_conditional_fields_are_checked
+2026-10-23T12:41:10.1469186Z PASS source_quotas_and_deployment_ceilings_are_enforced
+2026-10-23T12:41:10.1469570Z PASS review_times_use_the_trusted_clock_and_fractional_precision
+2026-10-23T12:41:10.1469949Z PASS search_defaults_preserve_query_and_filters
+2026-10-23T12:41:10.1470313Z PASS search_schema_rejects_unknown_fields_wrong_types_and_enums
+2026-10-23T12:41:10.1470706Z PASS ast_structure_and_complexity_have_independent_limits
+2026-10-23T12:41:10.1471298Z PASS unicode_schema_lengths_are_characters_not_bytes
+2026-10-23T12:41:10.1471659Z PASS repeated_date_bounds_are_conjunctive_in_every_order
+2026-10-23T12:41:10.1472070Z PASS date_equalities_respect_timezone_fraction_and_open_bounds
+2026-10-23T12:41:10.1472447Z PASS filter_field_operator_value_and_match_must_agree
+2026-10-23T12:41:10.1472815Z PASS search_budget_and_offline_conflicts_cannot_expand_scope
+2026-10-23T12:41:10.1473179Z PASS unknown_kind_and_non_object_inputs_are_rejected
+2026-10-23T12:41:10.1473676Z Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions
+2026-10-23T12:41:16.4260560Z PASS aged_terminal_frontiers_release_the_real_512_job_cap_after_restart
+2026-10-23T12:41:16.4261343Z PASS the_full_deadline_window_and_clock_extremes_are_respected
+2026-10-23T12:41:16.4261863Z PASS unknown_read_grants_survive_compaction_and_late_callbacks_cannot_reopen_work
+2026-10-23T12:41:16.4262395Z PASS paused_and_pending_jobs_remain_pinned_and_maintenance_is_owner_scoped
+2026-10-23T12:41:16.4262930Z PASS unknown_crawl_page_grants_and_origin_charges_survive_expiry_and_compaction
+2026-10-23T12:41:16.4263420Z PASS robots_receipt_and_admission_each_pin_the_exact_expired_record
+2026-10-23T12:41:16.4263927Z PASS expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive
+2026-10-23T12:41:16.4264480Z PASS robots_capacity_can_recover_at_admission_without_erasing_origin_accounting
+2026-10-23T12:41:16.4265014Z PASS crawl_frontier_edges_traps_and_map_candidates_compact_with_original_summaries
+2026-10-23T12:41:16.4265871Z PASS a_storage_failure_rolls_back_the_summary_and_all_detail_deletions
+2026-10-23T12:41:16.4266402Z PASS compaction_never_recreates_publication_deleted_aliases_or_owner_epochs
+2026-10-23T12:41:16.4266897Z PASS schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins
+2026-10-23T12:41:16.4267338Z PASS permanent_key_quotas_remain_bounded_per_owner_and_globally
+2026-10-23T12:41:16.4267793Z PASS two_store_compactors_serialize_without_duplicate_summaries_or_charges
+2026-10-23T12:41:16.4268229Z PASS compacted_backups_keep_the_restore_quarantine_gate
+2026-10-23T12:41:16.4269043Z PASS rpc_is_available_offline_and_validates_raw_limit_and_unknown_parameters
+2026-10-23T12:41:16.4269463Z 16 retention tests, 404 assertions, 0 failures
+2026-10-23T12:41:19.5232114Z PASS read_batches_follow_submission_order_and_rotate_with_identical_timestamps
+2026-10-23T12:41:19.5233067Z PASS late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains
+2026-10-23T12:41:19.5233845Z PASS read_queue_position_survives_restart_and_owner_isolation
+2026-10-23T12:41:19.5234709Z PASS restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch
+2026-10-23T12:41:19.5235543Z PASS two_store_connections_reserve_distinct_jobs_and_rounds
+2026-10-23T12:41:19.5236310Z PASS paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns
+2026-10-23T12:41:19.5237121Z PASS continuous_new_map_jobs_do_not_starve_an_existing_frontier
+2026-10-23T12:41:19.5237869Z PASS new_map_jobs_have_a_strict_submission_order_at_the_same_clock
+2026-10-23T12:41:19.5238845Z PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+2026-10-23T12:41:19.5239616Z PASS worker_loop_gives_batch_and_discovery_categories_progress
+2026-10-23T12:41:19.5240473Z PASS calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart
+2026-10-23T12:41:19.5241266Z 11 fairness tests, 251 assertions, 0 failures
+2026-10-23T12:41:19.5781437Z RUN concurrent_source_review_keeps_shared_registry_contract_valid
+2026-10-23T12:41:20.3134574Z PASS concurrent_source_review_keeps_shared_registry_contract_valid (735 ms)
+2026-10-23T12:41:20.3135483Z RUN progress_creates_immutable_versions_and_bound_stable_cursors
+2026-10-23T12:41:20.6829972Z PASS progress_creates_immutable_versions_and_bound_stable_cursors (369 ms)
+2026-10-23T12:41:20.6831127Z RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+2026-10-23T12:41:20.9226054Z PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (239 ms)
+2026-10-23T12:41:20.9227216Z RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+2026-10-23T12:41:21.1502374Z PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (227 ms)
+2026-10-23T12:41:21.1503059Z RUN cancel_pending_is_zero_request_and_idempotent
+2026-10-23T12:41:21.2684175Z PASS cancel_pending_is_zero_request_and_idempotent (118 ms)
+2026-10-23T12:41:21.2685071Z RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+2026-10-23T12:41:21.4826978Z PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (214 ms)
+2026-10-23T12:41:21.4827613Z RUN owner_isolation_invalid_options_and_version_binding
+2026-10-23T12:41:21.6163514Z PASS owner_isolation_invalid_options_and_version_binding (133 ms)
+2026-10-23T12:41:21.6164378Z RUN expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+2026-10-23T12:41:21.7680125Z PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (151 ms)
+2026-10-23T12:41:21.7681413Z RUN frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+2026-10-23T12:42:18.5496388Z PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (56781 ms)
+2026-10-23T12:42:18.5497408Z RUN delete_and_page_restriction_rechecked_without_content_in_event_log
+2026-10-23T12:42:18.7110808Z PASS delete_and_page_restriction_rechecked_without_content_in_event_log (161 ms)
+2026-10-23T12:42:18.7111757Z RUN site_tightening_survives_reopen_and_later_relaxation
+2026-10-23T12:42:18.9138709Z PASS site_tightening_survives_reopen_and_later_relaxation (202 ms)
+2026-10-23T12:42:18.9139631Z RUN active_session_backpressure_and_expired_detail_reclamation
+2026-10-23T12:42:19.6542945Z PASS active_session_backpressure_and_expired_detail_reclamation (740 ms)
+2026-10-23T12:42:19.6543583Z RUN local_search_gets_durable_events_and_still_has_snapshot_paging
+2026-10-23T12:42:19.7256072Z PASS local_search_gets_durable_events_and_still_has_snapshot_paging (71 ms)
+2026-10-23T12:42:19.7256780Z RUN expired_local_sessions_release_capacity_for_web_without_local_search
+2026-10-23T12:42:19.9459692Z PASS expired_local_sessions_release_capacity_for_web_without_local_search (220 ms)
+2026-10-23T12:42:19.9460484Z RUN fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+2026-10-23T12:42:20.6605101Z PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (714 ms)
+2026-10-23T12:42:20.6656771Z RUN source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+2026-10-23T12:42:20.8222697Z PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (161 ms)
+2026-10-23T12:42:20.8223333Z RUN source_duplicate_provenance_keeps_best_rank_through_second_fusion
+2026-10-23T12:42:20.9477062Z PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (125 ms)
+2026-10-23T12:42:20.9477711Z RUN permission_epoch_invalidates_replay_and_late_completion
+2026-10-23T12:42:21.0927937Z PASS permission_epoch_invalidates_replay_and_late_completion (145 ms)
+2026-10-23T12:42:21.0928910Z RUN continuous_new_sessions_cannot_overtake_an_existing_pending_source
+2026-10-23T12:42:21.3786171Z PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (285 ms)
+2026-10-23T12:42:21.3786864Z RUN frozen_known_redirect_binding_survives_target_revival_and_route_change
+2026-10-23T12:42:21.8026548Z PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (423 ms)
+2026-10-23T12:42:21.8027608Z RUN incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker
+2026-10-23T12:42:21.9500059Z PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (147 ms)
+2026-10-23T12:42:21.9501166Z RUN preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
+2026-10-23T12:42:22.5292820Z PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (579 ms)
+2026-10-23T12:42:22.7982490Z 22 tests, 285 assertions, 0 failures
+2026-10-23T12:42:27.3502187Z PASS direct_304_keeps_body_revision_and_evidence
+2026-10-23T12:42:27.3502837Z PASS batch_304_charges_one_request_and_no_body_bytes
+2026-10-23T12:42:27.3503450Z PASS validators_survive_restart_and_are_owner_scoped
+2026-10-23T12:42:27.3504104Z PASS not_modified_does_not_overwrite_a_concurrent_full_replacement
+2026-10-23T12:42:27.3504755Z PASS deletion_and_reimport_fence_a_304
+2026-10-23T12:42:27.3505401Z PASS restrictions_observed_before_304_dispatch_still_seal_old_body
+2026-10-23T12:42:27.3506198Z PASS not_modified_header_can_tighten_but_never_clear_cached_meta_directives
+2026-10-23T12:42:27.3506974Z PASS unsolicited_or_unbound_304_is_rejected_without_touching_body
+2026-10-23T12:42:27.3507633Z PASS http_metadata_rejects_unsafe_and_ambiguous_validators
+2026-10-23T12:42:27.3508256Z PASS imported_or_redirected_snapshots_do_not_grant_conditions
+2026-10-23T12:42:27.3509281Z PASS robots_revalidation_renews_exact_rules_and_retains_receipt_references
+2026-10-23T12:42:27.3510091Z PASS robots_304_cannot_replace_rules_or_admit_content_on_failure
+2026-10-23T12:42:27.3510986Z PASS crawl_304_rebuilds_the_new_frontier_depth_from_complete_retained_links
+2026-10-23T12:42:27.3511727Z PASS crawl_304_nofollow_blocks_retained_links
+2026-10-23T12:42:27.3512207Z PASS independent_same_snapshot_metadata_refresh_is_fenced
+2026-10-23T12:42:27.3512973Z PASS independent_during_request_restriction_cannot_republish_old_body
+2026-10-23T12:42:27.3513728Z PASS independent_304_metadata_growth_rolls_back_at_owner_quota
+2026-10-23T12:42:27.3514181Z PASS independent_304_then_full_fetch_refunds_only_retired_cache_metadata
+2026-10-23T12:42:27.3515019Z PASS independent_latest_robots_denial_survives_selective_job_compaction
+2026-10-23T12:42:27.3515527Z PASS repeated_conditional_cycles_keep_budget_and_compaction_invariants
+2026-10-23T12:42:27.3515979Z PASS current_nofollow_before_or_during_304_blocks_old_discovery
+2026-10-23T12:42:27.3516325Z 21 tests / 333 assertions / 0 failures
+2026-10-23T12:42:28.3897726Z PASS admin_authorization_and_strict_contract
+2026-10-23T12:42:28.3898996Z PASS every_token_for_subject_and_restart_remain_revoked
+2026-10-23T12:42:28.3899831Z PASS snapshots_evidence_sessions_and_new_work_denied_without_erasure
+2026-10-23T12:42:28.3900640Z PASS queued_paused_fixture_batch_map_crawl_work_is_stopped
+2026-10-23T12:42:28.3901320Z PASS fixture_late_completion_cannot_publish
+2026-10-23T12:42:28.3902038Z PASS known_inflight_read_is_settled_without_publication_or_retry
+2026-10-23T12:42:28.3902852Z PASS unknown_inflight_read_keeps_full_charge_across_restart
+2026-10-23T12:42:28.3903675Z PASS inflight_map_unknown_reservation_and_site_lock_survive_revoke
+2026-10-23T12:42:28.3904533Z PASS persistent_search_late_result_is_fenced_and_receipt_retained
+2026-10-23T12:42:28.3905399Z PASS synchronous_search_response_is_rechecked_after_worker_returns
+2026-10-23T12:42:28.3906175Z PASS synchronous_read_cannot_publish_after_revocation
+2026-10-23T12:42:28.3906884Z PASS backup_remains_quarantined_and_actor_recheck_is_durable
+2026-10-23T12:42:28.3907556Z 12/12 tests, 146 assertions
+2026-10-23T12:42:31.6877067Z PASS disabling_source_withdraws_existing_frozen_page
+2026-10-23T12:42:31.6877865Z PASS links_only_source_suppresses_existing_frozen_snippets
+2026-10-23T12:42:31.6878765Z PASS direct_search_enforces_current_links_only_review
+2026-10-23T12:42:31.6879540Z PASS cache_replay_cannot_restore_snippets_after_temporary_restriction
+2026-10-23T12:42:31.6880389Z PASS withdrawn_cached_response_is_replaced_only_by_new_authorized_attempt
+2026-10-23T12:42:31.6881161Z PASS frozen_links_only_survives_reopen_and_later_relaxation
+2026-10-23T12:42:31.6881923Z PASS explicit_empty_registry_retires_source_but_omission_preserves_it
+2026-10-23T12:42:31.6882694Z PASS disabled_source_remains_withdrawn_after_reopen_and_reenable
+2026-10-23T12:42:31.6883467Z PASS expiry_persists_even_when_page_rejection_and_clock_rollback_follow
+2026-10-23T12:42:31.6884240Z PASS renewal_after_unobserved_expiry_does_not_revive_old_results
+2026-10-23T12:42:31.6884997Z PASS stale_store_cannot_replace_more_recent_source_manifest
+2026-10-23T12:42:31.6886127Z PASS inflight_direct_response_keeps_intervening_snippet_ceiling
+2026-10-23T12:42:31.6886873Z PASS inflight_direct_response_cannot_cross_withdrawal_and_reenable
+2026-10-23T12:42:31.6887623Z PASS inflight_frozen_response_keeps_intervening_snippet_ceiling
+2026-10-23T12:42:31.6888546Z PASS queued_session_cannot_dispatch_after_withdrawal_and_reenable
+2026-10-23T12:42:31.6889301Z PASS source_endpoint_change_with_same_id_withdraws_only_old_results
+2026-10-23T12:42:31.6890015Z PASS restriction_preserves_frozen_rank_and_cursor_identity
+2026-10-23T12:42:31.6890751Z PASS rejected_expired_search_commits_withdrawal_before_clock_rollback
+2026-10-23T12:42:31.6891484Z PASS one_restricted_contributor_suppresses_fused_content
+2026-10-23T12:42:31.6892183Z PASS withdrawal_of_unrelated_source_preserves_frozen_allowed_results
+2026-10-23T12:42:31.6892885Z 20 source publication tests, 180 assertions, 0 failures
+2026-10-23T12:42:32.8469885Z PASS age_date_delay_and_residence_shorten_lifetime
+2026-10-23T12:42:32.8470977Z PASS expires_and_explicit_zero_are_hard_ceilings
+2026-10-23T12:42:32.8472091Z PASS restrictive_and_malformed_fields_never_gain_default_freshness
+2026-10-23T12:42:32.8472969Z PASS private_owner_cache_and_quoted_ages_remain_bounded
+2026-10-23T12:42:32.8473821Z PASS no_validator_page_uses_origin_max_age_and_never_implicit_stale_fallback
+2026-10-23T12:42:32.8474799Z PASS no_cache_and_zero_age_force_fresh_authorized_fetch
+2026-10-23T12:42:32.8475644Z PASS no_store_never_persists_new_body_and_fences_old_http_reuse
+2026-10-23T12:42:32.8476971Z PASS old_worker_metadata_requires_refresh_and_no_cache_only_network
+2026-10-23T12:42:32.8477901Z PASS restart_owner_and_changed_request_profile_do_not_share_cache
+2026-10-23T12:42:32.8478970Z PASS cache_only_rechecks_expiry_after_profile_rpc
+2026-10-23T12:42:32.8479752Z PASS cache_first_fetches_if_profile_rpc_outlasts_freshness
+2026-10-23T12:42:32.8480595Z PASS late_invalidation_cannot_clear_newer_representation
+2026-10-23T12:42:32.8481512Z PASS merge_304_preserves_omitted_restrictions_and_refreshes_time
+2026-10-23T12:42:32.8482279Z 13 cases, 80 assertions, 0 failed
+2026-10-23T12:42:42.1267690Z PASS mode_catalog_is_offline_and_describes_actual_limits
+2026-10-23T12:42:42.1268567Z PASS omitted_mode_preserves_legacy_sync_and_session_defaults
+2026-10-23T12:42:42.1269479Z PASS all_modes_bound_actual_source_fanout_candidates_and_rpc
+2026-10-23T12:42:42.1270242Z PASS explicit_source_selection_cannot_silently_exceed_preset
+2026-10-23T12:42:42.1271039Z PASS duplicate_source_ids_do_not_consume_multiple_attempt_slots
+2026-10-23T12:42:42.1271817Z PASS overrides_can_only_tighten_every_preset_dimension
+2026-10-23T12:42:42.1272456Z PASS narrowed_override_is_the_executed_budget
+2026-10-23T12:42:42.1273080Z PASS mode_never_bypasses_source_review_or_shared_quota
+2026-10-23T12:42:42.1273726Z PASS cache_is_bound_to_mode_and_effective_overrides
+2026-10-23T12:42:42.1274480Z PASS persistent_mode_and_omissions_survive_restart_without_reexecution
+2026-10-23T12:42:42.1275326Z PASS durable_dispatch_passes_only_remaining_deadline_to_worker
+2026-10-23T12:42:42.1276224Z PASS legacy_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+2026-10-23T12:42:42.1277331Z PASS explicit_mode_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+2026-10-23T12:42:42.1278270Z PASS public_subsecond_timeout_and_deadline_remain_invalid
+2026-10-23T12:42:42.1279202Z PASS expired_durable_deadline_never_dispatches_or_publishes
+2026-10-23T12:42:42.1280682Z {"scenario":"deadline_limited_rpc_before_wall_expiry","mode":"legacy","remaining_wall_ms":1,"rpc_timeout_ms":490,"state_before_expiry":"failed","events_before_expiry":["queued","failed"]}
+2026-10-23T12:42:42.1282229Z PASS legacy_deadline_limited_rpc_timeout_is_terminal_before_wall_expiry
+2026-10-23T12:42:42.1283733Z {"scenario":"deadline_limited_rpc_before_wall_expiry","mode":"fast","remaining_wall_ms":1,"rpc_timeout_ms":490,"state_before_expiry":"failed","events_before_expiry":["queued","failed"]}
+2026-10-23T12:42:42.1285718Z PASS explicit_mode_deadline_limited_rpc_timeout_is_terminal_before_wall_expiry
+2026-10-23T12:42:42.1286824Z {"scenario":"last_source_explicit_deadline","state":"failed","events":["queued","result_version","failed"]}
+2026-10-23T12:42:42.1288056Z {"scenario":"last_source_explicit_deadline","state":"failed","events":["queued","result_version","failed"]}
+2026-10-23T12:42:42.1289656Z PASS explicit_deadline_failure_preserves_prior_version_and_is_terminal_for_last_source
+2026-10-23T12:42:42.1290657Z PASS ordinary_source_errors_preserve_pending_tail_and_reject_old_deadline_callback
+2026-10-23T12:42:42.1291613Z PASS early_unavailable_is_not_deadline_even_when_rpc_budget_is_deadline_limited
+2026-10-23T12:42:42.1292473Z PASS late_response_is_not_published_or_cached_after_monotonic_deadline
+2026-10-23T12:42:42.1293227Z PASS mode_json_types_are_strict_and_unknown_modes_are_rejected
+2026-10-23T12:42:42.1293847Z 22 search mode tests, 382 assertions, 0 failures
+2026-10-23T12:43:08.6571346Z {"cycles":3,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":0,"real_http":false,"scenario":"frontier_512_capacity_refill","simulated_elapsed_ms":1816200003,"store_reopens":6,"submissions":1533,"wall_elapsed_ms":16986}
+2026-10-23T12:43:08.6574892Z PASS three_full_frontier_capacity_cycles_preserve_paused_keys_and_owner_boundaries
+2026-10-23T12:43:08.6578168Z {"cycles":12,"fake_worker_calls":220,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":111,"read_leases":109,"real_http":false,"scenario":"continuous_arrivals_96_opportunities_per_queue","simulated_elapsed_ms":608400001,"store_reopens":13,"submissions":198,"wall_elapsed_ms":7713}
+2026-10-23T12:43:08.6581160Z PASS continuous_arrivals_follow_durable_round_robin_across_twelve_reopens
+2026-10-23T12:43:08.6583867Z {"cycles":6,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":12,"real_http":false,"scenario":"unknown_grant_recovery_and_retention","simulated_elapsed_ms":3650400006,"store_reopens":12,"submissions":24,"wall_elapsed_ms":960}
+2026-10-23T12:43:08.6587924Z PASS six_unknown_grant_cycles_keep_active_and_paused_work_then_compact_without_refunds
+2026-10-23T12:43:08.6590208Z {"cycles":8,"fake_worker_calls":24,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":24,"read_leases":0,"real_http":false,"scenario":"robots_receipt_and_admission_pins","simulated_elapsed_ms":4867200016,"store_reopens":8,"submissions":24,"wall_elapsed_ms":711}
+2026-10-23T12:43:08.6592128Z PASS eight_robots_reference_cycles_protect_receipt_and_admission_independently
+2026-10-23T12:43:08.6592916Z 4 capacity cycle tests, 4800 assertions, 0 failures, 26398 wall ms
+2026-10-23T12:43:08.6994131Z ##[group]Run .venv/bin/python docs/planning/tools/validate_contracts.py
+2026-10-23T12:43:08.6994695Z [36;1m.venv/bin/python docs/planning/tools/validate_contracts.py[0m
+2026-10-23T12:43:08.6995144Z [36;1m.venv/bin/python docs/planning/tools/plan_v1_2.py check[0m
+2026-10-23T12:43:08.6995544Z [36;1m.venv/bin/python tools/test_plan_guard.py[0m
+2026-10-23T12:43:08.7057758Z shell: /usr/bin/bash -e {0}
+2026-10-23T12:43:08.7058029Z ##[endgroup]
+2026-10-23T12:43:09.4068642Z {
+2026-10-23T12:43:09.4069355Z   "scope": "design_contract_fixtures_only",
+2026-10-23T12:43:09.4069819Z   "count": 34,
+2026-10-23T12:43:09.4070124Z   "passed": 34,
+2026-10-23T12:43:09.4070414Z   "results": [
+2026-10-23T12:43:09.4070687Z     {
+2026-10-23T12:43:09.4071233Z       "case": "正常_model-config",
+2026-10-23T12:43:09.4071642Z       "expected_valid": true,
+2026-10-23T12:43:09.4072002Z       "actual_valid": true,
+2026-10-23T12:43:09.4072351Z       "passed": true,
+2026-10-23T12:43:09.4072784Z       "error": null
+2026-10-23T12:43:09.4073071Z     },
+2026-10-23T12:43:09.4073321Z     {
+2026-10-23T12:43:09.4073670Z       "case": "正常_search-request",
+2026-10-23T12:43:09.4074048Z       "expected_valid": true,
+2026-10-23T12:43:09.4074395Z       "actual_valid": true,
+2026-10-23T12:43:09.4075170Z       "passed": true,
+2026-10-23T12:43:09.4075472Z       "error": null
+2026-10-23T12:43:09.4075746Z     },
+2026-10-23T12:43:09.4076001Z     {
+2026-10-23T12:43:09.4076362Z       "case": "正常_source-manifest",
+2026-10-23T12:43:09.4076759Z       "expected_valid": true,
+2026-10-23T12:43:09.4077196Z       "actual_valid": true,
+2026-10-23T12:43:09.4077539Z       "passed": true,
+2026-10-23T12:43:09.4077841Z       "error": null
+2026-10-23T12:43:09.4078127Z     },
+2026-10-23T12:43:09.4078617Z     {
+2026-10-23T12:43:09.4078969Z       "case": "无模型基础部署",
+2026-10-23T12:43:09.4079308Z       "expected_valid": true,
+2026-10-23T12:43:09.4079666Z       "actual_valid": true,
+2026-10-23T12:43:09.4079997Z       "passed": true,
+2026-10-23T12:43:09.4080307Z       "error": null
+2026-10-23T12:43:09.4080592Z     },
+2026-10-23T12:43:09.4080846Z     {
+2026-10-23T12:43:09.4081218Z       "case": "角色继承默认profile",
+2026-10-23T12:43:09.4081584Z       "expected_valid": true,
+2026-10-23T12:43:09.4081954Z       "actual_valid": true,
+2026-10-23T12:43:09.4082294Z       "passed": true,
+2026-10-23T12:43:09.4082610Z       "error": null
+2026-10-23T12:43:09.4082891Z     },
+2026-10-23T12:43:09.4083145Z     {
+2026-10-23T12:43:09.4083493Z       "case": "显式null禁用角色",
+2026-10-23T12:43:09.4083839Z       "expected_valid": true,
+2026-10-23T12:43:09.4084186Z       "actual_valid": true,
+2026-10-23T12:43:09.4084530Z       "passed": true,
+2026-10-23T12:43:09.4084853Z       "error": null
+2026-10-23T12:43:09.4085140Z     },
+2026-10-23T12:43:09.4085393Z     {
+2026-10-23T12:43:09.4085726Z       "case": "默认角色并发覆盖生效",
+2026-10-23T12:43:09.4086053Z       "expected_valid": true,
+2026-10-23T12:43:09.4086398Z       "actual_valid": true,
+2026-10-23T12:43:09.4086720Z       "passed": true,
+2026-10-23T12:43:09.4087034Z       "error": null
+2026-10-23T12:43:09.4087316Z     },
+2026-10-23T12:43:09.4087558Z     {
+2026-10-23T12:43:09.4087883Z       "case": "坏profile引用",
+2026-10-23T12:43:09.4088234Z       "expected_valid": false,
+2026-10-23T12:43:09.4088794Z       "actual_valid": false,
+2026-10-23T12:43:09.4089140Z       "passed": true,
+2026-10-23T12:43:09.4089465Z       "error": "role profile missing"
+2026-10-23T12:43:09.4089840Z     },
+2026-10-23T12:43:09.4090089Z     {
+2026-10-23T12:43:09.4090428Z       "case": "错误嵌入能力",
+2026-10-23T12:43:09.4090761Z       "expected_valid": false,
+2026-10-23T12:43:09.4091113Z       "actual_valid": false,
+2026-10-23T12:43:09.4091453Z       "passed": true,
+2026-10-23T12:43:09.4091790Z       "error": "role capability mismatch"
+2026-10-23T12:43:09.4092172Z     },
+2026-10-23T12:43:09.4092428Z     {
+2026-10-23T12:43:09.4092765Z       "case": "并发不能为零",
+2026-10-23T12:43:09.4093089Z       "expected_valid": false,
+2026-10-23T12:43:09.4093452Z       "actual_valid": false,
+2026-10-23T12:43:09.4094139Z       "passed": true,
+2026-10-23T12:43:09.4094913Z       "error": "{'profile': 'primary_text', 'overrides': {'max_concurrency': 0}} is not valid under any of the given schemas"
+2026-10-23T12:43:09.4095719Z     },
+2026-10-23T12:43:09.4095986Z     {
+2026-10-23T12:43:09.4096355Z       "case": "隐藏付费工具被拒",
+2026-10-23T12:43:09.4096692Z       "expected_valid": false,
+2026-10-23T12:43:09.4097055Z       "actual_valid": false,
+2026-10-23T12:43:09.4097405Z       "passed": true,
+2026-10-23T12:43:09.4097747Z       "error": "False was expected"
+2026-10-23T12:43:09.4098102Z     },
+2026-10-23T12:43:09.4098538Z     {
+2026-10-23T12:43:09.4098862Z       "case": "坏备用模型",
+2026-10-23T12:43:09.4099196Z       "expected_valid": false,
+2026-10-23T12:43:09.4099563Z       "actual_valid": false,
+2026-10-23T12:43:09.4099921Z       "passed": true,
+2026-10-23T12:43:09.4100257Z       "error": "invalid text fallback"
+2026-10-23T12:43:09.4100624Z     },
+2026-10-23T12:43:09.4100875Z     {
+2026-10-23T12:43:09.4101220Z       "case": "显式思考参数缺失",
+2026-10-23T12:43:09.4101555Z       "expected_valid": false,
+2026-10-23T12:43:09.4101920Z       "actual_valid": false,
+2026-10-23T12:43:09.4102270Z       "passed": true,
+2026-10-23T12:43:09.4102660Z       "error": "explicit reasoning parameters missing"
+2026-10-23T12:43:09.4103355Z     },
+2026-10-23T12:43:09.4103598Z     {
+2026-10-23T12:43:09.4103945Z       "case": "file模型端点拒绝",
+2026-10-23T12:43:09.4104323Z       "expected_valid": false,
+2026-10-23T12:43:09.4104676Z       "actual_valid": false,
+2026-10-23T12:43:09.4105020Z       "passed": true,
+2026-10-23T12:43:09.4105357Z       "error": "invalid model endpoint"
+2026-10-23T12:43:09.4105754Z     },
+2026-10-23T12:43:09.4106019Z     {
+2026-10-23T12:43:09.4106350Z       "case": "负预算",
+2026-10-23T12:43:09.4106668Z       "expected_valid": false,
+2026-10-23T12:43:09.4107025Z       "actual_valid": false,
+2026-10-23T12:43:09.4107372Z       "passed": true,
+2026-10-23T12:43:09.4107735Z       "error": "-1 is less than the minimum of 0"
+2026-10-23T12:43:09.4108164Z     },
+2026-10-23T12:43:09.4108618Z     {
+2026-10-23T12:43:09.4108982Z       "case": "host不能配after",
+2026-10-23T12:43:09.4109343Z       "expected_valid": false,
+2026-10-23T12:43:09.4109706Z       "actual_valid": false,
+2026-10-23T12:43:09.4110071Z       "passed": true,
+2026-10-23T12:43:09.4110513Z       "error": "'host' is not one of ['published_at', 'updated_at']"
+2026-10-23T12:43:09.4111022Z     },
+2026-10-23T12:43:09.4111284Z     {
+2026-10-23T12:43:09.4111635Z       "case": "eq不能配数组",
+2026-10-23T12:43:09.4111975Z       "expected_valid": false,
+2026-10-23T12:43:09.4112326Z       "actual_valid": false,
+2026-10-23T12:43:09.4112660Z       "passed": true,
+2026-10-23T12:43:09.4112997Z       "error": "['x'] is not of type 'string'"
+2026-10-23T12:43:09.4113394Z     },
+2026-10-23T12:43:09.4113637Z     {
+2026-10-23T12:43:09.4113962Z       "case": "in必须配数组",
+2026-10-23T12:43:09.4114294Z       "expected_valid": false,
+2026-10-23T12:43:09.4114647Z       "actual_valid": false,
+2026-10-23T12:43:09.4114991Z       "passed": true,
+2026-10-23T12:43:09.4115378Z       "error": "'x' is not of type 'array'"
+2026-10-23T12:43:09.4115776Z     },
+2026-10-23T12:43:09.4116031Z     {
+2026-10-23T12:43:09.4116359Z       "case": "非法日期",
+2026-10-23T12:43:09.4116669Z       "expected_valid": false,
+2026-10-23T12:43:09.4117046Z       "actual_valid": false,
+2026-10-23T12:43:09.4117386Z       "passed": true,
+2026-10-23T12:43:09.4117715Z       "error": "invalid timestamp"
+2026-10-23T12:43:09.4118072Z     },
+2026-10-23T12:43:09.4118543Z     {
+2026-10-23T12:43:09.4118891Z       "case": "倒置时间范围",
+2026-10-23T12:43:09.4119225Z       "expected_valid": false,
+2026-10-23T12:43:09.4119568Z       "actual_valid": false,
+2026-10-23T12:43:09.4119882Z       "passed": true,
+2026-10-23T12:43:09.4120183Z       "error": "empty date range"
+2026-10-23T12:43:09.4120502Z     },
+2026-10-23T12:43:09.4120730Z     {
+2026-10-23T12:43:09.4121031Z       "case": "离线本地检索",
+2026-10-23T12:43:09.4121324Z       "expected_valid": true,
+2026-10-23T12:43:09.4121908Z       "actual_valid": true,
+2026-10-23T12:43:09.4122284Z       "passed": true,
+2026-10-23T12:43:09.4122601Z       "error": null
+2026-10-23T12:43:09.4122893Z     },
+2026-10-23T12:43:09.4123165Z     {
+2026-10-23T12:43:09.4123568Z       "case": "离线不允许外部范围",
+2026-10-23T12:43:09.4124169Z       "expected_valid": false,
+2026-10-23T12:43:09.4124565Z       "actual_valid": false,
+2026-10-23T12:43:09.4124912Z       "passed": true,
+2026-10-23T12:43:09.4125268Z       "error": "offline requires local corpus"
+2026-10-23T12:43:09.4125696Z     },
+2026-10-23T12:43:09.4125970Z     {
+2026-10-23T12:43:09.4126304Z       "case": "AST过深",
+2026-10-23T12:43:09.4126647Z       "expected_valid": false,
+2026-10-23T12:43:09.4127009Z       "actual_valid": false,
+2026-10-23T12:43:09.4127349Z       "passed": true,
+2026-10-23T12:43:09.4127683Z       "error": "AST complexity exceeded"
+2026-10-23T12:43:09.4128078Z     },
+2026-10-23T12:43:09.4128514Z     {
+2026-10-23T12:43:09.4128868Z       "case": "字符串查询仍有效",
+2026-10-23T12:43:09.4129218Z       "expected_valid": true,
+2026-10-23T12:43:09.4129591Z       "actual_valid": true,
+2026-10-23T12:43:09.4129930Z       "passed": true,
+2026-10-23T12:43:09.4130241Z       "error": null
+2026-10-23T12:43:09.4130525Z     },
+2026-10-23T12:43:09.4130781Z     {
+2026-10-23T12:43:09.4131111Z       "case": "查询体过大",
+2026-10-23T12:43:09.4131440Z       "expected_valid": false,
+2026-10-23T12:43:09.4131811Z       "actual_valid": false,
+2026-10-23T12:43:09.4132172Z       "passed": true,
+2026-10-23T12:43:09.4132504Z       "error": "request too large"
+2026-10-23T12:43:09.4132860Z     },
+2026-10-23T12:43:09.4133109Z     {
+2026-10-23T12:43:09.4133437Z       "case": "候选源不能启用",
+2026-10-23T12:43:09.4133775Z       "expected_valid": false,
+2026-10-23T12:43:09.4134136Z       "actual_valid": false,
+2026-10-23T12:43:09.4134490Z       "passed": true,
+2026-10-23T12:43:09.4134845Z       "error": "None is not of type 'string'"
+2026-10-23T12:43:09.4135253Z     },
+2026-10-23T12:43:09.4135508Z     {
+2026-10-23T12:43:09.4135879Z       "case": "源配置合同正例不构成真实授权",
+2026-10-23T12:43:09.4136259Z       "expected_valid": true,
+2026-10-23T12:43:09.4136627Z       "actual_valid": true,
+2026-10-23T12:43:09.4136992Z       "passed": true,
+2026-10-23T12:43:09.4137312Z       "error": null
+2026-10-23T12:43:09.4137612Z     },
+2026-10-23T12:43:09.4137871Z     {
+2026-10-23T12:43:09.4138212Z       "case": "审核时间格式非法",
+2026-10-23T12:43:09.4138756Z       "expected_valid": false,
+2026-10-23T12:43:09.4139149Z       "actual_valid": false,
+2026-10-23T12:43:09.4139518Z       "passed": true,
+2026-10-23T12:43:09.4139875Z       "error": "invalid timestamp"
+2026-10-23T12:43:09.4140261Z     },
+2026-10-23T12:43:09.4140524Z     {
+2026-10-23T12:43:09.4140858Z       "case": "审核过期",
+2026-10-23T12:43:09.4141198Z       "expected_valid": false,
+2026-10-23T12:43:09.4141566Z       "actual_valid": false,
+2026-10-23T12:43:09.4141926Z       "passed": true,
+2026-10-23T12:43:09.4142305Z       "error": "review time invalid or expired"
+2026-10-23T12:43:09.4142763Z     },
+2026-10-23T12:43:09.4143048Z     {
+2026-10-23T12:43:09.4143411Z       "case": "审核时间来自未来",
+2026-10-23T12:43:09.4143776Z       "expected_valid": false,
+2026-10-23T12:43:09.4144144Z       "actual_valid": false,
+2026-10-23T12:43:09.4144513Z       "passed": true,
+2026-10-23T12:43:09.4144919Z       "error": "review time invalid or expired"
+2026-10-23T12:43:09.4145367Z     },
+2026-10-23T12:43:09.4145636Z     {
+2026-10-23T12:43:09.4146002Z       "case": "启用源缺逻辑服务身份",
+2026-10-23T12:43:09.4146368Z       "expected_valid": false,
+2026-10-23T12:43:09.4146761Z       "actual_valid": false,
+2026-10-23T12:43:09.4147132Z       "passed": true,
+2026-10-23T12:43:09.4147554Z       "error": "'logical_service_id' is a required property"
+2026-10-23T12:43:09.4148059Z     },
+2026-10-23T12:43:09.4148515Z     {
+2026-10-23T12:43:09.4148868Z       "case": "限額缺窗口",
+2026-10-23T12:43:09.4149217Z       "expected_valid": false,
+2026-10-23T12:43:09.4149658Z       "actual_valid": false,
+2026-10-23T12:43:09.4150039Z       "passed": true,
+2026-10-23T12:43:09.4150731Z       "error": "quota window missing"
+2026-10-23T12:43:09.4151138Z     },
+2026-10-23T12:43:09.4151399Z     {
+2026-10-23T12:43:09.4151736Z       "case": "配额窗口完整",
+2026-10-23T12:43:09.4152069Z       "expected_valid": true,
+2026-10-23T12:43:09.4152435Z       "actual_valid": true,
+2026-10-23T12:43:09.4153003Z       "passed": true,
+2026-10-23T12:43:09.4153327Z       "error": null
+2026-10-23T12:43:09.4153624Z     },
+2026-10-23T12:43:09.4153891Z     {
+2026-10-23T12:43:09.4154240Z       "case": "file来源拒绝",
+2026-10-23T12:43:09.4154602Z       "expected_valid": false,
+2026-10-23T12:43:09.4154985Z       "actual_valid": false,
+2026-10-23T12:43:09.4155319Z       "passed": true,
+2026-10-23T12:43:09.4155636Z       "error": "unsupported source scheme"
+2026-10-23T12:43:09.4155999Z     }
+2026-10-23T12:43:09.4156227Z   ]
+2026-10-23T12:43:09.4156453Z }
+2026-10-23T12:43:09.4627090Z {"read_only": true, "structure_valid": true, "packages": 83, "acceptance_mappings": 161, "slices": 10, "planning_estimate": [418, 720], "product_acceptance_checked": false}
+2026-10-23T12:43:10.3348290Z {"suite": "plan_guard", "passed": 13, "failed": 0, "source_inputs_unchanged": true, "product_acceptance_cases_executed": 0}
+2026-10-23T12:43:10.3545918Z Post job cleanup.
+2026-10-23T12:43:10.4460416Z [command]/usr/bin/git version
+2026-10-23T12:43:10.4487301Z git version 2.55.0
+2026-10-23T12:43:10.4528504Z Temporarily overriding HOME='/home/runner/work/_temp/a229f892-7fca-4929-8468-e15dbcec1dd3' before making global git config changes
+2026-10-23T12:43:10.4529885Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-23T12:43:10.4534779Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bzs861/bzs861
+2026-10-23T12:43:10.4577289Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-23T12:43:10.4614046Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-23T12:43:10.4866949Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-23T12:43:10.4904415Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-23T12:43:10.5185318Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-23T12:43:10.5226808Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-23T12:43:10.5651874Z Cleaning up orphan processes
+2026-10-23T12:43:10.5981304Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

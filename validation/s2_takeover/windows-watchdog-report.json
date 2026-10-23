@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "project": "bzs861",
+  "version": "0.1.10",
+  "schema": 13,
+  "recorded_at_utc": "2026-10-23T13:14:18.382163+00:00",
+  "scope": "Retained five continuation increments and previous fixes; a narrow test-infrastructure correction for an observed Windows process watchdog timeout.",
+  "baseline_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+  "baseline_tree": "04b50269aeb0b66664f108d19b0991b1738b11db",
+  "previous_github_ci": {
+    "run_id": 39954357148,
+    "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+    "url": "https://github.com/wmqfl861/bzs861/actions/runs/39954357148",
+    "metadata": {
+      "path": "windows_watchdog_followup/initial-run.json",
+      "sha256": "d646c5a33cbe75a741b0f338713c61ab40fd22cd9961e480ae722431dc0d77d6"
+    },
+    "linux_log": {
+      "path": "windows_watchdog_followup/initial-linux.log",
+      "sha256": "f4b094163def13f1b11486921101ff9dfc127e3924b72330a7eef0ba3dbaf678"
+    },
+    "windows_log": {
+      "path": "windows_watchdog_followup/initial-windows.log",
+      "sha256": "674bc316bd2b492c021423d2dcac3680051752b86af7441734c78dd40d619b15"
+    },
+    "failure": "Windows crawl process timed out at 45.02 seconds, no case output; completed crawl case/assertion count unknown. Linux succeeded; Windows 16/17 succeeded.",
+    "cross_run_comparison": {
+      "path": "windows_watchdog_followup/windows-suite-duration-comparison.json",
+      "sha256": "a9d4b66f6bfd7701831075d49bebb81ae5262fd5600da3b13fddf969362831ef"
+    }
+  },
+  "changes": {
+    "production_runtime_files": [],
+    "test_configuration": "Windows core 45 to 90 seconds; crawl 45 to 120; site_publication 60 to 120. All are finite whole-process watchdogs.",
+    "test_harness": "chrono include and main-only unitbuf RUN/PASS elapsed milliseconds; every original fixture/function/assertion and registration order preserved.",
+    "original_crawl_cases": 54,
+    "original_crawl_assertions": 2798,
+    "product_deadlines_and_performance_acceptance_unchanged": true,
+    "workflow_and_suite_selection_unchanged": true,
+    "linux_properties_unchanged": true,
+    "tradeoff": "A true hang in one of these three Windows suites can take longer to fail. The guard remains bounded and crawl now exposes its last started case.",
+    "diagnostic_limits": "Broad duration variation does not establish host-level cause or rule out a particular stalled crawl case; no Windows execution was simulated locally."
+  },
+  "frozen_execution_inputs": {
+    "path": "windows-watchdog-execution-inputs.json",
+    "sha256": "46048832ba4c5f918ca724cdd6526c5b9459d60c9a0490698141d9eaffd8ab7e",
+    "files": 230
+  },
+  "source_manifest": {
+    "path": "windows-watchdog-source-manifest.json",
+    "sha256": "96d8674c1e9e23c27691e2851a02f548bdc052f9f6c22e677c89867ee733fec6",
+    "files": 215
+  },
+  "local_validation": {
+    "status": "passed_focused_local_windows_watchdog_correction_scope_limited",
+    "scope": "Only the changed crawl test harness was rebuilt and executed locally; unchanged production full-suite evidence is separately historical.",
+    "focused_debug": {
+      "passed_suites": 1,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "suite": "crawl",
+      "cases": 54,
+      "assertions": 2798,
+      "elapsed_seconds": 5.6439,
+      "run_lines": 54,
+      "pass_lines": 54,
+      "original_registration_order_confirmed": true,
+      "linux_watchdog_seconds": 45,
+      "junit": {
+        "path": "windows-watchdog-debug.xml",
+        "sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9"
+      },
+      "command": {
+        "record": "windows-watchdog-debug-command.json",
+        "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
+        "argv": [
+          "ctest",
+          "--test-dir",
+          "build",
+          "-R",
+          "^crawl$",
+          "--verbose",
+          "--output-on-failure",
+          "--output-junit",
+          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 5.673,
+        "log": "windows-watchdog-debug.log",
+        "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
+        "execution_inputs_and_binary_hashes_unchanged": true
+      }
+    },
+    "focused_asan_ubsan": {
+      "passed_suites": 1,
+      "failed_suites": 0,
+      "skipped_suites": 0,
+      "suite": "crawl",
+      "cases": 54,
+      "assertions": 2798,
+      "elapsed_seconds": 20.79,
+      "run_lines": 54,
+      "pass_lines": 54,
+      "original_registration_order_confirmed": true,
+      "linux_watchdog_seconds": 45,
+      "junit": {
+        "path": "windows-watchdog-asan.xml",
+        "sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4"
+      },
+      "command": {
+        "record": "windows-watchdog-asan-command.json",
+        "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
+        "argv": [
+          "ctest",
+          "--test-dir",
+          "build-asan",
+          "-R",
+          "^crawl$",
+          "--verbose",
+          "--output-on-failure",
+          "--output-junit",
+          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 20.817,
+        "log": "windows-watchdog-asan.log",
+        "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
+        "execution_inputs_and_binary_hashes_unchanged": true
+      }
+    },
+    "leak_detection_enabled": true,
+    "undefined_behavior_halt_enabled": true,
+    "unchanged_production_binaries_sha256": {
+      "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+      "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+      "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
+    },
+    "historical_unchanged_runtime_validation": {
+      "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "report": {
+        "path": "deadline-followup-report.json",
+        "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
+      },
+      "local_ctest_passed": 27,
+      "local_sanitizer_executables_passed": 15,
+      "native_cases": 418,
+      "native_assertions": 13106,
+      "python_tests": 1049,
+      "contracts": 34,
+      "planning_guards": 13,
+      "genuine_schema_upgrade": "12 to 13; 39 legacy tables; 310 old-preparation and 1184 upgrade assertions",
+      "independent_store_probe": "6 cases / 92 assertions",
+      "rerun_for_this_test_only_correction": false
+    },
+    "previous_remote_ci": {
+      "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "run_id": 39954357148,
+      "conclusion": "failure",
+      "linux": "success",
+      "linux_ctest_passed": 27,
+      "linux_sanitizer_executables_passed": 15,
+      "linux_native_cases": 418,
+      "linux_native_assertions": 13106,
+      "windows": "failure",
+      "windows_ctest_passed": 16,
+      "windows_ctest_total": 17,
+      "windows_failed_suite": "crawl",
+      "windows_crawl_timeout_seconds": 45.02,
+      "windows_completed_native_suites": 14,
+      "windows_completed_native_cases": 364,
+      "windows_completed_native_assertions": 10308,
+      "windows_crawl_completed_cases": "unknown; no case output before timeout",
+      "windows_search_modes_cases": 22,
+      "windows_http_cli_cases": 20,
+      "windows_http_revocation_cases": 4
+    },
+    "new_remote_ci": "Require successful actual Linux and Windows jobs on the containing published commit; also confirm the three Windows effective watchdogs in its verbose log.",
+    "counting_note": "Focused reruns overlap historical suites and do not add new product acceptance. The failed prior crawl is not counted as passed."
+  },
+  "successful_final_commands": [
+    {
+      "record": "windows-watchdog-debug-command.json",
+      "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "build",
+        "-R",
+        "^crawl$",
+        "--verbose",
+        "--output-on-failure",
+        "--output-junit",
+        "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.673,
+      "log": "windows-watchdog-debug.log",
+      "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
+      "execution_inputs_and_binary_hashes_unchanged": true
+    },
+    {
+      "record": "windows-watchdog-asan-command.json",
+      "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
+      "argv": [
+        "ctest",
+        "--test-dir",
+        "build-asan",
+        "-R",
+        "^crawl$",
+        "--verbose",
+        "--output-on-failure",
+        "--output-junit",
+        "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 20.817,
+      "log": "windows-watchdog-asan.log",
+      "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
+      "execution_inputs_and_binary_hashes_unchanged": true
+    },
+    {
+      "record": "windows-watchdog-preservation-command.json",
+      "record_sha256": "84caacf31829975e32f0d8483b4a8ed36bbc9885b4196c5d2aca214a3ad66e7b",
+      "argv": [
+        "python3",
+        "validation/s2_takeover/windows_watchdog_followup/check_preservation.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.237,
+      "log": "windows-watchdog-preservation.log",
+      "log_sha256": "c5dd65a6c5e7ffe186c649d8c378fccb1c19fd74df20410848fe550c165e2475",
+      "execution_inputs_and_binary_hashes_unchanged": true
+    }
+  ],
+  "build_preparation": {
+    "debug": {
+      "path": "windows-watchdog-prepare-debug-command.json",
+      "sha256": "4ebc20a9c771d9dd1583d94c92af8842b0fcc59923c2886719ebe0a5f547dbb7"
+    },
+    "asan": {
+      "path": "windows-watchdog-prepare-asan-command.json",
+      "sha256": "8cfd00b9e77b88b284aecde48dfe63e87001867f47003bd0b46911f0ab8d9600"
+    },
+    "before_properties_and_binaries": {
+      "path": "windows_watchdog_followup/linux-properties-before.json",
+      "sha256": "fbf46c61d12c5481732889dd860cc355645fa6b4b4386036183b8355ec81b46d"
+    },
+    "after_binaries": {
+      "path": "windows_watchdog_followup/final-build-preparation.json",
+      "sha256": "3827a8fa155757632b6a4b09d475670ceb6855ebc1b87e8743c23f42297fdbd0"
+    },
+    "scope": "Only modified crawl tests rebuilt. No production rebuild or binary-mode repair was required; preparation completed before execution-input freeze."
+  },
+  "preservation": {
+    "schema_version": 1,
+    "status": "passed",
+    "baseline_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+    "baseline_tree": "04b50269aeb0b66664f108d19b0991b1738b11db",
+    "preserved_existing_files": 1532,
+    "preserved_existing_files_manifest_sha256": "6bfcafe162820231aede6d9282603ebb14f2367947fa53eae6aa2765cf7f97f2",
+    "preserved_existing_validation_files": 1325,
+    "preserved_existing_validation_manifest_sha256": "15ea83ee9257473a0e088e9cb21bd6723751b96e700476acd40cc908631b4a9e",
+    "all_prior_validation_bytes_preserved": true,
+    "allowed_changed_files": {
+      "CMakeLists.txt": {
+        "before_blob": "3c26d04d621b3210c55774feb04bfc6551e8e268",
+        "after_blob": "12eb326bf8618334e3a9e5e628880c148d135129",
+        "after_sha256": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768"
+      },
+      "HANDOFF_START_HERE.md": {
+        "before_blob": "a03fb9db599dcc6d9993c79596d6544f49a6b5f1",
+        "after_blob": "d78ce6e570fae76ceb3a336815441faeb316ee37",
+        "after_sha256": "34da64a999ee45584bf11f0ee400fb6c73a71445d14333337cde145f40d72c91"
+      },
+      "README.md": {
+        "before_blob": "08994a0ce8af44b7567d7e94bf730ff9c27a2b10",
+        "after_blob": "946a0c1b9170fca97ba9de648f946710d2b694ed",
+        "after_sha256": "5d6305a9308aa53b349bfb6ec03a7360ad4278e6e5a60d9e37783b51fa199b9c"
+      },
+      "docs/DEVELOPMENT_STATUS.md": {
+        "before_blob": "7668ea9289e55a72aecb852d3f4af9ecef8ba1b4",
+        "after_blob": "5753615f1fd43df63735969b1cbf282a649eba8c",
+        "after_sha256": "f682efd79fc3012d6cb601c4c71ebeaedaf71b69b3d4e52ac6138d3879a2c494"
+      },
+      "docs/GITHUB_HANDOFF.md": {
+        "before_blob": "0c60428eea39df22e41c1f1a408662977c159cea",
+        "after_blob": "64daf45202eb191c27da78fa4548bf39f444d907",
+        "after_sha256": "76662fec5cdcd42bf5ed108501ae9c33e1d91df6677423122214724473d496d5"
+      },
+      "docs/handoff/NEXT_AGENT.md": {
+        "before_blob": "bfe4de4d4bae9926b5099d01f45eea82793c0005",
+        "after_blob": "e1a79896554dde5c037357dce35cff1a4f6fce71",
+        "after_sha256": "83709e7e73fb56bbafc8cf57e3843eaefec3d60a497b419c7a40b2d7d5980998"
+      },
+      "docs/implementation_status.json": {
+        "before_blob": "230547d5b01a5b0ff82599e03fd5ec819547338b",
+        "after_blob": "147f964f2dbcff4f4fffec5db0dd0e34aad7d1af",
+        "after_sha256": "142c92f3827edf08c998f2effbf19deb9aa43743eba569fed0df0e192b701367"
+      },
+      "tests/crawl.cpp": {
+        "before_blob": "9048cdd23cd6e04001ae7378fd23240eb85f58b8",
+        "after_blob": "997d5729e92677f99c2ebdc2025e8360da352472",
+        "after_sha256": "a41d87eadd1292a198e2a75797de210e78813ed9dceafba8d198e61dea27f06f"
+      }
+    },
+    "all_production_runtime_source_bytes_unchanged": true,
+    "original_crawl_fixtures_functions_assertions_and_registration_order_preserved": true,
+    "original_crawl_body_sha256": "193ba9335f94319d9e45f1d62b97cc13e08120a4570a103518c9872975cbd428",
+    "original_crawl_cases": 54,
+    "original_crawl_registered_names_sha256": "9fba096f108a25428d8998ecb9246273f0aae37cfe96e895c709857bd92d0693",
+    "workflow_presets_schema_contract_fixtures_and_dependency_locks_unchanged": true,
+    "generated_linux_test_properties_unchanged": true,
+    "generated_linux_test_count": 27,
+    "linux_watchdogs_seconds": {
+      "core": 45.0,
+      "crawl": 45.0,
+      "site_publication": 60.0,
+      "sessions": 60.0
+    },
+    "windows_configuration_execution": "Not performed locally; review source branch and require actual new Windows CI to show 90/120/120 seconds.",
+    "plan_and_acceptance_unchanged": true,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "new_files_limited_to_validation_evidence": true,
+    "golden_check": "Raw byte/object hashes only; no query inspection, labeling or tuning.",
+    "unchanged_production_binaries_sha256": {
+      "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+      "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+      "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
+    }
+  },
+  "independent_review": {
+    "path": "windows-watchdog-review.json",
+    "sha256": "2ecd85b46ec17e7c580fab400d9a97c77ef5d1db88e41fd0048aceec12ee9071"
+  },
+  "summary_audit": "windows-watchdog-summary-audit.json",
+  "historical_reports": [
+    {
+      "path": "final-report.json",
+      "sha256": "24450df351273fe049035a3a4ddaa5ac154d531948ae2312c336490cb9de2521"
+    },
+    {
+      "path": "ci-followup-report.json",
+      "sha256": "dd4a7e37fb44f9d678e59bed1c9f2de47f74d8a837e1dd0b74c274d6e31c0571"
+    },
+    {
+      "path": "deadline-followup-report.json",
+      "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
+    }
+  ],
+  "plan": {
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0,
+    "planned_acceptance_suite_executed": false,
+    "source_approvals_changed": false
+  },
+  "release_gate": "Publish with exact parent fcb58e4679a5bbdff17319b7b4ebff7019733eab and expected non-forced main update; verify local/remote full-tree equality, then require successful actual Linux and Windows CI on the new SHA, with Windows effective watchdogs 90/120/120. No future SHA or CI success is predeclared."
+}

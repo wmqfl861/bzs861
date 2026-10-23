@@ -1,0 +1,135 @@
+Internal ctest changing into directory: /workspace/scratch/e2371129386d/bzs861/build-asan
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/build-asan/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/bzs861/build-asan/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/build-asan/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/bzs861/build-asan/DartConfiguration.tcl
+Test project /workspace/scratch/e2371129386d/bzs861/build-asan
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 4
+    Start 4: crawl
+
+4: Test command: /workspace/scratch/e2371129386d/bzs861/build-asan/bzs_crawl_tests
+4: Working Directory: /workspace/scratch/e2371129386d/bzs861/build-asan
+4: Test timeout computed to be: 45
+4: RUN crawl_submission_is_distinct_and_bounded
+4: PASS crawl_submission_is_distinct_and_bounded (116 ms)
+4: RUN recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique
+4: PASS recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique (210 ms)
+4: RUN robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier
+4: PASS robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier (153 ms)
+4: RUN page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows
+4: PASS page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows (167 ms)
+4: RUN depth_and_query_variants_bound_recursive_traps
+4: PASS depth_and_query_variants_bound_recursive_traps (322 ms)
+4: RUN noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence
+4: PASS noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence (247 ms)
+4: RUN nosnippet_and_data_nosnippet_restrict_old_cursors_and_do_not_forge_offsets
+4: PASS nosnippet_and_data_nosnippet_restrict_old_cursors_and_do_not_forge_offsets (488 ms)
+4: RUN empty_successful_page_keeps_the_restrictive_refresh
+4: PASS empty_successful_page_keeps_the_restrictive_refresh (181 ms)
+4: RUN quota_failure_retains_restriction_observation_without_claiming_a_new_page
+4: PASS quota_failure_retains_restriction_observation_without_claiming_a_new_page (489 ms)
+4: RUN failed_header_observation_is_monotonic_and_keeps_failed_usage
+4: PASS failed_header_observation_is_monotonic_and_keeps_failed_usage (194 ms)
+4: RUN body_redirect_uses_one_page_grant_and_propagates_policy_to_existing_redirect_reads
+4: PASS body_redirect_uses_one_page_grant_and_propagates_policy_to_existing_redirect_reads (166 ms)
+4: RUN existing_normalized_aliases_share_publication_and_deletion_fences
+4: PASS existing_normalized_aliases_share_publication_and_deletion_fences (213 ms)
+4: RUN shared_dispatch_is_round_robin_across_map_crawl_jobs_and_restart
+4: PASS shared_dispatch_is_round_robin_across_map_crawl_jobs_and_restart (221 ms)
+4: RUN pause_cancel_and_auth_epoch_fence_late_body_and_observation
+4: PASS pause_cancel_and_auth_epoch_fence_late_body_and_observation (260 ms)
+4: RUN restarted_unknown_body_keeps_request_byte_and_page_reservations_without_retry
+4: PASS restarted_unknown_body_keeps_request_byte_and_page_reservations_without_retry (96 ms)
+4: RUN known_zero_http_refusal_refunds_page_and_request_grant
+4: PASS known_zero_http_refusal_refunds_page_and_request_grant (91 ms)
+4: RUN body_policy_index_edges_and_hop_receipt_commit_atomically
+4: PASS body_policy_index_edges_and_hop_receipt_commit_atomically (124 ms)
+4: RUN edge_capacity_stops_enqueue_before_an_unrecorded_body
+4: PASS edge_capacity_stops_enqueue_before_an_unrecorded_body (212 ms)
+4: RUN schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity
+4: PASS schema_five_migration_preserves_map_read_sessions_snapshots_and_index_identity (240 ms)
+4: RUN schema_five_quarantine_rejects_before_new_publication_ddl
+4: PASS schema_five_quarantine_rejects_before_new_publication_ddl (164 ms)
+4: RUN crawl_late_body_cannot_undo_a_newer_direct_page_restriction_or_replace_fresh_current
+4: PASS crawl_late_body_cannot_undo_a_newer_direct_page_restriction_or_replace_fresh_current (775 ms)
+4: RUN crawl_logical_refresh_sequence_survives_redirect_pause_and_restart
+4: PASS crawl_logical_refresh_sequence_survives_redirect_pause_and_restart (541 ms)
+4: RUN schema_seven_redirected_crawl_keeps_an_unknown_logical_capture_restricted_after_upgrade
+4: PASS schema_seven_redirected_crawl_keeps_an_unknown_logical_capture_restricted_after_upgrade (320 ms)
+4: RUN links_only_publication_ceiling_survives_direct_and_batch_refresh
+4: PASS links_only_publication_ceiling_survives_direct_and_batch_refresh (303 ms)
+4: RUN candidate_registry_without_optional_redistribution_does_not_break_explicit_read
+4: PASS candidate_registry_without_optional_redistribution_does_not_break_explicit_read (106 ms)
+4: RUN empty_meta_only_explicit_and_batch_reads_retract_without_a_new_snapshot
+4: PASS empty_meta_only_explicit_and_batch_reads_retract_without_a_new_snapshot (191 ms)
+4: RUN success_protocol_rejects_partial_error_http_and_hidden_redirects_with_known_usage
+4: PASS success_protocol_rejects_partial_error_http_and_hidden_redirects_with_known_usage (258 ms)
+4: RUN allowing_page_cannot_clear_its_own_noindex_observation
+4: PASS allowing_page_cannot_clear_its_own_noindex_observation (306 ms)
+4: RUN redirect_observation_survives_pause_restart_and_cannot_be_relaxed_by_target
+4: PASS redirect_observation_survives_pause_restart_and_cannot_be_relaxed_by_target (197 ms)
+4: RUN frozen_representation_is_immutable_across_retarget_and_same_content_reuse
+4: PASS frozen_representation_is_immutable_across_retarget_and_same_content_reuse (732 ms)
+4: RUN independent_store_connections_cannot_double_reserve_the_same_origin
+4: PASS independent_store_connections_cannot_double_reserve_the_same_origin (87 ms)
+4: RUN explicit_redirect_rules_are_versioned_for_logical_url_without_restricting_final_target
+4: PASS explicit_redirect_rules_are_versioned_for_logical_url_without_restricting_final_target (697 ms)
+4: RUN redirect_restriction_on_failed_or_quota_limited_read_does_not_relabel_target
+4: PASS redirect_restriction_on_failed_or_quota_limited_read_does_not_relabel_target (572 ms)
+4: RUN intermediate_redirect_observations_are_bound_and_late_batch_results_are_fenced
+4: PASS intermediate_redirect_observations_are_bound_and_late_batch_results_are_fenced (410 ms)
+4: RUN truncated_read_cannot_supply_an_allowing_versioned_publication
+4: PASS truncated_read_cannot_supply_an_allowing_versioned_publication (140 ms)
+4: RUN refused_redirect_tail_keeps_only_actual_public_response_policy
+4: PASS refused_redirect_tail_keeps_only_actual_public_response_policy (406 ms)
+4: RUN ordinary_read_requoting_and_escaped_paths_keep_actual_hop_restrictions
+4: PASS ordinary_read_requoting_and_escaped_paths_keep_actual_hop_restrictions (603 ms)
+4: RUN crawl_rejected_redirect_target_still_applies_its_admitted_response_header
+4: PASS crawl_rejected_redirect_target_still_applies_its_admitted_response_header (188 ms)
+4: RUN trap_policy_is_versioned_separately_from_map_and_pins_finite_limits
+4: PASS trap_policy_is_versioned_separately_from_map_and_pins_finite_limits (93 ms)
+4: RUN consecutive_calendar_days_include_leap_day_and_survive_pause_restart
+4: PASS consecutive_calendar_days_include_leap_day_and_survive_pause_restart (424 ms)
+4: RUN calendar_fanout_is_bounded_across_different_parents_and_keeps_other_documents
+4: PASS calendar_fanout_is_bounded_across_different_parents_and_keeps_other_documents (718 ms)
+4: RUN finite_dates_unique_article_slugs_versions_and_invalid_dates_are_not_calendar_stops
+4: PASS finite_dates_unique_article_slugs_versions_and_invalid_dates_are_not_calendar_stops (1451 ms)
+4: RUN calendar_month_and_backward_navigation_have_their_own_sequence_bound
+4: PASS calendar_month_and_backward_navigation_have_their_own_sequence_bound (670 ms)
+4: RUN query_permutations_decode_only_for_analysis_and_keep_repeated_value_order
+4: PASS query_permutations_decode_only_for_analysis_and_keep_repeated_value_order (455 ms)
+4: RUN parameter_combinations_stop_across_pagination_paths_before_generic_limits
+4: PASS parameter_combinations_stop_across_pagination_paths_before_generic_limits (499 ms)
+4: RUN query_dimension_bounds_count_distinct_keys_and_all_repeated_pairs
+4: PASS query_dimension_bounds_count_distinct_keys_and_all_repeated_pairs (233 ms)
+4: RUN changing_pagination_urls_with_identical_bodies_close_only_their_family
+4: PASS changing_pagination_urls_with_identical_bodies_close_only_their_family (601 ms)
+4: RUN queued_repeated_pages_keep_all_parent_reasons_after_restart_and_other_job_runs
+4: PASS queued_repeated_pages_keep_all_parent_reasons_after_restart_and_other_job_runs (467 ms)
+4: RUN explicit_pagination_seeds_are_read_after_family_limit_without_false_partial_coverage
+4: PASS explicit_pagination_seeds_are_read_after_family_limit_without_false_partial_coverage (252 ms)
+4: RUN duplicate_nonpagination_bodies_and_distinct_pagination_bodies_remain_readable
+4: PASS duplicate_nonpagination_bodies_and_distinct_pagination_bodies_remain_readable (655 ms)
+4: RUN discovered_redirect_target_is_checked_before_the_next_physical_request
+4: PASS discovered_redirect_target_is_checked_before_the_next_physical_request (784 ms)
+4: RUN schema_six_live_job_bootstraps_body_traps_and_preserves_idempotency
+4: PASS schema_six_live_job_bootstraps_body_traps_and_preserves_idempotency (385 ms)
+4: RUN seed_redirect_is_automatic_navigation_unless_target_is_itself_an_explicit_seed
+4: PASS seed_redirect_is_automatic_navigation_unless_target_is_itself_an_explicit_seed (328 ms)
+4: RUN oversized_legacy_observations_settle_once_without_starving_another_job
+4: PASS oversized_legacy_observations_settle_once_without_starving_another_job (1399 ms)
+4: 54 crawl tests, 2798 assertions, 0 failures
+1/1 Test #4: crawl ............................   Passed   20.79 sec
+
+The following tests passed:
+	crawl
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  20.79 sec

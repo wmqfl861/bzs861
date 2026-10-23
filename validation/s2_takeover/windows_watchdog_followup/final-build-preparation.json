@@ -1,0 +1,26 @@
+{
+  "scope": "Sequential Debug and ASan preparation rebuilt only the crawl test executable; unchanged production binary hashes and executable modes checked before formal validation.",
+  "binary_modes_repaired": false,
+  "binaries": {
+    "build/libbzs_core.a": {
+      "sha256": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+      "mode": "0o644"
+    },
+    "build/searchd": {
+      "sha256": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+      "mode": "0o755"
+    },
+    "build/bzs_crawl_tests": {
+      "sha256": "a6ae7ad92eb919c9da59f831205fa303a46a98a213e6856c2746563506a66ff9",
+      "mode": "0o755"
+    },
+    "build-asan/libbzs_core.a": {
+      "sha256": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54",
+      "mode": "0o644"
+    },
+    "build-asan/bzs_crawl_tests": {
+      "sha256": "3b26dfeea18b9025979f28cb7fbdc18efd7a15e4f8725a55e9ae4d210c43e45c",
+      "mode": "0o755"
+    }
+  }
+}

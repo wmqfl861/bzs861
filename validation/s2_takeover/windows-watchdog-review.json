@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "scope": "Windows whole-process watchdog and crawl diagnostic output correction only.",
+  "author": {
+    "agent": "/root",
+    "files": [
+      "CMakeLists.txt",
+      "tests/crawl.cpp"
+    ]
+  },
+  "independent_reviewers": [
+    {
+      "agent": "/root/handoff_audit",
+      "record": {
+        "path": "windows_watchdog_followup/independent-review.json",
+        "sha256": "88fca2ee992a62abc2505ee75f475954f7f0c238381ca16744a6092e4d10e5bb"
+      }
+    },
+    {
+      "agent": "/root/source_policy",
+      "record": {
+        "path": "windows_watchdog_followup/source-diagnosis.json",
+        "sha256": "18b6a32f3677305f12a62495f382dcbdfad7a780337a49f442d528d33059c4e7"
+      }
+    }
+  ],
+  "integrator": {
+    "agent": "/root",
+    "scope": "Sequential focused builds, Debug and leak-enabled ASan execution, input freeze, unchanged production binary and Linux-property checks, preservation of historical failures."
+  },
+  "summary_audit": "windows-watchdog-summary-audit.json",
+  "full_product_independent_signoff": false,
+  "scope_limit": "Local validation does not execute Windows. Actual containing SHA Windows must confirm the new watchdogs and all 54 crawl cases; CI remains a blocking gate."
+}

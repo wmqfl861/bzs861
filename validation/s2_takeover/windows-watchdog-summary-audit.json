@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-23T13:19:02.195036+00:00",
+  "role": {
+    "agent": "/root/revocation",
+    "capacity": "Independent summary, identity, path, preservation and evidence-boundary audit of root-authored Windows watchdog correction",
+    "implementation_authored_in_this_task": false,
+    "tests_executed_in_this_task": false,
+    "build_or_configuration_executed_in_this_task": false,
+    "only_output_file": "validation/s2_takeover/windows-watchdog-summary-audit.json",
+    "committed_by_this_agent": false
+  },
+  "baseline_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+  "baseline_tree": "04b50269aeb0b66664f108d19b0991b1738b11db",
+  "audited_report": {
+    "path": "validation/s2_takeover/windows-watchdog-report.json",
+    "sha256": "118566b436f1bd426fe4b776260a64120af18ced13d324c438b49839d9a0dffd"
+  },
+  "audited_review": {
+    "path": "validation/s2_takeover/windows-watchdog-review.json",
+    "sha256": "2ecd85b46ec17e7c580fab400d9a97c77ef5d1db88e41fd0048aceec12ee9071"
+  },
+  "conclusion": {
+    "status": "no_blocking_findings_in_reviewed_scope",
+    "blocking_findings": [],
+    "new_windows_ci_verified": false,
+    "new_linux_ci_verified": false,
+    "release_condition": "Actual containing published commit must pass Linux and Windows CI; the Windows log must confirm effective core/crawl/site_publication watchdogs of 90/120/120 seconds and all 54 original crawl cases."
+  },
+  "checks": {
+    "manifests": {
+      "frozen_execution_inputs": 230,
+      "frozen_execution_manifest_sha256": "46048832ba4c5f918ca724cdd6526c5b9459d60c9a0490698141d9eaffd8ab7e",
+      "source_files": 215,
+      "source_manifest_sha256": "96d8674c1e9e23c27691e2851a02f548bdc052f9f6c22e677c89867ee733fec6",
+      "all_live_entries_match": true
+    },
+    "commands": {
+      "successful_final_commands": [
+        {
+          "record": "windows-watchdog-debug-command.json",
+          "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
+          "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
+          "exit_code": 0,
+          "execution_inputs_sha256": "46048832ba4c5f918ca724cdd6526c5b9459d60c9a0490698141d9eaffd8ab7e",
+          "binary_files_bound": 36
+        },
+        {
+          "record": "windows-watchdog-asan-command.json",
+          "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
+          "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
+          "exit_code": 0,
+          "execution_inputs_sha256": "46048832ba4c5f918ca724cdd6526c5b9459d60c9a0490698141d9eaffd8ab7e",
+          "binary_files_bound": 36
+        },
+        {
+          "record": "windows-watchdog-preservation-command.json",
+          "record_sha256": "84caacf31829975e32f0d8483b4a8ed36bbc9885b4196c5d2aca214a3ad66e7b",
+          "log_sha256": "c5dd65a6c5e7ffe186c649d8c378fccb1c19fd74df20410848fe550c165e2475",
+          "exit_code": 0,
+          "execution_inputs_sha256": "46048832ba4c5f918ca724cdd6526c5b9459d60c9a0490698141d9eaffd8ab7e",
+          "binary_files_bound": 36
+        }
+      ],
+      "preparation": [
+        {
+          "record": "windows-watchdog-prepare-debug-command.json",
+          "exit_code": 0,
+          "before_freeze": true,
+          "log_sha256": "1828c3af3e5b4b843d474717bf805e78347e66609fed6ce84452939a7ab68ab7"
+        },
+        {
+          "record": "windows-watchdog-prepare-asan-command.json",
+          "exit_code": 0,
+          "before_freeze": true,
+          "log_sha256": "08d157c67279a628f24ecf21657242c9e74c12d34b823161696ea5145901dd9f"
+        }
+      ],
+      "structured_path_hash_references_checked": 19
+    },
+    "preservation": {
+      "previous_validation_files": 1325,
+      "previous_validation_manifest_sha256": "15ea83ee9257473a0e088e9cb21bd6723751b96e700476acd40cc908631b4a9e",
+      "preserved_baseline_files": 1532,
+      "preserved_baseline_manifest_sha256": "6bfcafe162820231aede6d9282603ebb14f2367947fa53eae6aa2765cf7f97f2",
+      "production_source_changed": [],
+      "all_original_crawl_test_bytes_preserved": true,
+      "registered_crawl_cases": 54,
+      "windows_only_watchdogs_seconds": {
+        "core": 90,
+        "crawl": 120,
+        "site_publication": 120
+      },
+      "linux_existing_generated_test_file_identical": true,
+      "product_deadlines_and_acceptance_unchanged": true
+    },
+    "current_execution": {
+      "debug": {
+        "suites_passed": 1,
+        "suites_failed": 0,
+        "suites_skipped": 0,
+        "cases": 54,
+        "assertions": 2798,
+        "elapsed_seconds": 5.6439,
+        "run_lines": 54,
+        "pass_lines": 54,
+        "original_order_preserved": true,
+        "junit_sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9",
+        "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d"
+      },
+      "asan": {
+        "suites_passed": 1,
+        "suites_failed": 0,
+        "suites_skipped": 0,
+        "cases": 54,
+        "assertions": 2798,
+        "elapsed_seconds": 20.79,
+        "run_lines": 54,
+        "pass_lines": 54,
+        "original_order_preserved": true,
+        "junit_sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4",
+        "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0"
+      }
+    },
+    "result_scope": {
+      "current_local_execution": "Two focused crawl invocations only (Debug and ASan/UBSan); no full-suite, migration, or independent probe replay by this auditor.",
+      "historical_full_validation": {
+        "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+        "ctest_suites": 27,
+        "sanitizer_executables": 15,
+        "native_cases": 418,
+        "native_assertions": 13106,
+        "python_tests": 1049,
+        "rerun_in_this_correction": false
+      },
+      "previous_ci": {
+        "run_id": 39954357148,
+        "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+        "linux": "success",
+        "windows": "failure",
+        "windows_passed_suites": 16,
+        "windows_total_suites": 17,
+        "crawl_timeout_seconds": 45.02,
+        "completed_native_suites": 14,
+        "completed_native_cases": 364,
+        "completed_native_assertions": 10308,
+        "crawl_completed_cases": "unknown"
+      },
+      "new_ci_success_predeclared": false,
+      "new_exact_commit_ci_still_required": true
+    },
+    "documentation": {
+      "machine_status_sha256": "142c92f3827edf08c998f2effbf19deb9aa43743eba569fed0df0e192b701367",
+      "machine_current_results_equal_report": true,
+      "six_documents": [
+        {
+          "path": "HANDOFF_START_HERE.md",
+          "sha256": "34da64a999ee45584bf11f0ee400fb6c73a71445d14333337cde145f40d72c91",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        },
+        {
+          "path": "README.md",
+          "sha256": "5d6305a9308aa53b349bfb6ec03a7360ad4278e6e5a60d9e37783b51fa199b9c",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        },
+        {
+          "path": "docs/DEVELOPMENT_STATUS.md",
+          "sha256": "f682efd79fc3012d6cb601c4c71ebeaedaf71b69b3d4e52ac6138d3879a2c494",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        },
+        {
+          "path": "docs/GITHUB_HANDOFF.md",
+          "sha256": "76662fec5cdcd42bf5ed108501ae9c33e1d91df6677423122214724473d496d5",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        },
+        {
+          "path": "docs/handoff/NEXT_AGENT.md",
+          "sha256": "83709e7e73fb56bbafc8cf57e3843eaefec3d60a497b419c7a40b2d7d5980998",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        },
+        {
+          "path": "docs/handoff/S2_TAKEOVER_20261023.md",
+          "sha256": "6ce370a4d73e6e31e3540038a0a1f72c6e8b42c6e7073301ec3984e560020770",
+          "scope_review": "Current focused correction and historical results distinguished; unchanged S2 scope document retains planned gate requirements."
+        }
+      ],
+      "local_markdown_links_checked": 74,
+      "planning": {
+        "work_packages": 83,
+        "acceptance_items": 161,
+        "slices": 10,
+        "partial": 37,
+        "not_started": 46,
+        "accepted": 0,
+        "planned_acceptance_suite_executed": false,
+        "source_approvals_changed": false
+      },
+      "future_exact_sha_ci_requirement_retained": true
+    },
+    "independence": {
+      "patch_author": "/root",
+      "patch_reviewers": [
+        "/root/handoff_audit",
+        "/root/source_policy"
+      ],
+      "summary_auditor": "/root/revocation",
+      "full_product_signoff": false,
+      "auditor_reran_tests": false
+    }
+  },
+  "limitations": [
+    "This audit re-read recorded results and hashed files; it did not execute tests, builds, migrations, Windows configuration, or any future CI.",
+    "The previous Windows crawl timeout has no completed-case evidence and is retained as failure; host-level cause and exact stalled case remain unproven.",
+    "Focused results overlap prior validation and add no formal product acceptance."
+  ]
+}

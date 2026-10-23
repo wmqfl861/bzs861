@@ -1,6 +1,6 @@
 # 下一会话接手顺序
 
-更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[当前截止时间报告](../../validation/s2_takeover/deadline-followup-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI。原[生产实现报告](../../validation/s2_takeover/final-report.json)和[HTTP清理报告](../../validation/s2_takeover/ci-followup-report.json)作为历史输入保留。
+更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[当前Windows watchdog报告](../../validation/s2_takeover/windows-watchdog-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI。原[生产实现报告](../../validation/s2_takeover/final-report.json)、[HTTP清理报告](../../validation/s2_takeover/ci-followup-report.json)和[截止时间报告](../../validation/s2_takeover/deadline-followup-report.json)作为各自历史输入保留。
 
 ## 当前基线与接口
 
@@ -17,6 +17,8 @@
 首次发布a06e7e9的CI39945994760中Linux通过，Windows构建成功、16/17套通过；http_revocation两例均在清理metadata.sqlite时遇到WinError32。Python SQLite事务上下文退出不等于连接关闭，该次HTTP修正只将rows()改为显式关闭，并在同一CI测试脚本加入成功/异常两条连接释放回归。该次保留生产代码、两条撤权HTTP业务测试与严格清理；对应冻结为ci-followup-execution-inputs.json。原v2不改写或冒充新测试输入，该HTTP修正发布为199eb635，Windows实际17/17通过，包含四项撤权HTTP测试；该成绩不代替其后的生产修正。
 
 HTTP修正提交199eb635的CI39950116698又在Linux原恢复test_06出现queued/source_unknown/failed事件竞态。当前整体期限限制的RPC超时归为E_DEADLINE，并由Store对有效lease原子终止且只计一次unknown；普通较短来源超时仍可在原预算内继续尾部。原E2E字节不变，新5项native和独立6场景验证末来源、取消/撤权/旧epoch、冻结版本及普通错误对照。以deadline-followup-execution-inputs.json和对应报告绑定的新生产库为准；旧final-v2及HTTP聚焦成绩不代替当前全量验证，前两次失败不得改写。
+
+生产期限修正发布为fcb58e4679a5bbdff17319b7b4ebff7019733eab，CI39954357148的Linux27/27与15套sanitizer通过；Windows16/17，crawl在45.02秒被整个测试进程watchdog终止，旧缓冲输出不能确认已完成用例。当前修正仅为Windows设置core90秒、crawl/site_publication120秒，并让crawl逐例即时输出RUN/PASS和耗时。45秒设置沿用自35例时期，现有54例；没有把该进程上限定义为产品性能验收。原用例/断言、业务期限、持久化设置和生产源码保持，Linux属性保持。本轮只重编crawl测试并执行聚焦Debug/ASan及保持检查，旧完整生产验证不改写为新执行；所有历史证据保留，新SHA仍须核对实际双平台CI及Windows有效时限。
 
 ## 接续开发
 

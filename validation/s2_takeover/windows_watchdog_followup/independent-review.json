@@ -1,0 +1,585 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-23T13:14:04.451100+00:00",
+  "role": {
+    "agent": "handoff_audit",
+    "capacity": "Independent review of the integrator-authored Windows watchdog and crawl output change",
+    "implementation_authored_in_this_task": false,
+    "tests_executed_in_this_task": false,
+    "configuration_executed_in_this_task": false,
+    "repository_writes": [
+      "validation/s2_takeover/windows_watchdog_followup/independent-review.json"
+    ],
+    "committed_by_this_agent": false
+  },
+  "conclusion": {
+    "status": "no_blocking_findings_in_reviewed_scope",
+    "approval_scope": "The bounded Windows process-watchdog and crawl progress-output change is appropriate for a new exact-commit CI attempt; this review does not claim that attempt passed.",
+    "blocking_findings": [],
+    "new_windows_ci_verified": false
+  },
+  "baseline": {
+    "commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+    "tree": "04b50269aeb0b66664f108d19b0991b1738b11db",
+    "worktree_head_at_review": "fcb58e4679a5bbdff17319b7b4ebff7019733eab"
+  },
+  "source_change_scope": {
+    "changed_code_configuration_or_workflow_paths": [
+      "CMakeLists.txt",
+      "tests/crawl.cpp"
+    ],
+    "production_source_paths_changed": [],
+    "workflow_and_presets_unchanged": true,
+    "reviewed_files": [
+      {
+        "path": "CMakeLists.txt",
+        "baseline_sha256": "dddb18ab670377751e915d2e64c7c7097a79b78abcc440e3c1c26b08f469f022",
+        "current_sha256": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768",
+        "current_bytes": 15265
+      },
+      {
+        "path": "tests/crawl.cpp",
+        "baseline_sha256": "7c9ec8737a3ddda02fbc4499c86a88c2e14a14ba9cf843e9564e2f1c474a6380",
+        "current_sha256": "a41d87eadd1292a198e2a75797de210e78813ed9dceafba8d198e61dea27f06f",
+        "current_bytes": 85806
+      }
+    ]
+  },
+  "cmake_review": {
+    "only_change": "One WIN32 conditional override after unchanged general defaults.",
+    "exact_removal_of_new_block_recovers_baseline_bytes": true,
+    "windows_timeout_seconds": {
+      "core": {
+        "before": 45,
+        "after": 90
+      },
+      "crawl": {
+        "before": 45,
+        "after": 120
+      },
+      "site_publication": {
+        "before": 60,
+        "after": 120
+      }
+    },
+    "other_suites_and_product_deadlines_unchanged": true,
+    "finite_watchdogs_retained": true,
+    "linux_local_configuration_verification": [
+      {
+        "configuration": "debug",
+        "regeneration_command": {
+          "path": "validation/s2_takeover/windows-watchdog-prepare-debug-command.json",
+          "sha256": "4ebc20a9c771d9dd1583d94c92af8842b0fcc59923c2886719ebe0a5f547dbb7",
+          "bytes": 10932
+        },
+        "regeneration_log": {
+          "path": "validation/s2_takeover/windows-watchdog-prepare-debug.log",
+          "sha256": "1828c3af3e5b4b843d474717bf805e78347e66609fed6ce84452939a7ab68ab7",
+          "bytes": 281
+        },
+        "command_exit_code": 0,
+        "generated_ctest_file": {
+          "path": "build/CTestTestfile.cmake",
+          "sha256": "33a4b88356127b44f06cf535416f74456da6a589e8ab0698c3b59073fff10f0a",
+          "bytes": 11920
+        },
+        "generated_file_identical_to_before": true,
+        "observed_timeout_seconds": {
+          "core": 45.0,
+          "crawl": 45.0,
+          "site_publication": 60.0
+        },
+        "reviewer_executed_configuration": false
+      },
+      {
+        "configuration": "asan",
+        "regeneration_command": {
+          "path": "validation/s2_takeover/windows-watchdog-prepare-asan-command.json",
+          "sha256": "8cfd00b9e77b88b284aecde48dfe63e87001867f47003bd0b46911f0ab8d9600",
+          "bytes": 10923
+        },
+        "regeneration_log": {
+          "path": "validation/s2_takeover/windows-watchdog-prepare-asan.log",
+          "sha256": "08d157c67279a628f24ecf21657242c9e74c12d34b823161696ea5145901dd9f",
+          "bytes": 286
+        },
+        "command_exit_code": 0,
+        "generated_ctest_file": {
+          "path": "build-asan/CTestTestfile.cmake",
+          "sha256": "e506d4414a3dfe5b0d26074bf02187ccc1a62be3ff4a83386b2cdd1f52f7f548",
+          "bytes": 12065
+        },
+        "generated_file_identical_to_before": true,
+        "observed_timeout_seconds": {
+          "core": 45.0,
+          "crawl": 45.0,
+          "site_publication": 60.0
+        },
+        "reviewer_executed_configuration": false
+      }
+    ],
+    "windows_runtime_property_verification": "Pending a new exact-commit Windows CI run; Linux CMake regeneration is not a Windows execution result."
+  },
+  "crawl_test_preservation": {
+    "method": "Split each file at its single newline-delimited int main() definition; remove only the one new chrono include from the new prefix, then compare the complete remaining prefixes byte-for-byte. Compare ordered TEST registrations independently.",
+    "all_original_pre_main_bytes_equal_after_include_removal": true,
+    "pre_main_baseline_sha256": "193ba9335f94319d9e45f1d62b97cc13e08120a4570a103518c9872975cbd428",
+    "pre_main_current_normalized_sha256": "193ba9335f94319d9e45f1d62b97cc13e08120a4570a103518c9872975cbd428",
+    "pre_main_baseline_bytes": 85132,
+    "test_functions_helpers_fixtures_assertions_and_registration_order_preserved": true,
+    "baseline_test_cases": 54,
+    "current_test_cases": 54,
+    "ordered_registration_names_sha256": "2c6c80ca5a6600422b43d8282781216d7057c9f5ca2cafbe3175b3873f2b1d4d",
+    "main_summary_and_exit_status_bytes_preserved": true,
+    "main_behavior_review": "The same registry is traversed once in the same order. Every test still runs in try/catch; each exception increments failures; any failure still returns 1. RUN is emitted with unitbuf before each test; PASS adds elapsed steady-clock milliseconds after success. The elapsed value is diagnostic and does not alter assertions, test deadlines, or result decisions.",
+    "runtime_assertion_count_claim": "No new execution by this reviewer. Historical Linux sanitizer crawl output reports 54 cases / 2798 assertions; the historical Windows crawl did not finish and has no completed-case count."
+  },
+  "watchdog_requirement_review": {
+    "assessment": "The historical 45-second setting is a whole-test-process CTest watchdog, not a mapped product request SLA or a frozen performance acceptance threshold. Its historical failure remains a CI failure.",
+    "introduced_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+    "introduced_case_count": 35,
+    "current_case_count": 54,
+    "introduced_timeout_seconds": 45,
+    "introduced_cmake_sha256": "dfd1adff62e72632a456d5c1932d85c031e1cfcc24f5a7c40a8f11200462a2d3",
+    "introduced_crawl_sha256": "f5e711a42c597e4a1e54ad3def537e7376446b31056497dd924993ff12ea8543",
+    "planning_basis": [
+      {
+        "path": "docs/planning/functional_spec_v0.3.md",
+        "sections": [
+          "QA-02 / FT-042 / C-14",
+          "OPS-01 / FT-073 / C-03",
+          "10.7"
+        ],
+        "finding": "Product performance acceptance requires frozen environment, corpus/hash, thresholds, method and reviewer; no mapping of this CTest process watchdog to those criteria was found in the reviewed design. Those acceptance rules and the original test conditions are unchanged."
+      }
+    ],
+    "interpretation_limit": "The review does not waive any actual product performance gate, infer a host-level cause, or claim the remaining Windows workload will finish within the new guard."
+  },
+  "production_call_chain_review": {
+    "production_binaries_verified_unchanged": [
+      {
+        "path": "build/libbzs_core.a",
+        "sha256": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+        "identical_to_before_watchdog_preparation": true
+      },
+      {
+        "path": "build/searchd",
+        "sha256": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+        "identical_to_before_watchdog_preparation": true
+      },
+      {
+        "path": "build-asan/libbzs_core.a",
+        "sha256": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54",
+        "identical_to_before_watchdog_preparation": true
+      }
+    ],
+    "prior_199_to_fcb_production_changes": [
+      "src/sessions.cpp",
+      "src/web.cpp"
+    ],
+    "prior_changes": "WebService::search translates a deadline-limited E_WORKER_TIMEOUT into E_DEADLINE; Store::fail_search atomically settles that search deadline failure.",
+    "crawl_path": "tests/crawl.cpp drain -> WebService::lease_map / execute_map -> map.fetch -> map/crawl store settlement. The freeze helper uses local Store::search in src/store.cpp. It does not invoke WebService::search or Store::fail_search.",
+    "absence_check_paths": [
+      "tests/crawl.cpp",
+      "src/map_service.cpp",
+      "src/crawl.cpp",
+      "src/batch.cpp"
+    ],
+    "changed_search_path_not_reached_by_reviewed_crawl_execution": true,
+    "limitation": "Static call-path and unchanged-source analysis establish no direct business-path link to the earlier search fix; they do not identify the cause of CI timing variation or constitute a performance benchmark.",
+    "source_references": [
+      {
+        "path": "src/web.cpp",
+        "sha256": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+        "bytes": 63331
+      },
+      {
+        "path": "src/sessions.cpp",
+        "sha256": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c",
+        "bytes": 42795
+      },
+      {
+        "path": "src/crawl.cpp",
+        "sha256": "21a878d0268933e572dbd63bd9d8b5a73649daaba4b45de4ce01c2f454a35271",
+        "bytes": 9511
+      },
+      {
+        "path": "src/map_service.cpp",
+        "sha256": "0fdacda671a76ffee89cb15dc4bca5fc46889eb14488a509c777ce77df9de60e",
+        "bytes": 16695
+      },
+      {
+        "path": "src/store.cpp",
+        "sha256": "034a0b18d588e8b7324e9471953829e3154fd4532f3ae81299ea1ec0a6cfeccb",
+        "bytes": 88371
+      },
+      {
+        "path": "src/batch.cpp",
+        "sha256": "5b9f7ec1c729f0a33866748d363dd7a5b264e7623213ad0295b470e85c89cc04",
+        "bytes": 41087
+      },
+      {
+        "path": "docs/planning/functional_spec_v0.3.md",
+        "sha256": "ce5e2cedaa9cb84e72a4460ac5f3e14b86ae39164e66e70a4e9eae48c85160e8",
+        "bytes": 95016
+      },
+      {
+        "path": "docs/planning/requirements_and_backlog.json",
+        "sha256": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+        "bytes": 178612
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "f161f06fc04fd19e52343943bf0188309894f11b2f7689c0cc753b4a9025d05d",
+        "bytes": 4424
+      },
+      {
+        "path": "CMakePresets.json",
+        "sha256": "0cee3fd0b9a72875b2535840da0dec13f17ab65b86d8fc5b8236b5f0a188aac2",
+        "bytes": 1568
+      }
+    ]
+  },
+  "historical_ci_verification": {
+    "run_id": 39954357148,
+    "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+    "run_conclusion": "failure",
+    "metadata": {
+      "path": "validation/s2_takeover/windows_watchdog_followup/initial-run.json",
+      "sha256": "d646c5a33cbe75a741b0f338713c61ab40fd22cd9961e480ae722431dc0d77d6",
+      "bytes": 22719
+    },
+    "jobs": {
+      "linux": {
+        "job_id": 120416357705,
+        "conclusion": "success",
+        "ctest_passed": 27,
+        "ctest_total": 27,
+        "ctest_seconds": 178.42,
+        "sanitizer_native_suites": 15,
+        "sanitizer_native_cases": 418,
+        "sanitizer_native_assertions": 13106,
+        "native_count_provenance": "Fifteen native summaries in the Address and undefined-behavior checks log section, not inferred from a new execution.",
+        "native_summary_locations": [
+          {
+            "line": 828,
+            "cases": 82,
+            "assertions": 715,
+            "failures": 0
+          },
+          {
+            "line": 859,
+            "cases": 30,
+            "assertions": 801,
+            "failures": 0
+          },
+          {
+            "line": 884,
+            "cases": 24,
+            "assertions": 462,
+            "failures": 0
+          },
+          {
+            "line": 939,
+            "cases": 54,
+            "assertions": 2798,
+            "failures": 0
+          },
+          {
+            "line": 972,
+            "cases": 32,
+            "assertions": 1200,
+            "failures": 0
+          },
+          {
+            "line": 1028,
+            "cases": 55,
+            "assertions": 269,
+            "failures": 0
+          },
+          {
+            "line": 1045,
+            "cases": 16,
+            "assertions": 404,
+            "failures": 0
+          },
+          {
+            "line": 1057,
+            "cases": 11,
+            "assertions": 251,
+            "failures": 0
+          },
+          {
+            "line": 1102,
+            "cases": 22,
+            "assertions": 285,
+            "failures": 0
+          },
+          {
+            "line": 1124,
+            "cases": 21,
+            "assertions": 333,
+            "failures": 0
+          },
+          {
+            "line": 1137,
+            "cases": 12,
+            "assertions": 146,
+            "failures": 0
+          },
+          {
+            "line": 1158,
+            "cases": 20,
+            "assertions": 180,
+            "failures": 0
+          },
+          {
+            "line": 1172,
+            "cases": 13,
+            "assertions": 80,
+            "failures": 0
+          },
+          {
+            "line": 1199,
+            "cases": 22,
+            "assertions": 382,
+            "failures": 0
+          },
+          {
+            "line": 1208,
+            "cases": 4,
+            "assertions": 4800,
+            "failures": 0
+          }
+        ],
+        "original_contracts_passed": 34,
+        "plan_guards_passed": 13
+      },
+      "windows": {
+        "job_id": 120416357507,
+        "build": "success",
+        "conclusion": "failure",
+        "ctest_passed": 16,
+        "ctest_total": 17,
+        "ctest_seconds": 497.91,
+        "failed_suite": "crawl",
+        "failure": "CTest watchdog timeout",
+        "watchdog_seconds": 45,
+        "observed_truncated_seconds": 45.02,
+        "crawl_completed_cases": null,
+        "crawl_completed_assertions": null,
+        "completed_native_suites": 14,
+        "completed_native_cases": 364,
+        "completed_native_assertions": 10308,
+        "native_summary_locations": [
+          {
+            "line": 1765,
+            "cases": 82,
+            "assertions": 715,
+            "failures": 0
+          },
+          {
+            "line": 1803,
+            "cases": 30,
+            "assertions": 801,
+            "failures": 0
+          },
+          {
+            "line": 1835,
+            "cases": 24,
+            "assertions": 462,
+            "failures": 0
+          },
+          {
+            "line": 1883,
+            "cases": 32,
+            "assertions": 1200,
+            "failures": 0
+          },
+          {
+            "line": 1907,
+            "cases": 16,
+            "assertions": 404,
+            "failures": 0
+          },
+          {
+            "line": 1926,
+            "cases": 11,
+            "assertions": 251,
+            "failures": 0
+          },
+          {
+            "line": 1978,
+            "cases": 22,
+            "assertions": 285,
+            "failures": 0
+          },
+          {
+            "line": 2006,
+            "cases": 20,
+            "assertions": 180,
+            "failures": 0
+          },
+          {
+            "line": 2040,
+            "cases": 22,
+            "assertions": 382,
+            "failures": 0
+          },
+          {
+            "line": 2069,
+            "cases": 21,
+            "assertions": 333,
+            "failures": 0
+          },
+          {
+            "line": 2089,
+            "cases": 12,
+            "assertions": 146,
+            "failures": 0
+          },
+          {
+            "line": 2105,
+            "cases": 4,
+            "assertions": 4800,
+            "failures": 0
+          },
+          {
+            "line": 2126,
+            "cases": 13,
+            "assertions": 80,
+            "failures": 0
+          },
+          {
+            "line": 2189,
+            "cases": 55,
+            "assertions": 269,
+            "failures": 0
+          }
+        ],
+        "http_cli_passed": 20,
+        "http_revocation_passed": 4,
+        "search_modes_passed": 22,
+        "search_modes_assertions": 382
+      }
+    },
+    "initial_run_numbers_and_statuses_match_raw_logs": true,
+    "duration_comparison": {
+      "reference": {
+        "path": "validation/s2_takeover/windows_watchdog_followup/windows-suite-duration-comparison.json",
+        "sha256": "a9d4b66f6bfd7701831075d49bebb81ae5262fd5600da3b13fddf969362831ef",
+        "bytes": 7652
+      },
+      "all_three_tables_and_log_hashes_verified": [
+        {
+          "run": "a06e7e91",
+          "log": {
+            "path": "validation/s2_takeover/ci_followup/initial-windows.log",
+            "sha256": "7b19d27d9d07b47296bb591251a6133bf35e2e9cbd563a4b942a6c7b77c5fc4d",
+            "bytes": 237703
+          },
+          "suite_rows": 17,
+          "all_status_and_duration_fields_match": true
+        },
+        {
+          "run": "199eb635",
+          "log": {
+            "path": "validation/s2_takeover/deadline_followup/initial-windows.log",
+            "sha256": "745865e655cba4dc141fdf6e8c679d48d05af00bbc0b44bc490564293c1f6577",
+            "bytes": 224737
+          },
+          "suite_rows": 17,
+          "all_status_and_duration_fields_match": true
+        },
+        {
+          "run": "fcb58e46",
+          "log": {
+            "path": "validation/s2_takeover/windows_watchdog_followup/initial-windows.log",
+            "sha256": "674bc316bd2b492c021423d2dcac3680051752b86af7441734c78dd40d619b15",
+            "bytes": 219657
+          },
+          "suite_rows": 17,
+          "all_status_and_duration_fields_match": true
+        }
+      ],
+      "all_fcb_prior_seconds_and_three_decimal_ratios_match": true,
+      "censored_crawl_caution": "45.02 / 40.36 = 1.115 is arithmetically correct but compares a watchdog-truncated duration with a completed duration. It is not a measured full-crawl slowdown ratio.",
+      "host_cause_caution": "Several suites slowed, while sessions and contracts were faster; the comparison does not prove a common external cause."
+    }
+  },
+  "raw_log_credential_review": {
+    "scope": "The two complete new raw job logs only; all bytes scanned. Potential credential values were not printed or copied into this report.",
+    "pattern_categories": [
+      "github_pat",
+      "aws_access_key",
+      "private_key_marker",
+      "openai_style_key",
+      "jwt",
+      "slack_token",
+      "url_user_password",
+      "signed_url_query"
+    ],
+    "checks": [
+      {
+        "log": {
+          "path": "validation/s2_takeover/windows_watchdog_followup/initial-linux.log",
+          "sha256": "f4b094163def13f1b11486921101ff9dfc127e3924b72330a7eef0ba3dbaf678",
+          "bytes": 130045
+        },
+        "high_confidence_pattern_hits": 0,
+        "masked_checkout_credential_fields": [
+          {
+            "line": 37,
+            "category": "token",
+            "masked": true
+          },
+          {
+            "line": 88,
+            "category": "authorization",
+            "masked": true
+          }
+        ],
+        "unmasked_generic_credential_candidates": 0
+      },
+      {
+        "log": {
+          "path": "validation/s2_takeover/windows_watchdog_followup/initial-windows.log",
+          "sha256": "674bc316bd2b492c021423d2dcac3680051752b86af7441734c78dd40d619b15",
+          "bytes": 219657
+        },
+        "high_confidence_pattern_hits": 0,
+        "masked_checkout_credential_fields": [
+          {
+            "line": 37,
+            "category": "token",
+            "masked": true
+          },
+          {
+            "line": 75,
+            "category": "authorization",
+            "masked": true
+          },
+          {
+            "line": 109,
+            "category": "token",
+            "masked": true
+          },
+          {
+            "line": 146,
+            "category": "authorization",
+            "masked": true
+          }
+        ],
+        "unmasked_generic_credential_candidates": 0
+      }
+    ],
+    "finding": "No unmasked credential candidate detected by these checks. GitHub checkout token and Authorization fields found by the generic review are masked with ***.",
+    "limitation": "Pattern and context review is bounded and is not a guarantee that arbitrary credentials or sensitive content cannot exist in any log. No credentials were tested against a service."
+  },
+  "limitations": [
+    "This file records a read-only source/evidence review plus the authorized JSON write; no CI, tests, deployment, or external source calls were performed by this reviewer.",
+    "The new code is not yet bound to a published commit or a completed Windows CI run; final new-SHA Linux and Windows results must be recorded separately.",
+    "The previous Windows crawl case of timeout is unresolved by the historical run itself; the case that was executing and its partial assertion count are unknown.",
+    "Focused local runtime checks, preservation checks beyond the reviewed scope, and final publication bindings are owned by the integrator and are not invented or borrowed from older successes."
+  ]
+}

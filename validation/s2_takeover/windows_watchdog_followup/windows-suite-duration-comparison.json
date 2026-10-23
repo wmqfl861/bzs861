@@ -1,0 +1,312 @@
+{
+  "scope": "Observed suite durations from three completed real Windows jobs, not proof of host-level cause or product performance acceptance.",
+  "runs": {
+    "a06e7e91": {
+      "log": "validation/s2_takeover/ci_followup/initial-windows.log",
+      "log_sha256": "7b19d27d9d07b47296bb591251a6133bf35e2e9cbd563a4b942a6c7b77c5fc4d",
+      "suites": [
+        {
+          "suite": "core",
+          "status": "Passed",
+          "seconds": 22.95
+        },
+        {
+          "suite": "batch",
+          "status": "Passed",
+          "seconds": 11.14
+        },
+        {
+          "suite": "map",
+          "status": "Passed",
+          "seconds": 6.74
+        },
+        {
+          "suite": "crawl",
+          "status": "Passed",
+          "seconds": 43.0
+        },
+        {
+          "suite": "site_publication",
+          "status": "Passed",
+          "seconds": 36.09
+        },
+        {
+          "suite": "retention",
+          "status": "Passed",
+          "seconds": 19.17
+        },
+        {
+          "suite": "fairness",
+          "status": "Passed",
+          "seconds": 6.16
+        },
+        {
+          "suite": "sessions",
+          "status": "Passed",
+          "seconds": 86.37
+        },
+        {
+          "suite": "source_publication",
+          "status": "Passed",
+          "seconds": 5.88
+        },
+        {
+          "suite": "search_modes",
+          "status": "Passed",
+          "seconds": 11.62
+        },
+        {
+          "suite": "revalidation",
+          "status": "Passed",
+          "seconds": 9.03
+        },
+        {
+          "suite": "revocation",
+          "status": "Passed",
+          "seconds": 2.49
+        },
+        {
+          "suite": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 71.55
+        },
+        {
+          "suite": "cache_freshness",
+          "status": "Passed",
+          "seconds": 2.11
+        },
+        {
+          "suite": "contracts",
+          "status": "Passed",
+          "seconds": 0.91
+        },
+        {
+          "suite": "http_cli",
+          "status": "Passed",
+          "seconds": 10.85
+        },
+        {
+          "suite": "http_revocation",
+          "status": "***Failed",
+          "seconds": 1.37
+        }
+      ]
+    },
+    "199eb635": {
+      "log": "validation/s2_takeover/deadline_followup/initial-windows.log",
+      "log_sha256": "745865e655cba4dc141fdf6e8c679d48d05af00bbc0b44bc490564293c1f6577",
+      "suites": [
+        {
+          "suite": "core",
+          "status": "Passed",
+          "seconds": 21.81
+        },
+        {
+          "suite": "batch",
+          "status": "Passed",
+          "seconds": 10.18
+        },
+        {
+          "suite": "map",
+          "status": "Passed",
+          "seconds": 6.9
+        },
+        {
+          "suite": "crawl",
+          "status": "Passed",
+          "seconds": 40.36
+        },
+        {
+          "suite": "site_publication",
+          "status": "Passed",
+          "seconds": 35.78
+        },
+        {
+          "suite": "retention",
+          "status": "Passed",
+          "seconds": 18.94
+        },
+        {
+          "suite": "fairness",
+          "status": "Passed",
+          "seconds": 5.84
+        },
+        {
+          "suite": "sessions",
+          "status": "Passed",
+          "seconds": 88.41
+        },
+        {
+          "suite": "source_publication",
+          "status": "Passed",
+          "seconds": 6.13
+        },
+        {
+          "suite": "search_modes",
+          "status": "Passed",
+          "seconds": 11.8
+        },
+        {
+          "suite": "revalidation",
+          "status": "Passed",
+          "seconds": 8.97
+        },
+        {
+          "suite": "revocation",
+          "status": "Passed",
+          "seconds": 2.33
+        },
+        {
+          "suite": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 69.44
+        },
+        {
+          "suite": "cache_freshness",
+          "status": "Passed",
+          "seconds": 2.02
+        },
+        {
+          "suite": "contracts",
+          "status": "Passed",
+          "seconds": 0.92
+        },
+        {
+          "suite": "http_cli",
+          "status": "Passed",
+          "seconds": 9.37
+        },
+        {
+          "suite": "http_revocation",
+          "status": "Passed",
+          "seconds": 1.58
+        }
+      ]
+    },
+    "fcb58e46": {
+      "log": "validation/s2_takeover/windows_watchdog_followup/initial-windows.log",
+      "log_sha256": "674bc316bd2b492c021423d2dcac3680051752b86af7441734c78dd40d619b15",
+      "suites": [
+        {
+          "suite": "core",
+          "status": "Passed",
+          "seconds": 44.8,
+          "prior_199_seconds": 21.81,
+          "ratio_to_199": 2.054
+        },
+        {
+          "suite": "batch",
+          "status": "Passed",
+          "seconds": 18.92,
+          "prior_199_seconds": 10.18,
+          "ratio_to_199": 1.859
+        },
+        {
+          "suite": "map",
+          "status": "Passed",
+          "seconds": 17.08,
+          "prior_199_seconds": 6.9,
+          "ratio_to_199": 2.475
+        },
+        {
+          "suite": "crawl",
+          "status": "***Timeout",
+          "seconds": 45.02,
+          "prior_199_seconds": 40.36,
+          "ratio_to_199": 1.115
+        },
+        {
+          "suite": "site_publication",
+          "status": "Passed",
+          "seconds": 56.88,
+          "prior_199_seconds": 35.78,
+          "ratio_to_199": 1.59
+        },
+        {
+          "suite": "retention",
+          "status": "Passed",
+          "seconds": 32.03,
+          "prior_199_seconds": 18.94,
+          "ratio_to_199": 1.691
+        },
+        {
+          "suite": "fairness",
+          "status": "Passed",
+          "seconds": 8.69,
+          "prior_199_seconds": 5.84,
+          "ratio_to_199": 1.488
+        },
+        {
+          "suite": "sessions",
+          "status": "Passed",
+          "seconds": 67.53,
+          "prior_199_seconds": 88.41,
+          "ratio_to_199": 0.764
+        },
+        {
+          "suite": "source_publication",
+          "status": "Passed",
+          "seconds": 9.16,
+          "prior_199_seconds": 6.13,
+          "ratio_to_199": 1.494
+        },
+        {
+          "suite": "search_modes",
+          "status": "Passed",
+          "seconds": 20.82,
+          "prior_199_seconds": 11.8,
+          "ratio_to_199": 1.764
+        },
+        {
+          "suite": "revalidation",
+          "status": "Passed",
+          "seconds": 13.47,
+          "prior_199_seconds": 8.97,
+          "ratio_to_199": 1.502
+        },
+        {
+          "suite": "revocation",
+          "status": "Passed",
+          "seconds": 4.46,
+          "prior_199_seconds": 2.33,
+          "ratio_to_199": 1.914
+        },
+        {
+          "suite": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 140.09,
+          "prior_199_seconds": 69.44,
+          "ratio_to_199": 2.017
+        },
+        {
+          "suite": "cache_freshness",
+          "status": "Passed",
+          "seconds": 3.1,
+          "prior_199_seconds": 2.02,
+          "ratio_to_199": 1.535
+        },
+        {
+          "suite": "contracts",
+          "status": "Passed",
+          "seconds": 0.62,
+          "prior_199_seconds": 0.92,
+          "ratio_to_199": 0.674
+        },
+        {
+          "suite": "http_cli",
+          "status": "Passed",
+          "seconds": 10.99,
+          "prior_199_seconds": 9.37,
+          "ratio_to_199": 1.173
+        },
+        {
+          "suite": "http_revocation",
+          "status": "Passed",
+          "seconds": 4.16,
+          "prior_199_seconds": 1.58,
+          "ratio_to_199": 2.633
+        }
+      ]
+    }
+  }
+}

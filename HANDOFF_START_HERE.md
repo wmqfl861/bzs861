@@ -6,13 +6,15 @@
 
 本轮生产实现的 `final-v2` 本地门禁为27/27套CTest（Python 1,049项）、15/15套ASan/UBSan，均无跳过；真实schema12→13升级与原合同/计划/历史保持检查通过。首次发布 `a06e7e91f6a115b345ff1072095b80e15d193ad4` 的 [CI 39945994760](https://github.com/wmqfl861/bzs861/actions/runs/39945994760) 为Linux成功、Windows构建成功但测试16/17通过；唯一失败是撤权HTTP测试未显式关闭SQLite连接，导致Windows临时目录清理失败。
 
-随后以 `199eb635ca90c657dff673fbf88bed44e7c4b40b` 发布测试连接释放修正及两条资源回归，该次生产代码不变，证据见[HTTP清理后续报告](validation/s2_takeover/ci-followup-report.json)。其 [CI 39950116698](https://github.com/wmqfl861/bzs861/actions/runs/39950116698) 的Windows17/17通过，Linux为26/27：原一秒恢复测试出现额外source_unknown事件。当前修正整体期限触发的RPC超时分类及原子终态结算，完整新验证见[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)。原E2E、旧报告和两次CI失败证据保留；最新提交仍须核对自己的实际Linux/Windows。
+随后以 `199eb635ca90c657dff673fbf88bed44e7c4b40b` 发布测试连接释放修正及两条资源回归，该次生产代码不变，证据见[HTTP清理后续报告](validation/s2_takeover/ci-followup-report.json)。其 [CI 39950116698](https://github.com/wmqfl861/bzs861/actions/runs/39950116698) 的Windows17/17通过，Linux为26/27：原一秒恢复测试出现额外source_unknown事件。整体期限触发的RPC超时分类及原子终态结算随后修正，完整验证见[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)，原E2E保持。
+
+该生产修正发布为 `fcb58e4679a5bbdff17319b7b4ebff7019733eab`，其 [CI 39954357148](https://github.com/wmqfl861/bzs861/actions/runs/39954357148) 的Linux27/27及15套sanitizer通过；Windows16/17，唯一失败为crawl整个进程45.02秒超时，无法从旧缓冲输出确认完成到了哪个用例。当前仅为Windows设置core90秒、crawl和site_publication120秒的有限watchdog，并增加crawl逐例即时RUN/PASS与耗时。54个原用例、断言、生产源码和二进制保持，Linux属性不变；[当前报告](validation/s2_takeover/windows-watchdog-report.json)分别记录本轮聚焦验证、未变生产库的历史全量成绩及原失败。新提交仍须取得自己的实际双平台CI，不据调整后的进程上限宣称产品性能验收完成。
 
 | 入口 | 内容 |
 | --- | --- |
 | [本轮五项范围](docs/handoff/S2_TAKEOVER_20261023.md) | 接手来源、原工作包与验收映射、实施边界 |
 | [当前进度](docs/DEVELOPMENT_STATUS.md)、[机器状态](docs/implementation_status.json) | 实际实现、未完成部分和本轮验证状态 |
-| [生产实现报告](validation/s2_takeover/final-report.json)、[HTTP清理报告](validation/s2_takeover/ci-followup-report.json)、[当前截止时间报告](validation/s2_takeover/deadline-followup-report.json) | 各次输入独立冻结，保留原失败、命令和独立复核；当前以最后一份报告为准 |
+| [当前Windows watchdog报告](validation/s2_takeover/windows-watchdog-report.json)、[截止时间报告](validation/s2_takeover/deadline-followup-report.json) | 当前测试设施修正与前次生产全量验证分开记录；原失败、命令和独立复核保留 |
 | [来源发布](docs/SOURCE_PUBLICATION.md)、[主体撤权](docs/PRINCIPAL_REVOCATION.md) | 持久政策收紧、管理员入口与恢复边界 |
 | [HTTP新鲜度](docs/HTTP_FRESHNESS.md)、[共享读取](docs/SHARED_READS.md)、[搜索预设](docs/SEARCH_MODES.md) | 缓存与取消语义、预算和公开接口 |
 | [蓝图](docs/planning/development_blueprint_v1.2.md)、[切片计划](docs/planning/slices_v1.2.json) | 原83包/161验收/10切片，依赖与验收语义保留 |

@@ -1,6 +1,6 @@
 # 开发进度：0.1.10 接手后的五项增量
 
-更新：2026-10-23。本轮从另一会话已发布的0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`、schema12继续。真实远端main与原工作区一致，来源策略未提交测试草稿已保留并审查；基线[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)的Linux/Windows成功只证明该旧输入。范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)，本轮证据见[验证说明](../validation/s2_takeover/README.md)和[当前报告](../validation/s2_takeover/deadline-followup-report.json)。
+更新：2026-10-23。本轮从另一会话已发布的0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`、schema12继续。真实远端main与原工作区一致，来源策略未提交测试草稿已保留并审查；基线[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)的Linux/Windows成功只证明该旧输入。范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)，本轮证据见[验证说明](../validation/s2_takeover/README.md)和[当前报告](../validation/s2_takeover/windows-watchdog-report.json)。
 
 ## 五项实现与实际边界
 
@@ -30,7 +30,7 @@ schema13仅追加来源规则、主体撤权及共享请求结构。真实基线
 
 ## 本轮验证与交付
 
-作者聚焦测试、独立反例、真实旧库升级和最终整合门禁分开记录；最终实际数量、二进制与源码哈希以[当前报告](../validation/s2_takeover/deadline-followup-report.json)为准。Linux完整CTest不允许把跳过当通过，ASan/UBSan开启泄漏检测，原合同和计划守卫保留。Windows继续执行原生与HTTP阻塞门槛，完整Worker打包仍属S9。
+作者聚焦测试、独立反例、真实旧库升级和最终整合门禁分开记录；最终实际数量、二进制与源码哈希以[当前报告](../validation/s2_takeover/windows-watchdog-report.json)为准。Linux完整CTest不允许把跳过当通过，ASan/UBSan开启泄漏检测，原合同和计划守卫保留。Windows继续执行原生与HTTP阻塞门槛，完整Worker打包仍属S9。
 
 首次生产实现的历史 `final-v2` 冻结222个执行输入，12条最终命令运行前后均一致。Linux完整 **27/27套CTest通过、0跳过**，其中15套原生共413个用例/12,906条断言，Python为1,049项；另以 `detect_leaks=1` 完成 **15/15套ASan/UBSan**。原合同34组、计划守卫13组、依赖检查与历史保持检查通过。真实旧库建库310条断言、升级1184条断言通过；共享读取独立探针以最终库重链重放3例/99条断言通过。这些重复覆盖不累加为产品验收数量。
 
@@ -53,3 +53,11 @@ HTTP清理修正发布为 `199eb635ca90c657dff673fbf88bed44e7c4b40b`；Windows�
 本次改变了生产库，使用新的完整执行输入、全量门禁、真实旧库升级与独立探针重链；实际数量和哈希见[当前报告](../validation/s2_takeover/deadline-followup-report.json)。此前final-v2和HTTP清理后续报告仍只证明各自输入，不改写为本次结果。83包/161验收、37部分/46未开始/0签收及来源审批边界保持。
 
 本次截止时间修正重新冻结229个执行输入并完整验证：27/27套CTest、0跳过，15套原生共418例/13,106条断言，Python1,049项；15/15套ASan/UBSan开启泄漏检测。完整CTest耗时171.30秒，sanitizer耗时160.40秒。原合同34组、计划守卫13组、依赖检查通过；真实schema12→13升级保留39张旧表，旧库建库310条断言和新库升级1184条断言通过；同一独立期限探针对最终库重链后6/6例、92条断言通过。这些是本次新生产输入的实际本地成绩，发布后仍核对新SHA自己的Linux/Windows。
+
+## Windows测试进程上限与逐例进度
+
+截止时间修正发布为 `fcb58e4679a5bbdff17319b7b4ebff7019733eab`，其 [CI 39954357148](https://github.com/wmqfl861/bzs861/actions/runs/39954357148) 的Linux27/27套、15套sanitizer、合同34和计划守卫13通过。Windows为16/17，唯一失败为crawl在45.02秒触及整个进程的45秒watchdog；旧输出缓冲使已完成用例数未知。另14套native明确完成364例/10,308条断言，search_modes22例/382条断言、HTTP20项与撤权HTTP4项均通过。该次Windows总耗时497.91秒，不能把未完成crawl计入通过。
+
+45秒上限沿用自该套件35例时，当前54例，前两次实际Windows完成分别为43.00和40.36秒。本次core44.80/45秒和site_publication56.88/60秒也接近上限，因此只为Windows将core设为90秒、crawl及site_publication设为120秒。全部保留有限阻塞式超时；原要求没有将此进程watchdog定义为产品性能阈值，业务期限、SQLite持久化配置和正式性能验收要求保持。多个套件耗时增加是观察结果，没有同机对照可确定宿主原因，也不能从超时日志排除某个crawl用例停滞。
+
+crawl仅增加chrono计时与main逐例立即刷出的RUN/PASS，原54个测试函数、fixture、断言、注册顺序与失败退出语义保持。新冻结230个执行输入，本地Debug为54/54例、2,798断言（5.64秒），ASan/UBSan为同54例/2,798断言（20.79秒），开启泄漏检测。生产源码及Debug/ASan生产库、searchd哈希保持；本轮没有把历史完整27套、15套sanitizer或真实升级冒充新执行。Linux生成后的27套属性保持，实际Windows90/120/120秒与新SHA的完整双平台结果仍须在发布后核对。当前证据见[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)，既有1,325份validation原字节保留，正式37/46/0进度不变。

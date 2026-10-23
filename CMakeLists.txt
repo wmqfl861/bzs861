@@ -238,6 +238,13 @@ if(BZS_BUILD_TESTS)
   set_tests_properties(retention PROPERTIES TIMEOUT 60)
   set_tests_properties(contracts PROPERTIES TIMEOUT 45)
   set_tests_properties(http_cli PROPERTIES TIMEOUT 90)
+  if(WIN32)
+    # These are whole-process watchdogs for offline durable-store fixtures,
+    # not product request deadlines. Windows Debug runs have reached the old
+    # limits; retain every assertion and a bounded guard against a hung suite.
+    set_tests_properties(core PROPERTIES TIMEOUT 90)
+    set_tests_properties(crawl site_publication PROPERTIES TIMEOUT 120)
+  endif()
   # 77 = dependencies missing -> reported as skipped, not passed.
   set_tests_properties(e2e_web PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)
   set_tests_properties(e2e_map PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)

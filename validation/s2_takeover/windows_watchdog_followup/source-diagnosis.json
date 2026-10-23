@@ -1,0 +1,631 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-23T13:09:02.149362+00:00",
+  "role": {
+    "agent": "source_policy",
+    "capacity": "independent read-only watchdog diagnosis; author of the earlier search deadline correction",
+    "implementation_authored_in_this_task": false,
+    "tests_executed_in_this_task": false,
+    "only_output_file": "validation/s2_takeover/windows_watchdog_followup/source-diagnosis.json",
+    "committed_by_this_agent": false
+  },
+  "baseline": {
+    "commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+    "tree": "04b50269aeb0b66664f108d19b0991b1738b11db"
+  },
+  "source_inputs": [
+    {
+      "path": "CMakeLists.txt",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "3c26d04d621b3210c55774feb04bfc6551e8e268",
+      "sha256": "dddb18ab670377751e915d2e64c7c7097a79b78abcc440e3c1c26b08f469f022",
+      "bytes": 14886
+    },
+    {
+      "path": "CMakePresets.json",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "8f11aaaec57700fd625be34812b3927852342e5f",
+      "sha256": "0cee3fd0b9a72875b2535840da0dec13f17ab65b86d8fc5b8236b5f0a188aac2",
+      "bytes": 1568
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "49924a2fffe54159969e6e5c7ef6a79972ee3e4b",
+      "sha256": "f161f06fc04fd19e52343943bf0188309894f11b2f7689c0cc753b4a9025d05d",
+      "bytes": 4424
+    },
+    {
+      "path": "tests/crawl.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "9048cdd23cd6e04001ae7378fd23240eb85f58b8",
+      "sha256": "7c9ec8737a3ddda02fbc4499c86a88c2e14a14ba9cf843e9564e2f1c474a6380",
+      "bytes": 85483
+    },
+    {
+      "path": "src/crawl.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "ad8868f4ed3293f6230507fb6ffba5102b6ac5d4",
+      "sha256": "21a878d0268933e572dbd63bd9d8b5a73649daaba4b45de4ce01c2f454a35271",
+      "bytes": 9511
+    },
+    {
+      "path": "src/map_service.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "031ed20719b65ce576209915dd0e25d0abc33f07",
+      "sha256": "0fdacda671a76ffee89cb15dc4bca5fc46889eb14488a509c777ce77df9de60e",
+      "bytes": 16695
+    },
+    {
+      "path": "src/store.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "0da91da7d00ac1435afdce3f30de8ceacd545690",
+      "sha256": "034a0b18d588e8b7324e9471953829e3154fd4532f3ae81299ea1ec0a6cfeccb",
+      "bytes": 88371
+    },
+    {
+      "path": "src/web.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "1ab8d098aecc2fb56dfa94bbb1934083bee00b60",
+      "sha256": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+      "bytes": 63331
+    },
+    {
+      "path": "src/sessions.cpp",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "3981b0f2d060eb44e3fc9c3c19bb185a29b73221",
+      "sha256": "0b4090380797042d78f914f79012e0a574b2da5223dd69d36aea411fa3e6b05c",
+      "bytes": 42795
+    },
+    {
+      "path": "docs/SITE_CRAWLING.md",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "0e69969c29bb78346f6e6996bcc57fe677331016",
+      "sha256": "b6df9b86ec911ffa49f6ae77326fd8d8f82e1ee54abaf1cfc8fd1b23299c02d9",
+      "bytes": 17050
+    },
+    {
+      "path": "docs/planning/functional_spec_v0.3.md",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "ce3f8dab87a53bacf5dbf1be4dba6d01ffc9b878",
+      "sha256": "ce5e2cedaa9cb84e72a4460ac5f3e14b86ae39164e66e70a4e9eae48c85160e8",
+      "bytes": 95016
+    },
+    {
+      "path": "docs/planning/development_blueprint_v1.1.md",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "503d95c3a495546a49faf951de7ec7aed7c128f6",
+      "sha256": "176daad8328d91a6840a12f8b40719df4d903e4c79a0f962faae85d355d72b7d",
+      "bytes": 55854
+    },
+    {
+      "path": "docs/planning/requirements_and_backlog.json",
+      "git_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "git_blob": "55acdddca420fcc4c30570818460d3d00eeff8f0",
+      "sha256": "abc127d95a898bbd8c412519048769f27927e52f5885e00b38a55ebfed965ca1",
+      "bytes": 178612
+    }
+  ],
+  "watchdog_history": {
+    "introduced_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+    "introduced_cmake": {
+      "path": "CMakeLists.txt",
+      "git_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+      "git_blob": "41c631b20fa957f5d16cbb3cdc35cd30b46a9b67",
+      "sha256": "dfd1adff62e72632a456d5c1932d85c031e1cfcc24f5a7c40a8f11200462a2d3",
+      "bytes": 7125
+    },
+    "introduced_crawl_test": {
+      "path": "tests/crawl.cpp",
+      "git_commit": "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63",
+      "git_blob": "f52a0ba2f86ad778977d23ab1a82b6f5ac9de3e3",
+      "sha256": "f5e711a42c597e4a1e54ad3def537e7376446b31056497dd924993ff12ea8543",
+      "bytes": 52562
+    },
+    "introduced_timeout_seconds": 45,
+    "current_baseline_timeout_seconds": 45,
+    "introduced_cases": 35,
+    "current_baseline_cases": 54,
+    "registration_counts_by_commit": {
+      "90ca7e93f9c96a43ff8d99b237638e4aa2aa2c63": 35,
+      "a06e7e91f6a115b345ff1072095b80e15d193ad4": 54,
+      "199eb635ca90c657dff673fbf88bed44e7c4b40b": 54,
+      "fcb58e4679a5bbdff17319b7b4ebff7019733eab": 54
+    },
+    "unchanged_across_three_ci_inputs": [
+      "CMakeLists.txt",
+      "CMakePresets.json",
+      ".github/workflows/ci.yml",
+      "tests/crawl.cpp",
+      "src/crawl.cpp"
+    ],
+    "evidence_method": "git blame on the crawl TIMEOUT line, git object reads, and exact TEST registration counts"
+  },
+  "ci_observations": [
+    {
+      "run_id": 39945994760,
+      "run_attempt": 1,
+      "head_sha": "a06e7e91f6a115b345ff1072095b80e15d193ad4",
+      "windows_job_id": 120388675036,
+      "windows_job_conclusion": "failure",
+      "log": {
+        "path": "validation/s2_takeover/ci_followup/initial-windows.log",
+        "sha256": "7b19d27d9d07b47296bb591251a6133bf35e2e9cbd563a4b942a6c7b77c5fc4d",
+        "bytes": 237703
+      },
+      "run_metadata": {
+        "path": "validation/s2_takeover/ci_followup/initial-run.json",
+        "sha256": "ad997f195fd920e54770439544fd6be3fa48b684614245181d896703e4355ae9"
+      },
+      "ctest_total_seconds": 347.59,
+      "suite_results": [
+        {
+          "ctest_number": 1,
+          "name": "core",
+          "status": "Passed",
+          "seconds": 22.95
+        },
+        {
+          "ctest_number": 2,
+          "name": "batch",
+          "status": "Passed",
+          "seconds": 11.14
+        },
+        {
+          "ctest_number": 3,
+          "name": "map",
+          "status": "Passed",
+          "seconds": 6.74
+        },
+        {
+          "ctest_number": 4,
+          "name": "crawl",
+          "status": "Passed",
+          "seconds": 43.0
+        },
+        {
+          "ctest_number": 5,
+          "name": "site_publication",
+          "status": "Passed",
+          "seconds": 36.09
+        },
+        {
+          "ctest_number": 6,
+          "name": "retention",
+          "status": "Passed",
+          "seconds": 19.17
+        },
+        {
+          "ctest_number": 7,
+          "name": "fairness",
+          "status": "Passed",
+          "seconds": 6.16
+        },
+        {
+          "ctest_number": 8,
+          "name": "sessions",
+          "status": "Passed",
+          "seconds": 86.37
+        },
+        {
+          "ctest_number": 9,
+          "name": "source_publication",
+          "status": "Passed",
+          "seconds": 5.88
+        },
+        {
+          "ctest_number": 10,
+          "name": "search_modes",
+          "status": "Passed",
+          "seconds": 11.62
+        },
+        {
+          "ctest_number": 11,
+          "name": "revalidation",
+          "status": "Passed",
+          "seconds": 9.03
+        },
+        {
+          "ctest_number": 12,
+          "name": "revocation",
+          "status": "Passed",
+          "seconds": 2.49
+        },
+        {
+          "ctest_number": 13,
+          "name": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 71.55
+        },
+        {
+          "ctest_number": 14,
+          "name": "cache_freshness",
+          "status": "Passed",
+          "seconds": 2.11
+        },
+        {
+          "ctest_number": 15,
+          "name": "contracts",
+          "status": "Passed",
+          "seconds": 0.91
+        },
+        {
+          "ctest_number": 16,
+          "name": "http_cli",
+          "status": "Passed",
+          "seconds": 10.85
+        },
+        {
+          "ctest_number": 17,
+          "name": "http_revocation",
+          "status": "***Failed",
+          "seconds": 1.37
+        }
+      ],
+      "crawl_completed_summary": {
+        "cases": 54,
+        "assertions": 2798,
+        "failures": 0
+      },
+      "crawl_observed_seconds": 43.0
+    },
+    {
+      "run_id": 39950116698,
+      "run_attempt": 1,
+      "head_sha": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+      "windows_job_id": 120402245063,
+      "windows_job_conclusion": "success",
+      "log": {
+        "path": "validation/s2_takeover/deadline_followup/initial-windows.log",
+        "sha256": "745865e655cba4dc141fdf6e8c679d48d05af00bbc0b44bc490564293c1f6577",
+        "bytes": 224737
+      },
+      "run_metadata": {
+        "path": "validation/s2_takeover/deadline_followup/prior-run-final.json",
+        "sha256": "daebd65fe9f1fd48d8f3c9a2c8c8e7fc9c891717035bf12a7e9a09763a2a3838"
+      },
+      "ctest_total_seconds": 340.84,
+      "suite_results": [
+        {
+          "ctest_number": 1,
+          "name": "core",
+          "status": "Passed",
+          "seconds": 21.81
+        },
+        {
+          "ctest_number": 2,
+          "name": "batch",
+          "status": "Passed",
+          "seconds": 10.18
+        },
+        {
+          "ctest_number": 3,
+          "name": "map",
+          "status": "Passed",
+          "seconds": 6.9
+        },
+        {
+          "ctest_number": 4,
+          "name": "crawl",
+          "status": "Passed",
+          "seconds": 40.36
+        },
+        {
+          "ctest_number": 5,
+          "name": "site_publication",
+          "status": "Passed",
+          "seconds": 35.78
+        },
+        {
+          "ctest_number": 6,
+          "name": "retention",
+          "status": "Passed",
+          "seconds": 18.94
+        },
+        {
+          "ctest_number": 7,
+          "name": "fairness",
+          "status": "Passed",
+          "seconds": 5.84
+        },
+        {
+          "ctest_number": 8,
+          "name": "sessions",
+          "status": "Passed",
+          "seconds": 88.41
+        },
+        {
+          "ctest_number": 9,
+          "name": "source_publication",
+          "status": "Passed",
+          "seconds": 6.13
+        },
+        {
+          "ctest_number": 10,
+          "name": "search_modes",
+          "status": "Passed",
+          "seconds": 11.8
+        },
+        {
+          "ctest_number": 11,
+          "name": "revalidation",
+          "status": "Passed",
+          "seconds": 8.97
+        },
+        {
+          "ctest_number": 12,
+          "name": "revocation",
+          "status": "Passed",
+          "seconds": 2.33
+        },
+        {
+          "ctest_number": 13,
+          "name": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 69.44
+        },
+        {
+          "ctest_number": 14,
+          "name": "cache_freshness",
+          "status": "Passed",
+          "seconds": 2.02
+        },
+        {
+          "ctest_number": 15,
+          "name": "contracts",
+          "status": "Passed",
+          "seconds": 0.92
+        },
+        {
+          "ctest_number": 16,
+          "name": "http_cli",
+          "status": "Passed",
+          "seconds": 9.37
+        },
+        {
+          "ctest_number": 17,
+          "name": "http_revocation",
+          "status": "Passed",
+          "seconds": 1.58
+        }
+      ],
+      "crawl_completed_summary": {
+        "cases": 54,
+        "assertions": 2798,
+        "failures": 0
+      },
+      "crawl_observed_seconds": 40.36
+    },
+    {
+      "run_id": 39954357148,
+      "run_attempt": 1,
+      "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "windows_job_id": 120416357507,
+      "windows_job_conclusion": "failure",
+      "log": {
+        "path": "validation/s2_takeover/windows_watchdog_followup/initial-windows.log",
+        "sha256": "674bc316bd2b492c021423d2dcac3680051752b86af7441734c78dd40d619b15",
+        "bytes": 219657
+      },
+      "run_metadata": {
+        "path": "validation/s2_takeover/windows_watchdog_followup/initial-run.json",
+        "sha256": "d646c5a33cbe75a741b0f338713c61ab40fd22cd9961e480ae722431dc0d77d6"
+      },
+      "ctest_total_seconds": 497.91,
+      "suite_results": [
+        {
+          "ctest_number": 1,
+          "name": "core",
+          "status": "Passed",
+          "seconds": 44.8
+        },
+        {
+          "ctest_number": 2,
+          "name": "batch",
+          "status": "Passed",
+          "seconds": 18.92
+        },
+        {
+          "ctest_number": 3,
+          "name": "map",
+          "status": "Passed",
+          "seconds": 17.08
+        },
+        {
+          "ctest_number": 4,
+          "name": "crawl",
+          "status": "***Timeout",
+          "seconds": 45.02
+        },
+        {
+          "ctest_number": 5,
+          "name": "site_publication",
+          "status": "Passed",
+          "seconds": 56.88
+        },
+        {
+          "ctest_number": 6,
+          "name": "retention",
+          "status": "Passed",
+          "seconds": 32.03
+        },
+        {
+          "ctest_number": 7,
+          "name": "fairness",
+          "status": "Passed",
+          "seconds": 8.69
+        },
+        {
+          "ctest_number": 8,
+          "name": "sessions",
+          "status": "Passed",
+          "seconds": 67.53
+        },
+        {
+          "ctest_number": 9,
+          "name": "source_publication",
+          "status": "Passed",
+          "seconds": 9.16
+        },
+        {
+          "ctest_number": 10,
+          "name": "search_modes",
+          "status": "Passed",
+          "seconds": 20.82
+        },
+        {
+          "ctest_number": 11,
+          "name": "revalidation",
+          "status": "Passed",
+          "seconds": 13.47
+        },
+        {
+          "ctest_number": 12,
+          "name": "revocation",
+          "status": "Passed",
+          "seconds": 4.46
+        },
+        {
+          "ctest_number": 13,
+          "name": "capacity_cycles",
+          "status": "Passed",
+          "seconds": 140.09
+        },
+        {
+          "ctest_number": 14,
+          "name": "cache_freshness",
+          "status": "Passed",
+          "seconds": 3.1
+        },
+        {
+          "ctest_number": 15,
+          "name": "contracts",
+          "status": "Passed",
+          "seconds": 0.62
+        },
+        {
+          "ctest_number": 16,
+          "name": "http_cli",
+          "status": "Passed",
+          "seconds": 10.99
+        },
+        {
+          "ctest_number": 17,
+          "name": "http_revocation",
+          "status": "Passed",
+          "seconds": 4.16
+        }
+      ],
+      "crawl_completed_summary": null,
+      "crawl_observed_seconds": 45.02
+    }
+  ],
+  "ctest_semantics": {
+    "property": "TIMEOUT",
+    "scope": "Entire bzs_crawl_tests executable registered as one CTest test named crawl",
+    "on_expiry": "CTest kills the test process and continues to the next test",
+    "local_cmake_property_documentation_sha256": "5f318d184c24248717dfc631731b2d11c7715d87a71833547b79bfe8116f0a38",
+    "local_cmake_property_documentation": "TIMEOUT\n-------\n\nHow many seconds to allow for this test.\n\nThis property if set will limit a test to not take more than the\nspecified number of seconds to run.  If it exceeds that the test\nprocess will be killed and ctest will move to the next test.  This\nsetting takes precedence over ``CTEST_TEST_TIMEOUT``.\n\nAn explicit ``0`` value means the test has no timeout, except as\nnecessary to honor :option:`ctest --stop-time`.\n\nSee also ``TIMEOUT_AFTER_MATCH`` and\n``TIMEOUT_SIGNAL_NAME``.\n",
+    "ci_configuration": "Windows Debug; unchanged regex includes 15 native suites plus http_cli and http_revocation",
+    "workflow_timeout_override_present": false,
+    "linux_asan_execution": "Native executables are invoked directly, so this CTest TIMEOUT property does not apply to those invocations"
+  },
+  "crawl_execution_structure": {
+    "cases": 54,
+    "prior_successful_assertions": 2798,
+    "serial_test_loop": true,
+    "worker_boundary": "Fake handles map.fetch; auxiliary Reader handles fetch.extract; no external HTTP service is used by this native suite",
+    "clock": "Existing Fake now value is injected into each Store; this does not measure a product wall-clock SLA",
+    "storage": "Actual temporary SQLite databases, migrations, commit/reopen operations; Store configures WAL and synchronous=FULL",
+    "bounded_drain": "Each drain invocation checks no more than 100 dispatch turns",
+    "baseline_output": "main emits PASS only after a case and uses newline without explicit flush; it does not emit RUN or per-case elapsed time",
+    "observed_buffering": "In the 199eb635 successful Windows log, all 54 PASS records arrive at suite completion near 12:18:19.499-504 UTC",
+    "current_timeout_case": null,
+    "cannot_infer_first_case_hang_from_empty_output": true
+  },
+  "planning_contract_review": {
+    "no_45_second_crawl_product_slo_binding_found": true,
+    "search_scope": [
+      "docs/planning functional specification and backlog CRAWL-01/FT-028 and CRAWL-03 entries",
+      "QA-02/FT-042/C-14 and OPS performance measurement rules",
+      "docs/SITE_CRAWLING.md",
+      "repository text search for crawl with 45 seconds/deadline/latency"
+    ],
+    "crawl_acceptance": "Scope checks, atomic in-flight budget reservation, partial at bounds, limited-frontier interpretation, and recovery; no 45-second whole-suite latency commitment",
+    "product_deadlines": {
+      "document": "docs/SITE_CRAWLING.md",
+      "default_total_timeout_ms": 600000,
+      "default_per_request_timeout_ms": 20000,
+      "ctest_process_timeout_is_independent": true
+    },
+    "performance_acceptance": "Original planning requires frozen machine/load/corpus/method/threshold evidence; infrastructure watchdog changes do not satisfy or relax that product acceptance"
+  },
+  "search_deadline_separation": {
+    "basis": "Static review of the exact 199eb635..fcb58e4 production diff and crawl fixture call sites",
+    "changed_production_methods": [
+      "WebService::search",
+      "Store::fail_search"
+    ],
+    "crawl_path": [
+      "WebService::submit_crawl -> Store::crawl_submit",
+      "WebService::execute_map -> WorkerPort map.fetch",
+      "Auxiliary direct/batch read -> Reader fetch.extract",
+      "Local freeze -> Store::search"
+    ],
+    "changed_search_deadline_methods_not_on_crawl_fixture_path": true,
+    "production_search_deadline_change_recommended": false,
+    "runtime_call_tracing_performed": false
+  },
+  "findings": {
+    "direct_failure": "CTest reported computed timeout 45 and killed crawl at 45.02 seconds; latest crawl did not complete",
+    "evidence_for_insufficient_margin": "The same crawl bytes completed at 43.00 and 40.36 seconds; many unrelated suites were slower on the latest host, with core at 44.80/45 and site_publication at 56.88/60",
+    "comparisons_not_uniform": "sessions became faster while several other suites slowed; evidence does not establish one common causal bottleneck",
+    "specific_host_cause_known": false,
+    "possible_crawl_stall_excluded": false,
+    "no_assertion_failure_observed_in_latest_crawl_log": true,
+    "latest_crawl_is_a_pass": false
+  },
+  "selected_change_review": {
+    "status": "Root-selected planned infrastructure correction, not implemented or validated by this report",
+    "substantive_objection": false,
+    "windows_ctest_timeout_seconds": {
+      "core": {
+        "from": 45,
+        "to": 90,
+        "latest_observed": 44.8
+      },
+      "crawl": {
+        "from": 45,
+        "to": 120,
+        "latest_observed": 45.02,
+        "latest_observation_is_censored_by_timeout": true,
+        "largest_prior_completed_observation": 43.0
+      },
+      "site_publication": {
+        "from": 60,
+        "to": 120,
+        "latest_observed": 56.88
+      }
+    },
+    "rationale": "Limit changes to the one killed and two concretely near-limit suites. 120 seconds gives crawl a finite window about 2.79 times its largest recent completed run; 90 gives core about 2.01 times its latest completed run. These are operational watchdog margins, not newly claimed performance thresholds. No objection to the narrower 90/120/120 selection; no expansion to 180 is requested.",
+    "crawl_runner_observability": "main may add RUN with immediate flush, invoke the unchanged test(), and report PASS with steady-clock elapsed time; all 54 case bodies, assertions, fixtures, registration order and exit behavior must be preserved",
+    "unchanged": [
+      "All production code and request deadlines",
+      "Linux CTest limits",
+      "Other Windows CTest limits",
+      "HTTP test limits",
+      "CMakePresets.json",
+      "CI workflow and exact test selection",
+      "All original case expectations"
+    ],
+    "risk": "A truly stalled affected Windows suite can consume its new finite timeout before failing; crawl completion within 120 seconds remains unproved until a new exact-SHA Windows run finishes",
+    "closure_requirement": "Retain this failed CI run, then require the new exact-SHA Windows selection to pass 17/17 with crawl 54 cases / 2798 assertions / 0 failures; preserve all original assertions and other platform gates; no until-pass rerun or skip"
+  },
+  "limitations": [
+    "Read-only source and existing-log review; no Windows runtime executed by this reviewer",
+    "No per-case crawl progress was captured in the failed run, so the interrupted case is unknown",
+    "No CPU/disk/host contention telemetry establishes a hardware or runner cause",
+    "Multiple slower suites support inadequate timeout margin but do not by themselves prove absence of a crawl-specific stall",
+    "Proposed timing/flush output and new TIMEOUT settings still require implementation preservation review and actual CI validation"
+  ]
+}

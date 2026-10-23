@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "baseline_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+  "baseline_tree": "04b50269aeb0b66664f108d19b0991b1738b11db",
+  "preserved_existing_files": 1532,
+  "preserved_existing_files_manifest_sha256": "6bfcafe162820231aede6d9282603ebb14f2367947fa53eae6aa2765cf7f97f2",
+  "preserved_existing_validation_files": 1325,
+  "preserved_existing_validation_manifest_sha256": "15ea83ee9257473a0e088e9cb21bd6723751b96e700476acd40cc908631b4a9e",
+  "all_prior_validation_bytes_preserved": true,
+  "allowed_changed_files": {
+    "CMakeLists.txt": {
+      "before_blob": "3c26d04d621b3210c55774feb04bfc6551e8e268",
+      "after_blob": "12eb326bf8618334e3a9e5e628880c148d135129",
+      "after_sha256": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768"
+    },
+    "HANDOFF_START_HERE.md": {
+      "before_blob": "a03fb9db599dcc6d9993c79596d6544f49a6b5f1",
+      "after_blob": "d78ce6e570fae76ceb3a336815441faeb316ee37",
+      "after_sha256": "34da64a999ee45584bf11f0ee400fb6c73a71445d14333337cde145f40d72c91"
+    },
+    "README.md": {
+      "before_blob": "08994a0ce8af44b7567d7e94bf730ff9c27a2b10",
+      "after_blob": "946a0c1b9170fca97ba9de648f946710d2b694ed",
+      "after_sha256": "5d6305a9308aa53b349bfb6ec03a7360ad4278e6e5a60d9e37783b51fa199b9c"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_blob": "7668ea9289e55a72aecb852d3f4af9ecef8ba1b4",
+      "after_blob": "5753615f1fd43df63735969b1cbf282a649eba8c",
+      "after_sha256": "f682efd79fc3012d6cb601c4c71ebeaedaf71b69b3d4e52ac6138d3879a2c494"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_blob": "0c60428eea39df22e41c1f1a408662977c159cea",
+      "after_blob": "64daf45202eb191c27da78fa4548bf39f444d907",
+      "after_sha256": "76662fec5cdcd42bf5ed108501ae9c33e1d91df6677423122214724473d496d5"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_blob": "bfe4de4d4bae9926b5099d01f45eea82793c0005",
+      "after_blob": "e1a79896554dde5c037357dce35cff1a4f6fce71",
+      "after_sha256": "83709e7e73fb56bbafc8cf57e3843eaefec3d60a497b419c7a40b2d7d5980998"
+    },
+    "docs/implementation_status.json": {
+      "before_blob": "230547d5b01a5b0ff82599e03fd5ec819547338b",
+      "after_blob": "147f964f2dbcff4f4fffec5db0dd0e34aad7d1af",
+      "after_sha256": "142c92f3827edf08c998f2effbf19deb9aa43743eba569fed0df0e192b701367"
+    },
+    "tests/crawl.cpp": {
+      "before_blob": "9048cdd23cd6e04001ae7378fd23240eb85f58b8",
+      "after_blob": "997d5729e92677f99c2ebdc2025e8360da352472",
+      "after_sha256": "a41d87eadd1292a198e2a75797de210e78813ed9dceafba8d198e61dea27f06f"
+    }
+  },
+  "all_production_runtime_source_bytes_unchanged": true,
+  "original_crawl_fixtures_functions_assertions_and_registration_order_preserved": true,
+  "original_crawl_body_sha256": "193ba9335f94319d9e45f1d62b97cc13e08120a4570a103518c9872975cbd428",
+  "original_crawl_cases": 54,
+  "original_crawl_registered_names_sha256": "9fba096f108a25428d8998ecb9246273f0aae37cfe96e895c709857bd92d0693",
+  "workflow_presets_schema_contract_fixtures_and_dependency_locks_unchanged": true,
+  "generated_linux_test_properties_unchanged": true,
+  "generated_linux_test_count": 27,
+  "linux_watchdogs_seconds": {
+    "core": 45.0,
+    "crawl": 45.0,
+    "site_publication": 60.0,
+    "sessions": 60.0
+  },
+  "windows_configuration_execution": "Not performed locally; review source branch and require actual new Windows CI to show 90/120/120 seconds.",
+  "plan_and_acceptance_unchanged": true,
+  "status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "new_files_limited_to_validation_evidence": true,
+  "golden_check": "Raw byte/object hashes only; no query inspection, labeling or tuning.",
+  "unchanged_production_binaries_sha256": {
+    "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+    "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
+  }
+}
