@@ -1,0 +1,109 @@
+{
+  "status": "prepared; no final combined execution claimed",
+  "root_library_inputs_must_be_frozen_before_execution": true,
+  "inputs": {
+    "performance_source": {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/validation/claude_followup_20261024/p2-5/benchmark-inputs/scan_blocking_negative.cpp",
+      "sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6"
+    },
+    "independent_probe": {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/validation/claude_continuation_20261024/independent/search-lock/probe.cpp",
+      "sha256": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022"
+    },
+    "query_oracle": {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/validation/claude_continuation_20261024/independent/search-lock/query_oracle.cpp",
+      "sha256": "75cdb7444b258f05caa9d48e7db9b795b8e41af172deb60227795fbabe4eb6af"
+    },
+    "old_release_library": {
+      "path": "/tmp/bzs-search-lock-baseline/libbzs_core_release_590.a",
+      "sha256": "385bff9799a53e147ff8905679a7d40b0c116a9951e33ec168e7a1aa7f7ef813"
+    },
+    "old_release_driver": {
+      "path": "/tmp/bzs-search-lock-baseline/scan-negative",
+      "sha256": "1bb83100fbd74ab7bd0f6384e879c678e096f53b294e2d09779680d68a64b7bd"
+    },
+    "old_store_header": {
+      "path": "/tmp/bzs-search-lock-baseline/include/bzs/store.hpp",
+      "sha256": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72"
+    }
+  },
+  "existing_release_configuration": [
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861/build-release/CMakeCache.txt",
+      "sha256": "6b2e70c30783ba6315f904c4264e4b4ae6bf2147a6edad155b40f784be0695a9",
+      "compiler_configuration": [
+        "CMAKE_BUILD_TYPE:STRING=Release",
+        "CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++",
+        "CMAKE_CXX_FLAGS:STRING=",
+        "CMAKE_CXX_FLAGS_DEBUG:STRING=-g",
+        "CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG"
+      ]
+    },
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-release/CMakeCache.txt",
+      "sha256": "1351438827c58b3451be88b851779e25dc03c935a0d72a81bceab7bf9614b036",
+      "compiler_configuration": [
+        "CMAKE_BUILD_TYPE:STRING=Release",
+        "CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++",
+        "CMAKE_CXX_FLAGS:STRING=",
+        "CMAKE_CXX_FLAGS_DEBUG:STRING=-g",
+        "CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG"
+      ]
+    }
+  ],
+  "performance": {
+    "args": [
+      "2000",
+      "204800"
+    ],
+    "driver_compile_flags": [
+      "-O2",
+      "-std=c++20"
+    ],
+    "link": [
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread"
+    ],
+    "old_include": "/tmp/bzs-search-lock-baseline/include",
+    "new_include": "/workspace/scratch/e2371129386d/bzs861/include",
+    "new_library_expected_path": "/workspace/scratch/e2371129386d/bzs861/build-release/libbzs_core.a",
+    "conditions": [
+      "Use identical unmodified driver source and dataset; separate fresh in-memory Store in each process.",
+      "Use old headers with old Release library and final combined headers with final combined Release library; Store layout changed when private test hook was added.",
+      "Run baseline and final sequentially on the same host after competing builds/gates have stopped; retain raw wall timings and max concurrent stats wait, without performance thresholds.",
+      "The 20 ms startup sleep and 5 ms stats sampling are observational, not a deterministic concurrency proof; the unchanged interleaving probe supplies that proof.",
+      "Both queries must report bounded_scan_recent; do not replace NOT with indexed positive queries."
+    ]
+  },
+  "independent_probe": {
+    "runtime_args": [],
+    "expected": "PASS 19 independent scenarios, 191 checks",
+    "compile_debug": [
+      "-std=c++20",
+      "-O0",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic"
+    ],
+    "compile_asan_additions": [
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer"
+    ],
+    "runtime_asan_environment": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+    },
+    "notes": [
+      "Compile against matching final combined include/ and final library; never reuse author-only probe binary for final binding.",
+      "Do not run existing run.py: it hardcodes the P2-5 author worktree.",
+      "Use the final probe.cpp, not probe-before-site-handle-fix.cpp; earlier E_SITE_POLICY_STALE was preserved as a corrected test setup assumption.",
+      "Native ASan execution must avoid ptrace LSan failure; preserve any actual failed attempt, do not disable leak detection."
+    ]
+  }
+}

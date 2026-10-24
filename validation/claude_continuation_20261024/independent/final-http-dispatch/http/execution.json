@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "case": "default_8_saturation_disconnect_recovery",
+      "passed": true,
+      "physical_rpcs": 8,
+      "peak": 8
+    },
+    {
+      "case": "shutdown_with_8_live_dispatches",
+      "passed": true,
+      "physical_rpcs": 8,
+      "peak": 8
+    }
+  ],
+  "checks": 39,
+  "inputs": {
+    "apps/searchd/main.cpp": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+    "tests/integration.py": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+  },
+  "elapsed_seconds": 0.399,
+  "executable_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+  "scope": "Linux independent real loopback; copy of root Debug server only; no external endpoints and no ASan claim"
+}

@@ -1,0 +1,104 @@
+{
+  "scope": "One adjacent old-590 to final-combination Release observation on the same host; no SLA, pass threshold or statistical performance claim",
+  "reviewer": "/root/dispatcher; P2-5 independent reviewer, not P2-5 author",
+  "old_product_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "final_product_commit": "cd540ee419f80c9ecb2f6ff51e2608b5e93570c3",
+  "root_execution_manifest": {
+    "path": "validation/claude_continuation_20261024/final-verification/execution-inputs.json",
+    "sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90"
+  },
+  "prior_debug_asan_manifest_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "production_inputs_unchanged_between_manifests": 43,
+  "driver_source_sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+  "dataset": {
+    "documents": 2000,
+    "target_body_bytes": 204800,
+    "database": ":memory: fresh per process",
+    "actual_body_construction": "Unmodified original repeated-text driver may pad past the target and appends a document number; identical on both runs."
+  },
+  "compile_conditions": {
+    "normalized_driver_command_equal": true,
+    "driver_flags": [
+      "-O2",
+      "-std=c++20"
+    ],
+    "core_release_flags": "-O3 -DNDEBUG",
+    "old_headers_exactly_match_590": true,
+    "new_headers_copied_from_final_root": true,
+    "compiler_version": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+    "final_cmake_flags": {
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "CMAKE_CXX_FLAGS": "",
+      "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG"
+    }
+  },
+  "execution_order": [
+    "old",
+    "new"
+  ],
+  "executions_per_variant": 1,
+  "automatic_retries": 0,
+  "runs": {
+    "old": {
+      "utc_started": "2026-10-24T12:44:38.491027+00:00",
+      "exit_code": 0,
+      "elapsed_seconds_including_data_construction": 53.546,
+      "library_sha256": "385bff9799a53e147ff8905679a7d40b0c116a9951e33ec168e7a1aa7f7ef813",
+      "driver_binary_sha256": "1bb83100fbd74ab7bd0f6384e879c678e096f53b294e2d09779680d68a64b7bd",
+      "sources_unchanged": true,
+      "inputs_unchanged": true
+    },
+    "new": {
+      "utc_started": "2026-10-24T12:45:32.102092+00:00",
+      "exit_code": 0,
+      "elapsed_seconds_including_data_construction": 52.934,
+      "library_sha256": "474d471336a2b96040aa99f07f801f1ca4aded28d7fb39a35270f584b8fc1d0f",
+      "driver_binary_sha256": "71340753326258bfa1d7bdee2a707a058f69988c2ff0863652f4a992e5aaa010",
+      "sources_unchanged": true,
+      "inputs_unchanged": true
+    }
+  },
+  "observations": [
+    {
+      "case": "single_NOT_phrase",
+      "query": "NOT \"alpha beta\"",
+      "old_search_ms": 2567,
+      "new_search_ms": 640,
+      "old_worst_concurrent_stats_ms": 2566,
+      "new_worst_concurrent_stats_ms": 150,
+      "retrieval": "bounded_scan_recent"
+    },
+    {
+      "case": "four_NOT_phrases_AND",
+      "query": "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\"",
+      "old_search_ms": 2573,
+      "new_search_ms": 1202,
+      "old_worst_concurrent_stats_ms": 2573,
+      "new_worst_concurrent_stats_ms": 157,
+      "retrieval": "bounded_scan_recent"
+    }
+  ],
+  "result_interpretation": "On these single runs the final version reduced query duration and unrelated-owner stats wait; precise matching/scoring/sorting leave the Store lock, while SQL/body copying/final projection still retain locks. Deterministic interleaving evidence is the separate 19-scenario Debug and sanitizer replay.",
+  "limits": [
+    "Only two query shapes on synthetic 2000 x 200 KiB target bodies; not production latency or throughput acceptance.",
+    "Stats uses the original 20 ms startup delay and 5 ms sampling; the maximum wait is an observation, not a deterministic bound.",
+    "These are sequential single runs, without repeated sampling or confidence intervals.",
+    "Total process time includes index/data construction and must not be reported as query latency.",
+    "No root source or build artifact was modified; no active root logs were read."
+  ],
+  "artifacts": {
+    "copy-manifest.json": "5a3cc607c0d61b963ba29d78f7e554e4716d1a4e0d16c75df215cf9f5c003145",
+    "root-execution-inputs.json": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+    "scan_blocking_negative.cpp": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+    "run_adjacent.py": "c9ca1c3bd4ec754e0c96ed404f8eb24b47052083e1cfb82678e5a3c435c12aee",
+    "evidence/compile-performance-old.json": "7249afaf2c2c097900802e73c41e14de5305e84ecfe2a037ba3809485e045019",
+    "evidence/compile-performance-old.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/run-performance-old.json": "9896b893e8728311d1dc9a2960e4be4998726398ebd8fc55bf6c53a9d5e8d36c",
+    "evidence/run-performance-old.log": "400e7a53b3aa34fdc8c56fdba0fa7b17640fff3ae9bcecbcc0a39b07580c2b93",
+    "evidence/compile-performance-new.json": "1ae58d93662544a1e908c1fa294cda8e105c0c201fe744a9d7827e0603a4b6f1",
+    "evidence/compile-performance-new.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/run-performance-new.json": "31400116b9d04741498e58905ce1c910a2f06eb21b2b4476e471be42795b8acb",
+    "evidence/run-performance-new.log": "554cfec3a0cfe1c76149808a86236cd0ad0e4f9e8592f3ebba2952f1a9ada8e8"
+  }
+}

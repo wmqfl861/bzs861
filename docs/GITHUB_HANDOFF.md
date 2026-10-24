@@ -2,7 +2,15 @@
 
 更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
-## 当前审计后续开发
+## 当前审计接续（基线 59081e1）
+
+本批基线 main 为 `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`，版本仍为 0.1.10。该提交的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。当前范围为 P2-5 搜索锁、P2-6 固定后台通道、P2-7 有界 HTTP 业务执行和 P2-9 来源退避；作者、独立审核与最终整合证据见[本批记录](../validation/claude_continuation_20261024/README.md)。P2-9 首版时钟回拨反例及修正分别保存，不能仅保留后来的通过。
+
+发布前记录真实已执行的本地结果和冻结输入；发布时核对准确远端父 SHA，非强制更新后取回实际 commit/tree，再查询该包含提交自己的 Checks。本文和机器状态不预填未来提交或未来 CI；准确 run 与平台结论以实际查询为准。无需为预写 CI 成功反复提交状态文件。本批不创建新 tag，不改变来源审批、六项保留决定、schema13 或辅助索引标记。
+
+## 上一批审计后续开发（44253a7 → 59081e1，历史）
+
+以下两段保留上一批原说明，其“本批”指 `claude_followup_20261024`；更下方的 0.1.10 历史区也只描述对应旧输入。
 
 本批从已发布 main `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，已发布版本仍为0.1.10。`review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 只读，不合并或修改审计材料；实际复现见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)。八项修正按约定顺序推进，每项保留正式回归、完整门禁、独立反例与原始失败，准确结果和提交表见[本批验证记录](../validation/claude_followup_20261024/)。
 
@@ -14,6 +22,7 @@
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
+| Claude 审计首批后续修正（本批基线） | `59081e14fdda765844031e13f874e588334f1a36` | CI 40067206826：Linux / Windows 成功；P1-1/2/3、P2-1..4 及 P2-5 初次匹配字段复用的证据见 claude_followup_20261024；不证明后续输入 |
 | 0.1.10 截止时间原子结算修正 | `fcb58e4679a5bbdff17319b7b4ebff7019733eab` | CI 39954357148：Linux27/27、15套sanitizer及合同/计划通过；Windows16/17，crawl在45.02秒进程超时，无用例完成输出；另14套native完成364例/10,308断言，HTTP20/20和4/4；完整失败日志保留 |
 | 0.1.10 Windows HTTP清理修正 | `199eb635ca90c657dff673fbf88bed44e7c4b40b` | CI 39950116698：Linux26/27，原一秒恢复测试多出source_unknown事件；Windows17/17通过（340.84秒），撤权HTTP4/4及严格连接清理通过；本次追加截止时间生产修正，原日志保留 |
 | 0.1.10 首次发布 | `a06e7e91f6a115b345ff1072095b80e15d193ad4` | CI 39945994760：Linux通过；Windows构建成功、16/17套通过，唯一失败为HTTP测试未关闭SQLite连接导致临时目录清理失败；原日志完整保留 |
@@ -53,6 +62,6 @@
 
 ## 证据分期
 
-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；当前审计后续为 `validation/claude_followup_20261024/`。旧证据不覆盖、不改名冒充新运行。
+`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；上一批审计后续为 `validation/claude_followup_20261024/`；当前 P2-5/6/7/9 接续为 `validation/claude_continuation_20261024/`。旧证据不覆盖、不改名冒充新运行。
 
 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。

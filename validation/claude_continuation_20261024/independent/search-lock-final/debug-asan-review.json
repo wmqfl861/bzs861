@@ -1,0 +1,30 @@
+{
+  "scope": "Final combined P2-5 independent Debug and sanitizer replay only",
+  "root_manifest_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "store_cpp_sha256": "1b7acb994470a01987ddef5ccb653c8c988a5355ddd2e2ca9fc7c8145bc1d7e2",
+  "probe_source_sha256": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022",
+  "runs": [
+    {
+      "variant": "Debug",
+      "report": "final-debug/evidence/review-result.json",
+      "sha256": "33988e5232bae07ba1a12c3f349317fd4c2e24b57741b65e3ae45d95b1138cb3",
+      "scenarios": 19,
+      "checks": 191,
+      "exit_code": 0,
+      "library_sha256": "18e36e84b78a38550f1345e13cc6627bf78cf6df244a65a22f3f4acf85cc9fb8"
+    },
+    {
+      "variant": "ASan/UBSan with LSan",
+      "report": "final-asan/evidence/review-result.json",
+      "sha256": "ab2c72f5693a7b568d5e62d5dc6f6c28a332e2a041a44d6fe0239fc3020a6971",
+      "scenarios": 19,
+      "checks": 191,
+      "exit_code": 0,
+      "library_sha256": "679658559ff0ddd1eff441a08ec1e44c0f085652c211a861519ec3993ad3b412"
+    }
+  ],
+  "counting_note": "The same scenarios run twice; these are not 38 distinct scenarios or product acceptance results.",
+  "release_performance": "not_executed_in_this_record",
+  "root_files_modified": false,
+  "active_root_logs_read": false
+}

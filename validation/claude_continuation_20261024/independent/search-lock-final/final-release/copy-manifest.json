@@ -1,0 +1,201 @@
+{
+  "scope": "Read-only old 590 and final-combination Release copies; same unchanged NOT driver, paired historical/current headers and libraries",
+  "utc": "2026-10-24T12:43:58.204583+00:00",
+  "root_head": "cd540ee419f80c9ecb2f6ff51e2608b5e93570c3",
+  "old_product_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "root_manifest_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "same_43_production_inputs_as_debug_asan_manifest": true,
+  "driver_flags": [
+    "-O2",
+    "-std=c++20"
+  ],
+  "core_release_flags": "-O3 -DNDEBUG",
+  "compiler_version": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "copied_files": [
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/contracts.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/contracts.hpp",
+      "sha256": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/crawl_trap.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/crawl_trap.hpp",
+      "sha256": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/error.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/error.hpp",
+      "sha256": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/highlight.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/highlight.hpp",
+      "sha256": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/html.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/html.hpp",
+      "sha256": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/http_cache.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/http_cache.hpp",
+      "sha256": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/json.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/json.hpp",
+      "sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/publication.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/publication.hpp",
+      "sha256": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/query.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/query.hpp",
+      "sha256": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/search_modes.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/search_modes.hpp",
+      "sha256": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/service.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/service.hpp",
+      "sha256": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/sites.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/sites.hpp",
+      "sha256": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/store.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/store.hpp",
+      "sha256": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/tokenizer.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/tokenizer.hpp",
+      "sha256": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/util.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/util.hpp",
+      "sha256": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/include/bzs/web.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/include/bzs/web.hpp",
+      "sha256": "f57ed6661ee0ac37a7c5371ff1d16df10171e4fabf1ddf6b40d078cafa9be671"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/contracts.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/contracts.hpp",
+      "sha256": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/crawl_trap.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/crawl_trap.hpp",
+      "sha256": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/error.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/error.hpp",
+      "sha256": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/highlight.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/highlight.hpp",
+      "sha256": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/html.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/html.hpp",
+      "sha256": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/http_cache.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/http_cache.hpp",
+      "sha256": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/json.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/json.hpp",
+      "sha256": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/publication.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/publication.hpp",
+      "sha256": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/query.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/query.hpp",
+      "sha256": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/search_modes.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/search_modes.hpp",
+      "sha256": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/service.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/service.hpp",
+      "sha256": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/sites.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/sites.hpp",
+      "sha256": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/store.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/store.hpp",
+      "sha256": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/tokenizer.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/tokenizer.hpp",
+      "sha256": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/util.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/util.hpp",
+      "sha256": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/include/bzs/web.hpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/include/bzs/web.hpp",
+      "sha256": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/build-release/libbzs_core.a",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/libbzs_core.a",
+      "sha256": "474d471336a2b96040aa99f07f801f1ca4aded28d7fb39a35270f584b8fc1d0f"
+    },
+    {
+      "source": "/tmp/bzs-search-lock-baseline/libbzs_core_release_590.a",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/old/libbzs_core.a",
+      "sha256": "385bff9799a53e147ff8905679a7d40b0c116a9951e33ec168e7a1aa7f7ef813"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/final-verification/execution-inputs.json",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/root-execution-inputs.json",
+      "sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861/build-release/CMakeCache.txt",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/new/CMakeCache.txt",
+      "sha256": "6b2e70c30783ba6315f904c4264e4b4ae6bf2147a6edad155b40f784be0695a9"
+    },
+    {
+      "source": "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/validation/claude_followup_20261024/p2-5/benchmark-inputs/scan_blocking_negative.cpp",
+      "copy": "/tmp/bzs-continuation-final-search-lock/final-release/scan_blocking_negative.cpp",
+      "sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6"
+    }
+  ]
+}

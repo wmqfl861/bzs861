@@ -1,0 +1,229 @@
+{
+  "scope": "Documentation draft only; no root worktree edits, publication or CI trigger",
+  "baseline": "59081e14fdda765844031e13f874e588334f1a36",
+  "baseline_tree": "5d555fabc43180aa905e0581a301a3bafbeca1d5",
+  "patch": {
+    "file": "handoff-docs.patch",
+    "sha256": "7bcee4e61ff2769b454bfabea4d0480ed8b759b9e40db75f8854ff94840dc625",
+    "bytes": 54293
+  },
+  "files": [
+    {
+      "path": "HANDOFF_START_HERE.md",
+      "before_sha256": "923278993b9ff0a6ab48fdf45017cb438efbf599908ad26136ec0c672a4f5b5b",
+      "after_sha256": "2ba78841e51bd4180751d8722d51443177d291706b48cc21d4c6e8efa02d0c24",
+      "before_bytes": 5633,
+      "after_bytes": 8071,
+      "action": "updated"
+    },
+    {
+      "path": "README.md",
+      "before_sha256": "e83812d028f08bef84807dbeb15fa080f68885e00e33ad260b648ff2846c8f70",
+      "after_sha256": "177745df80a98ac57b0d7e1143b0f75f08d65f451585ad241da636fbcb3d7cbf",
+      "before_bytes": 15913,
+      "after_bytes": 18283,
+      "action": "updated"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "before_sha256": "f9379f47a4918cc8ef211936f2bd50b2c88634d81a565bb1d6878bf5ec6b23aa",
+      "after_sha256": "a1b8cd9e886c2eb59b9ddfcd5f43592703ae57c79c015097076b92b94ff6dce0",
+      "before_bytes": 12828,
+      "after_bytes": 16095,
+      "action": "updated"
+    },
+    {
+      "path": "docs/handoff/NEXT_AGENT.md",
+      "before_sha256": "6074af919838bc1872907328d113a2c9b08330b584daa284f2f21c9d5f0ab7e8",
+      "after_sha256": "dc271780d88db0af62e4f8775c8ab23e00ee2e2e0b4849c9096987ed06b508b1",
+      "before_bytes": 7356,
+      "after_bytes": 9731,
+      "action": "updated"
+    },
+    {
+      "path": "docs/GITHUB_HANDOFF.md",
+      "before_sha256": "1aa23fd089e9c6d63fd7f9125682ed19cb87e9a379ef88c5841931ede1e4e833",
+      "after_sha256": "f5db9a78b00ec07faebd22c2158754afd50abcee06f81384fc217c470860a9bb",
+      "before_bytes": 8182,
+      "after_bytes": 9776,
+      "action": "updated"
+    },
+    {
+      "path": "docs/API.md",
+      "before_sha256": "d3d68515902b3c56a47e4c6e5e55e766fbe35c5762a22d25ded302588d21df4c",
+      "after_sha256": "1e4223086f906e7d9c8cb5ed09045ba1bdd7b12e120fe9ce837b8ada80772011",
+      "before_bytes": 37169,
+      "after_bytes": 39902,
+      "action": "updated"
+    },
+    {
+      "path": "docs/implementation_status.json",
+      "before_sha256": "459c932db827ad9ff85ce507cd213335a14a80e43874ddf5724340a6a38b6cf7",
+      "after_sha256": "8acc89635df488d4b7b87b3424834238f7bbad14bb88897efb52dd51efd6e144",
+      "before_bytes": 188181,
+      "after_bytes": 196814,
+      "action": "updated"
+    },
+    {
+      "path": "docs/HTTP_EXECUTION.md",
+      "before_sha256": null,
+      "after_sha256": "7831d36095ad7370224e715a4fef1194843aaae64098410a3ae430cd3996ad48",
+      "before_bytes": 0,
+      "after_bytes": 5785,
+      "action": "added"
+    }
+  ],
+  "checks": {
+    "git_diff_check": "passed",
+    "all_seven_original_files_exactly_match_590_baseline": true,
+    "no_original_json_key_removed": true,
+    "changed_original_json_keys": [
+      "stage",
+      "baseline",
+      "integration_inputs",
+      "current_test_report",
+      "upstream_baseline_reproduction",
+      "independent_review",
+      "review_record",
+      "historical_reports",
+      "current_results",
+      "historical_review_records",
+      "verification_binding"
+    ],
+    "all_changed_original_values_backed_up_exactly": true,
+    "backup_key": "historical_verification_claude_followup_20261024",
+    "backup_fields": [
+      "version",
+      "stage",
+      "recorded_at",
+      "baseline",
+      "baseline_version",
+      "integration_inputs",
+      "current_test_report",
+      "current_verification",
+      "upstream_baseline_reproduction",
+      "github_ci",
+      "independent_review",
+      "full_product_independent_review",
+      "review_record",
+      "current_results",
+      "verification_binding",
+      "source_availability",
+      "site_discovery_availability",
+      "site_crawl_availability",
+      "historical_reports",
+      "historical_review_records"
+    ],
+    "all_existing_historical_objects_unchanged": true,
+    "historical_report_lists_prefix_preserved": true,
+    "feature_count": 83,
+    "features_semantically_equal": true,
+    "features_raw_json_bytes_equal": true,
+    "features_raw_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "feature_status_counts": {
+      "partial": 37,
+      "not_started": 46
+    },
+    "unchanged_baseline_keys": [
+      "version",
+      "recorded_at",
+      "status_counts",
+      "status_legend",
+      "partial_work_packages",
+      "not_started",
+      "full_work_packages_accepted",
+      "milestones_accepted",
+      "slices_accepted",
+      "planned_acceptance_items",
+      "planned_acceptance_suite_executed",
+      "s0_live_sources",
+      "s1_acceptance",
+      "current_verification",
+      "github_ci",
+      "full_product_independent_review",
+      "acceptance_mapping",
+      "features",
+      "baseline_version",
+      "planned_work_packages",
+      "s2_acceptance",
+      "source_availability",
+      "site_discovery_availability",
+      "site_crawl_availability",
+      "historical_results_0_1_6",
+      "historical_results_0_1_8",
+      "historical_verification_0_1_8",
+      "historical_results_0_1_9_initial",
+      "historical_verification_0_1_9_initial",
+      "json_concurrency_followup",
+      "historical_verification_0_1_9_final",
+      "historical_verification_0_1_10_initial",
+      "historical_verification_0_1_10_http_cleanup",
+      "historical_verification_0_1_10_deadline",
+      "historical_verification_0_1_10_windows_watchdog"
+    ],
+    "preserved_prose": {
+      "HANDOFF_START_HERE.md": "entire prior body preserved under historical heading",
+      "docs/DEVELOPMENT_STATUS.md": "entire prior body preserved under historical heading",
+      "docs/handoff/NEXT_AGENT.md": "entire prior body preserved under historical heading",
+      "README.md": "entire prior introduction preserved under historical heading; original 0.1.9 verification paragraph also retained",
+      "docs/GITHUB_HANDOFF.md": "prior current-batch paragraphs preserved under historical heading; original history rows retained"
+    },
+    "planning_structure_check": {
+      "read_only": true,
+      "structure_valid": true,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "planning_estimate": [
+        418,
+        720
+      ],
+      "product_acceptance_checked": false
+    },
+    "production_tests_rerun_for_documentation": false,
+    "reason": "Documentation-only changes; final production gates are owned and recorded by the root agent."
+  },
+  "source_bindings": [
+    {
+      "worktree": "bzs861",
+      "path": "apps/searchd/main.cpp",
+      "sha256": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+      "head": "23cb1ceffbbc0e65dbcbc83baf44ac4a2159fedc",
+      "scope": "read-only implementation/contract source for this documentation draft; not a final integrated validation claim"
+    },
+    {
+      "worktree": "bzs861",
+      "path": "tests/integration.py",
+      "sha256": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536",
+      "head": "23cb1ceffbbc0e65dbcbc83baf44ac4a2159fedc",
+      "scope": "read-only implementation/contract source for this documentation draft; not a final integrated validation claim"
+    },
+    {
+      "worktree": "bzs861-next-search-lock",
+      "path": "docs/LOCAL_SEARCH_CONCURRENCY.md",
+      "sha256": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5",
+      "head": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+      "scope": "read-only implementation/contract source for this documentation draft; not a final integrated validation claim"
+    },
+    {
+      "worktree": "bzs861-next-retry",
+      "path": "docs/SOURCE_BACKOFF.md",
+      "sha256": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb",
+      "head": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "scope": "read-only implementation/contract source for this documentation draft; not a final integrated validation claim"
+    },
+    {
+      "worktree": "bzs861-next-dispatcher",
+      "path": "docs/BACKGROUND_DISPATCH.md",
+      "sha256": "e18ae048b2bf5a7f6a33ba14e96e46e53a513e427166112ee0815ed2bdc4952b",
+      "head": "612b254a7e6d7882c1f3d83167dc30e893080e92",
+      "scope": "read-only implementation/contract source for this documentation draft; not a final integrated validation claim"
+    }
+  ],
+  "integration_dependencies": [
+    "docs/LOCAL_SEARCH_CONCURRENCY.md from P2-5 author commit 1c69836f393aee55032beae4bd027f4d286d1e4b",
+    "docs/BACKGROUND_DISPATCH.md from P2-6 author commit a9bac84266ee603e27e3957b80a54387e2c44820",
+    "docs/SOURCE_BACKOFF.md from final P2-9 author commit a30231a802ab05f0bb3f821c51ef03d156d796d8",
+    "validation/claude_continuation_20261024/README.md to be completed by integration owner with actual results only"
+  ]
+}

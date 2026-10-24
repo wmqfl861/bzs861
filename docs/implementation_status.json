@@ -1,18 +1,26 @@
 {
   "version": "0.1.10",
-  "stage": "Claude audit followup corrections; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
+  "stage": "Claude audit continuation P2-5/P2-6/P2-7/P2-9; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
   "recorded_at": "2026-10-24",
-  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "baseline": "59081e14fdda765844031e13f874e588334f1a36",
   "integration_inputs": {
-    "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
-    "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
+    "main": "59081e14fdda765844031e13f874e588334f1a36",
+    "tree": "5d555fabc43180aa905e0581a301a3bafbeca1d5",
     "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
     "review_branch_read_only": true,
     "baseline_schema": 13,
     "schema": 13,
     "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
-    "scope": "Audit followup only; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
-    "evidence_directory": "validation/claude_followup_20261024"
+    "scope": "Continuation P2-5 local search lock, P2-6 bounded background lanes, P2-7 bounded HTTP request execution, P2-9 source backoff; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
+    "evidence_directory": "validation/claude_continuation_20261024",
+    "baseline_ci": {
+      "commit": "59081e14fdda765844031e13f874e588334f1a36",
+      "run_id": 40067206826,
+      "linux": "success",
+      "windows": "success",
+      "scope": "Historical baseline only; not verification of the continuation input.",
+      "url": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826"
+    }
   },
   "status_counts": {
     "partial": 37,
@@ -47,13 +55,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/claude_followup_20261024/README.md",
+  "current_test_report": "validation/claude_continuation_20261024/README.md",
   "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
-  "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
+  "upstream_baseline_reproduction": "The original eight findings and genuine 442 old-library index migration remain in validation/claude_followup_20261024. This continuation starts at 59081e14fdda765844031e13f874e588334f1a36; baseline/new-code evidence and exact semantic limits for P2-5/P2-6/P2-7/P2-9 are bound in validation/claude_continuation_20261024/README.md. The first P2-9 attempt failed independent clock-rollback review; preserve the failing input and later correction separately.",
   "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
-  "independent_review": "Per-issue and cross-item reviewer roles, findings and exact input bindings are recorded in the batch validation record.",
+  "independent_review": "Separate author and independent roles, exact source/library inputs, original failures (including P2-9 clock rollback), corrections and integrated results are recorded in validation/claude_continuation_20261024/README.md; do not infer a full-product review.",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/claude_followup_20261024/README.md",
+  "review_record": "validation/claude_continuation_20261024/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -70,7 +78,8 @@
     "validation/s2_takeover/final-report.json",
     "validation/s2_takeover/ci-followup-report.json",
     "validation/s2_takeover/deadline-followup-report.json",
-    "validation/s2_takeover/windows-watchdog-report.json"
+    "validation/s2_takeover/windows-watchdog-report.json",
+    "validation/claude_followup_20261024/README.md"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -2631,8 +2640,8 @@
   ],
   "current_results": {
     "status": "not_embedded_here; consult_exact_batch_record",
-    "record": "validation/claude_followup_20261024/README.md",
-    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
+    "record": "validation/claude_continuation_20261024/README.md",
+    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
   },
   "baseline_version": "0.1.10",
   "planned_work_packages": 83,
@@ -2646,13 +2655,14 @@
     "validation/s2_five_stages/final-review.json",
     "validation/s2_takeover/final-review.json",
     "validation/s2_takeover/ci-followup-review.json",
-    "validation/s2_takeover/deadline-followup-review.json"
+    "validation/s2_takeover/deadline-followup-review.json",
+    "validation/claude_followup_20261024/README.md"
   ],
   "verification_binding": {
     "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
-    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
-    "record": "validation/claude_followup_20261024/README.md",
-    "remote_ci": "Consult the batch record for the exact published commit and its actual Linux/Windows result.",
+    "baseline": "59081e14fdda765844031e13f874e588334f1a36",
+    "record": "validation/claude_continuation_20261024/README.md",
+    "remote_ci": "After publication, query Checks for the exact containing commit and its actual Linux/Windows results. No future commit or CI outcome is embedded here.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -4370,5 +4380,134 @@
       "actions_url": "https://github.com/wmqfl861/bzs861/actions"
     },
     "baseline_version": "0.1.9"
+  },
+  "historical_verification_claude_followup_20261024": {
+    "version": "0.1.10",
+    "stage": "Claude audit followup corrections; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
+    "recorded_at": "2026-10-24",
+    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "baseline_version": "0.1.10",
+    "integration_inputs": {
+      "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
+      "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
+      "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+      "review_branch_read_only": true,
+      "baseline_schema": 13,
+      "schema": 13,
+      "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+      "scope": "Audit followup only; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
+      "evidence_directory": "validation/claude_followup_20261024"
+    },
+    "current_test_report": "validation/claude_followup_20261024/README.md",
+    "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
+    "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
+    "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
+    "independent_review": "Per-issue and cross-item reviewer roles, findings and exact input bindings are recorded in the batch validation record.",
+    "full_product_independent_review": "not_performed",
+    "review_record": "validation/claude_followup_20261024/README.md",
+    "current_results": {
+      "status": "not_embedded_here; consult_exact_batch_record",
+      "record": "validation/claude_followup_20261024/README.md",
+      "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
+    },
+    "verification_binding": {
+      "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+      "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+      "record": "validation/claude_followup_20261024/README.md",
+      "remote_ci": "Consult the batch record for the exact published commit and its actual Linux/Windows result.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    },
+    "source_availability": {
+      "status": "not_verified",
+      "registered_sources": 17,
+      "enabled_sources": 0,
+      "approved_sources": 0,
+      "cloud_probe": {
+        "status": "dns_failed_no_http_response",
+        "environment": "cloud_execution_environment",
+        "sources": [
+          "marginalia",
+          "wikipedia_en"
+        ],
+        "attempted_source_requests": 2,
+        "dns_failures": 2,
+        "http_responses": 0,
+        "result_bearing_responses": 0,
+        "user_environment_validated": false,
+        "source_approval_changed": false,
+        "quota_scope": "this_probe_run",
+        "report": "validation/s0_s2_progress/cloud_probe_summary.json",
+        "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
+        "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment.",
+        "historical_version": "0.1.2",
+        "executed_for_current_increment": false
+      },
+      "current_increment_real_source_attempts": 0
+    },
+    "site_discovery_availability": {
+      "default_registered_sites": 0,
+      "default_enabled_sites": 0,
+      "real_site_requests_for_current_increment": 0,
+      "synthetic_fixture_review_is_production_approval": false,
+      "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+    },
+    "site_crawl_availability": {
+      "default_registered_sites": 0,
+      "default_enabled_sites": 0,
+      "real_site_requests_for_current_increment": 0,
+      "synthetic_fixture_review_is_production_approval": false,
+      "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+    },
+    "historical_reports": [
+      "validation/test_report.json",
+      "validation/takeover/test_report.json",
+      "validation/s1_test_report.json",
+      "validation/s1_review/test_report.json",
+      "validation/s0_s2_progress/test_report.json",
+      "validation/s2_discovery/test_report.json",
+      "validation/s2_crawl/test_report.json",
+      "validation/s2_hardening/test_report.json",
+      "validation/s2_five_stages/final-report.json",
+      "validation/s2_next_five/final-report.json",
+      "validation/s2_next_five/ci-followup-report.json",
+      "validation/s2_next_five/json-race-report.json",
+      "validation/s2_takeover/final-report.json",
+      "validation/s2_takeover/ci-followup-report.json",
+      "validation/s2_takeover/deadline-followup-report.json",
+      "validation/s2_takeover/windows-watchdog-report.json"
+    ],
+    "historical_review_records": [
+      "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
+      "validation/s0_s2_progress/independent_review.json",
+      "validation/s2_discovery/independent_review.json",
+      "validation/s2_crawl/independent_review.json",
+      "validation/s2_hardening/independent_review.json",
+      "validation/s2_five_stages/final-review.json",
+      "validation/s2_takeover/final-review.json",
+      "validation/s2_takeover/ci-followup-review.json",
+      "validation/s2_takeover/deadline-followup-review.json"
+    ]
+  },
+  "continuation_scope": {
+    "P2-5": {
+      "contract": "docs/LOCAL_SEARCH_CONCURRENCY.md",
+      "boundary": "Exact matching, fallback scoring and sorting release the Store lock; candidate SQL, one-body copy and final projection/highlighting retain locks and final publication/capacity checks."
+    },
+    "P2-6": {
+      "contract": "docs/BACKGROUND_DISPATCH.md",
+      "boundary": "Four fixed lanes: fixture, read_many, shared map/crawl, durable web search. One lease per lane; original accounting, shared reads, cancellation and unknown-outcome no-retry semantics remain."
+    },
+    "P2-7": {
+      "contract": "docs/HTTP_EXECUTION.md",
+      "boundary": "Business capacity defaults to min(IO threads,32), configurable 1..32; no additional business queue capacity, 503 before Service. Health remains on IO, subject to 64 active connections and socket limits; disconnect does not cancel or retry admitted work."
+    },
+    "P2-9": {
+      "contract": "docs/SOURCE_BACKOFF.md",
+      "boundary": "New search Retry-After/backoff is bounded to 24 hours and new parse-error backoff to 72 hours; settings proofs protect legitimate absolute deadlines across late responses, clock rollback and restart. Unproven historical deadlines use a conservative extreme-anomaly heuristic beyond both current/event time by 365 days and no future event; smaller or ambiguous old values may remain. See the contract for exact conditions.",
+      "first_attempt_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+      "independent_failure": "Clock rollback could shorten a legitimate existing cooldown; failing evidence and corrective inputs remain separate.",
+      "verification": "consult_batch_record_for_actual_correction_and_execution_results",
+      "correction_author_commit": "a30231a802ab05f0bb3f821c51ef03d156d796d8"
+    }
   }
 }

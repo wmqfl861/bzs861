@@ -1,5 +1,22 @@
 # bzs861 · 当前开发入口
 
+**更新：2026-10-24｜当前开发：Claude 审计接续 P2-5 / P2-6 / P2-7 / P2-9｜版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
+
+本批基线是已发布 main `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`；该基线的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。这个成绩只证明上一批输入。本批作者测试、独立审核、原始失败、最终整合输入及实际执行结果见[本批验证记录](validation/claude_continuation_20261024/README.md)；发布后的实际 commit/tree 与对应 Checks 必须另行核对，不预写未来 CI 成功。
+
+| 本批范围 | 实现边界与入口 |
+| --- | --- |
+| P2-5 本地搜索锁 | 精确匹配、共享 ASCII 折叠、评分和排序移出 Store 锁；SQL、逐篇正文复制及最终发布投影仍有必要的锁。见[搜索并发](docs/LOCAL_SEARCH_CONCURRENCY.md)。 |
+| P2-6 后台调度 | fixture、read_many、map/crawl、持久搜索分为四条固定通道；类别内轮转、共享读取租约、预算与撤权栅栏保留。见[后台调度](docs/BACKGROUND_DISPATCH.md)。 |
+| P2-7 HTTP 执行 | 有界业务线程池与 IO 分离，满额在进入 Service 前返回 503；健康检查走 IO，保留连接和 socket 期限。见[HTTP 执行](docs/HTTP_EXECUTION.md)。 |
+| P2-9 来源退避 | 新限流等待有上限，保留合法已有退避；首版时钟回拨误缩期限的独立反例及后续修正分开记录。最终策略见[来源退避](docs/SOURCE_BACKOFF.md)。 |
+
+本批沿用 schema13 和 `bzs-ascii-cjk/2+codepoint-grams/1`，不新增版本 tag。来源选审启用、S2 范围/状态及是否冻结、validation 入库政策、备份恢复隔离、永久幂等身份保留和抓取适配器六项决定保持。17 条来源全部禁用，站点登记为 0；原 83 包 / 161 验收 / 10 切片及 **37 partial / 46 not_started / 0 accepted** 不变。先读[下一会话顺序](docs/handoff/NEXT_AGENT.md)与[机器状态](docs/implementation_status.json)。
+
+## 上一批 Claude 审计修正（44253a7 → 59081e1，历史）
+
+以下保留上一批原交接说明；其中“本批 / 当前”指 `validation/claude_followup_20261024` 对应输入。再下一节的 0.1.10 五项增量及 CI 修正属于更早历史，均不代替本批 continuation 的验证。
+
 **更新：2026-10-24｜当前开发：Claude 审计后续修正｜已发布版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
 
 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续。审计分支 `review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 仅作只读材料，没有合并；八项原问题的实测与语义限定见[基线结论](validation/claude_followup_20261024/baseline-findings.json)。按 P1-2、P1-1、P1-3、P2-1 至 P2-4 的顺序修复，P2-5 的原查询补丁另经评审。逐项回归、独立反例、失败记录和准确执行输入见[本批验证记录](validation/claude_followup_20261024/)。

@@ -1,0 +1,520 @@
+diff --git a/HANDOFF_START_HERE.md b/HANDOFF_START_HERE.md
+index 1df106e..99266e7 100644
+--- a/HANDOFF_START_HERE.md
++++ b/HANDOFF_START_HERE.md
+@@ -1,5 +1,22 @@
+ # bzs861 · 当前开发入口
+ 
++**更新：2026-10-24｜当前开发：Claude 审计接续 P2-5 / P2-6 / P2-7 / P2-9｜版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
++
++本批基线是已发布 main `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`；该基线的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。这个成绩只证明上一批输入。本批作者测试、独立审核、原始失败、最终整合输入及实际执行结果见[本批验证记录](validation/claude_continuation_20261024/README.md)；发布后的实际 commit/tree 与对应 Checks 必须另行核对，不预写未来 CI 成功。
++
++| 本批范围 | 实现边界与入口 |
++| --- | --- |
++| P2-5 本地搜索锁 | 精确匹配、共享 ASCII 折叠、评分和排序移出 Store 锁；SQL、逐篇正文复制及最终发布投影仍有必要的锁。见[搜索并发](docs/LOCAL_SEARCH_CONCURRENCY.md)。 |
++| P2-6 后台调度 | fixture、read_many、map/crawl、持久搜索分为四条固定通道；类别内轮转、共享读取租约、预算与撤权栅栏保留。见[后台调度](docs/BACKGROUND_DISPATCH.md)。 |
++| P2-7 HTTP 执行 | 有界业务线程池与 IO 分离，满额在进入 Service 前返回 503；健康检查走 IO，保留连接和 socket 期限。见[HTTP 执行](docs/HTTP_EXECUTION.md)。 |
++| P2-9 来源退避 | 新限流等待有上限，保留合法已有退避；首版时钟回拨误缩期限的独立反例及后续修正分开记录。最终策略见[来源退避](docs/SOURCE_BACKOFF.md)。 |
++
++本批沿用 schema13 和 `bzs-ascii-cjk/2+codepoint-grams/1`，不新增版本 tag。来源选审启用、S2 范围/状态及是否冻结、validation 入库政策、备份恢复隔离、永久幂等身份保留和抓取适配器六项决定保持。17 条来源全部禁用，站点登记为 0；原 83 包 / 161 验收 / 10 切片及 **37 partial / 46 not_started / 0 accepted** 不变。先读[下一会话顺序](docs/handoff/NEXT_AGENT.md)与[机器状态](docs/implementation_status.json)。
++
++## 上一批 Claude 审计修正（44253a7 → 59081e1，历史）
++
++以下保留上一批原交接说明；其中“本批 / 当前”指 `validation/claude_followup_20261024` 对应输入。再下一节的 0.1.10 五项增量及 CI 修正属于更早历史，均不代替本批 continuation 的验证。
++
+ **更新：2026-10-24｜当前开发：Claude 审计后续修正｜已发布版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
+ 
+ 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续。审计分支 `review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 仅作只读材料，没有合并；八项原问题的实测与语义限定见[基线结论](validation/claude_followup_20261024/baseline-findings.json)。按 P1-2、P1-1、P1-3、P2-1 至 P2-4 的顺序修复，P2-5 的原查询补丁另经评审。逐项回归、独立反例、失败记录和准确执行输入见[本批验证记录](validation/claude_followup_20261024/)。
+diff --git a/README.md b/README.md
+index 8be0d13..5592bb5 100644
+--- a/README.md
++++ b/README.md
+@@ -1,11 +1,8 @@
+ # 不周山搜索工具 · bzs861
+ 
+-**状态：Claude 审计后续修正；已发布版本仍为 0.1.10。** 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，保留只读审计材料，先复现八项问题，再按约定顺序修复。无会话本地查询、永久身份容量、候选索引、HTTP 缓存、robots、字符集及查询匹配的代码范围与限制见 [API](docs/API.md)；逐项输入、真实失败和执行结果见[本批验证记录](validation/claude_followup_20261024/)。准确执行结果、提交与 CI 见该记录。S0、S1、S2 的完整验收仍未完成。
+-
+-上一轮 0.1.10 生产实现的历史 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。该次 watchdog 修正只调整 Windows 三个测试进程上限并增加 crawl 逐例即时进度，生产源码及二进制保持；其聚焦验证与原失败见[历史报告](validation/s2_takeover/windows-watchdog-report.json)，这些成绩不代替本批改动的验证。
+-
+-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
++**状态：Claude 审计接续 P2-5 / P2-6 / P2-7 / P2-9；版本仍为 0.1.10。** 本批从 `59081e14fdda765844031e13f874e588334f1a36` 接续，改进本地搜索持锁范围、后台类别并发、HTTP 请求执行和来源退避。接口与限制见 [API](docs/API.md)，源码与二进制输入、作者/独立审核、真实失败和整合结果见[本批验证记录](validation/claude_continuation_20261024/README.md)。S0、S1、S2 的完整验收仍未完成。
+ 
++目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。基线 `59081e1` 的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对双平台成功；该成绩不代表本批输入通过。当前发布 SHA、tree 与 Linux / Windows 结果须核对该提交自己的 [Checks](https://github.com/wmqfl861/bzs861/actions)。本批不创建新版本 tag。
+ 
+ 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
+ 
+@@ -25,10 +22,11 @@
+ | 搜索执行模式 | 可查看fast/balanced/deep来源数、候选数和期限上限；覆盖只可收紧，报告省略来源；只搜索，不自动读取或调用模型 |
+ | 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
+ | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
+-| 检索改进候选实现 | 词项 BM25 与子串辅助索引先取安全候选，再按原精确语义复核；预算仍有界，overflow 回原文复核，片段按 UTF-8 字节定位 |
++| 检索改进候选实现 | 词项 BM25 与子串辅助索引先取安全候选，精确匹配/评分/排序在 Store 锁外执行；逐篇复制及最终发布复核仍受锁保护，保留候选预算、overflow 与 UTF-8 定位 |
+ | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
+ | 任务历史回收 | 至少七天后压缩稳定终态明细，永久 key/指纹/计费摘要不占未压缩明细容量；活动、暂停与未结算任务仍受保护 |
+-| 持久调度与会话 | 批读与map/crawl持久轮转；联网搜索冻结版本、游标和元数据事件，支持重连、去重、取消、过期与背压 |
++| 持久调度与会话 | fixture、批读、map/crawl、持久搜索四条固定通道；类别内轮转、冻结版本、游标、取消和计费栅栏保留，map/crawl 仍共用一条通道 |
++| HTTP 请求执行 | 业务执行与 IO 分离，默认业务并发为 min(IO 线程数,32)，满额返回 503；保留 64 连接上限和 socket 期限，健康检查不等待业务槽 |
+ | 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结、来源贡献与外部消融配对；固定全池IDCG，缺失/失败不当空结果，完整质量门禁仍阻塞 |
+ | 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
+ 
+@@ -38,7 +36,7 @@
+ 
+ Agent 经 `bzs-mcp` 调用回环 HTTP 上的 C++ `searchd`。核心负责授权、合同、预算、来源准入、调度、存储、检索与证据，通过独立令牌的回环 HTTP 调用 Python `bzs-worker`。worker 执行网络和解析，并再次检查来源准入与目标地址。
+ 
+-MCP 不复制业务规则，worker 不写数据库。进程分离不等于操作系统沙箱；限制见 [安全说明](docs/SECURITY.md)。
++MCP 不复制业务规则，worker 不写数据库。进程分离不等于操作系统沙箱；限制见 [安全说明](docs/SECURITY.md)。HTTP 请求池、后台通道及搜索锁分别见 [HTTP 执行](docs/HTTP_EXECUTION.md)、[后台调度](docs/BACKGROUND_DISPATCH.md) 和 [搜索并发](docs/LOCAL_SEARCH_CONCURRENCY.md)。它们保留来源/站点/owner 的准入与预算，不构成生产时延保证。
+ 
+ ## 安装与启动（Linux）
+ 
+@@ -150,13 +148,27 @@ cmake --build --preset dev -j 2
+ ctest --preset dev
+ ```
+ 
+-本轮测试分为原生核心/批量/发现/爬取/发布/合同/回收/公平调度/会话、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_next_five/json-race-report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
++本轮完整门禁包含 CTest、pytest 和开启泄漏检测的原生 ASan/UBSan。作者聚焦回归、独立反例和最终整合执行分别绑定各自源码与二进制；实际命令、计数、环境、原始失败与最终结果见[本批记录](validation/claude_continuation_20261024/README.md)，不从套件存在或历史通过推导本批已通过。P2-9 首版在时钟回拨下误缩合法退避的反例必须与修正后结果一起保留。测试相互覆盖，不能按总数替代 161 项产品验收。
+ 
+ `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
+ 
++## 历史交接与验证说明
++
++下面三段是上一批 `44253a7 → 59081e1` 的交接原文，其中“本批”限于 `claude_followup_20261024`；所引更早的 0.1.10 发布记录继续作为对应历史输入的证据。
++
++**状态：Claude 审计后续修正；已发布版本仍为 0.1.10。** 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，保留只读审计材料，先复现八项问题，再按约定顺序修复。无会话本地查询、永久身份容量、候选索引、HTTP 缓存、robots、字符集及查询匹配的代码范围与限制见 [API](docs/API.md)；逐项输入、真实失败和执行结果见[本批验证记录](validation/claude_followup_20261024/)。准确执行结果、提交与 CI 见该记录。S0、S1、S2 的完整验收仍未完成。
++
++上一轮 0.1.10 生产实现的历史 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。该次 watchdog 修正只调整 Windows 三个测试进程上限并增加 crawl 逐例即时进度，生产源码及二进制保持；其聚焦验证与原失败见[历史报告](validation/s2_takeover/windows-watchdog-report.json)，这些成绩不代替本批改动的验证。
++
++目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
++
++以下为 0.1.9 验证范围的原说明，“本轮 / 本次”只指其链接报告：
++
++本轮测试分为原生核心/批量/发现/爬取/发布/合同/回收/公平调度/会话、HTTP/CLI、受控站点端到端、Python worker/MCP 和原生 ASan/UBSan；源码哈希、实际结果、环境、命令与原日志见 [本轮报告](validation/s2_next_five/json-race-report.json)。这些套件存在交叉覆盖，不能按总数替代 161 项产品验收。0.1.2 的有限云端来源探测保留在 [历史云端观察](validation/s0_s2_progress/cloud_probe_summary.json)，不代表本次新增实测、用户网络、人工相关性评分或来源批准。GitHub Linux/Windows 结果应检查本提交对应的 Actions。
++
+ ## 已有数据与后续范围
+ 
+-当前业务 schema 仍为13；子串辅助索引使用新的兼容标记，升级前须停止旧 Core。新版完成升级后旧二进制不能重新打开该库，不支持新旧进程混用；真实 442 旧库升级证据见[本批记录](validation/claude_followup_20261024/independent/p1-3/)。
++当前业务 schema 仍为13，本批沿用 `bzs-ascii-cjk/2+codepoint-grams/1` 兼容标记。若从 44253a7 等旧格式升级，仍须先停止旧 Core；新版完成升级后旧二进制不能重新打开该库，不支持新旧进程混用。真实 442 旧库升级证据见[上一批迁移记录](validation/claude_followup_20261024/independent/p1-3/)。
+ 
+ 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
+ 
+diff --git a/docs/API.md b/docs/API.md
+index 0110c26..ae213a5 100644
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -1,6 +1,6 @@
+ # searchd API（0.1.10 接手续作）
+ 
+-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮验证记录](../validation/s2_five_stages/README.md)。
++所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见[本批验证记录](../validation/claude_continuation_20261024/README.md)；[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
+ 
+ ```json
+ {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
+@@ -8,6 +8,14 @@
+ 
+ 响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
+ 
++## HTTP 执行与背压
++
++`searchd --threads 1..64` 控制 IO 线程，默认 8；`--request-threads 1..32` 控制业务执行线程，省略时取 `min(threads,32)`。业务调用不在 IO 回调中等待 Worker RPC。每个业务线程最多接纳一个正在执行或待开始的请求，没有额外的业务等待额度；满额在进入 Service、预留业务预算或派发 Worker 前返回 HTTP 503 / `E_REQUEST_BACKPRESSURE`。
++
++`GET /healthz` 在 IO 路径响应，不占业务槽，仍受 Host/Origin 检查和 64 个活动连接上限约束。它报告传输入口可响应，不证明来源可用、业务槽有余量或健康检查的时延 SLA。请求正文仍限 2 MiB、header 限 8 KiB；socket 读取与响应写入各有 5 秒期限，业务执行期限由对应操作决定，不能把 5 秒当作所有业务的整体期限。
++
++已接纳请求在客户端断连后仍可能完成并提交；断连不自动取消或重新发送业务。需要取消的持久任务仍调用原取消接口，未知结果保留原计费/幂等语义。停止时禁止新业务接纳，并在销毁业务对象前等待已执行请求结束；不保证停止后还能收到响应。详情见 [HTTP 执行](HTTP_EXECUTION.md)。后台持久任务使用独立的四条固定通道，见[后台调度](BACKGROUND_DISPATCH.md)，不能把后台上限与同步 HTTP 上限混为一个额度。
++
+ ## 保留的原生合同
+ 
+ `contract.validate` 接收 `kind` 和 `config`；kind 为 `model-config`、`source-manifest` 或 `search-request`。响应结果为：
+@@ -36,6 +44,8 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` 
+ 
+ ### 搜索结果
+ 
++搜索来源的新 `Retry-After` / API `backoff` 等待最多 24 小时，Core 与 Worker 都执行边界并在截断时返回诊断；配置冷却与合法已有期限继续生效。新报告中的 parse-error 退避最长 72 小时；已有可信绝对期限不因后来成功、限流或时钟回拨缩短，回拨后剩余时间可以超过 72 小时。无证明历史值仅按一年极端异常启发式保守修复，一年内或事件时间有歧义的旧值可能保留；准确条件及诊断字段以[来源退避合同](SOURCE_BACKOFF.md)为准。遇限流不自动重试或启用来源；站点/robots 的等待合同不因该搜索来源上限而改变。
++
+ `results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
+ 
+ 索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。已支持的 site 条件在结果中复核；其余未支持条件不能静默丢弃。
+@@ -224,6 +234,8 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前
+ 
+ ## 本地操作
+ 
++本地搜索在选取有界候选后，逐篇复制正文并在 Store 锁外进行精确匹配、评分及排序；匹配和非 FTS 评分共享每个字段的惰性 ASCII 折叠。候选 SQL、单篇复制和最终可见性/摘要投影仍持必要的锁。返回或创建会话前重查主体/owner、删除代际、保留快照及当前和历史发布约束；候选失效会被剔除并标记 `partial`，不自动重跑查询。冻结会话容量在最终事务再检查，`search.once` 仍不创建持久身份。细节见[搜索并发](LOCAL_SEARCH_CONCURRENCY.md)。
++
+ 本地查询使用原 bzs/2 词项索引和子串辅助索引；短语、符号字面量、非 ASCII 子串及 URL 字段先取安全候选，再由同一精确匹配器验证。混合 AND 查询在候选上限前求两类候选的交集，词项 BM25 和匹配语义保持不变。辅助路径标为 `fts5_substring_verified`；只有无法构造安全正向候选的表达式仍用 `bounded_scan_recent`。候选和返回上限仍生效，预算不足时 `partial=true`，不承诺无限召回。
+ 
+ 辅助索引每字段最多 65536 个不同的 1–3 codepoint gram，字段超限以显式 overflow 标记继续进入原文复核；不会静默截掉后半正文。仅折叠 ASCII 大小写，不做 Unicode casefold、去重音或规范化。索引内容是可重建派生数据，快照和证据字节不变。
+diff --git a/docs/DEVELOPMENT_STATUS.md b/docs/DEVELOPMENT_STATUS.md
+index e02c006..370bfb0 100644
+--- a/docs/DEVELOPMENT_STATUS.md
++++ b/docs/DEVELOPMENT_STATUS.md
+@@ -1,4 +1,23 @@
+-# 开发进度：Claude 审计后续修正（已发布版本仍为 0.1.10）
++# 开发进度：Claude 审计接续（版本仍为 0.1.10）
++
++更新：2026-10-24。本批从 main `59081e14fdda765844031e13f874e588334f1a36`、tree `5d555fabc43180aa905e0581a301a3bafbeca1d5` 接续。上一批该提交的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功；本批准确输入、作者测试、独立审核、整合门禁和发布信息另见[本批验证记录](../validation/claude_continuation_20261024/README.md)。远端结果应查询实际包含提交的 Checks，不把历史成绩填入新输入。
++
++## 本批实现与边界
++
++| 项目 | 改动 | 保留边界 |
++| --- | --- | --- |
++| P2-5 | 惰性 ASCII 折叠供匹配与非 FTS 评分复用；有界候选的精确匹配、评分、排序移出 Store 锁 | 候选 SQL、单篇正文复制、最终投影/摘要仍持锁；最终事务复核 owner、主体 epoch、删除、快照、页面/站点及跳转历史，重查冻结会话容量。不是无锁搜索或时延承诺。 |
++| P2-6 | fixture、read_many、map/crawl、持久搜索四条固定通道；统一拥有线程、停止和 join | 每条通道一次一份租约，map/crawl 合计一条；原共享读取、类别内公平、预算、取消、撤权和未知结果不重试保持。在途 RPC 仍由原有限超时结束。 |
++| P2-7 | HTTP 业务线程池与 IO 分离；默认 min(IO线程数,32)，可显式配置 1–32 | 无额外业务等待额度，满额在 Service 前返回 503；health 留在 IO，64 连接上限与读写各 5 秒 socket 期限保持。在途断连不自动取消或重试。 |
++| P2-9 | 新来源限流等待有界，保护有证明的既有绝对期限；无证明旧值仅按一年极端异常启发式保守处理 | 正常 parse-error 最长 72 小时不能被后续限流或成功缩短；首版回拨反例、修正及实际验证分别保留。准确历史修复条件以 SOURCE_BACKOFF 合同为准。 |
++
++详细合同见[搜索并发](LOCAL_SEARCH_CONCURRENCY.md)、[后台调度](BACKGROUND_DISPATCH.md)、[HTTP 执行](HTTP_EXECUTION.md)与[来源退避](SOURCE_BACKOFF.md)。P2-9 首版 `743f79d` 的独立审核发现时钟回拨误缩合法退避，这是实际逻辑反例；其后续修正不能覆盖原失败，也不能将它归为运行环境问题。本批最终本地/独立结果见记录，不以单项作者通过代替最终整合门禁。 修正以 settings 记录经过有界新报告证明的绝对期限；一年内或事件时间存在歧义的无证明旧值可能继续保留，不能声称所有旧冷却已清理。
++
++本批不变更 schema13、`bzs-ascii-cjk/2+codepoint-grams/1` 或版本 tag。来源选审启用、S2 范围/状态及是否冻结、validation 入库、备份恢复隔离、永久幂等身份保留和抓取适配器六项决定保持。17 条来源 / 0 启用 / 0 站点，原 83 包 / 161 验收 / 10 切片与 37 partial / 46 not_started / 0 accepted 全部保持。P2-8 的备份安全恢复及独立撤销连续性仍未完成；来源实测、人审 qrels、完整 S0/S1/S2 和长期故障验收不由本批合成回归代替。
++
++## 上一批 Claude 审计修正（44253a7 → 59081e1，历史）
++
++以下保留上一批原交接说明，“本批 / 当前”指 `claude_followup_20261024`；再下方的 0.1.10 五项增量及 CI 修正属于更早历史。
+ 
+ 更新：2026-10-24。本批以 `44253a752f945fdfab9810192e583b39fe5f6d83` 为基线，审计分支 `review/claude-2026-10-24` 保持只读；先复现全部八项，再按约定顺序修复。原复现的语义限定见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)，各阶段正式回归、完整门禁、独立反例和失败记录见[本批验证记录](../validation/claude_followup_20261024/)。本批准确执行结果、提交与 CI 见该记录；单项和历史成绩只证明各自输入。
+ 
+diff --git a/docs/GITHUB_HANDOFF.md b/docs/GITHUB_HANDOFF.md
+index d45b2d7..059c600 100644
+--- a/docs/GITHUB_HANDOFF.md
++++ b/docs/GITHUB_HANDOFF.md
+@@ -2,7 +2,15 @@
+ 
+ 更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+ 
+-## 当前审计后续开发
++## 当前审计接续（基线 59081e1）
++
++本批基线 main 为 `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`，版本仍为 0.1.10。该提交的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。当前范围为 P2-5 搜索锁、P2-6 固定后台通道、P2-7 有界 HTTP 业务执行和 P2-9 来源退避；作者、独立审核与最终整合证据见[本批记录](../validation/claude_continuation_20261024/README.md)。P2-9 首版时钟回拨反例及修正分别保存，不能仅保留后来的通过。
++
++发布前记录真实已执行的本地结果和冻结输入；发布时核对准确远端父 SHA，非强制更新后取回实际 commit/tree，再查询该包含提交自己的 Checks。本文和机器状态不预填未来提交或未来 CI；准确 run 与平台结论以实际查询为准。无需为预写 CI 成功反复提交状态文件。本批不创建新 tag，不改变来源审批、六项保留决定、schema13 或辅助索引标记。
++
++## 上一批审计后续开发（44253a7 → 59081e1，历史）
++
++以下两段保留上一批原说明，其“本批”指 `claude_followup_20261024`；更下方的 0.1.10 历史区也只描述对应旧输入。
+ 
+ 本批从已发布 main `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，已发布版本仍为0.1.10。`review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 只读，不合并或修改审计材料；实际复现见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)。八项修正按约定顺序推进，每项保留正式回归、完整门禁、独立反例与原始失败，准确结果和提交表见[本批验证记录](../validation/claude_followup_20261024/)。
+ 
+@@ -14,6 +22,7 @@
+ 
+ | 已交付输入 / 历史来源 | 提交 | 说明 |
+ |---|---|---|
++| Claude 审计首批后续修正（本批基线） | `59081e14fdda765844031e13f874e588334f1a36` | CI 40067206826：Linux / Windows 成功；P1-1/2/3、P2-1..4 及 P2-5 初次匹配字段复用的证据见 claude_followup_20261024；不证明后续输入 |
+ | 0.1.10 截止时间原子结算修正 | `fcb58e4679a5bbdff17319b7b4ebff7019733eab` | CI 39954357148：Linux27/27、15套sanitizer及合同/计划通过；Windows16/17，crawl在45.02秒进程超时，无用例完成输出；另14套native完成364例/10,308断言，HTTP20/20和4/4；完整失败日志保留 |
+ | 0.1.10 Windows HTTP清理修正 | `199eb635ca90c657dff673fbf88bed44e7c4b40b` | CI 39950116698：Linux26/27，原一秒恢复测试多出source_unknown事件；Windows17/17通过（340.84秒），撤权HTTP4/4及严格连接清理通过；本次追加截止时间生产修正，原日志保留 |
+ | 0.1.10 首次发布 | `a06e7e91f6a115b345ff1072095b80e15d193ad4` | CI 39945994760：Linux通过；Windows构建成功、16/17套通过，唯一失败为HTTP测试未关闭SQLite连接导致临时目录清理失败；原日志完整保留 |
+@@ -53,6 +62,6 @@
+ 
+ ## 证据分期
+ 
+-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；当前审计后续为 `validation/claude_followup_20261024/`。旧证据不覆盖、不改名冒充新运行。
++`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；上一批审计后续为 `validation/claude_followup_20261024/`；当前 P2-5/6/7/9 接续为 `validation/claude_continuation_20261024/`。旧证据不覆盖、不改名冒充新运行。
+ 
+ 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。
+diff --git a/docs/HTTP_EXECUTION.md b/docs/HTTP_EXECUTION.md
+new file mode 100644
+index 0000000..5e3a454
+--- /dev/null
++++ b/docs/HTTP_EXECUTION.md
+@@ -0,0 +1,50 @@
++# HTTP 请求执行与背压
++
++`searchd` 将传输 IO 与业务执行分开。接收请求、Host/Origin/认证和 Content-Type 检查、`GET /healthz`、响应写入留在 IO 线程；进入 `Service::dispatch` 的业务调用交给固定数量的请求线程。慢 Worker RPC 因此只占用自己的业务执行槽，其他业务在有余量时可以继续，IO 不随同步业务调用一起等待。
++
++这项隔离不改变权限、来源审核、预算、幂等、持久任务或 Worker 的准入规则。Store 的 SQL、正文复制和最终发布投影仍可能短暂持锁；本地搜索具体边界见[搜索并发](LOCAL_SEARCH_CONCURRENCY.md)。它不是任意负载下的吞吐或健康检查时延保证。
++
++## 配置与容量
++
++| 配置或限制 | 当前合同 |
++| --- | --- |
++| `--threads` | IO 线程数，1–64，默认 8。 |
++| `--request-threads` | 业务执行线程数，1–32；省略时取 `min(threads,32)`。 |
++| 业务接纳数 | 最多等于业务线程数，包括已执行和已接纳但尚未开始的请求；没有额外的业务等待额度。 |
++| 活动连接 | 既有上限 64；超出时关闭新连接，不承诺返回 JSON 背压信封。 |
++| 请求尺寸 | 正文最多 2 MiB，header 最多 8 KiB。 |
++| socket 期限 | 请求读取与响应写入各 5 秒；写入期限在准备响应时重新设置。 |
++
++例如 `--threads 2 --request-threads 4` 使用两条 IO 线程和四条业务线程。启动的 `ready` JSON 分别报告 `threads` 与 `request_threads`。CLI 参数在启动时严格检查范围；没有 HTTP 请求可以临时扩大线程数或取得额外等待额度。
++
++内部可以短暂保存已接纳但尚未被线程取走的调用，不过“执行中 + 待开始”的总数始终受同一容量约束，不另设溢出队列。容量满时，在进入 Service、创建业务身份、预留业务预算或派发 Worker 前返回 HTTP **503**，错误码 **`E_REQUEST_BACKPRESSURE`**。传输检查失败仍优先返回相应 Host、Origin、认证、路由或 Content-Type 错误。
++
++背压拒绝本身没有发起业务操作。后续显式提交仍须遵守原权限、预算和幂等合同；服务端不会因这一错误自动重试。容量不足也不会通过启用新来源、扩大抓取范围或切换身份来绕过。
++
++## 健康检查和超时
++
++`GET /healthz` 不占业务执行槽，也不访问 Store 或 Worker。它仍经过 Host/Origin 检查，并与其他请求共用 IO、监听器和活动连接上限。业务线程全部被占用时，健康检查仍可由 IO 处理；连接已满或 IO 无法调度时，没有单独的健康检查保留通道。
++
++`ready=true` 表示这个传输入口可以响应，不能据此推断来源可用、业务槽空闲、后台任务完成或完整产品已通过验收。测试中观察到的响应先后关系不构成健康检查 SLA。
++
++5 秒是各次 socket 读写操作的期限，不是所有业务请求的整体期限。操作进入业务线程后，继续使用其原有的 Worker 超时、持久/单调期限和预算。业务完成后的响应写入另外受 5 秒限制；不以传输期限延长业务授权。
++
++## 断连、取消和停止
++
++客户端断连时，已接纳的业务可能已经开始或完成。此改动不把断连转换为业务取消，也不自动重新派发请求；响应未送达不能证明没有执行。持久任务继续使用 `job.control` 或原会话取消接口，迟到响应仍须通过租约、owner、撤权、删除和发布栅栏。未知结果按原规则保留预留和幂等身份。
++
++停止时，请求执行器先停止接纳，并清除尚未开始的已接纳调用；已执行的同步调用继续在原有期限与提交检查下结束。主程序在销毁 Service、Store 和 Worker 之前 join 请求线程，响应所依赖的 IO 对象也活到请求线程退出之后。停止后不保证还能向客户端交付结果，不能据此推导应当自动重试。
++
++请求线程由执行器拥有，没有分离线程；构造请求线程池中途失败时，停止并 join 已创建的请求线程再传播异常。此生命周期说明仅覆盖该请求池，不是对操作系统线程资源耗尽的产品验收承诺。
++
++## 与后台调度的关系
++
++HTTP 请求线程数控制同步 API 调用。已提交的持久任务另由 [四条固定后台通道](BACKGROUND_DISPATCH.md) 执行：fixture、read_many、map/crawl、持久来源搜索。后台上限不消耗请求池的槽，也不能将两个上限相加后当作所有外部 HTTP 请求的总并发数；单次业务内部的来源扇出、站点/主机并发及共享预算仍按各自合同执行。
++
++固定通道只隔离不同类别。map/crawl 继续共享一条通道，同一类别内部的慢工作仍可能推迟后续工作；来源或站点配额也可合法延迟派发。健康检查、请求池或后台通道的存在都不授予来源/站点启用资格。
++
++## 验证与证据
++
++正式回归位于 `tests/integration.py`：用受控 Worker 闸门保留业务响应，检查 `/healthz` 能先返回、额外业务得到 503、拒绝请求未进入 Worker、容量回收和参数边界。独立探针另覆盖默认 8 槽饱和、断连后的单次执行与在途停止；作者、独立与 sanitizer 输入分开记录。有限等待只用于发现挂起，核心证据是闸门释放前的确定顺序和调用次数。
++
++旧 `59081e1` 基线的失败、作者聚焦执行、独立审核、sanitizer 及最终整合结果均见[本批验证记录](../validation/claude_continuation_20261024/README.md)，并绑定准确源码和二进制。本文不预填后续执行次数、未来远端 SHA 或 CI 成绩。本批不改变 64 连接上限、原 socket 期限、schema、来源启用、备份隔离或工作包签收状态。
+diff --git a/docs/handoff/NEXT_AGENT.md b/docs/handoff/NEXT_AGENT.md
+index 3d301ac..5829128 100644
+--- a/docs/handoff/NEXT_AGENT.md
++++ b/docs/handoff/NEXT_AGENT.md
+@@ -1,5 +1,20 @@
+ # 下一会话接手顺序
+ 
++更新：2026-10-24。当前接续 Claude 审计 P2-5 / P2-6 / P2-7 / P2-9，版本仍为 0.1.10，唯一推送目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批基线 `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`；其 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 只证明上一批输入。
++
++## 当前接手步骤
++
++1. 先读 [HANDOFF_START_HERE](../../HANDOFF_START_HERE.md)、[当前进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)及[本批验证记录](../../validation/claude_continuation_20261024/README.md)，核对实际工作树、包含提交、最终输入与该提交的 Checks。不得把作者聚焦或上一批 CI 当作最终整合验证。
++2. 按 [搜索并发](../LOCAL_SEARCH_CONCURRENCY.md)、[后台调度](../BACKGROUND_DISPATCH.md)、[HTTP 执行](../HTTP_EXECUTION.md)、[来源退避](../SOURCE_BACKOFF.md) 核对合同。P2-5 保留短 SQL/正文复制/最终投影锁；P2-6 只隔离固定类别；P2-7 满额 503 且断连不自动取消；都不承诺任意并行或健康检查 SLA。
++3. 阅读本批原始失败与独立审核。P2-9 首版 `743f79d` 的时钟回拨反例是已确认逻辑问题；只有与最终源码绑定的修正后执行才支持结论。新响应 24 小时上限、正常 parse-error 72 小时、可信绝对期限与无证明历史记录的一年极端异常启发式，按最终 SOURCE_BACKOFF 逐项核对；一年内或事件时间有歧义的旧值可能保留。
++4. 根据本批记录的剩余项继续开发。上一批 P1-1/2/3、P2-1..4 与 P2-5 初次字段复用已是基线的一部分，不重复套旧补丁；`review/claude-2026-10-24` / `30f058557e3f7ebb873e9780759323b49cfe9636` 始终只读，不合并、不改文件。
++
++本批沿用 schema13 和 `bzs-ascii-cjk/2+codepoint-grams/1`，不新增 tag。若从旧格式升级仍须停止旧 Core；备份没有独立撤销连续性证明则继续隔离。六项保留决定与 17 条来源全部禁用、0 站点、83 包 / 161 验收 / 10 切片、37 partial / 46 not_started / 0 accepted 均保持。
++
++## 上一批 Claude 审计交接（历史）
++
++以下原文中“本批 / 当前”只指 `claude_followup_20261024`。更早的 schema12→13、截止时间及 Windows watchdog 记录继续按原阶段保留。
++
+ 更新：2026-10-24。当前接续 Claude 审计修正，已发布版本仍为0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读 HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[本批基线结论](../../validation/claude_followup_20261024/baseline-findings.json)、[本批验证记录](../../validation/claude_followup_20261024/)和[机器状态](../implementation_status.json)，再核对实际包含提交与其CI。上一轮 schema12→13、截止时间与 Windows watchdog 报告保留为历史，不代替本批验证。
+ 
+ 本批基线为 `44253a752f945fdfab9810192e583b39fe5f6d83`，只读审计材料为 `30f058557e3f7ebb873e9780759323b49cfe9636`。修复顺序为 P1-2→P1-1→P1-3→P2-1..4，P2-5 原补丁评审后接纳；先核查已有阶段与剩余工作，不重写原失败或审计材料。本批实际输入、执行结果、准确提交与双平台 CI 见本批验证记录。
+diff --git a/docs/implementation_status.json b/docs/implementation_status.json
+index e20ac54..f91cb24 100644
+--- a/docs/implementation_status.json
++++ b/docs/implementation_status.json
+@@ -1,18 +1,26 @@
+ {
+   "version": "0.1.10",
+-  "stage": "Claude audit followup corrections; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
++  "stage": "Claude audit continuation P2-5/P2-6/P2-7/P2-9; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
+   "recorded_at": "2026-10-24",
+-  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
++  "baseline": "59081e14fdda765844031e13f874e588334f1a36",
+   "integration_inputs": {
+-    "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
+-    "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
++    "main": "59081e14fdda765844031e13f874e588334f1a36",
++    "tree": "5d555fabc43180aa905e0581a301a3bafbeca1d5",
+     "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+     "review_branch_read_only": true,
+     "baseline_schema": 13,
+     "schema": 13,
+     "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+-    "scope": "Audit followup only; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
+-    "evidence_directory": "validation/claude_followup_20261024"
++    "scope": "Continuation P2-5 local search lock, P2-6 bounded background lanes, P2-7 bounded HTTP request execution, P2-9 source backoff; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
++    "evidence_directory": "validation/claude_continuation_20261024",
++    "baseline_ci": {
++      "commit": "59081e14fdda765844031e13f874e588334f1a36",
++      "run_id": 40067206826,
++      "linux": "success",
++      "windows": "success",
++      "scope": "Historical baseline only; not verification of the continuation input.",
++      "url": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826"
++    }
+   },
+   "status_counts": {
+     "partial": 37,
+@@ -47,13 +55,13 @@
+   "planned_acceptance_suite_executed": false,
+   "s0_live_sources": "not_completed",
+   "s1_acceptance": "not_completed",
+-  "current_test_report": "validation/claude_followup_20261024/README.md",
++  "current_test_report": "validation/claude_continuation_20261024/README.md",
+   "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
+-  "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
++  "upstream_baseline_reproduction": "The original eight findings and genuine 442 old-library index migration remain in validation/claude_followup_20261024. This continuation starts at 59081e14fdda765844031e13f874e588334f1a36; baseline/new-code evidence and exact semantic limits for P2-5/P2-6/P2-7/P2-9 are bound in validation/claude_continuation_20261024/README.md. The first P2-9 attempt failed independent clock-rollback review; preserve the failing input and later correction separately.",
+   "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
+-  "independent_review": "Per-issue and cross-item reviewer roles, findings and exact input bindings are recorded in the batch validation record.",
++  "independent_review": "Separate author and independent roles, exact source/library inputs, original failures (including P2-9 clock rollback), corrections and integrated results are recorded in validation/claude_continuation_20261024/README.md; do not infer a full-product review.",
+   "full_product_independent_review": "not_performed",
+-  "review_record": "validation/claude_followup_20261024/README.md",
++  "review_record": "validation/claude_continuation_20261024/README.md",
+   "historical_reports": [
+     "validation/test_report.json",
+     "validation/takeover/test_report.json",
+@@ -70,7 +78,8 @@
+     "validation/s2_takeover/final-report.json",
+     "validation/s2_takeover/ci-followup-report.json",
+     "validation/s2_takeover/deadline-followup-report.json",
+-    "validation/s2_takeover/windows-watchdog-report.json"
++    "validation/s2_takeover/windows-watchdog-report.json",
++    "validation/claude_followup_20261024/README.md"
+   ],
+   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
+   "features": [
+@@ -2631,8 +2640,8 @@
+   ],
+   "current_results": {
+     "status": "not_embedded_here; consult_exact_batch_record",
+-    "record": "validation/claude_followup_20261024/README.md",
+-    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
++    "record": "validation/claude_continuation_20261024/README.md",
++    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
+   },
+   "baseline_version": "0.1.10",
+   "planned_work_packages": 83,
+@@ -2646,13 +2655,14 @@
+     "validation/s2_five_stages/final-review.json",
+     "validation/s2_takeover/final-review.json",
+     "validation/s2_takeover/ci-followup-review.json",
+-    "validation/s2_takeover/deadline-followup-review.json"
++    "validation/s2_takeover/deadline-followup-review.json",
++    "validation/claude_followup_20261024/README.md"
+   ],
+   "verification_binding": {
+     "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+-    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+-    "record": "validation/claude_followup_20261024/README.md",
+-    "remote_ci": "Consult the batch record for the exact published commit and its actual Linux/Windows result.",
++    "baseline": "59081e14fdda765844031e13f874e588334f1a36",
++    "record": "validation/claude_continuation_20261024/README.md",
++    "remote_ci": "After publication, query Checks for the exact containing commit and its actual Linux/Windows results. No future commit or CI outcome is embedded here.",
+     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+   },
+   "source_availability": {
+@@ -4370,5 +4380,134 @@
+       "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+     },
+     "baseline_version": "0.1.9"
++  },
++  "historical_verification_claude_followup_20261024": {
++    "version": "0.1.10",
++    "stage": "Claude audit followup corrections; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
++    "recorded_at": "2026-10-24",
++    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
++    "baseline_version": "0.1.10",
++    "integration_inputs": {
++      "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
++      "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
++      "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
++      "review_branch_read_only": true,
++      "baseline_schema": 13,
++      "schema": 13,
++      "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
++      "scope": "Audit followup only; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
++      "evidence_directory": "validation/claude_followup_20261024"
++    },
++    "current_test_report": "validation/claude_followup_20261024/README.md",
++    "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
++    "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
++    "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
++    "independent_review": "Per-issue and cross-item reviewer roles, findings and exact input bindings are recorded in the batch validation record.",
++    "full_product_independent_review": "not_performed",
++    "review_record": "validation/claude_followup_20261024/README.md",
++    "current_results": {
++      "status": "not_embedded_here; consult_exact_batch_record",
++      "record": "validation/claude_followup_20261024/README.md",
++      "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
++    },
++    "verification_binding": {
++      "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
++      "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
++      "record": "validation/claude_followup_20261024/README.md",
++      "remote_ci": "Consult the batch record for the exact published commit and its actual Linux/Windows result.",
++      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
++    },
++    "source_availability": {
++      "status": "not_verified",
++      "registered_sources": 17,
++      "enabled_sources": 0,
++      "approved_sources": 0,
++      "cloud_probe": {
++        "status": "dns_failed_no_http_response",
++        "environment": "cloud_execution_environment",
++        "sources": [
++          "marginalia",
++          "wikipedia_en"
++        ],
++        "attempted_source_requests": 2,
++        "dns_failures": 2,
++        "http_responses": 0,
++        "result_bearing_responses": 0,
++        "user_environment_validated": false,
++        "source_approval_changed": false,
++        "quota_scope": "this_probe_run",
++        "report": "validation/s0_s2_progress/cloud_probe_summary.json",
++        "metadata": "validation/s0_s2_progress/cloud_probe/probe_report.json",
++        "scope_note": "These are two source request attempts that failed during DNS resolution, not two successful HTTP transactions; they do not establish availability or unavailability on the user deployment.",
++        "historical_version": "0.1.2",
++        "executed_for_current_increment": false
++      },
++      "current_increment_real_source_attempts": 0
++    },
++    "site_discovery_availability": {
++      "default_registered_sites": 0,
++      "default_enabled_sites": 0,
++      "real_site_requests_for_current_increment": 0,
++      "synthetic_fixture_review_is_production_approval": false,
++      "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
++    },
++    "site_crawl_availability": {
++      "default_registered_sites": 0,
++      "default_enabled_sites": 0,
++      "real_site_requests_for_current_increment": 0,
++      "synthetic_fixture_review_is_production_approval": false,
++      "manifest_sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
++    },
++    "historical_reports": [
++      "validation/test_report.json",
++      "validation/takeover/test_report.json",
++      "validation/s1_test_report.json",
++      "validation/s1_review/test_report.json",
++      "validation/s0_s2_progress/test_report.json",
++      "validation/s2_discovery/test_report.json",
++      "validation/s2_crawl/test_report.json",
++      "validation/s2_hardening/test_report.json",
++      "validation/s2_five_stages/final-report.json",
++      "validation/s2_next_five/final-report.json",
++      "validation/s2_next_five/ci-followup-report.json",
++      "validation/s2_next_five/json-race-report.json",
++      "validation/s2_takeover/final-report.json",
++      "validation/s2_takeover/ci-followup-report.json",
++      "validation/s2_takeover/deadline-followup-report.json",
++      "validation/s2_takeover/windows-watchdog-report.json"
++    ],
++    "historical_review_records": [
++      "docs/handoff/CLAUDE_S1_REVIEW_20261018.md",
++      "validation/s0_s2_progress/independent_review.json",
++      "validation/s2_discovery/independent_review.json",
++      "validation/s2_crawl/independent_review.json",
++      "validation/s2_hardening/independent_review.json",
++      "validation/s2_five_stages/final-review.json",
++      "validation/s2_takeover/final-review.json",
++      "validation/s2_takeover/ci-followup-review.json",
++      "validation/s2_takeover/deadline-followup-review.json"
++    ]
++  },
++  "continuation_scope": {
++    "P2-5": {
++      "contract": "docs/LOCAL_SEARCH_CONCURRENCY.md",
++      "boundary": "Exact matching, fallback scoring and sorting release the Store lock; candidate SQL, one-body copy and final projection/highlighting retain locks and final publication/capacity checks."
++    },
++    "P2-6": {
++      "contract": "docs/BACKGROUND_DISPATCH.md",
++      "boundary": "Four fixed lanes: fixture, read_many, shared map/crawl, durable web search. One lease per lane; original accounting, shared reads, cancellation and unknown-outcome no-retry semantics remain."
++    },
++    "P2-7": {
++      "contract": "docs/HTTP_EXECUTION.md",
++      "boundary": "Business capacity defaults to min(IO threads,32), configurable 1..32; no additional business queue capacity, 503 before Service. Health remains on IO, subject to 64 active connections and socket limits; disconnect does not cancel or retry admitted work."
++    },
++    "P2-9": {
++      "contract": "docs/SOURCE_BACKOFF.md",
++      "boundary": "New search Retry-After/backoff is bounded to 24 hours and new parse-error backoff to 72 hours; settings proofs protect legitimate absolute deadlines across late responses, clock rollback and restart. Unproven historical deadlines use a conservative extreme-anomaly heuristic beyond both current/event time by 365 days and no future event; smaller or ambiguous old values may remain. See the contract for exact conditions.",
++      "first_attempt_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
++      "independent_failure": "Clock rollback could shorten a legitimate existing cooldown; failing evidence and corrective inputs remain separate.",
++      "verification": "consult_batch_record_for_actual_correction_and_execution_results",
++      "correction_author_commit": "a30231a802ab05f0bb3f821c51ef03d156d796d8"
++    }
+   }
+ }

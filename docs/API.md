@@ -1,12 +1,20 @@
 # searchd API（0.1.10 接手续作）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见 [本轮验证记录](../validation/s2_five_stages/README.md)。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见[本批验证记录](../validation/claude_continuation_20261024/README.md)；[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
 ```
 
 响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
+
+## HTTP 执行与背压
+
+`searchd --threads 1..64` 控制 IO 线程，默认 8；`--request-threads 1..32` 控制业务执行线程，省略时取 `min(threads,32)`。业务调用不在 IO 回调中等待 Worker RPC。每个业务线程最多接纳一个正在执行或待开始的请求，没有额外的业务等待额度；满额在进入 Service、预留业务预算或派发 Worker 前返回 HTTP 503 / `E_REQUEST_BACKPRESSURE`。
+
+`GET /healthz` 在 IO 路径响应，不占业务槽，仍受 Host/Origin 检查和 64 个活动连接上限约束。它报告传输入口可响应，不证明来源可用、业务槽有余量或健康检查的时延 SLA。请求正文仍限 2 MiB、header 限 8 KiB；socket 读取与响应写入各有 5 秒期限，业务执行期限由对应操作决定，不能把 5 秒当作所有业务的整体期限。
+
+已接纳请求在客户端断连后仍可能完成并提交；断连不自动取消或重新发送业务。需要取消的持久任务仍调用原取消接口，未知结果保留原计费/幂等语义。停止时禁止新业务接纳，并在销毁业务对象前等待已执行请求结束；不保证停止后还能收到响应。详情见 [HTTP 执行](HTTP_EXECUTION.md)。后台持久任务使用独立的四条固定通道，见[后台调度](BACKGROUND_DISPATCH.md)，不能把后台上限与同步 HTTP 上限混为一个额度。
 
 ## 保留的原生合同
 
@@ -35,6 +43,8 @@
 S0 候选探测属于显式工具路径：必须指定 `--include-candidates` 和非空 `--only` 来源 ID 列表；`--sources` 是清单文件路径，不是 ID 列表。它不修改正常准入或自动批准来源，详见 [S0_PROBE](S0_PROBE.md)。
 
 ### 搜索结果
+
+搜索来源的新 `Retry-After` / API `backoff` 等待最多 24 小时，Core 与 Worker 都执行边界并在截断时返回诊断；配置冷却与合法已有期限继续生效。新报告中的 parse-error 退避最长 72 小时；已有可信绝对期限不因后来成功、限流或时钟回拨缩短，回拨后剩余时间可以超过 72 小时。无证明历史值仅按一年极端异常启发式保守修复，一年内或事件时间有歧义的旧值可能保留；准确条件及诊断字段以[来源退避合同](SOURCE_BACKOFF.md)为准。遇限流不自动重试或启用来源；站点/robots 的等待合同不因该搜索来源上限而改变。
 
 `results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
 
@@ -223,6 +233,8 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 普通读取的 `download_truncated` 预览不获索引、摘要或跟随许可；批量和 crawl 仍保持字节预算失败语义。旧 Worker 兼容回包同样检查已报告的截断、206 和非成功 HTTP 状态，不能用不完整正文解除原限制。真实派发身份与索引/摘要水位持久化，晚到旧允许响应不能跨过新限制或删除；完整后发读取可以形成新表示，旧冻结表示不复活。重定向中间页的响应规则绑定实际 URL，目标拒绝不会丢掉之前已收到的限制，允许的最终页也不能覆盖入口规则。
 
 ## 本地操作
+
+本地搜索在选取有界候选后，逐篇复制正文并在 Store 锁外进行精确匹配、评分及排序；匹配和非 FTS 评分共享每个字段的惰性 ASCII 折叠。候选 SQL、单篇复制和最终可见性/摘要投影仍持必要的锁。返回或创建会话前重查主体/owner、删除代际、保留快照及当前和历史发布约束；候选失效会被剔除并标记 `partial`，不自动重跑查询。冻结会话容量在最终事务再检查，`search.once` 仍不创建持久身份。细节见[搜索并发](LOCAL_SEARCH_CONCURRENCY.md)。
 
 本地查询使用原 bzs/2 词项索引和子串辅助索引；短语、符号字面量、非 ASCII 子串及 URL 字段先取安全候选，再由同一精确匹配器验证。混合 AND 查询在候选上限前求两类候选的交集，词项 BM25 和匹配语义保持不变。辅助路径标为 `fts5_substring_verified`；只有无法构造安全正向候选的表达式仍用 `bounded_scan_recent`。候选和返回上限仍生效，预算不足时 `partial=true`，不承诺无限召回。
 

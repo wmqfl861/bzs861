@@ -1,0 +1,102 @@
+{
+  "reviewer": "retry_after agent; independent non-author of P2-6 dispatcher and P2-7 HTTP executor",
+  "verdict": "Passed on the final integrated root Debug binary: both unchanged independent probes succeeded; no blocking correctness finding in this bounded verification.",
+  "scope": "Final binary supplied by root, containing all four product changes. This is an integration recheck, not another independently linked composition and not a full-suite or sanitizer result.",
+  "binary_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+  "root_stage_manifest": "validation/claude_continuation_20261024/p2-9/execution-inputs.json",
+  "root_stage_manifest_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "input_binding": {
+    "product_files_verified_before_and_after": 221,
+    "all_bound_inputs_unchanged": true,
+    "both_executed_copies_equal_root": true,
+    "fixtures_root_and_dispatch_author_byte_equal": true,
+    "probe_sha256": {
+      "http/review.py": "4f23ca36fe5132bbe06a2d59574cedee5360f56ed7325eba3d8c89f086ba391d",
+      "dispatch/probe.py": "b9eb0fa86e72cfcefc3730647442935aa7b36902d53c390878ab99867c8bc2fb"
+    }
+  },
+  "results": {
+    "http": {
+      "cases": [
+        {
+          "case": "default_8_saturation_disconnect_recovery",
+          "passed": true,
+          "physical_rpcs": 8,
+          "peak": 8
+        },
+        {
+          "case": "shutdown_with_8_live_dispatches",
+          "passed": true,
+          "physical_rpcs": 8,
+          "peak": 8
+        }
+      ],
+      "checks": 39,
+      "inputs": {
+        "apps/searchd/main.cpp": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+        "tests/integration.py": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+      },
+      "elapsed_seconds": 0.399,
+      "executable_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+      "scope": "Linux independent real loopback; copy of root Debug server only; no external endpoints and no ASan claim"
+    },
+    "dispatcher": {
+      "passed": true,
+      "checks": 50,
+      "physical_rpcs": {
+        "read": 2,
+        "map": 2,
+        "search": 2,
+        "sync": 8
+      },
+      "peak_by_lane": {
+        "read": 1,
+        "map": 1,
+        "search": 1,
+        "sync": 8
+      },
+      "peak_total": 11,
+      "elapsed_seconds": 0.257,
+      "binary_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+      "scope": "Independently composed P2-7 HTTP executor plus P2-6 dispatcher, Linux Debug; synthetic loopback RPC only."
+    },
+    "total_checks": 89
+  },
+  "claims": [
+    "Actual default eight HTTP business slots saturate at eight physical RPCs; health/auth/transport validation stay available and excess business work returns 503 without ingest side effects.",
+    "Closing a client connection does not prematurely release an in-flight business slot or retry the underlying request; capacity recovers after accepted work settles.",
+    "SIGTERM while eight RPCs remain held stops IO acceptance while the process retains its execution owners, then exits zero after the held RPCs are released.",
+    "With all eight HTTP business calls still held, independent durable read/map/search lanes each start and settle their second queued task after release of the first task in that lane. Their peak is one each, with total observed RPC peak eleven.",
+    "Queued cancelled read stays terminal with zero attempts. Known read/map failures charge one external request and zero unknown requests; observed call counts show no replay.",
+    "After release of synchronous calls, admission recovers and the combined process exits zero."
+  ],
+  "limitations": [
+    "Linux Debug with local synthetic Workers and temporary state only; no real external sources were enabled.",
+    "Fixture completion was observed under saturation but could precede filling the HTTP pool; no stronger after-saturation fixture ordering is claimed.",
+    "No ASan/TSan/Windows or arbitrary latency SLA claim from these probes. Root full CTest/pytest/sanitizer gates are independently recorded.",
+    "The unmodified dispatcher probe emits its older static composition scope string; binding-before/binding-after, both command records and this report establish that this run used the actual final root binary. Raw output has not been rewritten."
+  ],
+  "evidence_sha256": {
+    "binding-after.json": "c1766919c48f31a4ca050df6ecb571f74a2b8a67a939d4fcf42b8ca8df714a05",
+    "binding-before.json": "c5674cf08286d980c850321a23f8360f9ecfdbf2864ae94ae11f69d73fe34eb7",
+    "dispatch/command.json": "ef73ced77e4f0771d7bd603d125fc1c5efffc7c40c773e5e310ec450635fc472",
+    "dispatch/execution.json": "3cfa63fef7d170ac9a54e329759c882be20d861099fcc8da49d3ea6bc4d6bed6",
+    "dispatch/probe.py": "b9eb0fa86e72cfcefc3730647442935aa7b36902d53c390878ab99867c8bc2fb",
+    "dispatch/run.log": "3cfa63fef7d170ac9a54e329759c882be20d861099fcc8da49d3ea6bc4d6bed6",
+    "dispatch/searchd.log": "b3b15714cc4191f838b68cc46557c9c658de6840e238bb111f67bef4211fb4e3",
+    "fixture-snapshot/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "fixture-snapshot/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "fixture-snapshot/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "fixture-snapshot/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "fixture-snapshot/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
+    "http/command.json": "f4ff9d86284ac42a54ea8b8f9e89d52e764a53199863f67f4b16770e262a8a42",
+    "http/default-saturation-searchd.log": "d91ae3cb09fb31b958813d8fbc6a2ad002d83ec2c2e767efd19b42c97f004bd8",
+    "http/execution.json": "35fe4027c2256e83074b22aebd45792b51ac3f1759152597842ccc497fd0b456",
+    "http/review.py": "4f23ca36fe5132bbe06a2d59574cedee5360f56ed7325eba3d8c89f086ba391d",
+    "http/run.log": "35fe4027c2256e83074b22aebd45792b51ac3f1759152597842ccc497fd0b456",
+    "http/shutdown-searchd.log": "c874a40b5fddd256a8f8f237771c00c28760cd14d7c363b4ad7d8a88e38e9d11",
+    "root-execution-inputs.json": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+    "run_probes.py": "3135ceefc63b7c9ff0e1c676a6e569632fb46f442dfc07c486da0cef13109c80"
+  },
+  "archive_guidance": "Keep all archive-manifest.json entries; omit both copied executable files. Preserve old independent reviews and this new integration recheck separately."
+}

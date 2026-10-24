@@ -1,0 +1,474 @@
+{
+  "scope": "Read-only integration equality/merge verification; no re-review of P2-5 implementation or production tests",
+  "base": "59081e14fdda765844031e13f874e588334f1a36",
+  "authors": {
+    "P2-5": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+    "P2-6": "a9bac84266ee603e27e3957b80a54387e2c44820",
+    "P2-7": "23cb1ceffbbc0e65dbcbc83baf44ac4a2159fedc",
+    "P2-9": "a30231a802ab05f0bb3f821c51ef03d156d796d8"
+  },
+  "root_head_before": "e066753af9bd8888eefa5d694e83f677d09a48a5",
+  "root_head_after": "e066753af9bd8888eefa5d694e83f677d09a48a5",
+  "git_version": "git version 2.51.1",
+  "expected_changed_files": 22,
+  "author_changed_files": {
+    "P2-5": [
+      "docs/LOCAL_SEARCH_CONCURRENCY.md",
+      "include/bzs/query.hpp",
+      "include/bzs/store.hpp",
+      "src/query.cpp",
+      "src/store.cpp",
+      "tests/unit.cpp"
+    ],
+    "P2-6": [
+      "apps/searchd/main.cpp",
+      "docs/BACKGROUND_DISPATCH.md",
+      "include/bzs/service.hpp",
+      "include/bzs/web.hpp",
+      "src/service.cpp",
+      "tests/e2e_crawl.py",
+      "tests/fairness.cpp"
+    ],
+    "P2-7": [
+      "apps/searchd/main.cpp",
+      "tests/integration.py"
+    ],
+    "P2-9": [
+      "docs/SOURCE_BACKOFF.md",
+      "include/bzs/web.hpp",
+      "python/bzs/probe.py",
+      "python/bzs/worker/sources/__init__.py",
+      "python/bzs/worker/sources/base.py",
+      "python/bzs/worker/sources/review.py",
+      "python/tests/test_probe.py",
+      "python/tests/test_sources.py",
+      "src/store.cpp",
+      "src/web.cpp",
+      "tests/unit.cpp"
+    ]
+  },
+  "current_scope_equals_author_union": true,
+  "files": {
+    "apps/searchd/main.cpp": {
+      "owners": [
+        "P2-6",
+        "P2-7"
+      ],
+      "working_sha256": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+      "index_blob": "e4e2304f161662192d77188476b47d299247994f",
+      "bytes": 19285,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "fe7606b1a8c900f4612c29acc766a4a38c793d0ff2a4e8336a294b6352caf291",
+        "P2-7": "2c0e6e569205e68fd60b747865f005fcba6cbea48b923564001f66b35eca2b06"
+      },
+      "relationship": "exact reviewed P2-7 main.cpp plus the one P2-6 BackgroundWorker handle replacement",
+      "expected_union_sha256": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+      "matches_already_integrated_p2_6_commit": true
+    },
+    "docs/BACKGROUND_DISPATCH.md": {
+      "owners": [
+        "P2-6"
+      ],
+      "working_sha256": "e18ae048b2bf5a7f6a33ba14e96e46e53a513e427166112ee0815ed2bdc4952b",
+      "index_blob": "c58210fb5edf614ad6da9e5a294149cbc965b12a",
+      "bytes": 3769,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "e18ae048b2bf5a7f6a33ba14e96e46e53a513e427166112ee0815ed2bdc4952b"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "docs/LOCAL_SEARCH_CONCURRENCY.md": {
+      "owners": [
+        "P2-5"
+      ],
+      "working_sha256": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5",
+      "index_blob": "99628010ab04f2757cb0bf683e127c8d8328b408",
+      "bytes": 2473,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "docs/SOURCE_BACKOFF.md": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb",
+      "index_blob": "a2ba237af339bf71bc7344e0e766e3fcd8f3592f",
+      "bytes": 5101,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "include/bzs/query.hpp": {
+      "owners": [
+        "P2-5"
+      ],
+      "working_sha256": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8",
+      "index_blob": "bebddc0d827bf0d26cd9d678c19697698bfbca56",
+      "bytes": 2166,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "include/bzs/service.hpp": {
+      "owners": [
+        "P2-6"
+      ],
+      "working_sha256": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1",
+      "index_blob": "7bf8603836c050498c6eb2434759968ab941f310",
+      "bytes": 2278,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "include/bzs/store.hpp": {
+      "owners": [
+        "P2-5"
+      ],
+      "working_sha256": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+      "index_blob": "f195b5762a4a6477a1c39e8745a41a7a4dc08dcd",
+      "bytes": 18463,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "include/bzs/web.hpp": {
+      "owners": [
+        "P2-6",
+        "P2-9"
+      ],
+      "working_sha256": "f57ed6661ee0ac37a7c5371ff1d16df10171e4fabf1ddf6b40d078cafa9be671",
+      "index_blob": "25e8564084a02ebbd86694d66b2563c030d8b2d7",
+      "bytes": 5903,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "d51d28f1232d04e4e17af6a9c3be7635609d9d381db2f40309c885860751b675",
+        "P2-9": "5ab90be7686d59edee1e404a07cdc8f994c180750b0671e21736a91faa6d6cb2"
+      },
+      "relationship": "exact union: P2-6 concurrent WorkerPort contract comment plus P2-9 limit comment/constant; no other change",
+      "base_sha256": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+      "expected_union_sha256": "f57ed6661ee0ac37a7c5371ff1d16df10171e4fabf1ddf6b40d078cafa9be671"
+    },
+    "python/bzs/probe.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "c9428ec621d26f4495a7426c3a1e83110a1b00cab9c7393f6d6786479777848d",
+      "index_blob": "a5b92dc059bfae4cac8c7c68104c547660463034",
+      "bytes": 25715,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "c9428ec621d26f4495a7426c3a1e83110a1b00cab9c7393f6d6786479777848d"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "python/bzs/worker/sources/__init__.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "cad2a941a86126b7919e56940abfe125f234aa40c25eb83898e1665dfa69f816",
+      "index_blob": "54955790ec236010650547add78bc7008b589f6b",
+      "bytes": 8558,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "cad2a941a86126b7919e56940abfe125f234aa40c25eb83898e1665dfa69f816"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "python/bzs/worker/sources/base.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "1d92a8ee66c0e084fdaa51e25f3236a2b441bd1e1352f1126bae9448b2917621",
+      "index_blob": "1b094d3f0ca6abfc5b5d20c93d5651e9be1a97fd",
+      "bytes": 7093,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "1d92a8ee66c0e084fdaa51e25f3236a2b441bd1e1352f1126bae9448b2917621"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "python/bzs/worker/sources/review.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "83611553d36a148c29b54e557c63ebccf618abd7250a0b430ddfcc43853042eb",
+      "index_blob": "b2b36125130d70ebc184366a3d5e48e21434807c",
+      "bytes": 6561,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "83611553d36a148c29b54e557c63ebccf618abd7250a0b430ddfcc43853042eb"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "python/tests/test_probe.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "20b840bbd5a15579ae14dca50df0c973519ee05544848fe9583d2d217b544f6c",
+      "index_blob": "09e1b38981f5ace3841254a9c544b35661fc2ceb",
+      "bytes": 20696,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "20b840bbd5a15579ae14dca50df0c973519ee05544848fe9583d2d217b544f6c"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "python/tests/test_sources.py": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "0414ea763197beae7c4df13bf6b44290dcd7048362c8f082755a13a99fdc51c3",
+      "index_blob": "fe7af46e961622226f04ed182c1746dde3a15ffd",
+      "bytes": 22262,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "0414ea763197beae7c4df13bf6b44290dcd7048362c8f082755a13a99fdc51c3"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "src/query.cpp": {
+      "owners": [
+        "P2-5"
+      ],
+      "working_sha256": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8",
+      "index_blob": "481accd445e6cd12664d7cb68e0bfa99416a8a8f",
+      "bytes": 18614,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "src/service.cpp": {
+      "owners": [
+        "P2-6"
+      ],
+      "working_sha256": "175f71a6f2fe037171edec611ef032e9548ae6da614f7022dfd9b89eeee31cf3",
+      "index_blob": "d05ca8fdccfd62d9be86f430b9c0712ecd90b08b",
+      "bytes": 20154,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "175f71a6f2fe037171edec611ef032e9548ae6da614f7022dfd9b89eeee31cf3"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "src/store.cpp": {
+      "owners": [
+        "P2-5",
+        "P2-9"
+      ],
+      "working_sha256": "1b7acb994470a01987ddef5ccb653c8c988a5355ddd2e2ca9fc7c8145bc1d7e2",
+      "index_blob": "8ec29a4fd62707e0b4fc5f041809cdc1377fe82d",
+      "bytes": 110416,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "99e38e37fd1701f3f8712a49c8b3882f8a50c400658ed6ac787358ecc2d6924e",
+        "P2-9": "68d7dd557c2b5e703af68e7283ac0a650b0ba84c77985e9e3e7d89ddbb65890d"
+      },
+      "relationship": "exact conflict-free three-way merge in both orientations"
+    },
+    "src/web.cpp": {
+      "owners": [
+        "P2-9"
+      ],
+      "working_sha256": "48474fd5393627a7238777dfa106faf14346da771b5747445d534ee06235b80e",
+      "index_blob": "a117b32300b9ed5a040127376590b73599d5aaac",
+      "bytes": 71942,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-9": "48474fd5393627a7238777dfa106faf14346da771b5747445d534ee06235b80e"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "tests/e2e_crawl.py": {
+      "owners": [
+        "P2-6"
+      ],
+      "working_sha256": "be95a24b70129e94904576ae22d97e86280fd1a9e8025c3f45118eafd08c804c",
+      "index_blob": "e8ada9b4b79fcac3222a5b86d9a0181d3a1c3a22",
+      "bytes": 52072,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "be95a24b70129e94904576ae22d97e86280fd1a9e8025c3f45118eafd08c804c"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "tests/fairness.cpp": {
+      "owners": [
+        "P2-6"
+      ],
+      "working_sha256": "525543d1613054c1e04bf4fdc3fc31b2ef4026f5bed16818d42da0a408869996",
+      "index_blob": "b00f31403f315cb51874fbaa8f34d457cf781ae0",
+      "bytes": 29455,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-6": "525543d1613054c1e04bf4fdc3fc31b2ef4026f5bed16818d42da0a408869996"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "tests/integration.py": {
+      "owners": [
+        "P2-7"
+      ],
+      "working_sha256": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536",
+      "index_blob": "45bbef639e4059a45b18be99f7ca2c727ec87687",
+      "bytes": 29572,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-7": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+      },
+      "relationship": "byte-for-byte equal to sole author commit"
+    },
+    "tests/unit.cpp": {
+      "owners": [
+        "P2-5",
+        "P2-9"
+      ],
+      "working_sha256": "9eee0b9fa8d55b8029beb19267f03ad5afb11e9511678f5e33ceb9201741eaf2",
+      "index_blob": "965a11f073dc192d4c9917658e08c98fdf016a5f",
+      "bytes": 117654,
+      "working_equals_index": true,
+      "author_sha256": {
+        "P2-5": "b2a58d5c2a8510b75b1ad4e4db3d431a770b8790a512e1dbc87df0994f8a4c35",
+        "P2-9": "28a7cb871cccc12a1101a5335b9c5625bbc187dffb220047dbc14f44baf0b881"
+      },
+      "relationship": "exact conflict-free three-way merge in both orientations"
+    }
+  },
+  "three_way_merges": {
+    "src/store.cpp": {
+      "base": "59081e14fdda765844031e13f874e588334f1a36",
+      "left": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+      "right": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "source_sha256": {
+        "base": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+        "search": "99e38e37fd1701f3f8712a49c8b3882f8a50c400658ed6ac787358ecc2d6924e",
+        "retry": "68d7dd557c2b5e703af68e7283ac0a650b0ba84c77985e9e3e7d89ddbb65890d"
+      },
+      "argv": [
+        "git",
+        "merge-file",
+        "-p",
+        "--diff3",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/search.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/base.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/retry.cpp"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "reverse_argv": [
+        "git",
+        "merge-file",
+        "-p",
+        "--diff3",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/retry.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/base.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-e6t5qoss/search.cpp"
+      ],
+      "reverse_exit_code": 0,
+      "merged_sha256": "1b7acb994470a01987ddef5ccb653c8c988a5355ddd2e2ca9fc7c8145bc1d7e2",
+      "both_orderings_equal_root_bytes": true
+    },
+    "tests/unit.cpp": {
+      "base": "59081e14fdda765844031e13f874e588334f1a36",
+      "left": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+      "right": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "source_sha256": {
+        "base": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+        "search": "b2a58d5c2a8510b75b1ad4e4db3d431a770b8790a512e1dbc87df0994f8a4c35",
+        "retry": "28a7cb871cccc12a1101a5335b9c5625bbc187dffb220047dbc14f44baf0b881"
+      },
+      "argv": [
+        "git",
+        "merge-file",
+        "-p",
+        "--diff3",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/search.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/base.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/retry.cpp"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "reverse_argv": [
+        "git",
+        "merge-file",
+        "-p",
+        "--diff3",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/retry.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/base.cpp",
+        "/tmp/bzs-continuation-integration-independent/merge-z159l603/search.cpp"
+      ],
+      "reverse_exit_code": 0,
+      "merged_sha256": "9eee0b9fa8d55b8029beb19267f03ad5afb11e9511678f5e33ceb9201741eaf2",
+      "both_orderings_equal_root_bytes": true
+    }
+  },
+  "formal_unit_registration_union": {
+    "baseline_count": 88,
+    "author_counts": {
+      "P2-5": 97,
+      "P2-9": 96
+    },
+    "integrated_count": 105,
+    "all_author_test_bodies_preserved_by_full_file_merge": true,
+    "new_test_names": {
+      "P2-5": [
+        "combined_match_score_keeps_legacy_weights_filters_and_field_semantics",
+        "search_matching_releases_store_lock_and_sqlite_transaction_for_every_path",
+        "search_matching_rechecks_deleted_and_reimported_candidate_identity",
+        "search_matching_preserves_immutable_revision_or_marks_pruning_partial",
+        "search_matching_rechecks_principal_revocation_before_any_result_or_receipt",
+        "search_matching_rechecks_active_session_capacity_at_commit",
+        "search_source_withdrawal_does_not_change_independent_local_snapshot_ownership",
+        "search_matching_rechecks_site_restrictions_even_after_relaxation",
+        "search_matching_rechecks_page_and_frozen_redirect_history_after_relaxation"
+      ],
+      "P2-9": [
+        "source_retry_after_is_bounded_persistent_and_saturating",
+        "source_retry_after_does_not_shorten_prior_parse_error_or_ordinary_waits",
+        "legacy_source_cooldown_repair_has_a_fixed_anchor_and_keeps_accounting",
+        "source_cooldown_proof_preserves_legal_deadlines_across_rollback_and_restart",
+        "legacy_source_cooldown_repair_retains_ambiguous_and_future_event_state",
+        "source_cooldown_proof_never_certifies_unknown_older_max",
+        "source_cooldown_proof_and_repair_are_transactional",
+        "web_search_bounds_old_worker_retry_after_and_reports_new_worker_clamping"
+      ]
+    },
+    "no_duplicate_names": true
+  },
+  "unchanged_baseline_guards": {
+    "config/sources.json": {
+      "sha256": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+      "equals_baseline": true
+    },
+    "config/sites.json": {
+      "sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+      "equals_baseline": true
+    },
+    "CMakeLists.txt": {
+      "sha256": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768",
+      "equals_baseline": true
+    },
+    "CMakePresets.json": {
+      "sha256": "0cee3fd0b9a72875b2535840da0dec13f17ab65b86d8fc5b8236b5f0a188aac2",
+      "equals_baseline": true
+    }
+  },
+  "all_checked_working_files_equal_index": true,
+  "source_bytes_unchanged_during_check": true,
+  "root_or_running_validation_logs_modified": false,
+  "production_tests_executed": false
+}

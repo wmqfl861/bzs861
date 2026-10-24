@@ -1,0 +1,233 @@
+{
+  "patch_sha256": "7bcee4e61ff2769b454bfabea4d0480ed8b759b9e40db75f8854ff94840dc625",
+  "author_patch_unchanged": true,
+  "files": {
+    "HANDOFF_START_HERE.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "2ba78841e51bd4180751d8722d51443177d291706b48cc21d4c6e8efa02d0c24",
+      "replayed_bytes_equal_after": true
+    },
+    "README.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "177745df80a98ac57b0d7e1143b0f75f08d65f451585ad241da636fbcb3d7cbf",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "a1b8cd9e886c2eb59b9ddfcd5f43592703ae57c79c015097076b92b94ff6dce0",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "dc271780d88db0af62e4f8775c8ab23e00ee2e2e0b4849c9096987ed06b508b1",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "f5db9a78b00ec07faebd22c2158754afd50abcee06f81384fc217c470860a9bb",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/API.md": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "1e4223086f906e7d9c8cb5ed09045ba1bdd7b12e120fe9ce837b8ada80772011",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/implementation_status.json": {
+      "before_matches_git": true,
+      "action": "updated",
+      "after_sha256": "8acc89635df488d4b7b87b3424834238f7bbad14bb88897efb52dd51efd6e144",
+      "replayed_bytes_equal_after": true
+    },
+    "docs/HTTP_EXECUTION.md": {
+      "before_matches_git": false,
+      "action": "added",
+      "after_sha256": "7831d36095ad7370224e715a4fef1194843aaae64098410a3ae430cd3996ad48",
+      "replayed_bytes_equal_after": true
+    }
+  },
+  "patch_replay": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/tmp/bzs-continuation-handoff-20261024/handoff-docs.patch"
+      ],
+      "cwd": "/tmp/bzs-continuation-docs-independent/replay",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/tmp/bzs-continuation-handoff-20261024/handoff-docs.patch"
+      ],
+      "cwd": "/tmp/bzs-continuation-docs-independent/replay",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "no_duplicate_json_keys": true,
+  "features": {
+    "count": 83,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46
+    },
+    "raw_value_bytes": 122468,
+    "raw_value_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "raw_before_after_equal": true,
+    "all_full_work_package_accepted_false": true
+  },
+  "changed_original_top_level_keys": [
+    "stage",
+    "baseline",
+    "integration_inputs",
+    "current_test_report",
+    "upstream_baseline_reproduction",
+    "independent_review",
+    "review_record",
+    "historical_reports",
+    "current_results",
+    "historical_review_records",
+    "verification_binding"
+  ],
+  "all_changed_values_preserved_in_new_history": true,
+  "old_history_object_raw_bytes_unchanged": [
+    "historical_results_0_1_6",
+    "historical_results_0_1_8",
+    "historical_verification_0_1_8",
+    "historical_results_0_1_9_initial",
+    "historical_verification_0_1_9_initial",
+    "historical_verification_0_1_9_final",
+    "historical_verification_0_1_10_initial",
+    "historical_verification_0_1_10_http_cleanup",
+    "historical_verification_0_1_10_deadline",
+    "historical_verification_0_1_10_windows_watchdog",
+    "json_concurrency_followup"
+  ],
+  "other_unchanged_top_level_raw_values": [
+    "version",
+    "recorded_at",
+    "status_counts",
+    "status_legend",
+    "partial_work_packages",
+    "not_started",
+    "full_work_packages_accepted",
+    "milestones_accepted",
+    "slices_accepted",
+    "planned_acceptance_items",
+    "planned_acceptance_suite_executed",
+    "s0_live_sources",
+    "s1_acceptance",
+    "current_verification",
+    "github_ci",
+    "full_product_independent_review",
+    "acceptance_mapping",
+    "features",
+    "baseline_version",
+    "planned_work_packages",
+    "s2_acceptance",
+    "source_availability",
+    "site_discovery_availability",
+    "site_crawl_availability",
+    "historical_results_0_1_6",
+    "historical_results_0_1_8",
+    "historical_verification_0_1_8",
+    "historical_results_0_1_9_initial",
+    "historical_verification_0_1_9_initial",
+    "json_concurrency_followup",
+    "historical_verification_0_1_9_final",
+    "historical_verification_0_1_10_initial",
+    "historical_verification_0_1_10_http_cleanup",
+    "historical_verification_0_1_10_deadline",
+    "historical_verification_0_1_10_windows_watchdog"
+  ],
+  "old_history_lists_only_append": {
+    "historical_reports": [
+      "validation/claude_followup_20261024/README.md"
+    ],
+    "historical_review_records": [
+      "validation/claude_followup_20261024/README.md"
+    ]
+  },
+  "configs_and_plan": {
+    "config/sources.json": {
+      "sha256": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+      "matches_baseline": true
+    },
+    "config/sites.json": {
+      "sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+      "matches_baseline": true
+    },
+    "docs/planning/slices_v1.2.json": {
+      "sha256": "01e436a36c4b3d8d3b99acabe0b4a24eb9a2028c4fa76d516471bd2937d5e69a",
+      "matches_baseline": true
+    }
+  },
+  "sources": {
+    "registered": 17,
+    "enabled": 0
+  },
+  "sites": {
+    "registered": 0
+  },
+  "source_bindings": [
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861/apps/searchd/main.cpp",
+      "sha256": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+      "matches_author_bound_input": true
+    },
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861/tests/integration.py",
+      "sha256": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536",
+      "matches_author_bound_input": true
+    },
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-search-lock/docs/LOCAL_SEARCH_CONCURRENCY.md",
+      "sha256": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5",
+      "matches_author_bound_input": true
+    },
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-retry/docs/SOURCE_BACKOFF.md",
+      "sha256": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb",
+      "matches_author_bound_input": true
+    },
+    {
+      "path": "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/docs/BACKGROUND_DISPATCH.md",
+      "sha256": "e18ae048b2bf5a7f6a33ba14e96e46e53a513e427166112ee0815ed2bdc4952b",
+      "matches_author_bound_input": true
+    }
+  ],
+  "root_document_hashes_before": {
+    "HANDOFF_START_HERE.md": "923278993b9ff0a6ab48fdf45017cb438efbf599908ad26136ec0c672a4f5b5b",
+    "README.md": "e83812d028f08bef84807dbeb15fa080f68885e00e33ad260b648ff2846c8f70",
+    "docs/DEVELOPMENT_STATUS.md": "f9379f47a4918cc8ef211936f2bd50b2c88634d81a565bb1d6878bf5ec6b23aa",
+    "docs/handoff/NEXT_AGENT.md": "6074af919838bc1872907328d113a2c9b08330b584daa284f2f21c9d5f0ab7e8",
+    "docs/GITHUB_HANDOFF.md": "1aa23fd089e9c6d63fd7f9125682ed19cb87e9a379ef88c5841931ede1e4e833",
+    "docs/API.md": "d3d68515902b3c56a47e4c6e5e55e766fbe35c5762a22d25ded302588d21df4c",
+    "docs/implementation_status.json": "459c932db827ad9ff85ce507cd213335a14a80e43874ddf5724340a6a38b6cf7",
+    "docs/HTTP_EXECUTION.md": null
+  },
+  "root_document_hashes_after": {
+    "HANDOFF_START_HERE.md": "923278993b9ff0a6ab48fdf45017cb438efbf599908ad26136ec0c672a4f5b5b",
+    "README.md": "e83812d028f08bef84807dbeb15fa080f68885e00e33ad260b648ff2846c8f70",
+    "docs/DEVELOPMENT_STATUS.md": "f9379f47a4918cc8ef211936f2bd50b2c88634d81a565bb1d6878bf5ec6b23aa",
+    "docs/handoff/NEXT_AGENT.md": "6074af919838bc1872907328d113a2c9b08330b584daa284f2f21c9d5f0ab7e8",
+    "docs/GITHUB_HANDOFF.md": "1aa23fd089e9c6d63fd7f9125682ed19cb87e9a379ef88c5841931ede1e4e833",
+    "docs/API.md": "d3d68515902b3c56a47e4c6e5e55e766fbe35c5762a22d25ded302588d21df4c",
+    "docs/implementation_status.json": "459c932db827ad9ff85ce507cd213335a14a80e43874ddf5724340a6a38b6cf7",
+    "docs/HTTP_EXECUTION.md": null
+  },
+  "root_documents_unchanged": true,
+  "no_production_tests_reexecuted": true
+}

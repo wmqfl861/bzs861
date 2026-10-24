@@ -1,5 +1,20 @@
 # 下一会话接手顺序
 
+更新：2026-10-24。当前接续 Claude 审计 P2-5 / P2-6 / P2-7 / P2-9，版本仍为 0.1.10，唯一推送目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。本批基线 `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`；其 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 只证明上一批输入。
+
+## 当前接手步骤
+
+1. 先读 [HANDOFF_START_HERE](../../HANDOFF_START_HERE.md)、[当前进度](../DEVELOPMENT_STATUS.md)、[机器状态](../implementation_status.json)及[本批验证记录](../../validation/claude_continuation_20261024/README.md)，核对实际工作树、包含提交、最终输入与该提交的 Checks。不得把作者聚焦或上一批 CI 当作最终整合验证。
+2. 按 [搜索并发](../LOCAL_SEARCH_CONCURRENCY.md)、[后台调度](../BACKGROUND_DISPATCH.md)、[HTTP 执行](../HTTP_EXECUTION.md)、[来源退避](../SOURCE_BACKOFF.md) 核对合同。P2-5 保留短 SQL/正文复制/最终投影锁；P2-6 只隔离固定类别；P2-7 满额 503 且断连不自动取消；都不承诺任意并行或健康检查 SLA。
+3. 阅读本批原始失败与独立审核。P2-9 首版 `743f79d` 的时钟回拨反例是已确认逻辑问题；只有与最终源码绑定的修正后执行才支持结论。新响应 24 小时上限、正常 parse-error 72 小时、可信绝对期限与无证明历史记录的一年极端异常启发式，按最终 SOURCE_BACKOFF 逐项核对；一年内或事件时间有歧义的旧值可能保留。
+4. 根据本批记录的剩余项继续开发。上一批 P1-1/2/3、P2-1..4 与 P2-5 初次字段复用已是基线的一部分，不重复套旧补丁；`review/claude-2026-10-24` / `30f058557e3f7ebb873e9780759323b49cfe9636` 始终只读，不合并、不改文件。
+
+本批沿用 schema13 和 `bzs-ascii-cjk/2+codepoint-grams/1`，不新增 tag。若从旧格式升级仍须停止旧 Core；备份没有独立撤销连续性证明则继续隔离。六项保留决定与 17 条来源全部禁用、0 站点、83 包 / 161 验收 / 10 切片、37 partial / 46 not_started / 0 accepted 均保持。
+
+## 上一批 Claude 审计交接（历史）
+
+以下原文中“本批 / 当前”只指 `claude_followup_20261024`。更早的 schema12→13、截止时间及 Windows watchdog 记录继续按原阶段保留。
+
 更新：2026-10-24。当前接续 Claude 审计修正，已发布版本仍为0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读 HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[本批基线结论](../../validation/claude_followup_20261024/baseline-findings.json)、[本批验证记录](../../validation/claude_followup_20261024/)和[机器状态](../implementation_status.json)，再核对实际包含提交与其CI。上一轮 schema12→13、截止时间与 Windows watchdog 报告保留为历史，不代替本批验证。
 
 本批基线为 `44253a752f945fdfab9810192e583b39fe5f6d83`，只读审计材料为 `30f058557e3f7ebb873e9780759323b49cfe9636`。修复顺序为 P1-2→P1-1→P1-3→P2-1..4，P2-5 原补丁评审后接纳；先核查已有阶段与剩余工作，不重写原失败或审计材料。本批实际输入、执行结果、准确提交与双平台 CI 见本批验证记录。

@@ -1,0 +1,49 @@
+{
+  "scope": "Independent replay of unchanged P2-5 interleaving probe against final combined P2-5/P2-6/P2-7/P2-9 ASan/UBSan library, with LSan enabled",
+  "reviewer": "/root/dispatcher; P2-5 reviewer, not P2-5 author",
+  "verdict": "pass; no blocker or sanitizer diagnostic observed in these 19 final-combination interleavings",
+  "root_product_commit": "e066753af9bd8888eefa5d694e83f677d09a48a5",
+  "root_execution_manifest": {
+    "path": "validation/claude_continuation_20261024/p2-9/execution-inputs.json",
+    "sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82"
+  },
+  "store_cpp_sha256": "1b7acb994470a01987ddef5ccb653c8c988a5355ddd2e2ca9fc7c8145bc1d7e2",
+  "production_library_sha256": "679658559ff0ddd1eff441a08ec1e44c0f085652c211a861519ec3993ad3b412",
+  "probe_source_sha256": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022",
+  "probe_binary_sha256": "e2b5af0af0aca15edb5da8bf08e406ea0f403378effeadeecf7ad2b073fe81aa",
+  "result": {
+    "exit_code": 0,
+    "scenarios": 19,
+    "checks": 191,
+    "elapsed_seconds": 2.626,
+    "source_files_checked": 43,
+    "all_43_production_inputs_match_root_execution_manifest": true,
+    "source_unchanged_across_copy_compile_and_run": true,
+    "copied_headers_and_library_still_equal_original_inputs": true,
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+    "native_execution_outside_ptrace_sandbox": true
+  },
+  "scenario_groups": {
+    "already_matched_redirect_final_or_intermediate_policy_history": 8,
+    "unrelated_owner_negative_controls": 2,
+    "second_handle_pruning_or_principal_revocation": 4,
+    "second_handle_site_generation_restriction_then_relaxation": 4,
+    "global_last_session_slot_race_and_once_identity_controls": 1
+  },
+  "artifacts": {
+    "copy-manifest.json": "e9b769a6daef46b662e6f840aa793d901d153690057b02c2a7ef68f71996b117",
+    "root-execution-inputs.json": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+    "probe.cpp": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022",
+    "evidence/compile-probe-asan.json": "d975089cb5f5115890f12041e1e103977cc940daca01f693083403aa395e687e",
+    "evidence/compile-probe-asan.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/run-probe-asan-native.json": "3381059b9baec44c753c9526075c4d1930b4d31733296242a87d048b44f393ca",
+    "evidence/run-probe-asan-native.log": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece"
+  },
+  "limits": [
+    "No final combined Release performance execution is claimed here.",
+    "Execution used a copied final library and matching copied headers; no root source or build artifact was changed, and no active test logs were read.",
+    "These same 19 scenarios overlap the Debug replay and are not added to product acceptance counts.",
+    "The first earlier author-stage sandbox LSan failure remains in its historical record; this final run used native execution directly, with leak detection never disabled."
+  ]
+}

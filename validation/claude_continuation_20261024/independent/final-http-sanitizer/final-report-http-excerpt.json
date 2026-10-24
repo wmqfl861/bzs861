@@ -1,0 +1,18 @@
+{
+  "final_http_sanitizer": {
+    "formal_cases": 3,
+    "server_shutdowns_checked": 2,
+    "all_exit_zero": true,
+    "sanitizers_and_leak_detection_enabled": true,
+    "binary_sha256": "ce8d9a0e9cfdf86666b1ba552f0b0052c56ec1f7a9b34f5b07af44c0025d57a2"
+  },
+  "final_verification": "final-verification/result.json",
+  "final_verification_sha256": "dde3131addba29b3bc14f041446849e9a16517e7efcd95d175c9f2b52ea50558",
+  "final_documented_inputs": "final-verification/execution-inputs.json",
+  "final_documented_inputs_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "post_full_suite_scope": "Only eight independently reviewed documentation files differ; final-verification/documentation-delta.json proves product/test/build/recorder bytes are unchanged. Extra planning/dependency/HTTP-sanitizer checks are separate, not another complete suite.",
+  "preserved_failure_statements": {
+    "p2_7_initial_sanitizer": "exit0 but incomplete output excluded; exact same 15 binaries and product inputs rerun with complete captured output",
+    "original_failed_probes": "Original author ptrace/LSan failures and independent fixture errors retained; no product checks weakened."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "scope": "Final combined P2-5 independent replay and one-pair Release observation",
+  "reviewer": "/root/dispatcher; not P2-5 implementation author",
+  "final_manifest_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "debug_asan_manifest_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "compiled_production_files_equal_across_manifests": 43,
+  "debug_asan_summary": {
+    "path": "debug-asan-review.json",
+    "sha256": "3b7fe93212384fc03feb47e60003333079aaa02c5c4b1bdef1c99bd9aed6d9ed"
+  },
+  "performance_report": {
+    "path": "final-release/evidence/performance-result.json",
+    "sha256": "fe69828bf08a130cc4253d888ec6d7542f4148fa40115849d0c059cd3a01f32e"
+  },
+  "independent_correctness": {
+    "Debug": {
+      "scenarios": 19,
+      "checks": 191,
+      "exit_code": 0
+    },
+    "ASan_UBSan_LSan": {
+      "scenarios": 19,
+      "checks": 191,
+      "exit_code": 0,
+      "leak_detection": true
+    }
+  },
+  "performance_observations": [
+    {
+      "case": "single_NOT_phrase",
+      "query": "NOT \"alpha beta\"",
+      "old_search_ms": 2567,
+      "new_search_ms": 640,
+      "old_worst_concurrent_stats_ms": 2566,
+      "new_worst_concurrent_stats_ms": 150,
+      "retrieval": "bounded_scan_recent"
+    },
+    {
+      "case": "four_NOT_phrases_AND",
+      "query": "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\"",
+      "old_search_ms": 2573,
+      "new_search_ms": 1202,
+      "old_worst_concurrent_stats_ms": 2573,
+      "new_worst_concurrent_stats_ms": 157,
+      "retrieval": "bounded_scan_recent"
+    }
+  ],
+  "performance_trials_per_variant": 1,
+  "counting_note": "Debug and sanitizer run the same 19 scenarios; repeated executions and observational timings are not extra product acceptance items.",
+  "root_modified": false,
+  "existing_evidence_overwritten": false,
+  "active_root_logs_read": false
+}

@@ -1,0 +1,24 @@
+test_explicit_business_limit_runs_concurrently_on_one_io_thread (integration.HTTPExecution.test_explicit_business_limit_runs_concurrently_on_one_io_thread) ... ok
+test_request_thread_limit_is_validated_before_listening (integration.HTTPExecution.test_request_thread_limit_is_validated_before_listening) ... ok
+test_saturated_requests_leave_health_and_transport_checks_live (integration.HTTPExecution.test_saturated_requests_leave_health_and_transport_checks_live) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.457s
+
+OK
+{
+  "harness_sha256": "10707c02e2175589b252aa6e62bf42d71eb13c992b1f541daf3e7d02c348b214",
+  "formal_tests_sha256": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536",
+  "shutdowns": [
+    {
+      "exit_code": 0,
+      "server_log": "{\"event\":\"request_completed\",\"request_id\":\"bbe082fab233d402e6f409a1d150c6f86a17e448e0b0b2b2\",\"http_status\":503,\"elapsed_ms\":1}\n{\"event\":\"request_completed\",\"request_id\":\"3a556b46bcbb7bf81806654c7a6291c698011ba7c45a9b36\",\"http_status\":504,\"elapsed_ms\":9}\n{\"event\":\"request_completed\",\"request_id\":\"6247aab0a781b5bfc6ce11ddd8c56d007a98f49dfbaf04fe\",\"http_status\":504,\"elapsed_ms\":9}\n{\"event\":\"request_completed\",\"request_id\":\"4603dce9c3c761eb13abdb91f932f5c6866a5dae74bed8df\",\"http_status\":200,\"elapsed_ms\":1}\n",
+      "server_log_sha256": "8f132bc8310deb06d8cba6f65b17039df59f2afb0b9319d34b9a160e32b52367"
+    },
+    {
+      "exit_code": 0,
+      "server_log": "{\"event\":\"request_completed\",\"request_id\":\"5f70cc86a6beeb0f22e54f9941563ef4f3e85dc319e38de2\",\"http_status\":503,\"elapsed_ms\":1}\n{\"event\":\"request_completed\",\"request_id\":\"8b909c2dd36747e6de5bd91419f1856b8e62684eafbd9d66\",\"http_status\":401,\"elapsed_ms\":1}\n{\"event\":\"request_completed\",\"request_id\":\"3ec3193035fa4063927eb237f1a37f3250a497947b93a1ae\",\"http_status\":403,\"elapsed_ms\":1}\n{\"event\":\"request_completed\",\"request_id\":\"35c030ade69fb1d082f560a8092a84a955f9b2d63ed0cded\",\"http_status\":504,\"elapsed_ms\":10}\n{\"event\":\"request_completed\",\"request_id\":\"48a5c54b524940e3ebeb75798b0204e40d552cc67c287707\",\"http_status\":200,\"elapsed_ms\":0}\n",
+      "server_log_sha256": "53d5dae77a7ff7fc21a9ea4e21827a6d738ff55499914afffec9d41826c67812"
+    }
+  ]
+}

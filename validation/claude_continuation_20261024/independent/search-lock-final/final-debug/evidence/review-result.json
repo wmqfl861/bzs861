@@ -1,0 +1,46 @@
+{
+  "scope": "Independent replay of the unchanged P2-5 19-scenario probe against final combined P2-5/P2-6/P2-7/P2-9 Debug library only",
+  "reviewer": "/root/dispatcher; P2-5 reviewer, not P2-5 author",
+  "verdict": "pass; no blocker observed in these 19 final-combination interleavings",
+  "root_product_commit": "e066753af9bd8888eefa5d694e83f677d09a48a5",
+  "root_execution_manifest": {
+    "path": "validation/claude_continuation_20261024/p2-9/execution-inputs.json",
+    "sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82"
+  },
+  "store_cpp_sha256": "1b7acb994470a01987ddef5ccb653c8c988a5355ddd2e2ca9fc7c8145bc1d7e2",
+  "production_library_sha256": "18e36e84b78a38550f1345e13cc6627bf78cf6df244a65a22f3f4acf85cc9fb8",
+  "probe_source_sha256": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022",
+  "probe_binary_sha256": "2f6cc8dec5317d9437914196d04f4854fb5bf078d9047e6bd9f06b137a59293e",
+  "result": {
+    "exit_code": 0,
+    "scenarios": 19,
+    "checks": 191,
+    "elapsed_seconds": 0.967,
+    "source_files_checked": 43,
+    "source_unchanged_across_copy_compile_and_run": true,
+    "copied_headers_and_library_still_equal_original_inputs": true,
+    "all_43_production_inputs_match_root_execution_manifest": true
+  },
+  "scenario_groups": {
+    "already_matched_redirect_final_or_intermediate_policy_history": 8,
+    "unrelated_owner_negative_controls": 2,
+    "second_handle_pruning_or_principal_revocation": 4,
+    "second_handle_site_generation_restriction_then_relaxation": 4,
+    "global_last_session_slot_race_and_once_identity_controls": 1
+  },
+  "artifacts": {
+    "copy-manifest.json": "9ee9e131fa8a47f85d4583378a2420022586a06bcbba59370aca6d478e5eb76c",
+    "root-execution-inputs.json": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+    "probe.cpp": "4b9d6697cad44d692d374f357399f48c3d81317f2a0ccb4ba44771b5aed4a022",
+    "evidence/compile-probe-debug.json": "3029154889a0abe08c82affc2db28afce6caba6deac15e8daab71ec34e116f7a",
+    "evidence/compile-probe-debug.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/run-probe-debug.json": "369613cbaed66de9b0dedaa772369df05979d8cfd5e8d44450624e0aed21bb8c",
+    "evidence/run-probe-debug.log": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece"
+  },
+  "limits": [
+    "No final combined ASan or Release performance execution is claimed here.",
+    "No root source, build artifact or active test log was modified or read beyond the authorized frozen headers/library/manifest and source hashes.",
+    "This replay preserves the existing 19 scenarios; prior author and broader query-oracle evidence remain separate records.",
+    "Compiler and probe outputs are recorded in /tmp; documentation draft bytes and existing validation files remain unchanged."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "reviewer": "retry_after agent, non-author of P2-7 HTTP executor and final HTTP sanitizer harness",
+  "verdict": "Pass for the scoped final HTTP sanitizer receipt; no blocking mismatch found.",
+  "tests_rerun": false,
+  "root_modified": false,
+  "activity_scope": "Read completed final-verification evidence, its explicitly authorized helpers, and the formal HTTP test source; hash/readelf the actual binary. Did not inspect active dispatcher performance output or review own P2-9 implementation.",
+  "binary_sha256": "ce8d9a0e9cfdf86666b1ba552f0b0052c56ec1f7a9b34f5b07af44c0025d57a2",
+  "final_input_manifest_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "machine_cross_checks": 25,
+  "findings": [
+    "Final input manifest matches all 226 named files; four helper hashes and the runtime formal test/harness hashes also match their current bytes.",
+    "The final server target was recompiled/relinked before this test. The resulting binary hash equals the executable record, both runtime artifact snapshots, final-verification result, final-report HTTP fields and the actual file.",
+    "The ELF declares libasan.so.8 and libubsan.so.1. The recorder supplies detect_leaks=1:halt_on_error=1 and UBSAN halt_on_error=1:print_stacktrace=1; RunningServer.Popen inherits this environment without an override.",
+    "Raw completed log has three named formal cases marked ok, Ran 3 tests and OK, without skips. Two successfully started listening servers are stopped using the original stop routine, waited for, and their closed logs checked; both exit zero with no recorded sanitizer diagnostics.",
+    "The selection wrapper preserves unittest success/failure, and the shutdown wrapper adds rejection of bad exit status or sanitizer markers. It does not remove a formal test assertion, swallow a failed unittest exit, or retry a failed server test.",
+    "Build and runtime command records exit zero without watchdog expiration; their input/log hashes match. Runtime binaries remain unchanged. The final receipt accurately treats this as targeted extra HTTP coverage rather than another complete product suite."
+  ],
+  "precision_note": "Two server_shutdowns_checked means the two successfully listening RunningServer instances. The third formal case also launches five invalid-argument startup subprocesses, for which formal assertions require exit code 2 and the expected E_ARGUMENT diagnostic. Do not describe this as only two total searchd subprocesses or all searchd invocations exiting zero.",
+  "historical_failure_scope": "The final report explicitly excludes the earlier incomplete exit-zero sanitizer output and explicitly retains ptrace/LSan and independent fixture failures. This scoped check did not re-audit every historical artifact; the main receipt reviewer owns that preservation check. No final HTTP-stage failure or retry is relabeled as success in the inspected records.",
+  "evidence": {
+    "manifest": "evidence-manifest.json",
+    "manifest_sha256": "5aea399ae9925ceb8645973944bc9042ba7d2d453023c502abe42b8fdf4b8a73",
+    "checks": "checks.json",
+    "checks_sha256": "1f809ee305ead9aa66542c464ca9b3244c12d4dc3d9d87bfce8ae1220440f1dd",
+    "receipt_excerpt": "final-report-http-excerpt.json",
+    "receipt_excerpt_sha256": "761722a4df6e6b68913c36f037fb638bb915e62e07793f070fd3ecff2b9c2ddf",
+    "binary_dynamic_dependencies": "readelf-needed.txt",
+    "binary_dynamic_dependencies_sha256": "5d1aeb2c8e94299491a5f6cb728947912f9025348bc2afcfd6c041c71c322ed4"
+  }
+}
