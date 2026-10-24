@@ -366,7 +366,12 @@ class EndToEnd(unittest.TestCase):
                         search = await session.call_tool("web_search", {"query": "resumable crawling", "limit": 5})
                         read = await session.call_tool("read_url", {"url": self.stack.url("/pages/article.html"), "max_bytes": 300})
                         iri = await session.call_tool("read_url", {"url": self.stack.url("/pages/中文路径")})
-                        local = await session.call_tool("search_local", {"query": "断点续爬"})
+                        for _ in range(70):
+                            local = await session.call_tool("search_local", {"query": "断点续爬"})
+                            self.assertFalse(local.is_error, local)
+                            self.assertEqual(local.structured_content["result_mode"], "single")
+                            self.assertGreater(local.structured_content["returned_count"], 0)
+                            self.assertNotIn("session_id", local.structured_content)
                         bad = await session.call_tool("read_url", {"url": "http://169.254.169.254/"})
                         batch_urls = [self.stack.url("/pages/article.html?batch=mcp"),
                                       self.stack.url("/pages/中文路径?batch=mcp")]

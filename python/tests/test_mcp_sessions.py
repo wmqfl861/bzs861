@@ -82,3 +82,25 @@ async def test_raw_reconnect_controls_reject_coercion_before_core(server, name, 
     with pytest.raises(ToolError, match="E_SCHEMA"):
         await instance.call_tool(name, args)
     assert calls == []
+
+
+@pytest.mark.parametrize(("limit", "effective"), [(0, 1), (10, 10), (1000, 100)])
+async def test_local_single_response_never_allocates_a_frozen_session(monkeypatch, limit, effective):
+    calls = []
+
+    async def call(operation, params):
+        calls.append((operation, params))
+        return {"result_mode": "single", "hits": [{"title": "safe title", "url": "https://example.com/a",
+                "snapshot_id": "snapshot", "snippet": "marker", "snippet_kind": "query_match",
+                "highlights": [{"start_byte": 0, "end_byte": 6}]}], "partial": True,
+                "retrieval": "fts5_bm25_verified"}
+
+    monkeypatch.setattr(mcp_server, "_call", call)
+    instance = mcp_server.build_server()
+    response = await instance.call_tool("search_local", {"query": "marker", "limit": limit})
+    assert calls == [("search.once", {"query": "marker", "limit": effective})]
+    result = response.structured_content
+    assert result["result_mode"] == "single" and result["returned_count"] == 1
+    assert result["partial"] is True
+    assert result["hits"][0]["highlights"] == [{"start_byte": 0, "end_byte": 6}]
+    assert not ({"session_id", "next_cursor", "total_frozen"} & result.keys())

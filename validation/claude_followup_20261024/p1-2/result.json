@@ -1,0 +1,16 @@
+{
+  "issue": "P1-2",
+  "status": "fixed",
+  "ctest": "27/27",
+  "pytest_passed": 1052,
+  "asan_ubsan_native_targets": 15,
+  "independent_checks": 368,
+  "independent_forbidden_session_writes": 0,
+  "regressions": [
+    "single_response_search_has_no_lifetime_or_active_session_cost",
+    "restart publication projections through search_once",
+    "real MCP stdio 70 search_local calls",
+    "MCP search.once forwarding and shape",
+    "HTTP principal revocation covers search.once"
+  ]
+}

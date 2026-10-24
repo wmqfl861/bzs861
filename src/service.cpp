@@ -138,7 +138,7 @@ namespace bzs {
     j.set("production_ready", false);
     Json a=Json::array();
     for(const auto*op: {
-      "capabilities", "search.modes", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create", "principal.revoke"
+      "capabilities", "search.modes", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.once", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create", "principal.revoke"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
       "web.search", "web.search.start", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
@@ -265,6 +265,13 @@ namespace bzs {
         "document_id"
       });
       return store_.erase(p.subject, required_string(args, "document_id", 64));
+    }
+    if(op=="search.once") {
+      args.allowed({"query","max_candidates","limit"});
+      auto query=parse_query(args.at("query"));
+      auto candidates=int_option(args,"max_candidates",2000,1,2000);
+      auto limit=int_option(args,"limit",10,1,100);
+      return store_.search_once(p.subject,query,candidates,limit);
     }
     if(op=="search") {
       args.allowed( {

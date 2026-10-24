@@ -1,0 +1,65 @@
+[
+  {
+    "name": "permanent_caps",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/permanent_caps.cpp",
+    "source_sha256": "9f9cc9009fdecb304694ef87c50833683e08175dcc348de89f29a00910d9babf",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/permanent_caps",
+    "binary_sha256": "6280c6b7afc4e942869c7423867c23288b757777e07aed3bfbbabb674af8c253"
+  },
+  {
+    "name": "hourly_session_cap",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/hourly_session_cap.cpp",
+    "source_sha256": "1ed0130c625e956bd05dd15a4d0f559c51d3949103b204a77cf03fe7dd913bdb",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/hourly_session_cap",
+    "binary_sha256": "9d374b7c822ba73c971a7fa2e8ecaad95ff75a5da39c5cd6401d53255577c10b"
+  },
+  {
+    "name": "phrase_recall",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/phrase_recall.cpp",
+    "source_sha256": "3ec1650b52ca9ff0a714aa86c11977051db15e75bfc91cca79c605a6b526058c",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/phrase_recall",
+    "binary_sha256": "38ded289bd771e8a1a972e3d28183a80ca4412b7968488d31c859a40ded4ffa8"
+  },
+  {
+    "name": "vary_cache",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/vary_cache.cpp",
+    "source_sha256": "99b161bf6218ac9b8f35b2ffde415924955cc674206f1ebaf6a09578537d1dc8",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/vary_cache",
+    "binary_sha256": "a5bee484f1321bb181baa95675b53854420b9a77d06217d8c717643dac3202ea"
+  },
+  {
+    "name": "default_sources",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/default_sources.cpp",
+    "source_sha256": "75350a9298b06b1d088e451f606db4e6590a237c988a67077a3ad4b5fca2986e",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/default_sources",
+    "binary_sha256": "1a223646e08494a236d264d4818c7652a1de4d5277a527fe00a1dcefac0be042"
+  },
+  {
+    "name": "robots_tokens",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/robots_tokens.py",
+    "source_sha256": "9e3c138c9232044dea70852ed93752c3bb9e3cd00b4d342ee50ff17753e69ce1"
+  },
+  {
+    "name": "charset_fallback",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/charset_fallback.py",
+    "source_sha256": "5a7c426141aaecf1b3b91bdcfb33dc0aabbbb62c65bc20f748bd4317f3cb6246"
+  },
+  {
+    "name": "redirect-cache",
+    "source": "validation/claude_followup_20261024/redirect-baseline.cpp",
+    "source_sha256": "15fa6cbd0e3a6e219fba4774f66c0ea9516b860127bbec3a1626b7a1e7b3adaa",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/redirect-cache",
+    "binary_sha256": "b8faa76528e9cd37acb150322e4cb13b5e7065b76d998a27c5ab1601fee527aa",
+    "author": "/root/source_policy",
+    "scope": "Supplemental observation because Claude supplied no P2-2 executable; not proof that old redirect payloads are safe to reuse."
+  },
+  {
+    "name": "scan_blocking",
+    "source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/scan_blocking.cpp",
+    "source_sha256": "531278f68e06bbe09c4705eacf83c5a5799e5a9ec123c1d7a7d443dae8c3b618",
+    "binary": "/tmp/bzs-claude-baseline-reproductions/scan_blocking",
+    "binary_sha256": "de4e82c3010772dfde1532e7d6a774588a66c97f75bc659c0fcd3c108485ef0d",
+    "library": "build-release/libbzs_core.a",
+    "library_sha256": "14c0ee18cd3bf3141898d2bb9347757db36261d4118d66412140074dccde42d6"
+  }
+]

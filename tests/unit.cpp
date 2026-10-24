@@ -457,6 +457,39 @@ namespace {
     CHECK(s.search("alice", q("C++")).at("frozen_count").num()==1);
     CHECK(s.search("alice", q("搜索")).at("frozen_count").num()==1);
   }
+  TEST(single_response_search_has_no_lifetime_or_active_session_cost) {
+    Temp t;const auto path=t.path/"db";std::int64_t now=1800000000000;
+    Store store(path,[&]{return now;});const auto query=q("marker");
+    const auto empty=store.search_once("alice",query);
+    CHECK(empty.at("hits").size()==0);CHECK(empty.at("returned_count").num()==0);
+    store.ingest("alice",text("https://x.example/a","marker first"));
+    const auto second=store.ingest("alice",text("https://x.example/b","marker second"));
+    store.ingest("bob",text("https://x.example/bob","marker private"));
+    for(int i=0;i<80;++i) {
+      now+=1000;const auto once=store.search_once("alice",query);
+      CHECK(once.at("result_mode").str()=="single");CHECK(once.at("returned_count").num()==2);
+      CHECK(!once.has("session_id")&&!once.has("result_set_version")&&!once.has("next_cursor"));
+      CHECK(!once.at("partial").flag());
+    }
+    for(const auto* sql:{"SELECT count(*) FROM sessions","SELECT count(*) FROM session_rows",
+                        "SELECT count(*) FROM search_stream_receipts","SELECT count(*) FROM search_event_log"})CHECK(database_scalar(path,sql)==0);
+    const auto frozen=store.search("alice",query);const auto id=frozen.at("session_id").str();
+    const auto page=store.page("alice",id,"",1);CHECK(page.at("has_more").flag());
+    const auto cursor=page.at("next_cursor").str(),last=store.page("alice",id,cursor,1).canonical();
+    for(int i=1;i<64;++i)store.search("alice",query);
+    rejects([&]{store.search("alice",query);},"E_QUOTA");
+    for(int i=0;i<80;++i)CHECK(store.search_once("alice",query).at("returned_count").num()==2);
+    CHECK(database_scalar(path,"SELECT count(*) FROM sessions")==64);
+    CHECK(database_scalar(path,"SELECT count(*) FROM session_rows")==128);
+    CHECK(database_scalar(path,"SELECT count(*) FROM search_stream_receipts")==64);
+    CHECK(store.page("alice",id,"",1).canonical()==page.canonical());
+    CHECK(store.page("alice",id,cursor,1).canonical()==last);
+    CHECK(store.search_once("bob",query).at("returned_count").num()==1);
+    store.erase("alice",second.at("document_id").str());
+    CHECK(store.search_once("alice",query).at("returned_count").num()==1);
+    rejects([&]{store.search_once("alice",query,2000,101);},"E_SCHEMA");
+    rejects([&]{store.search_once("alice",query,0,1);},"E_SCHEMA");
+  }
   TEST(store_candidate_predicate_agreement) {
     Temp t;
     Store s(t.path/"db");

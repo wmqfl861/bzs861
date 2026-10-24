@@ -1,0 +1,3 @@
+2000 docs x 200 KiB
+query "alpha beta"                                                                search=1450 ms, worst concurrent stats()=1450 ms, retrieval=bounded_scan_recent
+query "alpha beta" OR "gamma delta" OR "epsilon zeta" OR "eta theta"              search=2961 ms, worst concurrent stats()=2961 ms, retrieval=bounded_scan_recent

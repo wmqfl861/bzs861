@@ -405,16 +405,15 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
         "\"exact phrase\", AND/OR/NOT, -term, intitle:word, site:example.com. Returns query-relevant highlights "
         "with byte offsets that cite_evidence can verify when highlights are available. "
         "Page publication rules can hide a result, suppress its snippet, or provide a restricted snippet "
-        "without canonical-text offsets."))
+        "without canonical-text offsets. This is a single response and creates no persistent search session."))
     async def search_local(query: str, limit: int = 10) -> dict[str, Any]:
-        r = await _call("search", {"query": query, "limit": max(1, min(limit, 100)), "page_size": max(1, min(limit, 100))})
-        page = r.get("page", {})
+        r = await _call("search.once", {"query": query, "limit": max(1, min(limit, 100))})
         hits = [{"title": h.get("title"), "url": h.get("url"), "snapshot_id": h.get("snapshot_id"),
                  "snippet": h.get("snippet"), "snippet_kind": h.get("snippet_kind"),
                  "highlights": [{"start_byte": x["start_byte"], "end_byte": x["end_byte"]}
                                                              for x in h.get("highlights", [])]}
-                for h in page.get("hits", [])]
-        return {"query": query, "hits": hits, "total_frozen": r.get("frozen_count"), "retrieval": r.get("retrieval"),
+                for h in r.get("hits", [])]
+        return {"query": query, "hits": hits, "returned_count": len(hits), "result_mode": "single", "retrieval": r.get("retrieval"),
                 "partial": r.get("partial", False)}
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=False, idempotentHint=True), description=(

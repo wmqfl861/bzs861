@@ -1,0 +1,47 @@
+{
+  "scope": "Independent lightweight P1-2 Service/Store probe; no repository source or formal test changes",
+  "started_at_utc": "2026-10-24T02:37:51.860483+00:00",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_2_probe.cpp": "4b32d2f5f63555d581c82c84354014c4973cd799af338b0564f66261ddcdf187",
+    "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a": "1baff8260755da1662f854cef305b635ead0db5a2a8322c28abb0cb8371a7655",
+    "/workspace/scratch/e2371129386d/bzs861/include/bzs/store.hpp": "529322d31e3d9681fe03b2e302d678748a4c49cad408503a171bd654407cf87d",
+    "/workspace/scratch/e2371129386d/bzs861/include/bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "/workspace/scratch/e2371129386d/bzs861/src/store.cpp": "0c9c4376e8969e494ae324682dc2fadf82e75e3fe85a1d9bf7ebea6330ca2c52",
+    "/workspace/scratch/e2371129386d/bzs861/src/service.cpp": "b10ed8808e297c972714170275d8bc6c4728b4499578b38fbcdb380a9c7c5e75"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/workspace/scratch/e2371129386d/bzs861/include",
+      "/tmp/bzs-independent-claude-review/p1_2_probe.cpp",
+      "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_2_probe"
+    ],
+    "exit_code": 0,
+    "seconds": 1.698,
+    "log": "p1_2_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_2_probe",
+      "/workspace/scratch/e2371129386d/bzs861/tests/fixtures"
+    ],
+    "exit_code": 0,
+    "seconds": 0.084,
+    "log": "p1_2_run.log",
+    "log_sha256": "449cae0568401bfae58615fe0e37fc512feaaeecda7b079013f178ed37778009",
+    "binary_sha256": "2980802b9be264e898e4c4e048d689d448d2ba3400e8d926248a13afe40e8a46",
+    "binary_mode_before": "0o755"
+  },
+  "inputs_still_match": true
+}

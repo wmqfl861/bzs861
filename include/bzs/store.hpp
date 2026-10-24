@@ -71,6 +71,7 @@ namespace bzs {
     std::int64_t site_publication_cached_generation_=-1,site_publication_bound_generation_=0;
     std::int64_t site_publication_manifest_generation_=0;
     bool site_publication_legacy_withdrawn_=false;
+    Json search_impl(const std::string& owner,const Query& query,std::int64_t max_candidates,std::int64_t limit,bool freeze);
     void migrate();
     void migrate_revocations_locked();
     void require_principal_active_locked(const std::string& owner);
@@ -194,6 +195,8 @@ namespace bzs {
     Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes);
     Json erase(const std::string& owner, const std::string& document_id);
     Json search(const std::string& owner, const Query& query, std::int64_t max_candidates=2000, std::int64_t limit=200);
+    // One response with the same local visibility rules; no durable session.
+    Json search_once(const std::string& owner,const Query& query,std::int64_t max_candidates=2000,std::int64_t limit=10);
     Json page(const std::string& owner, const std::string& session_id, const std::string& cursor, std::int64_t page_size=20);
     Json search_submit(const std::string& owner,const Json& request,const SourceRegistry& registry);
     Json session_get(const std::string& owner,const std::string& id);

@@ -100,6 +100,47 @@ namespace bzs {
       out.set("content_origin", snap.at("content_origin"));
       return out;
     }
+    const char* local_result_sql=R"SQL(SELECT r.position,r.document_id,r.snapshot_id,r.score,s.title,d.url,s.canonical_text,s.revision,
+ s.publication_json,p.snapshot_id,COALESCE(p.restricted,0),MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0),COALESCE(cp.restriction_generation,0)),r.publication_generation,rp.snapshot_id,COALESCE(rp.restricted,0),cp.snapshot_id,COALESCE(cp.restricted,0),
+ CASE WHEN s.source_kind='web' THEN MAX(bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,r.representation_key),bzs_site_publication(current.source_kind,current.site_bindings_json,current.site_publication_generation,d.url,current.meta_json,'')) ELSE 0 END AS site_mode,r.snippet_suppressed
+ FROM local_results r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id
+ JOIN snapshots current ON current.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=r.representation_key LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
+ WHERE r.position>=? AND d.owner=? AND d.deleted=0 AND current.index_allowed=1
+ AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 AND site_mode<2
+ AND (?=0 OR r.site_binding_version<>0 OR s.source_kind<>'web') ORDER BY r.position LIMIT ?)SQL";
+    Json local_result(Stmt& rows,const std::optional<Query>& query) {
+      Json h=Json::object();
+      h.set("position", rows.num(0));
+      h.set("document_id", rows.text(1));
+      h.set("snapshot_id", rows.text(2));
+      h.set("score", rows.num(3));
+      h.set("title", rows.text(4));
+      h.set("url", rows.text(5));
+      auto text=rows.text(6);auto publication=Json::parse(rows.text(8),8*1024*1024);
+      const bool stale_restricted=rows.num(18)>0||rows.num(17)>0||rows.num(11)>rows.num(12)||(rows.num(10)!=0&&rows.text(9)!=rows.text(2))||(rows.num(14)!=0&&rows.text(13)!=rows.text(2))||(rows.num(16)!=0&&rows.text(15)!=rows.text(2));
+      bool snippet_allowed=!stale_restricted;
+      if(stale_restricted) { text.clear();h.set("title",rows.text(5)); }
+      else if(publication.has("version")) {
+        snippet_allowed=publication.at("snippet_allowed").flag();text=publication.at("snippet_text").str();
+        auto safe_title=publication.at("snippet_title").str();h.set("title",safe_title.empty()?rows.text(5):safe_title);
+      }
+      if(!snippet_allowed) {
+        h.set("snippet","");h.set("snippet_kind","publication_suppressed");h.set("highlights",Json::array());
+      } else if(query) {
+        auto hl=highlight(text, query->root);
+        h.set("snippet", hl.at("snippet"));
+        // Sanitized publication text is a different representation. Never
+        // label its byte offsets as locations in the canonical owner snapshot.
+        const bool canonical=text==rows.text(6);
+        h.set("snippet_kind",canonical?hl.at("snippet_kind"):Json::string("publication_excerpt"));
+        h.set("highlights",canonical?hl.at("highlights"):Json::array());
+      } else {
+        h.set("snippet", utf8_prefix(text, 350));
+        h.set("snippet_kind", "document_prefix");
+      }
+      h.set("revision", rows.num(7));
+      return h;
+    }
     const char* schema_tables=R"SQL(
  CREATE TABLE IF NOT EXISTS usage(owner TEXT PRIMARY KEY,bytes INTEGER NOT NULL DEFAULT 0,snapshots INTEGER NOT NULL DEFAULT 0);
  CREATE TABLE IF NOT EXISTS source_state(source_id TEXT PRIMARY KEY,cooldown_until INTEGER NOT NULL DEFAULT 0,
@@ -906,20 +947,27 @@ namespace bzs {
     return out;
   }
   Json Store::search(const std::string& owner, const Query&q, std::int64_t max_candidates, std::int64_t limit) {
+    return search_impl(owner,q,max_candidates,limit,true);
+  }
+  Json Store::search_once(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit) {
+    require(limit>=1&&limit<=100,"E_SCHEMA","Single-response result limit out of range");
+    return search_impl(owner,q,max_candidates,limit,false);
+  }
+  Json Store::search_impl(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit,bool freeze) {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
     require_principal_active_locked(owner);
-    settle_searches_locked();
+    if(freeze)settle_searches_locked();
     refresh_site_publication_locked();
-    auto epoch=epoch_locked(owner);
+    auto epoch=freeze?epoch_locked(owner):0;
     auto now=clock_();
-    {
+    if(freeze) {
       Stmt clear(db_, "DELETE FROM sessions WHERE expires_at<=?");
       clear.bind(1, now);
       clear.step();
     }
-    {
+    if(freeze) {
       Stmt n(db_, "SELECT count(*) FROM sessions WHERE owner=?");
       n.bind(1, owner);
       n.step();
@@ -976,6 +1024,33 @@ namespace bzs {
       partial=true;
     }
     auto retrieval=fts?"fts5_bm25_verified":"bounded_scan_recent";
+    if(!freeze) {
+      Json results=Json::array();
+      if(!hits.empty()) {
+        // Reuse the frozen-page authorization/publication projection without
+        // persisting a session, its rows, cursor, event log or identity receipt.
+        std::string values="WITH local_results(position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version,snippet_suppressed) AS (VALUES ";
+        for(std::size_t i=0;i<hits.size();++i)values+=(i?",":"")+std::string("(?,?,?,?,?,?,1,0)");
+        Stmt rows(db_,values+")"+local_result_sql);
+        int parameter=1;
+        for(std::size_t i=0;i<hits.size();++i) {
+          const auto& h=hits[i];
+          rows.bind(parameter++,static_cast<std::int64_t>(i));
+          rows.bind(parameter++,h.doc);rows.bind(parameter++,h.snap);rows.bind(parameter++,h.score);
+          rows.bind(parameter++,h.publication_generation);rows.bind(parameter++,h.representation_key);
+        }
+        rows.bind(parameter++,0);rows.bind(parameter++,owner);
+        rows.bind(parameter++,site_publication_legacy_withdrawn_?1:0);rows.bind(parameter,limit);
+        const std::optional<Query> query=q;
+        while(rows.step())results.push(local_result(rows,query));
+      }
+      Json out=Json::object();
+      out.set("result_mode","single");out.set("hits",results);
+      out.set("returned_count",static_cast<std::int64_t>(results.size()));
+      out.set("scanned_candidates",scanned);out.set("partial",partial);
+      out.set("coverage","authorized_local_documents_only");out.set("retrieval",retrieval);out.set("query",q.json());
+      tx.commit();return out;
+    }
     auto id=random_id();
     Stmt ins(db_, "INSERT INTO sessions VALUES(?,?,?,?,?,?,?,?,?)");
     ins.bind(1, id);
@@ -1038,14 +1113,7 @@ namespace bzs {
       require(cu.step(), "E_CURSOR", "Cursor does not belong to this session", 400);
       pos=cu.num(0);
     }
-    Stmt rows(db_, R"SQL(SELECT r.position,r.document_id,r.snapshot_id,r.score,s.title,d.url,s.canonical_text,s.revision,
- s.publication_json,p.snapshot_id,COALESCE(p.restricted,0),MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0),COALESCE(cp.restriction_generation,0)),r.publication_generation,rp.snapshot_id,COALESCE(rp.restricted,0),cp.snapshot_id,COALESCE(cp.restricted,0),
- CASE WHEN s.source_kind='web' THEN MAX(bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,r.representation_key),bzs_site_publication(current.source_kind,current.site_bindings_json,current.site_publication_generation,d.url,current.meta_json,'')) ELSE 0 END AS site_mode,r.snippet_suppressed
- FROM session_rows r JOIN documents d ON d.id=r.document_id JOIN snapshots s ON s.id=r.snapshot_id
- JOIN snapshots current ON current.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=r.representation_key LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
- WHERE r.session_id=? AND r.position>=? AND d.owner=? AND d.deleted=0 AND current.index_allowed=1
- AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 AND site_mode<2
- AND (?=0 OR r.site_binding_version<>0 OR s.source_kind<>'web') ORDER BY r.position LIMIT ?)SQL");
+    Stmt rows(db_,std::string("WITH local_results AS (SELECT * FROM session_rows WHERE session_id=?)")+local_result_sql);
     rows.bind(1, session_id);
     rows.bind(2, pos);
     rows.bind(3, owner);
@@ -1059,37 +1127,7 @@ namespace bzs {
         nextpos=rows.num(0);
         break;
       }
-      Json h=Json::object();
-      h.set("position", rows.num(0));
-      h.set("document_id", rows.text(1));
-      h.set("snapshot_id", rows.text(2));
-      h.set("score", rows.num(3));
-      h.set("title", rows.text(4));
-      h.set("url", rows.text(5));
-      auto text=rows.text(6);auto publication=Json::parse(rows.text(8),8*1024*1024);
-      const bool stale_restricted=rows.num(18)>0||rows.num(17)>0||rows.num(11)>rows.num(12)||(rows.num(10)!=0&&rows.text(9)!=rows.text(2))||(rows.num(14)!=0&&rows.text(13)!=rows.text(2))||(rows.num(16)!=0&&rows.text(15)!=rows.text(2));
-      bool snippet_allowed=!stale_restricted;
-      if(stale_restricted) { text.clear();h.set("title",rows.text(5)); }
-      else if(publication.has("version")) {
-        snippet_allowed=publication.at("snippet_allowed").flag();text=publication.at("snippet_text").str();
-        auto safe_title=publication.at("snippet_title").str();h.set("title",safe_title.empty()?rows.text(5):safe_title);
-      }
-      if(!snippet_allowed) {
-        h.set("snippet","");h.set("snippet_kind","publication_suppressed");h.set("highlights",Json::array());
-      } else if(query) {
-        auto hl=highlight(text, query->root);
-        h.set("snippet", hl.at("snippet"));
-        // Sanitized publication text is a different representation. Never
-        // label its byte offsets as locations in the canonical owner snapshot.
-        const bool canonical=text==rows.text(6);
-        h.set("snippet_kind",canonical?hl.at("snippet_kind"):Json::string("publication_excerpt"));
-        h.set("highlights",canonical?hl.at("highlights"):Json::array());
-      } else {
-        h.set("snippet", utf8_prefix(text, 350));
-        h.set("snippet_kind", "document_prefix");
-      }
-      h.set("revision", rows.num(7));
-      hits.push(h);
+      hits.push(local_result(rows,query));
       nextpos=rows.num(0)+1;
     }
     Json out=Json::object();

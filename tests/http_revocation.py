@@ -82,6 +82,7 @@ class RevocationHTTP(unittest.TestCase):
                       ("document.range", {"snapshot_id": sid, "start_byte": 0}),
                       ("evidence.read", {"evidence_id": evidence["evidence_id"]}),
                       ("search.page", {"session_id": session["session_id"]}),
+                      ("search.once", {"query": "private"}),
                       ("session.events", {"session_id": session["session_id"]}),
                       ("job.get", {"job_id": job["job_id"]}),
                       ("job.control", {"job_id": job["job_id"], "action": "resume"}),

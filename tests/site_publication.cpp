@@ -79,6 +79,7 @@ void restarted_tightening(const std::string& mode) {
   else review.set("status","rejected");
   Store store(temp.path/"db",[&]{return now;});WebService web(store,worker,{},SiteRegistry(config));
   const auto current=hits(store,frozen(store)),previous=hits(store,old);
+  CHECK(store.search_once("alice",parse_query(Json::string("marker")),2000,100).at("hits").canonical()==current.canonical());
   CHECK(worker.requests==0);CHECK(store.snapshot("alice",snapshot.at("snapshot_id").str()).at("canonical_text").str()=="marker canonical secret");
   if(mode=="links_only") {
     CHECK(current.size()==1);CHECK(previous.size()==1);CHECK(current.at(0).at("snippet").str().empty());CHECK(previous.at(0).at("snippet").str().empty());CHECK(current.at(0).at("title").str()==url);CHECK(previous.at(0).at("title").str()==url);

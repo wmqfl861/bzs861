@@ -222,9 +222,12 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 ## 本地操作
 
+MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mode=single`（替代原 `total_frozen`）。连续单次调用不占用冻结会话配额；需稳定分页的调用仍使用 `search` / `search.page`，其配额与有效期不变。两条路径复用相同的 owner、删除、站点/页面发布约束及摘要处理。
+
 | 操作 | 说明 |
 |---|---|
 | `search` / `search.page` | 字符串或当前 AST 子集；冻结结果与稳定游标，页大小和候选/结果上限由服务端检查 |
+| `search.once` | 单次本地查询：query，max_candidates=2000（1–2000），limit=10（1–100）；返回 hits、returned_count、result_mode=single、partial 和检索信息，不创建会话或游标 |
 | `query.compile` | AND/OR/NOT、短语、字段与已支持顶层 site/filetype 过滤；未索引字段明确拒绝 |
 | `document.ingest` / `document.read` / `document.delete` | 显式导入、读取与按文档删除；导入 URL 为元数据，不是任意服务器文件读取 |
 | `document.range` / `find` | UTF-8 字节窗口续读、精确查找和上下文 |
