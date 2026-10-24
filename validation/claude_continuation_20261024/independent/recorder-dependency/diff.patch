@@ -1,0 +1,19 @@
+--- reviewed-capture-8e975.py
++++ run-dependency-97057.py
+@@ -43,6 +43,7 @@
+              if name and not name.startswith(b"validation/")}
+     paths.add(str(Path(__file__).resolve().relative_to(ROOT)))
+     paths.add(str(GUARD.relative_to(ROOT)))
++    paths.add(str((OUT / "run.py").relative_to(ROOT)))
+     paths.add(str((OUT / "summarize_stage.py").relative_to(ROOT)))
+     return {name: sha(ROOT / name) for name in sorted(paths)}
+ 
+@@ -67,7 +68,7 @@
+     if not manifest.exists():
+         save(manifest, {"source_base_commit": subprocess.check_output(
+             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+-            "scope": "Actual non-validation tree bytes plus this recorder, native guard and result collector; dirty implementation/test changes are captured by their hashes.",
++            "scope": "Actual non-validation tree bytes plus this recorder, native guard, its imported run.py dependency and result collector; dirty implementation/test changes are captured by their hashes.",
+             "files": current})
+     if json.loads(manifest.read_bytes())["files"] != current:
+         raise RuntimeError("Inputs changed within a stage; choose a new stage label after reviewing the change")

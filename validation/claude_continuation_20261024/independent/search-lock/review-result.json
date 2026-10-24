@@ -1,0 +1,219 @@
+{
+  "issue": "P2-5",
+  "reviewer": "independent dispatcher agent; no authorship of reviewed search changes",
+  "reviewed_commit": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+  "base_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "author_worktree_clean_and_commit_bytes_verified": true,
+  "verdict": "No blocking finding in the reviewed bounded matching and publication-fence changes. Integrated full gates and final remote CI remain root-owned.",
+  "source_sha256": {
+    "include/bzs/query.hpp": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8",
+    "include/bzs/store.hpp": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+    "src/query.cpp": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8",
+    "src/store.cpp": "99e38e37fd1701f3f8712a49c8b3882f8a50c400658ed6ac787358ecc2d6924e",
+    "tests/unit.cpp": "b2a58d5c2a8510b75b1ad4e4db3d431a770b8790a512e1dbc87df0994f8a4c35",
+    "docs/LOCAL_SEARCH_CONCURRENCY.md": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5"
+  },
+  "reviewed_diff_sha256": "0c99105b5b681c88814763eb07f494326474da2da310cb9be3c6910fca24d796",
+  "libraries": {
+    "new_debug_sha256": "6d74311cff0bcfb32249ef0c70cce538ef00350a4ed9588d482fbf0ff9fd9917",
+    "new_asan_ubsan_sha256": "986978d5914b4cfc81f1d11105b90e5402af35f101355dd9bd83b5636fac852a",
+    "baseline_590_debug_sha256": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9"
+  },
+  "binaries": {
+    "probe-v3": "2dcc2630e5b063f48dcba5fc0cd9ab8940acf063ab1518328c775dfbe972ab01",
+    "probe-asan-v3": "5f56ea9c7a5e679a58b50f1f3406360da9ceedccf58d37e5ef7f4b89fb8d76e3",
+    "query-old": "2f26450888f22ce71f4867b61ff2faf4dd59f065ce59f218e5653458a70b2305",
+    "query-new": "4a3121c4a8db09a7271a2fb0552858a2e9196b2cdd9987400855df006b85b39a"
+  },
+  "independent_results": {
+    "debug_store_scenarios": 19,
+    "debug_checks": 191,
+    "asan_ubsan_store_scenarios": 19,
+    "asan_ubsan_checks": 191,
+    "sanitizer_detect_leaks": true,
+    "query_oracle": {
+      "comparisons": 8736,
+      "documents": 182,
+      "matched": 4003,
+      "matching_zero_scores": 326,
+      "matrix_sha256": "94d223d201c29ba2b2c2a8f21eed0104ac6de87bb1bdbb7f02ee18d95e61b793",
+      "queries": 48
+    },
+    "query_oracle_differences": 0
+  },
+  "scenario_groups": [
+    {
+      "name": "Earlier matched candidate plus old final/intermediate URI restriction, relaxation, and new current representation through second Store",
+      "cases": 8
+    },
+    {
+      "name": "Other owner same URL restriction/delete/revoke negative controls",
+      "cases": 2
+    },
+    {
+      "name": "Second Store snapshot pruning or principal revocation before result/session/receipt",
+      "cases": 4
+    },
+    {
+      "name": "Cached site-policy reload from second Store with noindex/nosnippet then allowance",
+      "cases": 4
+    },
+    {
+      "name": "Global 256th session slot consumed while matching; frozen failure rolls back and search.once remains usable",
+      "cases": 1
+    }
+  ],
+  "static_review": [
+    "All candidate and per-document SQLite statements are scoped before matching; exact owned strings outlive lazy string views; sorting is also outside Store lock.",
+    "Candidate IDs/ranks remain bounded; only one candidate body and its lazily folded copies live at a time.",
+    "Initial/final write transactions serialize complete candidate selection and result publication separately; each final publication checks principal and epoch, owner, deletion generation, captured snapshot retention, current and captured representation policy, and restriction history.",
+    "Captured and current representation joins plus immutable site bindings cover old redirects after a current-representation update; restriction then allowance cannot revive the captured artifact.",
+    "Session capacity is checked at final commit; global backpressure from local_stream_locked rolls back session and identity receipt together.",
+    "New match_score preserves host/type filters, legacy positive-leaf title/body weights and caps, ASCII folding, NOT zero score, Boolean/field/symbol/Unicode behavior; verified against actual prior library oracle.",
+    "No search_once durable session allocation introduced; previous owner-specific and global capacity fences remain.",
+    "No changes to schema, source activation, backup/restore, permanent identity retention, planning acceptance, or historical evidence in this reviewed production diff."
+  ],
+  "preserved_diagnostics": [
+    {
+      "records": [
+        "store-interleavings-v2.json",
+        "store-interleavings-asan-v2.json"
+      ],
+      "source": "probe-before-site-handle-fix.cpp",
+      "source_sha256": "868799c62dfa9ec0b1c8cb493adf3df65b41104c078c49d53aa51d17e42d6fdb",
+      "classification": "Independent harness opened activation actor before initial manifest activation. Existing E_SITE_POLICY_STALE correctly rejected explicit overwrite.",
+      "correction": "Open actor after the current initial manifest is active, then change it while the first handle is paused. No product source change; v3 Debug/ASan passes all 19 scenarios."
+    },
+    {
+      "record": "compile-store-probe.json",
+      "classification": "Initial independent harness had two formatting-only misleading-indentation warnings. Original log retained; final compile uses clarified line breaks and has no warnings."
+    }
+  ],
+  "limits": [
+    "Candidate SQL, copying one body, final visibility projection and highlighting still require protected Store access. This is not a lock-free database or a performance SLA.",
+    "The candidate set is captured once. Concurrent safe updates may leave an older retained snapshot eligible; pruned/deleted/restricted candidates are removed and marked partial. No automatic rerun or inclusion of later imports.",
+    "Focused independent review does not certify all project acceptance items, physical crash recovery, public-network behavior, or untested scheduling interleavings.",
+    "Complete integrated CTest, pytest, all 15 ASan programs, and exact published-head Linux/Windows CI are separate root gates."
+  ],
+  "command_records": [
+    {
+      "record": "compile-query-new.json",
+      "sha256": "8a3a9038a7301ff6d7a9f4d95150aeeed29d67cd2330b4915475f80f2f2c18c8",
+      "log": "compile-query-new.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-query-old.json",
+      "sha256": "79f4c12205c9de97fd18e878a9050d5807cdec092d056fe9ec4bde1e068e6827",
+      "log": "compile-query-old.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-asan-v2.json",
+      "sha256": "9e7dd3a932b3a47827d20c324de21bca2111e74e3f6d7daf25ce53227885ee23",
+      "log": "compile-store-probe-asan-v2.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-asan-v3.json",
+      "sha256": "f3474bb7770d8389696ba80a109520aecce8e5e493781d8d2bc0e7d90a355fc5",
+      "log": "compile-store-probe-asan-v3.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-asan.json",
+      "sha256": "018d8b532207d04855526d9eb6dcce7406e73056e58e7cc26b190355694437ec",
+      "log": "compile-store-probe-asan.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-final.json",
+      "sha256": "73bd857ea48191ead587cb7967aaa39e5d8611200829bfe5c2329df79dfa3ce6",
+      "log": "compile-store-probe-final.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-v2.json",
+      "sha256": "1bc180e069dc1d035c89bfaf523c46d8bdffccb7a6fd2094dc4238e40f1be1ee",
+      "log": "compile-store-probe-v2.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe-v3.json",
+      "sha256": "dc6b27794af143cea95cb448f18b91c35b81b5232ff74a54eb5e6ec607ac05ec",
+      "log": "compile-store-probe-v3.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0
+    },
+    {
+      "record": "compile-store-probe.json",
+      "sha256": "5fa7a3474fe0a6968bd96131829fcb4eea860fea57597bccf74352de71650e67",
+      "log": "compile-store-probe.log",
+      "log_sha256": "3ac5513f28369147e8ecf524b93e4e8df766ebaa5bfb500c4773722f5f04e2a3",
+      "exit_code": 0
+    },
+    {
+      "record": "query-oracle-new.json",
+      "sha256": "771f1f3793c9f3ce5343de4fe43cdad938692e499cde15465576e26ec11da8e2",
+      "log": "query-oracle-new.log",
+      "log_sha256": "5f2d00df8048c4f1ba65541d2595f5c59d0f9a5ee0b59c109c63da5501d24f79",
+      "exit_code": 0
+    },
+    {
+      "record": "query-oracle-old.json",
+      "sha256": "3f9fdab3d21d17498a82b77ccc47908c39c01a08e828daa0c559a6852e15d81c",
+      "log": "query-oracle-old.log",
+      "log_sha256": "5f2d00df8048c4f1ba65541d2595f5c59d0f9a5ee0b59c109c63da5501d24f79",
+      "exit_code": 0
+    },
+    {
+      "record": "store-interleavings-asan-v2.json",
+      "sha256": "3935fa980d3c99bbc1a2762e648e3b0cea067a83b34d2a9cf635b448ae55caec",
+      "log": "store-interleavings-asan-v2.log",
+      "log_sha256": "5fb203a507619bf4c13c8176bc29985b614633372738624cc18866269e764528",
+      "exit_code": 1
+    },
+    {
+      "record": "store-interleavings-asan-v3.json",
+      "sha256": "7b7d3a74292e3cfc29ced79be9240102e5087e4e47fc26bf8ebc2b6c47ac9a05",
+      "log": "store-interleavings-asan-v3.log",
+      "log_sha256": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece",
+      "exit_code": 0
+    },
+    {
+      "record": "store-interleavings-asan.json",
+      "sha256": "1721e837992d3788e1e7ab48a286766ea3889c9a34c0549b758588f683707099",
+      "log": "store-interleavings-asan.log",
+      "log_sha256": "7143cec7a28c2afc64ec47e030351a7706795e1412ad4855ae38cb0bb6ae2886",
+      "exit_code": 0
+    },
+    {
+      "record": "store-interleavings-v2.json",
+      "sha256": "9e718bb3062433d50d6c303709aa1cd306dce82c34b45d7fcf59df5a64a6b1a7",
+      "log": "store-interleavings-v2.log",
+      "log_sha256": "5fb203a507619bf4c13c8176bc29985b614633372738624cc18866269e764528",
+      "exit_code": 1
+    },
+    {
+      "record": "store-interleavings-v3.json",
+      "sha256": "a8cd8ace23871ae048b99ae5daafef72ba63cb9fa116167df61c321620e83517",
+      "log": "store-interleavings-v3.log",
+      "log_sha256": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece",
+      "exit_code": 0
+    },
+    {
+      "record": "store-interleavings.json",
+      "sha256": "e6e70359a1dc8bd5b928565e3c5719fc2da7e02c594c1ab9637405d8fb658924",
+      "log": "store-interleavings.log",
+      "log_sha256": "7143cec7a28c2afc64ec47e030351a7706795e1412ad4855ae38cb0bb6ae2886",
+      "exit_code": 0
+    }
+  ]
+}

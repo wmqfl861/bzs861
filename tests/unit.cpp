@@ -6,6 +6,8 @@
 #include <sqlite3.h>
 #include <atomic>
 #include <barrier>
+#include <chrono>
+#include <condition_variable>
 #include <exception>
 #include <fstream>
 #include <functional>
@@ -14,6 +16,13 @@
 #include <set>
 #include <thread>
 #include <vector>
+namespace bzs {
+  struct StoreSearchTestAccess {
+    static void set(Store& store,std::function<void()> callback) {
+      std::lock_guard lock(store.mutex_);store.search_unlocked_for_test_=std::move(callback);
+    }
+  };
+}
 using namespace bzs;
 namespace {
   using Test=std::pair<std::string, std::function<void()>>;
@@ -56,6 +65,47 @@ namespace {
   }
   Query q(const std::string&s) {
     return parse_query(Json::string(s));
+  }
+  // A handshaked barrier establishes that another Store operation completes
+  // while matching is paused. The timeout is only a deadlock watchdog, not a
+  // query-performance threshold; both threads are released/joined on failure.
+  Json search_while(Store& store,bool freeze,const std::function<void()>& action,const std::string& query="NOT absent") {
+    std::mutex mutex;std::condition_variable changed;
+    bool entered=false,released=false,finished=false,action_finished=false,transaction_free=false;
+    Json response;std::exception_ptr search_error,action_error;
+    StoreSearchTestAccess::set(store,[&] {
+      std::unique_lock lock(mutex);if(entered)return;
+      transaction_free=sqlite3_get_autocommit(store.raw_handle())!=0;entered=true;changed.notify_all();
+      changed.wait(lock,[&]{return released;});
+    });
+    std::thread searcher([&] {
+      try {response=freeze?store.search("alice",q(query),2000,100):store.search_once("alice",q(query),2000,100);}
+      catch(...) {search_error=std::current_exception();}
+      {std::lock_guard lock(mutex);finished=true;}changed.notify_all();
+    });
+    bool reached=false,progressed=false;
+    {
+      std::unique_lock lock(mutex);
+      reached=changed.wait_for(lock,std::chrono::seconds(5),[&]{return entered||finished;})&&entered;
+    }
+    std::thread actor;
+    if(reached) {
+      actor=std::thread([&] {
+        try {action();}catch(...) {action_error=std::current_exception();}
+        {std::lock_guard lock(mutex);action_finished=true;}changed.notify_all();
+      });
+      std::unique_lock lock(mutex);
+      progressed=changed.wait_for(lock,std::chrono::seconds(5),[&]{return action_finished;});
+    }
+    {std::lock_guard lock(mutex);released=true;}changed.notify_all();
+    searcher.join();if(actor.joinable())actor.join();StoreSearchTestAccess::set(store,{});
+    CHECK(reached);CHECK(progressed);CHECK(transaction_free);
+    if(action_error)std::rethrow_exception(action_error);
+    if(search_error)std::rethrow_exception(search_error);
+    return response;
+  }
+  Json search_hits(Store& store,bool freeze,const Json& result) {
+    return freeze?store.page("alice",result.at("session_id").str(),"",100).at("hits"):result.at("hits");
   }
   Json req(const std::string&op, const Json&params) {
     auto j=Json::object();
@@ -1718,6 +1768,148 @@ namespace {
     now+=6*60*1000;
     CHECK(!web.search("alice",args).at("from_cache").flag());
     CHECK(worker.calls.size()==2);
+  }
+
+
+  TEST(combined_match_score_keeps_legacy_weights_filters_and_field_semantics) {
+    struct Case {std::string expression,title,body;std::optional<int> score;};
+    const std::vector<Case> cases={
+      {"marker","MARKER marker","marker",9},
+      {"intitle:marker","MARKER marker","marker",9},
+      {"inbody:marker","marker marker marker marker marker marker","marker marker marker marker marker marker marker marker marker marker marker marker",30},
+      {"NOT absent","marker","marker",0},
+      {"NOT marker","marker","other",std::nullopt},
+      {"marker OR absent","marker","marker absent",6},
+      {"\"alpha beta\" AND NOT forbidden","Alpha Beta","alpha beta alpha beta",6},
+      {"café","CAFÉ","café",1},
+      {"Москва","Москва","москва",4},
+      {"c++","C++ c++20 ac++","c++ c++foo",9},
+      {"site:elsewhere.example marker","marker","marker",std::nullopt},
+      {"filetype:html marker","marker","marker",std::nullopt}};
+    for(bool reverse:{false,true})for(std::size_t i=0;i<cases.size();++i) {
+      const auto& value=cases[reverse?cases.size()-1-i:i];const auto query=q(value.expression);
+      const auto score=match_score(query,value.title,value.body,"https://x.example/marker","x.example","text/plain");
+      CHECK(score==value.score);CHECK(matches(query,value.title,value.body,"https://x.example/marker","x.example","text/plain")==score.has_value());
+      if(score)CHECK(score_match(query.root,value.title,value.body)==*value.score);
+    }
+    const auto url=parse_query(Json::parse(R"({"op":"phrase","field":"url","value":"marker"})"));
+    CHECK(match_score(url,"marker","marker marker","https://x.example/marker","x.example","text/plain")==6);
+    CHECK(match_score(url,"neutral","other","https://x.example/marker","x.example","text/plain")==0);
+    CHECK(!match_score(url,"marker","marker","https://x.example/other","x.example","text/plain"));
+  }
+  TEST(search_matching_releases_store_lock_and_sqlite_transaction_for_every_path) {
+    for(bool freeze:{false,true})for(const auto* query:{"marker","\"arker\"","NOT absent"}) {
+      Store store(":memory:");store.ingest("alice",text("https://x.example/a","marker local content"));
+      store.ingest("bob",text("https://x.example/b","marker other owner"));
+      const auto result=search_while(store,freeze,[&] {
+        CHECK(store.stats("bob").at("documents").num()==1);
+        store.ingest("bob",text("https://x.example/new","marker concurrent import"));
+        CHECK(store.stats("bob").at("documents").num()==2);
+      },query);
+      CHECK(search_hits(store,freeze,result).size()==1);CHECK(!result.at("partial").flag());
+      CHECK(result.at("scanned_candidates").num()==1);
+    }
+  }
+  TEST(search_matching_rechecks_deleted_and_reimported_candidate_identity) {
+    for(bool freeze:{false,true})for(bool reimport:{false,true}) {
+      Store store(":memory:");const auto old=store.ingest("alice",text("https://x.example/a","marker old"));
+      const auto result=search_while(store,freeze,[&] {
+        store.erase("alice",old.at("document_id").str());
+        if(reimport)store.ingest("alice",text("https://x.example/a","marker new"));
+      });
+      CHECK(search_hits(store,freeze,result).size()==0);CHECK(result.at("partial").flag());
+      CHECK(result.at("scanned_candidates").num()==1);
+      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==(reimport?1:0));
+    }
+  }
+  TEST(search_matching_preserves_immutable_revision_or_marks_pruning_partial) {
+    for(bool freeze:{false,true})for(bool prune:{false,true}) {
+      StoreOptions options;options.max_revisions_per_document=prune?1:5;
+      Store store(":memory:",{},options);const auto old=store.ingest("alice",text("https://x.example/a","marker original"));
+      const auto result=search_while(store,freeze,[&] {store.ingest("alice",text("https://x.example/a","replacement text"));},"marker");
+      const auto found=search_hits(store,freeze,result);CHECK(found.size()==(prune?0U:1U));
+      CHECK(result.at("partial").flag()==prune);
+      if(!prune)CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());
+      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==0);
+    }
+  }
+  TEST(search_matching_rechecks_principal_revocation_before_any_result_or_receipt) {
+    for(bool freeze:{false,true})for(bool other_handle:{false,true}) {
+      Temp temp;Store store(temp.path/"db");Store other(temp.path/"db");
+      store.ingest("alice",text("https://x.example/a","marker private"));
+      rejects([&] {search_while(store,freeze,[&] {(other_handle?other:store).revoke_principal("admin","alice");});},"E_PRINCIPAL_REVOKED");
+      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==0);
+      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM search_stream_receipts")==0);
+      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM snapshots")==1);
+    }
+  }
+  TEST(search_matching_rechecks_active_session_capacity_at_commit) {
+    Temp temp;Store store(temp.path/"db");store.ingest("alice",text("https://x.example/a","marker"));
+    for(int i=0;i<63;++i)store.search("alice",q("marker"));
+    rejects([&] {search_while(store,true,[&] {
+      StoreSearchTestAccess::set(store,{});store.search("alice",q("marker"));
+      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==64);
+    });},"E_QUOTA");
+    CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==64);
+    CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM search_stream_receipts")==64);
+    CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==1);
+  }
+  TEST(search_source_withdrawal_does_not_change_independent_local_snapshot_ownership) {
+    for(bool freeze:{false,true}) {
+      Store store(":memory:");store.activate_source_publication(test_registry());
+      store.ingest("alice",text("https://x.example/a","marker local import"));
+      store.ingest("bob",text("https://x.example/b","marker unrelated owner"));
+      const auto result=search_while(store,freeze,[&] {store.activate_source_publication(SourceRegistry(Json::parse(R"({"version":1,"sources":[]})")));});
+      const auto found=search_hits(store,freeze,result);CHECK(found.size()==1);
+      CHECK(found.at(0).at("url").str()=="https://x.example/a");CHECK(!result.at("partial").flag());
+    }
+  }
+  Json search_site_config(const std::string& mode="allowed") {
+    auto manifest=Json::parse(R"({"version":1,"sites":[{"id":"scan-site","enabled":true,"origin":"https://scan.example","path_prefixes":["/"],"review":{"status":"approved","payment_scheme":"no_payment","automated_access":"approved","checked_at":"2020-01-01T00:00:00Z","expires_at":"2999-01-01T00:00:00Z","terms_url":"https://scan.example/terms","cache_policy":"allowed_with_limits","redistribution_policy":"allowed_with_limits","approved_by":"offline-fixture"},"limits":{"max_concurrency":1,"min_interval_ms":0,"request_quota":1000,"quota_window_seconds":86400}}]})");
+    auto review=manifest.at("sites").at(0).at("review");
+    if(mode=="rejected")review.set("status","rejected");
+    if(mode=="links_only")review.set("redistribution_policy","links_only");
+    return manifest;
+  }
+  Json search_web_artifact(Store& store,const std::string& url,const std::string& final_url="",Json redirects=Json::array(),const std::string& mode="allowed") {
+    ParsedDocument parsed;parsed.title="marker original title";parsed.text="marker original secret";parsed.content_type="text/plain";parsed.parser_version="search-concurrency/1";
+    parsed.index_allowed=mode!="noindex";
+    parsed.publication=Json::parse(R"({"version":"bzs-publication-1","index_allowed":true,"snippet_allowed":true,"follow_allowed":true,"snippet_text":"marker original secret","snippet_title":"marker original title","directives":[],"diagnostics":[]})");
+    if(mode!="allowed") {parsed.publication.set("snippet_allowed",false);parsed.publication.set("snippet_text","");parsed.publication.set("snippet_title","");}
+    if(mode=="noindex")parsed.publication.set("index_allowed",false);
+    auto meta=Json::object();meta.set("final_url",final_url.empty()?url:final_url);meta.set("redirects",redirects);
+    return store.ingest_web("alice",{url,parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice",url));
+  }
+  TEST(search_matching_rechecks_site_restrictions_even_after_relaxation) {
+    for(bool freeze:{false,true})for(const auto* mode:{"rejected","links_only"})for(bool relax:{false,true}) {
+      Store store(":memory:");store.activate_site_publication(SiteRegistry(search_site_config()));
+      const auto old=search_web_artifact(store,"https://scan.example/a");
+      const auto result=search_while(store,freeze,[&] {
+        store.activate_site_publication(SiteRegistry(search_site_config(mode)));
+        if(relax)store.activate_site_publication(SiteRegistry(search_site_config()));
+      });
+      const auto found=search_hits(store,freeze,result);
+      if(std::string(mode)=="rejected") {CHECK(found.size()==0);CHECK(result.at("partial").flag());}
+      else {CHECK(found.size()==1);CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());CHECK(found.at(0).at("snippet").str().empty());CHECK(found.at(0).at("title").str()=="https://scan.example/a");}
+    }
+  }
+  TEST(search_matching_rechecks_page_and_frozen_redirect_history_after_relaxation) {
+    for(bool freeze:{false,true})for(const auto* mode:{"noindex","nosnippet"})for(const auto* identity:{"logical","final","intermediate"}) {
+      Store store(":memory:");const std::string logical="https://scan.example/a",intermediate="https://middle.example/b",final="https://final.example/c";
+      const auto old=search_web_artifact(store,logical,final,Json::parse("[\""+intermediate+"\",\""+final+"\"]"));
+      const auto target=std::string(identity)=="logical"?logical:std::string(identity)=="final"?final:intermediate;
+      const auto result=search_while(store,freeze,[&] {
+        search_web_artifact(store,target,"",Json::array(),mode);
+        search_web_artifact(store,target); // Current allow must not revive the captured old snapshot.
+      });
+      const auto found=search_hits(store,freeze,result);
+      if(std::string(mode)=="noindex") {CHECK(found.size()==0);CHECK(result.at("partial").flag());}
+      else {CHECK(found.size()==1);CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());CHECK(found.at(0).at("snippet").str().empty());CHECK(found.at(0).at("title").str()==logical);}
+      // A genuinely new read remains eligible, proving the barrier is a
+      // captured-artifact fence, not an accidental permanent URL blacklist.
+      StoreSearchTestAccess::set(store,{});search_web_artifact(store,logical,final,Json::parse("[\""+intermediate+"\",\""+final+"\"]"));
+      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()>0);
+    }
   }
 
 }

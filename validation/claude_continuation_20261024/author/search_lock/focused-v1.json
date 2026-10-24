@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "ctest",
+    "--test-dir",
+    "build",
+    "-R",
+    "^(core|site_publication|revocation|sessions|retention)$",
+    "--output-on-failure"
+  ],
+  "exit_code": 8,
+  "log_sha256": "794a6e40a9ead95dd6f36230567b72978c2bd43f3fd392b39150b0205b7569c5",
+  "inputs": "inputs-v1.json",
+  "build_log": "build-v1.log"
+}

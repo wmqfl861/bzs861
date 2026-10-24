@@ -1,0 +1,60 @@
+{
+  "probe_sha256": "cd3b3fc0fdf0cedc3e0f707d253d7ab2deacbf8421cbc6bd4b89724bc83d3a3c",
+  "old_baseline_instrumentation": "baseline-instrumentation.patch",
+  "commands": [
+    {
+      "label": "old",
+      "compile_argv": [
+        "g++",
+        "-std=c++20",
+        "-I/tmp/bzs-search-lock-instrumented/include",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_continuation_20261024/author/search_lock/barrier-regression.cpp",
+        "/tmp/bzs-search-lock-instrumented/build/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-search-lock-baseline/barrier-old"
+      ],
+      "argv": [
+        "/tmp/bzs-search-lock-baseline/barrier-old"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "elapsed_seconds": 5.029,
+      "library_sha256": "05ee544f1d2c66f5a02247491adf661fd108f7dbaf6721fbce3ed746265d8c62",
+      "header_sha256": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+      "binary_sha256": "29a3b8e009b788bd106a6a5b775d3937be6ca032e5c259518064f3354b890602",
+      "log_sha256": "e28d46df456ccf25e1cc5f280de5a11cc01cf119fd735f3194e840dfab64fbc0"
+    },
+    {
+      "label": "new",
+      "compile_argv": [
+        "g++",
+        "-std=c++20",
+        "-I/workspace/scratch/e2371129386d/bzs861-next-search-lock/include",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_continuation_20261024/author/search_lock/barrier-regression.cpp",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-search-lock-baseline/barrier-new"
+      ],
+      "argv": [
+        "/tmp/bzs-search-lock-baseline/barrier-new"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "elapsed_seconds": 0.114,
+      "library_sha256": "6d74311cff0bcfb32249ef0c70cce538ef00350a4ed9588d482fbf0ff9fd9917",
+      "header_sha256": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+      "binary_sha256": "9ca6d4decf2c222f590d486b1184b67d6fde28af5c301dd133dc588bd63bfbab",
+      "log_sha256": "589c9a2b95343dfd6e55b662a88d7f37ca998d550d4533bcb1a7f91da97f67a1"
+    }
+  ]
+}

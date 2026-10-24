@@ -1,0 +1,30 @@
+{
+  "base": "59081e14fdda765844031e13f874e588334f1a36",
+  "instrumentation": "baseline-instrumentation.json",
+  "compile_argv": [
+    "g++",
+    "-std=c++20",
+    "-DBZS_FIXTURE_DIR=\"/tmp/bzs-search-lock-instrumented/tests/fixtures\"",
+    "-I/tmp/bzs-search-lock-instrumented/include",
+    "/tmp/bzs-search-lock-instrumented/tests/unit.cpp",
+    "/tmp/bzs-search-lock-instrumented/build/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/tmp/bzs-search-lock-instrumented/concurrency-regression"
+  ],
+  "run_argv": [
+    "/tmp/bzs-search-lock-instrumented/concurrency-regression"
+  ],
+  "expected_exit_code": 1,
+  "actual_exit_code": 1,
+  "elapsed_seconds": 5.04,
+  "library_sha256": "05ee544f1d2c66f5a02247491adf661fd108f7dbaf6721fbce3ed746265d8c62",
+  "test_source_sha256": "4a79279f826df5f1ba26f66428b98d6dc23408b4ed6bd31189c31ce44f9cdc9b",
+  "binary_sha256": "b015977147cfa7d72def07968fa182414db80e615d39c248bc2d8bffb84f342e",
+  "log_sha256": "5ad52e3d74a5606ad623eb8d585045fc3642d127dc0b66a24606b17e2525a4aa",
+  "reason": "Identical formal regression and helper detect that stats cannot complete before the original lock-held matching barrier is released."
+}

@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-u",
+    "-c",
+    "print('intentional failure'); raise SystemExit(7)"
+  ],
+  "cwd": "/tmp/bzs-recorder-review-ut6ixb5x",
+  "started_at_utc": "2026-10-24T12:25:15.138129+00:00",
+  "elapsed_seconds": 0.017,
+  "exit_code": 7,
+  "process_watchdog_expired": false,
+  "environment_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/tmp/bzs-recorder-review-ut6ixb5x/python"
+  },
+  "execution_inputs": "execution-inputs.json",
+  "execution_inputs_sha256": "282b07b8807ec5cca6d39e5955ba1bcf79193e473c536fbcb428fd01565c49c3",
+  "source_inputs_unchanged": true,
+  "build_preparation": false,
+  "binaries_before_sha256": {
+    "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+  },
+  "binaries_after_sha256": {
+    "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+  },
+  "log": "child.log",
+  "log_sha256": "0f1fcdc2382e33d879d9599701d948f391e53aeba24826b9d229233ab82d4937"
+}

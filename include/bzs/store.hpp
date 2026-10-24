@@ -61,6 +61,10 @@ namespace bzs {
     std::function<std::int64_t()> clock_;
     StoreOptions options_;
     mutable std::mutex mutex_;
+    // Deterministic native-test barrier; no public setter or protocol surface.
+    // Copied while locked, called only with no Store lock or SQL transaction.
+    friend struct StoreSearchTestAccess;
+    std::function<void()> search_unlocked_for_test_;
     struct SitePublicationRule {
       std::string origin,path;
       int mode=0;

@@ -1,0 +1,24 @@
+{
+  "inputs": "inputs-v3.json",
+  "sources_unchanged": true,
+  "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+  "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+  "guard_sha256": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+  "library_sha256": "986978d5914b4cfc81f1d11105b90e5402af35f101355dd9bd83b5636fac852a",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "509c52bd0d4c28c1652ea5a03e75a3a58dfa20b3a50297201d6c7f530e95a856",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_tests"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 18.827,
+      "binary_sha256": "509c52bd0d4c28c1652ea5a03e75a3a58dfa20b3a50297201d6c7f530e95a856",
+      "unchanged_binary": true,
+      "log": "asan-v3-bzs_tests.log",
+      "log_sha256": "9dfcd7f3d74436b925eabf07cf5a1a589351810c77e4b7e73bef6b2522ee9464"
+    }
+  ]
+}

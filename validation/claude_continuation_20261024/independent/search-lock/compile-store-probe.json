@@ -1,0 +1,56 @@
+{
+  "argv": [
+    "c++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "-I/workspace/scratch/e2371129386d/bzs861-next-search-lock/include",
+    "validation/claude_continuation_20261024/independent/search-lock/probe.cpp",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/tmp/bzs-independent-next-search-lock/probe"
+  ],
+  "artifacts_after": {
+    "/tmp/bzs-next-dispatcher-baseline/libbzs_core.a": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/libbzs_core.a": "986978d5914b4cfc81f1d11105b90e5402af35f101355dd9bd83b5636fac852a",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build/libbzs_core.a": "6d74311cff0bcfb32249ef0c70cce538ef00350a4ed9588d482fbf0ff9fd9917"
+  },
+  "artifacts_before": {
+    "/tmp/bzs-next-dispatcher-baseline/libbzs_core.a": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/libbzs_core.a": "986978d5914b4cfc81f1d11105b90e5402af35f101355dd9bd83b5636fac852a",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build/libbzs_core.a": "6d74311cff0bcfb32249ef0c70cce538ef00350a4ed9588d482fbf0ff9fd9917"
+  },
+  "exit_code": 0,
+  "log_sha256": "3ac5513f28369147e8ecf524b93e4e8df766ebaa5bfb500c4773722f5f04e2a3",
+  "probe_inputs": {
+    "probe.cpp": "2adc25dd04b227a7104dea46866a220a401d55990cd3558f42a3ca71db6233a7",
+    "query_oracle.cpp": "75cdb7444b258f05caa9d48e7db9b795b8e41af172deb60227795fbabe4eb6af"
+  },
+  "runner_sha256": "a61b79dcfd60dd76f4634252378dd22b01781a6f734d17e706390661cc2cdb2f",
+  "seconds": 1.986,
+  "sources_after": {
+    "docs/LOCAL_SEARCH_CONCURRENCY.md": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5",
+    "include/bzs/query.hpp": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8",
+    "include/bzs/store.hpp": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+    "src/query.cpp": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8",
+    "src/store.cpp": "99e38e37fd1701f3f8712a49c8b3882f8a50c400658ed6ac787358ecc2d6924e",
+    "tests/unit.cpp": "b2a58d5c2a8510b75b1ad4e4db3d431a770b8790a512e1dbc87df0994f8a4c35"
+  },
+  "sources_before": {
+    "docs/LOCAL_SEARCH_CONCURRENCY.md": "43914d587e6acd94914c19a634e1ccabbd2022d08b8f7e493e870831ce7c6be5",
+    "include/bzs/query.hpp": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8",
+    "include/bzs/store.hpp": "770669b3aa715ab1686b5988c14e98c38d64ab38e69011d481bd52577d0b2273",
+    "src/query.cpp": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8",
+    "src/store.cpp": "99e38e37fd1701f3f8712a49c8b3882f8a50c400658ed6ac787358ecc2d6924e",
+    "tests/unit.cpp": "b2a58d5c2a8510b75b1ad4e4db3d431a770b8790a512e1dbc87df0994f8a4c35"
+  },
+  "utc_started": "2026-10-24T11:45:39.110042+00:00"
+}

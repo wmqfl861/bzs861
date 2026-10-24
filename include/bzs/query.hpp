@@ -18,6 +18,9 @@ namespace bzs {
   };
   Query parse_query(const Json& input);
   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type);
+  // Exact match and the existing fallback score, sharing lazy ASCII folding.
+  // nullopt is a non-match; zero is a matching query with no positive leaves.
+  std::optional<int> match_score(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type);
   // Safe optional word-FTS candidate query. Other shapes use substring candidates,
   // never a lossy approximation which could silently drop matching documents.
   std::optional<std::string> fts_candidates(const Query& q);

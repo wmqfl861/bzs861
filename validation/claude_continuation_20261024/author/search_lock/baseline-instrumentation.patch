@@ -1,0 +1,23 @@
+--- a/include/bzs/store.hpp
++++ b/include/bzs/store.hpp
+@@ -61,6 +61,10 @@
+     std::function<std::int64_t()> clock_;
+     StoreOptions options_;
+     mutable std::mutex mutex_;
++    // Deterministic native-test barrier; no public setter or protocol surface.
++    // Copied while locked, called only with no Store lock or SQL transaction.
++    friend struct StoreSearchTestAccess;
++    std::function<void()> search_unlocked_for_test_;
+     struct SitePublicationRule {
+       std::string origin,path;
+       int mode=0;
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -1127,6 +1127,7 @@
+         break;
+       }
+       ++scanned;
++      if(search_unlocked_for_test_)search_unlocked_for_test_();
+       if(!matches(q, c.text(2), c.text(3), c.text(4), c.text(5), c.text(6)))continue;
+       auto score=fts?static_cast<std::int64_t>(-c.real(7)*1000.0):static_cast<std::int64_t>(score_match(q.root, c.text(2), c.text(3)));
+       hits.push_back( {

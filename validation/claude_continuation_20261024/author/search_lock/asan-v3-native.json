@@ -1,0 +1,81 @@
+{
+  "inputs": "inputs-v3.json",
+  "sources_unchanged": true,
+  "environment_note": "Native execution outside ptrace sandbox; prior sandbox failure retained in asan-v3.json",
+  "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+  "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+  "guard_sha256": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+  "library_sha256": "986978d5914b4cfc81f1d11105b90e5402af35f101355dd9bd83b5636fac852a",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "509c52bd0d4c28c1652ea5a03e75a3a58dfa20b3a50297201d6c7f530e95a856",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 16.363,
+      "binary_sha256": "509c52bd0d4c28c1652ea5a03e75a3a58dfa20b3a50297201d6c7f530e95a856",
+      "unchanged_binary": true,
+      "log": "asan-v3-native-bzs_tests.log",
+      "log_sha256": "eb32158aa1417ec0debb3343e45990d3a377bf5a717780a4aaf9980042165b41"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "ce03a6c172d9ab982afdba07282b104a4ec91ccc3828e139b3d0668333d0b11f",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_site_publication_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 18.571,
+      "binary_sha256": "ce03a6c172d9ab982afdba07282b104a4ec91ccc3828e139b3d0668333d0b11f",
+      "unchanged_binary": true,
+      "log": "asan-v3-native-bzs_site_publication_tests.log",
+      "log_sha256": "e0f5661af56e979e36611aef98e57aedf8c46bd709b240e53c01159c5e2a7040"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "2595ea32d428580b6c7d7e11c120fc4130ce146c1666665eb49843a578bd4e82",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_retention_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.883,
+      "binary_sha256": "2595ea32d428580b6c7d7e11c120fc4130ce146c1666665eb49843a578bd4e82",
+      "unchanged_binary": true,
+      "log": "asan-v3-native-bzs_retention_tests.log",
+      "log_sha256": "1ca9d21d3394b74c753e881f9abaf6047648ac60a86448d026d3c0f0c88cb130"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "039156ee4a229baca1d78edd064f3495bd4d3b2fc91b3e2a57f4cbacd0afd8ad",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_session_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 65.023,
+      "binary_sha256": "039156ee4a229baca1d78edd064f3495bd4d3b2fc91b3e2a57f4cbacd0afd8ad",
+      "unchanged_binary": true,
+      "log": "asan-v3-native-bzs_session_tests.log",
+      "log_sha256": "9093fd20bc10d791c20346803aa5c6984dc0be45be97b280e5775163cfb9626f"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/validation/claude_followup_20261024/guard.py",
+        "99442ce949fe327777b001fc8befe7b210b280e57101f0b0743a73c395810f2d",
+        "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-asan/bzs_revocation_tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.967,
+      "binary_sha256": "99442ce949fe327777b001fc8befe7b210b280e57101f0b0743a73c395810f2d",
+      "unchanged_binary": true,
+      "log": "asan-v3-native-bzs_revocation_tests.log",
+      "log_sha256": "2f8e3019d0304d735552dba95dac4054bf466e1f88f14c59b565a0409e9c75ff"
+    }
+  ]
+}

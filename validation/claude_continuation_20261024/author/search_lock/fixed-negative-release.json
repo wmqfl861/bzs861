@@ -1,0 +1,32 @@
+{
+  "base": "59081e14fdda765844031e13f874e588334f1a36",
+  "inputs": "inputs-v3.json",
+  "sources_unchanged": true,
+  "compile_argv": [
+    "g++",
+    "-O2",
+    "-std=c++20",
+    "-Iinclude",
+    "validation/claude_followup_20261024/p2-5/benchmark-inputs/scan_blocking_negative.cpp",
+    "/workspace/scratch/e2371129386d/bzs861-next-search-lock/build-release/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/tmp/bzs-search-lock-baseline/scan-negative-fixed"
+  ],
+  "argv": [
+    "/tmp/bzs-search-lock-baseline/scan-negative-fixed",
+    "2000",
+    "204800"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 51.818,
+  "source_sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+  "binary_sha256": "4acc5cc8c604ec6b52c3bcbf8cbbd1ff1343a8f431691d1d457f951c18d73d2e",
+  "library_sha256": "f2c8c39d93182bd406a823c666d2b415a464f5ae36c781d7552e7817d914f30e",
+  "log_sha256": "5504d0e3f5da97ea01b5f5855408240089af7a5cf0526f4e930d00cdda829eb7",
+  "note": "Same original NOT query variant and 2000 x 200 KiB dataset, one run. Matching/scoring no longer hold Store lock; SQL copying/projection still do. Not an SLA."
+}

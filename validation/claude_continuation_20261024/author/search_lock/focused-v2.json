@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "ctest",
+    "--test-dir",
+    "build",
+    "-R",
+    "^(core|site_publication|revocation|sessions|retention)$",
+    "--output-on-failure"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 36.192,
+  "log_sha256": "7aa8906d7eee6ae5b52b2fce2ea89a38a7cd998524c53669c2dd61875071cb40",
+  "inputs": "inputs-v2.json",
+  "sources_unchanged": true,
+  "binaries": {
+    "libbzs_core.a": "d00246a4243c68fff4b2390939d79fabd318a8bd4aff15d86bb11e350b1b7733",
+    "bzs_tests": "43cffb80d9be44026046f46e4dbf608545d18d355c099b05180ce4522f194bcd",
+    "bzs_site_publication_tests": "a572caa52c6d7b98695c0218ded21bf64fdf7f44abbe6e35fb24fde57ccb1b5e",
+    "bzs_revocation_tests": "eea76a36821904f94e9934a87e861a89b4fab55db71647c61be58d22d3a43fa6",
+    "bzs_session_tests": "fda21daea20297810c65ce99877e4827c1f5f435c96cbff8aaed43c283f7e94d",
+    "bzs_retention_tests": "292cfe6baf07e246ecb04e7e518aab1706023558f9bc14fbd74388eaa95a9103"
+  }
+}

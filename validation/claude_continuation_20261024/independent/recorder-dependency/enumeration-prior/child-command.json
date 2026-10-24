@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-c",
+    "from pathlib import Path;p=Path('validation/claude_continuation_20261024/run.py');p.write_bytes(p.read_bytes()+b'\\n# independent dependency drift\\n')"
+  ],
+  "cwd": "/tmp/bzs-real-enumeration-g9p2p9xq",
+  "started_at_utc": "2026-10-24T12:25:29.217972+00:00",
+  "elapsed_seconds": 0.031,
+  "exit_code": 0,
+  "process_watchdog_expired": false,
+  "environment_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/tmp/bzs-real-enumeration-g9p2p9xq/python"
+  },
+  "execution_inputs": "execution-inputs.json",
+  "execution_inputs_sha256": "80247bc474d74b6fe13f274a7da5657c2a279034c164ac3cf5b81e2b003b741d",
+  "source_inputs_unchanged": true,
+  "build_preparation": false,
+  "binaries_before_sha256": {},
+  "binaries_after_sha256": {},
+  "log": "child.log",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

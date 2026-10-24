@@ -1062,30 +1062,12 @@ namespace bzs {
   }
   Json Store::search_impl(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit,bool freeze) {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
-    std::lock_guard lock(mutex_);
-    Tx tx(db_);
-    require_principal_active_locked(owner);
-    if(freeze)settle_searches_locked();
-    refresh_site_publication_locked();
-    auto epoch=freeze?epoch_locked(owner):0;
-    auto now=clock_();
-    if(freeze) {
-      Stmt clear(db_, "DELETE FROM sessions WHERE expires_at<=?");
-      clear.bind(1, now);
-      clear.step();
-    }
-    if(freeze) {
-      Stmt n(db_, "SELECT count(*) FROM sessions WHERE owner=?");
-      n.bind(1, owner);
-      n.step();
-      require(n.num(0)<64, "E_QUOTA", "Too many active search sessions; wait for expiry", 429);
-    }
     auto fts=fts_candidates(q);
     const auto substrings=substring_candidates(q);
     std::string sql;
     if(fts) {
       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+      sql=R"SQL(SELECT d.id,s.id,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
@@ -1093,61 +1075,129 @@ namespace bzs {
       if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
         " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
     } else if(substrings) {
-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM substring_fts JOIN documents d ON d.rowid=substring_fts.rowid JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
     } else {
-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
     }
-    Stmt c(db_, sql);
-    int bind=1;
-    if(fts||substrings) {
-      c.bind(bind++,fts?*fts:*substrings);
-      c.bind(bind++,owner);
-    }
-    c.bind(bind++,owner);
-    if(fts&&substrings) { c.bind(bind++,*substrings);c.bind(bind++,owner); }
-    c.bind(bind,max_candidates+1);
     struct Hit {
-      std::string doc, snap;
-      std::int64_t score,publication_generation;
+      std::string doc,snap;
+      std::int64_t score=0,publication_generation=0;
       std::string representation_key;
+      std::int64_t deletion_generation=0;
+      bool snippet_suppressed=false;
     };
-    std::vector<Hit> hits;
-    std::int64_t scanned=0;
+    std::vector<Hit> candidates,hits;
     bool partial=false;
-    while(c.step()) {
-      if(scanned==max_candidates) {
-        partial=true;
-        break;
+    std::int64_t epoch=0,publication_sequence=0;
+    std::function<void()> unlocked;
+    const auto current_epoch=[&] {
+      Stmt row(db_,"SELECT epoch FROM subjects WHERE owner=?");row.bind(1,owner);
+      return row.step()?row.num(0):std::int64_t{0};
+    };
+    const auto session_capacity=[&] {
+      settle_searches_locked();
+      Stmt count(db_,"SELECT COUNT(*) FROM sessions WHERE owner=?");count.bind(1,owner);count.step();
+      require(count.num(0)<64,"E_QUOTA","Too many active search sessions; wait for expiry",429);
+    };
+    {
+      std::lock_guard lock(mutex_);Tx tx(db_);
+      require_principal_active_locked(owner);
+      if(freeze)session_capacity();
+      refresh_site_publication_locked();
+      epoch=freeze?epoch_locked(owner):current_epoch();
+      publication_sequence=publication_sequence_locked();
+      unlocked=search_unlocked_for_test_;
+      // Freeze only small immutable identities/ranks. Copying every candidate's
+      // body at once could allocate 2000 MiB for a single allowed query.
+      Stmt rows(db_,sql);int bind=1;
+      if(fts||substrings) { rows.bind(bind++,fts?*fts:*substrings);rows.bind(bind++,owner); }
+      rows.bind(bind++,owner);
+      if(fts&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
+      rows.bind(bind,max_candidates+1);
+      while(rows.step()) {
+        if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
+        candidates.push_back({rows.text(0),rows.text(1),fts?static_cast<std::int64_t>(-rows.real(2)*1000.0):0,
+                              rows.num(3),rows.text(4),rows.num(5),false});
       }
-      ++scanned;
-      if(!matches(q, c.text(2), c.text(3), c.text(4), c.text(5), c.text(6)))continue;
-      auto score=fts?static_cast<std::int64_t>(-c.real(7)*1000.0):static_cast<std::int64_t>(score_match(q.root, c.text(2), c.text(3)));
-      hits.push_back( {
-        c.text(0), c.text(1), score,c.num(8),c.text(9)
-      });
+      tx.commit();
     }
-    if(!fts)std::stable_sort(hits.begin(), hits.end(), [](const Hit&a, const Hit&b) {
-      return a.score>b.score;
-    });
-    if(hits.size()>static_cast<std::size_t>(limit)) {
-      hits.resize(static_cast<std::size_t>(limit));
-      partial=true;
+    for(auto candidate:candidates) {
+      std::string title,body,url,host,type;
+      {
+        std::lock_guard lock(mutex_);
+        require_principal_active_locked(owner);
+        require(current_epoch()==epoch,"E_SESSION_INVALIDATED","Permissions changed; repeat the query",409);
+        Stmt row(db_,"SELECT s.title,s.canonical_text,d.url,d.host,s.content_type FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.id=? AND d.owner=? AND d.deleted=0 AND d.delete_generation=?");
+        row.bind(1,candidate.snap);row.bind(2,candidate.doc);row.bind(3,owner);row.bind(4,candidate.deletion_generation);
+        if(!row.step()) { partial=true;continue; }
+        title=row.text(0);body=row.text(1);url=row.text(2);host=row.text(3);type=row.text(4);
+      }
+      // The statement and transaction are closed before releasing the lock.
+      // Exact matching/scoring sees owned strings, never SQLite-backed views.
+      if(unlocked)unlocked();
+      if(fts) {
+        if(!matches(q,title,body,url,host,type))continue;
+      } else {
+        const auto score=match_score(q,title,body,url,host,type);
+        if(!score)continue;
+        candidate.score=*score;
+      }
+      hits.push_back(std::move(candidate));
     }
+    if(!fts)std::stable_sort(hits.begin(),hits.end(),[](const Hit& a,const Hit& b) {return a.score>b.score;});
+    const auto scanned=static_cast<std::int64_t>(candidates.size());
     auto retrieval=fts?"fts5_bm25_verified":substrings?"fts5_substring_verified":"bounded_scan_recent";
+    std::lock_guard lock(mutex_);Tx tx(db_);
+    require_principal_active_locked(owner);
+    require(current_epoch()==epoch,"E_SESSION_INVALIDATED","Permissions changed; repeat the query",409);
+    refresh_site_publication_locked();
+    // New searches may have consumed the last active slot while matching.
+    if(freeze)session_capacity();
+    const bool changed_publication=publication_sequence_locked()>publication_sequence;
+    std::vector<Hit> visible;
+    for(auto hit:hits) {
+      Stmt row(db_,R"SQL(SELECT s.source_kind,s.site_bindings_json,s.meta_json,d.url,
+ MAX(COALESCE(p.index_generation,0),COALESCE(rp.index_generation,0),COALESCE(cp.index_generation,0)),
+ MAX(COALESCE(p.snippet_generation,0),COALESCE(rp.snippet_generation,0),COALESCE(cp.snippet_generation,0)),
+ CASE WHEN s.source_kind='web' THEN MAX(bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,?),bzs_site_publication(current.source_kind,current.site_bindings_json,current.site_publication_generation,d.url,current.meta_json,'')) ELSE 0 END AS site_mode
+ FROM snapshots s JOIN documents d ON d.id=s.document_id JOIN snapshots current ON current.id=d.current_snapshot
+ LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key
+ LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=?
+ LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
+ WHERE s.id=? AND d.id=? AND d.owner=? AND d.deleted=0 AND d.delete_generation=?
+ AND s.index_allowed=1 AND current.index_allowed=1
+ AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 AND site_mode<2)SQL");
+      row.bind(1,hit.representation_key);row.bind(2,hit.representation_key);row.bind(3,hit.snap);
+      row.bind(4,hit.doc);row.bind(5,owner);row.bind(6,hit.deletion_generation);
+      if(!row.step()||row.num(4)>publication_sequence) { partial=true;continue; }
+      hit.snippet_suppressed=row.num(5)>publication_sequence;
+      if(changed_publication&&row.text(0)=="web") {
+        auto bindings=Json::parse(row.text(1),128*1024);
+        if(!bindings.has("version"))bindings=site_bindings_locked(row.text(3),Json::parse(row.text(2),8*1024*1024));
+        const auto history=publication_history_locked(owner,bindings.at("urls"),publication_sequence);
+        // A restrict-then-allow observation during matching cannot revive an
+        // older candidate. Check every frozen redirect identity as well.
+        if(history.at("index_generation").num()>0) { partial=true;continue; }
+        hit.snippet_suppressed=hit.snippet_suppressed||history.at("snippet_generation").num()>0;
+      }
+      visible.push_back(std::move(hit));
+    }
+    hits=std::move(visible);
+    if(hits.size()>static_cast<std::size_t>(limit)) {hits.resize(static_cast<std::size_t>(limit));partial=true;}
     if(!freeze) {
       Json results=Json::array();
       if(!hits.empty()) {
         // Reuse the frozen-page authorization/publication projection without
         // persisting a session, its rows, cursor, event log or identity receipt.
         std::string values="WITH local_results(position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version,snippet_suppressed) AS (VALUES ";
-        for(std::size_t i=0;i<hits.size();++i)values+=(i?",":"")+std::string("(?,?,?,?,?,?,1,0)");
+        for(std::size_t i=0;i<hits.size();++i)values+=(i?",":"")+std::string("(?,?,?,?,?,?,1,?)");
         Stmt rows(db_,values+")"+local_result_sql);
         int parameter=1;
         for(std::size_t i=0;i<hits.size();++i) {
@@ -1155,6 +1205,7 @@ namespace bzs {
           rows.bind(parameter++,static_cast<std::int64_t>(i));
           rows.bind(parameter++,h.doc);rows.bind(parameter++,h.snap);rows.bind(parameter++,h.score);
           rows.bind(parameter++,h.publication_generation);rows.bind(parameter++,h.representation_key);
+          rows.bind(parameter++,h.snippet_suppressed?1:0);
         }
         rows.bind(parameter++,0);rows.bind(parameter++,owner);
         rows.bind(parameter++,site_publication_legacy_withdrawn_?1:0);rows.bind(parameter,limit);
@@ -1168,6 +1219,7 @@ namespace bzs {
       out.set("coverage","authorized_local_documents_only");out.set("retrieval",retrieval);out.set("query",q.json());
       tx.commit();return out;
     }
+    const auto now=clock_();
     auto id=random_id();
     Stmt ins(db_, "INSERT INTO sessions VALUES(?,?,?,?,?,?,?,?,?)");
     ins.bind(1, id);
@@ -1182,13 +1234,13 @@ namespace bzs {
     ins.step();
     std::int64_t p=0;
     for(const auto&h:hits) {
-      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version)VALUES(?,?,?,?,?,?,?,1)");
+      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version,snippet_suppressed)VALUES(?,?,?,?,?,?,?,1,?)");
       row.bind(1, id);
       row.bind(2, p++);
       row.bind(3, h.doc);
       row.bind(4, h.snap);
       row.bind(5, h.score);
-      row.bind(6,h.publication_generation);row.bind(7,h.representation_key);
+      row.bind(6,h.publication_generation);row.bind(7,h.representation_key);row.bind(8,h.snippet_suppressed?1:0);
       row.step();
     }
     Json out=Json::object();

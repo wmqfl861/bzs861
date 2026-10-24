@@ -1,0 +1,563 @@
+diff --git a/docs/LOCAL_SEARCH_CONCURRENCY.md b/docs/LOCAL_SEARCH_CONCURRENCY.md
+new file mode 100644
+index 0000000..9962801
+--- /dev/null
++++ b/docs/LOCAL_SEARCH_CONCURRENCY.md
+@@ -0,0 +1,13 @@
++# 本地搜索的并发边界
++
++本地 `search` 与 `search.once` 先在 Store 锁和一个短事务内选取有界候选，保存文档 ID、不可变快照 ID、删除代际、发布水位及原排序分值。随后逐篇复制正文，关闭读取语句并释放 Store 锁，再执行精确匹配和评分。不会一次复制全部候选正文：候选上限仍为 2,000，单次匹配只保留一篇正文及其字段副本。
++
++匹配和非 FTS 评分共享本次调用的惰性 ASCII 转换；一个实际访问字段最多转换一次。词 FTS 仍用原 BM25 分值；其他路径保留原正叶评分、title/body 权重及上限、原稳定排序。纯 NOT 匹配的评分仍为 0。此优化不改变词边界、短语、Unicode 字面量或查询字段语义。
++
++返回或创建冻结会话前，再在一个事务内检查主体撤权和 epoch、文档归属、删除代际、快照是否仍在、当前及捕获表示的页/站点发布约束。匹配期间先收紧、后放宽的 `noindex` / `nosnippet` 仍约束旧候选；原始、最终和中间跳转身份均参与历史检查。当前允许状态不能使受过限制的旧候选重新公开。
++
++并发更新保留的旧快照可以按其原内容返回；删除、删除后重新导入、旧快照裁剪或新的索引禁令会剔除对应候选，并将响应标记为 `partial`。不自动重跑查询，也不把后来导入的新快照加入已选定的候选集合。冻结会话在最终提交时重新检查活动容量，因此两个同时开始的搜索不能占用同一个最后名额。`search.once` 继续不分配持久会话、游标、事件或身份收据。
++
++这项修改释放了精确匹配、评分和排序阶段的 Store 锁。SQLite 候选选择、单篇正文复制、最终可见性投影及摘要生成仍在其必要的锁保护下；不声称整个搜索过程无锁，也不以本地合成数据推导生产延迟或吞吐保证。搜索来源的发布政策约束联网来源结果；它不会自动撤销独立导入的本地文档。站点和网页的发布政策继续约束本地保存的网页表示。
++
++正式回归位于 `tests/unit.cpp`，使用只供友元测试访问器设置的私有闸门，在没有 Store 锁和 SQLite 事务的匹配阶段暂停。另一线程必须在解除暂停前完成读取或政策变更；有限等待仅用作死锁 watchdog，不以机器速度作为通过条件。该闸门没有公开配置、HTTP 参数或公共 setter。
+diff --git a/include/bzs/query.hpp b/include/bzs/query.hpp
+index 8ad0b7b..bebddc0 100644
+--- a/include/bzs/query.hpp
++++ b/include/bzs/query.hpp
+@@ -18,6 +18,9 @@ namespace bzs {
+   };
+   Query parse_query(const Json& input);
+   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type);
++  // Exact match and the existing fallback score, sharing lazy ASCII folding.
++  // nullopt is a non-match; zero is a matching query with no positive leaves.
++  std::optional<int> match_score(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type);
+   // Safe optional word-FTS candidate query. Other shapes use substring candidates,
+   // never a lossy approximation which could silently drop matching documents.
+   std::optional<std::string> fts_candidates(const Query& q);
+diff --git a/include/bzs/store.hpp b/include/bzs/store.hpp
+index beaed0c..f195b57 100644
+--- a/include/bzs/store.hpp
++++ b/include/bzs/store.hpp
+@@ -61,6 +61,10 @@ namespace bzs {
+     std::function<std::int64_t()> clock_;
+     StoreOptions options_;
+     mutable std::mutex mutex_;
++    // Deterministic native-test barrier; no public setter or protocol surface.
++    // Copied while locked, called only with no Store lock or SQL transaction.
++    friend struct StoreSearchTestAccess;
++    std::function<void()> search_unlocked_for_test_;
+     struct SitePublicationRule {
+       std::string origin,path;
+       int mode=0;
+diff --git a/src/query.cpp b/src/query.cpp
+index e05f4f3..481accd 100644
+--- a/src/query.cpp
++++ b/src/query.cpp
+@@ -261,6 +261,21 @@ namespace bzs {
+       if(n.field=="url")return in(LoweredFields::get(f.url, f.lower_url));
+       return in(title())||in(body());
+     }
++    bool filters_match(const Query& q,std::string_view host,std::string_view type) {
++      for(const auto& h:q.hosts)if(host!=h&&!(host.size()>h.size()&&host.ends_with("."+h)))return false;
++      for(const auto& t:q.types)if(type!=t)return false;
++      return true;
++    }
++    int score_fields(const QueryNode& q,const LoweredFields& fields) {
++      int score=0;
++      // Preserve legacy ranking: every positive leaf scores both fields even
++      // when its matching scope is title/body/URL; NOT subtrees add nothing.
++      for(const auto* leaf:positive_leaves(q)) {
++        score+=4*static_cast<int>(leaf_matches(LoweredFields::get(fields.title,fields.lower_title),*leaf,5).size());
++        score+=static_cast<int>(leaf_matches(LoweredFields::get(fields.body,fields.lower_body),*leaf,10).size());
++      }
++      return score;
++    }
+     std::string fts_quote(std::string_view v) {
+       std::string s="\"";
+       for(char c:v) {
+@@ -413,11 +428,16 @@ namespace bzs {
+     return q;
+   }
+   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type) {
+-    for(const auto& h:q.hosts)if(host!=h && !(host.size()>h.size()&&host.ends_with("."+h)))return false;
+-    for(const auto&t:q.types)if(type!=t)return false;
++    if(!filters_match(q,host,type))return false;
+     const LoweredFields fields{title, body, url, std::nullopt, std::nullopt, std::nullopt};
+     return eval(q.root, fields);
+   }
++  std::optional<int> match_score(const Query& q,std::string_view title,std::string_view body,std::string_view url,std::string_view host,std::string_view type) {
++    if(!filters_match(q,host,type))return std::nullopt;
++    const LoweredFields fields{title,body,url,std::nullopt,std::nullopt,std::nullopt};
++    if(!eval(q.root,fields))return std::nullopt;
++    return score_fields(q.root,fields);
++  }
+   std::optional<std::string> fts_candidates(const Query& q) {
+     return fts(q.root);
+   }
+@@ -431,12 +451,7 @@ namespace bzs {
+   }
+   int score_match(const QueryNode& q, std::string_view title, std::string_view body) {
+     // Used by substring candidates and fallback scans: title hits weigh more, body hits are capped.
+-    auto lt=ascii_lower(title), lb=ascii_lower(body);
+-    int n=0;
+-    for(const auto* leaf:positive_leaves(q)) {
+-      n+=4*static_cast<int>(leaf_matches(lt, *leaf, 5).size());
+-      n+=static_cast<int>(leaf_matches(lb, *leaf, 10).size());
+-    }
+-    return n;
++    const LoweredFields fields{title,body,{},std::nullopt,std::nullopt,std::nullopt};
++    return score_fields(q,fields);
+   }
+ }
+diff --git a/src/store.cpp b/src/store.cpp
+index 694c1fd..1a30660 100644
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -1062,30 +1062,12 @@ namespace bzs {
+   }
+   Json Store::search_impl(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit,bool freeze) {
+     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
+-    std::lock_guard lock(mutex_);
+-    Tx tx(db_);
+-    require_principal_active_locked(owner);
+-    if(freeze)settle_searches_locked();
+-    refresh_site_publication_locked();
+-    auto epoch=freeze?epoch_locked(owner):0;
+-    auto now=clock_();
+-    if(freeze) {
+-      Stmt clear(db_, "DELETE FROM sessions WHERE expires_at<=?");
+-      clear.bind(1, now);
+-      clear.step();
+-    }
+-    if(freeze) {
+-      Stmt n(db_, "SELECT count(*) FROM sessions WHERE owner=?");
+-      n.bind(1, owner);
+-      n.step();
+-      require(n.num(0)<64, "E_QUOTA", "Too many active search sessions; wait for expiry", 429);
+-    }
+     auto fts=fts_candidates(q);
+     const auto substrings=substring_candidates(q);
+     std::string sql;
+     if(fts) {
+       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
+-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
++      sql=R"SQL(SELECT d.id,s.id,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+  FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
+  WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
+@@ -1093,61 +1075,129 @@ namespace bzs {
+       if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
+         " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
+     } else if(substrings) {
+-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
++      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+  FROM substring_fts JOIN documents d ON d.rowid=substring_fts.rowid JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
+  WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
+  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+     } else {
+-      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
++      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
+  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+     }
+-    Stmt c(db_, sql);
+-    int bind=1;
+-    if(fts||substrings) {
+-      c.bind(bind++,fts?*fts:*substrings);
+-      c.bind(bind++,owner);
+-    }
+-    c.bind(bind++,owner);
+-    if(fts&&substrings) { c.bind(bind++,*substrings);c.bind(bind++,owner); }
+-    c.bind(bind,max_candidates+1);
+     struct Hit {
+-      std::string doc, snap;
+-      std::int64_t score,publication_generation;
++      std::string doc,snap;
++      std::int64_t score=0,publication_generation=0;
+       std::string representation_key;
++      std::int64_t deletion_generation=0;
++      bool snippet_suppressed=false;
+     };
+-    std::vector<Hit> hits;
+-    std::int64_t scanned=0;
++    std::vector<Hit> candidates,hits;
+     bool partial=false;
+-    while(c.step()) {
+-      if(scanned==max_candidates) {
+-        partial=true;
+-        break;
++    std::int64_t epoch=0,publication_sequence=0;
++    std::function<void()> unlocked;
++    const auto current_epoch=[&] {
++      Stmt row(db_,"SELECT epoch FROM subjects WHERE owner=?");row.bind(1,owner);
++      return row.step()?row.num(0):std::int64_t{0};
++    };
++    const auto session_capacity=[&] {
++      settle_searches_locked();
++      Stmt count(db_,"SELECT COUNT(*) FROM sessions WHERE owner=?");count.bind(1,owner);count.step();
++      require(count.num(0)<64,"E_QUOTA","Too many active search sessions; wait for expiry",429);
++    };
++    {
++      std::lock_guard lock(mutex_);Tx tx(db_);
++      require_principal_active_locked(owner);
++      if(freeze)session_capacity();
++      refresh_site_publication_locked();
++      epoch=freeze?epoch_locked(owner):current_epoch();
++      publication_sequence=publication_sequence_locked();
++      unlocked=search_unlocked_for_test_;
++      // Freeze only small immutable identities/ranks. Copying every candidate's
++      // body at once could allocate 2000 MiB for a single allowed query.
++      Stmt rows(db_,sql);int bind=1;
++      if(fts||substrings) { rows.bind(bind++,fts?*fts:*substrings);rows.bind(bind++,owner); }
++      rows.bind(bind++,owner);
++      if(fts&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
++      rows.bind(bind,max_candidates+1);
++      while(rows.step()) {
++        if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
++        candidates.push_back({rows.text(0),rows.text(1),fts?static_cast<std::int64_t>(-rows.real(2)*1000.0):0,
++                              rows.num(3),rows.text(4),rows.num(5),false});
++      }
++      tx.commit();
++    }
++    for(auto candidate:candidates) {
++      std::string title,body,url,host,type;
++      {
++        std::lock_guard lock(mutex_);
++        require_principal_active_locked(owner);
++        require(current_epoch()==epoch,"E_SESSION_INVALIDATED","Permissions changed; repeat the query",409);
++        Stmt row(db_,"SELECT s.title,s.canonical_text,d.url,d.host,s.content_type FROM snapshots s JOIN documents d ON d.id=s.document_id WHERE s.id=? AND d.id=? AND d.owner=? AND d.deleted=0 AND d.delete_generation=?");
++        row.bind(1,candidate.snap);row.bind(2,candidate.doc);row.bind(3,owner);row.bind(4,candidate.deletion_generation);
++        if(!row.step()) { partial=true;continue; }
++        title=row.text(0);body=row.text(1);url=row.text(2);host=row.text(3);type=row.text(4);
++      }
++      // The statement and transaction are closed before releasing the lock.
++      // Exact matching/scoring sees owned strings, never SQLite-backed views.
++      if(unlocked)unlocked();
++      if(fts) {
++        if(!matches(q,title,body,url,host,type))continue;
++      } else {
++        const auto score=match_score(q,title,body,url,host,type);
++        if(!score)continue;
++        candidate.score=*score;
+       }
+-      ++scanned;
+-      if(!matches(q, c.text(2), c.text(3), c.text(4), c.text(5), c.text(6)))continue;
+-      auto score=fts?static_cast<std::int64_t>(-c.real(7)*1000.0):static_cast<std::int64_t>(score_match(q.root, c.text(2), c.text(3)));
+-      hits.push_back( {
+-        c.text(0), c.text(1), score,c.num(8),c.text(9)
+-      });
+-    }
+-    if(!fts)std::stable_sort(hits.begin(), hits.end(), [](const Hit&a, const Hit&b) {
+-      return a.score>b.score;
+-    });
+-    if(hits.size()>static_cast<std::size_t>(limit)) {
+-      hits.resize(static_cast<std::size_t>(limit));
+-      partial=true;
++      hits.push_back(std::move(candidate));
+     }
++    if(!fts)std::stable_sort(hits.begin(),hits.end(),[](const Hit& a,const Hit& b) {return a.score>b.score;});
++    const auto scanned=static_cast<std::int64_t>(candidates.size());
+     auto retrieval=fts?"fts5_bm25_verified":substrings?"fts5_substring_verified":"bounded_scan_recent";
++    std::lock_guard lock(mutex_);Tx tx(db_);
++    require_principal_active_locked(owner);
++    require(current_epoch()==epoch,"E_SESSION_INVALIDATED","Permissions changed; repeat the query",409);
++    refresh_site_publication_locked();
++    // New searches may have consumed the last active slot while matching.
++    if(freeze)session_capacity();
++    const bool changed_publication=publication_sequence_locked()>publication_sequence;
++    std::vector<Hit> visible;
++    for(auto hit:hits) {
++      Stmt row(db_,R"SQL(SELECT s.source_kind,s.site_bindings_json,s.meta_json,d.url,
++ MAX(COALESCE(p.index_generation,0),COALESCE(rp.index_generation,0),COALESCE(cp.index_generation,0)),
++ MAX(COALESCE(p.snippet_generation,0),COALESCE(rp.snippet_generation,0),COALESCE(cp.snippet_generation,0)),
++ CASE WHEN s.source_kind='web' THEN MAX(bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,?),bzs_site_publication(current.source_kind,current.site_bindings_json,current.site_publication_generation,d.url,current.meta_json,'')) ELSE 0 END AS site_mode
++ FROM snapshots s JOIN documents d ON d.id=s.document_id JOIN snapshots current ON current.id=d.current_snapshot
++ LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key
++ LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=?
++ LEFT JOIN document_publication cp ON cp.owner=d.owner AND cp.url_key=d.representation_key
++ WHERE s.id=? AND d.id=? AND d.owner=? AND d.deleted=0 AND d.delete_generation=?
++ AND s.index_allowed=1 AND current.index_allowed=1
++ AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND COALESCE(cp.index_allowed,1)=1 AND site_mode<2)SQL");
++      row.bind(1,hit.representation_key);row.bind(2,hit.representation_key);row.bind(3,hit.snap);
++      row.bind(4,hit.doc);row.bind(5,owner);row.bind(6,hit.deletion_generation);
++      if(!row.step()||row.num(4)>publication_sequence) { partial=true;continue; }
++      hit.snippet_suppressed=row.num(5)>publication_sequence;
++      if(changed_publication&&row.text(0)=="web") {
++        auto bindings=Json::parse(row.text(1),128*1024);
++        if(!bindings.has("version"))bindings=site_bindings_locked(row.text(3),Json::parse(row.text(2),8*1024*1024));
++        const auto history=publication_history_locked(owner,bindings.at("urls"),publication_sequence);
++        // A restrict-then-allow observation during matching cannot revive an
++        // older candidate. Check every frozen redirect identity as well.
++        if(history.at("index_generation").num()>0) { partial=true;continue; }
++        hit.snippet_suppressed=hit.snippet_suppressed||history.at("snippet_generation").num()>0;
++      }
++      visible.push_back(std::move(hit));
++    }
++    hits=std::move(visible);
++    if(hits.size()>static_cast<std::size_t>(limit)) {hits.resize(static_cast<std::size_t>(limit));partial=true;}
+     if(!freeze) {
+       Json results=Json::array();
+       if(!hits.empty()) {
+         // Reuse the frozen-page authorization/publication projection without
+         // persisting a session, its rows, cursor, event log or identity receipt.
+         std::string values="WITH local_results(position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version,snippet_suppressed) AS (VALUES ";
+-        for(std::size_t i=0;i<hits.size();++i)values+=(i?",":"")+std::string("(?,?,?,?,?,?,1,0)");
++        for(std::size_t i=0;i<hits.size();++i)values+=(i?",":"")+std::string("(?,?,?,?,?,?,1,?)");
+         Stmt rows(db_,values+")"+local_result_sql);
+         int parameter=1;
+         for(std::size_t i=0;i<hits.size();++i) {
+@@ -1155,6 +1205,7 @@ namespace bzs {
+           rows.bind(parameter++,static_cast<std::int64_t>(i));
+           rows.bind(parameter++,h.doc);rows.bind(parameter++,h.snap);rows.bind(parameter++,h.score);
+           rows.bind(parameter++,h.publication_generation);rows.bind(parameter++,h.representation_key);
++          rows.bind(parameter++,h.snippet_suppressed?1:0);
+         }
+         rows.bind(parameter++,0);rows.bind(parameter++,owner);
+         rows.bind(parameter++,site_publication_legacy_withdrawn_?1:0);rows.bind(parameter,limit);
+@@ -1168,6 +1219,7 @@ namespace bzs {
+       out.set("coverage","authorized_local_documents_only");out.set("retrieval",retrieval);out.set("query",q.json());
+       tx.commit();return out;
+     }
++    const auto now=clock_();
+     auto id=random_id();
+     Stmt ins(db_, "INSERT INTO sessions VALUES(?,?,?,?,?,?,?,?,?)");
+     ins.bind(1, id);
+@@ -1182,13 +1234,13 @@ namespace bzs {
+     ins.step();
+     std::int64_t p=0;
+     for(const auto&h:hits) {
+-      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version)VALUES(?,?,?,?,?,?,?,1)");
++      Stmt row(db_, "INSERT INTO session_rows(session_id,position,document_id,snapshot_id,score,publication_generation,representation_key,site_binding_version,snippet_suppressed)VALUES(?,?,?,?,?,?,?,1,?)");
+       row.bind(1, id);
+       row.bind(2, p++);
+       row.bind(3, h.doc);
+       row.bind(4, h.snap);
+       row.bind(5, h.score);
+-      row.bind(6,h.publication_generation);row.bind(7,h.representation_key);
++      row.bind(6,h.publication_generation);row.bind(7,h.representation_key);row.bind(8,h.snippet_suppressed?1:0);
+       row.step();
+     }
+     Json out=Json::object();
+diff --git a/tests/unit.cpp b/tests/unit.cpp
+index 5fb4759..1a9ed86 100644
+--- a/tests/unit.cpp
++++ b/tests/unit.cpp
+@@ -6,6 +6,8 @@
+ #include <sqlite3.h>
+ #include <atomic>
+ #include <barrier>
++#include <chrono>
++#include <condition_variable>
+ #include <exception>
+ #include <fstream>
+ #include <functional>
+@@ -14,6 +16,13 @@
+ #include <set>
+ #include <thread>
+ #include <vector>
++namespace bzs {
++  struct StoreSearchTestAccess {
++    static void set(Store& store,std::function<void()> callback) {
++      std::lock_guard lock(store.mutex_);store.search_unlocked_for_test_=std::move(callback);
++    }
++  };
++}
+ using namespace bzs;
+ namespace {
+   using Test=std::pair<std::string, std::function<void()>>;
+@@ -57,6 +66,47 @@ namespace {
+   Query q(const std::string&s) {
+     return parse_query(Json::string(s));
+   }
++  // A handshaked barrier establishes that another Store operation completes
++  // while matching is paused. The timeout is only a deadlock watchdog, not a
++  // query-performance threshold; both threads are released/joined on failure.
++  Json search_while(Store& store,bool freeze,const std::function<void()>& action,const std::string& query="NOT absent") {
++    std::mutex mutex;std::condition_variable changed;
++    bool entered=false,released=false,finished=false,action_finished=false,transaction_free=false;
++    Json response;std::exception_ptr search_error,action_error;
++    StoreSearchTestAccess::set(store,[&] {
++      std::unique_lock lock(mutex);if(entered)return;
++      transaction_free=sqlite3_get_autocommit(store.raw_handle())!=0;entered=true;changed.notify_all();
++      changed.wait(lock,[&]{return released;});
++    });
++    std::thread searcher([&] {
++      try {response=freeze?store.search("alice",q(query),2000,100):store.search_once("alice",q(query),2000,100);}
++      catch(...) {search_error=std::current_exception();}
++      {std::lock_guard lock(mutex);finished=true;}changed.notify_all();
++    });
++    bool reached=false,progressed=false;
++    {
++      std::unique_lock lock(mutex);
++      reached=changed.wait_for(lock,std::chrono::seconds(5),[&]{return entered||finished;})&&entered;
++    }
++    std::thread actor;
++    if(reached) {
++      actor=std::thread([&] {
++        try {action();}catch(...) {action_error=std::current_exception();}
++        {std::lock_guard lock(mutex);action_finished=true;}changed.notify_all();
++      });
++      std::unique_lock lock(mutex);
++      progressed=changed.wait_for(lock,std::chrono::seconds(5),[&]{return action_finished;});
++    }
++    {std::lock_guard lock(mutex);released=true;}changed.notify_all();
++    searcher.join();if(actor.joinable())actor.join();StoreSearchTestAccess::set(store,{});
++    CHECK(reached);CHECK(progressed);CHECK(transaction_free);
++    if(action_error)std::rethrow_exception(action_error);
++    if(search_error)std::rethrow_exception(search_error);
++    return response;
++  }
++  Json search_hits(Store& store,bool freeze,const Json& result) {
++    return freeze?store.page("alice",result.at("session_id").str(),"",100).at("hits"):result.at("hits");
++  }
+   Json req(const std::string&op, const Json&params) {
+     auto j=Json::object();
+     j.set("operation", op);
+@@ -1720,6 +1770,148 @@ namespace {
+     CHECK(worker.calls.size()==2);
+   }
+ 
++
++  TEST(combined_match_score_keeps_legacy_weights_filters_and_field_semantics) {
++    struct Case {std::string expression,title,body;std::optional<int> score;};
++    const std::vector<Case> cases={
++      {"marker","MARKER marker","marker",9},
++      {"intitle:marker","MARKER marker","marker",9},
++      {"inbody:marker","marker marker marker marker marker marker","marker marker marker marker marker marker marker marker marker marker marker marker",30},
++      {"NOT absent","marker","marker",0},
++      {"NOT marker","marker","other",std::nullopt},
++      {"marker OR absent","marker","marker absent",6},
++      {"\"alpha beta\" AND NOT forbidden","Alpha Beta","alpha beta alpha beta",6},
++      {"café","CAFÉ","café",1},
++      {"Москва","Москва","москва",4},
++      {"c++","C++ c++20 ac++","c++ c++foo",9},
++      {"site:elsewhere.example marker","marker","marker",std::nullopt},
++      {"filetype:html marker","marker","marker",std::nullopt}};
++    for(bool reverse:{false,true})for(std::size_t i=0;i<cases.size();++i) {
++      const auto& value=cases[reverse?cases.size()-1-i:i];const auto query=q(value.expression);
++      const auto score=match_score(query,value.title,value.body,"https://x.example/marker","x.example","text/plain");
++      CHECK(score==value.score);CHECK(matches(query,value.title,value.body,"https://x.example/marker","x.example","text/plain")==score.has_value());
++      if(score)CHECK(score_match(query.root,value.title,value.body)==*value.score);
++    }
++    const auto url=parse_query(Json::parse(R"({"op":"phrase","field":"url","value":"marker"})"));
++    CHECK(match_score(url,"marker","marker marker","https://x.example/marker","x.example","text/plain")==6);
++    CHECK(match_score(url,"neutral","other","https://x.example/marker","x.example","text/plain")==0);
++    CHECK(!match_score(url,"marker","marker","https://x.example/other","x.example","text/plain"));
++  }
++  TEST(search_matching_releases_store_lock_and_sqlite_transaction_for_every_path) {
++    for(bool freeze:{false,true})for(const auto* query:{"marker","\"arker\"","NOT absent"}) {
++      Store store(":memory:");store.ingest("alice",text("https://x.example/a","marker local content"));
++      store.ingest("bob",text("https://x.example/b","marker other owner"));
++      const auto result=search_while(store,freeze,[&] {
++        CHECK(store.stats("bob").at("documents").num()==1);
++        store.ingest("bob",text("https://x.example/new","marker concurrent import"));
++        CHECK(store.stats("bob").at("documents").num()==2);
++      },query);
++      CHECK(search_hits(store,freeze,result).size()==1);CHECK(!result.at("partial").flag());
++      CHECK(result.at("scanned_candidates").num()==1);
++    }
++  }
++  TEST(search_matching_rechecks_deleted_and_reimported_candidate_identity) {
++    for(bool freeze:{false,true})for(bool reimport:{false,true}) {
++      Store store(":memory:");const auto old=store.ingest("alice",text("https://x.example/a","marker old"));
++      const auto result=search_while(store,freeze,[&] {
++        store.erase("alice",old.at("document_id").str());
++        if(reimport)store.ingest("alice",text("https://x.example/a","marker new"));
++      });
++      CHECK(search_hits(store,freeze,result).size()==0);CHECK(result.at("partial").flag());
++      CHECK(result.at("scanned_candidates").num()==1);
++      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==(reimport?1:0));
++    }
++  }
++  TEST(search_matching_preserves_immutable_revision_or_marks_pruning_partial) {
++    for(bool freeze:{false,true})for(bool prune:{false,true}) {
++      StoreOptions options;options.max_revisions_per_document=prune?1:5;
++      Store store(":memory:",{},options);const auto old=store.ingest("alice",text("https://x.example/a","marker original"));
++      const auto result=search_while(store,freeze,[&] {store.ingest("alice",text("https://x.example/a","replacement text"));},"marker");
++      const auto found=search_hits(store,freeze,result);CHECK(found.size()==(prune?0U:1U));
++      CHECK(result.at("partial").flag()==prune);
++      if(!prune)CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());
++      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==0);
++    }
++  }
++  TEST(search_matching_rechecks_principal_revocation_before_any_result_or_receipt) {
++    for(bool freeze:{false,true})for(bool other_handle:{false,true}) {
++      Temp temp;Store store(temp.path/"db");Store other(temp.path/"db");
++      store.ingest("alice",text("https://x.example/a","marker private"));
++      rejects([&] {search_while(store,freeze,[&] {(other_handle?other:store).revoke_principal("admin","alice");});},"E_PRINCIPAL_REVOKED");
++      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==0);
++      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM search_stream_receipts")==0);
++      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM snapshots")==1);
++    }
++  }
++  TEST(search_matching_rechecks_active_session_capacity_at_commit) {
++    Temp temp;Store store(temp.path/"db");store.ingest("alice",text("https://x.example/a","marker"));
++    for(int i=0;i<63;++i)store.search("alice",q("marker"));
++    rejects([&] {search_while(store,true,[&] {
++      StoreSearchTestAccess::set(store,{});store.search("alice",q("marker"));
++      CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==64);
++    });},"E_QUOTA");
++    CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM sessions")==64);
++    CHECK(database_scalar(temp.path/"db","SELECT COUNT(*) FROM search_stream_receipts")==64);
++    CHECK(store.search_once("alice",q("marker")).at("returned_count").num()==1);
++  }
++  TEST(search_source_withdrawal_does_not_change_independent_local_snapshot_ownership) {
++    for(bool freeze:{false,true}) {
++      Store store(":memory:");store.activate_source_publication(test_registry());
++      store.ingest("alice",text("https://x.example/a","marker local import"));
++      store.ingest("bob",text("https://x.example/b","marker unrelated owner"));
++      const auto result=search_while(store,freeze,[&] {store.activate_source_publication(SourceRegistry(Json::parse(R"({"version":1,"sources":[]})")));});
++      const auto found=search_hits(store,freeze,result);CHECK(found.size()==1);
++      CHECK(found.at(0).at("url").str()=="https://x.example/a");CHECK(!result.at("partial").flag());
++    }
++  }
++  Json search_site_config(const std::string& mode="allowed") {
++    auto manifest=Json::parse(R"({"version":1,"sites":[{"id":"scan-site","enabled":true,"origin":"https://scan.example","path_prefixes":["/"],"review":{"status":"approved","payment_scheme":"no_payment","automated_access":"approved","checked_at":"2020-01-01T00:00:00Z","expires_at":"2999-01-01T00:00:00Z","terms_url":"https://scan.example/terms","cache_policy":"allowed_with_limits","redistribution_policy":"allowed_with_limits","approved_by":"offline-fixture"},"limits":{"max_concurrency":1,"min_interval_ms":0,"request_quota":1000,"quota_window_seconds":86400}}]})");
++    auto review=manifest.at("sites").at(0).at("review");
++    if(mode=="rejected")review.set("status","rejected");
++    if(mode=="links_only")review.set("redistribution_policy","links_only");
++    return manifest;
++  }
++  Json search_web_artifact(Store& store,const std::string& url,const std::string& final_url="",Json redirects=Json::array(),const std::string& mode="allowed") {
++    ParsedDocument parsed;parsed.title="marker original title";parsed.text="marker original secret";parsed.content_type="text/plain";parsed.parser_version="search-concurrency/1";
++    parsed.index_allowed=mode!="noindex";
++    parsed.publication=Json::parse(R"({"version":"bzs-publication-1","index_allowed":true,"snippet_allowed":true,"follow_allowed":true,"snippet_text":"marker original secret","snippet_title":"marker original title","directives":[],"diagnostics":[]})");
++    if(mode!="allowed") {parsed.publication.set("snippet_allowed",false);parsed.publication.set("snippet_text","");parsed.publication.set("snippet_title","");}
++    if(mode=="noindex")parsed.publication.set("index_allowed",false);
++    auto meta=Json::object();meta.set("final_url",final_url.empty()?url:final_url);meta.set("redirects",redirects);
++    return store.ingest_web("alice",{url,parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice",url));
++  }
++  TEST(search_matching_rechecks_site_restrictions_even_after_relaxation) {
++    for(bool freeze:{false,true})for(const auto* mode:{"rejected","links_only"})for(bool relax:{false,true}) {
++      Store store(":memory:");store.activate_site_publication(SiteRegistry(search_site_config()));
++      const auto old=search_web_artifact(store,"https://scan.example/a");
++      const auto result=search_while(store,freeze,[&] {
++        store.activate_site_publication(SiteRegistry(search_site_config(mode)));
++        if(relax)store.activate_site_publication(SiteRegistry(search_site_config()));
++      });
++      const auto found=search_hits(store,freeze,result);
++      if(std::string(mode)=="rejected") {CHECK(found.size()==0);CHECK(result.at("partial").flag());}
++      else {CHECK(found.size()==1);CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());CHECK(found.at(0).at("snippet").str().empty());CHECK(found.at(0).at("title").str()=="https://scan.example/a");}
++    }
++  }
++  TEST(search_matching_rechecks_page_and_frozen_redirect_history_after_relaxation) {
++    for(bool freeze:{false,true})for(const auto* mode:{"noindex","nosnippet"})for(const auto* identity:{"logical","final","intermediate"}) {
++      Store store(":memory:");const std::string logical="https://scan.example/a",intermediate="https://middle.example/b",final="https://final.example/c";
++      const auto old=search_web_artifact(store,logical,final,Json::parse("[\""+intermediate+"\",\""+final+"\"]"));
++      const auto target=std::string(identity)=="logical"?logical:std::string(identity)=="final"?final:intermediate;
++      const auto result=search_while(store,freeze,[&] {
++        search_web_artifact(store,target,"",Json::array(),mode);
++        search_web_artifact(store,target); // Current allow must not revive the captured old snapshot.
++      });
++      const auto found=search_hits(store,freeze,result);
++      if(std::string(mode)=="noindex") {CHECK(found.size()==0);CHECK(result.at("partial").flag());}
++      else {CHECK(found.size()==1);CHECK(found.at(0).at("snapshot_id").str()==old.at("snapshot_id").str());CHECK(found.at(0).at("snippet").str().empty());CHECK(found.at(0).at("title").str()==logical);}
++      // A genuinely new read remains eligible, proving the barrier is a
++      // captured-artifact fence, not an accidental permanent URL blacklist.
++      StoreSearchTestAccess::set(store,{});search_web_artifact(store,logical,final,Json::parse("[\""+intermediate+"\",\""+final+"\"]"));
++      CHECK(store.search_once("alice",q("marker")).at("returned_count").num()>0);
++    }
++  }
++
+ }
+ int main() {
+   std::size_t passed=0;

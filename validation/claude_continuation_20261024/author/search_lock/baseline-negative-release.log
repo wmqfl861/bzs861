@@ -1,0 +1,3 @@
+2000 docs x 200 KiB
+query NOT "alpha beta"                                                            search=2130 ms, worst concurrent stats()=2129 ms, retrieval=bounded_scan_recent
+query NOT "alpha beta" AND NOT "gamma delta" AND NOT "epsilon zeta" AND NOT "eta theta" search=2630 ms, worst concurrent stats()=2629 ms, retrieval=bounded_scan_recent

@@ -1,0 +1,208 @@
+{
+  "original_config": "build-CTestTestfile.original.cmake",
+  "original_sha256": "46cc3b5d22caca24fc9b641c4a969025d120f936b1d64cb34163f12fa5bac037",
+  "guarded_config": "build-CTestTestfile.guarded.cmake",
+  "guarded_sha256": "1569bfe91685ed27d9fc72038724f515077ee9a95edbe4d270f11332617d5cbb",
+  "guard_sha256": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+  "native_command_count": 15,
+  "ctest_count": 27,
+  "only_prefix_changed": true,
+  "all_properties_and_other_commands_byte_unchanged": true,
+  "commands": [
+    {
+      "test": "core",
+      "target": "bzs_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_tests",
+      "expected_sha256": "c998e4c8280bda554c179e9803458691986d4a40c6575bd457288c04739f34c9",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "c998e4c8280bda554c179e9803458691986d4a40c6575bd457288c04739f34c9"
+      ],
+      "original_line": "add_test([=[core]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_tests\")",
+      "guarded_line": "add_test([=[core]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"c998e4c8280bda554c179e9803458691986d4a40c6575bd457288c04739f34c9\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_tests\")"
+    },
+    {
+      "test": "batch",
+      "target": "bzs_batch_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_batch_tests",
+      "expected_sha256": "d9b44bafb7c5472ebda5ebbceba0e5f3214f4180819106655c263da9816224d8",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "d9b44bafb7c5472ebda5ebbceba0e5f3214f4180819106655c263da9816224d8"
+      ],
+      "original_line": "add_test([=[batch]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_batch_tests\")",
+      "guarded_line": "add_test([=[batch]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"d9b44bafb7c5472ebda5ebbceba0e5f3214f4180819106655c263da9816224d8\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_batch_tests\")"
+    },
+    {
+      "test": "map",
+      "target": "bzs_map_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_map_tests",
+      "expected_sha256": "584719c51d50202ef4cf9ab96929884f86e4c24250133e10f04decc0a041a617",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "584719c51d50202ef4cf9ab96929884f86e4c24250133e10f04decc0a041a617"
+      ],
+      "original_line": "add_test([=[map]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_map_tests\")",
+      "guarded_line": "add_test([=[map]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"584719c51d50202ef4cf9ab96929884f86e4c24250133e10f04decc0a041a617\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_map_tests\")"
+    },
+    {
+      "test": "crawl",
+      "target": "bzs_crawl_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_crawl_tests",
+      "expected_sha256": "9996f7760b934b98769dbf984b400ca924e75808a656b33f45d7f4d7ea7a0db1",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "9996f7760b934b98769dbf984b400ca924e75808a656b33f45d7f4d7ea7a0db1"
+      ],
+      "original_line": "add_test([=[crawl]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_crawl_tests\")",
+      "guarded_line": "add_test([=[crawl]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"9996f7760b934b98769dbf984b400ca924e75808a656b33f45d7f4d7ea7a0db1\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_crawl_tests\")"
+    },
+    {
+      "test": "site_publication",
+      "target": "bzs_site_publication_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_site_publication_tests",
+      "expected_sha256": "8f34ecc32edd53a0a71c62fe0a8803aef7cf2d317744899e68404b7dca7de1d0",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "8f34ecc32edd53a0a71c62fe0a8803aef7cf2d317744899e68404b7dca7de1d0"
+      ],
+      "original_line": "add_test([=[site_publication]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_site_publication_tests\")",
+      "guarded_line": "add_test([=[site_publication]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"8f34ecc32edd53a0a71c62fe0a8803aef7cf2d317744899e68404b7dca7de1d0\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_site_publication_tests\")"
+    },
+    {
+      "test": "retention",
+      "target": "bzs_retention_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_retention_tests",
+      "expected_sha256": "200e8c547364afb8dd766f111ba3ee44d391680776f78eb61f20257724ba2460",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "200e8c547364afb8dd766f111ba3ee44d391680776f78eb61f20257724ba2460"
+      ],
+      "original_line": "add_test([=[retention]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_retention_tests\")",
+      "guarded_line": "add_test([=[retention]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"200e8c547364afb8dd766f111ba3ee44d391680776f78eb61f20257724ba2460\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_retention_tests\")"
+    },
+    {
+      "test": "fairness",
+      "target": "bzs_fairness_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_fairness_tests",
+      "expected_sha256": "e65c27641cdbf26070eb7494805b741c307bf1fa74ee7bd2506ccabb2748561e",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "e65c27641cdbf26070eb7494805b741c307bf1fa74ee7bd2506ccabb2748561e"
+      ],
+      "original_line": "add_test([=[fairness]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_fairness_tests\")",
+      "guarded_line": "add_test([=[fairness]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"e65c27641cdbf26070eb7494805b741c307bf1fa74ee7bd2506ccabb2748561e\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_fairness_tests\")"
+    },
+    {
+      "test": "sessions",
+      "target": "bzs_session_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_session_tests",
+      "expected_sha256": "7ad4db2598e35d12684fce467abf0c73aa2302f7bea45c1631cb74b7c4a9e651",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "7ad4db2598e35d12684fce467abf0c73aa2302f7bea45c1631cb74b7c4a9e651"
+      ],
+      "original_line": "add_test([=[sessions]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_session_tests\")",
+      "guarded_line": "add_test([=[sessions]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"7ad4db2598e35d12684fce467abf0c73aa2302f7bea45c1631cb74b7c4a9e651\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_session_tests\")"
+    },
+    {
+      "test": "source_publication",
+      "target": "bzs_source_publication_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_source_publication_tests",
+      "expected_sha256": "912553f4ab70301a06f495d4d9c5da4d42216ece01b6e35ffa59cdcc646de84f",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "912553f4ab70301a06f495d4d9c5da4d42216ece01b6e35ffa59cdcc646de84f"
+      ],
+      "original_line": "add_test([=[source_publication]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_source_publication_tests\")",
+      "guarded_line": "add_test([=[source_publication]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"912553f4ab70301a06f495d4d9c5da4d42216ece01b6e35ffa59cdcc646de84f\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_source_publication_tests\")"
+    },
+    {
+      "test": "search_modes",
+      "target": "bzs_search_mode_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_search_mode_tests",
+      "expected_sha256": "d2bbd9b7398d68f9dabf89bab719d0749d96063ec855fbcb062f534339344449",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "d2bbd9b7398d68f9dabf89bab719d0749d96063ec855fbcb062f534339344449"
+      ],
+      "original_line": "add_test([=[search_modes]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_search_mode_tests\")",
+      "guarded_line": "add_test([=[search_modes]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"d2bbd9b7398d68f9dabf89bab719d0749d96063ec855fbcb062f534339344449\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_search_mode_tests\")"
+    },
+    {
+      "test": "revalidation",
+      "target": "bzs_revalidation_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_revalidation_tests",
+      "expected_sha256": "236974292f3e857fe58cb8055a1ed302920d8775c91d92c7b87f77b8f74c743d",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "236974292f3e857fe58cb8055a1ed302920d8775c91d92c7b87f77b8f74c743d"
+      ],
+      "original_line": "add_test([=[revalidation]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_revalidation_tests\")",
+      "guarded_line": "add_test([=[revalidation]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"236974292f3e857fe58cb8055a1ed302920d8775c91d92c7b87f77b8f74c743d\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_revalidation_tests\")"
+    },
+    {
+      "test": "revocation",
+      "target": "bzs_revocation_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_revocation_tests",
+      "expected_sha256": "1bdbde68ef936ef26515ac2fa6aa8d7661711a3656ba10e190414986abbe5160",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "1bdbde68ef936ef26515ac2fa6aa8d7661711a3656ba10e190414986abbe5160"
+      ],
+      "original_line": "add_test([=[revocation]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_revocation_tests\")",
+      "guarded_line": "add_test([=[revocation]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"1bdbde68ef936ef26515ac2fa6aa8d7661711a3656ba10e190414986abbe5160\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_revocation_tests\")"
+    },
+    {
+      "test": "capacity_cycles",
+      "target": "bzs_capacity_cycles_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_capacity_cycles_tests",
+      "expected_sha256": "8e234a0cf8249729d7b780e6c840820dc4409402c88cd206b918f8ee78f0516f",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "8e234a0cf8249729d7b780e6c840820dc4409402c88cd206b918f8ee78f0516f"
+      ],
+      "original_line": "add_test([=[capacity_cycles]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_capacity_cycles_tests\")",
+      "guarded_line": "add_test([=[capacity_cycles]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"8e234a0cf8249729d7b780e6c840820dc4409402c88cd206b918f8ee78f0516f\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_capacity_cycles_tests\")"
+    },
+    {
+      "test": "cache_freshness",
+      "target": "bzs_cache_freshness_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_cache_freshness_tests",
+      "expected_sha256": "0dc95effc12cdcc17cbb05430815950559429de51d2a1ff8bee8116a736781b6",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "0dc95effc12cdcc17cbb05430815950559429de51d2a1ff8bee8116a736781b6"
+      ],
+      "original_line": "add_test([=[cache_freshness]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_cache_freshness_tests\")",
+      "guarded_line": "add_test([=[cache_freshness]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"0dc95effc12cdcc17cbb05430815950559429de51d2a1ff8bee8116a736781b6\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_cache_freshness_tests\")"
+    },
+    {
+      "test": "contracts",
+      "target": "bzs_contract_tests",
+      "executable": "/workspace/scratch/e2371129386d/bzs861/build/bzs_contract_tests",
+      "expected_sha256": "09c26017684dbcb62c8ac653ccbcaf075ca5aef1a1260ec9cdb91b0e9ba196ac",
+      "prefix_argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py",
+        "09c26017684dbcb62c8ac653ccbcaf075ca5aef1a1260ec9cdb91b0e9ba196ac"
+      ],
+      "original_line": "add_test([=[contracts]=] \"/workspace/scratch/e2371129386d/bzs861/build/bzs_contract_tests\" \"/workspace/scratch/e2371129386d/bzs861/docs/planning/validation/contract_cases.json\")",
+      "guarded_line": "add_test([=[contracts]=] \"/workspace/scratch/e2371129386d/bzs861/.venv/bin/python\" \"/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/guard.py\" \"09c26017684dbcb62c8ac653ccbcaf075ca5aef1a1260ec9cdb91b0e9ba196ac\" \"/workspace/scratch/e2371129386d/bzs861/build/bzs_contract_tests\" \"/workspace/scratch/e2371129386d/bzs861/docs/planning/validation/contract_cases.json\")"
+    }
+  ]
+}

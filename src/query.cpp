@@ -261,6 +261,21 @@ namespace bzs {
       if(n.field=="url")return in(LoweredFields::get(f.url, f.lower_url));
       return in(title())||in(body());
     }
+    bool filters_match(const Query& q,std::string_view host,std::string_view type) {
+      for(const auto& h:q.hosts)if(host!=h&&!(host.size()>h.size()&&host.ends_with("."+h)))return false;
+      for(const auto& t:q.types)if(type!=t)return false;
+      return true;
+    }
+    int score_fields(const QueryNode& q,const LoweredFields& fields) {
+      int score=0;
+      // Preserve legacy ranking: every positive leaf scores both fields even
+      // when its matching scope is title/body/URL; NOT subtrees add nothing.
+      for(const auto* leaf:positive_leaves(q)) {
+        score+=4*static_cast<int>(leaf_matches(LoweredFields::get(fields.title,fields.lower_title),*leaf,5).size());
+        score+=static_cast<int>(leaf_matches(LoweredFields::get(fields.body,fields.lower_body),*leaf,10).size());
+      }
+      return score;
+    }
     std::string fts_quote(std::string_view v) {
       std::string s="\"";
       for(char c:v) {
@@ -413,10 +428,15 @@ namespace bzs {
     return q;
   }
   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type) {
-    for(const auto& h:q.hosts)if(host!=h && !(host.size()>h.size()&&host.ends_with("."+h)))return false;
-    for(const auto&t:q.types)if(type!=t)return false;
+    if(!filters_match(q,host,type))return false;
     const LoweredFields fields{title, body, url, std::nullopt, std::nullopt, std::nullopt};
     return eval(q.root, fields);
+  }
+  std::optional<int> match_score(const Query& q,std::string_view title,std::string_view body,std::string_view url,std::string_view host,std::string_view type) {
+    if(!filters_match(q,host,type))return std::nullopt;
+    const LoweredFields fields{title,body,url,std::nullopt,std::nullopt,std::nullopt};
+    if(!eval(q.root,fields))return std::nullopt;
+    return score_fields(q.root,fields);
   }
   std::optional<std::string> fts_candidates(const Query& q) {
     return fts(q.root);
@@ -431,12 +451,7 @@ namespace bzs {
   }
   int score_match(const QueryNode& q, std::string_view title, std::string_view body) {
     // Used by substring candidates and fallback scans: title hits weigh more, body hits are capped.
-    auto lt=ascii_lower(title), lb=ascii_lower(body);
-    int n=0;
-    for(const auto* leaf:positive_leaves(q)) {
-      n+=4*static_cast<int>(leaf_matches(lt, *leaf, 5).size());
-      n+=static_cast<int>(leaf_matches(lb, *leaf, 10).size());
-    }
-    return n;
+    const LoweredFields fields{title,body,{},std::nullopt,std::nullopt,std::nullopt};
+    return score_fields(q,fields);
   }
 }

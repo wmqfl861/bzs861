@@ -1,0 +1,86 @@
+{
+  "reviewer": "independent retry_after agent",
+  "verdict": "Accepted: imported run.py dependency is now hash-bound; prior evidence-binding finding is resolved for new stages. Existing frozen stage evidence remains unmodified.",
+  "scope": "Narrow recorder-only revision relative to independently reviewed 8e975 snapshot; not a product/full-suite validation result.",
+  "inputs": {
+    "scope": "New recorder dependency-only revision, frozen before root P2-5 gates.",
+    "files": {
+      "run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+      "run_capture.py": "97057ed73c6cf61bd9929eb737d2c43cedb1e8f1f3edbf77ef3204a6af683f9a",
+      "guard.py": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+      "summarize_stage.py": "e6654299ed577336fb974d1137f0a5b51bd3603a788aa859b9707e452cce2b20"
+    },
+    "prior_recorder_sha256": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+    "identical_probe_sha256": "b5ae19b7a0b2843c437a008290fe3669a11b4005e1598fa7cb00e5e51c1fbf3b"
+  },
+  "exact_difference_check": "Removing the single OUT/run.py inputs addition and restoring only its scope-description literal reproduces the prior recorder byte-for-byte. run.py, guard.py and summarize_stage.py hashes are unchanged.",
+  "checks": {
+    "capture_regression": 25,
+    "real_git_enumeration": 19,
+    "total": 44
+  },
+  "results": {
+    "capture": "Same unchanged probe passed 25 checks including byte capture, refusal before duplicate launch, nonzero/timeout behavior and source/artifact drift rejection.",
+    "enumeration": [
+      {
+        "label": "prior",
+        "recorder_sha256": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+        "dependency_in_manifest": false,
+        "wrapper_exit": 0,
+        "source_inputs_unchanged": true
+      },
+      {
+        "label": "corrected",
+        "recorder_sha256": "97057ed73c6cf61bd9929eb737d2c43cedb1e8f1f3edbf77ef3204a6af683f9a",
+        "dependency_in_manifest": true,
+        "wrapper_exit": 125,
+        "source_inputs_unchanged": false
+      }
+    ],
+    "root_script_still_matches_frozen_sha256": "97057ed73c6cf61bd9929eb737d2c43cedb1e8f1f3edbf77ef3204a6af683f9a"
+  },
+  "previous_finding_resolution": "A successful child that changes the actual imported run.py in an isolated Git fixture is accepted by the prior recorder but rejected with wrapper125 by this revision; the original imported dependency hash is present in execution-inputs.json. inputs() was used without monkeypatching in this comparison.",
+  "unchanged_contracts": [
+    "Child argv/environment/cwd/timeout, output bytes and nonzero status handling remain unchanged.",
+    "Completed command JSON and hashes establish acceptance; output is written once after child completion, not by atomic rename.",
+    "The old recorder report, its prior dependency omission, and all old stage records remain retained."
+  ],
+  "rerun": {
+    "capture": "Copy unchanged probe.py and snapshot/run_capture.py to a fresh directory, then python3 NEW/probe.py. Never rerun into evidence folders with existing runs/execution.json.",
+    "enumeration": "enumeration_probe.py uses its adjacent snapshot plus the prior snapshot at /tmp/bzs-recorder-independent/snapshot. In a fresh output directory, copy this probe and new snapshot; restore that exact prior snapshot from the prior archived report if absent, then python3 NEW/enumeration_probe.py.",
+    "archive": "Retain all files listed in evidence_sha256 plus review.json, omitting __pycache__. success/child.log contains non-UTF8 bytes; byte-copy it or preserve base64 with original and storage SHA mappings."
+  },
+  "evidence_sha256": {
+    "enumeration_probe.py": "c4b8db6ae93070786b5d96e2dbacbceabdadf08fcfa0798b533b53c280ecb8fa",
+    "enumeration-execution.json": "0c16a67cf9258846b38b27cbe291a678d524f31cdbafba256f495d9a6e2dae7e",
+    "probe.py": "b5ae19b7a0b2843c437a008290fe3669a11b4005e1598fa7cb00e5e51c1fbf3b",
+    "diff.patch": "86d0298a10c29235b90328c4f58a2bba928869853f008bb1ac767ad2abea82e4",
+    "execution.json": "eee6f13caa9850f2869a8260b30ebed4d7898d842e421007d477a472b2955032",
+    "inputs.json": "3108be6f8c2a88247f92ce093c4b478e0f8f05e6d90cc7742be80478fdc73fb2",
+    "enumeration-prior/execution-inputs.json": "80247bc474d74b6fe13f274a7da5657c2a279034c164ac3cf5b81e2b003b741d",
+    "enumeration-prior/child-command.json": "adcc5a25b39a5ef0ca16c3621cac2357e99060096b0f835996cf5bd893099b4f",
+    "enumeration-prior/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "enumeration-corrected/execution-inputs.json": "4bdb4f72b96b8d0ee6b0e45ac186620886c78bf858e165ac2ee61eed907cb9e3",
+    "enumeration-corrected/child-command.json": "e3cae13e3de71654dc7c254f1a891176903fa4c5f24a0b363bbffe742301ca6f",
+    "enumeration-corrected/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot/run_capture.py": "97057ed73c6cf61bd9929eb737d2c43cedb1e8f1f3edbf77ef3204a6af683f9a",
+    "snapshot/run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+    "snapshot/summarize_stage.py": "e6654299ed577336fb974d1137f0a5b51bd3603a788aa859b9707e452cce2b20",
+    "snapshot/guard.py": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+    "runs/timeout/execution-inputs.json": "282b07b8807ec5cca6d39e5955ba1bcf79193e473c536fbcb428fd01565c49c3",
+    "runs/timeout/child-command.json": "180dc27a90f9a733b0893d4c7111533bd3d07874dcc5d4e88d7e3c7e1df77963",
+    "runs/timeout/child.log": "d6f741d7fd2d0237783fa75cc1e4a11b58ac55254ad2bd512d9d6b6f257ce15d",
+    "runs/success/execution-inputs.json": "282b07b8807ec5cca6d39e5955ba1bcf79193e473c536fbcb428fd01565c49c3",
+    "runs/success/child-command.json": "ace9feefda2d3a1180b52cb8d65feaf15406858a08940d2c7a6a24428dfa7df1",
+    "runs/success/child.log": "3f0abee89eab5c1de651a07b2f881c9ad8abe05f3ce94439a9de06316499d196",
+    "runs/source-drift/execution-inputs.json": "282b07b8807ec5cca6d39e5955ba1bcf79193e473c536fbcb428fd01565c49c3",
+    "runs/source-drift/child-command.json": "2513a1f5a163a177ba7b886ac13bb1bccdee233141fb6bd6564bfc4eb1b5461d",
+    "runs/source-drift/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runs/binary-drift/execution-inputs.json": "a90c5c88deff0f16dec88d4cec2253aeb6071d713eae49e32670981b3127fba7",
+    "runs/binary-drift/child-command.json": "cef9fe1c05a3d13e2af68b8a521a33f29ce9fc6f2803f0bb28c2d021e4a4d6a2",
+    "runs/binary-drift/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runs/nonzero/execution-inputs.json": "282b07b8807ec5cca6d39e5955ba1bcf79193e473c536fbcb428fd01565c49c3",
+    "runs/nonzero/child-command.json": "c4b174a4b317936c7c4593ccc1e8f78bb53d25830ef89311d907ddcda0f32290",
+    "runs/nonzero/child.log": "0f1fcdc2382e33d879d9599701d948f391e53aeba24826b9d229233ab82d4937"
+  }
+}

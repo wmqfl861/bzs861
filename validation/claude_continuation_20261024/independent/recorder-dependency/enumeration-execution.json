@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "checks": 19,
+  "cases": [
+    {
+      "label": "prior",
+      "recorder_sha256": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+      "dependency_in_manifest": false,
+      "wrapper_exit": 0,
+      "source_inputs_unchanged": true
+    },
+    {
+      "label": "corrected",
+      "recorder_sha256": "97057ed73c6cf61bd9929eb737d2c43cedb1e8f1f3edbf77ef3204a6af683f9a",
+      "dependency_in_manifest": true,
+      "wrapper_exit": 125,
+      "source_inputs_unchanged": false
+    }
+  ],
+  "scope": "Unmodified inputs() enumerated real isolated Git repositories; only fixture run.py was changed by successful child commands. Root was read only."
+}

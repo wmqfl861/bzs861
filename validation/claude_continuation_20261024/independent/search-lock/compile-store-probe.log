@@ -1,0 +1,14 @@
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp: In function ‘bzs::Json {anonymous}::web(bzs::Store&, const std::string&, const std::string&, const std::string&, const std::vector<std::__cxx11::basic_string<char> >&, const std::string&, const std::string&)’:
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp:32:3: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+   32 |   for(const auto& item:redirects)chain.push(Json::string(item));meta.set("redirects",chain);
+      |   ^~~
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp:32:65: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+   32 |   for(const auto& item:redirects)chain.push(Json::string(item));meta.set("redirects",chain);
+      |                                                                 ^~~~
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp: In function ‘{anonymous}::Outcome {anonymous}::interleave(bzs::Store&, bool, int, const std::function<void()>&, const std::string&)’:
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp:60:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   60 |   if(other_error)std::rethrow_exception(other_error);return out;
+      |   ^~
+validation/claude_continuation_20261024/independent/search-lock/probe.cpp:60:54: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   60 |   if(other_error)std::rethrow_exception(other_error);return out;
+      |                                                      ^~~~~~
