@@ -1,0 +1,463 @@
+{
+  "created_at_utc": "2026-10-24T05:40:14.040499+00:00",
+  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "issues": [
+    {
+      "id": "P1-2",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "MCP search_local 改用 search.once；不创建持久冻结会话、游标或收据，冻结搜索原配额保持。",
+      "coverage": "单次查询容量、70 次真实 MCP stdio、删除/发布/撤销投影",
+      "local_commit": "f0e8219e2202447805cfbb03c83116eca30d5645",
+      "github_commit": "28cee594fcb4315ea4a929bdf3e67d305cb8f807",
+      "tree": "e6b4c4b0d349e2d9b81130b4a717424d4fa8654c",
+      "stage": "p1-2",
+      "result": "p1-2/result.json",
+      "result_sha256": "30d8148d145632cd97ff26eac977a60758b91ae9b9a13b54bd4cdf0bdd59b73f",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "python/tests/test_mcp_sessions.py",
+          "sha256": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_local_single_response_never_allocates_a_frozen_session"
+          ]
+        },
+        {
+          "path": "tests/e2e_web.py",
+          "sha256": "70defd96a1823954c3395fd6e233446c8deeab5fb684afadffb88f15b11fdf8b",
+          "ctest_target": "e2e_web",
+          "test_names": [
+            "EndToEnd.test_09_mcp_stdio"
+          ]
+        },
+        {
+          "path": "tests/http_revocation.py",
+          "sha256": "c253cb9acb1dedaa017b635608f1c65fa388c581a4e7d88afbf346c50b2c85b9",
+          "ctest_target": "http_revocation",
+          "test_names": [
+            "RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation"
+          ]
+        },
+        {
+          "path": "tests/site_publication.cpp",
+          "sha256": "a0d163ceedc8b2f7a1a3afdcb89bb39468e603aeb4fc1ee89e47616856279d1d",
+          "ctest_target": "site_publication",
+          "test_names": [
+            "restart_links_only_with_zero_http_restricts_stored_and_frozen_publication",
+            "restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication",
+            "restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication"
+          ]
+        },
+        {
+          "path": "tests/unit.cpp",
+          "sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "ctest_target": "core",
+          "test_names": [
+            "single_response_search_has_no_lifetime_or_active_session_cost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-1",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "永久身份与可回收明细容量分离；真实终态保留期压缩后可继续准入，旧键、指纹、归属和计费保持。",
+      "coverage": "真实终态压缩、永久键重放、活动/暂停上限、撤销 owner 回收",
+      "local_commit": "87154c0dfd6fdabea6cbdec78c8011db8e94f865",
+      "github_commit": "34c998bc4b83f51049c3393bdf95ed2bead1dc83",
+      "tree": "1c06c2766930aaf755a1520ffbc1b87b11e62e67",
+      "stage": "p1-1-v2",
+      "result": "p1-1-v2/result.json",
+      "result_sha256": "74f031ca764f12e12507a60463a9558e161833eefe312328c0175ebddfaece3f",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "tests/retention.cpp",
+          "sha256": "9868e2b3652e9a7566d80f8c2446c041d8df76776f486bc30795f2ad450072bd",
+          "ctest_target": "retention",
+          "test_names": [
+            "unarchived_job_capacity_remains_bounded_per_owner_and_globally",
+            "real_terminal_fixture_compaction_releases_capacity_without_losing_identity",
+            "fixture_retention_covers_stable_terminal_states_and_keeps_paused_work",
+            "global_capacity_can_reclaim_revoked_owners_without_restoring_access"
+          ]
+        },
+        {
+          "path": "tests/sessions.cpp",
+          "sha256": "9a5f424b430371f3c690ad79cd7c1bad5916d7b417dfbfe1bf6d0f5abdf13d20",
+          "ctest_target": "sessions",
+          "test_names": [
+            "permanent_search_receipts_do_not_exhaust_future_admission"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P1-3",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "增加保持原匹配语义的子串候选索引；owner/AND 条件先交集再限额，溢出仍进入原文复核。",
+      "coverage": "2101 文档旧目标、AND/owner 交集、overflow、真实旧库迁移",
+      "local_commit": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+      "github_commit": "03697c189949e7a5de2e866e1e2388ea2049d5aa",
+      "tree": "a181c7407e6cd18eeabee643338b2cd78e07ed75",
+      "stage": "p1-3",
+      "result": "p1-3/result.json",
+      "result_sha256": "b607cea38449fe56610675efe0ed0f78898ab698a63bbf8dde30a30c4926e54f",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "tests/unit.cpp",
+          "sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "ctest_target": "core",
+          "test_names": [
+            "store_candidate_predicate_agreement",
+            "substring_index_finds_old_phrases_symbols_and_multilingual_text_before_budget",
+            "substring_candidates_preserve_exact_matching_across_fields_and_boolean_shapes",
+            "substring_overflow_keeps_exact_matches_and_bounds_derived_fields",
+            "known_word_index_upgrade_is_atomic_and_preserves_business_rows",
+            "migrate_both_schema_two_layouts_preserves_records"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2-1",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "允许有界、严格 ASCII 的 Accept-Encoding Vary，绑定准确请求 profile；其他选择及损坏形式仍拒绝复用。",
+      "coverage": "Vary 边界、profile/owner 隔离、304 继承、robots 请求头",
+      "local_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+      "github_commit": "a36ea9cb33a844d4a161246d7da102bb2e14cc78",
+      "tree": "c2823e162903dfe304194cc7023f044035f40023",
+      "stage": "p2-1",
+      "result": "p2-1/result.json",
+      "result_sha256": "c6a531afd5b358696666f0c44175409d70fa32ff4de0c1c9303844073cf11016",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1130,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "python/tests/test_http_revalidation.py",
+          "sha256": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_cache_metadata_accepts_bounded_encoding_selections",
+            "test_cache_metadata_rejects_other_or_ambiguous_encoding_selections",
+            "test_accept_encoding_vary_survives_full_read_and_one_hop_304",
+            "test_304_omitted_vary_preserves_the_prior_encoding_selection",
+            "test_changed_accept_encoding_profile_fetches_one_complete_representation",
+            "test_full_200_remains_readable_but_unsafe_cache_headers_cannot_be_retained",
+            "test_ambiguous_304_preserves_restrictions_without_retry",
+            "test_expired_robots_base_only_becomes_fresh_after_a_bound_304",
+            "test_robots_304_without_trustworthy_freshness_fails_closed_once"
+          ]
+        },
+        {
+          "path": "python/tests/test_robots.py",
+          "sha256": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_robots_freshness_supports_only_fixed_request_selections",
+            "test_robots_freshness_rejects_unknown_or_ambiguous_vary_selections"
+          ]
+        },
+        {
+          "path": "tests/cache_freshness.cpp",
+          "sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+          "ctest_target": "cache_freshness",
+          "test_names": [
+            "vary_accept_encoding_is_the_only_supported_nonempty_selection",
+            "accept_encoding_does_not_override_other_cache_restrictions",
+            "accept_encoding_cache_reuse_keeps_owner_and_request_profile_fences",
+            "merge_304_preserves_omitted_restrictions_and_refreshes_time"
+          ]
+        },
+        {
+          "path": "tests/revalidation.cpp",
+          "sha256": "55c958c546ff692fcddeae5dc4544b573019575c5d79a86b0edb5cf79f40db81",
+          "ctest_target": "revalidation",
+          "test_names": [
+            "accept_encoding_vary_metadata_uses_bounded_ascii_list_semantics",
+            "accept_encoding_304_merge_keeps_selection_and_profile_identity",
+            "accept_encoding_conditional_refresh_retains_the_bound_body"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2-2",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "支持有完整证明的有界 HTTP 跳转缓存和原路线刷新，保留逐跳计费、owner、CAS、删除及发布约束。",
+      "coverage": "原 URL 命中、重启/逐跳刷新/计费、撤销/CAS、publication、8/16 KiB 边界",
+      "local_commit": "1bac5c3b4e5c56df33e6f8de3a65bd5989e70c8b",
+      "github_commit": "07dd85c17fa5d39fb16c7a62a7278eeb038f6e7b",
+      "tree": "7e25bd35cfe99be15d62d1e9f2e4c8943f555f23",
+      "stage": "p2-2-v4",
+      "result": "p2-2-v4/result.json",
+      "result_sha256": "2a3bf81780b8921fca82e55a3b298ec8e05b5345bf773b3d5e9e532e47a5ebfc",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1173,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "python/tests/test_crawl_worker.py",
+          "sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes"
+          ]
+        },
+        {
+          "path": "python/tests/test_http_redirect_cache.py",
+          "sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_private_encoded_size_matches_core_slashes_backslashes_and_utf8",
+            "test_optional_proof_boundary_uses_core_canonical_bytes",
+            "test_oversized_optional_proof_keeps_complete_body_and_prefix_observations",
+            "test_http_chain_final_publication_excludes_original_only_site_rules",
+            "test_rejected_routed_304_does_not_attribute_original_site_rule_to_final",
+            "test_complete_http_chain_reports_each_actual_cache_policy",
+            "test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix",
+            "test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt",
+            "test_new_redirect_from_conditioned_final_never_forwards_its_validator",
+            "test_changed_read_profile_disables_old_conditions_without_retry",
+            "test_304_after_changed_prefix_is_rejected_without_implicit_full_get",
+            "test_soft_redirects_never_create_http_chain_proof",
+            "test_no_store_prefix_survives_a_later_ssrf_refusal",
+            "test_request_grant_stops_before_final_without_resetting_for_hops",
+            "test_body_grant_stops_inside_redirect_without_dispatching_final",
+            "test_ambiguous_location_can_never_become_reusable_proof",
+            "test_redirect_condition_is_strict_before_attempt_retention_or_dispatch",
+            "test_redirect_grant_never_accepts_non_http_or_private_credentials_as_identity",
+            "test_complete_receipt_distinguishes_scope_without_granting_cache_lifetime",
+            "test_actual_final_noindex_remains_in_both_publication_scopes",
+            "test_final_scope_record_is_absent_without_a_complete_successful_200",
+            "test_final_scope_maximum_ascii_fields_keep_existing_rpc_bound"
+          ]
+        },
+        {
+          "path": "tests/cache_freshness.cpp",
+          "sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+          "ctest_target": "cache_freshness",
+          "test_names": [
+            "http_redirect_proof_caches_original_without_creating_a_global_alias",
+            "http_redirect_proof_survives_restart_and_expires_at_prefix_intersection",
+            "http_redirect_profile_changes_require_a_complete_attempt",
+            "legacy_redirects_without_proof_keep_original_conservative_contract",
+            "http_redirect_each_hop_requires_explicit_cacheable_lifetime",
+            "http_redirect_no_store_creates_no_new_body_and_invalidates_bound_old_reuse",
+            "http_redirect_304_batch_accounts_for_every_request_and_redirect_body",
+            "http_redirect_target_deletion_blocks_reuse_but_not_owned_history",
+            "http_redirect_target_deletion_during_profile_rpc_is_checked_at_hit",
+            "http_redirect_304_same_snapshot_metadata_race_is_not_retried",
+            "http_redirect_304_cannot_erase_inflight_final_publication_restriction",
+            "http_redirect_changed_prefix_never_accepts_a_late_final_304",
+            "http_redirect_failed_new_route_invalidates_previously_direct_cache",
+            "http_redirect_late_route_failure_cannot_clear_new_direct_metadata",
+            "http_redirect_intermediate_policy_never_becomes_independent_final_policy",
+            "http_redirect_original_site_ceiling_still_limits_only_its_aggregate",
+            "http_redirect_proof_protocol_tampering_cannot_replace_retained_body",
+            "http_redirect_proof_bytes_are_charged_and_refunded_on_full_replacement",
+            "http_redirect_304_metadata_growth_rolls_back_at_owner_quota",
+            "http_redirect_hop_and_encoded_limits_are_not_trusted_from_worker",
+            "http_redirect_expiry_is_rechecked_after_profile_rpc_before_reuse",
+            "direct_cache_hits_project_current_noindex_without_rewriting_history",
+            "direct_cache_hit_rechecks_publication_after_profile_rpc",
+            "direct_cache_hit_rechecks_same_snapshot_metadata_after_profile_rpc",
+            "direct_cache_guard_does_not_require_a_redirect_publication_fence",
+            "oversized_optional_redirect_grant_uses_one_full_refresh_without_retry",
+            "oversized_optional_redirect_grant_batch_keeps_full_get_known_usage",
+            "oversized_optional_redirect_grant_does_not_authorize_unsolicited_304",
+            "explicit_final_policy_preserves_worker_aggregate_and_independent_final",
+            "final_publication_wrapper_is_strictly_versioned_typed_and_bound",
+            "final_publication_wrapper_requires_complete_successful_200",
+            "final_publication_wrapper_cannot_relax_actual_response_or_aggregate",
+            "bodyless_304_cannot_supply_final_publication_wrapper",
+            "complete_uncacheable_receipt_keeps_final_history_separate",
+            "worker_cannot_inject_the_core_final_scope_marker"
+          ]
+        },
+        {
+          "path": "tests/e2e_cache_freshness.py",
+          "sha256": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+          "ctest_target": "e2e_cache_freshness",
+          "test_names": [
+            "CacheFreshness.test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator",
+            "CacheFreshness.test_http_chain_batch_304_accounts_for_each_request_and_redirect_body",
+            "CacheFreshness.test_http_chain_cache_is_owner_scoped_without_a_global_final_alias",
+            "CacheFreshness.test_failed_new_http_route_invalidates_the_old_direct_cache"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2-3",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "隔离明确无关的损坏 robots UA 标识，保留分组与有效成员；自身、通配和未知损坏仍严格拒绝。",
+      "coverage": "无关损坏 UA、混合组、空规则边界、自身/未知 fail-closed",
+      "local_commit": "026dafb783e1a922abffaf03fc3667f0167d2561",
+      "github_commit": "db0f0d016d74b2f3f0f998a9544a1e6c95c8d2f8",
+      "tree": "d4de828b18cd0a5f078be42b0e9a8842661bbcf4",
+      "stage": "p2-3",
+      "result": "p2-3/result.json",
+      "result_sha256": "0f3afd480c553cccecb2ccf9b7a099a797399d08afdf0fcbdf0a111a3f084add",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1217,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "python/tests/test_robots.py",
+          "sha256": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_damaged_policy_never_silently_turns_into_allow",
+            "test_unrelated_invalid_user_agents_keep_group_boundaries",
+            "test_ignored_invalid_member_does_not_discard_valid_members_of_same_group",
+            "test_empty_rule_still_delimits_an_ignored_invalid_agent_group",
+            "test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule",
+            "test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed",
+            "test_invalid_agent_classification_is_relative_to_the_selected_product"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2-4",
+      "baseline_state": "仍成立",
+      "final_state": "已修",
+      "description": "优先按可用声明字符集替换损坏字节，避免整页换编码；BOM、header/meta 顺序及原始 robots/XML 严格性保持。",
+      "coverage": "损坏 UTF-8/ASCII、header/meta/BOM、Unicode 链接、原始 XML/robots",
+      "local_commit": "54dec2cef34fa7777660b0851220f99869d3f596",
+      "github_commit": "6aa27d2d5c52f5dbd99c6d25e7832a3c66f08c3f",
+      "tree": "269f9fe44f7c88ff5c8c4b2149746aea4c908e17",
+      "stage": "p2-4",
+      "result": "p2-4/result.json",
+      "result_sha256": "8f32ba8506fb997e2c11ac74c7f4f863d6a525dc3edac82cb63675d195aa013f",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1242,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "python/tests/test_crawl_worker.py",
+          "sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage"
+          ]
+        },
+        {
+          "path": "python/tests/test_discovery.py",
+          "sha256": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links",
+            "test_xml_charset_damage_remains_strict_and_cannot_publish_a_valid_prefix"
+          ]
+        },
+        {
+          "path": "python/tests/test_extract.py",
+          "sha256": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038",
+          "ctest_target": "python_worker",
+          "test_names": [
+            "test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset",
+            "test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail",
+            "test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes",
+            "test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding",
+            "test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes",
+            "test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes",
+            "test_invalid_meta_codec_uses_the_existing_undeclared_guess_order"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2-5",
+      "baseline_state": "仍成立",
+      "final_state": "仍成立（已局部优化）",
+      "description": "接纳原补丁：一次 matches() 内每个访问字段最多 ASCII 转换一次；评分重复转换、逐叶扫描和 Store 总锁仍在。",
+      "coverage": "字段/文档隔离、正反顺序 16 断言、ASCII-only 与符号边界",
+      "local_commit": "d688e4f0344d1c13dc70ca6573d3ed44524f0438",
+      "github_commit": "51c10ab5241b9ec3cb412b710a69a70add6cac93",
+      "tree": "c01745ec7239c224fa64c886379fd0808b388ed9",
+      "stage": "p2-5",
+      "result": "p2-5/result.json",
+      "result_sha256": "d90c54470d4ce253284162f35a679bd98b1b2ea93be276803404200057c0c760",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "ctest_skipped": 0,
+      "pytest_passed": 1242,
+      "asan_ubsan_native_targets": 15,
+      "formal_regressions": [
+        {
+          "path": "tests/unit.cpp",
+          "sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "ctest_target": "core",
+          "test_names": [
+            "compound_matching_keeps_fields_and_documents_independent"
+          ]
+        }
+      ]
+    }
+  ],
+  "remaining": [
+    {
+      "id": "P2-5",
+      "state": "仍成立（已局部优化）",
+      "remaining": "Store 总锁及有界扫描仍会阻塞并发 Store 操作。",
+      "basis": "本批原始及 NOT 变体 Release 复现；见 p2-5/benchmark-results.json。"
+    },
+    {
+      "id": "P2-6",
+      "state": "仍成立",
+      "remaining": "后台 dispatcher 串行执行同步工作。",
+      "basis": "结构复核；未新增并发压测，未纳入指定修复顺序。"
+    },
+    {
+      "id": "P2-7",
+      "state": "仍成立",
+      "remaining": "同步 Worker RPC 可占满 HTTP IO 线程；health 没有保留执行线程。",
+      "basis": "结构复核；不把单个慢请求等同于全池饱和，未纳入本批。"
+    },
+    {
+      "id": "P2-8",
+      "state": "仍成立",
+      "remaining": "真实隔离 SQLite 备份已存在，缺受支持的恢复及撤销对账流程。",
+      "basis": "按用户要求保持备份恢复现状，不绕过 quarantine。"
+    },
+    {
+      "id": "P2-9",
+      "state": "仍成立",
+      "remaining": "超长 Retry-After 可形成持久超长冷却；没有实施业务时长上限。",
+      "basis": "未纳入本批指定修复范围；这不是 manifest 禁用，也不是新增审批要求。"
+    }
+  ],
+  "source_index": "independent/final-issue-index-pre-final.json",
+  "source_index_note": "保留的索引草案按其读取时点把 P2-5 标为进行中；本文件由最终真实 result 更新，不改写该草案。"
+}

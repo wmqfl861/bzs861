@@ -1,0 +1,110 @@
+{
+  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "read_only_review": "30f058557e3f7ebb873e9780759323b49cfe9636",
+  "integration_order": [
+    "P1-2",
+    "P1-1",
+    "P1-3",
+    "P2-1",
+    "P2-2",
+    "P2-3",
+    "P2-4",
+    "P2-5"
+  ],
+  "fixed": [
+    "P1-2",
+    "P1-1",
+    "P1-3",
+    "P2-1",
+    "P2-2",
+    "P2-3",
+    "P2-4"
+  ],
+  "partially_optimized": [
+    "P2-5"
+  ],
+  "remaining": [
+    {
+      "id": "P2-5",
+      "state": "仍成立（已局部优化）",
+      "remaining": "Store 总锁及有界扫描仍会阻塞并发 Store 操作。",
+      "basis": "本批原始及 NOT 变体 Release 复现；见 p2-5/benchmark-results.json。"
+    },
+    {
+      "id": "P2-6",
+      "state": "仍成立",
+      "remaining": "后台 dispatcher 串行执行同步工作。",
+      "basis": "结构复核；未新增并发压测，未纳入指定修复顺序。"
+    },
+    {
+      "id": "P2-7",
+      "state": "仍成立",
+      "remaining": "同步 Worker RPC 可占满 HTTP IO 线程；health 没有保留执行线程。",
+      "basis": "结构复核；不把单个慢请求等同于全池饱和，未纳入本批。"
+    },
+    {
+      "id": "P2-8",
+      "state": "仍成立",
+      "remaining": "真实隔离 SQLite 备份已存在，缺受支持的恢复及撤销对账流程。",
+      "basis": "按用户要求保持备份恢复现状，不绕过 quarantine。"
+    },
+    {
+      "id": "P2-9",
+      "state": "仍成立",
+      "remaining": "超长 Retry-After 可形成持久超长冷却；没有实施业务时长上限。",
+      "basis": "未纳入本批指定修复范围；这不是 manifest 禁用，也不是新增审批要求。"
+    }
+  ],
+  "final_execution_manifest": "p2-5/execution-inputs.json",
+  "final_execution_manifest_sha256": "d887d9e93e1b7dc5aa542fd4dc452dd1fe6c44094933276e86f876bae1f14ffd",
+  "source_input_files": 220,
+  "input_bytes_equal_after_all_local_checks": true,
+  "last_product_local_commit": "d688e4f0344d1c13dc70ca6573d3ed44524f0438",
+  "last_product_github_commit": "51c10ab5241b9ec3cb412b710a69a70add6cac93",
+  "last_product_tree": "c01745ec7239c224fa64c886379fd0808b388ed9",
+  "final_local_result": "p2-5/result.json",
+  "final_local_result_sha256": "d90c54470d4ce253284162f35a679bd98b1b2ea93be276803404200057c0c760",
+  "benchmark_record": "p2-5/benchmark-results.json",
+  "benchmark_record_sha256": "3c7b89a6fc7631c12c978edda40224fa3122ee61813edbec6b9956e1796ab9e1",
+  "independent_final_review": "independent/cross-item/final-delta/final-review.json",
+  "independent_final_review_sha256": "07362e5d5ec96d07e990096c802147653f6620720c46945062c65b1749e09a31",
+  "documentation_review": "independent/documentation-v3-review.json",
+  "launcher_review": "launcher/root-review.json",
+  "retained_independent_counterexample": {
+    "cases_passed": 4,
+    "cases_failed": 2,
+    "checks": 209,
+    "reason": "既存 reverse-percent URI 身份边界；原源与失败日志保留，未宣称六例全过。"
+  },
+  "retained_decisions": {
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "sites": 0,
+    "S2": "范围、状态及是否冻结的决定保持现状",
+    "validation": "继续入库，原失败保留",
+    "backup": "保持隔离及恢复现状",
+    "idempotency": "永久身份保留",
+    "scraping_adapters": "保持现状"
+  },
+  "plan_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0,
+    "packages": 83,
+    "acceptance_mappings": 161
+  },
+  "version": "0.1.10",
+  "new_tag_or_release": false,
+  "github_verification": {
+    "branch": "main",
+    "expected_previous_sha": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "force": false,
+    "workflow": ".github/workflows/ci.yml",
+    "workflow_changed": false,
+    "record_location": "GitHub Actions checks attached to the final published main commit; the delivery message links the exact run and SHA.",
+    "acceptance_rule": "Both linux and windows jobs must succeed for that exact final head; older runs or matching intermediate trees are not substituted.",
+    "local_counts_are_not_remote_ci_claims": true,
+    "workflow_url": "https://github.com/wmqfl861/bzs861/actions/workflows/ci.yml"
+  },
+  "receipt_scope": "本回执提交仅更新 validation 记录；实际产品/测试/文档输入与最后完整门禁相同。远端 CI 以最终发布提交 Checks 为独立记录，不制造自引用的 CI 成绩提交。"
+}
