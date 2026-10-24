@@ -209,17 +209,83 @@ TEST(schema_eight_upgrade_keeps_live_jobs_accounting_and_private_pins) {
   Temp temp;Fake f;std::string id,snapshot,proof;
   {
     Store store(temp.path/"db",[&]{return f.now;});const auto doc=store.ingest("alice",{"https://import.example/a","retention import","text/plain","import"});snapshot=doc.at("snapshot_id").str();proof=store.evidence("alice",snapshot,0,9).at("evidence_id").str();id=store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("job_id").str();store.job_control("alice",id,"pause");
-    sql(store.raw_handle(),"DROP INDEX jobs_retention; DROP INDEX robots_retention; DROP INDEX map_hops_robots_admission; DROP INDEX map_hops_robots_receipt; ALTER TABLE jobs DROP COLUMN archive_json; ALTER TABLE jobs DROP COLUMN archived_at; PRAGMA user_version=8");
+    sql(store.raw_handle(),"DROP INDEX jobs_retention; DROP INDEX jobs_unarchived_owner; DROP INDEX robots_retention; DROP INDEX map_hops_robots_admission; DROP INDEX map_hops_robots_receipt; ALTER TABLE jobs DROP COLUMN archive_json; ALTER TABLE jobs DROP COLUMN archived_at; PRAGMA user_version=8");
   }
   Store store(temp.path/"db",[&]{return f.now;});CHECK(count(store.raw_handle(),"PRAGMA user_version")==13);CHECK(store.job_get("alice",id).at("state").str()=="paused");CHECK(store.read_many_submit("alice",{"https://read.example/live"},"live",{}).at("reused").flag());f.now+=week+86400000;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()=="retention import");CHECK(store.evidence_get("alice",proof).at("quote").str()=="retention");
 }
 
-TEST(permanent_key_quotas_remain_bounded_per_owner_and_globally) {
+TEST(unarchived_job_capacity_remains_bounded_per_owner_and_globally) {
   Temp temp;Store store(temp.path/"db");const auto first=store.job_create("alice","fixture","permanent").at("job_id").str();store.job_control("alice",first,"cancel");
-  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<9999) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'own-'||x,'alice','fixture','own-'||x,'retained','cancelled',0,1,1,0 FROM n");
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<9999) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'own-'||x,'alice','fixture','own-'||x,'retained','paused',0,1,1,0 FROM n");
   rejects([&]{store.job_create("alice","fixture","new");},"E_QUOTA");CHECK(store.job_create("alice","fixture","permanent").at("reused").flag());CHECK(store.compact_jobs("alice").at("retained_job_keys").num()==10000);
-  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<40000) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'global-'||x,'owner-'||((x-1)/10000),'fixture','global-'||x,'retained','cancelled',0,1,1,0 FROM n");
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<40000) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'global-'||x,'owner-'||((x-1)/10000),'fixture','global-'||x,'retained','paused',0,1,1,0 FROM n");
   rejects([&]{store.read_many_submit("new-owner",{"https://read.example/a"},"global",{});},"E_QUOTA");rejects([&]{store.map_submit("new-owner",args("global"),SiteRegistry(manifest()));},"E_QUOTA");CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs")==50000);
+}
+
+TEST(real_terminal_fixture_compaction_releases_capacity_without_losing_identity) {
+  Temp temp;std::int64_t now=1800000000000;Store store(temp.path/"db",[&]{return now;});
+  const auto id=store.job_create("alice","fixture","permanent",3,1000).at("job_id").str();
+  const auto lease=store.lease_next();CHECK(lease&&lease->id==id);
+  const SourceDocument document{"https://fixture.example/terminal","capacity marker private text","text/plain","fixture"};
+  CHECK(store.complete(*lease,document,parse_document(document.raw,document.content_type)));
+  const auto before=store.job_get("alice",id);CHECK(before.at("state").str()=="succeeded");
+  const auto snapshot=before.at("result").at("snapshot_id").str();
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<9999) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'busy-'||x,'alice','fixture','busy-'||x,'retained','paused',0,1,1,0 FROM n");
+  now+=1000+week-1;
+  CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==0);
+  rejects([&]{store.job_create("alice","fixture","new");},"E_QUOTA");
+  ++now;const auto admitted=store.job_create("alice","fixture","new");CHECK(!admitted.at("reused").flag());
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs")==10001);
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs WHERE archived_at=0")==10000);
+  const auto archive=store.job_get("alice",id);CHECK(!archive.at("retention").at("details_available").flag());
+  for(const auto* key:{"state","attempts","used_pages","external_requests"})CHECK(archive.at(key).canonical()==before.at(key).canonical());
+  CHECK(archive.at("result").is_null());CHECK(cell(store.raw_handle(),"SELECT result_json FROM jobs WHERE id='"+id+"'").empty());
+  CHECK(store.snapshot("alice",snapshot).at("canonical_text").str()==document.raw);
+  CHECK(store.job_create("alice","fixture","permanent",3,1000).at("reused").flag());
+  rejects([&]{store.job_create("alice","different","permanent",3,1000);},"E_IDEMPOTENCY_CONFLICT",409);
+  rejects([&]{store.job_control("alice",id,"resume");},"E_JOB_RESULTS_EXPIRED",410);
+  rejects([&]{store.job_results("alice",id);},"E_JOB_RESULTS_EXPIRED",410);
+  CHECK(!store.complete(*lease,document,parse_document(document.raw,document.content_type)));
+  rejects([&]{store.job_get("bob",id);},"E_NOT_FOUND",404);
+  rejects([&]{store.job_create("alice","fixture","overflow");},"E_QUOTA");
+  Store reopened(temp.path/"db",[&]{return now;});CHECK(reopened.job_get("alice",id).canonical()==archive.canonical());
+  CHECK(reopened.job_create("alice","fixture","permanent",3,1000).at("job_id").str()==id);
+}
+
+TEST(fixture_retention_covers_stable_terminal_states_and_keeps_paused_work) {
+  Temp temp;std::int64_t now=1800000000000;Store store(temp.path/"db",[&]{return now;});
+  const auto failed=store.job_create("alice","fixture","failed",1,1000).at("job_id").str();
+  const auto lease=store.lease_next();CHECK(lease);store.fail(*lease,"E_FIXTURE");
+  const auto cancelled=store.job_create("alice","fixture","cancelled",1,1000).at("job_id").str();store.job_control("alice",cancelled,"cancel");
+  const auto paused=store.job_create("alice","fixture","paused",1,1000).at("job_id").str();store.job_control("alice",paused,"pause");
+  now+=1000+week;CHECK(store.compact_jobs("alice").at("compacted_jobs").num()==2);
+  CHECK(store.job_get("alice",failed).at("state").str()=="failed");CHECK(store.job_get("alice",cancelled).at("state").str()=="cancelled");
+  CHECK(!store.job_get("alice",paused).has("retention"));CHECK(store.job_get("alice",paused).at("state").str()=="paused");
+  CHECK(store.compact_jobs("alice").at("unarchived_jobs").num()==1);
+}
+
+TEST(global_capacity_can_reclaim_revoked_owners_without_restoring_access) {
+  Temp temp;std::int64_t now=1800000000000;Store store(temp.path/"db",[&]{return now;});
+  const auto fixture=store.job_create("retired-fixture","fixture","old",1,1000).at("job_id").str();store.job_control("retired-fixture",fixture,"cancel");
+  const auto read=store.read_many_submit("retired-read",{"https://read.example/old"},"old",{}).at("job_id").str();
+  const auto lease=store.lease_next_read();CHECK(lease);store.fail_read(*lease,"E_FETCH_HTTP",1,100);
+  SiteRegistry sites(manifest());const auto mapped=store.map_submit("retired-map",args("old"),sites).at("job_id").str();store.job_control("retired-map",mapped,"cancel");
+  const auto crawled=store.crawl_submit("retired-crawl",args("old"),sites).at("job_id").str();store.job_control("retired-crawl",crawled,"cancel");
+  const auto before=store.job_get("retired-read",read);
+  for(const auto* owner:{"retired-fixture","retired-read","retired-map","retired-crawl"})store.revoke_principal("admin",owner);
+  sql(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<49996) INSERT INTO jobs(id,owner,fixture_id,idempotency_key,fingerprint,state,auth_epoch,max_attempts,deadline,created_at) SELECT 'live-'||x,'live-owner-'||((x-1)/10000),'fixture','live-'||x,'retained','paused',0,1,1,0 FROM n");
+  now+=week+86400000;
+  rejects([&]{store.compact_jobs("retired-fixture");},"E_PRINCIPAL_REVOKED",403);
+  CHECK(!store.job_create("new-owner","fixture","new").at("reused").flag());
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs")==50001);
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs WHERE archived_at>0")==4);
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM jobs WHERE archived_at=0")==49997);
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM read_job_items")==0);CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM map_jobs")==0);
+  const auto archived=Json::parse(cell(store.raw_handle(),"SELECT archive_json FROM jobs WHERE id='"+read+"'"));accounting_equal(before,archived);
+  rejects([&]{store.job_get("retired-read",read);},"E_PRINCIPAL_REVOKED",403);
+  rejects([&]{store.job_get("new-owner",read);},"E_NOT_FOUND",404);
+  rejects([&]{store.job_create("retired-fixture","fixture","old",1,1000);},"E_PRINCIPAL_REVOKED",403);
+  CHECK(count(store.raw_handle(),"SELECT COUNT(*) FROM principal_revocations")==4);
 }
 
 TEST(two_store_compactors_serialize_without_duplicate_summaries_or_charges) {

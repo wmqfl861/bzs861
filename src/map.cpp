@@ -202,6 +202,9 @@ Json Store::frontier_submit(const std::string& owner,const Json& args,const Site
 Json Store::map_job_locked(const std::string& owner,const std::string& id) {
   require_principal_active_locked(owner);
   if(auto archived=compacted_job_locked(owner,id))return *archived;
+  return map_job_details_locked(owner,id);
+}
+Json Store::map_job_details_locked(const std::string& owner,const std::string& id) {
   Sql j(db_,"SELECT j.state,j.epoch,j.attempts,j.lease_until,j.deadline,j.error_code,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_urls,m.max_depth,m.max_requests,m.max_bytes,m.per_request_timeout_ms,m.charged_requests,m.charged_bytes,m.external_requests,m.content_bytes,m.unknown_requests,m.unknown_bytes,m.partial,m.stop_reason,j.kind,m.max_pages,m.used_pages FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.owner=? AND j.kind IN ('web.map','web.crawl')");
   j.bind(1,id);j.bind(2,owner);require(j.step(),"E_NOT_FOUND","Map job not found",404);
   auto out=Json::object();out.set("job_id",id);out.set("kind",j.text(23));out.set("state",j.text(0));out.set("lease_epoch",j.num(1));out.set("dispatches",j.num(2));

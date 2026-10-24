@@ -367,7 +367,7 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=False, idempotentHint=False,
                                             destructiveHint=True), description=(
-        "Delete eligible settled terminal batch-read, map and crawl detail history for the authenticated owner "
+        "Delete eligible settled terminal fixture-ingest, batch-read, map and crawl detail history for the authenticated owner "
         "after the core's fixed minimum 7-day retention. Job identities, idempotency keys, summaries and usage "
         "counters are preserved; active and paused jobs remain. The core can also reclaim expired robots cache "
         "records with no retained job references. limit is 1..64, default 16. No source requests are made. A "

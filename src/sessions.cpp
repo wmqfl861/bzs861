@@ -51,10 +51,9 @@ std::string search_registry_identity(const SourceRegistry& registry) {
   identity.set("sources",sources);return sha256(identity.canonical());
 }
 void capacity(sqlite3* db,const std::string& owner) {
-  Statement count(db,"SELECT (SELECT COUNT(*) FROM search_streams WHERE owner=?)+(SELECT COUNT(*) FROM sessions WHERE owner=? AND id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_streams)+(SELECT COUNT(*) FROM sessions WHERE id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_stream_receipts WHERE owner=?),(SELECT COUNT(*) FROM search_stream_receipts)");
-  count.bind(1,owner);count.bind(2,owner);count.bind(3,owner);count.step();
+  Statement count(db,"SELECT (SELECT COUNT(*) FROM search_streams WHERE owner=?)+(SELECT COUNT(*) FROM sessions WHERE owner=? AND id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_streams)+(SELECT COUNT(*) FROM sessions WHERE id NOT IN (SELECT id FROM search_streams))");
+  count.bind(1,owner);count.bind(2,owner);count.step();
   require(count.num(0)<64&&count.num(1)<256,"E_SESSION_BACKPRESSURE","Active search session capacity reached; wait for expiry",429);
-  require(count.num(2)<10000&&count.num(3)<100000,"E_SESSION_BACKPRESSURE","Retained search identity capacity reached",429);
 }
 Json normalized_request(const Json& input,const SourceRegistry& registry,std::int64_t now) {
   input.allowed({"query","sources","category","limit","per_source","language","timeout_ms","deadline_ms","idempotency_key","mode","max_sources"});
@@ -135,9 +134,10 @@ void Store::stream_event_locked(const std::string& id,const std::string& kind,co
 void Store::local_stream_locked(const std::string& owner,const std::string& id) {
   Statement exists(db_,"SELECT 1 FROM search_streams WHERE id=? AND owner=?");exists.bind(1,id);exists.bind(2,owner);if(exists.step())return;
   Statement local(db_,"SELECT auth_epoch,created_at,expires_at FROM sessions WHERE id=? AND owner=?");local.bind(1,id);local.bind(2,owner);if(!local.step())return;
-  // Local sessions already occupy one slot. Only the durable identity bound is new.
-  Statement count(db_,"SELECT (SELECT COUNT(*) FROM search_stream_receipts WHERE owner=?),(SELECT COUNT(*) FROM search_stream_receipts),(SELECT COUNT(*) FROM search_streams)+(SELECT COUNT(*) FROM sessions WHERE id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_streams WHERE owner=?)+(SELECT COUNT(*) FROM sessions WHERE owner=? AND id NOT IN (SELECT id FROM search_streams))");count.bind(1,owner);count.bind(2,owner);count.bind(3,owner);count.step();
-  require(count.num(0)<10000&&count.num(1)<100000&&count.num(2)<=256&&count.num(3)<=64,"E_SESSION_BACKPRESSURE","Search identity or event capacity reached",429);
+  // The local session already occupies one active slot. Permanent receipts
+  // retain replay identity but do not consume a new lifetime admission quota.
+  Statement count(db_,"SELECT (SELECT COUNT(*) FROM search_streams)+(SELECT COUNT(*) FROM sessions WHERE id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_streams WHERE owner=?)+(SELECT COUNT(*) FROM sessions WHERE owner=? AND id NOT IN (SELECT id FROM search_streams))");count.bind(1,owner);count.bind(2,owner);count.step();
+  require(count.num(0)<=256&&count.num(1)<=64,"E_SESSION_BACKPRESSURE","Active search session capacity reached; wait for expiry",429);
   Statement receipt(db_,"INSERT INTO search_stream_receipts(id,owner,state,created_at)VALUES(?,?,'completed',?)");receipt.bind(1,id);receipt.bind(2,owner);receipt.bind(3,local.num(1));receipt.step();
   Statement stream(db_,"INSERT INTO search_streams(id,owner,auth_epoch,kind,state,created_at,expires_at,deadline,latest_version)VALUES(?,?,?,'local','completed',?,?,?,?)");
   stream.bind(1,id);stream.bind(2,owner);stream.bind(3,local.num(0));stream.bind(4,local.num(1));stream.bind(5,local.num(2));stream.bind(6,local.num(2));stream.bind(7,id);stream.step();stream_event_locked(id,"completed",id);

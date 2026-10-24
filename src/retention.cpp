@@ -4,11 +4,12 @@
 #include <sqlite3.h>
 #include <algorithm>
 #include <vector>
+#include <utility>
 
 namespace bzs {
 namespace {
 constexpr std::int64_t retention_ms=7LL*24*60*60*1000;
-constexpr std::int64_t owner_keys=10000,global_keys=50000,max_summary_bytes=8192;
+constexpr std::int64_t owner_details=10000,global_details=50000,max_summary_bytes=8192;
 constexpr const char* version="bzs-job-retention-1";
 void checked(int rc) {
   if(rc==SQLITE_OK||rc==SQLITE_ROW||rc==SQLITE_DONE)return;
@@ -39,10 +40,9 @@ public:
 // The deadline, rather than a mutable state-change time, also protects the
 // original retry window. Paused jobs and unsettled grants are never eligible.
 constexpr const char* eligible=R"SQL(
- SELECT j.id FROM jobs j WHERE j.owner=? AND j.archived_at=0
- AND j.kind IN ('web.read_many','web.map','web.crawl') AND j.state IN ('succeeded','failed','cancelled')
+ AND j.kind IN ('fixture.ingest','web.read_many','web.map','web.crawl') AND j.state IN ('succeeded','failed','cancelled')
  AND j.created_at<=? AND j.deadline<=? AND j.lease_until<=?
- AND ((j.kind='web.read_many' AND EXISTS(SELECT 1 FROM read_job_budgets b WHERE b.job_id=j.id)
+ AND (j.kind='fixture.ingest' OR (j.kind='web.read_many' AND EXISTS(SELECT 1 FROM read_job_budgets b WHERE b.job_id=j.id)
    AND NOT EXISTS(SELECT 1 FROM read_job_items i WHERE i.job_id=j.id AND (i.state IN ('pending','running') OR i.request_grant<>0 OR i.byte_grant<>0)))
   OR (j.kind IN ('web.map','web.crawl') AND EXISTS(SELECT 1 FROM map_jobs m WHERE m.job_id=j.id)
    AND NOT EXISTS(SELECT 1 FROM map_resources r WHERE r.job_id=j.id AND r.state IN ('pending','running'))
@@ -63,8 +63,19 @@ std::optional<Json> Store::compacted_job_locked(const std::string& owner,const s
 }
 
 void Store::job_capacity_locked(const std::string& owner) {
-  Sql count(db_,"SELECT (SELECT COUNT(*) FROM jobs WHERE owner=?),(SELECT COUNT(*) FROM jobs)");count.bind(1,owner);count.step();
-  require(count.num(0)<owner_keys&&count.num(1)<global_keys,"E_QUOTA","Permanent job-key retention quota reached",429);
+  const auto counts=[&] {
+    Sql count(db_,"SELECT (SELECT COUNT(*) FROM jobs WHERE owner=? AND archived_at=0),(SELECT COUNT(*) FROM jobs WHERE archived_at=0)");
+    count.bind(1,owner);count.step();return std::pair{count.num(0),count.num(1)};
+  };
+  auto [owned,total]=counts();
+  if(total>=global_details) {
+    // Capacity belongs to the deployment. Revoked or inactive owners must not
+    // pin it forever: reclaim only fully settled, aged details in this same
+    // admission transaction. Never return another owner's metadata to callers.
+    compact_jobs_locked(owner,8,true);
+    const auto after=counts();owned=after.first;total=after.second;
+  }
+  require(owned<owner_details&&total<global_details,"E_QUOTA","Unarchived job detail capacity reached; compact eligible terminal jobs",429);
 }
 
 std::int64_t Store::compact_robots_locked(const std::string& owner,std::int64_t limit) {
@@ -91,29 +102,41 @@ std::int64_t Store::compact_robots_locked(const std::string& owner,std::int64_t 
   return removed;
 }
 
-Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit) {
-  const auto now=clock_();std::vector<std::string> ids;
+Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool all_owners) {
+  const auto now=clock_();std::vector<std::pair<std::string,std::string>> ids;
   // Subtraction is safe even near INT64_MAX. A clock before the Unix epoch or
   // within the first window cannot make a future deadline eligible.
   if(now>=retention_ms) {
-    const auto cutoff=now-retention_ms;Sql rows(db_,eligible);
-    rows.bind(1,owner);for(int i=2;i<=4;++i)rows.bind(i,cutoff);rows.bind(5,limit+1);
-    while(rows.step())ids.push_back(rows.text(0));
+    const auto cutoff=now-retention_ms;
+    const auto query=std::string("SELECT j.id,j.owner FROM jobs j WHERE j.archived_at=0 ")+
+      (all_owners?"":"AND j.owner=? ")+eligible;
+    Sql rows(db_,query.c_str());int parameter=1;
+    if(!all_owners)rows.bind(parameter++,owner);
+    for(int i=0;i<3;++i)rows.bind(parameter++,cutoff);
+    rows.bind(parameter,limit+1);
+    while(rows.step())ids.emplace_back(rows.text(0),rows.text(1));
   }
   const bool more=ids.size()>static_cast<std::size_t>(limit);
   if(more)ids.resize(static_cast<std::size_t>(limit));
   std::int64_t details=0;
-  for(const auto& id:ids) {
-    auto summary=job_locked(owner,id);const auto usage=summary.at("usage"),budget=summary.at("budget");
-    require(usage.at("reserved_requests").num()==0&&usage.at("reserved_bytes").num()==0&&
-            budget.at("charged_requests").num()==usage.at("external_requests").num()+usage.at("unknown_requests_charged").num()&&
-            budget.at("charged_bytes").num()==usage.at("content_bytes").num()+usage.at("unknown_bytes_charged").num(),
-            "E_STORAGE","Unsettled job accounting cannot be compacted",500);
+  for(const auto& [id,job_owner]:ids) {
+    auto summary=job_details_locked(job_owner,id);
+    if(summary.at("kind").str()=="fixture.ingest") {
+      // The fixture result is expired detail. Keep its permanent identity and
+      // terminal counters, never arbitrary legacy result_json or body copies.
+      summary.set("result",Json());
+    } else {
+      const auto usage=summary.at("usage"),budget=summary.at("budget");
+      require(usage.at("reserved_requests").num()==0&&usage.at("reserved_bytes").num()==0&&
+              budget.at("charged_requests").num()==usage.at("external_requests").num()+usage.at("unknown_requests_charged").num()&&
+              budget.at("charged_bytes").num()==usage.at("content_bytes").num()+usage.at("unknown_bytes_charged").num(),
+              "E_STORAGE","Unsettled job accounting cannot be compacted",500);
+    }
     auto retention=Json::object();retention.set("version",version);retention.set("details_available",false);
     retention.set("compacted_at_ms",now);retention.set("minimum_retention_ms",retention_ms);summary.set("retention",retention);
     const auto encoded=summary.canonical();require(encoded.size()<=static_cast<std::size_t>(max_summary_bytes),"E_QUOTA","Retained job summary exceeds its bound",429);
-    Sql archive(db_,"UPDATE jobs SET archive_json=?,archived_at=? WHERE id=? AND owner=? AND archived_at=0");
-    archive.bind(1,encoded);archive.bind(2,now);archive.bind(3,id);archive.bind(4,owner);archive.step();
+    Sql archive(db_,"UPDATE jobs SET archive_json=?,archived_at=?,result_json=CASE WHEN kind='fixture.ingest' THEN '' ELSE result_json END WHERE id=? AND owner=? AND archived_at=0");
+    archive.bind(1,encoded);archive.bind(2,now);archive.bind(3,id);archive.bind(4,job_owner);archive.step();
     // Preserve the job/key row, snapshots, evidence, deletion and publication
     // watermarks, origin quotas/cooldowns and dispatch sequences. All detail
     // deletion and its preceding immutable summary share the caller's writer
@@ -128,14 +151,14 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit) {
  SELECT g.attempt_id FROM read_shared_attempts g WHERE g.owner=? AND g.settled<>0
  AND NOT EXISTS(SELECT 1 FROM read_shared_members m WHERE m.attempt_id=g.attempt_id)
  ORDER BY g.attempt_id LIMIT 100))SQL");
-    shared.bind(1,owner);shared.step();details+=sqlite3_changes(db_);
+    shared.bind(1,job_owner);shared.step();details+=sqlite3_changes(db_);
   }
-  const auto robots=compact_robots_locked(owner,std::min<std::int64_t>(64,limit*4));
-  Sql count(db_,"SELECT COUNT(*) FROM jobs WHERE owner=?");count.bind(1,owner);count.step();
+  const auto robots=all_owners?0:compact_robots_locked(owner,std::min<std::int64_t>(64,limit*4));
+  Sql count(db_,"SELECT COUNT(*),COALESCE(SUM(archived_at=0),0) FROM jobs WHERE owner=?");count.bind(1,owner);count.step();
   auto out=Json::object();out.set("version",version);out.set("minimum_retention_ms",retention_ms);out.set("limit",limit);
   out.set("compacted_jobs",static_cast<std::int64_t>(ids.size()));out.set("deleted_detail_rows",details);out.set("deleted_robots_records",robots);
-  out.set("has_more_jobs",more);out.set("retained_job_keys",count.num(0));
-  auto limits=Json::object();limits.set("max_jobs_per_owner",owner_keys);limits.set("max_jobs_global",global_keys);
+  out.set("has_more_jobs",more);out.set("retained_job_keys",count.num(0));out.set("unarchived_jobs",count.num(1));
+  auto limits=Json::object();limits.set("max_jobs_per_owner",owner_details);limits.set("max_jobs_global",global_details);limits.set("job_capacity_scope","unarchived_details");
   limits.set("max_jobs_per_call",std::int64_t{64});limits.set("max_robots_per_call",std::int64_t{64});limits.set("max_summary_bytes",max_summary_bytes);out.set("limits",limits);
   out.set("external_requests",std::int64_t{0});out.set("model_calls",std::int64_t{0});return out;
 }

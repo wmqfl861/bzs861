@@ -106,7 +106,7 @@ def full_stage(stage: str) -> None:
     record(stage, "configure-debug", ["cmake", "--preset", "dev", "-DBZS_PYTHON=" + str(PYTHON),
                                      "-DBZS_REQUIRE_PYTHON_TESTS=ON"], build=True)
     record(stage, "build-debug", ["cmake", "--build", "--preset", "dev", "-j2"], build=True)
-    record(stage, "ctest", ["ctest", "--preset", "dev", "--verbose", "--output-junit",
+    record(stage, "ctest", ["ctest", "--preset", "dev", "--parallel", "2", "--verbose", "--output-junit",
                             str(OUT / stage / "ctest.xml")])
     record(stage, "pytest", [str(PYTHON), "-m", "pytest", "python/tests", "-q", "-p", "no:cacheprovider"])
     record(stage, "configure-asan", ["cmake", "--preset", "asan", "-DBZS_PYTHON=" + str(PYTHON),

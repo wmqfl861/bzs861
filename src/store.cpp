@@ -510,6 +510,8 @@ namespace bzs {
       migrate_source_publication_locked();migrate_revocations_locked();migrate_shared_reads_locked();
       exec(db_,"PRAGMA user_version=13;");
     }
+    // Permanent key history must not make active-detail counts scan that history.
+    exec(db_,"CREATE INDEX IF NOT EXISTS jobs_unarchived_owner ON jobs(owner) WHERE archived_at=0;");
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -1243,12 +1245,15 @@ namespace bzs {
   Json Store::job_locked(const std::string& owner, const std::string& id) {
     require_principal_active_locked(owner);
     if(auto archived=compacted_job_locked(owner,id))return *archived;
+    return job_details_locked(owner,id);
+  }
+  Json Store::job_details_locked(const std::string& owner,const std::string& id) {
     Stmt s(db_, "SELECT id,fixture_id,state,epoch,attempts,max_attempts,lease_until,deadline,used_pages,result_json,error_code,kind FROM jobs WHERE id=? AND owner=?");
     s.bind(1, id);
     s.bind(2, owner);
     require(s.step(), "E_NOT_FOUND", "Job not found", 404);
     if(s.text(11)=="web.read_many")return read_job_locked(owner,id);
-    if(s.text(11)=="web.map"||s.text(11)=="web.crawl")return map_job_locked(owner,id);
+    if(s.text(11)=="web.map"||s.text(11)=="web.crawl")return map_job_details_locked(owner,id);
     Json j=Json::object();
     j.set("job_id", s.text(0));
     j.set("kind", "fixture.ingest");

@@ -8,25 +8,25 @@
       "id": "P1-1",
       "state": "仍成立",
       "finding": "10,001 次冻结搜索 E_SESSION_BACKPRESSURE，30 天后仍拒绝；历史 jobs 被全量计数。原 jobs 复现只创建未完成 queued 任务，不证明未完成任务应该压缩；正式回归将补实际终态压缩。",
-      "log": "baseline/repro-permanent-caps.log"
+      "log": "baseline/repro-permanent_caps.log"
     },
     {
       "id": "P1-2",
       "state": "仍成立",
       "finding": "每秒一次的第 65 次冻结本地搜索 E_QUOTA；MCP search_local 使用此路径，却不暴露会话以供继续分页。",
-      "log": "baseline/repro-hourly-session-cap.log"
+      "log": "baseline/repro-hourly_session_cap.log"
     },
     {
       "id": "P1-3",
       "state": "仍成立",
       "finding": "2101 文档中，早期目标只有 machine learning 词项查询召回；短语、C++、node.js、café、Москва 扫描最近 2000 后漏召回并标 partial。",
-      "log": "baseline/repro-phrase-recall.log"
+      "log": "baseline/repro-phrase_recall.log"
     },
     {
       "id": "P2-1",
       "state": "仍成立",
       "finding": "相同可缓存响应在无 Vary 时 fresh，Vary: Accept-Encoding 时 unsupported_vary。",
-      "log": "baseline/repro-vary-cache.log"
+      "log": "baseline/repro-vary_cache.log"
     },
     {
       "id": "P2-2",
@@ -38,13 +38,13 @@
       "id": "P2-3",
       "state": "仍成立",
       "finding": "360Spider、Sogou web spider、Googlebot-Image/1.0 无关 UA 令整个 robots 变为 deny_all；Baiduspider 对照正常。",
-      "log": "baseline/repro-robots-tokens.log"
+      "log": "baseline/repro-robots_tokens.log"
     },
     {
       "id": "P2-4",
       "state": "仍成立",
       "finding": "声明 UTF-8 的英语正文夹 0x92 后落到 GB18030，It’s 被误解为 It抯；中文对照使用 UTF-8 replacement。",
-      "log": "baseline/repro-charset-fallback.log"
+      "log": "baseline/repro-charset_fallback.log"
     },
     {
       "id": "P2-5",

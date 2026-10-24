@@ -1,0 +1,43 @@
+{
+  "started_at_utc": "2026-10-24T02:46:47.830902+00:00",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_1_query_plan.cpp": "c901aa2472ead5dcf42115e05de114e3ebf1a56d9e2864c2b195820af42a1045",
+    "/tmp/bzs-independent-claude-review/p1_1_plan_queries.json": "884f563ff479131e03f17a46e8338db90eaae68f2b23ca679180a9fd90d96b54",
+    "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a": "f1bebbc99f1c8d38c044caf3f0e3379c75bf3b8f49b1a10e207c2a0b4e50ed96",
+    "/workspace/scratch/e2371129386d/bzs861/src/retention.cpp": "a37065ee4f3d6088f90c5b2bbcd77e7b90b2f4567c70d4520897494c23773313",
+    "/workspace/scratch/e2371129386d/bzs861/src/store.cpp": "48cddc894ab86866afcc69773f017b76417b72e3c43fc7be00123410c3bc1dca"
+  },
+  "scope": "EXPLAIN QUERY PLAN on a new Store schema with 10000 archived and 100 unarchived fixture rows, ANALYZE applied; eligibility predicate extracted from the exact current retention source. Diagnostic plan inspection, not product timing evidence.",
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/workspace/scratch/e2371129386d/bzs861/include",
+      "/tmp/bzs-independent-claude-review/p1_1_query_plan.cpp",
+      "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_1_query_plan"
+    ],
+    "exit_code": 0,
+    "seconds": 1.208,
+    "log": "p1_1_plan_compile.log"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_1_query_plan",
+      "/tmp/bzs-independent-claude-review/p1_1_plan_queries.json"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "488b5c79b4910d77cbd7774b382ec99687f7ecbbf4dc0ce66b2db752d2edfd0d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "binary_sha256": "8c153b8ad56ce71981643bf2ce25b0ee92aa389162dab83b9181efc3733a86ab"
+  },
+  "inputs_still_match": true
+}

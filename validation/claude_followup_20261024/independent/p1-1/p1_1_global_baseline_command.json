@@ -1,0 +1,44 @@
+{
+  "scope": "Independent P1-1 revoked-owner global-capacity counterexample, frozen original 44253a7 library",
+  "started_at_utc": "2026-10-24T02:44:52.745786+00:00",
+  "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_1_global_revoked_probe.cpp": "d389ffa9851f189accd778bcae63ba3f458c2518bb80060b6a1e2e7f05f22d26",
+    "/tmp/bzs-claude-baseline-artifacts/libbzs_core-debug.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "/tmp/bzs-independent-claude-review/headers-44253a7-manifest.json": "fc1ff9b1038ff3959d95d5ff34c0292d1a285ab7f7e8d3d97c81e04f07a953e3"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/tmp/bzs-independent-claude-review/headers-44253a7",
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_probe.cpp",
+      "/tmp/bzs-claude-baseline-artifacts/libbzs_core-debug.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_baseline"
+    ],
+    "exit_code": 0,
+    "seconds": 1.178,
+    "log": "p1_1_global_baseline_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_baseline"
+    ],
+    "exit_code": 2,
+    "seconds": 0.318,
+    "log": "p1_1_global_baseline_run.log",
+    "log_sha256": "bdaf7478c155435ee8f5e32455e76a7723bde2c85656cbb874287f6b62e52a28",
+    "binary_sha256": "d1ce7fb269921f06cad1f5c8372de3c605d7baad56879a7e97ef1f5f8bc7f174",
+    "expected_failure": true
+  },
+  "inputs_still_match": true
+}

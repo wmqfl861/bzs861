@@ -1,0 +1,13 @@
+{
+  "failure": "CTest crawl process not started: permission denied",
+  "root_observation": "Only build/bzs_crawl_tests had mode 0644; its binary bytes matched the completed build before and after CTest. No test assertion ran for this program.",
+  "before": {
+    "mode": "0o644",
+    "sha256": "7b79a8e9a5df55040eee87d853f44558464e9760bdf439580963391179759524"
+  },
+  "after": {
+    "mode": "0o755",
+    "sha256": "7b79a8e9a5df55040eee87d853f44558464e9760bdf439580963391179759524"
+  },
+  "scope": "Restore executable mode on the recorded locally built test; no source or binary-content changes, no assertion skip. Full gates will run under a new stage label."
+}

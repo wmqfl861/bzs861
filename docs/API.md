@@ -105,7 +105,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 取消停止未完成来源，已在途的有限 RPC 可以继续至超时，但不能再发布。重复取消或取消已完成会话不新增取消事件，已完成版本保留，响应含 completed_results_preserved=true。dispatched_source_attempts / unknown_source_attempts 为核心尝试及其未知子集，不是精确实际 HTTP 成功数，也不应按轮询累加。
 
-未过期本地/联网完整会话共用每 owner 64、部署 256 上限。单联网会话请求、审核合同、来源载荷及全部冻结行最多 4 MiB；单来源保存载荷最多 256 KiB。过期完整数据可清理，永久身份/尝试摘要保留，每 owner 10000、部署 100000。达到上限返回 `E_SESSION_BACKPRESSURE`（429），不是无限容量。
+未过期本地/联网完整会话共用每 owner 64、部署 256 上限。单联网会话请求、审核合同、来源载荷及全部冻结行最多 4 MiB；单来源保存载荷最多 256 KiB。过期完整数据可清理，永久身份/尝试摘要继续保留，不计入活动会话容量。达到活动或载荷上限返回 `E_SESSION_BACKPRESSURE`（429），不是无限容量。
 
 缺少或不匹配版本为 `E_RESULT_VERSION`（400），错会话/版本游标为 `E_CURSOR`（400）。MCP 工具为 start_web_search、get_search_session、search_session_events、search_session_page、cancel_search_session，在 SDK 转换前检查原始 JSON 类型和未知字段，不把字符串来源列表、布尔预算或显式 null 转成默认请求。
 
@@ -149,7 +149,7 @@ MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。�
 
 ## 终态任务明细回收
 
-`jobs.compact` 接收可选整数 limit（默认16、范围1–64），只处理当前 owner 已稳定结算的终态 web.read_many/web.map/web.crawl。创建、原截止和最后租约时间都须超过固定七天窗口；活动、暂停、未结清预留不可回收。没有 owner、days 或清空全部参数。
+`jobs.compact` 接收可选整数 limit（默认16、范围1–64），只处理当前 owner 已稳定结算的终态 fixture.ingest/web.read_many/web.map/web.crawl。创建、原截止和最后租约时间都须超过固定七天窗口；活动、暂停、未结清预留不可回收。没有 owner、days 或清空全部参数。
 
 ```json
 {"operation":"jobs.compact","params":{"limit":16}}
@@ -157,9 +157,11 @@ MCP 对应工具为 `read_urls`、`get_job`、`job_results`、`control_job`。�
 
 原 ID/幂等键/指纹/终态/累计预算和已知未知用量永久保留。job.get 增加 `retention`（version=bzs-job-retention-1、details_available=false、compacted_at_ms、minimum_retention_ms）；同参数重提通过当前准入后返回原摘要，不重做请求。job.results、crawl.edges、job.control 对原 owner 返回 `E_JOB_RESULTS_EXPIRED`（410），其他 owner 仍404。
 
-结果含 compacted_jobs、deleted_detail_rows、deleted_robots_records、has_more_jobs、retained_job_keys 与 limits。摘要最多8192字节；永久身份每owner10000、部署50000。robots 仅在过期且没有保留准入/回执引用时删除，单次最多min(64,limit×4)；has_more_jobs不表示robots积压。新任务接纳前另有最多8项有界维护。
+结果含 compacted_jobs、deleted_detail_rows、deleted_robots_records、has_more_jobs、retained_job_keys 与 limits。摘要最多8192字节；未压缩任务每owner10000、部署50000（limits.job_capacity_scope=unarchived_details），压缩后永久身份不占该配额。fixture 压缩后 result=null，快照独立保留。robots 仅在过期且没有保留准入/回执引用时删除，单次最多min(64,limit×4)；has_more_jobs不表示robots积压。新任务接纳前另有最多8项有界维护。
 
 维护不请求网络、不删正文/快照/证据、不清零未知计费、配额/冷却、派发序号及删除/发布水位。释放逻辑容量和SQLite可复用页，不承诺文件立即缩小。CLI为 `bzs jobs compact --limit 16`，MCP为 compact_job_history；重复调用可能删下一批，操作本身不标记幂等。详见 [JOB_RETENTION](JOB_RETENTION.md)。
+
+全局未压缩任务达到 50000 时，新任务接纳在同一事务内另做最多 8 项跨 owner 维护；仍须满足完整七天、稳定终态及无未结算预留规则，包含已撤权主体的合格历史。该内部维护不向发起者返回他人的摘要、不解除撤权，公共 `jobs.compact` 仍只处理自己的任务。这不是通用全局 GC，其他有界明细容量保持原约束。
 
 ## 有界站点发现
 

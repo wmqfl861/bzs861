@@ -115,8 +115,11 @@ namespace bzs {
     Json ingest_web_locked(const std::string& owner, const SourceDocument& input, ParsedDocument parsed,
                            const Json& meta, std::int64_t expected_deletion_generation,bool allow_empty=false);
     Json job_locked(const std::string& owner, const std::string& id);
+    // Internal metadata projection only; caller owns authorization and transaction.
+    Json job_details_locked(const std::string& owner,const std::string& id);
+    Json map_job_details_locked(const std::string& owner,const std::string& id);
     std::optional<Json> compacted_job_locked(const std::string& owner,const std::string& id);
-    Json compact_jobs_locked(const std::string& owner,std::int64_t limit);
+    Json compact_jobs_locked(const std::string& owner,std::int64_t limit,bool all_owners=false);
     std::int64_t compact_robots_locked(const std::string& owner,std::int64_t limit);
     void job_capacity_locked(const std::string& owner);
     Json read_job_locked(const std::string& owner, const std::string& id);
@@ -214,7 +217,7 @@ namespace bzs {
     Json job_create(const std::string& owner, const std::string& fixture_id, const std::string& key, std::int64_t max_attempts=3, std::int64_t timeout_ms=60000);
     Json job_get(const std::string& owner, const std::string& job_id);
     Json job_control(const std::string& owner, const std::string& job_id, const std::string& action);
-    // Reclaim bounded terminal web-job details at least seven days after all
+    // Reclaim bounded terminal job details at least seven days after all
     // deadline/lease bounds. Permanent keys and aggregate accounting survive.
     Json compact_jobs(const std::string& owner,std::int64_t limit=16);
     Json read_many_submit(const std::string& owner, const std::vector<std::string>& urls,

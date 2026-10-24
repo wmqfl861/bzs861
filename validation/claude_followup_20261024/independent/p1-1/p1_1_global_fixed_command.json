@@ -1,0 +1,47 @@
+{
+  "scope": "Unchanged independent P1-1 global-capacity probe linked to fixed root library",
+  "started_at_utc": "2026-10-24T02:46:05.938544+00:00",
+  "head_commit": "f0e8219e2202447805cfbb03c83116eca30d5645",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_1_global_revoked_probe.cpp": "d389ffa9851f189accd778bcae63ba3f458c2518bb80060b6a1e2e7f05f22d26",
+    "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a": "f1bebbc99f1c8d38c044caf3f0e3379c75bf3b8f49b1a10e207c2a0b4e50ed96",
+    "/workspace/scratch/e2371129386d/bzs861/include/bzs/store.hpp": "e56007923c5eeea3a0a17afadf97fd1d82471986203fa8ab932ab0e0ed3e45af",
+    "/workspace/scratch/e2371129386d/bzs861/src/store.cpp": "48cddc894ab86866afcc69773f017b76417b72e3c43fc7be00123410c3bc1dca",
+    "/workspace/scratch/e2371129386d/bzs861/src/retention.cpp": "a37065ee4f3d6088f90c5b2bbcd77e7b90b2f4567c70d4520897494c23773313",
+    "/workspace/scratch/e2371129386d/bzs861/src/map.cpp": "52f3d69d78d4b2c62c1d7bbf3f02b27309d9fbe5cb240a03690d42719f19ea00",
+    "/workspace/scratch/e2371129386d/bzs861/src/sessions.cpp": "f15c1baba6781b8c711bd7cebbe028591cf44f6afc683f78ae34c86095bd7702"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/workspace/scratch/e2371129386d/bzs861/include",
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_probe.cpp",
+      "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_fixed"
+    ],
+    "exit_code": 0,
+    "seconds": 1.281,
+    "log": "p1_1_global_fixed_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_1_global_revoked_fixed"
+    ],
+    "exit_code": 0,
+    "seconds": 0.475,
+    "log": "p1_1_global_fixed_run.log",
+    "log_sha256": "1ad02f821d818903033dd5e938a629c85c9878019824af3d640c2df630cb0757",
+    "binary_sha256": "10fa29a79c812f8e48b3db179d83743e8b6a337c6bcf8e2e5e8cd7eebeec5437"
+  },
+  "inputs_still_match": true
+}

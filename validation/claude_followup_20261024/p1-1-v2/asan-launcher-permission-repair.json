@@ -1,0 +1,12 @@
+{
+  "failure": "Final native ASan executable could not start (PermissionError); preceding 14 native targets passed.",
+  "repair": [
+    {
+      "path": "build-asan/bzs_capacity_cycles_tests",
+      "mode_before": "0o644",
+      "mode_after": "0o755",
+      "sha256": "5a7ec5a17610bf184b3594c7fa23f5d0719cda90fce4999a918ab4a06e4ffe75"
+    }
+  ],
+  "rerun": "All 15 ASan/UBSan programs, with unchanged source/test inputs and unchanged binary content. Previous failed invocation retained."
+}

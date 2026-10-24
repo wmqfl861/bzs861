@@ -1,0 +1,22 @@
+{
+  "issue": "P1-1",
+  "status": "fixed",
+  "ctest": "27/27",
+  "pytest_passed": 1052,
+  "asan_ubsan_native_targets": 15,
+  "asan_result_command": "asan-after-mode-repair-command.json",
+  "independent_checks": 88,
+  "independent_baseline": "Same probe fails original 442 with E_QUOTA after all 50000 identities age past retention.",
+  "regressions": [
+    "10001 real frozen searches plus 100000 retained receipt boundary",
+    "real fixture completion, full seven-day deadline window, compaction, then admission beyond 10000 retained keys",
+    "active/paused owner and global caps remain",
+    "retired-owner fixture/read/map/crawl terminal maintenance keeps revocation and accounting",
+    "old-key replay/conflict and archived results rejection"
+  ],
+  "preserved_failures": [
+    "p1-1/ctest: generated crawl executable mode 0644, no test execution",
+    "p1-1-v2/asan: generated final capacity executable mode 0644, 14 targets passed before launch failure"
+  ],
+  "repair": "Only executable file modes restored; binary hashes unchanged. Successful full sanitizer rerun uses the exact same source/test input manifest as successful CTest and pytest."
+}

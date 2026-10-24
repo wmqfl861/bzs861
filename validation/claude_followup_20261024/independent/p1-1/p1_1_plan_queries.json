@@ -1,0 +1,37 @@
+{
+  "owner_capacity": {
+    "sql": "SELECT COUNT(*) FROM jobs WHERE owner=? AND archived_at=0",
+    "params": [
+      "history"
+    ]
+  },
+  "global_capacity": {
+    "sql": "SELECT COUNT(*) FROM jobs WHERE archived_at=0",
+    "params": []
+  },
+  "owner_eligibility": {
+    "sql": "SELECT j.id,j.owner FROM jobs j WHERE j.archived_at=0 AND j.owner=? \n AND j.kind IN ('fixture.ingest','web.read_many','web.map','web.crawl') AND j.state IN ('succeeded','failed','cancelled')\n AND j.created_at<=? AND j.deadline<=? AND j.lease_until<=?\n AND (j.kind='fixture.ingest' OR (j.kind='web.read_many' AND EXISTS(SELECT 1 FROM read_job_budgets b WHERE b.job_id=j.id)\n   AND NOT EXISTS(SELECT 1 FROM read_job_items i WHERE i.job_id=j.id AND (i.state IN ('pending','running') OR i.request_grant<>0 OR i.byte_grant<>0)))\n  OR (j.kind IN ('web.map','web.crawl') AND EXISTS(SELECT 1 FROM map_jobs m WHERE m.job_id=j.id)\n   AND NOT EXISTS(SELECT 1 FROM map_resources r WHERE r.job_id=j.id AND r.state IN ('pending','running'))\n   AND NOT EXISTS(SELECT 1 FROM map_hops h WHERE h.job_id=j.id AND (h.state='running' OR h.request_grant<>0 OR h.byte_grant<>0))))\n ORDER BY MAX(j.created_at,j.deadline,j.lease_until),j.id LIMIT ?\n ",
+    "params": [
+      "history",
+      1800000000000,
+      1800000000000,
+      1800000000000,
+      9
+    ]
+  },
+  "global_eligibility": {
+    "sql": "SELECT j.id,j.owner FROM jobs j WHERE j.archived_at=0 \n AND j.kind IN ('fixture.ingest','web.read_many','web.map','web.crawl') AND j.state IN ('succeeded','failed','cancelled')\n AND j.created_at<=? AND j.deadline<=? AND j.lease_until<=?\n AND (j.kind='fixture.ingest' OR (j.kind='web.read_many' AND EXISTS(SELECT 1 FROM read_job_budgets b WHERE b.job_id=j.id)\n   AND NOT EXISTS(SELECT 1 FROM read_job_items i WHERE i.job_id=j.id AND (i.state IN ('pending','running') OR i.request_grant<>0 OR i.byte_grant<>0)))\n  OR (j.kind IN ('web.map','web.crawl') AND EXISTS(SELECT 1 FROM map_jobs m WHERE m.job_id=j.id)\n   AND NOT EXISTS(SELECT 1 FROM map_resources r WHERE r.job_id=j.id AND r.state IN ('pending','running'))\n   AND NOT EXISTS(SELECT 1 FROM map_hops h WHERE h.job_id=j.id AND (h.state='running' OR h.request_grant<>0 OR h.byte_grant<>0))))\n ORDER BY MAX(j.created_at,j.deadline,j.lease_until),j.id LIMIT ?\n ",
+    "params": [
+      1800000000000,
+      1800000000000,
+      1800000000000,
+      9
+    ]
+  },
+  "summary_diagnostic": {
+    "sql": "SELECT COUNT(*),COALESCE(SUM(archived_at=0),0) FROM jobs WHERE owner=?",
+    "params": [
+      "history"
+    ]
+  }
+}
