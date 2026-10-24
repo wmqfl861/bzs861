@@ -1,0 +1,35 @@
+{
+  "role": "Author fixture constant verification with actual json-c PLAIN; not independent Core acceptance",
+  "library": "libjson-c.so.5",
+  "scalar_sample": {
+    "path/key": [
+      "https://host.example/a/b",
+      "a\\b/c",
+      "中文"
+    ]
+  },
+  "scalar_actual_json_c_bytes": 65,
+  "proofs": [
+    {
+      "final_uri_bytes": 3825,
+      "actual_json_c_bytes": 8190
+    },
+    {
+      "final_uri_bytes": 3826,
+      "actual_json_c_bytes": 8192
+    },
+    {
+      "final_uri_bytes": 3827,
+      "actual_json_c_bytes": 8194
+    },
+    {
+      "final_uri_bytes": 3833,
+      "actual_json_c_bytes": 8206
+    },
+    {
+      "final_uri_bytes": 3834,
+      "actual_json_c_bytes": 8208
+    }
+  ],
+  "limitation": "Integer/boolean/string protocol shapes; no Core process, DNS, sockets, or compilation."
+}

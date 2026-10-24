@@ -1,0 +1,289 @@
+{
+  "version": 1,
+  "created_utc": "2026-10-24T05:01:37.016901+00:00",
+  "role": "Independent runtime probes with real Core/Store and mock completed Worker; not formal suite counts or real HTTP",
+  "head": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "library": {
+    "source": "/workspace/scratch/e2371129386d/bzs861/build/libbzs_core.a",
+    "copy": "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+    "sha256": "fba67dbd752682bdcf0ae8acb690b1232b398492b79caba8202757175d81a242",
+    "source_still_matches": true,
+    "copy_still_matches": true
+  },
+  "source_hashes": {
+    "CMakeLists.txt": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768",
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "include/bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "include/bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "include/bzs/web.hpp": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+    "src/batch.cpp": "5b9f7ec1c729f0a33866748d363dd7a5b264e7623213ad0295b470e85c89cc04",
+    "src/contracts.cpp": "51d7e1f356c6443665eb634cf35201ce01f64da193841d1cc2b1ff03292bb1e0",
+    "src/crawl.cpp": "21a878d0268933e572dbd63bd9d8b5a73649daaba4b45de4ce01c2f454a35271",
+    "src/crawl_trap.cpp": "8e86a80fb0d3f72fad552b3e41fc57ac3fb311d7fe5b2049c0133a19652fd8d1",
+    "src/highlight.cpp": "95c588d69ee6d1540519dfc9bc81c62d07e46c0961ed73293ae49a5ed82dce66",
+    "src/html.cpp": "4078688efe4b67d21a01691678319638756bb8784f2892de677a093fa3be2c67",
+    "src/http_cache.cpp": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+    "src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "src/map.cpp": "52f3d69d78d4b2c62c1d7bbf3f02b27309d9fbe5cb240a03690d42719f19ea00",
+    "src/map_service.cpp": "0fdacda671a76ffee89cb15dc4bca5fc46889eb14488a509c777ce77df9de60e",
+    "src/publication.cpp": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9",
+    "src/query.cpp": "ad8b5452ad77a899ec8f37afa4ec7cf0e178e7a15cc7418dd4a519b9cead3707",
+    "src/retention.cpp": "a37065ee4f3d6088f90c5b2bbcd77e7b90b2f4567c70d4520897494c23773313",
+    "src/revocation.cpp": "fa19355dfebd323ed9395023e89886eeedc661de974fb36c4c8140f111e792e3",
+    "src/search_modes.cpp": "9754751f7e0ea091e1cf22cb7959bf5399784998b1ebfe36f2e6150828c242fc",
+    "src/service.cpp": "b10ed8808e297c972714170275d8bc6c4728b4499578b38fbcdb380a9c7c5e75",
+    "src/sessions.cpp": "f15c1baba6781b8c711bd7cebbe028591cf44f6afc683f78ae34c86095bd7702",
+    "src/sites.cpp": "b8e8f34baca47e732e4aa14a8369c8b171d00879426175819ea901bc828b0d49",
+    "src/source_publication.cpp": "fd5e87388959ca59e5a7f46795b21ced95f72f65a642ff39ccf12ce3f9ddadb6",
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "src/tokenizer.cpp": "4003fe648f414476c76881c74b5cfc9149055284cf65bfa8a5e84cf2d6fda4c0",
+    "src/util.cpp": "091cee6a65eabccee1bc9a0a6cba943ec6421000932682e4225100c73adebf8b",
+    "src/web.cpp": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524"
+  },
+  "source_unchanged": true,
+  "author_followup_patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+  "probes": [
+    {
+      "name": "aggregate-final",
+      "probe": "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/aggregate_final_native_probe.cpp",
+      "probe_sha256": "bd66ed1829ccd166e4af0570934f889ea605d42ca2a50c1c51cd297a0239391a",
+      "expected_case_count": 24,
+      "commands": [
+        {
+          "kind": "compile",
+          "argv": [
+            "c++",
+            "-std=c++20",
+            "-I/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/include",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/aggregate_final_native_probe.cpp",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+            "-lsqlite3",
+            "-lcrypto",
+            "-lxml2",
+            "-ljson-c",
+            "-pthread",
+            "-o",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/aggregate-final"
+          ],
+          "started_utc": "2026-10-24T05:01:27.911909+00:00",
+          "seconds": 1.6428547720006463,
+          "exit_code": 0,
+          "stdout": "aggregate-final.compile.stdout.log",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "aggregate-final.compile.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "run",
+          "argv": [
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/aggregate-final"
+          ],
+          "started_utc": "2026-10-24T05:01:29.554789+00:00",
+          "seconds": 1.4059438809999847,
+          "exit_code": 0,
+          "stdout": "aggregate-final.run.stdout.log",
+          "stdout_sha256": "2cafb38d1b325b125c9c8251cc03d9c98f373beef40b8b115a05984390a8a37e",
+          "stderr": "aggregate-final.run.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "direct-route-failure",
+      "probe": "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+      "probe_sha256": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+      "expected_case_count": 1,
+      "commands": [
+        {
+          "kind": "compile",
+          "argv": [
+            "c++",
+            "-std=c++20",
+            "-I/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/include",
+            "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+            "-lsqlite3",
+            "-lcrypto",
+            "-lxml2",
+            "-ljson-c",
+            "-pthread",
+            "-o",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/direct-route-failure"
+          ],
+          "started_utc": "2026-10-24T05:01:30.960948+00:00",
+          "seconds": 1.4263006170003791,
+          "exit_code": 0,
+          "stdout": "direct-route-failure.compile.stdout.log",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "direct-route-failure.compile.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "run",
+          "argv": [
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/direct-route-failure"
+          ],
+          "started_utc": "2026-10-24T05:01:32.387319+00:00",
+          "seconds": 0.037895796000157134,
+          "exit_code": 0,
+          "stdout": "direct-route-failure.run.stdout.log",
+          "stdout_sha256": "bf4da710b325051d114874442c7efc925fefd213f18d2036aa2c88ad27a43fd4",
+          "stderr": "direct-route-failure.run.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "redirect-publication-scope",
+      "probe": "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+      "probe_sha256": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+      "expected_case_count": 2,
+      "commands": [
+        {
+          "kind": "compile",
+          "argv": [
+            "c++",
+            "-std=c++20",
+            "-I/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/include",
+            "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+            "-lsqlite3",
+            "-lcrypto",
+            "-lxml2",
+            "-ljson-c",
+            "-pthread",
+            "-o",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/redirect-publication-scope"
+          ],
+          "started_utc": "2026-10-24T05:01:32.425418+00:00",
+          "seconds": 1.4046864909996657,
+          "exit_code": 0,
+          "stdout": "redirect-publication-scope.compile.stdout.log",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "redirect-publication-scope.compile.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "run",
+          "argv": [
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/redirect-publication-scope"
+          ],
+          "started_utc": "2026-10-24T05:01:33.830134+00:00",
+          "seconds": 0.26587889099937456,
+          "exit_code": 0,
+          "stdout": "redirect-publication-scope.run.stdout.log",
+          "stdout_sha256": "d08570c1823693478352d36310c82f2eccdb51049c5913bc2f45a06ac5444b82",
+          "stderr": "redirect-publication-scope.run.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "direct-indexed-projection",
+      "probe": "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+      "probe_sha256": "4671ac7f9464ae929d23993bfcd127b43e3ac9a119bdac6f1519445503dcc202",
+      "expected_case_count": 1,
+      "commands": [
+        {
+          "kind": "compile",
+          "argv": [
+            "c++",
+            "-std=c++20",
+            "-I/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/include",
+            "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+            "-lsqlite3",
+            "-lcrypto",
+            "-lxml2",
+            "-ljson-c",
+            "-pthread",
+            "-o",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/direct-indexed-projection"
+          ],
+          "started_utc": "2026-10-24T05:01:34.096178+00:00",
+          "seconds": 1.2783041429993318,
+          "exit_code": 0,
+          "stdout": "direct-indexed-projection.compile.stdout.log",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "direct-indexed-projection.compile.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "run",
+          "argv": [
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/direct-indexed-projection"
+          ],
+          "started_utc": "2026-10-24T05:01:35.374510+00:00",
+          "seconds": 0.036925763999533956,
+          "exit_code": 0,
+          "stdout": "direct-indexed-projection.run.stdout.log",
+          "stdout_sha256": "d4661a60e7f91f910ae545bdd313a66279fb74eb288d9c31f919f7186847aef2",
+          "stderr": "direct-indexed-projection.run.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "oversized-conditional",
+      "probe": "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+      "probe_sha256": "06d2995b4e666eb336244518156300cece5ab3ae39287f795d11da6036034b3b",
+      "expected_case_count": 1,
+      "commands": [
+        {
+          "kind": "compile",
+          "argv": [
+            "c++",
+            "-std=c++20",
+            "-I/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/include",
+            "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/libbzs_core.a",
+            "-lsqlite3",
+            "-lcrypto",
+            "-lxml2",
+            "-ljson-c",
+            "-pthread",
+            "-o",
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/oversized-conditional"
+          ],
+          "started_utc": "2026-10-24T05:01:35.411668+00:00",
+          "seconds": 1.3915370560007432,
+          "exit_code": 0,
+          "stdout": "oversized-conditional.compile.stdout.log",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "oversized-conditional.compile.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "run",
+          "argv": [
+            "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/actual-native-v3/oversized-conditional"
+          ],
+          "started_utc": "2026-10-24T05:01:36.803235+00:00",
+          "seconds": 0.2117107379999652,
+          "exit_code": 0,
+          "stdout": "oversized-conditional.run.stdout.log",
+          "stdout_sha256": "a28424261f20d839e6ae0d02c5639235598b6427b0d9dcb991131ebd0cafe60b",
+          "stderr": "oversized-conditional.run.stderr.log",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "All source probes retain frozen assertions; no implementation/source changes.",
+    "No project build or formal suite rerun by independent reviewer.",
+    "No TCP sockets/DNS requests; root owns real HTTP and complete suite gates."
+  ]
+}

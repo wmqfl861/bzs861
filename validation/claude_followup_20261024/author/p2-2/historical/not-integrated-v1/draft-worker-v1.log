@@ -1,0 +1,1304 @@
+EEEEEEEEEEEEEEEEEEEE.                                                    [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_complete_http_chain_reports_each_actual_cache_policy[1] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_complete_http_chain_repor0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_complete_http_chain_reports_each_actual_cache_policy[2] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_complete_http_chain_repor1')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[False-1] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_304_conditions_o0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[False-2] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_304_conditions_o1')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[True-1] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_304_conditions_o2')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[True-2] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_304_conditions_o3')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_changed_prefix_rejoining_0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_changed_read_profile_disables_old_conditions_without_retry _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_changed_read_profile_disa0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_304_after_changed_prefix_is_rejected_without_implicit_full_get _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_304_after_changed_prefix_0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_____ ERROR at setup of test_soft_redirects_never_create_http_chain_proof ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_soft_redirects_never_crea0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_____ ERROR at setup of test_no_store_prefix_survives_a_later_ssrf_refusal _____
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_no_store_prefix_survives_0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_request_grant_stops_before_final_without_resetting_for_hops _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_request_grant_stops_befor0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_body_grant_stops_inside_redirect_without_dispatching_final _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_body_grant_stops_inside_r0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+__ ERROR at setup of test_ambiguous_location_can_never_become_reusable_proof ___
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_ambiguous_location_can_ne0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[unknown] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str0')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[cycle] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str1')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[too_many] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str2')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[wrong_final] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str3')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[oversized] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str4')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[both] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_redirect_condition_is_str5')
+
+    @pytest.fixture
+    async def redirect_worker(tmp_path):
+        calls = []
+        state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
+                 "forced_304": False, "target": None, "duplicate_location": False, "soft": False}
+    
+        async def handle(request):
+            calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
+            if request.path in ("/start", "/middle"):
+                target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
+                if state["soft"] and request.path == "/start":
+                    target = "/soft"
+                headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
+                if state["duplicate_location"]:
+                    headers.add("Location", "/page")
+                return web.Response(status=301, body=b"jump", headers=headers)
+            if request.path == "/soft":
+                return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
+                                    content_type="text/html")
+            headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
+            modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
+            return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_http_redirect_cache.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+=========================== short test summary info ============================
+ERROR tests/test_http_redirect_cache.py::test_complete_http_chain_reports_each_actual_cache_policy[1]
+ERROR tests/test_http_redirect_cache.py::test_complete_http_chain_reports_each_actual_cache_policy[2]
+ERROR tests/test_http_redirect_cache.py::test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[False-1]
+ERROR tests/test_http_redirect_cache.py::test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[False-2]
+ERROR tests/test_http_redirect_cache.py::test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[True-1]
+ERROR tests/test_http_redirect_cache.py::test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix[True-2]
+ERROR tests/test_http_redirect_cache.py::test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt
+ERROR tests/test_http_redirect_cache.py::test_changed_read_profile_disables_old_conditions_without_retry
+ERROR tests/test_http_redirect_cache.py::test_304_after_changed_prefix_is_rejected_without_implicit_full_get
+ERROR tests/test_http_redirect_cache.py::test_soft_redirects_never_create_http_chain_proof
+ERROR tests/test_http_redirect_cache.py::test_no_store_prefix_survives_a_later_ssrf_refusal
+ERROR tests/test_http_redirect_cache.py::test_request_grant_stops_before_final_without_resetting_for_hops
+ERROR tests/test_http_redirect_cache.py::test_body_grant_stops_inside_redirect_without_dispatching_final
+ERROR tests/test_http_redirect_cache.py::test_ambiguous_location_can_never_become_reusable_proof
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[unknown]
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[cycle]
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[too_many]
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[wrong_final]
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[oversized]
+ERROR tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch[both]
+1 passed, 20 errors in 0.85s

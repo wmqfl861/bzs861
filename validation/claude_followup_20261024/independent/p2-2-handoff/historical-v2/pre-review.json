@@ -1,0 +1,124 @@
+{
+  "role": "Independent P2-2 reviewer; author of earlier shared-read implementation. Shared-read coverage is an interaction regression, not independent sign-off of that prior implementation.",
+  "stage": "frozen v2 static review and independent probe preparation; runtime pending exact integrated library",
+  "draft_patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+  "baseline_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "preview_files": [
+    {
+      "path": "docs/HTTP_FRESHNESS.md",
+      "sha256": "dddc34bc8ca5c5d8f721c9a0bd011ef6b0e57cd5263fca90068be0d14663c1ec",
+      "bytes": 5743
+    },
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "sha256": "089b0bd0c49676cd6e06fac6a7c1d3358ee8328bc46b19003eeb78ac23850df7",
+      "bytes": 10467
+    },
+    {
+      "path": "docs/HTTP_REVALIDATION.md",
+      "sha256": "8ef72dddad5da040b48a2d8094420125843b2aa3ae64739310f28cf53ed25795",
+      "bytes": 13062
+    },
+    {
+      "path": "include/bzs/http_cache.hpp",
+      "sha256": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+      "bytes": 1613
+    },
+    {
+      "path": "include/bzs/store.hpp",
+      "sha256": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+      "bytes": 18210
+    },
+    {
+      "path": "include/bzs/web.hpp",
+      "sha256": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+      "bytes": 5577
+    },
+    {
+      "path": "python/bzs/worker/fetch.py",
+      "sha256": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+      "bytes": 22590
+    },
+    {
+      "path": "python/bzs/worker/freshness.py",
+      "sha256": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+      "bytes": 1662
+    },
+    {
+      "path": "python/bzs/worker/redirect_cache.py",
+      "sha256": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21",
+      "bytes": 3354
+    },
+    {
+      "path": "python/bzs/worker/server.py",
+      "sha256": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9",
+      "bytes": 54891
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "sha256": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183",
+      "bytes": 15454
+    },
+    {
+      "path": "src/http_cache.cpp",
+      "sha256": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+      "bytes": 25840
+    },
+    {
+      "path": "src/publication.cpp",
+      "sha256": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717",
+      "bytes": 37064
+    },
+    {
+      "path": "src/store.cpp",
+      "sha256": "4fd13314ce37d1347dc465139c469fe22ecdf58d03611566612603b9bbb47681",
+      "bytes": 100112
+    },
+    {
+      "path": "src/web.cpp",
+      "sha256": "84881494880754e085421cc27192f4b3a7a05573c69549fc2f84103b31115de0",
+      "bytes": 68869
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "sha256": "84debb90e19241912494c10f57db2a7c5b03b8040062664f8cb7e61e0e9b8084",
+      "bytes": 33925
+    },
+    {
+      "path": "tests/e2e_cache_freshness.py",
+      "sha256": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+      "bytes": 14032
+    }
+  ],
+  "probe": {
+    "path": "/tmp/bzs-independent-claude-review/p2-2/redirect_independent_probe.cpp",
+    "sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb",
+    "executed": false,
+    "network": "deterministic WorkerPort only; no external requests"
+  },
+  "known_v1_blockers_not_rediscovered": [
+    "Failed direct-to-redirect refresh left old direct freshness eligibility",
+    "Original/intermediate publication restriction could become final-C restriction when stored representation policy was empty"
+  ],
+  "v2_static_assessment": [
+    "Old final representation policy is captured before current aggregate ceilings",
+    "Final-only retained policy floor is separately checked at Store 304 commit",
+    "Final history is sealed using only final URL, while aggregate history remains the full chain",
+    "Final/aggregate are compacted only after complete restriction processing",
+    "Old direct route changes now trigger bound invalidation regardless of previous proof",
+    "Worker proof200/routed304 site observation describes final URI; Core full-chain site bindings remain"
+  ],
+  "prepared_probe_cases": [
+    "positive cache owner scope, exact final validator, prefix expiry",
+    "middle/final and normalized alias deletions, deletion then revival",
+    "inflight deletion retains actual known 3 requests and 7 redirect-body bytes",
+    "final-C current and historical restrictions cannot be relaxed by A 304; later independent-C allow remains separate",
+    "same-owner shared 304 with payer cancellation, one physical settlement and foreign-owner isolation",
+    "same-snapshot metadata CAS keeps newer winner"
+  ],
+  "pending_semantic_question": "Percent-encoded reverse alias (/ %6Diddle without space versus /middle) is retained as an explicit probe branch. Current map_url deliberately retains percent escapes, while HTTP publication identity decodes unreserved escapes. It is not yet a proven P2-2 blocker or a claim of existing all-URI-equivalence deletion semantics.",
+  "repository_modified": false,
+  "production_or_formal_tests_authored": false,
+  "heavy_build_or_runtime_executed": false,
+  "acceptance": "pending root exact library and requested complete gates"
+}

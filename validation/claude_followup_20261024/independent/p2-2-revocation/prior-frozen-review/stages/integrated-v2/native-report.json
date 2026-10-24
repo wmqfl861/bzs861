@@ -1,0 +1,157 @@
+{
+  "role": "independent same-source frozen counterexample replay on integrated P2-2 v2; focused acceptance only",
+  "git_head_observed": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+  "patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+  "manifest_sha256": "29550f283107ada53dfabe9c57c47ccdaa7bf7462839fbcbb980aee5208dabd1",
+  "integrated_source_matches": {
+    "docs/HTTP_FRESHNESS.md": {
+      "expected": "dddc34bc8ca5c5d8f721c9a0bd011ef6b0e57cd5263fca90068be0d14663c1ec",
+      "actual": "dddc34bc8ca5c5d8f721c9a0bd011ef6b0e57cd5263fca90068be0d14663c1ec"
+    },
+    "docs/HTTP_REDIRECT_CACHE.md": {
+      "expected": "089b0bd0c49676cd6e06fac6a7c1d3358ee8328bc46b19003eeb78ac23850df7",
+      "actual": "089b0bd0c49676cd6e06fac6a7c1d3358ee8328bc46b19003eeb78ac23850df7"
+    },
+    "docs/HTTP_REVALIDATION.md": {
+      "expected": "8ef72dddad5da040b48a2d8094420125843b2aa3ae64739310f28cf53ed25795",
+      "actual": "8ef72dddad5da040b48a2d8094420125843b2aa3ae64739310f28cf53ed25795"
+    },
+    "include/bzs/http_cache.hpp": {
+      "expected": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+      "actual": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b"
+    },
+    "include/bzs/store.hpp": {
+      "expected": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+      "actual": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72"
+    },
+    "include/bzs/web.hpp": {
+      "expected": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+      "actual": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+    },
+    "python/bzs/worker/fetch.py": {
+      "expected": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+      "actual": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c"
+    },
+    "python/bzs/worker/freshness.py": {
+      "expected": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+      "actual": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66"
+    },
+    "python/bzs/worker/redirect_cache.py": {
+      "expected": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21",
+      "actual": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21"
+    },
+    "python/bzs/worker/server.py": {
+      "expected": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9",
+      "actual": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9"
+    },
+    "python/tests/test_http_redirect_cache.py": {
+      "expected": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183",
+      "actual": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183"
+    },
+    "src/http_cache.cpp": {
+      "expected": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+      "actual": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b"
+    },
+    "src/publication.cpp": {
+      "expected": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717",
+      "actual": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717"
+    },
+    "src/store.cpp": {
+      "expected": "4fd13314ce37d1347dc465139c469fe22ecdf58d03611566612603b9bbb47681",
+      "actual": "4fd13314ce37d1347dc465139c469fe22ecdf58d03611566612603b9bbb47681"
+    },
+    "src/web.cpp": {
+      "expected": "84881494880754e085421cc27192f4b3a7a05573c69549fc2f84103b31115de0",
+      "actual": "84881494880754e085421cc27192f4b3a7a05573c69549fc2f84103b31115de0"
+    },
+    "tests/cache_freshness.cpp": {
+      "expected": "84debb90e19241912494c10f57db2a7c5b03b8040062664f8cb7e61e0e9b8084",
+      "actual": "84debb90e19241912494c10f57db2a7c5b03b8040062664f8cb7e61e0e9b8084"
+    },
+    "tests/e2e_cache_freshness.py": {
+      "expected": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+      "actual": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c"
+    }
+  },
+  "headers": {
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "include/bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "include/bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "include/bzs/web.hpp": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+  },
+  "native_probes": [
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+      "source_sha256": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-v2/include",
+          "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-v2/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-v2/direct_route_failure_probe/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.366337776184082,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 0,
+        "seconds": 0.043846845626831055,
+        "binary_sha256": "4ec19dca492c2c061adf5e7857eadcc47195c3efc3e0b7d38e4ccc3dea1c3f5d",
+        "log_sha256": "bf4da710b325051d114874442c7efc925fefd213f18d2036aa2c88ad27a43fd4",
+        "output": "refresh=E_FETCH_HTTP\nPASS old HTTP reuse invalidated, history retained, no extra request\n"
+      }
+    },
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+      "source_sha256": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-v2/include",
+          "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-v2/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-v2/redirect_publication_scope_probe/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.4620699882507324,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 1,
+        "seconds": 0.2603905200958252,
+        "binary_sha256": "b5bf581b97612b43fe8d0da0754047d867eee7b07fbacb39a1702411520bc9c2",
+        "log_sha256": "2973da0a21d5f3c6006e60114d5687d9c053f57433794005f56bd206fb1c6ead",
+        "output": "FAIL response: Final noindex did not tighten C cache projection\nFAIL preexisting: Final noindex did not tighten C cache projection\n"
+      }
+    }
+  ]
+}

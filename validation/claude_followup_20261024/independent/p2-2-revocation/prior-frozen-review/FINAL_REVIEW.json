@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "reviewer": "/root/revocation",
+  "implementation_author": "/root/source_policy",
+  "integrator_and_full_gate_owner": "/root",
+  "created_at_utc": "2026-10-24T04:44:03.433620+00:00",
+  "scope": "Independent P2-2 redirect cache source review, frozen counterexamples and exact-input focused replay",
+  "decision": "Passed independent review after fixes; no unresolved blocking finding in the reviewed scope. Full product gates remain parent-owned and are not asserted here.",
+  "main_tree_modified_by_reviewer": false,
+  "production_or_formal_tests_written_by_reviewer": false,
+  "final_binding": {
+    "baseline_git_head": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+    "library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+    "worker_redirect_cache_sha256": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+    "native_report_sha256": "65e1aed9aa0daf65d38cf563be720470cd66b26258154cc5097bbe77622ab00c",
+    "python_report_sha256": "8eecd706f7d1e998d4fffd80c8e224cd6d3b4a7c6901ba895590f210c5743ab2",
+    "all_final_python_sources_matched_main_before_and_after": true,
+    "cpp_inputs_unchanged_across_final_python_patch": true,
+    "library_unchanged_after_final_python": true,
+    "applied_author_patches": [
+      {
+        "path": "author-inputs/redirect-cache-draft-v2.patch",
+        "sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941"
+      },
+      {
+        "path": "author-inputs/direct-hit-followup.patch",
+        "sha256": "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1"
+      },
+      {
+        "path": "author-inputs/bounded-grant-followup.patch",
+        "sha256": "df90e99af7d96f88b65c95c658605ea73ae73c75dc391b6b21390eb754b32439"
+      },
+      {
+        "path": "author-inputs/wire-size-followup.patch",
+        "sha256": "8b1487d21109fe0a80946f40dfbbce168e6d2a954960319ec940f41b32f39c57"
+      }
+    ]
+  },
+  "findings_and_disposition": [
+    {
+      "id": "R1",
+      "finding": "Old direct fresh representation survived a newly observed redirect followed by a failed target",
+      "negative": "Old-library runtime returned from_cache=true after refresh E_FETCH_HTTP; v1 branch was independently source-confirmed",
+      "fix": "Route comparison now includes prior direct representations; snapshot+metadata CAS invalidates HTTP eligibility and preserves historical body",
+      "final": "Original frozen native probe exit0"
+    },
+    {
+      "id": "R2",
+      "finding": "Aggregate redirect restrictions could poison an independently authorized final representation, including Worker site ceilings",
+      "negative": "v1 C++ path source-confirmed; v1 Worker scope probe 4/6 with prefix-only routed200/routed304 failures",
+      "fix": "Final policy captured before chain ceilings; final-only history/current ceilings; final-only new-proof Worker fields; aggregate still checks complete route/site bindings",
+      "final": "Original frozen native response/preexisting branches both pass all assertions; Worker scope 6/6"
+    },
+    {
+      "id": "R3",
+      "finding": "Pre-existing direct cache indexed field ignored current page publication restriction",
+      "negative": "Same diagnostic on pre-P2-2 and v2 libraries returned cache_only_indexed=true while current_search_count=0; no search publication escape observed",
+      "fix": "Current cache-hit guard/projection also applies to direct hits; default snapshot/range historical semantics retained",
+      "final": "Original scope probe and unchanged diagnostic pass; cache_only_indexed=false, snapshot_indexed=true, origin_requests=1"
+    },
+    {
+      "id": "R4",
+      "finding": "An accepted proof and metadata could produce an oversized optional conditional grant that blocked all refreshes locally",
+      "negative": "Real v2 Core measured proof7558/HTTPmetadata16157/grant8403 bytes; base supplied, refresh E_WORKER_PROTOCOL, only initial origin call",
+      "fix": "Before dispatch, revalidation_base omits a grant that cannot fit 8192; same authorized read performs one full GET, no conditional/unbound304 authorization",
+      "final": "Frozen size-v2 probe exit0, base_supplied=0, origin_calls=2, one initial GET plus one full refresh"
+    },
+    {
+      "id": "R5",
+      "finding": "Worker optional-proof byte count omitted slash escapes required by Core canonical encoding",
+      "negative": "Frozen v2 helper emitted proof at actual json-c sizes8194 and8206; canonical probe3/5",
+      "fix": "Only private encoded_size now counts Core slash escaping; 8192/16384 limits and transport serializer unchanged",
+      "final": "Original canonical probe5/5; sizes8190 and8192 accepted,8194 and8206 omitted"
+    }
+  ],
+  "stage_results": [
+    {
+      "stage": "initial-source-review",
+      "result": "Two blocking source findings; native routed304 v1 not compiled/executed by reviewer",
+      "evidence": "stages/initial-review/review-v1.json"
+    },
+    {
+      "stage": "pre-P2-2-direct-negative",
+      "library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+      "result": "Expected negative exit1 for old direct reuse; not a v1 native run",
+      "evidence": "stages/initial-review/baseline-p2-1/report.json"
+    },
+    {
+      "stage": "v1-worker-scope-negative",
+      "result": "4 passed/2 failed; completed-response coordinator stub, no HTTP",
+      "evidence": "stages/initial-review/worker-scope-v1/report.json"
+    },
+    {
+      "stage": "integrated-v2",
+      "library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+      "result": "direct-route exit0; scope executable exit1 with both branches failing direct indexed projection; Worker scope6/6",
+      "evidence": [
+        "stages/integrated-v2/native-report.json",
+        "stages/integrated-v2/worker-report.json"
+      ]
+    },
+    {
+      "stage": "pre-existing-direct-field-comparison",
+      "result": "pre-P2-2 and v2 each exit1, byte-identical diagnostic output",
+      "evidence": "stages/integrated-v2/projection-comparison.json"
+    },
+    {
+      "stage": "direct-hit-followup",
+      "library_sha256": "0585d5ed4a0d67b767f51e2ef0a25216144d4470094cfafdf9239bee135b5d22",
+      "result": "direct-route,scope(two branches),projection all exit0",
+      "evidence": "stages/direct-hit-followup/report.json"
+    },
+    {
+      "stage": "v2-grant-size-negative",
+      "result": "Frozen size-v2 native probe exit1; first draft retained but never executed",
+      "evidence": "stages/boundary-counterexamples/report-v2.json"
+    },
+    {
+      "stage": "v2-canonical-size-negative",
+      "result": "3 passed/2 failed; actual system json-c comparison, no HTTP or project compilation",
+      "evidence": "stages/boundary-counterexamples/canonical-v2-report.json"
+    },
+    {
+      "stage": "final-C++-replay",
+      "library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+      "result": "All four independent executables exit0; scope executable covers response/preexisting branches; original assertions retained",
+      "evidence": "stages/final-native/report.json"
+    },
+    {
+      "stage": "final-Python-replay",
+      "result": "canonical5/5 and Worker scope6/6 separately; copied from exact main; no HTTP",
+      "evidence": "stages/final-python/report.json"
+    }
+  ],
+  "other_reviewed_contracts": [
+    "All hop/final TTL remaining times intersect; profile checks and cache-hit expiry recheck remain",
+    "Final validators only reach exact URI after live exact-prefix match; original route still dispatched",
+    "No cross-owner or global final-URL body lookup; owner and revocation fences retained",
+    "Current snapshot/metadata CAS and target deletion fences; existing in-flight publication/job-lease commit gates retained",
+    "HTTP redirect304 exact N+1 request and consumed-prefix-byte accounting against existing grant",
+    "Optional proof8192 bytes and total stored HTTP metadata16384 bytes; observations enforced even without reusable proof"
+  ],
+  "counting_and_limits": [
+    "Do not add these focused/overlapping probe cases to product acceptance or formal suite totals",
+    "No final full CTest/pytest/ASan/CI result is claimed by this report; parent stage p2-2-v2 was running during report generation",
+    "Native probes use mock Worker responses with real Core/Store; Worker scope is a completed-response stub; canonical probe uses the actual installed json-c serializer",
+    "Original negative reports and all frozen probe versions are included without rewriting. Initial oversized_conditional_probe.cpp was never executed; v2 removed a base-presence test assumption before its first execution.",
+    "No source enablement, backup restore guarantee, permission expansion, or change to the six user decisions is introduced by this review"
+  ],
+  "evidence_manifest": "MANIFEST.json",
+  "bundle_content_policy": "UTF-8 source, patches, logs and JSON only; no DB, SQLite/WAL, compiled library, executable, object, virtual environment or dependency tree"
+}

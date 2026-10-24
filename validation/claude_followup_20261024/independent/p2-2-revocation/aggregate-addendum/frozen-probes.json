@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "created_utc": "2026-10-24T04:56:26.468385+00:00",
+  "purpose": "Additive independent regression after full-suite discovery that public Worker publication must preserve aggregate site ceilings.",
+  "frozen_inputs": {
+    "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/worker_aggregate_final_probe.py": "09781621508fb439e2339fb94d6d7adc8a26aece745709a165427a89feea8a57",
+    "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/aggregate_final_native_probe.cpp": "bd66ed1829ccd166e4af0570934f889ea605d42ca2a50c1c51cd297a0239391a",
+    "/tmp/bzs-p2-redirect-review-revocation-v1/worker_publication_scope_probe.py": "d3b2f35f94884809beb4d8f5f0597df3fa4c1fd40d58a3bb093f39e7078967c2",
+    "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c"
+  },
+  "prior_report_preserved": {
+    "path": "/tmp/bzs-p2-redirect-independent-final-20261024/final-review.json",
+    "sha256": "a6658e0ea57183e240510a6b57a82d933b6e55f76f2d27f8211ae6824c215c8f",
+    "status": "Pre-full-suite scoped conclusion; superseded for aggregate compatibility by this additive review. Raw original expectations/results are not edited."
+  },
+  "expected_cases": {
+    "python_worker_aggregate_and_final": 14,
+    "native_real_store_protocol_and_policy": 24
+  },
+  "native_scope": "Completed Worker protocol mocks, actual WebService/Store. Equal and explicit final policies crossed with cacheable/no-cache/TTL0/16KiB omitted proof; in-flight A noindex; independent C current/frozen snippets and cache; actual final restrictions; strict private field boundaries; no retries/evidence removal.",
+  "python_scope": "Actual Worker coordinator/SiteRegistry, stubbed completed fetch. No real HTTP or DNS. Optional equal-policy record omission accepted only with complete proof.",
+  "commands": [
+    {
+      "argv": [
+        "c++",
+        "-std=c++20",
+        "-fsyntax-only",
+        "-I/workspace/scratch/e2371129386d/bzs861/include",
+        "/tmp/bzs-p2-redirect-aggregate-review-revocation-v1/aggregate_final_native_probe.cpp"
+      ],
+      "exit_code": 0,
+      "seconds": 0.9072848289997637,
+      "stdout": "syntax-native.stdout.log",
+      "stderr": "syntax-native.stderr.log"
+    }
+  ],
+  "execution": {
+    "python_ast_parse": "passed",
+    "native_syntax_only": "passed",
+    "native_linked_or_run": false,
+    "python_behavior_run": false,
+    "waiting_for": "Author frozen aggregate followup and root exact final production library/Python."
+  }
+}

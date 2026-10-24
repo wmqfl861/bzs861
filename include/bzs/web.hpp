@@ -90,7 +90,7 @@ namespace bzs {
     Json decode_redirect_observations(const std::string& url,const Json& response);
     ReadArtifact decode_read(const std::string& url, const Json& response,bool allow_empty=false);
     ReadArtifact decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base);
-    Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
+    Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at,const Json& http_guard=Json());
     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
     Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false,
                 std::optional<std::chrono::steady_clock::time_point> internal_deadline=std::nullopt);

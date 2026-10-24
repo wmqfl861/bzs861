@@ -1,4 +1,5 @@
 #include "bzs/store.hpp"
+#include "bzs/web.hpp"
 #include "bzs/error.hpp"
 #include "bzs/highlight.hpp"
 #include "bzs/http_cache.hpp"
@@ -663,7 +664,7 @@ namespace bzs {
     std::string site_bindings="{}";std::int64_t site_generation=0;
     const auto metadata=Json::parse(meta_json,8*1024*1024);
     auto http_metadata=Json::object();
-    for(const auto* key:{"http_cache","http_freshness","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
+    for(const auto* key:{"http_cache","http_freshness","http_redirect_chain","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
     const auto http_bytes=http_metadata.size()?static_cast<std::int64_t>(http_metadata.canonical().size()):0;
     require(http_bytes<=16384,"E_WORKER_PROTOCOL","HTTP revalidation metadata exceeds its bound",502);
     const bool stale_publication=source_kind=="web"&&metadata.has("page_publication_stale")&&metadata.at("page_publication_stale").flag();
@@ -822,17 +823,35 @@ namespace bzs {
               sha256(old.canonical())==binding.at("base_metadata_sha256").str()&&
               sha256(owner+"\n"+base.text(0)+"\n"+sha256(old.canonical()))==binding.at("binding_id").str(),
               "E_REVALIDATION_STALE","Revalidation base metadata changed",409);
+      require(old.has("final_url")&&m.has("final_url")&&old.at("final_url").str()==m.at("final_url").str()&&
+              m.has("http_cache")&&m.at("http_cache").at("url").str()==old.at("final_url").str(),
+              "E_WORKER_PROTOCOL","304 cannot retarget the retained representation",502);
       require(base.text(2)==sha256(input.raw)&&base.text(3)==parsed.text&&base.text(4)==parsed.title&&base.text(5)==parsed.parser_version&&
               base.text(6)==input.content_type&&Json::parse(base.text(7)).canonical()==parsed.links.canonical(),
               "E_WORKER_PROTOCOL","304 cannot replace the retained body",502);
-      require(publication_covers(parsed.publication,Json::parse(base.text(8),8*1024*1024)),"E_WORKER_PROTOCOL","304 cannot relax the retained publication policy",502);
+      const auto old_publication=Json::parse(base.text(8),8*1024*1024);
+      require(publication_covers(parsed.publication,old_publication),"E_WORKER_PROTOCOL","304 cannot relax the retained publication policy",502);
+      if(m.has("http_redirect_chain")) {
+        const auto old_representation=Json::parse(base.text(9),8*1024*1024);
+        require(parsed.representation_publication.has("version")&&
+                publication_covers(parsed.representation_publication,old_representation.has("version")?old_representation:old_publication),
+                "E_WORKER_PROTOCOL","304 cannot relax the retained final publication policy",502);
+      }
       parsed.publication=current_publication_ceiling_locked(owner,input.url,parsed.publication);
-      if(parsed.representation_publication.has("version"))parsed.representation_publication=current_publication_ceiling_locked(owner,input.url,parsed.representation_publication);
+      if(m.has("http_redirect_chain"))for(std::size_t i=0;i<m.at("redirects").size();++i)
+        parsed.publication=current_publication_ceiling_locked(owner,m.at("redirects").at(i).str(),parsed.publication);
+      if(parsed.representation_publication.has("version"))parsed.representation_publication=current_publication_ceiling_locked(owner,m.at("final_url").str(),parsed.representation_publication);
       parsed.index_allowed=parsed.publication.at("index_allowed").flag();
       // This is the original body's history boundary, not the newer request's
       // boundary. Restrictions observed before this 304 was dispatched count.
       m.set("page_publication_sequence",old.at("page_publication_sequence"));
       m.set("site_publication_generation",old.at("site_publication_generation"));
+    }
+    if(m.has("http_redirect_chain")) {
+      require(m.has("http_freshness")&&m.has("final_url")&&m.has("redirects"),"E_WORKER_PROTOCOL","Stored redirect proof lacks its final representation",502);
+      const auto chain=validate_http_redirect_chain(m.at("http_redirect_chain"),input.url,m.at("final_url").str(),m.at("redirects"));
+      require(http_redirect_chain_cacheable(chain),"E_WORKER_PROTOCOL","Stored redirect proof lacks explicit cacheable hop lifetimes",502);
+      require(http_read_freshness(m,input.url,clock_(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","Redirect cache policy forbids persistent snapshots",409);
     }
     if(m.has("http_freshness"))
       require(http_freshness(m.at("http_freshness"),clock_(),7*86400).at("store_allowed").flag(),
@@ -880,7 +899,7 @@ namespace bzs {
     const auto old=Json::parse(row.text(0),8*1024*1024);
     if(sha256(old.canonical())!=metadata_sha256)return;
     auto meta=Json::object(),accounted=Json::object();
-    for(const auto& key:old.keys())if(key!="http_cache"&&key!="http_freshness"&&key!="http_revalidation")meta.set(key,old.at(key));
+    for(const auto& key:old.keys())if(key!="http_cache"&&key!="http_freshness"&&key!="http_redirect_chain"&&key!="http_revalidation")meta.set(key,old.at(key));
     if(meta.has("revalidation_discovery"))accounted.set("revalidation_discovery",meta.at("revalidation_discovery"));
     const auto bytes=accounted.size()?static_cast<std::int64_t>(accounted.canonical().size()):0;
     Stmt update(db_,"UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
@@ -894,32 +913,85 @@ namespace bzs {
     row.bind(1,owner);row.bind(2,url);if(!row.step())return std::nullopt;
     auto meta=Json::parse(row.text(8),8*1024*1024);
     if(!meta.has("http_cache")||!meta.has("page_publication_sequence")||!meta.has("site_publication_generation")||
-       !meta.has("raw_stored")||!meta.at("raw_stored").flag()||!meta.has("final_url")||meta.at("final_url").str()!=url||
-       !meta.has("redirects")||!meta.at("redirects").is_array()||meta.at("redirects").size()!=0||
+       !meta.has("raw_stored")||!meta.at("raw_stored").flag()||!meta.has("final_url")||
+       !meta.has("redirects")||!meta.at("redirects").is_array()||
        (meta.has("text_truncated")&&meta.at("text_truncated").flag())||
        (meta.has("crawl_publication_urls")&&(meta.at("crawl_publication_urls").size()!=1||meta.at("crawl_publication_urls").at(std::size_t{0}).str()!=url)))return std::nullopt;
+    const auto final_url=meta.at("final_url").str();
+    const bool direct=final_url==url&&meta.at("redirects").size()==0;
     Json cache;
-    try { cache=validate_http_cache(meta.at("http_cache"),url); }
-    catch(const Error&) { return std::nullopt; }
+    try {
+      cache=validate_http_cache(meta.at("http_cache"),final_url);
+      if(!direct) {
+        if(!meta.has("http_redirect_chain")||!meta.has("http_freshness")||!meta.has("publication_fence"))return std::nullopt;
+        const auto chain=validate_http_redirect_chain(meta.at("http_redirect_chain"),url,final_url,meta.at("redirects"));
+        if(!http_redirect_chain_cacheable(chain)||cache.at("request_profile").str()!=meta.at("http_freshness").at("request_profile").str()||
+           cache.at("request_profile").str()!=chain.at("hops").at(std::size_t{0}).at("http_freshness").at("request_profile").str())return std::nullopt;
+        const auto sequence=meta.at("publication_fence").at("sequence").num();
+        for(std::size_t i=0;i<meta.at("redirects").size();++i) {
+          const auto target=meta.at("redirects").at(i).str();
+          (void)alias_fences_locked(owner,url,target,sequence);
+          (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
+        }
+      }
+    } catch(const Error&) { return std::nullopt; }
     RevalidationBase base;base.snapshot_id=row.text(0);base.cache_sha256=sha256(cache.canonical());base.metadata_sha256=sha256(meta.canonical());
     base.document={url,row.text(1),row.text(5),row.text(3)};
     base.parsed.title=row.text(3);base.parsed.text=row.text(2);base.parsed.parser_version=row.text(4);base.parsed.content_type=row.text(5);
     base.parsed.index_allowed=row.num(6)!=0;base.parsed.links=Json::parse(row.text(7));
     base.parsed.publication=Json::parse(row.text(9),8*1024*1024);base.parsed.representation_publication=Json::parse(row.text(10),8*1024*1024);
     if(!base.parsed.publication.has("version"))return std::nullopt;
+    // An omitted final policy means it equalled the stored aggregate, before
+    // any newer original/intermediate URL restriction is applied to this base.
+    if(!direct&&!base.parsed.representation_publication.has("version"))
+      base.parsed.representation_publication=base.parsed.publication;
     base.parsed.publication=current_publication_ceiling_locked(owner,url,base.parsed.publication);
-    if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,url,base.parsed.representation_publication);
+    if(!direct)for(std::size_t i=0;i<meta.at("redirects").size();++i)
+      base.parsed.publication=current_publication_ceiling_locked(owner,meta.at("redirects").at(i).str(),base.parsed.publication);
+    if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,final_url,base.parsed.representation_publication);
     base.parsed.index_allowed=base.parsed.publication.at("index_allowed").flag();
-    base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));return base;
+    base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));
+    if(!direct) {
+      // A reusable proof can fit storage while its optional conditional grant
+      // exceeds the separate wire bound. Skip that optimization before dispatch;
+      // the same authorized read will fetch a complete representation once.
+      try { (void)http_redirect_conditional(meta.at("http_redirect_chain"),base.conditional); }
+      catch(const Error& error) { if(error.code!="E_WORKER_PROTOCOL")throw;return std::nullopt; }
+    }
+    return base;
   }
   Json Store::snapshot(const std::string& owner, const std::string& id) {
     std::lock_guard lock(mutex_);
     return snapshot_locked(owner, id);
   }
-  Json Store::range(const std::string& owner, const std::string& id, std::int64_t start, std::int64_t max_bytes) {
+  Json Store::range(const std::string& owner, const std::string& id, std::int64_t start, std::int64_t max_bytes,const Json& http_guard) {
     require(start>=0&&max_bytes>=1&&max_bytes<=262144, "E_SCHEMA", "Invalid range parameters");
     std::lock_guard lock(mutex_);
     auto snap=snapshot_locked(owner, id);
+    if(!http_guard.is_null()) {
+      http_guard.allowed({"version","url","metadata_sha256","max_age_s"});
+      require(http_guard.size()==4&&http_guard.at("version").str()=="bzs-http-cache-hit-1", "E_WORKER_PROTOCOL","Invalid internal cache-hit guard",502);
+      const auto url=http_guard.at("url").str();const auto meta=snap.at("meta");
+      Stmt current(db_,"SELECT 1 FROM documents WHERE owner=? AND url=? AND deleted=0 AND current_snapshot=?");
+      current.bind(1,owner);current.bind(2,url);current.bind(3,id);
+      require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
+              http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
+              "E_CACHE_STALE","Cached representation changed or expired",409);
+      if(meta.has("http_redirect_chain")) {
+        require(meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
+        const auto sequence=meta.at("publication_fence").at("sequence").num();
+        try {
+          for(std::size_t i=0;i<meta.at("redirects").size();++i) {
+            const auto target=meta.at("redirects").at(i).str();
+            (void)alias_fences_locked(owner,url,target,sequence);
+            (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
+          }
+        } catch(const Error& error) {
+          if(error.code!="E_TARGET_DELETED")throw;
+          throw Error("E_CACHE_STALE","A cached redirect target was deleted",409);
+        }
+      }
+    }
     auto text=snap.at("canonical_text").str();
     auto total=static_cast<std::int64_t>(text.size());
     require(start<=total, "E_EVIDENCE_RANGE", "start_byte beyond end of text");
@@ -935,6 +1007,13 @@ namespace bzs {
     out.set("total_bytes", total);
     out.set("truncated", end<total);
     out.set("next_start_byte", end<total?Json::integer(end):Json());
+    if(!http_guard.is_null()) {
+      auto current=Json::object();auto policy=current_publication_ceiling_locked(owner,snap.at("url").str(),snap.at("publication"));
+      const auto redirects=snap.at("meta").at("redirects");
+      for(std::size_t i=0;i<redirects.size();++i)policy=current_publication_ceiling_locked(owner,redirects.at(i).str(),policy);
+      current.set("indexed",snap.at("indexed").flag()&&policy.at("index_allowed").flag());current.set("site_publication",snap.at("site_publication"));
+      out.set("http_publication_projection",current);
+    }
     return out;
   }
   Json Store::erase(const std::string& owner, const std::string& id) {

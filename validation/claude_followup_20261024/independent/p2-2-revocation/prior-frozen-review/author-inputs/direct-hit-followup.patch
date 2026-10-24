@@ -1,0 +1,120 @@
+diff --git a/docs/HTTP_FRESHNESS.md b/docs/HTTP_FRESHNESS.md
+--- a/docs/HTTP_FRESHNESS.md
++++ b/docs/HTTP_FRESHNESS.md
+@@ -33,3 +33,7 @@
+ ## 完整 HTTP 跳转链补充
+ 
+ 显式读取现在可以依据 `bzs-http-redirect-chain-1` 复用完整 HTTP 跳转链：每跳有明确有效期限、精确 URI 与当前 profile，整体期限取交集。没有证明的旧 payload 和 soft redirect 仍保守。刷新仍从原始 URI 重新走实际跳转，仅在精确 final URI 安装其自身验证器；中途 no-store、删除、发布限制与全部实际用量不会因缓存省略。私有协议、边界及回归位置见 [HTTP_REDIRECT_CACHE](HTTP_REDIRECT_CACHE.md)。
++
++## 缓存命中的当前权限投影
++
++直达缓存与具备完整证明的 HTTP 跳转缓存都在返回前，在 Store 锁内复核当前快照、元数据身份和有效期，并按当前发布权限返回 `indexed`。跳转缓存额外复核持久化删除屏障与链中 URL；直达缓存不要求跳转证明。`fetch.profile` 只确认当前 Worker 配置，不产生 origin 请求，其间发生的限制或并发刷新仍会在最终命中时被发现。此投影不修改历史正文；`document.read` 与默认 `read_range` 保持原有历史读取语义。
+diff --git a/src/store.cpp b/src/store.cpp
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -968,18 +968,20 @@
+       current.bind(1,owner);current.bind(2,url);current.bind(3,id);
+       require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
+               http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
+-              "E_CACHE_STALE","Cached redirect representation changed or expired",409);
+-      require(meta.has("http_redirect_chain")&&meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
+-      const auto sequence=meta.at("publication_fence").at("sequence").num();
+-      try {
+-        for(std::size_t i=0;i<meta.at("redirects").size();++i) {
+-          const auto target=meta.at("redirects").at(i).str();
+-          (void)alias_fences_locked(owner,url,target,sequence);
+-          (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
++              "E_CACHE_STALE","Cached representation changed or expired",409);
++      if(meta.has("http_redirect_chain")) {
++        require(meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
++        const auto sequence=meta.at("publication_fence").at("sequence").num();
++        try {
++          for(std::size_t i=0;i<meta.at("redirects").size();++i) {
++            const auto target=meta.at("redirects").at(i).str();
++            (void)alias_fences_locked(owner,url,target,sequence);
++            (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
++          }
++        } catch(const Error& error) {
++          if(error.code!="E_TARGET_DELETED")throw;
++          throw Error("E_CACHE_STALE","A cached redirect target was deleted",409);
+         }
+-      } catch(const Error& error) {
+-        if(error.code!="E_TARGET_DELETED")throw;
+-        throw Error("E_CACHE_STALE","A cached redirect target was deleted",409);
+       }
+     }
+     auto text=snap.at("canonical_text").str();
+diff --git a/src/web.cpp b/src/web.cpp
+--- a/src/web.cpp
++++ b/src/web.cpp
+@@ -759,11 +759,9 @@
+         current==cached->at("meta").at("http_freshness").at("request_profile").str();
+     };
+     const auto cached_window=[&] {
+-      auto guard=Json();const auto meta=cached->at("meta");
+-      if(meta.has("http_redirect_chain")) {
+-        guard=Json::object();guard.set("version","bzs-http-cache-hit-1");guard.set("url",url);
+-        guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("max_age_s",max_age);
+-      }
++      const auto meta=cached->at("meta");auto guard=Json::object();
++      guard.set("version","bzs-http-cache-hit-1");guard.set("url",url);
++      guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("max_age_s",max_age);
+       return window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num(),guard);
+     };
+     if(freshness=="cache_only") {
+diff --git a/tests/cache_freshness.cpp b/tests/cache_freshness.cpp
+--- a/tests/cache_freshness.cpp
++++ b/tests/cache_freshness.cpp
+@@ -390,6 +390,52 @@
+     else {CHECK(!web.read("a",redirect_args(mode)).at("from_cache").flag());CHECK(w.requests==2);}
+   }
+ }
++TEST(direct_cache_hits_project_current_noindex_without_rewriting_history) {
++  Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  const auto first=web.read("a",args()),evidence=s.evidence("a",first.at("snapshot_id").str(),0,5);
++  const auto query=parse_query(Json::string("cache"));const auto frozen=s.search("a",query);
++  s.observe_web_publication("a",url,url,redirect_noindex(),s.publication_fence("a",url));
++  for(const auto* freshness:{"cache_only","cache_first"}) {
++    const auto hit=web.read("a",args(freshness));CHECK(hit.at("from_cache").flag());CHECK(!hit.at("indexed").flag());
++    CHECK(hit.at("snapshot_id").str()==first.at("snapshot_id").str());CHECK(hit.at("content").at("text").str()=="cache fixture body");
++    CHECK(!hit.at("content").has("http_publication_projection"));
++  }
++  CHECK(w.requests==1);CHECK(s.search("a",query).at("frozen_count").num()==0);
++  CHECK(s.page("a",frozen.at("session_id").str(),"",20).at("hits").size()==0);
++  const auto historical=s.snapshot("a",first.at("snapshot_id").str());CHECK(historical.at("indexed").flag());CHECK(historical.at("canonical_text").str()=="cache fixture body");
++  const auto range=s.range("a",first.at("snapshot_id").str(),0,100);CHECK(range.at("text").str()=="cache fixture body");CHECK(!range.has("http_publication_projection"));
++  CHECK(s.evidence_get("a",evidence.at("evidence_id").str()).at("quote").str()=="cache");
++}
++TEST(direct_cache_hit_rechecks_publication_after_profile_rpc) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});const auto first=web.read("a",args());bool observed=false;
++  w.during_profile=[&] {if(!observed){observed=true;s.observe_web_publication("a",url,url,redirect_noindex(),s.publication_fence("a",url));}};
++  const auto hit=web.read("a",args("cache_only"));CHECK(observed);CHECK(hit.at("from_cache").flag());CHECK(!hit.at("indexed").flag());
++  CHECK(hit.at("snapshot_id").str()==first.at("snapshot_id").str());CHECK(w.requests==1);
++}
++TEST(direct_cache_hit_rechecks_same_snapshot_metadata_after_profile_rpc) {
++  for(const auto* freshness:{"cache_only","cache_first"}) {
++    Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++    const auto first=web.read("a",args());const auto before=s.cached("a",url)->at("meta").canonical();bool refreshed=false;
++    w.during_profile=[&] {
++      if(!refreshed) {refreshed=true;++w.now;const auto newer=web.read("a",args("refresh"));CHECK(newer.at("snapshot_id").str()==first.at("snapshot_id").str());}
++    };
++    if(std::string(freshness)=="cache_only") {
++      rejects([&]{web.read("a",args(freshness));},"E_CACHE_STALE");CHECK(w.requests==2);
++    } else {
++      const auto fetched=web.read("a",args(freshness));CHECK(!fetched.at("from_cache").flag());CHECK(w.requests==3);
++    }
++    CHECK(s.cached("a",url)->at("meta").canonical()!=before);
++    const auto requests=w.requests;CHECK(web.read("a",args("cache_only")).at("from_cache").flag());CHECK(w.requests==requests);
++  }
++}
++TEST(direct_cache_guard_does_not_require_a_redirect_publication_fence) {
++  Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  SourceDocument document{url,"cache fixture body","text/plain","cache fixture"};ParsedDocument parsed;
++  parsed.title=document.title;parsed.text=document.raw;parsed.content_type=document.content_type;parsed.parser_version="fixture/1";parsed.index_allowed=true;
++  auto meta=Json::object();meta.set("final_url",url);meta.set("redirects",Json::array());meta.set("http_freshness",policy());meta.set("fetched_at_ms",w.now);
++  const auto stored=s.ingest_web("a",document,parsed,meta,s.deletion_generation("a",url));CHECK(!stored.at("meta").has("publication_fence"));
++  const auto hit=web.read("a",args("cache_only"));CHECK(hit.at("from_cache").flag());CHECK(hit.at("indexed").flag());CHECK(hit.at("snapshot_id").str()==stored.at("snapshot_id").str());CHECK(w.requests==0);
++}
+ 
+ }
+ int main(){int failed=0;for(const auto& [name,test]:cases){try{test();std::cout<<"PASS "<<name<<'\n';}catch(const std::exception& e){++failed;std::cout<<"FAIL "<<name<<": "<<e.what()<<'\n';}}std::cout<<cases.size()<<" cases, "<<assertions<<" assertions, "<<failed<<" failed\n";return failed?1:0;}

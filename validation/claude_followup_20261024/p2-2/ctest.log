@@ -1,0 +1,471 @@
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/e2371129386d/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/e2371129386d/bzs861/build/DartConfiguration.tcl
+Test project /workspace/scratch/e2371129386d/bzs861/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 22
+      Start 22: e2e_session_recovery
+
+22: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+22: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+22: Test timeout computed to be: 180
+test 21
+      Start 21: e2e_crawl_recovery
+
+21: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+21: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+21: Test timeout computed to be: 180
+21: test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request (__main__.CrawlRecovery.test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request) ... ok
+22: test_01_core_crash_before_worker_reserves_unknown_without_sending_source (__main__.SessionRecovery.test_01_core_crash_before_worker_reserves_unknown_without_sending_source) ... ok
+21: test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact (__main__.CrawlRecovery.test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact) ... ok
+21: test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch (__main__.CrawlRecovery.test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch) ... ok
+21: test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage (__main__.CrawlRecovery.test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage) ... ok
+21: test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart) ... ok
+21: test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart) ... ok
+21: test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart) ... ok
+21: test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart (__main__.CrawlRecovery.test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart) ... ok
+21: 
+21: ----------------------------------------------------------------------
+21: Ran 8 tests in 22.969s
+21: 
+21: OK
+21: {"checkpoint": "before_worker_rpc", "deleted_pending_tail": false, "core_exit_code": -9, "attempt_id": "9de5f0b060738611500650d8fdf4736bc6aeb24a3d2fbbe1", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 0, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 3, "reused_job_id": "4f28ac33c88ca14cb4c69752b916b6fca51fc85f30f83f7e"}
+21: {"checkpoint": "after_worker_rpc", "deleted_pending_tail": false, "core_exit_code": -9, "attempt_id": "8d7efbef39d5dd92d259704d46d2f4cdb3b2a734e6a21a62", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 1, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 3, "reused_job_id": "59fb0347f38278bf8a712447d9ec302bd3abe69ab68afb17"}
+21: {"checkpoint": "after_worker_rpc", "deleted_pending_tail": true, "core_exit_code": -9, "attempt_id": "381d86a25b8c87920f0fe3bcd6f78d754fa5ea52e28f9ce2", "request_grant": 1, "byte_grant": 2097152, "fixture_lost_url_requests": 1, "state": "failed", "unknown_requests_charged": 1, "unknown_bytes_charged": 2097152, "used_pages": 2, "reused_job_id": "d78d63710d22d865b6410d26226526ce617de221e3b1ebc7"}
+21: {"checkpoint": "committed_job_before_submit_ack", "core_exit_code": -9, "reused_job_id": "881be0d424337a4519fafdf3e25be4cb888ee17829aa97f3", "snapshots": 5, "edges": 7, "extra_http_requests_after_retry": 0, "state": "succeeded"}
+21: {"crawl_recovery_e2e_tests": 8, "failures": 0, "errors": 0, "seconds": 22.97, "database_mutation_by_fixture": false, "pause_or_resume_calls": 0}
+ 1/27 Test #21: e2e_crawl_recovery ...............   Passed   23.94 sec
+test 27
+      Start 27: python_worker
+
+27: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "-m" "pytest" "-q" "-p" "no:cacheprovider" "tests"
+27: Working Directory: /workspace/scratch/e2371129386d/bzs861/python
+27: Test timeout computed to be: 180
+22: test_02_core_crash_after_worker_reply_never_resends_unknown_source (__main__.SessionRecovery.test_02_core_crash_after_worker_reply_never_resends_unknown_source) ... ok
+22: test_03_worker_crash_during_http_then_restart_runs_only_pending_tail (__main__.SessionRecovery.test_03_worker_crash_during_http_then_restart_runs_only_pending_tail) ... ok
+22: test_04_lost_start_ack_reuses_committed_session_after_core_crash (__main__.SessionRecovery.test_04_lost_start_ack_reuses_committed_session_after_core_crash) ... ok
+22: test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart (__main__.SessionRecovery.test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart) ... ok
+27: ................F....................................................... [  6%]
+27: ........................................................................ [ 12%]
+22: test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail) ... ok
+22: 
+22: ----------------------------------------------------------------------
+22: Ran 6 tests in 26.857s
+22: 
+22: OK
+22: {"session_recovery_e2e_tests": 6, "failures": 0, "errors": 0, "seconds": 26.858, "database_mutation_by_fixture": false, "clock_injection": false, "real_source_http_counts": true, "physical_power_loss_coverage": false, "observations": [{"test": "test_01_core_crash_before_worker_reserves_unknown_without_sending_source", "crashes": [{"component": "searchd", "exit_code": -9}, {"component": "searchd", "exit_code": -9}], "state": "completed", "dispatched_source_attempts": 2, "unknown_source_attempts": 1, "source_http_counts": {"/bing/search": 1}, "event_count": 3}, {"test": "test_02_core_crash_after_worker_reply_never_resends_unknown_source", "crashes": [{"component": "searchd", "exit_code": -9}, {"component": "searchd", "exit_code": -9}], "state": "completed", "dispatched_source_attempts": 2, "unknown_source_attempts": 1, "source_http_counts": {"/ddg/html/": 1, "/bing/search": 1}, "event_count": 3}, {"test": "test_03_worker_crash_during_http_then_restart_runs_only_pending_tail", "crashes": [{"component": "worker", "exit_code": -9}], "state": "completed", "dispatched_source_attempts": 2, "unknown_source_attempts": 1, "source_http_counts": {"/ddg/html/": 1, "/bing/search": 1}, "event_count": 3}, {"test": "test_04_lost_start_ack_reuses_committed_session_after_core_crash", "crashes": [{"component": "searchd", "exit_code": -9}, {"component": "searchd", "exit_code": -9}], "state": "completed", "dispatched_source_attempts": 2, "unknown_source_attempts": 0, "source_http_counts": {"/ddg/html/": 1, "/bing/search": 1}, "event_count": 3}, {"test": "test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart", "crashes": [{"component": "searchd", "exit_code": -9}], "state": "cancelled", "dispatched_source_attempts": 2, "unknown_source_attempts": 1, "source_http_counts": {"/ddg/html/": 1, "/bing/search": 1}, "event_count": 3}, {"test": "test_06_real_deadline_rejects_late_response_and_never_dispatches_tail", "crashes": [], "state": "failed", "dispatched_source_attempts": 1, "unknown_source_attempts": 1, "source_http_counts": {"/ddg/html/": 1}, "event_count": 2}]}
+ 2/27 Test #22: e2e_session_recovery .............   Passed   27.77 sec
+test 8
+      Start  8: sessions
+
+8: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_session_tests
+8: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+8: Test timeout computed to be: 60
+27: ........................................................................ [ 18%]
+8: RUN concurrent_source_review_keeps_shared_registry_contract_valid
+8: PASS concurrent_source_review_keeps_shared_registry_contract_valid (130 ms)
+8: RUN progress_creates_immutable_versions_and_bound_stable_cursors
+8: PASS progress_creates_immutable_versions_and_bound_stable_cursors (96 ms)
+8: RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+8: PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (61 ms)
+8: RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+8: PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (68 ms)
+8: RUN cancel_pending_is_zero_request_and_idempotent
+8: PASS cancel_pending_is_zero_request_and_idempotent (35 ms)
+8: RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+8: PASS lost_lease_is_not_resent_and_unknown_accounting_survives_restart (54 ms)
+8: RUN owner_isolation_invalid_options_and_version_binding
+8: PASS owner_isolation_invalid_options_and_version_binding (30 ms)
+8: RUN expired_events_have_explicit_recovery_and_expired_keys_never_reexecute
+8: PASS expired_events_have_explicit_recovery_and_expired_keys_never_reexecute (36 ms)
+8: RUN frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages
+27: ........................................................................ [ 24%]
+27: ........................................................................ [ 31%]
+27: ........................................................................ [ 37%]
+27: ........................................................................ [ 43%]
+27: ........................................................................ [ 49%]
+27: ........................................................................ [ 56%]
+27: ........................................................................ [ 62%]
+27: ........................................................................ [ 68%]
+27: ........................................................................ [ 74%]
+27: ........................................................................ [ 81%]
+27: ........................................................................ [ 87%]
+27: ........................................................................ [ 93%]
+27: ........................................................................ [ 99%]
+27: ...                                                                      [100%]
+27: =================================== FAILURES ===================================
+27: _ test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect] _
+27: 
+27: crawl_worker = (<bzs.worker.server.Worker object at 0x7f84fa8d4b90>, <aiohttp.test_utils.TestServer object at 0x7f84fa8d5100>, [{'pat...: 200}, <asyncio.locks.Event object at 0x7f84fa8d4140 [unset]>, <asyncio.locks.Event object at 0x7f84fa8d41d0 [unset]>)
+27: prefix = '/redirect'
+27: 
+27:     @pytest.mark.parametrize("prefix", ["/redirect", "/page"])
+27:     async def test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes(crawl_worker, prefix):
+27:         worker, server, calls, *_ = crawl_worker
+27:         site = worker.sites.sites["fixture-site"]
+27:         site["review"]["redistribution_policy"] = "links_only"
+27:         site["path_prefixes"] = [prefix]
+27:         result = await worker.fetch_extract({"url": str(server.make_url("/redirect"))})
+27:         assert result["status"] == "ok" and result["text"]
+27: >       assert result["publication"]["snippet_text"] == result["publication"]["snippet_title"] == ""
+27: E       AssertionError: assert 'Public body ...pathSkip link' == 'Public crawl title'
+27: E         
+27: E         - Public crawl title
+27: E         + Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restart...
+27: E         
+27: E         ...Full output truncated (3 lines hidden), use '-vv' to show
+27: 
+27: tests/test_crawl_worker.py:198: AssertionError
+27: =========================== short test summary info ============================
+27: FAILED tests/test_crawl_worker.py::test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect]
+27: 1 failed, 1154 passed in 16.47s
+ 3/27 Test #27: python_worker ....................***Failed   17.39 sec
+................F....................................................... [  6%]
+........................................................................ [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+........................................................................ [ 31%]
+........................................................................ [ 37%]
+........................................................................ [ 43%]
+........................................................................ [ 49%]
+........................................................................ [ 56%]
+........................................................................ [ 62%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 81%]
+........................................................................ [ 87%]
+........................................................................ [ 93%]
+........................................................................ [ 99%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect] _
+
+crawl_worker = (<bzs.worker.server.Worker object at 0x7f84fa8d4b90>, <aiohttp.test_utils.TestServer object at 0x7f84fa8d5100>, [{'pat...: 200}, <asyncio.locks.Event object at 0x7f84fa8d4140 [unset]>, <asyncio.locks.Event object at 0x7f84fa8d41d0 [unset]>)
+prefix = '/redirect'
+
+    @pytest.mark.parametrize("prefix", ["/redirect", "/page"])
+    async def test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes(crawl_worker, prefix):
+        worker, server, calls, *_ = crawl_worker
+        site = worker.sites.sites["fixture-site"]
+        site["review"]["redistribution_policy"] = "links_only"
+        site["path_prefixes"] = [prefix]
+        result = await worker.fetch_extract({"url": str(server.make_url("/redirect"))})
+        assert result["status"] == "ok" and result["text"]
+>       assert result["publication"]["snippet_text"] == result["publication"]["snippet_title"] == ""
+E       AssertionError: assert 'Public body ...pathSkip link' == 'Public crawl title'
+E         
+E         - Public crawl title
+E         + Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restartable queues and accountable requests. Public body text about bounded crawling, restart...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests/test_crawl_worker.py:198: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_crawl_worker.py::test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect]
+1 failed, 1154 passed in 16.47s
+
+test 20
+      Start 20: e2e_crawl
+
+20: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+20: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+20: Test timeout computed to be: 180
+8: PASS frozen_storage_backpressure_rolls_back_new_version_and_preserves_existing_pages (13345 ms)
+8: RUN delete_and_page_restriction_rechecked_without_content_in_event_log
+8: PASS delete_and_page_restriction_rechecked_without_content_in_event_log (57 ms)
+8: RUN site_tightening_survives_reopen_and_later_relaxation
+8: PASS site_tightening_survives_reopen_and_later_relaxation (49 ms)
+8: RUN active_session_backpressure_and_expired_detail_reclamation
+8: PASS active_session_backpressure_and_expired_detail_reclamation (244 ms)
+8: RUN local_search_gets_durable_events_and_still_has_snapshot_paging
+8: PASS local_search_gets_durable_events_and_still_has_snapshot_paging (20 ms)
+8: RUN expired_local_sessions_release_capacity_for_web_without_local_search
+8: PASS expired_local_sessions_release_capacity_for_web_without_local_search (93 ms)
+8: RUN permanent_search_receipts_do_not_exhaust_future_admission
+20: test_01_recursive_bodies_edges_cycles_and_scope (__main__.CrawlEndToEnd.test_01_recursive_bodies_edges_cycles_and_scope) ... ok
+20: test_02_page_request_depth_variant_and_byte_budgets (__main__.CrawlEndToEnd.test_02_page_request_depth_variant_and_byte_budgets) ... ok
+20: test_03_noindex_refresh_fences_old_sessions_and_keeps_evidence (__main__.CrawlEndToEnd.test_03_noindex_refresh_fences_old_sessions_and_keeps_evidence) ... ok
+20: test_04_snippet_restrictions_apply_to_fresh_and_frozen_results (__main__.CrawlEndToEnd.test_04_snippet_restrictions_apply_to_fresh_and_frozen_results) ... ok
+20: test_05_empty_restrictive_response_also_withdraws_old_index (__main__.CrawlEndToEnd.test_05_empty_restrictive_response_also_withdraws_old_index) ... ok
+20: test_06_agent_scope_nofollow_title_and_links_only_policy (__main__.CrawlEndToEnd.test_06_agent_scope_nofollow_title_and_links_only_policy) ... ok
+20: test_07_robots_and_redirect_denials_never_dispatch_forbidden_bodies (__main__.CrawlEndToEnd.test_07_robots_and_redirect_denials_never_dispatch_forbidden_bodies) ... ok
+20: test_08_paused_frontier_survives_restart_without_repeating_committed_pages (__main__.CrawlEndToEnd.test_08_paused_frontier_survives_restart_without_repeating_committed_pages) ... ok
+20: test_09_map_and_crawl_jobs_share_fair_origin_dispatch (__main__.CrawlEndToEnd.test_09_map_and_crawl_jobs_share_fair_origin_dispatch) ... ok
+20: test_10_late_crawl_response_cannot_revive_deleted_url_alias (__main__.CrawlEndToEnd.test_10_late_crawl_response_cannot_revive_deleted_url_alias) ... ok
+20: test_11_native_cli_uses_the_same_crawl_operation (__main__.CrawlEndToEnd.test_11_native_cli_uses_the_same_crawl_operation) ... ok
+8: PASS permanent_search_receipts_do_not_exhaust_future_admission (3701 ms)
+8: RUN fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion
+8: PASS fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion (205 ms)
+8: RUN source_policy_drift_stops_pending_work_and_does_not_refund_attempts
+8: PASS source_policy_drift_stops_pending_work_and_does_not_refund_attempts (43 ms)
+8: RUN source_duplicate_provenance_keeps_best_rank_through_second_fusion
+8: PASS source_duplicate_provenance_keeps_best_rank_through_second_fusion (38 ms)
+8: RUN permission_epoch_invalidates_replay_and_late_completion
+8: PASS permission_epoch_invalidates_replay_and_late_completion (39 ms)
+8: RUN continuous_new_sessions_cannot_overtake_an_existing_pending_source
+8: PASS continuous_new_sessions_cannot_overtake_an_existing_pending_source (73 ms)
+8: RUN frozen_known_redirect_binding_survives_target_revival_and_route_change
+8: PASS frozen_known_redirect_binding_survives_target_revival_and_route_change (124 ms)
+8: RUN incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker
+8: PASS incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker (43 ms)
+8: RUN preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read
+20: test_12_mcp_crawl_to_receipt_edges_and_canonical_read (__main__.CrawlEndToEnd.test_12_mcp_crawl_to_receipt_edges_and_canonical_read) ... ok
+20: test_13_invalid_budgets_scope_and_caller_approval_are_rejected_before_dispatch (__main__.CrawlEndToEnd.test_13_invalid_budgets_scope_and_caller_approval_are_rejected_before_dispatch) ... ok
+8: PASS preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read (162 ms)
+8: 23 tests, 298 assertions, 0 failures
+ 4/27 Test  #8: sessions .........................   Passed   18.77 sec
+test 23
+      Start 23: e2e_revalidation
+
+23: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+23: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+23: Test timeout computed to be: 180
+20: test_14_crawl_results_and_edges_remain_owner_isolated (__main__.CrawlEndToEnd.test_14_crawl_results_and_edges_remain_owner_isolated) ... ok
+20: test_15_failed_body_parse_cannot_leave_or_restore_a_forbidden_result (__main__.CrawlEndToEnd.test_15_failed_body_parse_cannot_leave_or_restore_a_forbidden_result) ... ok
+20: test_16_final_url_policy_retracts_previously_read_redirect_representations (__main__.CrawlEndToEnd.test_16_final_url_policy_retracts_previously_read_redirect_representations) ... ok
+20: test_17_meta_only_empty_refresh_retracts_web_read_and_read_many_results (__main__.CrawlEndToEnd.test_17_meta_only_empty_refresh_retracts_web_read_and_read_many_results) ... ok
+23: test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant) ... ok
+20: test_18_redirect_restriction_is_not_erased_by_allowing_final_body (__main__.CrawlEndToEnd.test_18_redirect_restriction_is_not_erased_by_allowing_final_body) ... ok
+20: test_19_frozen_results_keep_their_original_representation_policy (__main__.CrawlEndToEnd.test_19_frozen_results_keep_their_original_representation_policy) ... ok
+20: test_21_date_sequence_and_date_family_stop_before_generic_budgets (__main__.CrawlEndToEnd.test_21_date_sequence_and_date_family_stop_before_generic_budgets) ... ok
+20: test_22_filter_combinations_and_query_shape_have_specific_public_reasons (__main__.CrawlEndToEnd.test_22_filter_combinations_and_query_shape_have_specific_public_reasons) ... ok
+20: test_23_repeated_pagination_observations_and_reasons_survive_restart (__main__.CrawlEndToEnd.test_23_repeated_pagination_observations_and_reasons_survive_restart) ... ok
+23: test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery) ... ok
+23: test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart) ... ok
+20: test_24_finite_article_slugs_numeric_ids_and_versions_remain_distinct (__main__.CrawlEndToEnd.test_24_finite_article_slugs_numeric_ids_and_versions_remain_distinct) ... ok
+20: test_99_manifest_mismatch_retains_refusal_without_body_dispatch (__main__.CrawlEndToEnd.test_99_manifest_mismatch_retains_refusal_without_body_dispatch) ... ok
+20: 
+20: ----------------------------------------------------------------------
+20: Ran 24 tests in 9.192s
+20: 
+20: OK
+20: {"crawl_e2e_tests": 24, "failures": 0, "errors": 0, "seconds": 9.193}
+ 5/27 Test #20: e2e_crawl ........................   Passed   10.25 sec
+test 13
+      Start 13: capacity_cycles
+
+13: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_capacity_cycles_tests
+13: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+13: Test timeout computed to be: 180
+23: test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content) ... ok
+23: test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation) ... ok
+23: test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator) ... ok
+23: 
+23: ----------------------------------------------------------------------
+23: Ran 6 tests in 8.727s
+23: 
+23: OK
+ 6/27 Test #23: e2e_revalidation .................   Passed    8.82 sec
+test 25
+      Start 25: e2e_cache_policy_review
+
+25: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+25: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+25: Test timeout computed to be: 180
+25: test_203_no_store_batch_cannot_persist (__main__.ReviewPolicy.test_203_no_store_batch_cannot_persist) ... ok
+25: test_203_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_203_no_store_crawl_cannot_persist) ... ok
+25: test_203_no_store_direct_cannot_persist (__main__.ReviewPolicy.test_203_no_store_direct_cannot_persist) ... ok
+25: test_empty_200_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_empty_200_no_store_crawl_cannot_persist) ... ok
+25: test_rejected_304_no_cache_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_no_cache_invalidates_previous_freshness) ... ok
+25: test_rejected_304_zero_age_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_zero_age_invalidates_previous_freshness) ... ok
+13: {"cycles":3,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":0,"real_http":false,"scenario":"frontier_512_capacity_refill","simulated_elapsed_ms":1816200003,"store_reopens":6,"submissions":1533,"wall_elapsed_ms":5967}
+13: PASS three_full_frontier_capacity_cycles_preserve_paused_keys_and_owner_boundaries
+13: {"cycles":12,"fake_worker_calls":220,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":111,"read_leases":109,"real_http":false,"scenario":"continuous_arrivals_96_opportunities_per_queue","simulated_elapsed_ms":608400001,"store_reopens":13,"submissions":198,"wall_elapsed_ms":2383}
+13: PASS continuous_arrivals_follow_durable_round_robin_across_twelve_reopens
+13: {"cycles":6,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":12,"real_http":false,"scenario":"unknown_grant_recovery_and_retention","simulated_elapsed_ms":3650400006,"store_reopens":12,"submissions":24,"wall_elapsed_ms":279}
+13: PASS six_unknown_grant_cycles_keep_active_and_paused_work_then_compact_without_refunds
+13: {"cycles":8,"fake_worker_calls":24,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":24,"read_leases":0,"real_http":false,"scenario":"robots_receipt_and_admission_pins","simulated_elapsed_ms":4867200016,"store_reopens":8,"submissions":24,"wall_elapsed_ms":217}
+13: PASS eight_robots_reference_cycles_protect_receipt_and_admission_independently
+13: 4 capacity cycle tests, 4800 assertions, 0 failures, 8858 wall ms
+ 7/27 Test #13: capacity_cycles ..................   Passed    8.87 sec
+test 18
+      Start 18: e2e_web
+
+18: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+18: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+18: Test timeout computed to be: 180
+25: test_repeated_age_never_uses_only_last_zero (__main__.ReviewPolicy.test_repeated_age_never_uses_only_last_zero) ... ok
+18: test_01_capabilities (__main__.EndToEnd.test_01_capabilities) ... ok
+25: test_repeated_date_never_becomes_fresh (__main__.ReviewPolicy.test_repeated_date_never_becomes_fresh) ... ok
+18: test_02_web_search_merges_sources (__main__.EndToEnd.test_02_web_search_merges_sources) ... ok
+18: test_02a_explicit_snippet_permission_preserves_search_engine_text (__main__.EndToEnd.test_02a_explicit_snippet_permission_preserves_search_engine_text) ... ok
+18: test_02b_durable_session_reconnect_paging_and_restart (__main__.EndToEnd.test_02b_durable_session_reconnect_paging_and_restart) ... ok
+18: test_03_blocked_source_cools_down_and_others_still_answer (__main__.EndToEnd.test_03_blocked_source_cools_down_and_others_still_answer) ... ok
+25: test_repeated_pragma_keeps_no_cache (__main__.ReviewPolicy.test_repeated_pragma_keeps_no_cache) ... ok
+18: test_04_read_url_extracts_and_caches (__main__.EndToEnd.test_04_read_url_extracts_and_caches) ... ok
+18: test_04b_robots_header_change_replaces_index_projection (__main__.EndToEnd.test_04b_robots_header_change_replaces_index_projection) ... ok
+18: test_05_ssrf_is_refused (__main__.EndToEnd.test_05_ssrf_is_refused) ... ok
+18: test_06_gbk_page_and_chinese_local_search (__main__.EndToEnd.test_06_gbk_page_and_chinese_local_search) ... ok
+18: test_07_find_range_and_evidence (__main__.EndToEnd.test_07_find_range_and_evidence) ... ok
+18: test_08_unreadable_pages_report_why (__main__.EndToEnd.test_08_unreadable_pages_report_why) ... ok
+25: test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh (__main__.ReviewPolicy.test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh) ... ok
+25: 
+25: ----------------------------------------------------------------------
+25: Ran 10 tests in 8.542s
+25: 
+25: OK
+ 8/27 Test #25: e2e_cache_policy_review ..........   Passed    8.64 sec
+test 4
+      Start  4: crawl
+
+4: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_crawl_tests
+4: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+4: Test timeout computed to be: 45
+Process not started
+ /workspace/scratch/e2371129386d/bzs861/build/bzs_crawl_tests
+[permission denied]
+ 9/27 Test  #4: crawl ............................***Not Run   0.00 sec
+test 16
+      Start 16: http_cli
+
+16: Test command: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 "/workspace/scratch/e2371129386d/bzs861/tests/integration.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--cli" "/workspace/scratch/e2371129386d/bzs861/build/searchctl" "--fixtures" "/workspace/scratch/e2371129386d/bzs861/tests/fixtures"
+16: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+16: Test timeout computed to be: 90
+16: test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+16: test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+16: test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+16: test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+16: test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+16: test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+16: test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+16: test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+16: test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+16: test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+16: test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+16: test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+18: test_09_mcp_stdio (__main__.EndToEnd.test_09_mcp_stdio) ... ok
+18: test_09a_http_batch_ten_inputs_failure_isolation_and_idempotency (__main__.EndToEnd.test_09a_http_batch_ten_inputs_failure_isolation_and_idempotency) ... ok
+18: test_09b_mcp_http_requires_a_client_token (__main__.EndToEnd.test_09b_mcp_http_requires_a_client_token) ... ok
+18: test_10_worker_down_is_explicit_and_local_features_survive (__main__.EndToEnd.test_10_worker_down_is_explicit_and_local_features_survive) ... ok
+18: 
+18: ----------------------------------------------------------------------
+18: Ran 15 tests in 6.162s
+18: 
+18: OK
+18: {"e2e_tests": 15, "failures": 0, "errors": 0, "seconds": 6.2}
+10/27 Test #18: e2e_web ..........................   Passed    7.22 sec
+test 5
+      Start  5: site_publication
+
+5: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_site_publication_tests
+5: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+5: Test timeout computed to be: 60
+16: test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+16: test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+16: test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+16: test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+16: test_17_invalid_search_options_preserve_session_quota (__main__.Integration.test_17_invalid_search_options_preserve_session_quota) ... ok
+16: test_18_contract_validation_and_trusted_parameters (__main__.Integration.test_18_contract_validation_and_trusted_parameters) ... ok
+16: test_19_validation_does_not_enable_execution (__main__.Integration.test_19_validation_does_not_enable_execution) ... ok
+16: test_20_cli_contract_validation_and_file_limit (__main__.Integration.test_20_cli_contract_validation_and_file_limit) ... ok
+16: 
+16: ----------------------------------------------------------------------
+16: Ran 20 tests in 5.658s
+16: 
+16: OK
+11/27 Test #16: http_cli .........................   Passed    5.73 sec
+test 24
+      Start 24: e2e_cache_freshness
+
+24: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+24: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+24: Test timeout computed to be: 180
+24: test_304_no_store_cannot_leave_old_fresh_cache_usable (__main__.CacheFreshness.test_304_no_store_cannot_leave_old_fresh_cache_usable) ... ok
+24: test_failed_new_http_route_invalidates_the_old_direct_cache (__main__.CacheFreshness.test_failed_new_http_route_invalidates_the_old_direct_cache) ... ok
+24: test_failed_refresh_never_silently_serves_expired_body (__main__.CacheFreshness.test_failed_refresh_never_silently_serves_expired_body) ... ok
+24: test_http_chain_batch_304_accounts_for_each_request_and_redirect_body (__main__.CacheFreshness.test_http_chain_batch_304_accounts_for_each_request_and_redirect_body) ... ok
+5: PASS restart_links_only_with_zero_http_restricts_stored_and_frozen_publication
+5: PASS restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication
+5: PASS restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication
+5: PASS disabled_removed_and_unconfigured_restart_keep_durable_restrictions
+5: PASS review_expiry_is_durable_without_restart_or_http_and_cannot_be_rewound
+5: PASS relaxation_requires_a_new_complete_artifact_and_never_revives_frozen_content
+5: PASS scope_shrink_preserves_the_retained_child_and_expansion_does_not_restore_retired_content
+5: PASS new_child_scopes_inherit_prior_ancestor_index_and_snippet_watermarks
+5: PASS intermediate_site_bindings_are_immutable_even_when_body_and_final_url_reuse
+5: PASS final_representation_retarget_does_not_release_frozen_site_constraints
+5: PASS import_snapshots_and_frozen_imports_do_not_inherit_deployment_rules_from_later_web_reads
+5: PASS stale_connections_cannot_reactivate_or_publish_using_an_older_allowing_service
+5: PASS inflight_allowing_response_cannot_cross_a_tighten_then_relax_epoch
+5: PASS sql_candidate_limits_and_counts_exclude_withdrawn_rows_before_bounded_sweep_finishes
+5: PASS escaped_and_requoted_paths_cannot_bypass_a_registered_origin_ceiling
+5: PASS history_capacity_failure_is_atomic_and_does_not_discard_restriction_watermarks
+5: PASS site_tightening_cannot_revive_an_inflight_deleted_owner_document
+5: PASS schema_six_empty_unconfigured_upgrade_does_not_withdraw_unregistered_explicit_reads
+5: PASS schema_six_first_managed_activation_withdraws_only_legacy_web_frozen_rows
+5: PASS schema_six_unverified_crawl_current_requires_complete_reread_after_explicit_activation
+5: PASS schema_six_quarantine_is_checked_before_deployment_policy_migration
+5: PASS read_many_receipts_recheck_current_deployment_policy_without_new_requests
+5: PASS artifacts_captured_while_restricted_do_not_publish_after_an_unrelated_generation_and_later_allow
+5: PASS inflight_restricted_response_cannot_borrow_a_later_allowing_generation
+5: PASS refresh_order_fences_direct_and_bounded_reads_across_all_known_aliases
+5: PASS legacy_allowing_responses_are_permanently_sealed_after_a_new_snippet_restriction
+5: PASS identical_failed_header_observations_each_fence_a_new_inflight_allow
+5: PASS late_alias_response_keeps_a_later_logical_retarget_and_its_frozen_row
+5: PASS deletion_fences_cover_final_and_intermediate_aliases_for_direct_and_bounded_reads
+5: PASS bounded_read_dispatch_fence_survives_a_new_store_connection
+5: PASS schema_seven_inflight_read_has_an_unknown_capture_and_cannot_republish_a_legacy_alias
+5: PASS compatibility_responses_cannot_relax_restrictions_with_incomplete_http_bodies
+5: 32 site publication tests, 1203 assertions, 0 failures
+12/27 Test  #5: site_publication .................   Passed    5.68 sec
+test 19
+      Start 19: e2e_map
+
+19: Test command: /workspace/scratch/e2371129386d/bzs861/.venv/bin/python "/workspace/scratch/e2371129386d/bzs861/tests/e2e_map.py" "--server" "/workspace/scratch/e2371129386d/bzs861/build/searchd" "--python" "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python" "--repo" "/workspace/scratch/e2371129386d/bzs861"
+19: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+19: Test timeout computed to be: 180
+24: test_http_chain_cache_is_owner_scoped_without_a_global_final_alias (__main__.CacheFreshness.test_http_chain_cache_is_owner_scoped_without_a_global_final_alias) ... ok
+24: test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator (__main__.CacheFreshness.test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator) ... ok
+19: test_01_reviewed_registry_and_all_discovery_formats_do_not_read_candidates (__main__.DiscoveryEndToEnd.test_01_reviewed_registry_and_all_discovery_formats_do_not_read_candidates) ... ok
+19: test_02_robots_denial_unreachable_and_rate_limit_never_dispatch_content (__main__.DiscoveryEndToEnd.test_02_robots_denial_unreachable_and_rate_limit_never_dispatch_content) ... ok
+19: test_03_redirects_recheck_scope_and_robots (__main__.DiscoveryEndToEnd.test_03_redirects_recheck_scope_and_robots) ... ok
+19: test_04_restart_reuses_persistent_rules_and_idempotent_results (__main__.DiscoveryEndToEnd.test_04_restart_reuses_persistent_rules_and_idempotent_results) ... ok
+24: test_no_cache_and_upstream_age_do_not_become_default_seven_days (__main__.CacheFreshness.test_no_cache_and_upstream_age_do_not_become_default_seven_days) ... ok
+19: test_05_history_is_visible_without_new_body_publication_and_xml_entities_are_blocked (__main__.DiscoveryEndToEnd.test_05_history_is_visible_without_new_body_publication_and_xml_entities_are_blocked) ... ok
+24: test_no_store_batch_and_crawl_charge_requests_without_receipts (__main__.CacheFreshness.test_no_store_batch_and_crawl_charge_requests_without_receipts) ... ok
+19: test_06_mcp_discovery_to_persistent_candidates (__main__.DiscoveryEndToEnd.test_06_mcp_discovery_to_persistent_candidates) ... ok
+19: test_07_native_cli_uses_the_same_map_operation (__main__.DiscoveryEndToEnd.test_07_native_cli_uses_the_same_map_operation) ... ok
+19: test_08_scope_and_privileged_overrides_are_rejected_before_any_dispatch (__main__.DiscoveryEndToEnd.test_08_scope_and_privileged_overrides_are_rejected_before_any_dispatch) ... ok
+24: test_no_store_denies_new_snapshot_and_invalidates_old_reuse (__main__.CacheFreshness.test_no_store_denies_new_snapshot_and_invalidates_old_reuse) ... ok
+19: test_09_worker_manifest_mismatch_cannot_reuse_core_robots_admission (__main__.DiscoveryEndToEnd.test_09_worker_manifest_mismatch_cannot_reuse_core_robots_admission) ... ok
+19: 
+19: ----------------------------------------------------------------------
+19: Ran 9 tests in 3.067s
+19: 
+19: OK
+19: {"map_e2e_tests": 9, "failures": 0, "errors": 0, "seconds": 3.068}
+13/27 Test #19: e2e_map ..........................   Passed    4.15 sec
+test 1
+      Start  1: core
+
+1: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_tests
+1: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+1: Test timeout computed to be: 45
+Process not started
+ /workspace/scratch/e2371129386d/bzs861/build/bzs_tests
+[permission denied]
+14/27 Test  #1: core .............................***Not Run   0.00 sec
+test 10
+      Start 10: search_modes
+
+10: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_search_mode_tests
+10: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+10: Test timeout computed to be: 60
+24: test_no_validator_fresh_cache_survives_core_restart (__main__.CacheFreshness.test_no_validator_fresh_cache_survives_core_restart) ... ok
+24: 
+24: ----------------------------------------------------------------------
+24: Ran 10 tests in 8.135s
+24: 
+24: OK
+15/27 Test #24: e2e_cache_freshness ..............   Passed    8.25 sec
+test 6
+      Start  6: retention
+
+6: Test command: /workspace/scratch/e2371129386d/bzs861/build/bzs_retention_tests
+6: Working Directory: /workspace/scratch/e2371129386d/bzs861/build
+6: Test timeout computed to be: 60

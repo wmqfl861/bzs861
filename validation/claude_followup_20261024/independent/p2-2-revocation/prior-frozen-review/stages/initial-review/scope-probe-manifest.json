@@ -1,0 +1,34 @@
+{
+  "role": "independent P2-2 v1 regression probe; no production/formal tests changed",
+  "probe": "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+  "probe_sha256": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+  "reviewed_patch": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.patch",
+  "reviewed_patch_sha256": "2c7aa627fd3a2d4437f1c6271680b561ac9df5cafa1ba84d5133b23506765c77",
+  "syntax": {
+    "argv": [
+      "c++",
+      "-std=c++20",
+      "-I/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/include",
+      "-fsyntax-only",
+      "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp"
+    ],
+    "exit_code": 0,
+    "seconds": 0.9310100078582764,
+    "log": "/tmp/bzs-p2-redirect-review-revocation-v1/scope-probe-syntax.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "runtime": "not run; requires integrated P2-2 library; baseline P2-1 cannot authorize this routed-304 path",
+  "scenarios": [
+    "A prefix noindex first observed on routed 304 keeps independent C current/frozen results and cache indexed",
+    "A noindex already observed before revalidation_base still does not contaminate independent C",
+    "later allowing 304 cannot lift retained A noindex",
+    "actual final C noindex restricts both A and independent C current/frozen/cache projections",
+    "immutable A/C snapshot bodies remain readable; three refreshes consume exactly three worker calls and no retries"
+  ],
+  "static_v1_failure_path": [
+    "decode_read saves representation_publication only when aggregate differs from final; initial all-allow route leaves {}",
+    "revalidation_base applies logical/all-route ceilings while representation_publication may remain {}",
+    "decode_not_modified merges redirect observations only into aggregate without first separating final identity",
+    "ingest_locked final_policy falls back to aggregate when representation_publication has no version, publishing unrelated final C as restricted"
+  ]
+}

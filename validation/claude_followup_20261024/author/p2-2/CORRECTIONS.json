@@ -1,0 +1,37 @@
+{
+  "type": "additive correction; original manifests and logs retained verbatim",
+  "corrected_assumption": {
+    "affected_stage": "integrated/01-redirect-v2",
+    "affected_original_manifest_statement": "v2_changes_from_v1: Worker proof 200 and new-route 304 final observation uses only final site identity",
+    "incorrect_part": "Interpreting existing Worker full200 publication as final-only.",
+    "cause": "The v2 author separated final policy to protect an independently read final URL, but changed the existing Worker aggregate contract; newly authored full200 assertions inherited that mistaken contract.",
+    "original_regression": "python/tests/test_crawl_worker.py::test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect]",
+    "reported_failure_location": "line198: original publication snippet_text and snippet_title must both be empty under original-only links_only site scope",
+    "source_of_full_gate_result": "Root reported actual frozen p2-2-v2 full CTest failure. Raw complete gate logs are root-owned and intentionally not re-authored in this author package.",
+    "what_old_previews_do_not_prove": "The retained 218-case and33-case focused passes did not establish compatibility with the omitted original Worker aggregate assertion. They remain genuine historical focused results, not successful full validation.",
+    "resolution_stage": "integrated/05-aggregate-publication",
+    "resolution": "Restore original200 publication aggregate; explicit strictly bound final wrapper only if needed; keep routed304 final-only observation; establish transient Core→Store scope from every validated complete200 receipt, including equal policies.",
+    "tests": "Original crawl_worker source bytes unchanged. The new author test was extended to assert aggregate and final policies together. Old source/patch/report artifacts were not overwritten."
+  },
+  "other_preserved_failure_evidence": [
+    {
+      "path": "historical/not-integrated-v1/draft-worker-v1.log",
+      "result": "1 passed,20 setup errors; local socket denied in sandbox before origin assertions; later approved loopback preview is a separate retained log"
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-cpp-syntax-v1.log",
+      "result": "Store syntax failed because publication_url_identity lacked its explicit include; corrected syntax result is a separate retained log"
+    }
+  ],
+  "author_role_boundaries": [
+    "No author native linking/execution, whole CTest, whole pytest or ASan acceptance is claimed by this package.",
+    "Root owns exact integrated full-gate input and outcomes; independent reviewers own their frozen probes and reports.",
+    "The author package records root-reported integration order but does not convert integration into a passing gate.",
+    "All original absolute paths in copied manifests are historical provenance. EVIDENCE_INDEX.json maps each source to its packaged relative path and exact hash."
+  ],
+  "final_author_preview": {
+    "python": "118 passed in1.92s",
+    "native": "51 registered cases after7 additions; syntax-only of web.cpp/publication.cpp/cache_freshness.cpp passed; not executed by author"
+  },
+  "unchanged_owner_decisions": "S2 scope/status and freeze decision unchanged; no new freeze or acceptance declared. Source approval/enabling, validation storage, backup isolation, permanent idempotency and fetch-adapter decisions are not changed by this package."
+}

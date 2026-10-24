@@ -1,0 +1,65 @@
+{
+  "role": "Author isolated wire-size followup; independent replay and integrated full gates remain parent/reviewer-owned",
+  "patch": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup.patch",
+  "patch_sha256": "8b1487d21109fe0a80946f40dfbbce168e6d2a954960319ec940f41b32f39c57",
+  "repository_modified": false,
+  "production_scope": "Only redirect_cache.encoded_size: count default json-c slash escaping in UTF-8 for private protocol bounds. No global JSON or actual HTTP transport serialization changes; no limit increases.",
+  "files": [
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "before_sha256": "326b650273b2d7c0520cb7364c296e08b37b2724f52d05331d682987c9a25ef9",
+      "after_sha256": "8b1cfad4c60d79b3b148aa46b01bd4ec8bb229d2d5c12c66deba9ddee4958422",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "python/bzs/worker/redirect_cache.py",
+      "before_sha256": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21",
+      "after_sha256": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "before_sha256": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183",
+      "after_sha256": "d2feccd612ed81ba7942e5ffd24d326bbc56bac27eab197983c4d285471352f6",
+      "current_main_matches_preimage": true
+    }
+  ],
+  "regressions": {
+    "original_test_functions_AST_unchanged": true,
+    "pure": "Frozen json-c byte counts at 8190/8192/8194/8206/8208 and string-key/URL/backslash/UTF-8 sample",
+    "local_http": "Oversized optional proof omitted while complete body, actual usage and max-age/no-store prefix observations remain",
+    "new_parameterized_cases": 8,
+    "focused_total_cases": 33
+  },
+  "preview": {
+    "apply_check_current_main_exit": 0,
+    "AST": "passed",
+    "focused_pytest": "33 passed in 0.62s against isolated /tmp runtime using locked venv",
+    "actual_json_c_oracle": "passed; exact fixture constants independently measured from the installed serializer by author",
+    "Core_e2e_full_pytest_CTest_ASan": "not rerun by author"
+  },
+  "runtime_input_matches": {
+    "python/bzs/worker/redirect_cache.py": true,
+    "python/tests/test_http_redirect_cache.py": true
+  },
+  "logs": [
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-pytest.log",
+      "sha256": "f94c6c1d339436e4b15545cc8b6dbd973c2a2e35b44255841d6b22c5739be072"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-oracle.json",
+      "sha256": "72d6f82d807f18387897d60e6efc6213f8418d271cbb6148cbb3018f899d3f1d"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320"
+    }
+  ],
+  "preserved_patches": [
+    "redirect-cache-draft-v1.patch",
+    "redirect-cache-draft-v2.patch",
+    "direct-hit-followup.patch",
+    "bounded-grant-followup.patch"
+  ]
+}

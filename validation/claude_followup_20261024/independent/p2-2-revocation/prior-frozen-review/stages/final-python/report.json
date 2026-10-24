@@ -1,0 +1,297 @@
+{
+  "role": "independent final same-source Python replay against a frozen copy of integrated main; focused only",
+  "git_head_observed": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "wire_patch_sha256": "8b1487d21109fe0a80946f40dfbbce168e6d2a954960319ec940f41b32f39c57",
+  "source_hashes": {
+    "python/bzs/__init__.py": "5976cd3f3dfdd994256418ccbac4bcd2cff4aaa23f349a71c529357de67e6634",
+    "python/bzs/cli.py": "9811608c61447b4fa071c77fe44d853bbf4154d5c957f3e7595d560c9913b6a2",
+    "python/bzs/config.py": "cee85154b2f1532725638b8b2371c9d3d5a2dcc8c400bf38de40d8937b6ee009",
+    "python/bzs/core_client.py": "663bd765f82d40912fa3f695b71b35033e26202c90582e50b0451eae46b82fc2",
+    "python/bzs/evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+    "python/bzs/evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+    "python/bzs/evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+    "python/bzs/golden.py": "93ceb831eb3b10de9729d5f1047029dd2c6e5e05c65a559669d3768125bd99ad",
+    "python/bzs/mcp_auth.py": "6cc7f4e7905da0f4119a1c51e4fc71086ac432b413844f38bcc8def62f64b634",
+    "python/bzs/mcp_server.py": "89dac6312dfd027515ab777ce69e480032af945f7bf9eab0870963efb16d37aa",
+    "python/bzs/probe.py": "8d6b918f19c85e3a0f2515aa885a43065bdee1f2c1efc1aba884cb1e9a5e9303",
+    "python/bzs/probe_format.py": "96fede0a2f755c5ab61eadfdc88f70fd89688bde05d25363b6f0391c477abe85",
+    "python/bzs/probe_state.py": "daca8d069117210e012c15757cbd098445b2192099f48c17e841b7ea18cb176a",
+    "python/bzs/replay.py": "bb74844f7276983654e7e313614e949e74b7845e858226abc3bf2bb19e653c7d",
+    "python/bzs/urls.py": "c5d603044bfdd2718f0cc27723d6f15a9adb63562c67a7bc64ff4f2653f17a52",
+    "python/bzs/worker/__init__.py": "7a5bb9cb7c00f6243565bf13172863ebe8c10e5f983cb3f25b1a38824400eb7e",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+    "python/bzs/worker/fetch.py": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+    "python/bzs/worker/freshness.py": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+    "python/bzs/worker/netguard.py": "c1c2c9c8de2c30a93143e32621734fff4570c60370f858a7aba538d983cb8738",
+    "python/bzs/worker/publication.py": "59bbf263ed2b918d26a15601d794cbd570b91fccd7d8be15a81e15a07a2caa7c",
+    "python/bzs/worker/redirect_cache.py": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "python/bzs/worker/robots.py": "c884b818e1c9e68a1ef55a23836e84c49d59701d47dde8781c05732caef672ed",
+    "python/bzs/worker/server.py": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9",
+    "python/bzs/worker/sites.py": "e48495c0c9ea66bf1e92f0be3e9734c7e9fc6d04a19dbc9be71ff67a5f10a0aa",
+    "python/bzs/worker/sources/__init__.py": "0aa94db1a1abf5a0f7ad10cea6f92764de8f264e468c61d1640da8db65346da1",
+    "python/bzs/worker/sources/apis.py": "5341bdcaad7660b460974e49f8a7cdc8b42c02a1e5945de2078af6ed77cbf47a",
+    "python/bzs/worker/sources/base.py": "0a1ed9504c4c4c364ea101a253350bf51b667c794544db0857fff76167560bb4",
+    "python/bzs/worker/sources/engines.py": "9dd91248e7c5a3561d0a13236a56209f2980170476bbd951c7ac2db6bafbcb12",
+    "python/bzs/worker/sources/review.py": "8933620897a460c8f359ee15720fc197219410b9e9b6a57b0c90acaf25ec8f2e",
+    "python/tests/fakecrawl.py": "ba979d5f443deea35d32e06330862e3097a631d81811e2eaf1f1fe3e99b3b39b",
+    "python/tests/fakemap.py": "317d9893a002be2ef984481f99ae4c59dbd3af788c129e5d08fc8850fcb06e0c",
+    "python/tests/fakeweb.py": "e6634ebb86c557c6b5d24f422a977ca0fad56ea48d86c7e8f10d012150c44000",
+    "python/tests/test_config_sites.py": "dbd0dd28f4dbf5ea7b10abc5143a186a4479875f0e7508869ee351f7e153589b",
+    "python/tests/test_crawl_worker.py": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "python/tests/test_discovery.py": "19cf141380877639c98f02df732c8b870adaa5713a47ab8ee724a4c1d6e3133c",
+    "python/tests/test_evaluation.py": "c35882497aebedfe15d6c531fed828c004d81dd518be97f032b628e5e09ef2de",
+    "python/tests/test_evaluation_ablation.py": "61105b605d5dd80398d7794ab53147cb5d002d342f8846f70fb60f22b9bb6816",
+    "python/tests/test_extract.py": "265e1f05165b76b1cc48ebd199f82d6362f279c09caa2adfe7af43607a948f5f",
+    "python/tests/test_fetch.py": "3e1905e58bca1dcf27cc9bb3312553f23f09af60627459320346e82c36ffd1d7",
+    "python/tests/test_fetch_budget.py": "a44b2b9c8537e2d7bc6cd7f4693d280e64b98eb2b21fb59ceb4b4c6d3a5e2875",
+    "python/tests/test_golden.py": "5520fd494dabae6974f540e7c794bf95ba81bc8cffd93594b751c81337c89361",
+    "python/tests/test_http_freshness.py": "10fbaffdfb251e6d4fc572d3a1f1ce6e96363bd8f243394421a17e917ce0caa3",
+    "python/tests/test_http_freshness_review.py": "9170c7832d87c923bd7e42f03166b3389aa34ddbe2a69d41a85b5f2980d7670d",
+    "python/tests/test_http_redirect_cache.py": "d2feccd612ed81ba7942e5ffd24d326bbc56bac27eab197983c4d285471352f6",
+    "python/tests/test_http_revalidation.py": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+    "python/tests/test_job_compaction_adapters.py": "ec75bdbb06fd4b3a0fb419902bef3ac254bfb3fd1d9419163aab60d009ae6ec7",
+    "python/tests/test_map_worker.py": "26b43fd55a115a4a3f757e75016c72dc088428e68bbe3b6b35e869e2bd7020de",
+    "python/tests/test_mcp_auth.py": "4b4d22e71d2513d1215a0a5b3ebab5e49c7af88e343da3028f439373536fd19c",
+    "python/tests/test_mcp_crawl.py": "6f261fb673ec91a7c2c5a6db995962e1db1eae5e11a02fc4779acada6f498d72",
+    "python/tests/test_mcp_jobs.py": "de348b1a59da463513d8ac2f51f745a9bf82b0c9c9d031f71cbc27bdadf3ae65",
+    "python/tests/test_mcp_map.py": "975c2018920ca24746ff1697c4624293c541afcb38e9c7867bd05972d321d8a5",
+    "python/tests/test_mcp_sessions.py": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+    "python/tests/test_netguard.py": "c8ad956b37ae94fe7d919fc390eb36b56a272b2dd3c5488fb846a57d0d69a9d3",
+    "python/tests/test_principal_revocation_adapters.py": "79e32098c867ae9d33ebeb1b166ef36748514ab8ee303e85da563ea39e670677",
+    "python/tests/test_probe.py": "8c625ef37a193c80653762786cceff4bf5fc07348815eb95c519c9db0131aa68",
+    "python/tests/test_publication.py": "d86a1c73da2f5e3f67e2a5a9e50bb138141c8ae90c0529b9996aebb3be39be2b",
+    "python/tests/test_replay.py": "29d170512588015991efdc1c21d215e9da279b1d082e887874dc4a03693e5a46",
+    "python/tests/test_robots.py": "fa8d6c6ca12e1a9b406c8fdc8029b6c9ec84fb03bfefc608c53402156381f33b",
+    "python/tests/test_search_modes_adapters.py": "dc5f00b7467d2dcd93e66f05bc49c305c8caf135e8472f19e35ef2a73789cbe3",
+    "python/tests/test_sources.py": "533712807c27f15d69191523fc5b58e1ab59d79e7da86be51d6d7e373d19196c",
+    "python/tests/test_urls.py": "28dca6d5f50f9e5f8c8cdde77eeb1aff55341dfe65f4d1207e07f9e95352cf58"
+  },
+  "native_report_sha256": "65e1aed9aa0daf65d38cf563be720470cd66b26258154cc5097bbe77622ab00c",
+  "library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+  "native_cpp_input_comparison": {
+    "include/bzs/http_cache.hpp": {
+      "native_replay": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+      "current_main": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b"
+    },
+    "include/bzs/store.hpp": {
+      "native_replay": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+      "current_main": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72"
+    },
+    "include/bzs/web.hpp": {
+      "native_replay": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+      "current_main": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+    },
+    "src/http_cache.cpp": {
+      "native_replay": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+      "current_main": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b"
+    },
+    "src/publication.cpp": {
+      "native_replay": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717",
+      "current_main": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717"
+    },
+    "src/store.cpp": {
+      "native_replay": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+      "current_main": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c"
+    },
+    "src/web.cpp": {
+      "native_replay": "6d90fbe8b7edb2d2041f7d0cbc7e7201a882e617874225dc544c9837a8a11bf0",
+      "current_main": "6d90fbe8b7edb2d2041f7d0cbc7e7201a882e617874225dc544c9837a8a11bf0"
+    }
+  },
+  "probes": [
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/canonical_proof_size_probe.py",
+      "source_sha256": "a2ca8380d5e3cf7ca915dabebb93e7a9375411c420a6aea7749ccdc5b97a47bf",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/canonical_proof_size_probe.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.055495262145996094,
+      "log": "/tmp/bzs-p2-redirect-review-revocation-final-python-v1/canonical_proof_size_probe.log",
+      "log_sha256": "b3ac7f68851fd6eeb95acede97c11b5dfeadda51f8e509658c5a8285ef6a9a89",
+      "result": {
+        "scope": "Worker helper vs actual json-c scalar encoding; no HTTP",
+        "json_c_library": "libjson-c.so.5",
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "final_uri_bytes": 100,
+            "consumer_canonical_bytes": 758,
+            "worker_encoded_size": 758,
+            "proof_emitted": true,
+            "expected_proof_emitted": true,
+            "passed": true
+          },
+          {
+            "final_uri_bytes": 3816,
+            "consumer_canonical_bytes": 8190,
+            "worker_encoded_size": 8190,
+            "proof_emitted": true,
+            "expected_proof_emitted": true,
+            "passed": true
+          },
+          {
+            "final_uri_bytes": 3817,
+            "consumer_canonical_bytes": 8192,
+            "worker_encoded_size": 8192,
+            "proof_emitted": true,
+            "expected_proof_emitted": true,
+            "passed": true
+          },
+          {
+            "final_uri_bytes": 3818,
+            "consumer_canonical_bytes": 8194,
+            "worker_encoded_size": 8194,
+            "proof_emitted": false,
+            "expected_proof_emitted": false,
+            "passed": true
+          },
+          {
+            "final_uri_bytes": 3824,
+            "consumer_canonical_bytes": 8206,
+            "worker_encoded_size": 8206,
+            "proof_emitted": false,
+            "expected_proof_emitted": false,
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v1/worker_publication_scope_probe.py",
+      "source_sha256": "d3b2f35f94884809beb4d8f5f0597df3fa4c1fd40d58a3bb093f39e7078967c2",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/tmp/bzs-p2-redirect-review-revocation-v1/worker_publication_scope_probe.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.32424283027648926,
+      "log": "/tmp/bzs-p2-redirect-review-revocation-final-python-v1/worker_publication_scope_probe.log",
+      "log_sha256": "426a64a63498459bbbc646dd0f0d1e96eab6bce84ce81a3a542e73662e345066",
+      "result": {
+        "scope": "isolated coordinator unit; completed-response stub; no real HTTP",
+        "passed": 6,
+        "total": 6,
+        "cases": [
+          {
+            "name": "routed304-prefix-only",
+            "passed": true,
+            "status": "not_modified",
+            "expected_final_restricted": false,
+            "actual_final_restricted": false,
+            "final_publication_record": null,
+            "completed_response_calls": 1
+          },
+          {
+            "name": "routed304-final-only",
+            "passed": true,
+            "status": "not_modified",
+            "expected_final_restricted": true,
+            "actual_final_restricted": true,
+            "final_publication_record": {
+              "version": "bzs-publication-1",
+              "index_allowed": true,
+              "snippet_allowed": false,
+              "follow_allowed": true,
+              "snippet_text": "",
+              "snippet_title": "",
+              "directives": [],
+              "diagnostics": [
+                "conditional_publication_ceiling",
+                "site_links_only"
+              ]
+            },
+            "completed_response_calls": 1
+          },
+          {
+            "name": "direct304-final-only",
+            "passed": true,
+            "status": "not_modified",
+            "expected_final_restricted": true,
+            "actual_final_restricted": true,
+            "final_publication_record": {
+              "version": "bzs-publication-1",
+              "index_allowed": true,
+              "snippet_allowed": false,
+              "follow_allowed": true,
+              "snippet_text": "",
+              "snippet_title": "",
+              "directives": [],
+              "diagnostics": [
+                "conditional_publication_ceiling",
+                "site_links_only"
+              ]
+            },
+            "completed_response_calls": 1
+          },
+          {
+            "name": "routed200-prefix-only",
+            "passed": true,
+            "status": "ok",
+            "expected_final_restricted": false,
+            "actual_final_restricted": false,
+            "final_publication_record": {
+              "version": "bzs-publication-1",
+              "index_allowed": true,
+              "snippet_allowed": true,
+              "follow_allowed": true,
+              "snippet_text": "scopeprobe final text",
+              "snippet_title": "scopeprobe",
+              "directives": [],
+              "diagnostics": []
+            },
+            "completed_response_calls": 1
+          },
+          {
+            "name": "routed200-final-only",
+            "passed": true,
+            "status": "ok",
+            "expected_final_restricted": true,
+            "actual_final_restricted": true,
+            "final_publication_record": {
+              "version": "bzs-publication-1",
+              "index_allowed": true,
+              "snippet_allowed": false,
+              "follow_allowed": true,
+              "snippet_text": "",
+              "snippet_title": "",
+              "directives": [],
+              "diagnostics": [
+                "site_links_only"
+              ]
+            },
+            "completed_response_calls": 1
+          },
+          {
+            "name": "legacy200-prefix-only",
+            "passed": true,
+            "status": "ok",
+            "expected_final_restricted": true,
+            "actual_final_restricted": true,
+            "final_publication_record": {
+              "version": "bzs-publication-1",
+              "index_allowed": true,
+              "snippet_allowed": false,
+              "follow_allowed": true,
+              "snippet_text": "",
+              "snippet_title": "",
+              "directives": [],
+              "diagnostics": [
+                "site_links_only"
+              ]
+            },
+            "completed_response_calls": 1
+          }
+        ]
+      }
+    }
+  ],
+  "snapshot_source_unchanged": true,
+  "main_source_still_matches_snapshot": true,
+  "main_library_still_matches": true,
+  "all_passed": true
+}

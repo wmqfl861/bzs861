@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "created_utc": "2026-10-24T04:58:08.884866+00:00",
+  "role": "independent source review; not author runtime results",
+  "patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+  "author_manifest_sha256": "ab68bf824c1f62bcdd8d29c63b9ab1343851cebb04f61829fccb78569332a642",
+  "verified_after_sources": [
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/docs/HTTP_REDIRECT_CACHE.md",
+      "sha256": "053e4bed4d38e8d913eec538ca5f87082579385e09cd77340e63d4be7574d38c"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/python/bzs/worker/server.py",
+      "sha256": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/python/tests/test_http_redirect_cache.py",
+      "sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/src/publication.cpp",
+      "sha256": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/src/web.cpp",
+      "sha256": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/tests/cache_freshness.cpp",
+      "sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44"
+    }
+  ],
+  "unchanged_original_contract_test": {
+    "path": "/workspace/scratch/e2371129386d/bzs861/python/tests/test_crawl_worker.py",
+    "sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d"
+  },
+  "findings": [
+    "No source-review blocker found in this followup. Final acceptance remains conditional on frozen probes and root full gates.",
+    "Worker public publication once again applies original, intermediate, and final site ceilings. Hop HTTP robots observations remain separate as required by unchanged original tests.",
+    "Only a complete successful nontruncated 200 can carry the strict private final-publication wrapper; 304 and incomplete/unproven responses reject it.",
+    "Core checks raw aggregate covers supplied final, supplied final covers the actual final observation, exact final URL/version/field shape and full route receipt before using the supplied policy.",
+    "Every verified complete ok200 receipt establishes transient final identity, including equal-policy wrapper omission and proofs later omitted for no-cache, TTL0 or aggregate metadata budget.",
+    "Store preserves the pre-history final basis, seals only final history into it, compacts equality only afterwards, and consumes the marker by rebuilding local metadata before persistence.",
+    "The marker does not itself create HTTP freshness, validators or revalidation base. Persisted final publication retains its existing byte accounting; no additional 16KiB HTTP field is introduced.",
+    "Arbitrary Worker top-level or nested metadata fields cannot populate Core top-level authorization marker."
+  ],
+  "limits": [
+    "This report is static review only. Author preview 118 Python cases and syntax checks are not independent runtime acceptance.",
+    "Prior old 6-case Worker expectation of final-only public publication was incorrect for full200; raw previous evidence remains immutable and is superseded by additive contract probes."
+  ],
+  "probe_manifest_sha256": "62f2292292908e8313e4ad74259b82b0b6f426db281759a3394d954336217234",
+  "runtime_results": null
+}

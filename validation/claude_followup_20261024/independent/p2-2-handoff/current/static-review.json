@@ -1,0 +1,91 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "checked_at_utc": "2026-10-24T04:59:34.815523+00:00",
+  "stage": "p2-2-v3 frozen aggregate/final followup static review; native replay not yet authorized and not run",
+  "patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+  "actual_after_inputs": [
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "sha256": "053e4bed4d38e8d913eec538ca5f87082579385e09cd77340e63d4be7574d38c"
+    },
+    {
+      "path": "python/bzs/worker/server.py",
+      "sha256": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2"
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876"
+    },
+    {
+      "path": "src/publication.cpp",
+      "sha256": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9"
+    },
+    {
+      "path": "src/web.cpp",
+      "sha256": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524"
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44"
+    }
+  ],
+  "preservation": {
+    "original_44_native_functions_helpers_and_order_are_an_exact_prefix": true,
+    "original_native_namespace_and_runner_trailer_byte_identical": true,
+    "native_cases_now": 51,
+    "old_crawl_worker_entire_file_equals_real442_baseline": true,
+    "crawl_worker_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "old_independent_28_file_package_manifest_sha256": "5ad501ad401dd1ed651289ca6f1db8c52d2f62919860377ee684c0302eb34228",
+    "all_27_listed_old_package_files_unchanged": true
+  },
+  "prior_stage_status": {
+    "stage": "p2-2-v2",
+    "failed": true,
+    "failure_analysis_sha256": "1390306f7f05e17771bb25fbf130ebcae9ff46b43e2f05ee2578406defb15f27",
+    "real_regression": "Original test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect] requires Worker publication to retain the whole-read site aggregate.",
+    "separate_launch_failures": "core/crawl BAD_COMMAND from execute mode loss; no assertions executed for those launches.",
+    "old_reports_kept_as_historical": true,
+    "not_a_pass": true
+  },
+  "reviewed_contracts": [
+    {
+      "area": "Worker 200 compatibility",
+      "finding": "publication retains original+intermediate+final site ceiling. The optional three-field representation_publication wrapper carries only final policy when different; raw index_allowed consistency is retained because site redistribution only tightens snippets."
+    },
+    {
+      "area": "Strict Core wrapper checks",
+      "finding": "Only complete nontruncated ok200 with a validated exact HTTP receipt may use the wrapper. Exact version/url/shape are checked; raw aggregate must cover final, final must cover actual final observation, and current final site restrictions remain applied. Errors, empty, non200, unproven, truncated and304 wrapper forms fail closed."
+    },
+    {
+      "area": "Transient scope lifetime",
+      "finding": "Core itself creates validated_final_publication_scope after validating every qualifying200 receipt even when wrapper is omitted. It survives the decision not to save HTTP proof for no-cache/TTL0/16KiB, so final history remains final-only; it is consumed before snapshot persistence. Untrusted top-level or nested metadata cannot create this internal field."
+    },
+    {
+      "area": "Monotone policy and cache distinction",
+      "finding": "The marker provides publication scope only. Reuse still requires existing per-hop TTL, request profile, route, owner, metadataCAS and deletion checks. Store retains original aggregate/final floors and old-body sequence for304; current and historic final restrictions are not released by the new marker."
+    },
+    {
+      "area": "Failure and budget paths",
+      "finding": "Actual final/prefix restrictive observations are decoded separately before failed body handling; the new wrapper grants no failed publication. The patch does not modify read grants, settlement, cancellation, unknown accounting, automatic retry or source/site approval."
+    },
+    {
+      "area": "Copy/consumption interaction",
+      "finding": "Ordinary/shared complete_read passes deep-copied metadata to the Store and one publisher ingests a shared body; marker removal rebuilds the local metadata object. This is a static P2-2 interaction check by the historical shared-read author, not independent sign-off of that earlier implementation."
+    }
+  ],
+  "independence": {
+    "p2_2_production_author": false,
+    "formal_product_test_author": false,
+    "historical_shared_read_author": true,
+    "new_validation_launcher_author": true,
+    "launcher_review": "Root separately reviewed/applied validation-only launcher; this report does not independently sign off the reviewer-authored launcher."
+  },
+  "conclusion": "No new static blocker found in the exact frozen followup. Await root new library identity and allowed replay time, then replay the unchanged six-case probe and append actual whole-source binding. Existing reverse-percent limitation and its two stronger-probe failures remain unchanged.",
+  "runtime_claims": {
+    "new_native_probe_run": false,
+    "new_product_tests_run_by_reviewer": false,
+    "full_v3_CTest_pytest_ASan_pass_claimed": false,
+    "remote_CI_pass_claimed": false
+  },
+  "root_repository_modified": false
+}

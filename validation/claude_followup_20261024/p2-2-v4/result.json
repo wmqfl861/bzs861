@@ -1,0 +1,32 @@
+{
+  "issue": "P2-2",
+  "status": "fixed within the explicitly documented supported HTTP chain and URI identity scope",
+  "ctest": "27/27; zero skipped",
+  "pytest_passed": 1173,
+  "asan_ubsan_native_targets": 15,
+  "native_cache_regressions": "51 cases / 640 assertions",
+  "independent_new_python_checks": 14,
+  "independent_canonical_size_checks": 5,
+  "independent_new_native_scenarios": 24,
+  "independent_prior_native_probes": "All four unchanged protocol/cache probes passed; handoff six-case probe remains four passed/two existing reverse-percent identity assumptions failed, unchanged from prior versions.",
+  "independent_review": "../independent/p2-2-addendum-review.json",
+  "regressions": [
+    "Original URL cache hit and restart, TTL intersection, exact current request profile and same-owner identity",
+    "Full original-route refresh and exact final validator binding, no forwarding or extra retry",
+    "Every-hop request/body accounting, no-store and failed-target old-cache invalidation, metadata CAS and quota rollback",
+    "Deletion and publication fences; aggregate Worker contract and separate exact-final policy across 200/304/current/frozen/cache projections",
+    "8 KiB proof/grant and 16 KiB combined metadata boundaries, same Core/Worker encoded size, one full GET when optional grant cannot fit",
+    "No-cache/zero-TTL/metadata omission retain final publication history without storing transient marker or granting cache/304 authority"
+  ],
+  "preserved_failures": [
+    "p2-2: interrupted candidate after canonical slash-size mismatch was found",
+    "p2-2-v2: real original Worker aggregate-publication regression, plus two generated ELF mode launch failures",
+    "p2-2-v3: default sandbox denied socket creation (EPERM); all 15 native targets passed, HTTP fixtures failed and original Python watchdog expired"
+  ],
+  "verification_environment": "p2-2-v4 uses approved local-loopback execution. Validation-only hash-bound native launch guard preserves all original argv, properties, test timeouts and exit status. Product CMake and CI unchanged.",
+  "remaining_limits": [
+    "Only complete bounded HTTP chains with explicit positive lifetime qualify for reuse; soft/unproven chains retain full reads",
+    "Existing reverse percent URL identities remain distinct; documented and independently compared with baseline",
+    "No source enablement, S2 decision, retention-policy change, backup restoration or scraper change"
+  ]
+}

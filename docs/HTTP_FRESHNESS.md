@@ -29,3 +29,11 @@
 页面新鲜度和条件验证只支持缺失的 Vary，或仅由 Accept-Encoding 组成的有界 ASCII 列表。字段名大小写和重复项不改变含义；通配符、其他选型、混合列表、空项、显式空字段及超界字段仍不能获得缓存复用。Accept-Encoding 已包含在实际请求 profile 中；当前 profile 必须与已存表示相同，改变编码选择会使旧缓存失效。304 省略 Vary 时保留原选择，不能抹去既有约束。
 
 robots 的新鲜规则沿用固定 BzsBot User-Agent、text/plain Accept，并允许固定 gzip/deflate Accept-Encoding；其版本化策略身份依赖这些固定选择。新鲜 robots 记录本身不另存 profile，未来使这些头可配置或改变默认值时，必须更新策略身份或增加显式绑定。条件重验证仍要求精确 profile，且只接受上面的较窄 Vary 子集。
+
+## 完整 HTTP 跳转链补充
+
+显式读取现在可以依据 `bzs-http-redirect-chain-1` 复用完整 HTTP 跳转链：每跳有明确有效期限、精确 URI 与当前 profile，整体期限取交集。没有证明的旧 payload 和 soft redirect 仍保守。刷新仍从原始 URI 重新走实际跳转，仅在精确 final URI 安装其自身验证器；中途 no-store、删除、发布限制与全部实际用量不会因缓存省略。私有协议、边界及回归位置见 [HTTP_REDIRECT_CACHE](HTTP_REDIRECT_CACHE.md)。
+
+## 缓存命中的当前权限投影
+
+直达缓存与具备完整证明的 HTTP 跳转缓存都在返回前，在 Store 锁内复核当前快照、元数据身份和有效期，并按当前发布权限返回 `indexed`。跳转缓存额外复核持久化删除屏障与链中 URL；直达缓存不要求跳转证明。`fetch.profile` 只确认当前 Worker 配置，不产生 origin 请求，其间发生的限制或并发刷新仍会在最终命中时被发现。此投影不修改历史正文；`document.read` 与默认 `read_range` 保持原有历史读取语义。

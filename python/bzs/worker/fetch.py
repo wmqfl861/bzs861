@@ -14,7 +14,9 @@ from yarl import URL
 
 from .netguard import GuardedResolver, NetPolicy, PolicyError
 from .publication import restriction_observation
-from .revalidation import request_profile
+from .revalidation import conditional_headers, request_profile
+from .freshness import raw_response_freshness
+from .redirect_cache import make_chain
 
 DEFAULT_UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/130.0.0.0 Safari/537.36")
@@ -85,6 +87,10 @@ class FetchResult:
     content_bytes: int = 0
     error_code: str = ""
     request_profile: str = ""
+    http_redirect_chain: dict | None = None
+    http_redirect_observations: list[dict] = field(default_factory=list)
+    response_content_bytes: int = 0
+    conditioned_binding_id: str = ""
 
     @property
     def content_type(self) -> str:
@@ -171,7 +177,9 @@ class Fetcher:
                     params: dict | None = None, data: dict | None = None, headers: dict | None = None,
                     max_bytes: int | None = None, accept: str | None = None,
                     budget: FetchBudget | None = None, follow_redirects: bool = True,
-                    before_dispatch: Callable[[URL], None] | None = None) -> FetchResult:
+                    before_dispatch: Callable[[URL], None] | None = None,
+                    collect_redirect_cache: bool = False,
+                    redirect_conditional: dict | None = None) -> FetchResult:
         assert self._session is not None, "Fetcher.start() not called"
         started = time.monotonic()
         deadline = started + timeout_s
@@ -179,6 +187,14 @@ class Fetcher:
         result = FetchResult(status="network_error", url=str(url))
         current = url
         req_headers = self.request_headers(accept=accept, headers=headers)
+        # The original URI is always dispatched. A route only selects final-URI
+        # validators after every preceding live HTTP response matched its prefix.
+        expected_route = ([redirect_conditional["request_url"], *redirect_conditional["redirects"]]
+                          if redirect_conditional is not None else [])
+        actual_route: list[str] = []
+        route_live = bool(expected_route)
+        cache_hops: list[dict] = []
+        cache_chain_eligible = method == "GET" and params is None and data is None
         try:
             for hop in range((self.max_redirects if follow_redirects else 0) + 1):
                 if budget:
@@ -220,10 +236,25 @@ class Fetcher:
                         budget.dispatch()
                     result.external_requests += 1
                     result.request_profile = request_profile(req_headers)
+                    result.conditioned_binding_id = ""
+                    actual_route.append(str(target))
+                    route_live = (route_live and len(actual_route) <= len(expected_route) and
+                                  actual_route[-1] == expected_route[len(actual_route) - 1])
+                    dispatch_headers = dict(req_headers)
+                    if route_live and len(actual_route) == len(expected_route):
+                        condition = redirect_conditional["conditional"]
+                        if (method == "GET" and condition["url"] == str(target) and
+                                condition["request_profile"] == result.request_profile):
+                            dispatch_headers.update(conditional_headers(condition))
+                            result.conditioned_binding_id = condition["binding_id"]
+                    sent_at = time.monotonic()
                     async with self._session.request(method, target, params=params if hop == 0 else None,
-                                                     data=data if method == "POST" else None, headers=req_headers,
+                                                     data=data if method == "POST" else None, headers=dispatch_headers,
                                                      allow_redirects=False, timeout=timeout) as resp:
                         result.http_status = resp.status
+                        result.response_content_bytes = 0
+                        received_at_ms = int(time.time() * 1000)
+                        response_delay_ms = int((time.monotonic() - sent_at) * 1000)
                         # Bind policy seen before a body timeout to the actual
                         # HTTP response, including later redirect-chain hops.
                         result.final_url = str(resp.url)
@@ -242,7 +273,19 @@ class Fetcher:
                             if fields:
                                 separator = "," if name in ("Cache-Control", "Pragma", "Vary") else "\n"
                                 result.headers[name.lower()] = separator.join(fields)
+                        if collect_redirect_cache:
+                            hop_freshness = raw_response_freshness(
+                                result.headers, str(resp.url), result.request_profile,
+                                received_at_ms, response_delay_ms)
                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
+                        if redirect and collect_redirect_cache:
+                            # Following the existing response is separate from
+                            # proving an unambiguous reusable Location selection.
+                            if len(resp.headers.getall("Location", ())) != 1:
+                                cache_chain_eligible = False
+                            result.http_redirect_observations.append({
+                                "url": str(resp.url), "http_status": resp.status,
+                                "http_freshness": dict(hop_freshness)})
                         if redirect and follow_redirects:
                             observation = restriction_observation(result.headers)
                             if observation is not None:
@@ -284,12 +327,14 @@ class Fetcher:
                                     break
                                 budget.content_bytes += len(chunk)
                                 result.content_bytes += len(chunk)
+                                result.response_content_bytes += len(chunk)
                                 size += len(chunk)
                                 if not redirect:
                                     chunks.append(chunk)
                         elif not redirect:
                             async for chunk in resp.content.iter_chunked(65536):
                                 result.content_bytes += len(chunk)
+                                result.response_content_bytes += len(chunk)
                                 size += len(chunk)
                                 if size > limit:
                                     chunks.append(chunk[: max(0, limit - (size - len(chunk)))])
@@ -299,6 +344,11 @@ class Fetcher:
                         if redirect:
                             nxt = self.policy.prepare_url(urljoin(str(resp.url), result.headers["location"]))
                             result.redirects.append(str(nxt))
+                            if collect_redirect_cache:
+                                cache_hops.append({"url": str(resp.url), "target_url": str(nxt),
+                                                   "http_status": resp.status,
+                                                   "content_bytes": result.response_content_bytes,
+                                                   "http_freshness": dict(hop_freshness)})
                             if not follow_redirects:
                                 result.final_url = str(resp.url)
                                 result.status = "redirect"
@@ -318,6 +368,8 @@ class Fetcher:
                             continue
                         result.body = b"".join(chunks)
                         result.final_url = str(resp.url)
+                        if collect_redirect_cache and cache_chain_eligible and not result.truncated:
+                            result.http_redirect_chain = make_chain(str(url), result.final_url, cache_hops, result.request_profile)
                         result.status = ("not_modified" if resp.status == 304 else
                                          "ok" if resp.status < 400 else "http_error")
                         return result

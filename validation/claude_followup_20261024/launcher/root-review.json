@@ -1,0 +1,62 @@
+{
+  "reviewer": "root; did not author the guard draft",
+  "scope": "Validation launch mechanics only. Product source, CMake, CI, original test argv, CTest properties and watchdogs unchanged.",
+  "review": [
+    "Checked exact15 native/27 CTest transform and byte-for-byte inverse check.",
+    "Checked ELF/hash/path/symlink binding and original cwd/env/argv exec semantics.",
+    "Confirmed only pre-exec EACCES allows one mode repair; no completed test retry or exit-status substitution.",
+    "Guard and recorder bytes are part of each future stage input manifest.",
+    "No new product test run claimed by this review; actual gates follow under new stages."
+  ],
+  "applied_patch_sha256": "0a9f14a0ea36f77877fe7af5edc2bcfa663ad9ae771da76512f0aaeaa7853adf",
+  "evidence": [
+    {
+      "path": "validation-launch-guard-v2.patch",
+      "sha256": "0a9f14a0ea36f77877fe7af5edc2bcfa663ad9ae771da76512f0aaeaa7853adf"
+    },
+    {
+      "path": "validation-launch-guard.patch",
+      "sha256": "77c5ad746b5632fcdfb266717fa642228ef06c9413a423f5859599bc60cab9ec"
+    },
+    {
+      "path": "verify_draft.py",
+      "sha256": "f26d87d5111dd5561e90027dc3c8c561c557ee75920f24538678974ab8a793f2"
+    },
+    {
+      "path": "verify-draft-v1.log",
+      "sha256": "324da8346b9f0eb653969ed702181b6f47d19c05660561fb89aec039c8ec7893"
+    },
+    {
+      "path": "verify-draft-v1-command.json",
+      "sha256": "53a1d06e1c5e4a984269c73cac0d87ba957ade7fd60e8bb925535687a882b41f"
+    },
+    {
+      "path": "draft-report.json",
+      "sha256": "ba331aa4388906fba878404ab3cb424754b9edac86fc007b8c33af5146784227"
+    },
+    {
+      "path": "draft-verification.json",
+      "sha256": "803f5b1bd2b5fa50917b018f8234a4eb0209a7117ae9259f350d0874fffb22c0"
+    },
+    {
+      "path": "apply-check.log",
+      "sha256": "8406467937a711cd03503de2296f1d25183cd93c59d55dcb0ec8c0d6aa0b75a0"
+    },
+    {
+      "path": "apply-check-v2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixture-check/build-CTestTestfile.original.cmake",
+      "sha256": "c4884e05b6fcc970f75d11153a2ae9076717653cf5fb95eb67e18b4b369a92a3"
+    },
+    {
+      "path": "fixture-check/build-CTestTestfile.guarded.cmake",
+      "sha256": "405e4f375f0deef36404aac113d6112d97e2fb5c2e962827c43df2252f0aded9"
+    },
+    {
+      "path": "fixture-check/build-native-launch-map.json",
+      "sha256": "e0db2eec06c1309e269fee8a7c04934d881428b8e822887a5de3d4d059c2b7ba"
+    }
+  ]
+}

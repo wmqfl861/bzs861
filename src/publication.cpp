@@ -326,6 +326,20 @@ void Store::prepare_web_publication_locked(const std::string& owner,const std::s
     policy.set("snippet_text",parsed.index_allowed?utf8_prefix(parsed.text,1024*1024):"");policy.set("snippet_title",parsed.index_allowed?parsed.title:"");
     policy.set("directives",Json::array());policy.set("diagnostics",Json::parse(R"(["legacy_read_publication"])"));parsed.publication=policy;
   }
+  // A complete HTTP chain has two publication identities. Preserve the final
+  // representation before sealing the aggregate with original/intermediate history.
+  const bool validated_scope=meta.has("validated_final_publication_scope");
+  if(validated_scope) {
+    const auto scope=meta.at("validated_final_publication_scope");scope.allowed({"version","url"});
+    require(scope.size()==2&&scope.at("version").str()=="bzs-final-publication-scope-1"&&
+            scope.at("url").str().size()<=4096&&meta.has("final_url")&&scope.at("url").str()==meta.at("final_url").str()&&
+            scope.at("url").str()!=url&&meta.has("http_status")&&meta.at("http_status").num()==200&&
+            meta.has("redirects")&&meta.at("redirects").is_array()&&meta.at("redirects").size()>0&&
+            normalize_iri(meta.at("redirects").at(meta.at("redirects").size()-1).str())==scope.at("url").str(),
+            "E_WORKER_PROTOCOL","Invalid internal final publication scope",502);
+  }
+  const bool separate_final=meta.has("http_redirect_chain")||validated_scope;
+  if(separate_final&&!parsed.representation_publication.has("version"))parsed.representation_publication=parsed.publication;
   const auto sequence=meta.has("page_publication_sequence")?meta.at("page_publication_sequence").num():publication_sequence_locked();
   require(sequence>=0&&sequence<=publication_sequence_locked(),"E_WORKER_PROTOCOL","Invalid read publication sequence",502);
   auto urls=Json::array();std::set<std::string> known;
@@ -357,7 +371,14 @@ void Store::prepare_web_publication_locked(const std::string& owner,const std::s
     const auto& final=parsed.representation_publication.has("version")?parsed.representation_publication:parsed.publication;
     if(meta.has("final_url")&&restrictive_publication(final))observe_policy_locked(owner,meta.at("final_url").str(),meta.at("final_url").str(),final);
     parsed.publication=seal_publication_locked(parsed.publication,history);
-    if(parsed.representation_publication.has("version"))parsed.representation_publication=seal_publication_locked(parsed.representation_publication,history);
+    if(parsed.representation_publication.has("version")) {
+      auto final_history=history;
+      if(separate_final) {
+        auto final_urls=Json::array();final_urls.push(meta.at("final_url"));
+        final_history=publication_history_locked(owner,final_urls,sequence);
+      }
+      parsed.representation_publication=seal_publication_locked(parsed.representation_publication,final_history);
+    }
     if(history.at("index_generation").num()>0)parsed.index_allowed=false;
   }
   // Evaluate history before applying this response's own redirect headers.
@@ -368,6 +389,16 @@ void Store::prepare_web_publication_locked(const std::string& owner,const std::s
       const auto item=observations.at(i);const auto target=item.at("url").str();
       observe_policy_locked(owner,target,target,item.at("publication"));
     }
+  }
+  // Retain the existing compact encoding and unchanged-304 snapshot identity.
+  // Compact only after every history/response restriction has been applied.
+  if(separate_final&&parsed.representation_publication.canonical()==parsed.publication.canonical())
+    parsed.representation_publication=Json::object();
+  if(validated_scope) {
+    // The committed final policy already carries its ordinary publication byte
+    // charge. Do not persist a second grant or expand HTTP cache metadata.
+    auto retained=Json::object();for(const auto& key:meta.keys())if(key!="validated_final_publication_scope")retained.set(key,meta.at(key));
+    meta=std::move(retained);
   }
 }
 void Store::publish_policy_locked(const std::string& owner,const std::string& url,const std::string& snapshot_id,const Json& policy) {

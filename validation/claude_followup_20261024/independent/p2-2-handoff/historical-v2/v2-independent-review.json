@@ -1,0 +1,185 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "review_time_utc": "2026-10-24T04:30:45.192782+00:00",
+  "stage": "P2-2 v2 independent exact-library review; final direct-cache-projection followup remains pending",
+  "role": {
+    "independent_of_p2_2_implementation": true,
+    "authored_prior_shared_read_implementation": true,
+    "shared_case": "P2-2 interaction regression only; not independent sign-off of prior shared-read implementation",
+    "root_files_modified": false,
+    "production_or_formal_tests_authored": false
+  },
+  "bindings": {
+    "draft_patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+    "root_baseline_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+    "candidate_library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+    "original_probe_sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb",
+    "matched_draft_after_files": 17,
+    "copied_library_unchanged": true,
+    "probe_unchanged": true
+  },
+  "original_probe_result": {
+    "cases": 6,
+    "passed_cases": 4,
+    "failed_cases": 2,
+    "checks_executed": 209,
+    "exit_code": 2,
+    "external_network_requests": 0,
+    "log": "run-v1.log",
+    "log_sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d",
+    "do_not_claim_all_passed": true
+  },
+  "passed_cases": [
+    {
+      "case": "positive_owner_and_prefix_expiry",
+      "verified": "Original-URL two-hop cache hit, no implicit final entry, owner isolation, expiry at prefix intersection, exact final conditional and retained body."
+    },
+    {
+      "case": "final_history_304_is_monotone",
+      "verified": "Final C active noindex/nosnippet/nofollow remains restrictive in A 304; after a later complete C allow, old A retains historic index/snippet denial and newer independent C stays allowed; immutable original body survives."
+    },
+    {
+      "case": "shared_payer_cancel_routed_settlement",
+      "verified": "Same-owner subscriber completes after payer cancel; cancelled payer gets no receipt but bears all 3 actual requests and 7 redirect-body bytes once, subscriber actual usage stays zero, reservations settle; another owner dispatches separately without that conditional."
+    },
+    {
+      "case": "same_snapshot_metadata_cas",
+      "verified": "Concurrent winning renewal changes metadata; outer 304 returns E_REVALIDATION_STALE without retry or overwriting winner; body remains readable."
+    }
+  ],
+  "additional_passed_branches_before_failed_stronger_assertion": [
+    "Deleting actual middle or final URI denies cache reuse and revalidation base; explicit reimport does not revive the stale original proof.",
+    "Deleting the same middle URI with uppercase host/default443 normalization has the same denial and reimport behavior.",
+    "In-flight actual middle deletion rejects the routed304 receipt with E_TARGET_DELETED while retaining known 3 requests/7 bytes and settling reservations."
+  ],
+  "failed_stronger_assumptions": [
+    {
+      "deleted_uri": "https://independent-chain.example/%6Diddle",
+      "chain_uri": "https://independent-chain.example/middle",
+      "observed": "cache_only still hits; first stronger E_CACHE_STALE assertion fails"
+    },
+    {
+      "deleted_uri": "https://INDEPENDENT-CHAIN.EXAMPLE:443/%66inal",
+      "chain_uri": "https://independent-chain.example/final",
+      "observed": "routed304 read_many completes with known 3 requests; stronger failed-job assertion fails"
+    }
+  ],
+  "before_after_observation": {
+    "source": "reverse_alias_observation.cpp",
+    "source_sha256": "878ef348c3cd154de20a5650e948ac8e060583e3473c139e3bf30152a7b36a3b",
+    "purpose": "Determine whether reverse-percent equivalence is a newly introduced P2-2 commit-fence regression; observation source uses full200 in both libraries.",
+    "old_library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+    "new_library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+    "cases_per_library": 4,
+    "checks_per_library": 32,
+    "both_results": "Plain and host/default-port normalized middle deletion: E_TARGET_DELETED; reverse percent-encoded middle/final deletion: succeeds. Each full200 attempt records known 3 requests/45 consumed bytes.",
+    "classification": "Existing map_url identity boundary, not newly introduced by routed304. This does not declare broader percent-equivalent deletion behavior correct or implemented.",
+    "parent_scope_decision": "Keep current exact URI and map_url host/default-port deletion identity contract; explicitly record reverse-percent equivalence as existing unimplemented scope. Preserve all original failure records."
+  },
+  "static_review": {
+    "final_policy": "Store restores omitted old final policy before aggregate ceilings; Store separately validates old final floor at304 commit; publication seals final-only history and whole-chain aggregate separately, compacting only after all meets.",
+    "route_invalidation": "Observed new route invalidates old direct as well as old routed eligibility, using snapshot+metadata CAS.",
+    "transport_and_metadata": "Versioned exact route/profile/binding checks, per-hop positive lifetime, N+1 requests/hop-body accounting, aggregate metadata quota and known usage logic remain bounded.",
+    "scope": "Explicit web.read/read_many only; map/crawl routing and review/approval decisions unchanged."
+  },
+  "limitations": [
+    "Deterministic WorkerPort, not independent real socket/Core+Worker integration; root owns formal real-chain E2E and full required gates.",
+    "Original independent probe is 4/6, not a green six-case suite. Two failures document a stronger URI-equivalence assumption outside this phase.",
+    "No assertion that arbitrary URI percent encoding or every possible URI equivalence shares deletion identity.",
+    "Final followup library for direct cache response indexed projection is not yet bound or tested by this report.",
+    "No new real origin approval, external network request or complete product acceptance claim."
+  ],
+  "conclusion": "No new P2-2 blocker demonstrated within the inherited exact/map_url deletion contract; principal requested policy, owner, accounting and CAS interactions passed. Final followup needs exact-library replay.",
+  "evidence": [
+    {
+      "path": "pre-review.json",
+      "sha256": "15ab7d4346c1f14e6a902d67f5cd18ba301f38e590de0e866344836986b1f6e5",
+      "bytes": 5424
+    },
+    {
+      "path": "redirect_independent_probe.cpp",
+      "sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb",
+      "bytes": 16489
+    },
+    {
+      "path": "compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "compile-command.json",
+      "sha256": "0c744f5e3656aa85d56557fde29b16101732f2bc13f95ebc647e1d512dcadf6c",
+      "bytes": 5828
+    },
+    {
+      "path": "fixed-inputs.json",
+      "sha256": "43763bb4ab7fc689c0bdca8b80718d3b64c0f93aa837d9d487ecd40695889424",
+      "bytes": 4873
+    },
+    {
+      "path": "run-v1.log",
+      "sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d",
+      "bytes": 580
+    },
+    {
+      "path": "run-v1-command.json",
+      "sha256": "03b4bb8b574782ee3cd3a0241154113fb7b08de13aa4b3a1ed2f2c0057c1865e",
+      "bytes": 661
+    },
+    {
+      "path": "redirect_independent_probe_trace.cpp",
+      "sha256": "6e0060fd3044ca77c2fdb37735f03f6629c13153d30ecf6fa8dc5ebe9f5236ff",
+      "bytes": 16748
+    },
+    {
+      "path": "trace-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "trace-compile-command.json",
+      "sha256": "2b0cb12e9f9ba803a71dab6b9f3a5139bf55e3dadf30d372bf3073daffd7fc14",
+      "bytes": 703
+    },
+    {
+      "path": "trace-run.log",
+      "sha256": "a309437bbe448c4574531ed733023b1d568857a554209f9b9127dadb27330f7d",
+      "bytes": 995
+    },
+    {
+      "path": "trace-run-command.json",
+      "sha256": "7dcca106a4f1b1875134316ed74dd57d178c26e0c8b003c0d65b849e2b324671",
+      "bytes": 505
+    },
+    {
+      "path": "reverse_alias_observation.cpp",
+      "sha256": "878ef348c3cd154de20a5650e948ac8e060583e3473c139e3bf30152a7b36a3b",
+      "bytes": 2254
+    },
+    {
+      "path": "alias-observation-commands.json",
+      "sha256": "e30e3dd1a6986ff71294d5ee2f84f15f9082659d68eb73812e3c382eafc17d42",
+      "bytes": 7110
+    },
+    {
+      "path": "pre_p2_2-alias-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "pre_p2_2-alias-run.log",
+      "sha256": "399e569d16c24d1998d5cb35895a187fe524af3be307f4f5c89bc8e0619a6afb",
+      "bytes": 1550
+    },
+    {
+      "path": "p2_2_v2-alias-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "p2_2_v2-alias-run.log",
+      "sha256": "532e5b2a2b5380d0ad9bfb7cf20145bfde6f1911c5357f1931e86442bb92fed8",
+      "bytes": 1546
+    }
+  ]
+}

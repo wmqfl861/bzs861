@@ -1,0 +1,55 @@
+{
+  "role": "independent read-only review of frozen P2-2 v1; not author implementation or integrated acceptance",
+  "reviewed_patch": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.patch",
+  "reviewed_patch_sha256": "2c7aa627fd3a2d4437f1c6271680b561ac9df5cafa1ba84d5133b23506765c77",
+  "decision": "changes required; parent and author acknowledged both blockers, v2 pending",
+  "blockers": [
+    {
+      "id": "R1",
+      "title": "Failed newly observed redirect retains old direct HTTP reuse eligibility",
+      "static_path": "src/web.cpp redirect_route_changed returns false immediately without old http_redirect_chain; all newly observed policies can be fresh despite final 503",
+      "scope": "direct old 200 -> new 301 fresh -> 503 fresh; immutable old body may remain, HTTP fresh reuse must be invalidated using old snapshot and metadata CAS",
+      "runtime_evidence": "baseline-p2-1/report.json",
+      "runtime_qualification": "independent runtime negative on pre-P2-2 library ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156; v1 itself not built by reviewer"
+    },
+    {
+      "id": "R2",
+      "title": "Routed revalidation confuses aggregate and final publication identities",
+      "static_path": [
+        "initial equality optimization leaves representation_publication {}",
+        "revalidation_base aggregate current ceilings and decode_not_modified redirect observations can then make aggregate restrictive",
+        "ingest_locked final_policy falls back to restrictive aggregate and retracts independently authorized C results"
+      ],
+      "probe": "redirect_publication_scope_probe.cpp",
+      "runtime_qualification": "syntax checked only; requires new routed-304 library",
+      "related_worker_failure": "server.fetch_extract maps original/full-route site ceilings into final-only publication_observation (304) or publication (new proof 200)",
+      "worker_runtime_evidence": "worker-scope-v1/report.json",
+      "worker_runtime_qualification": "exact baseline 442 Python with frozen v1 overlay; completed-response unit stub, no actual HTTP; 2 expected failures/4 passing controls"
+    }
+  ],
+  "other_paths_reviewed_without_additional_blocker": [
+    "original URI always dispatched; final conditions gated by entire live exact prefix, profile and final URI",
+    "cross-origin/conditioned-final redirect strips representation validators; changed prefix disables later conditions even if route rejoins",
+    "HTTP-only proof max five hops and 8192 canonical bytes; aggregate optional HTTP cache metadata limited to 16384 bytes",
+    "raw restrictive hop observations retained independently of optional proof; no-store prevents new persistent read artifact",
+    "freshness intersects all hop/final remaining lifetimes without reset; profile RPC followed by recheck",
+    "cache hit guard uses owner,current snapshot,metadata hash,freshness and current alias deletion fences under Store mutex",
+    "routed 304 current-base CAS, old body/publication sequence and site generation retained; owner/revocation and lease publication fences unchanged",
+    "routed 304 receipts require N+1 HTTP requests and exact consumed prefix bytes; complete_read reconciles the existing reserved grant",
+    "direct/legacy/soft/ambiguous routes remain conservative; no global alias shortcut or cross-owner lookup added"
+  ],
+  "scope_limits": [
+    "No production source, formal tests or root workspace changed by reviewer",
+    "No P2-2 native full build/runtime or full regression gate executed by reviewer",
+    "Frozen source probes await parent integrated v2 exact library before same-source rerun",
+    "This review does not expand accepted source enablement, backup restore continuity, or any of the six user decisions"
+  ],
+  "evidence": {
+    "direct_route_failure_probe.cpp": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+    "baseline-p2-1/report.json": "a183300a56f957cebb655ff54990dc7dcaa47c91927bab569dec0519bdaf5915",
+    "redirect_publication_scope_probe.cpp": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+    "scope-probe-manifest.json": "d35554d79b0e83a230cf074308877da9a6c30c03ee10d4829b0a5143da87c1c4",
+    "worker_publication_scope_probe.py": "d3b2f35f94884809beb4d8f5f0597df3fa4c1fd40d58a3bb093f39e7078967c2",
+    "worker-scope-v1/report.json": "d373f8ea375dea994e983e4bf6a88a23259aef22159cfaf4feb4290d0043078b"
+  }
+}

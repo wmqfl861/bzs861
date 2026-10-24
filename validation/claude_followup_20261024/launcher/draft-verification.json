@@ -1,0 +1,91 @@
+{
+  "scope": "Temporary copied CTest grammar and small system-ELF fixtures only; no product tests or repository mutation",
+  "observations": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/tmp/bzs-validation-launch-guard-20261024/b/validation/claude_followup_20261024/guard.py",
+        "72ae71290bca0bdc816f2a5d103e7b6147af59f50a2c8527bf86be79efe58013",
+        "/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_tests",
+        "%s|%s",
+        "first arg",
+        "second"
+      ],
+      "exit_code": 0,
+      "stdout": "first arg|second",
+      "stderr": "GUARD_EXEC {\"target\": \"bzs_tests\", \"sha256\": \"72ae71290bca0bdc816f2a5d103e7b6147af59f50a2c8527bf86be79efe58013\", \"attempt\": 1, \"mode_before\": \"0o644\", \"mode_after\": \"0o755\"}\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/tmp/bzs-validation-launch-guard-20261024/b/validation/claude_followup_20261024/guard.py",
+        "51613561717bdf3432667f419e6205ea60c362f4c951d6d649f2d0814eb9a5f0",
+        "/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_batch_tests"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "GUARD_EXEC {\"target\": \"bzs_batch_tests\", \"sha256\": \"51613561717bdf3432667f419e6205ea60c362f4c951d6d649f2d0814eb9a5f0\", \"attempt\": 1, \"mode_before\": \"0o644\", \"mode_after\": \"0o755\"}\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/tmp/bzs-validation-launch-guard-20261024/b/validation/claude_followup_20261024/guard.py",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_batch_tests"
+      ],
+      "exit_code": 125,
+      "stdout": "",
+      "stderr": "GUARD_ERROR Native target differs from its frozen SHA256\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/tmp/bzs-validation-launch-guard-20261024/b/validation/claude_followup_20261024/guard.py",
+        "0c78a87a7feb7212ca0919456cb4633cb7caf6bf7959c8d291529799e2bbf0e6",
+        "/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_map_tests"
+      ],
+      "exit_code": 125,
+      "stdout": "",
+      "stderr": "GUARD_ERROR Native target is not an ELF build output\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/tmp/bzs-validation-launch-guard-20261024/b/validation/claude_followup_20261024/guard.py",
+        "72ae71290bca0bdc816f2a5d103e7b6147af59f50a2c8527bf86be79efe58013",
+        "/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_map_tests"
+      ],
+      "exit_code": 125,
+      "stdout": "",
+      "stderr": "GUARD_ERROR [Errno 40] Too many levels of symbolic links: '/tmp/bzs-validation-launch-guard-20261024/b/build/bzs_map_tests'\n"
+    }
+  ],
+  "ctest_parser_equivalence": {
+    "test_count": 27,
+    "guarded_native_count": 15,
+    "all_original_argv_after_stripping_prefix": true,
+    "all_properties_equal": true,
+    "test_order_and_names_equal": true,
+    "native_tests": [
+      "core",
+      "batch",
+      "map",
+      "crawl",
+      "site_publication",
+      "retention",
+      "fairness",
+      "sessions",
+      "source_publication",
+      "search_modes",
+      "revalidation",
+      "revocation",
+      "capacity_cycles",
+      "cache_freshness",
+      "contracts"
+    ]
+  },
+  "source_ctest_sha256": "46cc3b5d22caca24fc9b641c4a969025d120f936b1d64cb34163f12fa5bac037",
+  "byte_inverse_exact": true,
+  "main_config_and_runner_unchanged": true,
+  "status": "passed"
+}

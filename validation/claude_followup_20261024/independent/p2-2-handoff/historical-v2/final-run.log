@@ -1,0 +1,13 @@
+RUN positive_owner_and_prefix_expiry
+PASS positive_owner_and_prefix_expiry
+RUN all_alias_deletions_and_revival
+FAIL all_alias_deletions_and_revival expected error E_CACHE_STALE
+RUN inflight_alias_delete_known_usage
+FAIL inflight_alias_delete_known_usage assertion: job.at("state").str()=="failed"
+RUN final_history_304_is_monotone
+PASS final_history_304_is_monotone
+RUN shared_payer_cancel_routed_settlement
+PASS shared_payer_cancel_routed_settlement
+RUN same_snapshot_metadata_cas
+PASS same_snapshot_metadata_cas
+SUMMARY cases=6 checks=209 failures=2 external_network_requests=0

@@ -28,6 +28,9 @@ from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extra
                           publication_rules, restriction_observation)
 from .revalidation import (VERSION as REVALIDATION_VERSION, ConditionalMismatch, conditional_headers,
                            request_profile, response_cache, validate_conditional)
+from .redirect_cache import (CONDITIONAL_VERSION as REDIRECT_CONDITIONAL_VERSION,
+                             MAX_OBSERVATIONS, MAX_OBSERVATION_BYTES, encoded_size,
+                             validate_redirect_conditional)
 from .robots import (CRAWLER_USER_AGENT, MAX_ROBOTS_BYTES, POLICY_VERSION, PRODUCT_TOKEN, require_record,
                      response_record, revalidated_record, rule_decision, validate_revalidation_base)
 from .sites import SiteRegistry, canonical_map_url
@@ -103,6 +106,16 @@ class Worker:
         if not isinstance(params, dict):
             raise ValueError("fetch.extract parameters must be an object")
         conditional = None
+        redirect_conditional = None
+        if "conditional" in params and "redirect_conditional" in params:
+            raise ValueError("direct and redirect conditions are mutually exclusive")
+        if "redirect_conditional" in params:
+            if set(params) - {"url", "timeout_ms", "attempt_id", "max_requests", "max_content_bytes", "redirect_conditional"}:
+                raise ValueError("unknown redirect conditional fetch.extract parameters")
+            redirect_conditional = validate_redirect_conditional(params["redirect_conditional"], params.get("url"))
+            timeout = params.get("timeout_ms", 20000)
+            if type(timeout) is not int or not 1 <= timeout <= 60000:
+                raise ValueError("invalid redirect conditional timeout")
         if "conditional" in params:
             if set(params) - {"url", "timeout_ms", "attempt_id", "max_requests", "max_content_bytes", "conditional"}:
                 raise ValueError("unknown conditional fetch.extract parameters")
@@ -136,18 +149,34 @@ class Worker:
             budget = FetchBudget(requests, byte_limit)
             self._read_attempts[attempt_id] = budget
         try:
-            out = await self._fetch_extract(params, budget, conditional)
+            out = await self._fetch_extract(params, budget, conditional, redirect_conditional)
             if out.get("http_status") == 304:
                 # A bodyless result cannot provide new snippet text. Current
                 # known-site ceilings can still restrict the old snapshot.
+                # This observation belongs to the actual final response. Core
+                # separately binds the original/intermediate site ceilings.
                 observed = out.get("publication_observation", publication_rules({}))
-                ceiling = self.sites.publication_ceiling(observed, [params["url"], out.get("final_url", "")])
+                identities = ([out.get("final_url", "")] if redirect_conditional is not None or "http_redirect_chain" in out else
+                              [params["url"], out.get("final_url", "")])
+                ceiling = self.sites.publication_ceiling(observed, identities)
                 observation = extraction_restriction_observation(ceiling, "conditional_publication_ceiling")
                 if observation is not None:
                     out["publication_observation"] = observation
             if "publication" in out:
+                # Preserve the public Worker record's existing whole-read site
+                # ceiling. Only a complete HTTP receipt can distinguish the
+                # final representation's own policy from that aggregate.
+                final_publication = self.sites.publication_ceiling(
+                    out["publication"], [out.get("final_url", "")])
+                identities = [str(params.get("url", "")), out.get("final_url", ""), *out.get("redirects", [])]
                 out["publication"] = self.sites.publication_ceiling(
-                    out["publication"], [str(params.get("url", "")), out.get("final_url", ""), *out.get("redirects", [])])
+                    out["publication"], identities)
+                if (out.get("status") == "ok" and out.get("http_status") == 200 and
+                        "http_redirect_chain" in out and "download_truncated" not in out.get("warnings", []) and
+                        final_publication != out["publication"]):
+                    out["representation_publication"] = {
+                        "version": "bzs-http-representation-publication-1", "url": out["final_url"],
+                        "publication": final_publication}
                 if "download_truncated" in out.get("warnings", []):
                     # Keep the owner's existing readable-prefix behavior, while
                     # refusing grants whose restrictive tail was not received.
@@ -573,7 +602,8 @@ class Worker:
         page["links"] = [item["url"] for item in parsed["candidates"]][:512]
         return {"page": page, "discovery": parsed}
 
-    async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None) -> dict:
+    async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None,
+                             redirect_conditional: dict | None = None) -> dict:
         url = str(params.get("url", ""))
         timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
         loop = asyncio.get_running_loop()
@@ -592,7 +622,26 @@ class Worker:
             if conditional["request_profile"] != request_profile(headers):
                 conditional = None
             headers.update(conditional_headers(conditional))
-        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers, **({"budget": budget} if budget else {}))
+        if redirect_conditional is not None:
+            # URI normalization must not silently retarget a retained condition.
+            try:
+                initial = self.policy.prepare_url(url)
+            except PolicyError as exc:
+                return {"status": "blocked_by_policy", "error_code": "E_NETWORK_POLICY", "error": str(exc),
+                        "http_status": None, "final_url": url, "redirects": [],
+                        "usage": {"external_requests": 0, "content_bytes": 0}}
+            if str(initial) != redirect_conditional["request_url"]:
+                return {"status": "error", "error_code": "E_CONDITIONAL_MISMATCH",
+                        "error": "redirect conditional initial URI differs from actual GET",
+                        "http_status": None, "final_url": url, "redirects": [],
+                        "usage": {"external_requests": 0, "content_bytes": 0}}
+            if redirect_conditional["conditional"]["request_profile"] != request_profile(headers):
+                # Configuration changes turn this same authorized attempt into a
+                # full GET; they never trigger a second request or reuse a body.
+                redirect_conditional = None
+        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers,
+                                       collect_redirect_cache=True, redirect_conditional=redirect_conditional,
+                                       **({"budget": budget} if budget else {}))
         used_requests, used_bytes = res.external_requests, res.content_bytes
         follows = 0
         while True:
@@ -600,6 +649,14 @@ class Worker:
                     "usage": {"external_requests": used_requests, "content_bytes": used_bytes}}
             if res.http_status is not None:
                 base["http_freshness"] = response_freshness(res)
+            if res.http_redirect_observations:
+                if (len(res.http_redirect_observations) > MAX_OBSERVATIONS or
+                        encoded_size(res.http_redirect_observations) > MAX_OBSERVATION_BYTES):
+                    return {**base, "status": "http_error", "error_code": "E_HTTP_REVALIDATION",
+                            "error": "redirect cache observation bound exceeded"}
+                base["http_redirect_observations"] = res.http_redirect_observations
+            if not follows and res.http_redirect_chain is not None:
+                base["http_redirect_chain"] = res.http_redirect_chain
             if res.redirect_publication_observations:
                 base["redirect_publication_observations"] = res.redirect_publication_observations
             if res.http_status is not None:
@@ -610,12 +667,28 @@ class Worker:
                     base["publication_observation"] = incomplete_publication(publication_rules(res.headers))
             if res.http_status == 304:
                 try:
-                    if (conditional is None or res.status != "not_modified" or res.redirects or follows or
-                            res.truncated or res.body or res.content_bytes):
+                    selected = conditional
+                    routed = redirect_conditional is not None
+                    if routed:
+                        selected = redirect_conditional["conditional"]
+                        if (follows or res.http_redirect_chain is None or
+                                res.redirects != redirect_conditional["redirects"] or
+                                res.conditioned_binding_id != selected["binding_id"] or
+                                res.final_url != selected["url"] or res.response_content_bytes):
+                            raise ValueError("redirect 304 lacks an exact final-URI condition and complete HTTP prefix")
+                    elif res.redirects or follows or res.content_bytes:
+                        raise ValueError("direct 304 cannot follow a redirect or consume a body")
+                    if selected is None or res.status != "not_modified" or res.truncated or res.body:
                         raise ValueError("304 response has no matching complete representation grant")
                     cache = response_cache(res.headers, url=res.final_url,
-                                           profile=res.request_profile, conditional=conditional)
-                    return {**base, "status": "not_modified", "binding_id": conditional["binding_id"], "http_cache": cache}
+                                           profile=res.request_profile, conditional=selected)
+                    result = {**base, "status": "not_modified", "binding_id": selected["binding_id"], "http_cache": cache}
+                    if routed:
+                        result["redirect_revalidation"] = {"version": REDIRECT_CONDITIONAL_VERSION,
+                                                           "request_url": redirect_conditional["request_url"],
+                                                           "final_url": selected["url"],
+                                                           "binding_id": selected["binding_id"]}
+                    return result
                 except (ValueError, ConditionalMismatch) as exc:
                     return {**base, "status": "http_error", "error_code": "E_HTTP_REVALIDATION", "error": str(exc)}
             if res.status != "ok":
@@ -659,12 +732,17 @@ class Worker:
                     if remaining <= 0:
                         return {**base, "status": "timeout", "error": "request timed out",
                                 "redirect_publication_observations": observed}
-                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, **({"budget": budget} if budget else {}))
+                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, collect_redirect_cache=True,
+                                                   **({"budget": budget} if budget else {}))
                     conditional = None
+                    redirect_conditional = None
                     used_requests += nxt.external_requests
                     used_bytes += nxt.content_bytes
                     nxt.redirects = res.redirects + [target] + nxt.redirects
                     nxt.redirect_publication_observations = observed + nxt.redirect_publication_observations
+                    nxt.http_redirect_observations = res.http_redirect_observations + nxt.http_redirect_observations
+                    # A complete HTTP proof never spans an HTML/JavaScript redirect.
+                    nxt.http_redirect_chain = None
                     if not nxt.final_url:
                         # No headers arrived from the next attempt. The last
                         # actual response may be an intermediate soft redirect,

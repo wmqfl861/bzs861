@@ -1,0 +1,58 @@
+{
+  "role": "Author isolated followup to frozen P2-2 v2; not root integration or independent runtime approval",
+  "patch": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup.patch",
+  "patch_sha256": "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1",
+  "baseline_v2_patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+  "repository_modified": false,
+  "files": [
+    {
+      "path": "docs/HTTP_FRESHNESS.md",
+      "before_sha256": "dddc34bc8ca5c5d8f721c9a0bd011ef6b0e57cd5263fca90068be0d14663c1ec",
+      "after_sha256": "73f7240ab18fd5cd93d1932af548eed69c4b9a335ffa25782463543b40baaa22",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "src/store.cpp",
+      "before_sha256": "4fd13314ce37d1347dc465139c469fe22ecdf58d03611566612603b9bbb47681",
+      "after_sha256": "07027ac8901a5f04b52267c19e20a8ff6e4c23f7cf743fcfbcf9b093e23884e2",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "src/web.cpp",
+      "before_sha256": "84881494880754e085421cc27192f4b3a7a05573c69549fc2f84103b31115de0",
+      "after_sha256": "6d90fbe8b7edb2d2041f7d0cbc7e7201a882e617874225dc544c9837a8a11bf0",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "before_sha256": "84debb90e19241912494c10f57db2a7c5b03b8040062664f8cb7e61e0e9b8084",
+      "after_sha256": "8d980548a1a89741ca141ed40c5ebb13191ca566ee3e2f47ddd12b5f3196143d",
+      "current_main_matches_preimage": true
+    }
+  ],
+  "change": "Every direct/proven-chain cache hit uses the existing current-snapshot, metadata-hash and TTL guard plus current indexed/site projection. Only proven chains require the persistent redirect/alias deletion fence. Normal document.read/snapshot/range history remains unchanged.",
+  "regressions": [
+    "direct noindex => cache_only and cache_first indexed false without origin request; current/frozen search withdrawn; historical snapshot/range/evidence unchanged; internal projection not leaked",
+    "direct publication restriction during profile RPC is reflected by the final hit",
+    "same-snapshot metadata changed during profile RPC => cache_only stale; cache_first performs its authorized fetch; later current cache remains usable",
+    "legacy direct metadata without publication_fence stays usable and does not acquire redirect-only requirements"
+  ],
+  "native_cases_before": 37,
+  "native_cases_after": 41,
+  "preview": {
+    "apply_check_current_main_exit": 0,
+    "cpp_syntax": "store.cpp, web.cpp, cache_freshness.cpp all exit 0",
+    "runtime_tests": "not run by author; root owns exact-library native / full gates and reviewers own frozen probes"
+  },
+  "logs": [
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup-syntax.log",
+      "sha256": "e10b7a5c9e6d05299410bee0211d1e8dc3348dc138492556953d2ebb2a79e3ce"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320"
+    }
+  ],
+  "preserved_evidence": "v1, v2, prior failure logs and independently frozen scope/projection probes remain unchanged"
+}

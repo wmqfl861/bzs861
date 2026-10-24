@@ -1,0 +1,20 @@
+{
+  "stopped_at": "2026-10-24T04:38:09.243293+00:00",
+  "candidate": "P2-2 before canonical wire-size followup",
+  "reason": "Independent probe proved Python counted unescaped slash bytes while Core canonical JSON escapes slashes; an optional proof near 8 KiB could be emitted then rejected. Stop obsolete full-stage candidate before modifying inputs. Preserve all output, then run all gates on a new final stage.",
+  "signal": "SIGINT sent only to this recorded CTest child",
+  "runner_pid": 25801,
+  "child_pid": 26143,
+  "argv": [
+    "ctest",
+    "--preset",
+    "dev",
+    "--parallel",
+    "2",
+    "--verbose",
+    "--output-junit",
+    "/workspace/scratch/e2371129386d/bzs861/validation/claude_followup_20261024/p2-2/ctest.xml"
+  ],
+  "replacement_stage": "p2-2-v2",
+  "not_an_acceptance_result": true
+}

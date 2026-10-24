@@ -1,0 +1,64 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "checked_at_utc": "2026-10-24T05:03:30.945305+00:00",
+  "purpose": "Additive final actual P2-2 v4 source binding after aggregate-contract repair. Earlier v2 bindings/replays remain immutable historical inputs and are not current product acceptance.",
+  "parent_current_stage": "validation/claude_followup_20261024/p2-2-v4",
+  "source_base_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "actual_input_count": 220,
+  "actual_current_path_set_matches_v4": true,
+  "every_actual_file_hash_matches_v4": true,
+  "v3_execution_inputs_sha256": "f8ed3a2d6f1f54e6f1284a123889ee15bece751c04aa65c01a38a9cc8cc773f1",
+  "v4_execution_inputs_sha256": "f8ed3a2d6f1f54e6f1284a123889ee15bece751c04aa65c01a38a9cc8cc773f1",
+  "v3_v4_source_files_identical": true,
+  "production_prefix_paths": 73,
+  "formal_test_fixture_prefix_paths": 64,
+  "validation_launcher_source_bound": {
+    "validation/claude_followup_20261024/guard.py": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+    "validation/claude_followup_20261024/run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf"
+  },
+  "current_library_sha256": "fba67dbd752682bdcf0ae8acb690b1232b398492b79caba8202757175d81a242",
+  "current_root_library_equals_replayed_frozen_copy": true,
+  "all_replay_cpp_inputs_unchanged": true,
+  "probe_source_sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb",
+  "probe_log_sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d",
+  "probe_result": "6 cases /209checks /4 pass /2 preserved reverse-percent assumptions fail; not all passed",
+  "current_protocol_files": {
+    "src/web.cpp": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524",
+    "src/publication.cpp": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9",
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "python/bzs/worker/server.py": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2",
+    "python/bzs/worker/redirect_cache.py": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+    "python/tests/test_http_redirect_cache.py": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+    "python/tests/test_crawl_worker.py": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "tests/cache_freshness.cpp": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+    "docs/HTTP_REDIRECT_CACHE.md": "053e4bed4d38e8d913eec538ca5f87082579385e09cd77340e63d4be7574d38c"
+  },
+  "actual_documented_URI_scope": "URI 删除身份沿用既有精确 URL 与 `map_url` 规范化范围，包括主机大小写和默认端口。反向 percent 编码的不同存储身份尚未统一：例如单独删除 `/%6Diddle` 不等同于删除实际 `/middle`。本轮保留并记录该既存限制，没有迁移或合并历史 URL 身份。",
+  "preservation": {
+    "historical_v2_package_manifest_sha256": "5ad501ad401dd1ed651289ca6f1db8c52d2f62919860377ee684c0302eb34228",
+    "all_28_historical_files_byte_identical": true,
+    "original_probe_assertions_unchanged": true,
+    "v2_v3_failed_fullstage_records_copied": true
+  },
+  "full_gate_status": {
+    "p2_2_v2": "Failed: original Python aggregate contract regression plus two native BAD_COMMAND launches; preserved.",
+    "p2_2_v3": {
+      "ctest_exit_code": 8,
+      "source_inputs_unchanged": true,
+      "ctest_log_sha256": "6d2a979f0acfc748857b6b056202e330bf8d2863067d40c1585aded6bc9f9bb8",
+      "status": "Failed execution environment; native targets ran, HTTP fixtures were blocked by sandbox socket EPERM and python_worker reached its unchanged180s watchdog. See copied parent failure analysis."
+    },
+    "p2_2_v4": "Approved local-loopback full run in progress at binding time; final CTest/pytest/ASan result must be determined by root. No pass claimed here."
+  },
+  "scope_conclusion": "No new failure in the independently repeated inherited-contract interactions; static final protocol review found no blocker. This is bounded P2-2 review evidence, not whole-product approval or an all-green six-case claim.",
+  "independence": {
+    "independent_of_p2_2_production": true,
+    "authored_historical_shared_reads": true,
+    "shared_case_is_interaction_not_independent_prior_shared_signoff": true,
+    "authored_new_validation_guard": true,
+    "guard_independent_review_owned_by_root": true
+  },
+  "new_tests_run_in_binding_step": false,
+  "root_repository_modified": false,
+  "package_policy": "Only source.cpp, UTF8.log and JSON. No runtimeDB, ELF, static archive, credentials or private chat exports."
+}

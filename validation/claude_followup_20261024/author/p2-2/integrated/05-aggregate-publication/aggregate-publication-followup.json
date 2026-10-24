@@ -1,0 +1,116 @@
+{
+  "created_at_utc": "2026-10-24T04:56:55.970311+00:00",
+  "role": "P2-2 author followup; independent review and native runtime gates are owned by root/reviewers",
+  "base_head": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "base_state": "uncommitted P2-2 v2 + direct-hit + bounded-grant + wire-size followups; exact before hashes below",
+  "patch": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup.patch",
+  "patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+  "changes": [
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "before_sha256": "8b1cfad4c60d79b3b148aa46b01bd4ec8bb229d2d5c12c66deba9ddee4958422",
+      "after_sha256": "053e4bed4d38e8d913eec538ca5f87082579385e09cd77340e63d4be7574d38c"
+    },
+    {
+      "path": "python/bzs/worker/server.py",
+      "before_sha256": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9",
+      "after_sha256": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2"
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "before_sha256": "d2feccd612ed81ba7942e5ffd24d326bbc56bac27eab197983c4d285471352f6",
+      "after_sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876"
+    },
+    {
+      "path": "src/publication.cpp",
+      "before_sha256": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717",
+      "after_sha256": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9"
+    },
+    {
+      "path": "src/web.cpp",
+      "before_sha256": "6d90fbe8b7edb2d2041f7d0cbc7e7201a882e617874225dc544c9837a8a11bf0",
+      "after_sha256": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524"
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "before_sha256": "1e3ab7d8e3eea57149ddd3335134fb80185ef1dca074e0d8b7af871f88b67099",
+      "after_sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44"
+    }
+  ],
+  "regression_origin": "Original test_crawl_worker aggregate publication contract failed in root full CTest. Prior final-only full200 assumption is invalid; old reports/patches remain preserved.",
+  "semantics": [
+    "Worker 200 publication retains original full-read site aggregate and index_allowed consistency. Intermediate HTTP robots observations stay separate.",
+    "Only a complete receipt, status ok, HTTP200 and nontruncation may carry exact three-field representation_publication wrapper; equal policies omit the duplicate.",
+    "Core checks version/exact final identity/complete receipt/raw aggregate covers final/final covers actual observation and rejects wrapper in304/errors/unproven/empty/truncated.",
+    "Core creates transient version+final URL scope after verifying each qualifying full200 receipt, including equal-policy omission; Store uses it before chain history and removes it before persistence.",
+    "The transient marker adds no permanent metadata/cache bytes. Final policy retains existing publication accounting. It confers neither freshness nor304 authority; no-cache/TTL0/16KiB proof omission retain final scope.",
+    "Legacy unproven payload remains conservatively interpreted. Routed304 final-only observation unchanged; no source/site approval or public API/limits/schema changes.",
+    "HttpWorker24MiB body/JSON frame unchanged. Max ASCII8MiBhtml+2MiBtext+1MiBfinalsnippet verified below cap; arbitrary escape-heavy field combinations still obey existing frame bound."
+  ],
+  "preview": {
+    "python": {
+      "exit_code": 0,
+      "result": "118 passed in 1.92s",
+      "log": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/python-focused-1.log",
+      "log_sha256": "13e80ce478ee64be36857f21a9ac94de5d7d46e45df57731d6cf21d15c4c2545",
+      "scope": [
+        "new test_http_redirect_cache.py",
+        "unchanged original test_crawl_worker.py"
+      ],
+      "network": "local loopback fixtures only",
+      "overlay": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/runtime/python"
+    },
+    "syntax_only": [
+      {
+        "command": [
+          "g++",
+          "-std=c++20",
+          "-I/workspace/scratch/e2371129386d/bzs861/include",
+          "-fsyntax-only",
+          "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/src/web.cpp"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-web-1.log",
+        "source_sha256": "d82ecc4298ab4f72fa082dec34d9376d179c716706fd2038e0641ecca02db524"
+      },
+      {
+        "command": [
+          "g++",
+          "-std=c++20",
+          "-I/workspace/scratch/e2371129386d/bzs861/include",
+          "-fsyntax-only",
+          "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/src/publication.cpp"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-publication-1.log",
+        "source_sha256": "16d1a8ad5787c77818793fff72733a6eb0683aa2a58169897b70be72c44984c9"
+      },
+      {
+        "command": [
+          "g++",
+          "-std=c++20",
+          "-I/workspace/scratch/e2371129386d/bzs861/include",
+          "-fsyntax-only",
+          "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/b/tests/cache_freshness.cpp"
+        ],
+        "exit_code": 0,
+        "log": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-cache_freshness-1.log",
+        "source_sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44"
+      }
+    ],
+    "native_runtime_executed": false,
+    "whole_gates_executed": false,
+    "native_cases_before": 44,
+    "native_cases_after": 51,
+    "original_native_test_bodies_preserved": true,
+    "original_crawl_worker_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "overlay_crawl_worker_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "apply_check_exit_code": 0
+  },
+  "read_only_shared_lifecycle_review": {
+    "file": "src/batch.cpp",
+    "sha256": "5b9f7ec1c729f0a33866748d363dd7a5b264e7623213ad0295b470e85c89cc04",
+    "finding": "complete_read deep-copies supplied meta with Json::parse(meta.dump()) for ordinary/shared paths; shared group ingests once for selected publisher. Marker consumption rebuilds local Json instead of mutating/removing the marker in an aliased input object."
+  },
+  "remaining": "Root must compile/link all51 native cases, run the unchanged original/full suites and ASan, and independent reviewers must rerun frozen/additive probes before acceptance."
+}

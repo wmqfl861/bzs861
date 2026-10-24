@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 from pathlib import Path
+import secrets
 import sys
 import tempfile
 import threading
@@ -21,6 +24,7 @@ class Origin:
         self.age = ""
         self.tag = False
         self.error = False
+        self.redirects = {}
         fixture = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -31,6 +35,17 @@ class Origin:
 
             def do_GET(self):
                 fixture.requests.append((self.path, self.headers.get("If-None-Match", "")))
+                if self.path in fixture.redirects:
+                    status, target, body, control = fixture.redirects[self.path]
+                    self.send_response(status)
+                    self.send_header("Location", target)
+                    self.send_header("Cache-Control", control)
+                    self.send_header("ETag", '"redirect-only"')
+                    self.send_header("Content-Type", "text/plain; charset=utf-8")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
                 robots = self.path == "/robots.txt"
                 status = 200 if robots else (503 if fixture.error else
                     304 if fixture.tag and self.headers.get("If-None-Match") == '"fresh"' else 200)
@@ -156,6 +171,102 @@ class CacheFreshness(unittest.TestCase):
         crawl_job = self.wait(crawl["job_id"])
         self.assertEqual(crawl_job["usage"]["external_requests"], 2)
         self.assertEqual(self.ok("stats")["snapshots"], 0)
+
+    def http_chain(self):
+        self.origin.tag = True
+        self.origin.redirects = {
+            "/docs/start": (301, "/docs/middle", b"first jump", "max-age=60"),
+            "/docs/middle": (307, "/docs/page", b"second jump", "max-age=60"),
+        }
+        return self.stack.url("/docs/start")
+
+    def test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator(self):
+        original = self.http_chain()
+        first = self.ok("web.read", {"url": original, "freshness": "cache_first"})
+        self.assertEqual(self.origin.requests, [("/docs/start", ""), ("/docs/middle", ""), ("/docs/page", "")])
+        self.assertEqual(first["cache"]["redirect_hops"], 2)
+        for freshness in ("cache_only", "cache_first"):
+            hit = self.ok("web.read", {"url": original, "freshness": freshness})
+            self.assertTrue(hit["from_cache"])
+            self.assertEqual(hit["snapshot_id"], first["snapshot_id"])
+        self.assertEqual(len(self.origin.requests), 3)
+        self.stack.kill("searchd")
+        self.stack.start_core()
+        hit = self.ok("web.read", {"url": original, "freshness": "cache_only"})
+        self.assertEqual(hit["snapshot_id"], first["snapshot_id"])
+        self.assertEqual(len(self.origin.requests), 3)
+        refreshed = self.ok("web.read", {"url": original, "freshness": "refresh"})
+        self.assertEqual(refreshed["fetch"]["http_status"], 304)
+        self.assertTrue(refreshed["fetch"]["revalidated"])
+        self.assertEqual(refreshed["snapshot_id"], first["snapshot_id"])
+        self.assertEqual(refreshed["content"]["text"], first["content"]["text"])
+        self.assertEqual(self.origin.requests[3:], [("/docs/start", ""), ("/docs/middle", ""), ("/docs/page", '"fresh"')])
+
+    def test_http_chain_batch_304_accounts_for_each_request_and_redirect_body(self):
+        original = self.http_chain()
+        first = self.ok("web.read", {"url": original})
+        accepted = self.ok("read_many.submit", {"urls": [original], "idempotency_key": "chain-304",
+            "max_requests": 3, "max_bytes": 100000})
+        job = self.wait(accepted["job_id"])
+        self.assertEqual(job["state"], "succeeded", job)
+        redirect_bytes = len(b"first jump") + len(b"second jump")
+        self.assertEqual(job["usage"]["external_requests"], 3)
+        self.assertEqual(job["usage"]["content_bytes"], redirect_bytes)
+        self.assertEqual(job["usage"]["unknown_requests_charged"], 0)
+        self.assertEqual(job["usage"]["unknown_bytes_charged"], 0)
+        self.assertEqual(job["usage"]["reserved_requests"], 0)
+        self.assertEqual(job["usage"]["reserved_bytes"], 0)
+        self.assertEqual(job["budget"]["charged_requests"], 3)
+        self.assertEqual(job["budget"]["charged_bytes"], redirect_bytes)
+        results = self.ok("job.results", {"job_id": accepted["job_id"]})
+        self.assertEqual(results["items"][0]["receipt"]["snapshot_id"], first["snapshot_id"])
+        retained = self.ok("document.read", {"snapshot_id": first["snapshot_id"]})
+        self.assertEqual(retained["canonical_text"], first["content"]["text"])
+        self.assertEqual(self.origin.requests[3:], [("/docs/start", ""), ("/docs/middle", ""), ("/docs/page", '"fresh"')])
+
+    def test_http_chain_cache_is_owner_scoped_without_a_global_final_alias(self):
+        original = self.http_chain()
+        first = self.ok("web.read", {"url": original})
+        status, result = self.stack.call("web.read", {"url": self.stack.url("/docs/page"), "freshness": "cache_only"})
+        self.assertNotEqual(status, 200, result)
+        self.assertEqual(result["errors"][0]["code"], "E_NOT_CACHED", result)
+        other_token = secrets.token_hex(32)
+        auth_path = self.stack.root / "auth.json"
+        auth = json.loads(auth_path.read_text())
+        auth["tokens"].append({"sha256": hashlib.sha256(other_token.encode()).hexdigest(), "subject": "other-owner", "admin": False})
+        auth_path.write_text(json.dumps(auth))
+        self.stack.kill("searchd")
+        self.stack.start_core()
+        owner_token = self.stack.api_token
+        try:
+            self.stack.api_token = other_token
+            status, result = self.stack.call("web.read", {"url": original, "freshness": "cache_only"})
+            self.assertNotEqual(status, 200, result)
+            self.assertEqual(result["errors"][0]["code"], "E_NOT_CACHED", result)
+            self.assertEqual(len(self.origin.requests), 3)
+            other = self.ok("web.read", {"url": original, "freshness": "cache_first"})
+            self.assertFalse(other["from_cache"])
+            self.assertNotEqual(other["snapshot_id"], first["snapshot_id"])
+            self.assertEqual(self.origin.requests[3:], [("/docs/start", ""), ("/docs/middle", ""), ("/docs/page", "")])
+        finally:
+            self.stack.api_token = owner_token
+        self.assertEqual(self.ok("web.read", {"url": original, "freshness": "cache_only"})["snapshot_id"], first["snapshot_id"])
+        self.assertEqual(len(self.origin.requests), 6)
+
+    def test_failed_new_http_route_invalidates_the_old_direct_cache(self):
+        original = self.stack.url("/docs/start")
+        first = self.ok("web.read", {"url": original})
+        self.origin.redirects["/docs/start"] = (301, "/docs/page", b"new route", "max-age=60")
+        self.origin.error = True
+        status, result = self.stack.call("web.read", {"url": original, "freshness": "refresh"})
+        self.assertNotEqual(status, 200, result)
+        self.assertEqual(result["errors"][0]["code"], "E_FETCH_HTTP", result)
+        status, result = self.stack.call("web.read", {"url": original, "freshness": "cache_only"})
+        self.assertNotEqual(status, 200, result)
+        self.assertEqual(result["errors"][0]["code"], "E_CACHE_STALE", result)
+        self.assertEqual([request[0] for request in self.origin.requests], ["/docs/start", "/docs/start", "/docs/page"])
+        self.assertEqual(self.ok("stats")["snapshots"], 1)
+        self.assertIn("freshnessneedle", self.ok("document.read", {"snapshot_id": first["snapshot_id"]})["canonical_text"])
 
 
 if __name__ == "__main__":

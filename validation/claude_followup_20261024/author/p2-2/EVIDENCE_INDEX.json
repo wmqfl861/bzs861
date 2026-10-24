@@ -1,0 +1,391 @@
+{
+  "package_version": 1,
+  "created_at_utc": "2026-10-24T04:59:52.545022+00:00",
+  "author_agent": "/root/source_policy",
+  "purpose": "pure-text author evidence for root repository archival",
+  "repository_modified_by_packaging": false,
+  "original_evidence_modified": false,
+  "integrated_patch_order": [
+    {
+      "stage": "01-redirect-v2",
+      "patch": "integrated/01-redirect-v2/redirect-cache-draft-v2.patch",
+      "manifest": "integrated/01-redirect-v2/redirect-cache-draft-v2.json",
+      "patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941"
+    },
+    {
+      "stage": "02-direct-hit",
+      "patch": "integrated/02-direct-hit/direct-hit-followup.patch",
+      "manifest": "integrated/02-direct-hit/direct-hit-followup.json",
+      "patch_sha256": "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1"
+    },
+    {
+      "stage": "03-bounded-grant",
+      "patch": "integrated/03-bounded-grant/bounded-grant-followup.patch",
+      "manifest": "integrated/03-bounded-grant/bounded-grant-followup.json",
+      "patch_sha256": "df90e99af7d96f88b65c95c658605ea73ae73c75dc391b6b21390eb754b32439"
+    },
+    {
+      "stage": "04-wire-size",
+      "patch": "integrated/04-wire-size/wire-size-followup.patch",
+      "manifest": "integrated/04-wire-size/wire-size-followup.json",
+      "patch_sha256": "8b1487d21109fe0a80946f40dfbbce168e6d2a954960319ec940f41b32f39c57"
+    },
+    {
+      "stage": "05-aggregate-publication",
+      "patch": "integrated/05-aggregate-publication/aggregate-publication-followup.patch",
+      "manifest": "integrated/05-aggregate-publication/aggregate-publication-followup.json",
+      "patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e"
+    }
+  ],
+  "members": [
+    {
+      "path": "CORRECTIONS.json",
+      "sha256": "20d3bc35386ba7b376de4ddd543a4274614175ef45667aae2b92b68b542f7c3e",
+      "bytes": 3456,
+      "stage": "package",
+      "role": "new additive explanation; no original evidence changed",
+      "copied_verbatim": false
+    },
+    {
+      "path": "README.md",
+      "sha256": "71cbd6a4c79b744907f5d8303ffd7ad1e519e03ba4e49829294f3e66444069ae",
+      "bytes": 2092,
+      "stage": "package",
+      "role": "new additive explanation; no original evidence changed",
+      "copied_verbatim": false
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-apply-check-v1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-apply-check-v1.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-cpp-syntax-v1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-cpp-syntax-v1.log",
+      "sha256": "05d2853a780547b55d80d6bcec715ea5e58f98005bf8b179c210498e84cd1ce0",
+      "bytes": 1228,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-cpp-syntax-v2.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-cpp-syntax-v2.log",
+      "sha256": "a15dab7672ef13e170f66b5bd1a428af77caafb3d9b2df78d30d4c213cad0649",
+      "bytes": 17,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-worker-related-v3.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-worker-related-v3.log",
+      "sha256": "f1ebc5852207f36686e72b45415d4dc12dfb5ef3ca6a70273b604884594e74cf",
+      "bytes": 260,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-worker-v1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-worker-v1.log",
+      "sha256": "e740885a009dfea829e7230208bbd95aa4f609f70bfacc2faf84699c5a1c7377",
+      "bytes": 75829,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-worker-v2.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-worker-v2.log",
+      "sha256": "9a7a96f6a2aa433e74e3355a2a128f0c15665c0daf69a19488ecd8d1c6acf427",
+      "bytes": 99,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/draft-worker-v4.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-worker-v4.log",
+      "sha256": "d2fb1c09eb6c4dfeaaef85edc26e1673b84f5217c553cd8281c3d1a3247eed0f",
+      "bytes": 99,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/redirect-cache-draft-v1.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.json",
+      "sha256": "7f9f9a2cdbc52a1454aef8d47e75ba571c7eb5ccc9da4f184baa1cb06c12013b",
+      "bytes": 7150,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "historical/not-integrated-v1/redirect-cache-draft-v1.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.patch",
+      "sha256": "2c7aa627fd3a2d4437f1c6271680b561ac9df5cafa1ba84d5133b23506765c77",
+      "bytes": 108082,
+      "stage": "historical-v1",
+      "role": "superseded author draft and original previews; not an integration or acceptance result",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/preview/draft-v2-apply-check.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7,
+      "stage": "01-redirect-v2",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/preview/draft-v2-ast-runtime.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-ast-runtime.json",
+      "sha256": "0bdf3756a8171542dd65cdb5f1b2fd602f2dff073cf27e0cdbf234cf64f99b35",
+      "bytes": 733,
+      "stage": "01-redirect-v2",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/preview/draft-v2-cpp-syntax.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-cpp-syntax.log",
+      "sha256": "1ab02010ad5a2a1929bd0ab795c50616bd0209cc19d2ffbb61bc0b1917719f5b",
+      "bytes": 196,
+      "stage": "01-redirect-v2",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/preview/draft-v2-worker-related.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-worker-related.log",
+      "sha256": "351cb7d7e202e679c6fa79c70ae2b35cbfc3dcc6f62e06ddc3740735421f637a",
+      "bytes": 340,
+      "stage": "01-redirect-v2",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/redirect-cache-draft-v2.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v2.json",
+      "sha256": "29550f283107ada53dfabe9c57c47ccdaa7bf7462839fbcbb980aee5208dabd1",
+      "bytes": 8359,
+      "stage": "01-redirect-v2",
+      "role": "original frozen author manifest",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/01-redirect-v2/redirect-cache-draft-v2.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v2.patch",
+      "sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+      "bytes": 135185,
+      "stage": "01-redirect-v2",
+      "role": "integrated author patch",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/02-direct-hit/direct-hit-followup.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup.json",
+      "sha256": "6a88d63ee6b6168a30278abd2b18a456de3ba38ba55bf5264fdc0fe255efb95c",
+      "bytes": 3194,
+      "stage": "02-direct-hit",
+      "role": "original frozen author manifest",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/02-direct-hit/direct-hit-followup.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup.patch",
+      "sha256": "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1",
+      "bytes": 8770,
+      "stage": "02-direct-hit",
+      "role": "integrated author patch",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/02-direct-hit/preview/direct-hit-followup-apply-check.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7,
+      "stage": "02-direct-hit",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/02-direct-hit/preview/direct-hit-followup-syntax.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/direct-hit-followup-syntax.log",
+      "sha256": "e10b7a5c9e6d05299410bee0211d1e8dc3348dc138492556953d2ebb2a79e3ce",
+      "bytes": 115,
+      "stage": "02-direct-hit",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/03-bounded-grant/bounded-grant-followup.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup.json",
+      "sha256": "a1fb948f5e855372ea9a1f2d6c9e4a632c76dcce514fd36f4eda97984f8cac40",
+      "bytes": 2949,
+      "stage": "03-bounded-grant",
+      "role": "original frozen author manifest",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/03-bounded-grant/bounded-grant-followup.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup.patch",
+      "sha256": "df90e99af7d96f88b65c95c658605ea73ae73c75dc391b6b21390eb754b32439",
+      "bytes": 8684,
+      "stage": "03-bounded-grant",
+      "role": "integrated author patch",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/03-bounded-grant/preview/bounded-grant-followup-apply-check.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7,
+      "stage": "03-bounded-grant",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/03-bounded-grant/preview/bounded-grant-followup-syntax.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup-syntax.log",
+      "sha256": "1c792a0aadfa643b3ab79b2828fea21659e05363630c6ce12a93323589971afb",
+      "bytes": 82,
+      "stage": "03-bounded-grant",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/04-wire-size/preview/wire-size-followup-apply-check.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7,
+      "stage": "04-wire-size",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/04-wire-size/preview/wire-size-followup-oracle.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-oracle.json",
+      "sha256": "72d6f82d807f18387897d60e6efc6213f8418d271cbb6148cbb3018f899d3f1d",
+      "bytes": 807,
+      "stage": "04-wire-size",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/04-wire-size/preview/wire-size-followup-pytest.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup-pytest.log",
+      "sha256": "f94c6c1d339436e4b15545cc8b6dbd973c2a2e35b44255841d6b22c5739be072",
+      "bytes": 99,
+      "stage": "04-wire-size",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/04-wire-size/wire-size-followup.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup.json",
+      "sha256": "e95f4e91fc0d696e1861f0bb3ff24b83a6c9241a31757869806f6795ea4f9f84",
+      "bytes": 3031,
+      "stage": "04-wire-size",
+      "role": "original frozen author manifest",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/04-wire-size/wire-size-followup.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/wire-size-followup.patch",
+      "sha256": "8b1487d21109fe0a80946f40dfbbce168e6d2a954960319ec940f41b32f39c57",
+      "bytes": 6497,
+      "stage": "04-wire-size",
+      "role": "integrated author patch",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/aggregate-publication-followup.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup.json",
+      "sha256": "ab68bf824c1f62bcdd8d29c63b9ab1343851cebb04f61829fccb78569332a642",
+      "bytes": 6600,
+      "stage": "05-aggregate-publication",
+      "role": "original frozen author manifest",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/aggregate-publication-followup.patch",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup.patch",
+      "sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+      "bytes": 36140,
+      "stage": "05-aggregate-publication",
+      "role": "integrated author patch",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/apply-check.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/apply-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/python-focused-1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/python-focused-1.log",
+      "sha256": "13e80ce478ee64be36857f21a9ac94de5d7d46e45df57731d6cf21d15c4c2545",
+      "bytes": 180,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/syntax-cache_freshness-1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-cache_freshness-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/syntax-preview-1.json",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-preview-1.json",
+      "sha256": "506f537fb09d64f8eaa617a24099b1a799f735a1bcdee635e9661a0e6f1e8363",
+      "bytes": 1365,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/syntax-publication-1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-publication-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    },
+    {
+      "path": "integrated/05-aggregate-publication/preview/syntax-web-1.log",
+      "source_path": "/tmp/bzs-p2-source-policy-20261024/aggregate-publication-followup/syntax-web-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "stage": "05-aggregate-publication",
+      "role": "author focused preview; not independent or full-gate acceptance",
+      "copied_verbatim": true
+    }
+  ],
+  "member_count_excluding_index_and_checksum": 38,
+  "known_exclusions": [
+    "compiled objects/libraries/executables",
+    "databases",
+    "runtime/venv",
+    "duplicate full source trees",
+    "independent reviewer result copies",
+    "root full-gate raw logs"
+  ]
+}

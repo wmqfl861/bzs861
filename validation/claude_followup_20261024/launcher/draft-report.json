@@ -1,0 +1,78 @@
+{
+  "role": "Author of validation-only draft at parent request; independent product reviewer role is separate. Parent must review/apply.",
+  "patch_sha256": "0a9f14a0ea36f77877fe7af5edc2bcfa663ad9ae771da76512f0aaeaa7853adf",
+  "files": [
+    {
+      "path": "validation/claude_followup_20261024/run.py",
+      "before_sha256": "cfdd513991c80a723052db4d33d91809d984da140000c0e20f41d257832c4b6b",
+      "after_sha256": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf"
+    },
+    {
+      "path": "validation/claude_followup_20261024/guard.py",
+      "before_sha256": null,
+      "after_sha256": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d"
+    }
+  ],
+  "main_repository_modified": false,
+  "audit_materials_modified": false,
+  "scope": [
+    "Only validation/run.py plus new validation/guard.py. Product CMake/CI, source, test assertions, CTest properties and selection are not changed.",
+    "After each local configure/build, freeze generated original and guarded CTest files plus exact test/ELF SHA mapping in new stage. Only15 native command prefixes are added; byte-inverse must reproduce original config.",
+    "Guard included in execution-inputs. Native guarded process verifies known regular no-symlink ELF/hash, repairs only execute mode, then execs original binary+argv with unchanged environment/cwd.",
+    "Only pre-exec EACCES permits one repeated verification/mode repair. A successfully started test is never retried; its signals/exit status replace the launcher.",
+    "ASan full-stage native loop uses same frozen mapping and original args. Existing ad-hoc no-stage sanitizers retains previous behavior.",
+    "Original17-binary bulk preparation remains for initial searchd/searchctl readiness; nested Python server launches are not individually wrapped."
+  ],
+  "verification": {
+    "temporary_fixtures_only": true,
+    "actual_CTest_parser_compared": true,
+    "test_count": 27,
+    "native_guard_count": 15,
+    "other_commands_argv_properties_order_unchanged": true,
+    "byte_inverse_exact": true,
+    "mode0644_repaired_with_args_preserved": true,
+    "ordinary_nonzero_exit1_preserved_no_retry": true,
+    "bad_hash_non_ELF_and_symlink_refused": true,
+    "product_tests_run": 0,
+    "full_stage_run": false,
+    "git_apply_check_exit": 0
+  },
+  "limitations": [
+    "Designed for the observed Linux local workspace; product Windows CI remains unchanged.",
+    "Second kernel EACCES or unexpected identity/hash change fails visibly; no infinite preparation or passing substitution.",
+    "Future native/test inventory changes fail the exact15/27 check and require review.",
+    "No claim the intermittent mode-reset cause is proven or fixed at filesystem level.",
+    "This author checks the validation draft; parent independent review remains required before adoption."
+  ],
+  "preparation_failure_preserved": {
+    "patch": "validation-launch-guard.patch",
+    "log": "apply-check.log",
+    "reason": "First generated patch lacked git new-file-mode header; apply-check rejected dev/null. Source draft unchanged; v2 adds only required patch metadata."
+  },
+  "evidence": [
+    {
+      "path": "verify_draft.py",
+      "sha256": "f26d87d5111dd5561e90027dc3c8c561c557ee75920f24538678974ab8a793f2"
+    },
+    {
+      "path": "verify-draft-v1.log",
+      "sha256": "324da8346b9f0eb653969ed702181b6f47d19c05660561fb89aec039c8ec7893"
+    },
+    {
+      "path": "verify-draft-v1-command.json",
+      "sha256": "53a1d06e1c5e4a984269c73cac0d87ba957ade7fd60e8bb925535687a882b41f"
+    },
+    {
+      "path": "draft-verification.json",
+      "sha256": "803f5b1bd2b5fa50917b018f8234a4eb0209a7117ae9259f350d0874fffb22c0"
+    },
+    {
+      "path": "apply-check.log",
+      "sha256": "8406467937a711cd03503de2296f1d25183cd93c59d55dcb0ec8c0d6aa0b75a0"
+    },
+    {
+      "path": "apply-check-v2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

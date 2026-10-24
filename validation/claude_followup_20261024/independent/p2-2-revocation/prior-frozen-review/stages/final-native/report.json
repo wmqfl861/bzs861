@@ -1,0 +1,171 @@
+{
+  "role": "independent same-source native replay after both C++ followups; not a full-suite acceptance count",
+  "library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+  "git_head_observed": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "source_hashes": {
+    "docs/HTTP_FRESHNESS.md": "73f7240ab18fd5cd93d1932af548eed69c4b9a335ffa25782463543b40baaa22",
+    "docs/HTTP_REDIRECT_CACHE.md": "326b650273b2d7c0520cb7364c296e08b37b2724f52d05331d682987c9a25ef9",
+    "docs/HTTP_REVALIDATION.md": "8ef72dddad5da040b48a2d8094420125843b2aa3ae64739310f28cf53ed25795",
+    "include/bzs/http_cache.hpp": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+    "include/bzs/store.hpp": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+    "include/bzs/web.hpp": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397",
+    "python/bzs/worker/fetch.py": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+    "python/bzs/worker/freshness.py": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+    "python/bzs/worker/redirect_cache.py": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21",
+    "python/bzs/worker/server.py": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9",
+    "python/tests/test_http_redirect_cache.py": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183",
+    "src/http_cache.cpp": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+    "src/publication.cpp": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717",
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "src/web.cpp": "6d90fbe8b7edb2d2041f7d0cbc7e7201a882e617874225dc544c9837a8a11bf0",
+    "tests/cache_freshness.cpp": "1e3ab7d8e3eea57149ddd3335134fb80185ef1dca074e0d8b7af871f88b67099",
+    "tests/e2e_cache_freshness.py": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c"
+  },
+  "headers": {
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "include/bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "include/bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "include/bzs/web.hpp": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+  },
+  "followup_hashes": {
+    "redirect-cache-draft-v2.patch": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+    "direct-hit-followup.patch": "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1",
+    "bounded-grant-followup.patch": "df90e99af7d96f88b65c95c658605ea73ae73c75dc391b6b21390eb754b32439"
+  },
+  "native_probes": [
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+      "source_sha256": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-final-native-v1/include",
+          "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/direct_route_failure_probe/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.3398628234863281,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 0,
+        "seconds": 0.03942584991455078,
+        "binary_sha256": "84505bf3f56e733f5a04547ef22ebb0c83f152bb1c5dbcc6e95e44168789a633",
+        "log_sha256": "bf4da710b325051d114874442c7efc925fefd213f18d2036aa2c88ad27a43fd4",
+        "output": "refresh=E_FETCH_HTTP\nPASS old HTTP reuse invalidated, history retained, no extra request\n"
+      }
+    },
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+      "source_sha256": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-final-native-v1/include",
+          "/tmp/bzs-p2-redirect-review-revocation-v1/redirect_publication_scope_probe.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/redirect_publication_scope_probe/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.3238985538482666,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 0,
+        "seconds": 0.24901556968688965,
+        "binary_sha256": "182abfa4a8efc77237d2bc8c40b9052676fcf91261add691593fbae2c0af680c",
+        "log_sha256": "d08570c1823693478352d36310c82f2eccdb51049c5913bc2f45a06ac5444b82",
+        "output": "PASS response prefix restriction: A denied; independent C preserved; final C denial enforced; immutable evidence retained\nPASS preexisting prefix restriction: A denied; independent C preserved; final C denial enforced; immutable evidence retained\n"
+      }
+    },
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+      "source_sha256": "4671ac7f9464ae929d23993bfcd127b43e3ac9a119bdac6f1519445503dcc202",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-final-native-v1/include",
+          "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/direct_indexed_projection_probe/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.2512457370758057,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 0,
+        "seconds": 0.034552574157714844,
+        "binary_sha256": "fbbef8f23c73dcd76ffeaa4e8884a45d7a2bab3849de749e078fae06a4270a5b",
+        "log_sha256": "d4661a60e7f91f910ae545bdd313a66279fb74eb288d9c31f919f7186847aef2",
+        "output": "{\"cache_only_indexed\":false,\"current_search_count\":0,\"history_retained\":true,\"origin_requests\":1,\"snapshot_indexed\":true}\n"
+      }
+    },
+    {
+      "source": "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+      "source_sha256": "06d2995b4e666eb336244518156300cece5ab3ae39287f795d11da6036034b3b",
+      "compile": {
+        "argv": [
+          "c++",
+          "-std=c++20",
+          "-I/tmp/bzs-p2-redirect-review-revocation-final-native-v1/include",
+          "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/libbzs_core.a",
+          "-lsqlite3",
+          "-lcrypto",
+          "-lxml2",
+          "-ljson-c",
+          "-pthread",
+          "-o",
+          "/tmp/bzs-p2-redirect-review-revocation-final-native-v1/oversized_conditional_probe_v2/probe"
+        ],
+        "exit_code": 0,
+        "seconds": 1.4456312656402588,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "run": {
+        "exit_code": 0,
+        "seconds": 0.199462890625,
+        "binary_sha256": "0636aafd4e16cd141b1c81bccdb1aebbd8d9b31926ae6275ee7db75588b3bc3e",
+        "log_sha256": "a28424261f20d839e6ae0d02c5639235598b6427b0d9dcb991131ebd0cafe60b",
+        "output": "proof_bytes=7558 metadata_bytes=16157 conditional_bytes=8403 base_supplied=0\norigin_calls=2\nPASS oversized optional route grant fell back to one full authorized GET\n"
+      }
+    }
+  ],
+  "library_still_matches": true,
+  "all_passed": true
+}

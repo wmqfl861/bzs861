@@ -1,0 +1,54 @@
+{
+  "role": "Author isolated optional-grant-bound followup; runtime validation and independent replay remain parent/reviewer-owned",
+  "patch": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup.patch",
+  "patch_sha256": "df90e99af7d96f88b65c95c658605ea73ae73c75dc391b6b21390eb754b32439",
+  "baseline": "P2-2 v2 plus frozen direct-hit-followup and parent documentation clarification",
+  "preserved_parent_patches": [
+    "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+    "0772158d135bff34641d0951eb0e5a1122a07b44bc8b50b21ccd58c82ab3dfb1"
+  ],
+  "repository_modified": false,
+  "files": [
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "before_sha256": "c37245e9e339a6e41ef80d8c6fedb4b40aee083f10d560be06713811d6e15e87",
+      "after_sha256": "326b650273b2d7c0520cb7364c296e08b37b2724f52d05331d682987c9a25ef9",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "src/store.cpp",
+      "before_sha256": "07027ac8901a5f04b52267c19e20a8ff6e4c23f7cf743fcfbcf9b093e23884e2",
+      "after_sha256": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+      "current_main_matches_preimage": true
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "before_sha256": "dda827a08079e1975b3cdc9e472f29896332aa0048434ab414b2dcc6327ea455",
+      "after_sha256": "1e3ab7d8e3eea57149ddd3335134fb80185ef1dca074e0d8b7af871f88b67099",
+      "current_main_matches_preimage": true
+    }
+  ],
+  "production_change": "Store::revalidation_base preflights the actual complete routed conditional object. If its optional protocol encoding is invalid/oversized it returns no base before dispatch, so this same authorized call fetches one full representation. Public Worker bounds and unsolicited-304 rejection stay unchanged.",
+  "regressions": [
+    "Legal 3500-byte final URI and 1024-byte ETag: cache proof <=8192 and aggregate HTTP metadata <=16384 but grant >8192; cache hit remains valid and explicit refresh sends one full GET with neither conditional field",
+    "Bounded read_many of the same case reports 2 known HTTP requests and 21 consumed bytes, no unknown/reserved request grant and one physical Worker dispatch",
+    "Unsolicited 304 without the declined grant is rejected once; old metadata/body unchanged and the old TTL still expires normally"
+  ],
+  "case_count_before": 41,
+  "case_count_after": 44,
+  "preview": {
+    "apply_check_current_main_exit": 0,
+    "syntax_only": "store.cpp and cache_freshness.cpp exit 0",
+    "compiled_native_or_full_gates": "not run by draft author"
+  },
+  "logs": [
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup-syntax.log",
+      "sha256": "1c792a0aadfa643b3ab79b2828fea21659e05363630c6ce12a93323589971afb"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/bounded-grant-followup-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320"
+    }
+  ]
+}

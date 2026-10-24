@@ -1,0 +1,42 @@
+PASS cacheable-equal-without-wrapper
+PASS cacheable-explicit-final
+PASS no-cache-equal-without-wrapper
+PASS no-cache-explicit-final
+PASS ttl-zero-equal-without-wrapper
+PASS ttl-zero-explicit-final
+BOUNDARY proof=7558 combined=16557
+PASS metadata-omission-equal-without-wrapper
+BOUNDARY proof=7558 combined=16557
+PASS metadata-omission-explicit-final
+REJECT wrong-version code=E_WORKER_PROTOCOL
+PASS reject-wrong-version
+REJECT wrong-url code=E_WORKER_PROTOCOL
+PASS reject-wrong-url
+REJECT extra-field code=E_WORKER_PROTOCOL
+PASS reject-extra-field
+REJECT missing-field code=E_WORKER_PROTOCOL
+PASS reject-missing-field
+REJECT wrong-type code=E_WORKER_PROTOCOL
+PASS reject-wrong-type
+REJECT nested-version code=E_WORKER_PROTOCOL
+PASS reject-nested-version
+REJECT without-proof code=E_WORKER_PROTOCOL
+PASS reject-without-proof
+REJECT without-receipt code=E_WORKER_PROTOCOL
+PASS reject-without-receipt
+REJECT wrong-usage code=E_WORKER_PROTOCOL
+PASS reject-wrong-usage
+REJECT status203 code=E_WORKER_PROTOCOL
+PASS reject-status203
+REJECT missing-aggregate code=E_WORKER_PROTOCOL
+PASS reject-missing-aggregate
+REJECT aggregate-relaxes-final code=E_WORKER_PROTOCOL
+PASS reject-aggregate-relaxes-final
+REJECT final-relaxes-observation code=E_WORKER_PROTOCOL
+PASS reject-final-relaxes-observation
+REJECT on304 code=E_WORKER_PROTOCOL
+PASS reject-on304
+REJECT direct code=E_WORKER_PROTOCOL
+PASS reject-direct
+PASS actual-final-denial
+SUMMARY 24/24 passed

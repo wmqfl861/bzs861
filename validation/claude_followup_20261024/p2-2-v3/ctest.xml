@@ -1,0 +1,1843 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="27"
+	failures="12"
+	disabled="0"
+	skipped="0"
+	hostname="e3ab84622d41"
+	time="185"
+	timestamp="2026-10-24T12:58:00"
+	>
+	<testcase name="core" classname="core" time="5.16686" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_tests", "sha256": "f1b55ace9fb96693ff2b67a1a9b8066f193108a57ebbfc3dc1d68d2a11df4b14", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS json_roundtrip
+PASS json_shared_readers_preserve_serialization_and_alias_lifetimes
+PASS json_duplicate_keys
+PASS json_malformed
+PASS json_strict_types
+PASS json_depth_limit
+PASS json_scalar_unicode_and_ranges
+PASS utf8_boundaries
+PASS hash_and_random
+PASS metadata_urls
+PASS query_symbols
+PASS query_boolean
+PASS query_phrases
+PASS query_fields
+PASS query_quoted_directives
+PASS query_ast
+PASS query_errors
+PASS query_chinese
+PASS query_flat_conjunction
+PASS html_main_code
+PASS html_noindex
+PASS html_selected_subtree
+PASS html_hidden_ancestors
+PASS html_robots_tokens
+PASS html_guards
+PASS document_limits
+PASS store_snapshots
+PASS store_owner_isolation
+PASS store_search
+PASS single_response_search_has_no_lifetime_or_active_session_cost
+PASS store_candidate_predicate_agreement
+PASS substring_index_finds_old_phrases_symbols_and_multilingual...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="batch" classname="batch" time="1.32202" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_batch_tests", "sha256": "c70612d9a6c37510a0a2d58a1d2080113a7844e3fa0ad497533f5ecb2e6b121a", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS ten_explicit_inputs_only_and_ordered_receipts
+PASS input_budget_validation_and_owner_scope
+PASS execution_identity_does_not_use_search_deduplication
+PASS errors_are_isolated_and_default_attempts_do_not_retry
+PASS completed_items_survive_pause_restart_resume_without_refetch
+PASS pause_or_cancel_during_fetch_fences_late_publication
+PASS deletion_and_reimport_cannot_be_overwritten_by_old_batch
+PASS deletion_before_dispatch_stops_only_its_target
+PASS unknown_execution_keeps_grants_across_recovery
+PASS request_and_byte_budgets_stop_unstarted_items
+PASS lease_expiry_and_permission_changes_refuse_late_results
+PASS receipt_failure_rolls_back_snapshot_and_index
+PASS malformed_usage_consumes_unknown_grant_and_never_publishes
+PASS noindex_and_deleted_receipts_never_resurrect_content
+PASS api_dispatch_and_fixture_jobs_coexist
+PASS deadline...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="map" classname="map" time="0.844046" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_map_tests", "sha256": "377311f2be745bbd0cd54871704953d59c88568306f670a8a406f6925eed2129", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS empty_sites_default_and_strict_independent_review
+PASS registry_origin_limits_and_exact_uri_identity
+PASS input_validation_idempotency_and_owner_only_jobs
+PASS robots_precedes_discovery_and_html_is_candidates_only
+PASS optional_bad_candidates_and_sitemaps_do_not_poison_valid_results
+PASS sitemap_index_children_only_are_queued_once
+PASS url_depth_and_fixed_query_variant_budgets_report_partial
+PASS history_is_owner_scoped_and_deletion_never_revives_candidates
+PASS history_alias_tombstone_remains_bound_to_original_document
+PASS each_redirect_hop_gets_new_persistent_grant_and_same_origin_scope
+PASS late_results_after_logical_or_redirect_target_deletion_are_fenced
+PASS pause_cancel_fences_dispatch_and_late_publication
+PASS completed_resources_and_robots_cache_survive_restart_without_refetch
+PASS unknown_dispatched_step_remains_charged...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="crawl" classname="crawl" time="6.38456" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_crawl_tests", "sha256": "e4f3823c6bef20e6bfa01126377b10dd88287d215c49a72fdb03a3ee1819fd56", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+RUN crawl_submission_is_distinct_and_bounded
+PASS crawl_submission_is_distinct_and_bounded (38 ms)
+RUN recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique
+PASS recursive_diamond_cycle_edges_are_durable_and_bodies_are_unique (64 ms)
+RUN robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier
+PASS robots_sitemap_metadata_and_body_pages_share_one_bounded_frontier (47 ms)
+RUN page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows
+PASS page_budget_stops_before_another_body_dispatch_and_keeps_skipped_rows (57 ms)
+RUN depth_and_query_variants_bound_recursive_traps
+PASS depth_and_query_variants_bound_recursive_traps (124 ms)
+RUN noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence
+PASS noindex_refresh_retracts_frozen_rows_without_destroying_owner_evidence (81 ms)
+RUN nosnippet_and_data_...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="site_publication" classname="site_publication" time="5.246" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_site_publication_tests", "sha256": "bddefa3a47b78d3069336153ba0e3245552501cfc671ec8a7f82c156f45f9d0f", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS restart_links_only_with_zero_http_restricts_stored_and_frozen_publication
+PASS restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication
+PASS restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication
+PASS disabled_removed_and_unconfigured_restart_keep_durable_restrictions
+PASS review_expiry_is_durable_without_restart_or_http_and_cannot_be_rewound
+PASS relaxation_requires_a_new_complete_artifact_and_never_revives_frozen_content
+PASS scope_shrink_preserves_the_retained_child_and_expansion_does_not_restore_retired_content
+PASS new_child_scopes_inherit_prior_ancestor_index_and_snippet_watermarks
+PASS intermediate_site_bindings_are_immutable_even_when_body_and_final_url_reuse
+PASS final_representation_retarget_does_not_release_frozen_site_constraints
+PASS import_snapshots_and_froze...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="retention" classname="retention" time="2.48917" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_retention_tests", "sha256": "3a3807d795accafe76ba40d88938dd835f8d759db651a29316414cc2b9d1cf52", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS aged_terminal_frontiers_release_the_real_512_job_cap_after_restart
+PASS the_full_deadline_window_and_clock_extremes_are_respected
+PASS unknown_read_grants_survive_compaction_and_late_callbacks_cannot_reopen_work
+PASS paused_and_pending_jobs_remain_pinned_and_maintenance_is_owner_scoped
+PASS unknown_crawl_page_grants_and_origin_charges_survive_expiry_and_compaction
+PASS robots_receipt_and_admission_each_pin_the_exact_expired_record
+PASS expired_unreferenced_robots_are_bounded_and_fresh_or_other_owner_records_survive
+PASS robots_capacity_can_recover_at_admission_without_erasing_origin_accounting
+PASS crawl_frontier_edges_traps_and_map_candidates_compact_with_original_summaries
+PASS a_storage_failure_rolls_back_the_summary_and_all_detail_deletions
+PASS compaction_never_recreates_publication_deleted_aliases_or_owner_epochs
+PASS...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="fairness" classname="fairness" time="0.946157" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_fairness_tests", "sha256": "787fba10df363e6976b3ec746c3dd92567567d73f8c09835ce9e8d4bb5996c08", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS read_batches_follow_submission_order_and_rotate_with_identical_timestamps
+PASS late_short_batch_gets_a_turn_before_an_old_twenty_item_batch_drains
+PASS read_queue_position_survives_restart_and_owner_isolation
+PASS restarted_unknown_attempt_keeps_its_grant_and_does_not_jump_a_waiting_batch
+PASS two_store_connections_reserve_distinct_jobs_and_rounds
+PASS paused_cancelled_and_expired_batches_do_not_consume_other_jobs_turns
+PASS continuous_new_map_jobs_do_not_starve_an_existing_frontier
+PASS new_map_jobs_have_a_strict_submission_order_at_the_same_clock
+PASS cold_or_cooled_origin_does_not_stop_another_origin_or_read_batch
+PASS worker_loop_gives_batch_and_discovery_categories_progress
+PASS calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart
+11 fairness tests, 251 assertions, 0 failures
+</system-out>
+	</testcase>
+	<testcase name="sessions" classname="sessions" time="18.5907" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_session_tests", "sha256": "937d9ac391a0e18fb6f1b5e3e5f8b2443b121afa86d458e8fd6a3b641cd39610", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+RUN concurrent_source_review_keeps_shared_registry_contract_valid
+PASS concurrent_source_review_keeps_shared_registry_contract_valid (134 ms)
+RUN progress_creates_immutable_versions_and_bound_stable_cursors
+PASS progress_creates_immutable_versions_and_bound_stable_cursors (120 ms)
+RUN events_reconnect_without_duplicates_or_content_replay_and_survive_restart
+PASS events_reconnect_without_duplicates_or_content_replay_and_survive_restart (58 ms)
+RUN cancel_mid_request_fences_late_response_and_preserves_completed_version
+PASS cancel_mid_request_fences_late_response_and_preserves_completed_version (64 ms)
+RUN cancel_pending_is_zero_request_and_idempotent
+PASS cancel_pending_is_zero_request_and_idempotent (35 ms)
+RUN lost_lease_is_not_resent_and_unknown_accounting_survives_restart
+PASS lost_lease_is_not_resent_and_unknown_accounting_sur...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="source_publication" classname="source_publication" time="0.860723" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_source_publication_tests", "sha256": "d33b107cd116949975bf55bdd47f0121c17e06cdd1647c78cdf0dd009707d4ef", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS disabling_source_withdraws_existing_frozen_page
+PASS links_only_source_suppresses_existing_frozen_snippets
+PASS direct_search_enforces_current_links_only_review
+PASS cache_replay_cannot_restore_snippets_after_temporary_restriction
+PASS withdrawn_cached_response_is_replaced_only_by_new_authorized_attempt
+PASS frozen_links_only_survives_reopen_and_later_relaxation
+PASS explicit_empty_registry_retires_source_but_omission_preserves_it
+PASS disabled_source_remains_withdrawn_after_reopen_and_reenable
+PASS expiry_persists_even_when_page_rejection_and_clock_rollback_follow
+PASS renewal_after_unobserved_expiry_does_not_revive_old_results
+PASS stale_store_cannot_replace_more_recent_source_manifest
+PASS inflight_direct_response_keeps_intervening_snippet_ceiling
+PASS inflight_direct_response_cannot_cross_withdrawal_and_reenabl...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="search_modes" classname="search_modes" time="3.19349" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_search_mode_tests", "sha256": "54b0e6e4024723199fcd52dba503094cc25154c201fb6dcab4bb57486228d6ad", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS mode_catalog_is_offline_and_describes_actual_limits
+PASS omitted_mode_preserves_legacy_sync_and_session_defaults
+PASS all_modes_bound_actual_source_fanout_candidates_and_rpc
+PASS explicit_source_selection_cannot_silently_exceed_preset
+PASS duplicate_source_ids_do_not_consume_multiple_attempt_slots
+PASS overrides_can_only_tighten_every_preset_dimension
+PASS narrowed_override_is_the_executed_budget
+PASS mode_never_bypasses_source_review_or_shared_quota
+PASS cache_is_bound_to_mode_and_effective_overrides
+PASS persistent_mode_and_omissions_survive_restart_without_reexecution
+PASS durable_dispatch_passes_only_remaining_deadline_to_worker
+PASS legacy_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+PASS explicit_mode_durable_search_dispatches_with_500ms_remaining_without_extending_deadline
+PASS public_s...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="revalidation" classname="revalidation" time="1.3203" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_revalidation_tests", "sha256": "347d59e775245dc99261aa7de50a2ae4fce39f841e6d1666e4061e9446af9a17", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS direct_304_keeps_body_revision_and_evidence
+PASS batch_304_charges_one_request_and_no_body_bytes
+PASS validators_survive_restart_and_are_owner_scoped
+PASS not_modified_does_not_overwrite_a_concurrent_full_replacement
+PASS deletion_and_reimport_fence_a_304
+PASS restrictions_observed_before_304_dispatch_still_seal_old_body
+PASS not_modified_header_can_tighten_but_never_clear_cached_meta_directives
+PASS unsolicited_or_unbound_304_is_rejected_without_touching_body
+PASS http_metadata_rejects_unsafe_and_ambiguous_validators
+PASS accept_encoding_vary_metadata_uses_bounded_ascii_list_semantics
+PASS accept_encoding_304_merge_keeps_selection_and_profile_identity
+PASS accept_encoding_conditional_refresh_retains_the_bound_body
+PASS imported_or_redirected_snapshots_do_not_grant_conditions
+PASS robots_revalidation_renews_exact_rules_a...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="revocation" classname="revocation" time="0.323254" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_revocation_tests", "sha256": "ecc0347f8b17e44b0c4039eb156d108dad848a1816c4e095ea3aa0e75598ddc9", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS admin_authorization_and_strict_contract
+PASS every_token_for_subject_and_restart_remain_revoked
+PASS snapshots_evidence_sessions_and_new_work_denied_without_erasure
+PASS queued_paused_fixture_batch_map_crawl_work_is_stopped
+PASS fixture_late_completion_cannot_publish
+PASS known_inflight_read_is_settled_without_publication_or_retry
+PASS unknown_inflight_read_keeps_full_charge_across_restart
+PASS inflight_map_unknown_reservation_and_site_lock_survive_revoke
+PASS persistent_search_late_result_is_fenced_and_receipt_retained
+PASS synchronous_search_response_is_rechecked_after_worker_returns
+PASS synchronous_read_cannot_publish_after_revocation
+PASS backup_remains_quarantined_and_actor_recheck_is_durable
+12/12 tests, 146 assertions
+</system-out>
+	</testcase>
+	<testcase name="capacity_cycles" classname="capacity_cycles" time="8.54603" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_capacity_cycles_tests", "sha256": "32965764bb6d9141943ff8c438c27dea72a00685c28be70d25c15c040f42eecb", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+{"cycles":3,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":0,"real_http":false,"scenario":"frontier_512_capacity_refill","simulated_elapsed_ms":1816200003,"store_reopens":6,"submissions":1533,"wall_elapsed_ms":5882}
+PASS three_full_frontier_capacity_cycles_preserve_paused_keys_and_owner_boundaries
+{"cycles":12,"fake_worker_calls":220,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":111,"read_leases":109,"real_http":false,"scenario":"continuous_arrivals_96_opportunities_per_queue","simulated_elapsed_ms":608400001,"store_reopens":13,"submissions":198,"wall_elapsed_ms":2135}
+PASS continuous_arrivals_follow_durable_round_robin_across_twelve_reopens
+{"cycles":6,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="cache_freshness" classname="cache_freshness" time="3.74211" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_cache_freshness_tests", "sha256": "b0bccec8c3b6dd468b0a9be88dae26980911c647eade1bc734eef93c8173997c", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS age_date_delay_and_residence_shorten_lifetime
+PASS expires_and_explicit_zero_are_hard_ceilings
+PASS restrictive_and_malformed_fields_never_gain_default_freshness
+PASS vary_accept_encoding_is_the_only_supported_nonempty_selection
+PASS accept_encoding_does_not_override_other_cache_restrictions
+PASS accept_encoding_cache_reuse_keeps_owner_and_request_profile_fences
+PASS private_owner_cache_and_quoted_ages_remain_bounded
+PASS no_validator_page_uses_origin_max_age_and_never_implicit_stale_fallback
+PASS no_cache_and_zero_age_force_fresh_authorized_fetch
+PASS no_store_never_persists_new_body_and_fences_old_http_reuse
+PASS old_worker_metadata_requires_refresh_and_no_cache_only_network
+PASS restart_owner_and_changed_request_profile_do_not_share_cache
+PASS cache_only_rechecks_expiry_after_profile_rpc
+PASS cache_first_fetches_if...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="contracts" classname="contracts" time="0.186242" status="run">
+		<properties/>
+		<system-out>GUARD_EXEC {"target": "bzs_contract_tests", "sha256": "09c26017684dbcb62c8ac653ccbcaf075ca5aef1a1260ec9cdb91b0e9ba196ac", "attempt": 1, "mode_before": "0o755", "mode_after": "0o755"}
+PASS fixture 正常_model-config
+PASS fixture 正常_search-request
+PASS fixture 正常_source-manifest
+PASS fixture 无模型基础部署
+PASS fixture 角色继承默认profile
+PASS fixture 显式null禁用角色
+PASS fixture 默认角色并发覆盖生效
+PASS fixture 坏profile引用
+PASS fixture 错误嵌入能力
+PASS fixture 并发不能为零
+PASS fixture 隐藏付费工具被拒
+PASS fixture 坏备用模型
+PASS fixture 显式思考参数缺失
+PASS fixture file模型端点拒绝
+PASS fixture 负预算
+PASS fixture host不能配after
+PASS fixture eq不能配数组
+PASS fixture in必须配数组
+PASS fixture 非法日期
+PASS fixture 倒置时间范围
+PASS fixture 离线本地检索
+PASS fixture 离线不允许外部范围
+PASS fixture AST过深
+PASS fixture 字符串查询仍有效
+PASS fixture 查询体过大
+PASS fixtu...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+	<testcase name="http_cli" classname="http_cli" time="0.0888536" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>setUpClass (__main__.Integration) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.Integration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 92, in setUpClass
+    cls.server = RunningServer(Path(cls.tmp.name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 50, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service&lt;Protocol&gt;::open(implementation_type&amp;, const protocol_type&amp;, boost::system::error_code&amp;)']
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.027s
+
+FAILED (errors=1)
+</system-out>
+	</testcase>
+	<testcase name="http_revocation" classname="http_revocation" time="0.165174" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner) ... ERROR
+test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation) ... ERROR
+test_rows_closes_connection_after_query_exception (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_query_exception) ... ok
+test_rows_closes_connection_after_success (__main__.RowsConnectionLifecycle.test_rows_closes_connection_after_success) ... ok
+
+======================================================================
+ERROR: test_administrator_only_strict_contract_and_unrelated_owner (__main__.RevocationHTTP.test_administrator_only_strict_contract_and_unrelated_owner)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/http_revocation.py", line 22, in setUp
+    self.server = integration.RunningServer(self.root, no_worker=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 50, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service&lt;Protocol&gt;::open(implementation_type&amp;, const protocol_type&amp;, boost::system::error_code&amp;)']
+
+
+======================================================================
+ERROR: test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation (__main__.RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/http_revocation.py", line 22, in setUp
+    self.server = integration.RunningServer(self.root, no_worker=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 36, in __init__
+    self.start()
+  File "/workspace/scratch/e2371129386d/bzs861/tests/integration.py", line 50, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: open: Operation not permitted [system:1 at /usr/include/boost/asio/detail/reactive_socket_service.hpp:133:5 in function 'boost::system::error_code boost::asio::detail::reactive_socket_service&lt;Protocol&gt;::open(implementation_type&amp;, const protocol_type&amp;, boost::system::error_code&amp;)']
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.072s
+
+FAILED (errors=2)
+</system-out>
+	</testcase>
+	<testcase name="e2e_web" classname="e2e_web" time="0.986197" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>setUpClass (__main__.EndToEnd) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.EndToEnd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 136, in setUpClass
+    cls.stack.__init__(Path(cls.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.160s
+
+FAILED (errors=1)
+{"e2e_tests": 0, "failures": 0, "errors": 1, "seconds": 0.2}
+</system-out>
+	</testcase>
+	<testcase name="e2e_map" classname="e2e_map" time="0.937607" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>setUpClass (__main__.DiscoveryEndToEnd) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.DiscoveryEndToEnd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_map.py", line 77, in setUpClass
+    cls.stack.__init__(Path(cls.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_map.py", line 41, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakemap", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakemap.py", line 156, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakemap.py", line 148, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakemap.py", line 141, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.147s
+
+FAILED (errors=1)
+{"map_e2e_tests": 0, "failures": 0, "errors": 1, "seconds": 0.148}
+</system-out>
+	</testcase>
+	<testcase name="e2e_crawl" classname="e2e_crawl" time="1.06213" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>setUpClass (__main__.CrawlEndToEnd) ... ERROR
+
+======================================================================
+ERROR: setUpClass (__main__.CrawlEndToEnd)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 87, in setUpClass
+    cls.stack.__init__(Path(cls.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.164s
+
+FAILED (errors=1)
+{"crawl_e2e_tests": 0, "failures": 0, "errors": 1, "seconds": 0.166}
+</system-out>
+	</testcase>
+	<testcase name="e2e_crawl_recovery" classname="e2e_crawl_recovery" time="2.14455" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request (__main__.CrawlRecovery.test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request) ... ERROR
+test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact (__main__.CrawlRecovery.test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact) ... ERROR
+test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch (__main__.CrawlRecovery.test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch) ... ERROR
+test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage (__main__.CrawlRecovery.test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage) ... ERROR
+test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart) ... ERROR
+test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart) ... ERROR
+test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart) ... ERROR
+test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart (__main__.CrawlRecovery.test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart) ... ERROR
+
+======================================================================
+ERROR: test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request (__main__.CrawlRecovery.test_01_crash_before_worker_dispatch_preserves_unknown_grant_without_sending_late_request)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact (__main__.CrawlRecovery.test_02_crash_after_worker_response_never_publishes_or_repeats_the_lost_artifact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch (__main__.CrawlRecovery.test_03_deleting_the_pending_tail_during_recovery_blocks_its_first_dispatch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage (__main__.CrawlRecovery.test_04_lost_submit_ack_after_commit_reuses_job_snapshots_edges_and_usage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_05_links_only_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_05_links_only_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_06_rejected_review_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart (__main__.CrawlRecovery.test_07_expired_review_applies_to_stored_results_after_explicit_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart (__main__.CrawlRecovery.test_08_explicit_empty_registry_withdraws_previous_scopes_on_offline_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl_recovery.py", line 196, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.283s
+
+FAILED (errors=8)
+{"crawl_recovery_e2e_tests": 8, "failures": 0, "errors": 8, "seconds": 1.284, "database_mutation_by_fixture": false, "pause_or_resume_calls": 0}
+</system-out>
+	</testcase>
+	<testcase name="e2e_session_recovery" classname="e2e_session_recovery" time="1.81024" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_01_core_crash_before_worker_reserves_unknown_without_sending_source (__main__.SessionRecovery.test_01_core_crash_before_worker_reserves_unknown_without_sending_source) ... ERROR
+test_02_core_crash_after_worker_reply_never_resends_unknown_source (__main__.SessionRecovery.test_02_core_crash_after_worker_reply_never_resends_unknown_source) ... ERROR
+test_03_worker_crash_during_http_then_restart_runs_only_pending_tail (__main__.SessionRecovery.test_03_worker_crash_during_http_then_restart_runs_only_pending_tail) ... ERROR
+test_04_lost_start_ack_reuses_committed_session_after_core_crash (__main__.SessionRecovery.test_04_lost_start_ack_reuses_committed_session_after_core_crash) ... ERROR
+test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart (__main__.SessionRecovery.test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart) ... ERROR
+test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail) ... ERROR
+
+======================================================================
+ERROR: test_01_core_crash_before_worker_reserves_unknown_without_sending_source (__main__.SessionRecovery.test_01_core_crash_before_worker_reserves_unknown_without_sending_source)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_02_core_crash_after_worker_reply_never_resends_unknown_source (__main__.SessionRecovery.test_02_core_crash_after_worker_reply_never_resends_unknown_source)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_03_worker_crash_during_http_then_restart_runs_only_pending_tail (__main__.SessionRecovery.test_03_worker_crash_during_http_then_restart_runs_only_pending_tail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_04_lost_start_ack_reuses_committed_session_after_core_crash (__main__.SessionRecovery.test_04_lost_start_ack_reuses_committed_session_after_core_crash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart (__main__.SessionRecovery.test_05_cancel_fences_late_result_preserves_version_and_event_cursor_after_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_06_real_deadline_rejects_late_response_and_never_dispatches_tail (__main__.SessionRecovery.test_06_real_deadline_rejects_late_response_and_never_dispatches_tail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 188, in setUp
+    self.stack.__init__(Path(self.tmp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 64, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakeweb", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_session_recovery.py", line 125, in spawn
+    ready = super().spawn(name, command)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 199, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 191, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 8099)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakeweb.py", line 158, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.942s
+
+FAILED (errors=6)
+{"session_recovery_e2e_tests": 6, "failures": 0, "errors": 6, "seconds": 0.943, "database_mutation_by_fixture": false, "clock_injection": false, "real_source_http_counts": true, "physical_power_loss_coverage": false, "observations": []}
+</system-out>
+	</testcase>
+	<testcase name="e2e_revalidation" classname="e2e_revalidation" time="0.0895103" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant) ... ERROR
+test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery) ... ERROR
+test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart) ... ERROR
+test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content) ... ERROR
+test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation) ... ERROR
+test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator) ... ERROR
+
+======================================================================
+ERROR: test_batch_304_refunds_only_unused_body_grant (__main__.Revalidation.test_batch_304_refunds_only_unused_body_grant)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_crawl_revalidates_robots_and_complete_discovery (__main__.Revalidation.test_crawl_revalidates_robots_and_complete_discovery)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_direct_304_preserves_snapshot_across_core_restart (__main__.Revalidation.test_direct_304_preserves_snapshot_across_core_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_invalid_robots_304_never_dispatches_content (__main__.Revalidation.test_invalid_robots_304_never_dispatches_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_rejected_304_still_applies_new_noindex_observation (__main__.Revalidation.test_rejected_304_still_applies_new_noindex_observation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_same_origin_redirect_removes_the_old_resource_validator (__main__.Revalidation.test_same_origin_redirect_removes_the_old_resource_validator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 132, in setUp
+    self.fixture = Origin()
+                   ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revalidation.py", line 78, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.003s
+
+FAILED (errors=6)
+</system-out>
+	</testcase>
+	<testcase name="e2e_cache_freshness" classname="e2e_cache_freshness" time="0.0957062" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_304_no_store_cannot_leave_old_fresh_cache_usable (__main__.CacheFreshness.test_304_no_store_cannot_leave_old_fresh_cache_usable) ... ERROR
+test_failed_new_http_route_invalidates_the_old_direct_cache (__main__.CacheFreshness.test_failed_new_http_route_invalidates_the_old_direct_cache) ... ERROR
+test_failed_refresh_never_silently_serves_expired_body (__main__.CacheFreshness.test_failed_refresh_never_silently_serves_expired_body) ... ERROR
+test_http_chain_batch_304_accounts_for_each_request_and_redirect_body (__main__.CacheFreshness.test_http_chain_batch_304_accounts_for_each_request_and_redirect_body) ... ERROR
+test_http_chain_cache_is_owner_scoped_without_a_global_final_alias (__main__.CacheFreshness.test_http_chain_cache_is_owner_scoped_without_a_global_final_alias) ... ERROR
+test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator (__main__.CacheFreshness.test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator) ... ERROR
+test_no_cache_and_upstream_age_do_not_become_default_seven_days (__main__.CacheFreshness.test_no_cache_and_upstream_age_do_not_become_default_seven_days) ... ERROR
+test_no_store_batch_and_crawl_charge_requests_without_receipts (__main__.CacheFreshness.test_no_store_batch_and_crawl_charge_requests_without_receipts) ... ERROR
+test_no_store_denies_new_snapshot_and_invalidates_old_reuse (__main__.CacheFreshness.test_no_store_denies_new_snapshot_and_invalidates_old_reuse) ... ERROR
+test_no_validator_fresh_cache_survives_core_restart (__main__.CacheFreshness.test_no_validator_fresh_cache_survives_core_restart) ... ERROR
+
+======================================================================
+ERROR: test_304_no_store_cannot_leave_old_fresh_cache_usable (__main__.CacheFreshness.test_304_no_store_cannot_leave_old_fresh_cache_usable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_failed_new_http_route_invalidates_the_old_direct_cache (__main__.CacheFreshness.test_failed_new_http_route_invalidates_the_old_direct_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_failed_refresh_never_silently_serves_expired_body (__main__.CacheFreshness.test_failed_refresh_never_silently_serves_expired_body)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_http_chain_batch_304_accounts_for_each_request_and_redirect_body (__main__.CacheFreshness.test_http_chain_batch_304_accounts_for_each_request_and_redirect_body)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_http_chain_cache_is_owner_scoped_without_a_global_final_alias (__main__.CacheFreshness.test_http_chain_cache_is_owner_scoped_without_a_global_final_alias)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator (__main__.CacheFreshness.test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_no_cache_and_upstream_age_do_not_become_default_seven_days (__main__.CacheFreshness.test_no_cache_and_upstream_age_do_not_become_default_seven_days)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_no_store_batch_and_crawl_charge_requests_without_receipts (__main__.CacheFreshness.test_no_store_batch_and_crawl_charge_requests_without_receipts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_no_store_denies_new_snapshot_and_invalidates_old_reuse (__main__.CacheFreshness.test_no_store_denies_new_snapshot_and_invalidates_old_reuse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_no_validator_fresh_cache_survives_core_restart (__main__.CacheFreshness.test_no_validator_fresh_cache_survives_core_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 80, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_cache_freshness.py", line 66, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+FAILED (errors=10)
+</system-out>
+	</testcase>
+	<testcase name="e2e_cache_policy_review" classname="e2e_cache_policy_review" time="0.0932645" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_203_no_store_batch_cannot_persist (__main__.ReviewPolicy.test_203_no_store_batch_cannot_persist) ... ERROR
+test_203_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_203_no_store_crawl_cannot_persist) ... ERROR
+test_203_no_store_direct_cannot_persist (__main__.ReviewPolicy.test_203_no_store_direct_cannot_persist) ... ERROR
+test_empty_200_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_empty_200_no_store_crawl_cannot_persist) ... ERROR
+test_rejected_304_no_cache_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_no_cache_invalidates_previous_freshness) ... ERROR
+test_rejected_304_zero_age_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_zero_age_invalidates_previous_freshness) ... ERROR
+test_repeated_age_never_uses_only_last_zero (__main__.ReviewPolicy.test_repeated_age_never_uses_only_last_zero) ... ERROR
+test_repeated_date_never_becomes_fresh (__main__.ReviewPolicy.test_repeated_date_never_becomes_fresh) ... ERROR
+test_repeated_pragma_keeps_no_cache (__main__.ReviewPolicy.test_repeated_pragma_keeps_no_cache) ... ERROR
+test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh (__main__.ReviewPolicy.test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh) ... ERROR
+
+======================================================================
+ERROR: test_203_no_store_batch_cannot_persist (__main__.ReviewPolicy.test_203_no_store_batch_cannot_persist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_203_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_203_no_store_crawl_cannot_persist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_203_no_store_direct_cannot_persist (__main__.ReviewPolicy.test_203_no_store_direct_cannot_persist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_empty_200_no_store_crawl_cannot_persist (__main__.ReviewPolicy.test_empty_200_no_store_crawl_cannot_persist)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_rejected_304_no_cache_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_no_cache_invalidates_previous_freshness)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_rejected_304_zero_age_invalidates_previous_freshness (__main__.ReviewPolicy.test_rejected_304_zero_age_invalidates_previous_freshness)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_repeated_age_never_uses_only_last_zero (__main__.ReviewPolicy.test_repeated_age_never_uses_only_last_zero)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_repeated_date_never_becomes_fresh (__main__.ReviewPolicy.test_repeated_date_never_becomes_fresh)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_repeated_pragma_keeps_no_cache (__main__.ReviewPolicy.test_repeated_pragma_keeps_no_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+======================================================================
+ERROR: test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh (__main__.ReviewPolicy.test_truncated_200_keeps_nonpublishing_prefix_but_cannot_be_fresh)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 76, in setUp
+    self.origin = Origin()
+                  ^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/cache_review/probe_http_policy.py", line 62, in __init__
+    self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socketserver.py", line 453, in __init__
+    self.socket = socket.socket(self.address_family,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py", line 233, in __init__
+    _socket.socket.__init__(self, family, type, proto, fileno)
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+FAILED (errors=10)
+</system-out>
+	</testcase>
+	<testcase name="e2e_revocation" classname="e2e_revocation" time="0.599291" status="fail">
+		<failure message="Failed"/>
+		<properties/>
+		<system-out>test_batch_revocation_after_dispatch_preserves_known_charge_without_publication (__main__.RevocationEndToEnd.test_batch_revocation_after_dispatch_preserves_known_charge_without_publication) ... ERROR
+test_crawl_revocation_after_page_dispatch_stops_frontier_and_late_snapshot (__main__.RevocationEndToEnd.test_crawl_revocation_after_page_dispatch_stops_frontier_and_late_snapshot) ... ERROR
+test_direct_read_late_response_is_denied_after_real_worker_fetch (__main__.RevocationEndToEnd.test_direct_read_late_response_is_denied_after_real_worker_fetch) ... ERROR
+
+======================================================================
+ERROR: test_batch_revocation_after_dispatch_preserves_known_charge_without_publication (__main__.RevocationEndToEnd.test_batch_revocation_after_dispatch_preserves_known_charge_without_publication)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revocation.py", line 51, in setUp
+    self.stack.__init__(Path(self.temp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_crawl_revocation_after_page_dispatch_stops_frontier_and_late_snapshot (__main__.RevocationEndToEnd.test_crawl_revocation_after_page_dispatch_stops_frontier_and_late_snapshot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revocation.py", line 51, in setUp
+    self.stack.__init__(Path(self.temp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+======================================================================
+ERROR: test_direct_read_late_response_is_denied_after_real_worker_fetch (__main__.RevocationEndToEnd.test_direct_read_late_response_is_denied_after_real_worker_fetch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_revocation.py", line 51, in setUp
+    self.stack.__init__(Path(self.temp.name))
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_crawl.py", line 42, in __init__
+    self.web_port = self.spawn("fakeweb", [CONFIG.python, "-m", "tests.fakecrawl", "0"])["port"]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 92, in spawn
+    return ready_line(proc, log_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/tests/e2e_web.py", line 40, in ready_line
+    raise RuntimeError(f"process exited during startup; log:\n{log.read_text(errors='replace')}")
+RuntimeError: process exited during startup; log:
+Traceback (most recent call last):
+  File "&lt;frozen runpy&gt;", line 198, in _run_module_as_main
+  File "&lt;frozen runpy&gt;", line 88, in _run_code
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 211, in &lt;module&gt;
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 203, in main
+    runner, port = await start(int(sys.argv[1]) if len(sys.argv) &gt; 1 else 0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/e2371129386d/bzs861/python/tests/fakecrawl.py", line 197, in start
+    await site.start()
+  File "/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/web_runner.py", line 138, in start
+    self._server = await loop.create_server(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 1587, in create_server
+    raise OSError('could not bind on any address out of %r'
+OSError: could not bind on any address out of [('127.0.0.1', 0)]
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.480s
+
+FAILED (errors=3)
+</system-out>
+	</testcase>
+	<testcase name="python_worker" classname="python_worker" time="180.06" status="fail">
+		<failure message="Timeout"/>
+		<properties/>
+		<system-out>...........EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE [  6%]
+EEEEEEEEEEEEEE.......................................................... [ 12%]
+........................................................................ [ 18%]
+........................................................................ [ 24%]
+.............................................EEEEEEEFEEEEEEEEEE......... [ 30%]
+EEEEEEEEEEEEEEEEEEEEEE.................................................. [ 36%]
+..............EEEEE....EE......EEEEEEEEEEEEEEEEEEEEEEEEEE.EEEEEEEEE.EE.. [ 42%]
+.....................EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE [ 49%]
+EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE [ 55%]
+EEEEEE..................................EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE [ 61%]
+</system-out>
+	</testcase>
+</testsuite>

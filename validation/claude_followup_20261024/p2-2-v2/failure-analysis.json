@@ -1,0 +1,29 @@
+{
+  "stage_status": "failed; superseded only after a new complete stage passes",
+  "ctest_exit_code": 8,
+  "real_regression": {
+    "test": "python/tests/test_crawl_worker.py::test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes[/redirect]",
+    "reason": "A proof-carrying 200 changed the existing aggregate publication field to a final-only policy. Preserve the original test assertion and aggregate contract; distinguish final policy explicitly.",
+    "python_results": "1 failed, 1162 passed",
+    "change_required": true
+  },
+  "separate_environment_launch_failures": {
+    "tests": [
+      "core",
+      "crawl"
+    ],
+    "kind": "BAD_COMMAND; generated ELF execute bits returned to 0644 after recorded preparation",
+    "files": {
+      "build/bzs_tests": {
+        "sha256": "e2759b2010506e67235bc6881982b2fcf852a582835c21d51f8f4ca41f8c6d5c",
+        "observed_mode": "0o644"
+      },
+      "build/bzs_crawl_tests": {
+        "sha256": "4774ff80e9759582517744cc17b3cfef4568bdf4cdc1f57564cf91cc10365af2",
+        "observed_mode": "0o644"
+      }
+    },
+    "source_or_assertion_relaxation": false
+  },
+  "later_gates": "Standalone pytest and sanitizers were not run because CTest failed. New frozen inputs require a new full stage."
+}

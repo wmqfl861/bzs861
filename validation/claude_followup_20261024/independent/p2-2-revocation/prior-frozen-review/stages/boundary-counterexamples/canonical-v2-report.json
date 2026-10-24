@@ -1,0 +1,63 @@
+{
+  "role": "independent frozen P2-2-v2 producer/consumer byte-bound negative; no compilation/network",
+  "source": "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/canonical_proof_size_probe.py",
+  "source_sha256": "a2ca8380d5e3cf7ca915dabebb93e7a9375411c420a6aea7749ccdc5b97a47bf",
+  "worker_redirect_cache_sha256": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21",
+  "core_json_cpp_sha256": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+  "json_c_shared_library_sha256": "5cb4dfc866c13becb4d447440c4efbbd4114a469e348209f6f86d9741c12661f",
+  "argv": [
+    "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+    "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/canonical_proof_size_probe.py"
+  ],
+  "exit_code": 1,
+  "seconds": 0.049735069274902344,
+  "log_sha256": "414b00bc38a41a24c6b10ebae8479f64da19755f7c5a16cfa14f115bdedd0adf",
+  "result": {
+    "scope": "Worker helper vs actual json-c scalar encoding; no HTTP",
+    "json_c_library": "libjson-c.so.5",
+    "passed": 3,
+    "total": 5,
+    "cases": [
+      {
+        "final_uri_bytes": 100,
+        "consumer_canonical_bytes": 758,
+        "worker_encoded_size": 743,
+        "proof_emitted": true,
+        "expected_proof_emitted": true,
+        "passed": true
+      },
+      {
+        "final_uri_bytes": 3816,
+        "consumer_canonical_bytes": 8190,
+        "worker_encoded_size": 8175,
+        "proof_emitted": true,
+        "expected_proof_emitted": true,
+        "passed": true
+      },
+      {
+        "final_uri_bytes": 3817,
+        "consumer_canonical_bytes": 8192,
+        "worker_encoded_size": 8177,
+        "proof_emitted": true,
+        "expected_proof_emitted": true,
+        "passed": true
+      },
+      {
+        "final_uri_bytes": 3818,
+        "consumer_canonical_bytes": 8194,
+        "worker_encoded_size": 8179,
+        "proof_emitted": true,
+        "expected_proof_emitted": false,
+        "passed": false
+      },
+      {
+        "final_uri_bytes": 3824,
+        "consumer_canonical_bytes": 8206,
+        "worker_encoded_size": 8191,
+        "proof_emitted": true,
+        "expected_proof_emitted": false,
+        "passed": false
+      }
+    ]
+  }
+}

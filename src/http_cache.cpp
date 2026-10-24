@@ -1,6 +1,7 @@
 #include "bzs/http_cache.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
+#include "bzs/web.hpp"
 #include <algorithm>
 #include <array>
 #include <charconv>
@@ -229,13 +230,138 @@ Json http_freshness(const Json& input,std::int64_t now,std::int64_t max_age_s) {
   out.set("fresh",fresh);out.set("reason",fresh?"fresh":"expired");out.set("current_age_ms",current_age);out.set("freshness_lifetime_ms",lifetime);return out;
 }
 
-bool http_response_restricts_cache(const Json& response,std::int64_t now) {
+namespace {
+constexpr std::size_t redirect_hops=5,redirect_bytes=8192;
+bool redirect_status(std::int64_t status) { return status==301||status==302||status==303||status==307||status==308; }
+Json redirect_observations(const Json& response,const std::string& url) {
+  auto output=Json::array();if(!response.has("http_redirect_observations"))return output;
+  const auto records=response.at("http_redirect_observations");
+  protocol(!url.empty()&&records.is_array()&&records.size()<=20&&records.canonical().size()<=524288,"Invalid redirect cache observation bounds");
+  protocol(response.has("redirects")&&response.at("redirects").is_array()&&response.at("redirects").size()<=20&&
+           response.has("final_url")&&response.at("final_url").is_string(),"Redirect cache observations lack a response route");
+  std::vector<std::string> route={publication_url_identity(url)};
+  const auto redirects=response.at("redirects");
+  for(std::size_t i=0;i<redirects.size();++i) {
+    try { route.push_back(publication_url_identity(redirects.at(i).str())); }catch(const Error&) { break; }
+  }
+  const auto final=publication_url_identity(response.at("final_url").str());
+  std::size_t reached=route.size();for(std::size_t i=0;i<route.size();++i)if(route[i]==final)reached=i;
+  protocol(reached<route.size(),"Redirect cache observations do not reach the actual response");
+  const std::set<std::string> observed(route.begin(),route.begin()+static_cast<std::ptrdiff_t>(reached+1));
+  protocol(response.has("usage")&&response.at("usage").has("external_requests")&&
+           response.at("usage").at("external_requests").is_integer()&&
+           response.at("usage").at("external_requests").num()>=static_cast<std::int64_t>(records.size()),"Redirect cache observations exceed actual HTTP usage");
+  for(std::size_t i=0;i<records.size();++i) {
+    const auto record=records.at(i);record.allowed({"url","http_status","http_freshness"});
+    protocol(record.size()==3&&record.at("http_status").is_integer()&&redirect_status(record.at("http_status").num()),"Invalid redirect cache observation status");
+    const auto target=field(record,"url",4096);
+    protocol(observed.contains(publication_url_identity(target)),"Redirect cache observation is outside the actual response prefix");
+    output.push(validate_http_freshness(record.at("http_freshness"),target));
+  }
+  return output;
+}
+}
+Json validate_http_redirect_chain(const Json& record,const std::string& url,const std::string& final_url,const Json& redirects) {
+  record.allowed({"version","request_url","final_url","hops"});
+  protocol(record.size()==4&&record.canonical().size()<=redirect_bytes&&
+           field(record,"version",64)=="bzs-http-redirect-chain-1"&&field(record,"request_url",4096)==url&&
+           field(record,"final_url",4096)==final_url,"Invalid HTTP redirect proof identity or encoded bounds");
+  const auto hops=record.at("hops");
+  protocol(hops.is_array()&&hops.size()>=1&&hops.size()<=redirect_hops&&redirects.is_array()&&redirects.size()==hops.size(),"Incomplete HTTP redirect proof");
+  std::set<std::string> visited={url};std::string prior=url,profile;std::int64_t bytes=0;
+  check_public_url(url);
+  for(std::size_t i=0;i<hops.size();++i) {
+    const auto hop=hops.at(i);hop.allowed({"url","target_url","http_status","content_bytes","http_freshness"});
+    protocol(hop.size()==5&&field(hop,"url",4096)==prior&&hop.at("http_status").is_integer()&&redirect_status(hop.at("http_status").num()),"Broken HTTP redirect proof prefix");
+    const auto target=field(hop,"target_url",4096);check_public_url(target);
+    protocol(redirects.at(i).is_string()&&redirects.at(i).str()==target&&visited.insert(target).second,"HTTP redirect proof is cyclic or differs from the actual route");
+    protocol(hop.at("content_bytes").is_integer()&&hop.at("content_bytes").num()>=0&&hop.at("content_bytes").num()<=8*1024*1024,"Invalid redirect body accounting");
+    bytes+=hop.at("content_bytes").num();protocol(bytes<=8*1024*1024,"Redirect bodies exceed the read grant bound");
+    const auto freshness=validate_http_freshness(hop.at("http_freshness"),prior);
+    if(profile.empty())profile=freshness.at("request_profile").str();
+    protocol(freshness.at("request_profile").str()==profile,"v1 redirect proof changed its selected request profile");
+    prior=target;
+  }
+  protocol(prior==final_url,"HTTP redirect proof does not reach the final representation");
+  return Json::parse(record.canonical());
+}
+Json validate_http_redirect_receipt(const Json& response,const std::string& url,bool not_modified) {
+  protocol(response.has("http_redirect_chain")&&response.has("http_freshness")&&response.has("usage"),"Redirect proof lacks its final receipt");
+  const auto proof=validate_http_redirect_chain(response.at("http_redirect_chain"),url,response.at("final_url").str(),response.at("redirects"));
+  const auto hops=proof.at("hops"),observed=redirect_observations(response,url);
+  protocol(observed.size()==hops.size(),"Redirect proof omits an observed cache policy");
+  std::int64_t bytes=0;
+  for(std::size_t i=0;i<hops.size();++i) {
+    const auto hop=hops.at(i),receipt=response.at("http_redirect_observations").at(i);
+    protocol(receipt.at("url").str()==hop.at("url").str()&&receipt.at("http_status").num()==hop.at("http_status").num()&&
+             observed.at(i).canonical()==hop.at("http_freshness").canonical(),"Redirect proof differs from its HTTP observations");
+    bytes+=hop.at("content_bytes").num();
+  }
+  const auto policy=validate_http_freshness(response.at("http_freshness"),proof.at("final_url").str());
+  protocol(policy.at("request_profile").str()==hops.at(std::size_t{0}).at("http_freshness").at("request_profile").str(),"Redirect final profile differs from its prefix");
+  const auto usage=response.at("usage");
+  protocol(usage.has("external_requests")&&usage.at("external_requests").is_integer()&&usage.at("external_requests").num()==static_cast<std::int64_t>(hops.size()+1)&&
+           usage.has("content_bytes")&&usage.at("content_bytes").is_integer()&&usage.at("content_bytes").num()>=bytes&&usage.at("content_bytes").num()<=8*1024*1024&&
+           (!not_modified||usage.at("content_bytes").num()==bytes),"Redirect receipt does not account for its exact HTTP prefix and final response");
+  return proof;
+}
+bool http_redirect_chain_cacheable(const Json& record) {
+  const auto hops=record.at("hops");
+  for(std::size_t i=0;i<hops.size();++i) {
+    const auto policy=hops.at(i).at("http_freshness");const auto cc=controls(policy.at("cache_control").str());
+    // v1 never invents a default TTL for a redirect response.
+    if((!cc.max_age&&policy.at("expires").str().empty())||
+       !http_freshness(policy,policy.at("received_at_ms").num(),365LL*86400).at("fresh").flag())return false;
+  }
+  return true;
+}
+Json http_redirect_conditional(const Json& record,const Json& conditional) {
+  protocol(conditional.at("url").str()==record.at("final_url").str(),"Redirect condition does not name its final URI");
+  auto result=Json::object(),route=Json::array();const auto hops=record.at("hops");
+  for(std::size_t i=0;i<hops.size();++i)route.push(hops.at(i).at("target_url"));
+  result.set("version","bzs-http-redirect-conditional-1");result.set("request_url",record.at("request_url"));
+  result.set("redirects",route);result.set("conditional",conditional);
+  protocol(result.canonical().size()<=redirect_bytes,"Redirect condition exceeds its encoded bound");return result;
+}
+Json http_read_freshness(const Json& meta,const std::string& url,std::int64_t now,std::int64_t max_age_s) {
+  auto result=http_freshness(meta.has("http_freshness")?meta.at("http_freshness"):Json(),now,max_age_s);
+  const bool direct=meta.has("final_url")&&meta.at("final_url").str()==url&&meta.has("redirects")&&meta.at("redirects").is_array()&&meta.at("redirects").size()==0;
+  if(direct)return result;
+  if(!meta.has("http_redirect_chain")||!meta.has("http_freshness")) {
+    result.set("fresh",false);result.set("reason","redirect_chain_not_cached");return result;
+  }
+  const auto proof=validate_http_redirect_chain(meta.at("http_redirect_chain"),url,meta.at("final_url").str(),meta.at("redirects"));
+  const auto hops=proof.at("hops");
+  protocol(hops.at(std::size_t{0}).at("http_freshness").at("request_profile").str()==meta.at("http_freshness").at("request_profile").str(),"Final redirect profile differs from its prefix");
+  bool fresh=result.at("fresh").flag(),store=result.at("store_allowed").flag();
+  std::int64_t remaining=result.at("freshness_lifetime_ms").num()-result.at("current_age_ms").num();
+  for(std::size_t i=0;i<hops.size();++i) {
+    const auto status=http_freshness(hops.at(i).at("http_freshness"),now,max_age_s);
+    remaining=std::min(remaining,status.at("freshness_lifetime_ms").num()-status.at("current_age_ms").num());
+    store=store&&status.at("store_allowed").flag();
+    if(!status.at("fresh").flag()&&fresh)result.set("reason","redirect_"+status.at("reason").str());
+    fresh=fresh&&status.at("fresh").flag();
+  }
+  if(!http_redirect_chain_cacheable(proof)) {fresh=false;result.set("reason","redirect_explicit_freshness_required");}
+  result.set("fresh",fresh);result.set("store_allowed",store);result.set("redirect_hops",static_cast<std::int64_t>(hops.size()));
+  // Express the intersected lifetime against the final response's age anchor.
+  result.set("freshness_lifetime_ms",std::max<std::int64_t>(0,result.at("current_age_ms").num()+remaining));
+  return result;
+}
+bool http_redirect_storage_allowed(const Json& response,const std::string& url,std::int64_t now) {
+  const auto records=redirect_observations(response,url);
+  for(std::size_t i=0;i<records.size();++i)if(!http_freshness(records.at(i),now,7*86400).at("store_allowed").flag())return false;
+  return true;
+}
+bool http_response_restricts_cache(const Json& response,std::int64_t now,const std::string& url) {
+  const auto observed=redirect_observations(response,url);
+  for(std::size_t i=0;i<observed.size();++i) {
+    const auto policy=observed.at(i);const auto cc=controls(policy.at("cache_control").str());
+    if((!cc.max_age&&policy.at("expires").str().empty())||!http_freshness(policy,now,7*86400).at("fresh").flag())return true;
+  }
   if(!response.has("http_freshness"))return false;
   protocol(response.has("final_url")&&response.at("final_url").is_string(),"HTTP cache response lacks identity");
   const auto record=validate_http_freshness(response.at("http_freshness"),response.at("final_url").str());
-  // A failed extraction or unsupported 304 must not preserve an older, more
-  // permissive freshness decision. This ceiling is independent of the caller's
-  // max_age_s, which may deliberately request a conditional refresh at age zero.
   return !http_freshness(record,now,7*86400).at("fresh").flag();
 }
 

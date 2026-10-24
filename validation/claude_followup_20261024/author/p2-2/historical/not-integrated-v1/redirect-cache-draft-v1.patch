@@ -1,0 +1,1461 @@
+diff --git a/docs/HTTP_FRESHNESS.md b/docs/HTTP_FRESHNESS.md
+--- a/docs/HTTP_FRESHNESS.md
++++ b/docs/HTTP_FRESHNESS.md
+@@ -23,3 +23,7 @@
+ 结果的 `cache` 对象解释 fresh、store_allowed、reason、current_age_ms 和 freshness_lifetime_ms。完整协议与304的权限/发布屏障继续见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。本次不实现通用 Vary 选型、跨用户缓存、瞬时 no-store 流、stale-if-error 或外部代理缓存。
+ 
+ 所有HTTP状态在解析之前搬运一次原始缓存字段，完整203/空正文crawl和失败304都不能遗漏限制。重复Pragma按列表保留；重复Date/Age等单值字段保持可检测的无效表示，不取最后一个覆盖前项。接收时间只采样一次，正文提取期间的驻留时间不会归零；本地profile RPC结束后再次核验TTL。已有的截断正文证据可在显式非发布规则下保留，但不会保存可复用的新鲜度或条件验证器。
++
++## 完整 HTTP 跳转链补充
++
++显式读取现在可以依据 `bzs-http-redirect-chain-1` 复用完整 HTTP 跳转链：每跳有明确有效期限、精确 URI 与当前 profile，整体期限取交集。没有证明的旧 payload 和 soft redirect 仍保守。刷新仍从原始 URI 重新走实际跳转，仅在精确 final URI 安装其自身验证器；中途 no-store、删除、发布限制与全部实际用量不会因缓存省略。私有协议、边界及回归位置见 [HTTP_REDIRECT_CACHE](HTTP_REDIRECT_CACHE.md)。
+diff --git a/docs/HTTP_REDIRECT_CACHE.md b/docs/HTTP_REDIRECT_CACHE.md
+new file mode 100644
+--- /dev/null
++++ b/docs/HTTP_REDIRECT_CACHE.md
+@@ -0,0 +1,69 @@
++# 显式读取的 HTTP 跳转缓存协议 v1
++
++本协议只扩展 `fetch.extract` 对显式 `web.read` / `web.read_many` 的表示复用。它不增加公开 API 参数，不修改来源或站点审批，不为自动 map/crawl 赋予跳转捷径，也不改变旧快照的证据身份。
++
++## 支持范围
++
++完整的 HTTP 301、302、303、307、308 链可以提供版本化的缓存证明。每跳必须有明确、有效的正期限（max-age / s-maxage / Expires），整条链使用当前同一 read 请求 profile；最多五跳，证明的规范 JSON 最多 8192 字节。没有明确期限的跳转、HTML/JavaScript soft redirect、循环、重复 Location、无法完整绑定的响应以及旧 Worker 未提供证明的 payload 仍走完整读取，不获得跳转缓存资格。
++
++最终响应仍受既有 HTTP freshness 和 validator 协议限制。没有 ETag 也可在全部链条新鲜时命中缓存；没有安全 validator 时刷新执行完整读取。no-cache / 零期限不能得到新鲜命中。private 只属于同一 owner，不跨 owner 复用；最终 private 表示是否提供条件请求仍遵守原有 validator 子集。
++
++`cache_first` 与 `cache_only` 只有在每跳和最终响应同时新鲜、当前 profile 相符、快照仍是当前版本、全部 URL 的删除水位有效时才能返回缓存。期限按各段剩余有效时间的交集计算，调用方 max_age_s 也约束每段。本地 `fetch.profile` RPC 后再次检查期限，最终缓存读取在 Store 锁内重查快照、metadata hash、期限与 URL 删除水位。未命中时仍使用原有 `E_NOT_CACHED` / `E_CACHE_STALE` 行为。
++
++缓存结果的 `current_age_ms` 仍以最终响应的年龄为锚；`freshness_lifetime_ms` 收紧到整条链的有效期交集，`redirect_hops` 说明参与约束的跳数。逻辑文档仍使用用户给出的原始 URL；本协议不建立全局 final-URL → snapshot 查找，也不让另一个 owner 或 URL 自动取得该正文。
++
++## Worker → Core 证明
++
++可选 `http_redirect_chain` 对象必须恰好包含：
++
++| 字段 | 内容 |
++|---|---|
++| version | `bzs-http-redirect-chain-1` |
++| request_url | 实际初始 GET 的精确 URI，与 Core 原始请求相同 |
++| final_url | 实际最终表示的精确 URI |
++| hops | 1–5 个按真实派发顺序排列的跳转响应 |
++
++每个 hop 恰好包含 `url`、`target_url`、整数 `http_status`、整数 `content_bytes` 和完整的 `http_freshness`。`url` 必须等于前一跳的 target；末跳 target 必须等于最终 URI；所有 target 必须依次等于外层 `redirects`。所有 URI 都继续经过现有公网策略校验。`content_bytes` 是本应用实际消费的跳转正文，单链合计不超过 8 MiB，不冒充 socket 或 TLS 字节数。
++
++每跳缓存字段在响应头到达时采样；response_delay_ms 只涵盖该跳从派发到响应头的时间，后续等候/正文消费通过驻留时间计入年龄。最终响应保持既有 freshness 采样路径。证明的 profile 必须与每跳及最终响应一致。
++
++Worker 另行返回有界的 `http_redirect_observations`（最多 20 条，规范 JSON 最多 512 KiB），每条恰好包含实际 `url`、3xx `http_status`、`http_freshness`。即使后续准入、预算、网络或提取失败，这些已经收到的限制仍保留。Core 验证它们属于本次实际响应前缀且不超过已知请求用量。完整证明必须与这些观察逐条一致。
++
++证明超过 8 KiB 或无法覆盖整个请求时，Worker 不授予复用资格，仍报告限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账，无新增表或 schema 迁移。
++
++任何实际中间响应的 no-store、非法 Cache-Control 或 Worker 标记 invalid 的原始字段，都会阻止本次原始 URL 读取产生新的持久正文，返回 `E_CACHE_POLICY`。这是本项目当前没有瞬时正文通道时的保守规则；并不声称 HTTP 标准禁止对另一个独立授权资源单独缓存。此前合法取得的正文仍可作为历史证据读取，其 HTTP 复用资格则按旧 snapshot ID + metadata hash 失效。失败的迟到回执不能删除后来成功刷新建立的新缓存身份。
++
++## Core → Worker 刷新授权
++
++原始 URL 的 `refresh` 始终从原始 URI 开始实际 GET，不从本地证明直接跳到 final。Core 可以发送新的、与旧 `conditional` 互斥的 `redirect_conditional` 私有对象：
++
++| 字段 | 内容 |
++|---|---|
++| version | `bzs-http-redirect-conditional-1` |
++| request_url | 原始精确 URI |
++| redirects | 原证明中的完整 target URI 列表，1–5 项、无循环 |
++| conditional | 现有六字段 `bzs-http-revalidation-1`，其中 url 必须是 final URI |
++
++整个授权最多 8192 字节，未知字段、重复身份、错误类型、非 HTTP URI、用户信息、片段以及同时发送两种条件授权都在 attempt 留存或网络派发前拒绝。它不是公开 HTTP/MCP/CLI 参数。
++
++Worker 重新走每个实际 HTTP 跳转，保留原有 SSRF、连接约束、跨来源头清理、单一 deadline 和请求/正文预算。只有实际前缀与授权完全相同，且最终实际请求 profile 与 validator 的 profile 相符，才在精确 final URI 的这次 GET 上安装其自己的 If-None-Match / If-Modified-Since。条件头不会从前一跳继承；若 conditioned final 又返回跳转，下一 URI 同样不继承这些验证器。
++
++配置 profile 改变、前缀改道或目标变化时，同一个原定读取取得完整表示，不进行额外重试。如果没有实际发送绑定条件却收到 304，继续拒绝。soft redirect 不延续这种授权。新的实际 Location 或失败的新跳转会使旧的、与该请求绑定的 alias 证明失效；仍由 snapshot ID + metadata hash 防止迟到失效覆盖更新后的表示。
++
++## 304 提交与计费
++
++跳转后的 304 必须同时带有完整新 HTTP 证明和 `redirect_revalidation` 回执。回执恰好包含 version、request_url、final_url、binding_id；version 为 `bzs-http-redirect-conditional-1`，binding 必须等于派发授权。Core 再次校验原始 URI、精确前缀、最终 URI、profile、验证器及已保存正文身份。
++
++带 N 个跳转的 304 必须报告 **N+1 次实际 HTTP 请求**；最终 304 没有正文，但此前实际消费的 redirect body 字节仍计费，必须等于各 hop 的 content_bytes 之和。直接、无跳转的旧 304 继续要求一次请求与零正文。未知用量、失联、取消、任务租约及最后订阅的行为仍按现有保守账目处理，不据此获得免费请求或重试。
++
++304 使用原快照的正文、原页面发布序号和原站点代际；在 Store 事务中校验当前 snapshot、旧 metadata hash、cache hash、owner、删除代数及当前全链发布限制。响应中新看到的 restrictive publication 只能收紧权限。quota 失败或并发刷新导致的 stale base 不部分提交，也不自动补发完整 GET。完整 200 才能以新的实际内容和原有授权规则建立新表示。
++
++自动 map/crawl 仍使用既有单跳 `map.fetch`、站点清单、robots 准入和派发边界复核；它们不接受新的 redirect_conditional 授权。显式读取缓存也不会为自动抓取生成 robots 许可。
++
++## 回归位置
++
++`tests/cache_freshness.cpp` 增量覆盖原 URL 命中、重启、交集期限、profile 改变、旧无证明 payload、no-store、真实链 304 账目、目标删除与 profile-RPC 间竞态、原正文发布限制、metadata 竞争、配额回滚、协议边界和元数据退款。
++
++`python/tests/test_http_redirect_cache.py` 使用本地 HTTP fixture 覆盖实际逐跳回执、final-only 条件、改道后重汇 final、conditioned final 再跳转、profile 改变、无绑定 304、soft redirect、SSRF 拒绝、预算边界、重复 Location 以及严格私有授权。
++
++旧的直接 304、redirect 条件头隔离、自动 robots 准入、单一 deadline 与全套 native/Python/ASan 门禁仍必须通过；本文不是验收通过声明。
+diff --git a/docs/HTTP_REVALIDATION.md b/docs/HTTP_REVALIDATION.md
+--- a/docs/HTTP_REVALIDATION.md
++++ b/docs/HTTP_REVALIDATION.md
+@@ -64,7 +64,7 @@
+ 
+ 304 的其他缺失 HTTP 字段仍返回空串。持久化时，核心只用非空字段更新旧 `http_cache`，不能通过省略字段删除原来的缓存限制。完整 200 则建立一份新的元数据；如果新 200 不再具有可用元数据，应清理旧的验证器绑定。
+ 
+-以下情况返回 `E_HTTP_REVALIDATION`，不自动执行完整 GET：没有派发条件、profile 变化后收到 304、HTTP/soft redirect 后收到 304、验证器冲突、不支持的 Vary、非法缓存字段、截断或出现正文。即使结果失败，已经收到的 noindex/nosnippet 等限制仍向核心报告。
++以下情况返回 `E_HTTP_REVALIDATION`，不自动执行完整 GET：没有派发条件、profile 变化后收到 304、没有完整 HTTP 链授权的 HTTP redirect 后收到 304、任何 soft redirect 后收到 304、验证器冲突、不支持的 Vary、非法缓存字段、截断或出现正文。即使结果失败，已经收到的 noindex/nosnippet 等限制仍向核心报告。
+ 
+ 条件头在**每次 HTTP 跳转后移除，包括同源跳转**，soft redirect 后也不继承。自动页面/robots 请求仍是单个 HTTP hop，下一跳由核心另行派发并重新核验站点、robots 与预算。
+ 
+@@ -116,3 +116,7 @@
+ ## 0.1.10 独立新鲜度补充
+ 
+ 条件验证器协议仍保守，页面缓存限制改由独立`http_freshness`记录约束。没有ETag不代表允许默认缓存；no-store、no-cache、Age/Date/Expires等具体行为见[HTTP_FRESHNESS](HTTP_FRESHNESS.md)。该补充不改变304的原正文权限、删除、发布和表示身份屏障。
++
++## 完整 HTTP 跳转链授权
++
++显式 `fetch.extract` 新增与直接 `conditional` 互斥的 `bzs-http-redirect-conditional-1` 包装；只有已保存完整逐跳证明、重新从原 URI 走完相同实际前缀，才能在精确 final URI 使用其自身 validator。它不是把条件头从前一跳继承到下一跳。链 304 按 N+1 个实际请求和已消费的 redirect body 字节计费，继续使用同一正文绑定与旧发布序号。旧直接协议、无证明 redirect、soft redirect、自动 map/crawl 单跳准入均保持原边界，详见 [HTTP_REDIRECT_CACHE](HTTP_REDIRECT_CACHE.md)。
+diff --git a/include/bzs/http_cache.hpp b/include/bzs/http_cache.hpp
+--- a/include/bzs/http_cache.hpp
++++ b/include/bzs/http_cache.hpp
+@@ -12,5 +12,13 @@
+   Json validate_http_freshness(const Json& record,const std::string& url);
+   Json merge_http_freshness(const Json& base,const Json& update);
+   Json http_freshness(const Json& record,std::int64_t now,std::int64_t max_age_s);
+-  bool http_response_restricts_cache(const Json& response,std::int64_t now);
++  // Optional v1 proof for a complete, bounded HTTP-only redirect chain.
++  Json validate_http_redirect_chain(const Json& record,const std::string& url,
++                                    const std::string& final_url,const Json& redirects);
++  Json validate_http_redirect_receipt(const Json& response,const std::string& url,bool not_modified=false);
++  bool http_redirect_chain_cacheable(const Json& record);
++  Json http_redirect_conditional(const Json& record,const Json& conditional);
++  Json http_read_freshness(const Json& meta,const std::string& url,std::int64_t now,std::int64_t max_age_s);
++  bool http_redirect_storage_allowed(const Json& response,const std::string& url,std::int64_t now);
++  bool http_response_restricts_cache(const Json& response,std::int64_t now,const std::string& url="");
+ }
+diff --git a/include/bzs/store.hpp b/include/bzs/store.hpp
+--- a/include/bzs/store.hpp
++++ b/include/bzs/store.hpp
+@@ -191,7 +191,7 @@
+     std::optional<RevalidationBase> revalidation_base(const std::string& owner,const std::string& url);
+     Json snapshot(const std::string& owner, const std::string& snapshot_id);
+     // A UTF-8-safe window of the canonical text (read_range).
+-    Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes);
++    Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes, const Json& http_guard=Json());
+     Json erase(const std::string& owner, const std::string& document_id);
+     Json search(const std::string& owner, const Query& query, std::int64_t max_candidates=2000, std::int64_t limit=200);
+     Json page(const std::string& owner, const std::string& session_id, const std::string& cursor, std::int64_t page_size=20);
+diff --git a/include/bzs/web.hpp b/include/bzs/web.hpp
+--- a/include/bzs/web.hpp
++++ b/include/bzs/web.hpp
+@@ -90,7 +90,7 @@
+     Json decode_redirect_observations(const std::string& url,const Json& response);
+     ReadArtifact decode_read(const std::string& url, const Json& response,bool allow_empty=false);
+     ReadArtifact decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base);
+-    Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at);
++    Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at,const Json& http_guard=Json());
+     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
+     Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false,
+                 std::optional<std::chrono::steady_clock::time_point> internal_deadline=std::nullopt);
+diff --git a/python/bzs/worker/fetch.py b/python/bzs/worker/fetch.py
+--- a/python/bzs/worker/fetch.py
++++ b/python/bzs/worker/fetch.py
+@@ -14,7 +14,9 @@
+ 
+ from .netguard import GuardedResolver, NetPolicy, PolicyError
+ from .publication import restriction_observation
+-from .revalidation import request_profile
++from .revalidation import conditional_headers, request_profile
++from .freshness import raw_response_freshness
++from .redirect_cache import make_chain
+ 
+ DEFAULT_UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+               "Chrome/130.0.0.0 Safari/537.36")
+@@ -85,6 +87,10 @@
+     content_bytes: int = 0
+     error_code: str = ""
+     request_profile: str = ""
++    http_redirect_chain: dict | None = None
++    http_redirect_observations: list[dict] = field(default_factory=list)
++    response_content_bytes: int = 0
++    conditioned_binding_id: str = ""
+ 
+     @property
+     def content_type(self) -> str:
+@@ -171,7 +177,9 @@
+                     params: dict | None = None, data: dict | None = None, headers: dict | None = None,
+                     max_bytes: int | None = None, accept: str | None = None,
+                     budget: FetchBudget | None = None, follow_redirects: bool = True,
+-                    before_dispatch: Callable[[URL], None] | None = None) -> FetchResult:
++                    before_dispatch: Callable[[URL], None] | None = None,
++                    collect_redirect_cache: bool = False,
++                    redirect_conditional: dict | None = None) -> FetchResult:
+         assert self._session is not None, "Fetcher.start() not called"
+         started = time.monotonic()
+         deadline = started + timeout_s
+@@ -179,6 +187,14 @@
+         result = FetchResult(status="network_error", url=str(url))
+         current = url
+         req_headers = self.request_headers(accept=accept, headers=headers)
++        # The original URI is always dispatched. A route only selects final-URI
++        # validators after every preceding live HTTP response matched its prefix.
++        expected_route = ([redirect_conditional["request_url"], *redirect_conditional["redirects"]]
++                          if redirect_conditional is not None else [])
++        actual_route: list[str] = []
++        route_live = bool(expected_route)
++        cache_hops: list[dict] = []
++        cache_chain_eligible = method == "GET" and params is None and data is None
+         try:
+             for hop in range((self.max_redirects if follow_redirects else 0) + 1):
+                 if budget:
+@@ -220,10 +236,25 @@
+                         budget.dispatch()
+                     result.external_requests += 1
+                     result.request_profile = request_profile(req_headers)
++                    result.conditioned_binding_id = ""
++                    actual_route.append(str(target))
++                    route_live = (route_live and len(actual_route) <= len(expected_route) and
++                                  actual_route[-1] == expected_route[len(actual_route) - 1])
++                    dispatch_headers = dict(req_headers)
++                    if route_live and len(actual_route) == len(expected_route):
++                        condition = redirect_conditional["conditional"]
++                        if (method == "GET" and condition["url"] == str(target) and
++                                condition["request_profile"] == result.request_profile):
++                            dispatch_headers.update(conditional_headers(condition))
++                            result.conditioned_binding_id = condition["binding_id"]
++                    sent_at = time.monotonic()
+                     async with self._session.request(method, target, params=params if hop == 0 else None,
+-                                                     data=data if method == "POST" else None, headers=req_headers,
++                                                     data=data if method == "POST" else None, headers=dispatch_headers,
+                                                      allow_redirects=False, timeout=timeout) as resp:
+                         result.http_status = resp.status
++                        result.response_content_bytes = 0
++                        received_at_ms = int(time.time() * 1000)
++                        response_delay_ms = int((time.monotonic() - sent_at) * 1000)
+                         # Bind policy seen before a body timeout to the actual
+                         # HTTP response, including later redirect-chain hops.
+                         result.final_url = str(resp.url)
+@@ -242,7 +273,19 @@
+                             if fields:
+                                 separator = "," if name in ("Cache-Control", "Pragma", "Vary") else "\n"
+                                 result.headers[name.lower()] = separator.join(fields)
++                        if collect_redirect_cache:
++                            hop_freshness = raw_response_freshness(
++                                result.headers, str(resp.url), result.request_profile,
++                                received_at_ms, response_delay_ms)
+                         redirect = resp.status in (301, 302, 303, 307, 308) and "location" in result.headers
++                        if redirect and collect_redirect_cache:
++                            # Following the existing response is separate from
++                            # proving an unambiguous reusable Location selection.
++                            if len(resp.headers.getall("Location", ())) != 1:
++                                cache_chain_eligible = False
++                            result.http_redirect_observations.append({
++                                "url": str(resp.url), "http_status": resp.status,
++                                "http_freshness": dict(hop_freshness)})
+                         if redirect and follow_redirects:
+                             observation = restriction_observation(result.headers)
+                             if observation is not None:
+@@ -284,12 +327,14 @@
+                                     break
+                                 budget.content_bytes += len(chunk)
+                                 result.content_bytes += len(chunk)
++                                result.response_content_bytes += len(chunk)
+                                 size += len(chunk)
+                                 if not redirect:
+                                     chunks.append(chunk)
+                         elif not redirect:
+                             async for chunk in resp.content.iter_chunked(65536):
+                                 result.content_bytes += len(chunk)
++                                result.response_content_bytes += len(chunk)
+                                 size += len(chunk)
+                                 if size > limit:
+                                     chunks.append(chunk[: max(0, limit - (size - len(chunk)))])
+@@ -299,6 +344,11 @@
+                         if redirect:
+                             nxt = self.policy.prepare_url(urljoin(str(resp.url), result.headers["location"]))
+                             result.redirects.append(str(nxt))
++                            if collect_redirect_cache:
++                                cache_hops.append({"url": str(resp.url), "target_url": str(nxt),
++                                                   "http_status": resp.status,
++                                                   "content_bytes": result.response_content_bytes,
++                                                   "http_freshness": dict(hop_freshness)})
+                             if not follow_redirects:
+                                 result.final_url = str(resp.url)
+                                 result.status = "redirect"
+@@ -318,6 +368,8 @@
+                             continue
+                         result.body = b"".join(chunks)
+                         result.final_url = str(resp.url)
++                        if collect_redirect_cache and cache_chain_eligible and not result.truncated:
++                            result.http_redirect_chain = make_chain(str(url), result.final_url, cache_hops, result.request_profile)
+                         result.status = ("not_modified" if resp.status == 304 else
+                                          "ok" if resp.status < 400 else "http_error")
+                         return result
+diff --git a/python/bzs/worker/freshness.py b/python/bzs/worker/freshness.py
+--- a/python/bzs/worker/freshness.py
++++ b/python/bzs/worker/freshness.py
+@@ -13,20 +13,26 @@
+ 
+ 
+ def response_freshness(response) -> dict:
++    return raw_response_freshness(response.headers, response.final_url, response.request_profile,
++                                  int(time.time() * 1000), response.elapsed_ms)
++
++
++def raw_response_freshness(headers: dict, url: str, profile: str,
++                           received_at_ms: int, response_delay_ms: int) -> dict:
+     # Body completeness is separate from header validity. The core may retain
+     # an explicitly non-publishing bounded prefix, but never reuse it as fresh.
+     invalid = False
+     values: dict[str, str] = {}
+     for key, header in _FIELDS.items():
+-        value = response.headers.get(header, "")
++        value = headers.get(header, "")
+         if (not isinstance(value, str) or len(value) > 4096 or not value.isascii() or
+                 any(ord(char) < 32 or ord(char) == 127 for char in value) or
+-                header in response.headers and not value):
++                header in headers and not value):
+             invalid = True
+             value = ""
+         values[key] = value
+-    return {"version": VERSION, "url": response.final_url,
+-            "request_profile": response.request_profile, **values,
+-            "received_at_ms": int(time.time() * 1000),
+-            "response_delay_ms": max(0, min(response.elapsed_ms, 3600000)),
++    return {"version": VERSION, "url": url,
++            "request_profile": profile, **values,
++            "received_at_ms": received_at_ms,
++            "response_delay_ms": max(0, min(response_delay_ms, 3600000)),
+             "invalid": invalid}
+diff --git a/python/bzs/worker/redirect_cache.py b/python/bzs/worker/redirect_cache.py
+new file mode 100644
+--- /dev/null
++++ b/python/bzs/worker/redirect_cache.py
+@@ -0,0 +1,73 @@
++"""Bounded private HTTP redirect cache receipts and exact-URI conditions.
++
++This module does not decide cache freshness, ownership or crawl admission. A
++condition may only be selected after the original GET has traversed the exact
++recorded HTTP prefix. It never provides a shortcut to the final URL.
++"""
++from __future__ import annotations
++
++import json
++from typing import Any
++from urllib.parse import urlsplit
++
++from .revalidation import validate_conditional
++
++CHAIN_VERSION = "bzs-http-redirect-chain-1"
++CONDITIONAL_VERSION = "bzs-http-redirect-conditional-1"
++MAX_HOPS = 5
++MAX_CHAIN_BYTES = 8192
++MAX_OBSERVATIONS = 20
++MAX_OBSERVATION_BYTES = 524288
++
++
++def encoded_size(value: Any) -> int:
++    return len(json.dumps(value, ensure_ascii=False, sort_keys=True,
++                          separators=(",", ":")).encode("utf-8"))
++
++
++def _uri(value: Any) -> bool:
++    if (not isinstance(value, str) or not value.isascii() or not 1 <= len(value) <= 4096 or
++            any(ord(char) <= 32 or ord(char) == 127 for char in value)):
++        return False
++    try:
++        parsed = urlsplit(value)
++        return (parsed.scheme in ("http", "https") and bool(parsed.hostname) and
++                parsed.username is None and parsed.password is None and not parsed.fragment)
++    except ValueError:
++        return False
++
++
++def validate_redirect_conditional(value: Any, request_url: str) -> dict:
++    """Validate before attempt retention; NetPolicy still checks every dispatch."""
++    if (not isinstance(value, dict) or
++            set(value) != {"version", "request_url", "redirects", "conditional"} or
++            value["version"] != CONDITIONAL_VERSION or not _uri(value["request_url"]) or
++            value["request_url"] != request_url or encoded_size(value) > MAX_CHAIN_BYTES):
++        raise ValueError("invalid redirect conditional identity or bounds")
++    route = value["redirects"]
++    if (not isinstance(route, list) or not 1 <= len(route) <= MAX_HOPS or
++            any(not _uri(url) for url in route) or
++            len(set([request_url, *route])) != len(route) + 1):
++        raise ValueError("invalid redirect conditional route")
++    conditional = validate_conditional(value["conditional"])
++    if conditional["url"] != route[-1]:
++        raise ValueError("redirect conditional must identify the exact final URI")
++    return {"version": CONDITIONAL_VERSION, "request_url": request_url,
++            "redirects": list(route), "conditional": conditional}
++
++
++def make_chain(request_url: str, final_url: str, hops: list[dict], profile: str) -> dict | None:
++    """A missing/oversized receipt grants no redirect cache reuse.
++
++    Policy observations are transported separately even when this receipt does
++    not fit. Omitting a reuse grant must not discard a no-store observation.
++    """
++    if not 1 <= len(hops) <= MAX_HOPS or any(hop["http_freshness"]["request_profile"] != profile for hop in hops):
++        return None
++    urls = [request_url, *(hop["target_url"] for hop in hops)]
++    if (any(not _uri(url) for url in urls) or len(set(urls)) != len(urls) or
++            urls[-1] != final_url or any(hop["url"] != urls[i] for i, hop in enumerate(hops))):
++        return None
++    result = {"version": CHAIN_VERSION, "request_url": request_url,
++              "final_url": final_url, "hops": hops}
++    return result if encoded_size(result) <= MAX_CHAIN_BYTES else None
+diff --git a/python/bzs/worker/server.py b/python/bzs/worker/server.py
+--- a/python/bzs/worker/server.py
++++ b/python/bzs/worker/server.py
+@@ -28,6 +28,9 @@
+                           publication_rules, restriction_observation)
+ from .revalidation import (VERSION as REVALIDATION_VERSION, ConditionalMismatch, conditional_headers,
+                            request_profile, response_cache, validate_conditional)
++from .redirect_cache import (CONDITIONAL_VERSION as REDIRECT_CONDITIONAL_VERSION,
++                             MAX_OBSERVATIONS, MAX_OBSERVATION_BYTES, encoded_size,
++                             validate_redirect_conditional)
+ from .robots import (CRAWLER_USER_AGENT, MAX_ROBOTS_BYTES, POLICY_VERSION, PRODUCT_TOKEN, require_record,
+                      response_record, revalidated_record, rule_decision, validate_revalidation_base)
+ from .sites import SiteRegistry, canonical_map_url
+@@ -103,6 +106,16 @@
+         if not isinstance(params, dict):
+             raise ValueError("fetch.extract parameters must be an object")
+         conditional = None
++        redirect_conditional = None
++        if "conditional" in params and "redirect_conditional" in params:
++            raise ValueError("direct and redirect conditions are mutually exclusive")
++        if "redirect_conditional" in params:
++            if set(params) - {"url", "timeout_ms", "attempt_id", "max_requests", "max_content_bytes", "redirect_conditional"}:
++                raise ValueError("unknown redirect conditional fetch.extract parameters")
++            redirect_conditional = validate_redirect_conditional(params["redirect_conditional"], params.get("url"))
++            timeout = params.get("timeout_ms", 20000)
++            if type(timeout) is not int or not 1 <= timeout <= 60000:
++                raise ValueError("invalid redirect conditional timeout")
+         if "conditional" in params:
+             if set(params) - {"url", "timeout_ms", "attempt_id", "max_requests", "max_content_bytes", "conditional"}:
+                 raise ValueError("unknown conditional fetch.extract parameters")
+@@ -136,7 +149,7 @@
+             budget = FetchBudget(requests, byte_limit)
+             self._read_attempts[attempt_id] = budget
+         try:
+-            out = await self._fetch_extract(params, budget, conditional)
++            out = await self._fetch_extract(params, budget, conditional, redirect_conditional)
+             if out.get("http_status") == 304:
+                 # A bodyless result cannot provide new snippet text. Current
+                 # known-site ceilings can still restrict the old snapshot.
+@@ -573,7 +586,8 @@
+         page["links"] = [item["url"] for item in parsed["candidates"]][:512]
+         return {"page": page, "discovery": parsed}
+ 
+-    async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None) -> dict:
++    async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None,
++                             redirect_conditional: dict | None = None) -> dict:
+         url = str(params.get("url", ""))
+         timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
+         loop = asyncio.get_running_loop()
+@@ -592,7 +606,26 @@
+             if conditional["request_profile"] != request_profile(headers):
+                 conditional = None
+             headers.update(conditional_headers(conditional))
+-        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers, **({"budget": budget} if budget else {}))
++        if redirect_conditional is not None:
++            # URI normalization must not silently retarget a retained condition.
++            try:
++                initial = self.policy.prepare_url(url)
++            except PolicyError as exc:
++                return {"status": "blocked_by_policy", "error_code": "E_NETWORK_POLICY", "error": str(exc),
++                        "http_status": None, "final_url": url, "redirects": [],
++                        "usage": {"external_requests": 0, "content_bytes": 0}}
++            if str(initial) != redirect_conditional["request_url"]:
++                return {"status": "error", "error_code": "E_CONDITIONAL_MISMATCH",
++                        "error": "redirect conditional initial URI differs from actual GET",
++                        "http_status": None, "final_url": url, "redirects": [],
++                        "usage": {"external_requests": 0, "content_bytes": 0}}
++            if redirect_conditional["conditional"]["request_profile"] != request_profile(headers):
++                # Configuration changes turn this same authorized attempt into a
++                # full GET; they never trigger a second request or reuse a body.
++                redirect_conditional = None
++        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers,
++                                       collect_redirect_cache=True, redirect_conditional=redirect_conditional,
++                                       **({"budget": budget} if budget else {}))
+         used_requests, used_bytes = res.external_requests, res.content_bytes
+         follows = 0
+         while True:
+@@ -600,6 +633,14 @@
+                     "usage": {"external_requests": used_requests, "content_bytes": used_bytes}}
+             if res.http_status is not None:
+                 base["http_freshness"] = response_freshness(res)
++            if res.http_redirect_observations:
++                if (len(res.http_redirect_observations) > MAX_OBSERVATIONS or
++                        encoded_size(res.http_redirect_observations) > MAX_OBSERVATION_BYTES):
++                    return {**base, "status": "http_error", "error_code": "E_HTTP_REVALIDATION",
++                            "error": "redirect cache observation bound exceeded"}
++                base["http_redirect_observations"] = res.http_redirect_observations
++            if not follows and res.http_redirect_chain is not None:
++                base["http_redirect_chain"] = res.http_redirect_chain
+             if res.redirect_publication_observations:
+                 base["redirect_publication_observations"] = res.redirect_publication_observations
+             if res.http_status is not None:
+@@ -610,12 +651,28 @@
+                     base["publication_observation"] = incomplete_publication(publication_rules(res.headers))
+             if res.http_status == 304:
+                 try:
+-                    if (conditional is None or res.status != "not_modified" or res.redirects or follows or
+-                            res.truncated or res.body or res.content_bytes):
++                    selected = conditional
++                    routed = redirect_conditional is not None
++                    if routed:
++                        selected = redirect_conditional["conditional"]
++                        if (follows or res.http_redirect_chain is None or
++                                res.redirects != redirect_conditional["redirects"] or
++                                res.conditioned_binding_id != selected["binding_id"] or
++                                res.final_url != selected["url"] or res.response_content_bytes):
++                            raise ValueError("redirect 304 lacks an exact final-URI condition and complete HTTP prefix")
++                    elif res.redirects or follows or res.content_bytes:
++                        raise ValueError("direct 304 cannot follow a redirect or consume a body")
++                    if selected is None or res.status != "not_modified" or res.truncated or res.body:
+                         raise ValueError("304 response has no matching complete representation grant")
+                     cache = response_cache(res.headers, url=res.final_url,
+-                                           profile=res.request_profile, conditional=conditional)
+-                    return {**base, "status": "not_modified", "binding_id": conditional["binding_id"], "http_cache": cache}
++                                           profile=res.request_profile, conditional=selected)
++                    result = {**base, "status": "not_modified", "binding_id": selected["binding_id"], "http_cache": cache}
++                    if routed:
++                        result["redirect_revalidation"] = {"version": REDIRECT_CONDITIONAL_VERSION,
++                                                           "request_url": redirect_conditional["request_url"],
++                                                           "final_url": selected["url"],
++                                                           "binding_id": selected["binding_id"]}
++                    return result
+                 except (ValueError, ConditionalMismatch) as exc:
+                     return {**base, "status": "http_error", "error_code": "E_HTTP_REVALIDATION", "error": str(exc)}
+             if res.status != "ok":
+@@ -659,12 +716,17 @@
+                     if remaining <= 0:
+                         return {**base, "status": "timeout", "error": "request timed out",
+                                 "redirect_publication_observations": observed}
+-                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, **({"budget": budget} if budget else {}))
++                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, collect_redirect_cache=True,
++                                                   **({"budget": budget} if budget else {}))
+                     conditional = None
++                    redirect_conditional = None
+                     used_requests += nxt.external_requests
+                     used_bytes += nxt.content_bytes
+                     nxt.redirects = res.redirects + [target] + nxt.redirects
+                     nxt.redirect_publication_observations = observed + nxt.redirect_publication_observations
++                    nxt.http_redirect_observations = res.http_redirect_observations + nxt.http_redirect_observations
++                    # A complete HTTP proof never spans an HTML/JavaScript redirect.
++                    nxt.http_redirect_chain = None
+                     if not nxt.final_url:
+                         # No headers arrived from the next attempt. The last
+                         # actual response may be an intermediate soft redirect,
+diff --git a/python/tests/test_http_redirect_cache.py b/python/tests/test_http_redirect_cache.py
+new file mode 100644
+--- /dev/null
++++ b/python/tests/test_http_redirect_cache.py
+@@ -0,0 +1,240 @@
++"""P2-2: actual local HTTP proves each hop; a route never skips the first URI."""
++import copy
++import json
++import secrets
++
++import pytest
++from aiohttp import web
++from aiohttp.test_utils import TestServer
++from multidict import CIMultiDict
++
++from bzs.worker.netguard import NetPolicy
++from bzs.worker.redirect_cache import CONDITIONAL_VERSION, MAX_CHAIN_BYTES, validate_redirect_conditional
++from bzs.worker.server import Worker
++
++
++BODY = b"An explicit local text representation for redirect caching. " * 30
++
++
++@pytest.fixture
++async def redirect_worker(tmp_path):
++    calls = []
++    state = {"hops": 1, "prefix_control": "max-age=10", "final_control": "max-age=60",
++             "forced_304": False, "target": None, "duplicate_location": False, "soft": False, "final_redirect": False}
++
++    async def handle(request):
++        calls.append({"path": request.path, "headers": {key.lower(): value for key, value in request.headers.items()}})
++        if request.path in ("/start", "/middle"):
++            target = state["target"] or ("/middle" if request.path == "/start" and state["hops"] == 2 else "/page")
++            if state["soft"] and request.path == "/start":
++                target = "/soft"
++            headers = CIMultiDict({"Location": target, "Cache-Control": state["prefix_control"]})
++            if state["duplicate_location"]:
++                headers.add("Location", "/page")
++            return web.Response(status=301, body=b"jump", headers=headers)
++        if request.path == "/soft":
++            return web.Response(text='<html><head><meta http-equiv="refresh" content="0; url=/page"></head><body>Jump</body></html>',
++                                content_type="text/html")
++        if request.path == "/page" and state["final_redirect"]:
++            return web.Response(status=302, body=b"next", headers={"Location": "/other", "Cache-Control": "max-age=10"})
++        headers = {"ETag": '"redirect-v1"', "Cache-Control": state["final_control"], "Content-Type": "text/plain"}
++        modified = not state["forced_304"] and request.headers.get("If-None-Match") != headers["ETag"]
++        return web.Response(status=200 if modified else 304, body=BODY if modified else b"", headers=headers)
++
++    app = web.Application()
++    app.router.add_route("*", "/{tail:.*}", handle)
++    async with TestServer(app) as server:
++        sources = tmp_path / "sources.json"
++        sources.write_text('{"version":1,"sources":[]}', encoding="utf-8")
++        worker = Worker(str(sources), NetPolicy(["127.0.0.1/32"], test_mode=True))
++        await worker.start()
++        try:
++            yield worker, server, calls, state
++        finally:
++            await worker.close()
++
++
++def params(server, *, bounded=False, **changes):
++    value = {"url": str(server.make_url("/start")), "timeout_ms": 2000}
++    if bounded:
++        value.update(attempt_id=secrets.token_hex(24), max_requests=4, max_content_bytes=65536)
++    value.update(changes)
++    return value
++
++
++def route(first):
++    cache, proof = first["http_cache"], first["http_redirect_chain"]
++    conditional = {key: cache[key] for key in ("version", "url", "etag", "last_modified", "request_profile")}
++    conditional["binding_id"] = "b" * 64
++    return {"version": CONDITIONAL_VERSION, "request_url": proof["request_url"],
++            "redirects": [hop["target_url"] for hop in proof["hops"]], "conditional": conditional}
++
++
++@pytest.mark.parametrize("hops", [1, 2])
++async def test_complete_http_chain_reports_each_actual_cache_policy(redirect_worker, hops):
++    worker, server, calls, state = redirect_worker
++    state["hops"] = hops
++    result = await worker.fetch_extract(params(server, bounded=True))
++    assert result["status"] == "ok" and result["text"]
++    proof = result["http_redirect_chain"]
++    assert proof["version"] == "bzs-http-redirect-chain-1"
++    assert proof["request_url"] == str(server.make_url("/start")) and proof["final_url"] == str(server.make_url("/page"))
++    assert len(proof["hops"]) == len(result["http_redirect_observations"]) == hops
++    assert len(calls) == result["usage"]["external_requests"] == hops + 1
++    assert result["usage"]["content_bytes"] == len(BODY) + 4 * hops
++    previous = proof["request_url"]
++    for hop, observed in zip(proof["hops"], result["http_redirect_observations"]):
++        assert hop["url"] == previous and hop["http_status"] == 301 and hop["content_bytes"] == 4
++        assert observed["http_freshness"] == hop["http_freshness"]
++        assert hop["http_freshness"]["url"] == hop["url"]
++        assert hop["http_freshness"]["request_profile"] == result["http_freshness"]["request_profile"]
++        assert hop["http_freshness"]["received_at_ms"] <= result["http_freshness"]["received_at_ms"]
++        previous = hop["target_url"]
++    assert previous == result["final_url"]
++
++
++@pytest.mark.parametrize("hops", [1, 2])
++@pytest.mark.parametrize("bounded", [False, True])
++async def test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix(redirect_worker, hops, bounded):
++    worker, server, calls, state = redirect_worker
++    state["hops"] = hops
++    first = await worker.fetch_extract(params(server, bounded=bounded))
++    calls.clear()
++    result = await worker.fetch_extract(params(server, bounded=bounded, redirect_conditional=route(first)))
++    assert result["status"] == "not_modified" and result["http_status"] == 304
++    assert result["binding_id"] == "b" * 64 and result["redirect_revalidation"]["version"] == CONDITIONAL_VERSION
++    assert len(calls) == result["usage"]["external_requests"] == hops + 1
++    assert result["usage"]["content_bytes"] == (4 * hops if bounded else 0)
++    assert calls[0]["path"] == "/start" and calls[-1]["path"] == "/page"
++    assert all("if-none-match" not in item["headers"] and "if-modified-since" not in item["headers"] for item in calls[:-1])
++    assert calls[-1]["headers"]["if-none-match"] == '"redirect-v1"'
++    assert not {"html", "text", "page", "discovery", "publication"}.intersection(result)
++
++
++async def test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    first = await worker.fetch_extract(params(server))
++    state["hops"] = 2
++    calls.clear()
++    result = await worker.fetch_extract(params(server, redirect_conditional=route(first)))
++    assert result["status"] == "ok" and result["http_status"] == 200
++    assert len(calls) == result["usage"]["external_requests"] == 3
++    assert all("if-none-match" not in item["headers"] for item in calls)
++    assert "redirect_revalidation" not in result
++
++
++async def test_new_redirect_from_conditioned_final_never_forwards_its_validator(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    first = await worker.fetch_extract(params(server))
++    state["final_redirect"] = True
++    calls.clear()
++    result = await worker.fetch_extract(params(server, redirect_conditional=route(first)))
++    assert result["status"] == "ok" and result["final_url"] == str(server.make_url("/other"))
++    assert [item["path"] for item in calls] == ["/start", "/page", "/other"]
++    assert "if-none-match" not in calls[0]["headers"]
++    assert calls[1]["headers"]["if-none-match"] == '"redirect-v1"'
++    assert "if-none-match" not in calls[2]["headers"] and "if-modified-since" not in calls[2]["headers"]
++    assert len(result["http_redirect_chain"]["hops"]) == 2
++
++
++async def test_changed_read_profile_disables_old_conditions_without_retry(redirect_worker):
++    worker, server, calls, _ = redirect_worker
++    first = await worker.fetch_extract(params(server))
++    worker.fetcher.accept_language = "en-US"
++    calls.clear()
++    result = await worker.fetch_extract(params(server, redirect_conditional=route(first)))
++    assert result["status"] == "ok" and len(calls) == 2
++    assert all("if-none-match" not in item["headers"] for item in calls)
++    assert result["http_freshness"]["request_profile"] != first["http_freshness"]["request_profile"]
++
++
++async def test_304_after_changed_prefix_is_rejected_without_implicit_full_get(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    first = await worker.fetch_extract(params(server))
++    state.update(hops=2, forced_304=True)
++    calls.clear()
++    result = await worker.fetch_extract(params(server, redirect_conditional=route(first)))
++    assert result["status"] == "http_error" and result["error_code"] == "E_HTTP_REVALIDATION"
++    assert len(calls) == result["usage"]["external_requests"] == 3
++    assert all("if-none-match" not in item["headers"] for item in calls)
++
++
++async def test_soft_redirects_never_create_http_chain_proof(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    state["soft"] = True
++    result = await worker.fetch_extract(params(server))
++    assert result["status"] == "ok" and len(calls) == 3
++    assert "http_redirect_chain" not in result
++    assert len(result["http_redirect_observations"]) == 1
++
++
++async def test_no_store_prefix_survives_a_later_ssrf_refusal(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    state.update(prefix_control="no-store", target="http://127.0.0.2/private")
++    result = await worker.fetch_extract(params(server, bounded=True))
++    assert result["status"] == "blocked_by_policy" and len(calls) == 1
++    assert result["usage"]["external_requests"] == 1
++    assert result["http_redirect_observations"][0]["http_freshness"]["cache_control"] == "no-store"
++    assert "http_redirect_chain" not in result
++
++
++async def test_request_grant_stops_before_final_without_resetting_for_hops(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    state["hops"] = 2
++    result = await worker.fetch_extract(params(server, bounded=True, max_requests=2))
++    assert result["status"] == "budget_exhausted" and result["error_code"] == "E_REQUEST_BUDGET"
++    assert [item["path"] for item in calls] == ["/start", "/middle"]
++    assert result["usage"] == {"external_requests": 2, "content_bytes": 8}
++    assert "http_redirect_chain" not in result
++
++
++async def test_body_grant_stops_inside_redirect_without_dispatching_final(redirect_worker):
++    worker, server, calls, _ = redirect_worker
++    result = await worker.fetch_extract(params(server, bounded=True, max_content_bytes=2))
++    assert result["status"] == "budget_exhausted" and len(calls) == 1
++    assert result["usage"] == {"external_requests": 1, "content_bytes": 2}
++    assert len(result["http_redirect_observations"]) == 1 and "http_redirect_chain" not in result
++
++
++async def test_ambiguous_location_can_never_become_reusable_proof(redirect_worker):
++    worker, server, calls, state = redirect_worker
++    state["duplicate_location"] = True
++    result = await worker.fetch_extract(params(server))
++    assert result["status"] == "ok" and len(calls) == 2
++    assert "http_redirect_chain" not in result and result["http_redirect_observations"]
++
++
++@pytest.mark.parametrize("kind", ["unknown", "cycle", "too_many", "wrong_final", "oversized", "both"])
++async def test_redirect_condition_is_strict_before_attempt_retention_or_dispatch(redirect_worker, kind):
++    worker, server, calls, _ = redirect_worker
++    first = await worker.fetch_extract(params(server))
++    grant = route(first)
++    if kind == "unknown":
++        grant["extra"] = True
++    elif kind == "cycle":
++        grant["redirects"] = [grant["request_url"], grant["conditional"]["url"]]
++    elif kind == "too_many":
++        grant["redirects"] = [str(server.make_url("/hop-" + str(i))) for i in range(6)]
++        grant["conditional"]["url"] = grant["redirects"][-1]
++    elif kind == "wrong_final":
++        grant["conditional"]["url"] = str(server.make_url("/other"))
++    elif kind == "oversized":
++        grant["redirects"] = [str(server.make_url("/" + str(i) + "x" * 3000)) for i in range(3)]
++        grant["conditional"]["url"] = grant["redirects"][-1]
++        assert len(json.dumps(grant)) > MAX_CHAIN_BYTES
++    value = params(server, bounded=True, redirect_conditional=grant)
++    if kind == "both":
++        value["conditional"] = copy.deepcopy(grant["conditional"])
++    calls.clear()
++    with pytest.raises(ValueError):
++        await worker.fetch_extract(value)
++    assert not calls and value["attempt_id"] not in worker._retired_attempts
++
++
++def test_redirect_grant_never_accepts_non_http_or_private_credentials_as_identity():
++    grant = {"version": CONDITIONAL_VERSION, "request_url": "https://public.example/start",
++             "redirects": ["https://user:secret@public.example/page"],
++             "conditional": {"version": "bzs-http-revalidation-1", "url": "https://user:secret@public.example/page",
++                             "etag": '"v1"', "last_modified": "", "request_profile": "a" * 64, "binding_id": "b" * 64}}
++    with pytest.raises(ValueError):
++        validate_redirect_conditional(grant, grant["request_url"])
+diff --git a/src/http_cache.cpp b/src/http_cache.cpp
+--- a/src/http_cache.cpp
++++ b/src/http_cache.cpp
+@@ -1,6 +1,7 @@
+ #include "bzs/http_cache.hpp"
+ #include "bzs/error.hpp"
+ #include "bzs/util.hpp"
++#include "bzs/web.hpp"
+ #include <algorithm>
+ #include <array>
+ #include <charconv>
+@@ -209,13 +210,138 @@
+   out.set("fresh",fresh);out.set("reason",fresh?"fresh":"expired");out.set("current_age_ms",current_age);out.set("freshness_lifetime_ms",lifetime);return out;
+ }
+ 
+-bool http_response_restricts_cache(const Json& response,std::int64_t now) {
++namespace {
++constexpr std::size_t redirect_hops=5,redirect_bytes=8192;
++bool redirect_status(std::int64_t status) { return status==301||status==302||status==303||status==307||status==308; }
++Json redirect_observations(const Json& response,const std::string& url) {
++  auto output=Json::array();if(!response.has("http_redirect_observations"))return output;
++  const auto records=response.at("http_redirect_observations");
++  protocol(!url.empty()&&records.is_array()&&records.size()<=20&&records.canonical().size()<=524288,"Invalid redirect cache observation bounds");
++  protocol(response.has("redirects")&&response.at("redirects").is_array()&&response.at("redirects").size()<=20&&
++           response.has("final_url")&&response.at("final_url").is_string(),"Redirect cache observations lack a response route");
++  std::vector<std::string> route={publication_url_identity(url)};
++  const auto redirects=response.at("redirects");
++  for(std::size_t i=0;i<redirects.size();++i) {
++    try { route.push_back(publication_url_identity(redirects.at(i).str())); }catch(const Error&) { break; }
++  }
++  const auto final=publication_url_identity(response.at("final_url").str());
++  std::size_t reached=route.size();for(std::size_t i=0;i<route.size();++i)if(route[i]==final)reached=i;
++  protocol(reached<route.size(),"Redirect cache observations do not reach the actual response");
++  const std::set<std::string> observed(route.begin(),route.begin()+static_cast<std::ptrdiff_t>(reached+1));
++  protocol(response.has("usage")&&response.at("usage").has("external_requests")&&
++           response.at("usage").at("external_requests").is_integer()&&
++           response.at("usage").at("external_requests").num()>=static_cast<std::int64_t>(records.size()),"Redirect cache observations exceed actual HTTP usage");
++  for(std::size_t i=0;i<records.size();++i) {
++    const auto record=records.at(i);record.allowed({"url","http_status","http_freshness"});
++    protocol(record.size()==3&&record.at("http_status").is_integer()&&redirect_status(record.at("http_status").num()),"Invalid redirect cache observation status");
++    const auto target=field(record,"url",4096);
++    protocol(observed.contains(publication_url_identity(target)),"Redirect cache observation is outside the actual response prefix");
++    output.push(validate_http_freshness(record.at("http_freshness"),target));
++  }
++  return output;
++}
++}
++Json validate_http_redirect_chain(const Json& record,const std::string& url,const std::string& final_url,const Json& redirects) {
++  record.allowed({"version","request_url","final_url","hops"});
++  protocol(record.size()==4&&record.canonical().size()<=redirect_bytes&&
++           field(record,"version",64)=="bzs-http-redirect-chain-1"&&field(record,"request_url",4096)==url&&
++           field(record,"final_url",4096)==final_url,"Invalid HTTP redirect proof identity or encoded bounds");
++  const auto hops=record.at("hops");
++  protocol(hops.is_array()&&hops.size()>=1&&hops.size()<=redirect_hops&&redirects.is_array()&&redirects.size()==hops.size(),"Incomplete HTTP redirect proof");
++  std::set<std::string> visited={url};std::string prior=url,profile;std::int64_t bytes=0;
++  check_public_url(url);
++  for(std::size_t i=0;i<hops.size();++i) {
++    const auto hop=hops.at(i);hop.allowed({"url","target_url","http_status","content_bytes","http_freshness"});
++    protocol(hop.size()==5&&field(hop,"url",4096)==prior&&hop.at("http_status").is_integer()&&redirect_status(hop.at("http_status").num()),"Broken HTTP redirect proof prefix");
++    const auto target=field(hop,"target_url",4096);check_public_url(target);
++    protocol(redirects.at(i).is_string()&&redirects.at(i).str()==target&&visited.insert(target).second,"HTTP redirect proof is cyclic or differs from the actual route");
++    protocol(hop.at("content_bytes").is_integer()&&hop.at("content_bytes").num()>=0&&hop.at("content_bytes").num()<=8*1024*1024,"Invalid redirect body accounting");
++    bytes+=hop.at("content_bytes").num();protocol(bytes<=8*1024*1024,"Redirect bodies exceed the read grant bound");
++    const auto freshness=validate_http_freshness(hop.at("http_freshness"),prior);
++    if(profile.empty())profile=freshness.at("request_profile").str();
++    protocol(freshness.at("request_profile").str()==profile,"v1 redirect proof changed its selected request profile");
++    prior=target;
++  }
++  protocol(prior==final_url,"HTTP redirect proof does not reach the final representation");
++  return Json::parse(record.canonical());
++}
++Json validate_http_redirect_receipt(const Json& response,const std::string& url,bool not_modified) {
++  protocol(response.has("http_redirect_chain")&&response.has("http_freshness")&&response.has("usage"),"Redirect proof lacks its final receipt");
++  const auto proof=validate_http_redirect_chain(response.at("http_redirect_chain"),url,response.at("final_url").str(),response.at("redirects"));
++  const auto hops=proof.at("hops"),observed=redirect_observations(response,url);
++  protocol(observed.size()==hops.size(),"Redirect proof omits an observed cache policy");
++  std::int64_t bytes=0;
++  for(std::size_t i=0;i<hops.size();++i) {
++    const auto hop=hops.at(i),receipt=response.at("http_redirect_observations").at(i);
++    protocol(receipt.at("url").str()==hop.at("url").str()&&receipt.at("http_status").num()==hop.at("http_status").num()&&
++             observed.at(i).canonical()==hop.at("http_freshness").canonical(),"Redirect proof differs from its HTTP observations");
++    bytes+=hop.at("content_bytes").num();
++  }
++  const auto policy=validate_http_freshness(response.at("http_freshness"),proof.at("final_url").str());
++  protocol(policy.at("request_profile").str()==hops.at(std::size_t{0}).at("http_freshness").at("request_profile").str(),"Redirect final profile differs from its prefix");
++  const auto usage=response.at("usage");
++  protocol(usage.has("external_requests")&&usage.at("external_requests").is_integer()&&usage.at("external_requests").num()==static_cast<std::int64_t>(hops.size()+1)&&
++           usage.has("content_bytes")&&usage.at("content_bytes").is_integer()&&usage.at("content_bytes").num()>=bytes&&usage.at("content_bytes").num()<=8*1024*1024&&
++           (!not_modified||usage.at("content_bytes").num()==bytes),"Redirect receipt does not account for its exact HTTP prefix and final response");
++  return proof;
++}
++bool http_redirect_chain_cacheable(const Json& record) {
++  const auto hops=record.at("hops");
++  for(std::size_t i=0;i<hops.size();++i) {
++    const auto policy=hops.at(i).at("http_freshness");const auto cc=controls(policy.at("cache_control").str());
++    // v1 never invents a default TTL for a redirect response.
++    if((!cc.max_age&&policy.at("expires").str().empty())||
++       !http_freshness(policy,policy.at("received_at_ms").num(),365LL*86400).at("fresh").flag())return false;
++  }
++  return true;
++}
++Json http_redirect_conditional(const Json& record,const Json& conditional) {
++  protocol(conditional.at("url").str()==record.at("final_url").str(),"Redirect condition does not name its final URI");
++  auto result=Json::object(),route=Json::array();const auto hops=record.at("hops");
++  for(std::size_t i=0;i<hops.size();++i)route.push(hops.at(i).at("target_url"));
++  result.set("version","bzs-http-redirect-conditional-1");result.set("request_url",record.at("request_url"));
++  result.set("redirects",route);result.set("conditional",conditional);
++  protocol(result.canonical().size()<=redirect_bytes,"Redirect condition exceeds its encoded bound");return result;
++}
++Json http_read_freshness(const Json& meta,const std::string& url,std::int64_t now,std::int64_t max_age_s) {
++  auto result=http_freshness(meta.has("http_freshness")?meta.at("http_freshness"):Json(),now,max_age_s);
++  const bool direct=meta.has("final_url")&&meta.at("final_url").str()==url&&meta.has("redirects")&&meta.at("redirects").is_array()&&meta.at("redirects").size()==0;
++  if(direct)return result;
++  if(!meta.has("http_redirect_chain")||!meta.has("http_freshness")) {
++    result.set("fresh",false);result.set("reason","redirect_chain_not_cached");return result;
++  }
++  const auto proof=validate_http_redirect_chain(meta.at("http_redirect_chain"),url,meta.at("final_url").str(),meta.at("redirects"));
++  const auto hops=proof.at("hops");
++  protocol(hops.at(std::size_t{0}).at("http_freshness").at("request_profile").str()==meta.at("http_freshness").at("request_profile").str(),"Final redirect profile differs from its prefix");
++  bool fresh=result.at("fresh").flag(),store=result.at("store_allowed").flag();
++  std::int64_t remaining=result.at("freshness_lifetime_ms").num()-result.at("current_age_ms").num();
++  for(std::size_t i=0;i<hops.size();++i) {
++    const auto status=http_freshness(hops.at(i).at("http_freshness"),now,max_age_s);
++    remaining=std::min(remaining,status.at("freshness_lifetime_ms").num()-status.at("current_age_ms").num());
++    store=store&&status.at("store_allowed").flag();
++    if(!status.at("fresh").flag()&&fresh)result.set("reason","redirect_"+status.at("reason").str());
++    fresh=fresh&&status.at("fresh").flag();
++  }
++  if(!http_redirect_chain_cacheable(proof)) {fresh=false;result.set("reason","redirect_explicit_freshness_required");}
++  result.set("fresh",fresh);result.set("store_allowed",store);result.set("redirect_hops",static_cast<std::int64_t>(hops.size()));
++  // Express the intersected lifetime against the final response's age anchor.
++  result.set("freshness_lifetime_ms",std::max<std::int64_t>(0,result.at("current_age_ms").num()+remaining));
++  return result;
++}
++bool http_redirect_storage_allowed(const Json& response,const std::string& url,std::int64_t now) {
++  const auto records=redirect_observations(response,url);
++  for(std::size_t i=0;i<records.size();++i)if(!http_freshness(records.at(i),now,7*86400).at("store_allowed").flag())return false;
++  return true;
++}
++bool http_response_restricts_cache(const Json& response,std::int64_t now,const std::string& url) {
++  const auto observed=redirect_observations(response,url);
++  for(std::size_t i=0;i<observed.size();++i) {
++    const auto policy=observed.at(i);const auto cc=controls(policy.at("cache_control").str());
++    if((!cc.max_age&&policy.at("expires").str().empty())||!http_freshness(policy,now,7*86400).at("fresh").flag())return true;
++  }
+   if(!response.has("http_freshness"))return false;
+   protocol(response.has("final_url")&&response.at("final_url").is_string(),"HTTP cache response lacks identity");
+   const auto record=validate_http_freshness(response.at("http_freshness"),response.at("final_url").str());
+-  // A failed extraction or unsupported 304 must not preserve an older, more
+-  // permissive freshness decision. This ceiling is independent of the caller's
+-  // max_age_s, which may deliberately request a conditional refresh at age zero.
+   return !http_freshness(record,now,7*86400).at("fresh").flag();
+ }
+ 
+diff --git a/src/store.cpp b/src/store.cpp
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -1,4 +1,5 @@
+ #include "bzs/store.hpp"
++#include "bzs/web.hpp"
+ #include "bzs/error.hpp"
+ #include "bzs/highlight.hpp"
+ #include "bzs/http_cache.hpp"
+@@ -585,7 +586,7 @@
+     std::string site_bindings="{}";std::int64_t site_generation=0;
+     const auto metadata=Json::parse(meta_json,8*1024*1024);
+     auto http_metadata=Json::object();
+-    for(const auto* key:{"http_cache","http_freshness","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
++    for(const auto* key:{"http_cache","http_freshness","http_redirect_chain","http_revalidation","revalidation_discovery"})if(metadata.has(key))http_metadata.set(key,metadata.at(key));
+     const auto http_bytes=http_metadata.size()?static_cast<std::int64_t>(http_metadata.canonical().size()):0;
+     require(http_bytes<=16384,"E_WORKER_PROTOCOL","HTTP revalidation metadata exceeds its bound",502);
+     const bool stale_publication=source_kind=="web"&&metadata.has("page_publication_stale")&&metadata.at("page_publication_stale").flag();
+@@ -751,17 +752,28 @@
+               sha256(old.canonical())==binding.at("base_metadata_sha256").str()&&
+               sha256(owner+"\n"+base.text(0)+"\n"+sha256(old.canonical()))==binding.at("binding_id").str(),
+               "E_REVALIDATION_STALE","Revalidation base metadata changed",409);
++      require(old.has("final_url")&&m.has("final_url")&&old.at("final_url").str()==m.at("final_url").str()&&
++              m.has("http_cache")&&m.at("http_cache").at("url").str()==old.at("final_url").str(),
++              "E_WORKER_PROTOCOL","304 cannot retarget the retained representation",502);
+       require(base.text(2)==sha256(input.raw)&&base.text(3)==parsed.text&&base.text(4)==parsed.title&&base.text(5)==parsed.parser_version&&
+               base.text(6)==input.content_type&&Json::parse(base.text(7)).canonical()==parsed.links.canonical(),
+               "E_WORKER_PROTOCOL","304 cannot replace the retained body",502);
+       require(publication_covers(parsed.publication,Json::parse(base.text(8),8*1024*1024)),"E_WORKER_PROTOCOL","304 cannot relax the retained publication policy",502);
+       parsed.publication=current_publication_ceiling_locked(owner,input.url,parsed.publication);
+-      if(parsed.representation_publication.has("version"))parsed.representation_publication=current_publication_ceiling_locked(owner,input.url,parsed.representation_publication);
++      if(m.has("http_redirect_chain"))for(std::size_t i=0;i<m.at("redirects").size();++i)
++        parsed.publication=current_publication_ceiling_locked(owner,m.at("redirects").at(i).str(),parsed.publication);
++      if(parsed.representation_publication.has("version"))parsed.representation_publication=current_publication_ceiling_locked(owner,m.at("final_url").str(),parsed.representation_publication);
+       parsed.index_allowed=parsed.publication.at("index_allowed").flag();
+       // This is the original body's history boundary, not the newer request's
+       // boundary. Restrictions observed before this 304 was dispatched count.
+       m.set("page_publication_sequence",old.at("page_publication_sequence"));
+       m.set("site_publication_generation",old.at("site_publication_generation"));
++    }
++    if(m.has("http_redirect_chain")) {
++      require(m.has("http_freshness")&&m.has("final_url")&&m.has("redirects"),"E_WORKER_PROTOCOL","Stored redirect proof lacks its final representation",502);
++      const auto chain=validate_http_redirect_chain(m.at("http_redirect_chain"),input.url,m.at("final_url").str(),m.at("redirects"));
++      require(http_redirect_chain_cacheable(chain),"E_WORKER_PROTOCOL","Stored redirect proof lacks explicit cacheable hop lifetimes",502);
++      require(http_read_freshness(m,input.url,clock_(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","Redirect cache policy forbids persistent snapshots",409);
+     }
+     if(m.has("http_freshness"))
+       require(http_freshness(m.at("http_freshness"),clock_(),7*86400).at("store_allowed").flag(),
+@@ -809,7 +821,7 @@
+     const auto old=Json::parse(row.text(0),8*1024*1024);
+     if(sha256(old.canonical())!=metadata_sha256)return;
+     auto meta=Json::object(),accounted=Json::object();
+-    for(const auto& key:old.keys())if(key!="http_cache"&&key!="http_freshness"&&key!="http_revalidation")meta.set(key,old.at(key));
++    for(const auto& key:old.keys())if(key!="http_cache"&&key!="http_freshness"&&key!="http_redirect_chain"&&key!="http_revalidation")meta.set(key,old.at(key));
+     if(meta.has("revalidation_discovery"))accounted.set("revalidation_discovery",meta.at("revalidation_discovery"));
+     const auto bytes=accounted.size()?static_cast<std::int64_t>(accounted.canonical().size()):0;
+     Stmt update(db_,"UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
+@@ -823,13 +835,28 @@
+     row.bind(1,owner);row.bind(2,url);if(!row.step())return std::nullopt;
+     auto meta=Json::parse(row.text(8),8*1024*1024);
+     if(!meta.has("http_cache")||!meta.has("page_publication_sequence")||!meta.has("site_publication_generation")||
+-       !meta.has("raw_stored")||!meta.at("raw_stored").flag()||!meta.has("final_url")||meta.at("final_url").str()!=url||
+-       !meta.has("redirects")||!meta.at("redirects").is_array()||meta.at("redirects").size()!=0||
++       !meta.has("raw_stored")||!meta.at("raw_stored").flag()||!meta.has("final_url")||
++       !meta.has("redirects")||!meta.at("redirects").is_array()||
+        (meta.has("text_truncated")&&meta.at("text_truncated").flag())||
+        (meta.has("crawl_publication_urls")&&(meta.at("crawl_publication_urls").size()!=1||meta.at("crawl_publication_urls").at(std::size_t{0}).str()!=url)))return std::nullopt;
++    const auto final_url=meta.at("final_url").str();
++    const bool direct=final_url==url&&meta.at("redirects").size()==0;
+     Json cache;
+-    try { cache=validate_http_cache(meta.at("http_cache"),url); }
+-    catch(const Error&) { return std::nullopt; }
++    try {
++      cache=validate_http_cache(meta.at("http_cache"),final_url);
++      if(!direct) {
++        if(!meta.has("http_redirect_chain")||!meta.has("http_freshness")||!meta.has("publication_fence"))return std::nullopt;
++        const auto chain=validate_http_redirect_chain(meta.at("http_redirect_chain"),url,final_url,meta.at("redirects"));
++        if(!http_redirect_chain_cacheable(chain)||cache.at("request_profile").str()!=meta.at("http_freshness").at("request_profile").str()||
++           cache.at("request_profile").str()!=chain.at("hops").at(std::size_t{0}).at("http_freshness").at("request_profile").str())return std::nullopt;
++        const auto sequence=meta.at("publication_fence").at("sequence").num();
++        for(std::size_t i=0;i<meta.at("redirects").size();++i) {
++          const auto target=meta.at("redirects").at(i).str();
++          (void)alias_fences_locked(owner,url,target,sequence);
++          (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
++        }
++      }
++    } catch(const Error&) { return std::nullopt; }
+     RevalidationBase base;base.snapshot_id=row.text(0);base.cache_sha256=sha256(cache.canonical());base.metadata_sha256=sha256(meta.canonical());
+     base.document={url,row.text(1),row.text(5),row.text(3)};
+     base.parsed.title=row.text(3);base.parsed.text=row.text(2);base.parsed.parser_version=row.text(4);base.parsed.content_type=row.text(5);
+@@ -837,7 +864,9 @@
+     base.parsed.publication=Json::parse(row.text(9),8*1024*1024);base.parsed.representation_publication=Json::parse(row.text(10),8*1024*1024);
+     if(!base.parsed.publication.has("version"))return std::nullopt;
+     base.parsed.publication=current_publication_ceiling_locked(owner,url,base.parsed.publication);
+-    if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,url,base.parsed.representation_publication);
++    if(!direct)for(std::size_t i=0;i<meta.at("redirects").size();++i)
++      base.parsed.publication=current_publication_ceiling_locked(owner,meta.at("redirects").at(i).str(),base.parsed.publication);
++    if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,final_url,base.parsed.representation_publication);
+     base.parsed.index_allowed=base.parsed.publication.at("index_allowed").flag();
+     base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));return base;
+   }
+@@ -845,10 +874,32 @@
+     std::lock_guard lock(mutex_);
+     return snapshot_locked(owner, id);
+   }
+-  Json Store::range(const std::string& owner, const std::string& id, std::int64_t start, std::int64_t max_bytes) {
++  Json Store::range(const std::string& owner, const std::string& id, std::int64_t start, std::int64_t max_bytes,const Json& http_guard) {
+     require(start>=0&&max_bytes>=1&&max_bytes<=262144, "E_SCHEMA", "Invalid range parameters");
+     std::lock_guard lock(mutex_);
+     auto snap=snapshot_locked(owner, id);
++    if(!http_guard.is_null()) {
++      http_guard.allowed({"version","url","metadata_sha256","max_age_s"});
++      require(http_guard.size()==4&&http_guard.at("version").str()=="bzs-http-cache-hit-1", "E_WORKER_PROTOCOL","Invalid internal cache-hit guard",502);
++      const auto url=http_guard.at("url").str();const auto meta=snap.at("meta");
++      Stmt current(db_,"SELECT 1 FROM documents WHERE owner=? AND url=? AND deleted=0 AND current_snapshot=?");
++      current.bind(1,owner);current.bind(2,url);current.bind(3,id);
++      require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
++              http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
++              "E_CACHE_STALE","Cached redirect representation changed or expired",409);
++      require(meta.has("http_redirect_chain")&&meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
++      const auto sequence=meta.at("publication_fence").at("sequence").num();
++      try {
++        for(std::size_t i=0;i<meta.at("redirects").size();++i) {
++          const auto target=meta.at("redirects").at(i).str();
++          (void)alias_fences_locked(owner,url,target,sequence);
++          (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
++        }
++      } catch(const Error& error) {
++        if(error.code!="E_TARGET_DELETED")throw;
++        throw Error("E_CACHE_STALE","A cached redirect target was deleted",409);
++      }
++    }
+     auto text=snap.at("canonical_text").str();
+     auto total=static_cast<std::int64_t>(text.size());
+     require(start<=total, "E_EVIDENCE_RANGE", "start_byte beyond end of text");
+@@ -864,6 +915,13 @@
+     out.set("total_bytes", total);
+     out.set("truncated", end<total);
+     out.set("next_start_byte", end<total?Json::integer(end):Json());
++    if(!http_guard.is_null()) {
++      auto current=Json::object();auto policy=current_publication_ceiling_locked(owner,snap.at("url").str(),snap.at("publication"));
++      const auto redirects=snap.at("meta").at("redirects");
++      for(std::size_t i=0;i<redirects.size();++i)policy=current_publication_ceiling_locked(owner,redirects.at(i).str(),policy);
++      current.set("indexed",snap.at("indexed").flag()&&policy.at("index_allowed").flag());current.set("site_publication",snap.at("site_publication"));
++      out.set("http_publication_projection",current);
++    }
+     return out;
+   }
+   Json Store::erase(const std::string& owner, const std::string& id) {
+diff --git a/src/web.cpp b/src/web.cpp
+--- a/src/web.cpp
++++ b/src/web.cpp
+@@ -58,6 +58,21 @@
+       auto result=uri.substr(0,start)+authority+path;
+       if(query!=std::string::npos&&query+1<rest.size())result+='?'+component(std::string_view(rest).substr(query+1),true);
+       return result;
++    }
++    bool redirect_route_changed(const Json& meta,const Json& response) {
++      if(!meta.has("http_redirect_chain"))return false;
++      if(response.has("redirects")&&response.at("redirects").is_array()) {
++        const auto prior=meta.at("redirects"),observed=response.at("redirects");
++        for(std::size_t i=0;i<observed.size();++i)
++          if(i>=prior.size()||!observed.at(i).is_string()||observed.at(i).str()!=prior.at(i).str())return true;
++        const auto status=response.has("status")&&response.at("status").is_string()?response.at("status").str():"";
++        if(status=="ok"||status=="not_modified")
++          return observed.canonical()!=prior.canonical()||!response.has("final_url")||response.at("final_url").str()!=meta.at("final_url").str();
++        // A newly observed redirect whose target failed admission/completion
++        // cannot keep an older alias alive merely because its target was not reached.
++        if(response.has("http_redirect_observations")&&response.at("http_redirect_observations").is_array()&&response.at("http_redirect_observations").size()!=0)return true;
++      }
++      return false;
+     }
+     std::vector<std::string> split(std::string_view s, char sep) {
+       std::vector<std::string> out;
+@@ -673,7 +688,7 @@
+     if(answered)cache_put(cache_key, out, partial,source_generation);
+     return out;
+   }
+-  Json WebService::window(const std::string& owner, const Json& snap, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at) {
++  Json WebService::window(const std::string& owner, const Json& snap, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at,const Json& http_guard) {
+     auto meta=snap.at("meta");
+     Json out=Json::object();
+     out.set("snapshot_id", snap.at("snapshot_id"));
+@@ -686,7 +701,12 @@
+     out.set("from_cache", from_cache);
+     out.set("indexed", snap.at("indexed"));
+     out.set("site_publication",snap.at("site_publication"));
+-    out.set("content", store_.range(owner, snap.at("snapshot_id").str(), start, max_bytes));
++    auto content=store_.range(owner, snap.at("snapshot_id").str(), start, max_bytes,http_guard);
++    if(content.has("http_publication_projection")) {
++      const auto current=content.at("http_publication_projection");out.set("indexed",current.at("indexed"));out.set("site_publication",current.at("site_publication"));
++      auto range=Json::object();for(const auto& key:content.keys())if(key!="http_publication_projection")range.set(key,content.at(key));content=std::move(range);
++    }
++    out.set("content",content);
+     out.set("links_count", static_cast<std::int64_t>(snap.at("links").size()));
+     out.set("metadata", meta.has("metadata")?meta.at("metadata"):Json::object());
+     Json fetch=Json::object();
+@@ -714,11 +734,7 @@
+     auto cached=store_.cached(owner, url);
+     const auto cache_status=[&] {
+       const auto meta=cached?cached->at("meta"):Json::object();
+-      auto status=http_freshness(meta.has("http_freshness")?meta.at("http_freshness"):Json(),store_.now(),max_age);
+-      if(!meta.has("final_url")||meta.at("final_url").str()!=url||!meta.has("redirects")||meta.at("redirects").size()!=0) {
+-        status.set("fresh",false);status.set("reason","redirect_chain_not_cached");
+-      }
+-      return status;
++      return http_read_freshness(meta,url,store_.now(),max_age);
+     };
+     const auto matching_profile=[&] {
+       // Local RPC only: no origin request. The worker configuration can change
+@@ -739,31 +755,43 @@
+       return cached&&cached->at("meta").has("http_freshness")&&
+         current==cached->at("meta").at("http_freshness").at("request_profile").str();
+     };
++    const auto cached_window=[&] {
++      auto guard=Json();const auto meta=cached->at("meta");
++      if(meta.has("http_redirect_chain")) {
++        guard=Json::object();guard.set("version","bzs-http-cache-hit-1");guard.set("url",url);
++        guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("max_age_s",max_age);
++      }
++      return window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num(),guard);
++    };
+     if(freshness=="cache_only") {
+       require(cached.has_value(), "E_NOT_CACHED", "No stored snapshot for this URL; use freshness=cache_first or refresh", 404);
+       require(cache_status().at("fresh").flag()&&matching_profile(),"E_CACHE_STALE","Stored representation requires origin validation; cache_only cannot perform network requests",409);
+       const auto current=cache_status();
+       require(current.at("fresh").flag(),"E_CACHE_STALE","Stored representation expired while checking the worker profile",409);
+-      auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
++      auto out=cached_window();out.set("cache",current);return out;
+     }
+     if(freshness=="cache_first"&&cached&&cache_status().at("fresh").flag()&&matching_profile()) {
+       // The local profile RPC may wait long enough to cross the origin's TTL.
+       const auto current=cache_status();
+       if(current.at("fresh").flag()) {
+-        auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
++        try { auto out=cached_window();out.set("cache",current);return out; }
++        catch(const Error& error) { if(error.code!="E_CACHE_STALE")throw; }
+       }
+     }
+     Json params=Json::object();
+     params.set("url", url);
+     params.set("timeout_ms", timeout);
+     const auto base=store_.revalidation_base(owner,url);
+-    if(base)params.set("conditional",base->conditional);
++    if(base) {
++      if(base->conditional.at("url").str()==url)params.set("conditional",base->conditional);
++      else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
++    }
+     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
+     if(r.has("http_freshness")) {
+       const auto record=validate_http_freshness(r.at("http_freshness"),required_string(r,"final_url",4096));
+       std::lock_guard lock(cache_mutex_);last_read_profile_=record.at("request_profile").str();
+     }
+-    if(cached&&http_response_restricts_cache(r,store_.now()))
++    if(cached&&(http_response_restricts_cache(r,store_.now(),url)||redirect_route_changed(cached->at("meta"),r)))
+       store_.invalidate_web_cache(owner,url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
+     const auto redirect_observations=decode_redirect_observations(url,r);
+     std::optional<Json> observation;
+@@ -784,7 +812,7 @@
+     try {
+       auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
+       auto out=window(owner,snap,start,max_bytes,false,artifact.meta.at("fetched_at_ms").num());
+-      out.set("cache",http_freshness(artifact.meta.has("http_freshness")?artifact.meta.at("http_freshness"):Json(),store_.now(),max_age));return out;
++      out.set("cache",http_read_freshness(artifact.meta,url,store_.now(),max_age));return out;
+     } catch(const Error& error) {
+       if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
+         apply_observations();
+@@ -877,6 +905,7 @@
+       }
+       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
+     }
++    require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
+     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
+       require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str())&&r.at(key).str().find('\0')==std::string::npos,"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
+     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
+@@ -951,26 +980,57 @@
+       require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
+       meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
+     }
++    if(r.has("http_redirect_chain")) {
++      require(!incomplete,"E_WORKER_PROTOCOL","A truncated response cannot prove a reusable redirect representation",502);
++      const auto chain=validate_http_redirect_receipt(r,url);
++      if(http_redirect_chain_cacheable(chain)) {
++        auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
++        // The optional proof must fit the existing aggregate metadata allowance.
++        // Its policy observations were already enforced before this omission.
++        if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
++      }
++    }
+     return {std::move(doc),std::move(parsed),std::move(meta)};
+   }
+   WebService::ReadArtifact WebService::decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base) {
+     require(base.has_value(),"E_WORKER_PROTOCOL","Unsolicited 304 has no retained representation",502);
++    const auto final_url=base->conditional.at("url").str();const bool routed=final_url!=url;
+     require(response.at("status").str()=="not_modified"&&response.at("http_status").num()==304&&
+-            response.at("final_url").str()==url&&response.at("binding_id").str()==base->conditional.at("binding_id").str(),
++            response.at("final_url").str()==final_url&&response.at("binding_id").str()==base->conditional.at("binding_id").str(),
+             "E_WORKER_PROTOCOL","304 response is not bound to its exact representation",502);
+-    require(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery")&&!response.has("publication")&&
+-            (!response.has("redirects")||(response.at("redirects").is_array()&&response.at("redirects").size()==0)),
+-            "E_WORKER_PROTOCOL","304 cannot carry a replacement body or redirect chain",502);
++    require(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery")&&!response.has("publication"),
++            "E_WORKER_PROTOCOL","304 cannot carry a replacement body or allowing publication",502);
++    Json chain;
++    if(routed) {
++      require(base->meta.has("http_redirect_chain")&&response.has("redirect_revalidation"),"E_WORKER_PROTOCOL","Redirect 304 lacks a versioned route grant",502);
++      const auto receipt=response.at("redirect_revalidation");receipt.allowed({"version","request_url","final_url","binding_id"});
++      require(receipt.size()==4&&receipt.at("version").str()=="bzs-http-redirect-conditional-1"&&receipt.at("request_url").str()==url&&
++              receipt.at("final_url").str()==final_url&&receipt.at("binding_id").str()==base->conditional.at("binding_id").str(),
++              "E_WORKER_PROTOCOL","Redirect 304 route receipt changed",502);
++      chain=validate_http_redirect_receipt(response,url,true);
++      require(response.at("redirects").canonical()==base->meta.at("redirects").canonical(),"E_WORKER_PROTOCOL","Redirect 304 changed its exact prefix",502);
++      require(http_redirect_storage_allowed(response,url,store_.now()),"E_CACHE_POLICY","304 redirect policy forbids persistent reuse",409);
++    } else {
++      require(!response.has("redirect_revalidation")&&!response.has("http_redirect_chain")&&
++              (!response.has("redirects")||(response.at("redirects").is_array()&&response.at("redirects").size()==0)),
++              "E_WORKER_PROTOCOL","Direct 304 cannot carry a redirect chain",502);
++    }
+     ReadArtifact artifact{base->document,base->parsed,Json::parse(base->meta.dump(),8*1024*1024)};
+     artifact.meta.set("http_cache",merge_http_cache(base->meta.at("http_cache"),response.at("http_cache")));
+     if(response.has("http_freshness")) {
+-      auto policy=validate_http_freshness(response.at("http_freshness"),url);
++      auto policy=validate_http_freshness(response.at("http_freshness"),final_url);
+       if(base->meta.has("http_freshness"))policy=merge_http_freshness(base->meta.at("http_freshness"),policy);
+       require(http_freshness(policy,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","304 policy forbids persistent reuse",409);
+       artifact.meta.set("http_freshness",policy);
+     } else {
+-      // A legacy worker cannot renew an unreported response policy.
+-      auto conservative=Json::object();for(const auto& key:artifact.meta.keys())if(key!="http_freshness")conservative.set(key,artifact.meta.at(key));artifact.meta=std::move(conservative);
++      auto conservative=Json::object();for(const auto& key:artifact.meta.keys())if(key!="http_freshness"&&key!="http_redirect_chain")conservative.set(key,artifact.meta.at(key));artifact.meta=std::move(conservative);
++    }
++    if(routed) {
++      require(http_redirect_chain_cacheable(chain),"E_REVALIDATION_STALE","Redirect 304 cannot renew an uncacheable prefix",409);
++      artifact.meta.set("http_redirect_chain",chain);
++      const auto observations=decode_redirect_observations(url,response);artifact.meta.set("redirect_publication_observations",observations);
++      for(std::size_t i=0;i<observations.size();++i)artifact.parsed.publication=meet_publication(artifact.parsed.publication,observations.at(i).at("publication"));
++      artifact.parsed.index_allowed=artifact.parsed.publication.at("index_allowed").flag();
+     }
+     artifact.meta.set("fetched_at_ms",store_.now());artifact.meta.set("http_status",std::int64_t{304});artifact.meta.set("revalidated",true);
+     auto bound=Json::object();bound.set("version","bzs-http-revalidation-1");bound.set("base_snapshot_id",base->snapshot_id);
+@@ -1021,7 +1081,10 @@
+       params.set("attempt_id",lease.attempt_id);
+       const auto cached=store_.cached(lease.owner,lease.url);
+       const auto base=store_.revalidation_base(lease.owner,lease.url);
+-      if(base)params.set("conditional",base->conditional);
++      if(base) {
++        if(base->conditional.at("url").str()==lease.url)params.set("conditional",base->conditional);
++        else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
++      }
+       const auto response=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
+       require(response.is_object()&&response.has("status")&&response.at("status").is_string()&&
+               response.has("usage")&&response.at("usage").is_object(),
+@@ -1036,9 +1099,9 @@
+               (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
+               "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
+       requests=used_requests;bytes=used_bytes;
+-      if(cached&&http_response_restricts_cache(response,store_.now()))
++      if(cached&&(http_response_restricts_cache(response,store_.now(),lease.url)||redirect_route_changed(cached->at("meta"),response)))
+         store_.invalidate_web_cache(lease.owner,lease.url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
+-      if(response.at("status").str()=="not_modified")require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
++      if(response.at("status").str()=="not_modified"&&!response.has("redirect_revalidation"))require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
+       redirect_observations=decode_redirect_observations(lease.url,response);
+       observation=decode_observation(lease.url,response);if(observation)observed_url=normalize_iri(response.at("final_url").str());
+       const auto status=response.at("status").str();
+diff --git a/tests/cache_freshness.cpp b/tests/cache_freshness.cpp
+--- a/tests/cache_freshness.cpp
++++ b/tests/cache_freshness.cpp
+@@ -114,5 +114,155 @@
+   auto merged=merge_http_freshness(old,update);CHECK(merged.at("cache_control").str()=="max-age=10");CHECK(http_freshness(merged,epoch+10001,86400).at("fresh").flag());
+   update.set("request_profile",sha256("other"));rejects([&]{merge_http_freshness(old,update);},"E_WORKER_PROTOCOL");
+ }
++// P2-2 draft additions to the existing cache_freshness native suite.
++const std::string redirect_original="http://cache.example/start";
++Json redirect_args(const char* freshness="cache_first") { auto r=args(freshness);r.set("url",redirect_original);return r; }
++struct RedirectWorker:Worker {
++  std::string prefix_control="max-age=10";int hops=1;bool legacy=false,force200=false;
++  std::vector<Json> calls;std::function<void()> during_profile;
++  std::function<Json(const Json&,Json)> alter;
++  Json call(const std::string& method,const Json& parameters,int timeout)override {
++    if(method=="fetch.profile") {if(during_profile)during_profile();return Worker::call(method,parameters,timeout);}
++    if(parameters.at("url").str()!=redirect_original)return Worker::call(method,parameters,timeout);
++    ++requests;calls.push_back(Json::parse(parameters.dump()));if(during)during();
++    const bool conditional=!force200&&parameters.has("redirect_conditional")&&
++      parameters.at("redirect_conditional").at("conditional").at("request_profile").str()==profile;
++    auto r=conditional?Json::object():Json::parse(R"({"html":"cache fixture body","text":"cache fixture body","title":"cache fixture","content_type":"text/plain","extractor":"fixture/1","extract_status":"ok","index_allowed":true,"links":[],"warnings":[],"metadata":{}})");
++    r.set("status",conditional?"not_modified":"ok");r.set("http_status",std::int64_t{conditional?304:200});r.set("final_url",url);
++    auto chain=Json::object(),route=Json::array(),proof=Json::array(),observations=Json::array();std::string previous=redirect_original;
++    for(int i=0;i<hops;++i) {
++      const auto target=i+1==hops?url:"https://cache.example/hop-"+std::to_string(i);
++      auto h=policy(prefix_control);h.set("url",previous);h.set("received_at_ms",now);h.set("request_profile",profile);
++      auto hop=Json::object();hop.set("url",previous);hop.set("target_url",target);hop.set("http_status",std::int64_t{301});hop.set("content_bytes",std::int64_t{3});hop.set("http_freshness",h);proof.push(hop);route.push(Json::string(target));
++      auto observed=Json::object();observed.set("url",previous);observed.set("http_status",std::int64_t{301});observed.set("http_freshness",h);observations.push(observed);previous=target;
++    }
++    r.set("redirects",route);
++    chain.set("version","bzs-http-redirect-chain-1");chain.set("request_url",redirect_original);chain.set("final_url",url);chain.set("hops",proof);
++    if(!legacy) {r.set("http_redirect_chain",chain);r.set("http_redirect_observations",observations);}
++    auto final=Json::parse(headers.dump());final.set("url",url);final.set("received_at_ms",now);final.set("request_profile",profile);r.set("http_freshness",final);
++    auto cache=Json::parse(R"({"version":"bzs-http-revalidation-1","url":"","request_profile":"","etag":"\"redirect-v1\"","last_modified":"","cache_control":"max-age=60","vary":"","date":"","age":"","expires":""})");cache.set("url",url);cache.set("request_profile",profile);r.set("http_cache",cache);
++    auto usage=Json::object();usage.set("external_requests",std::int64_t{hops+1});usage.set("content_bytes",std::int64_t{3*hops+(conditional?0:18)});r.set("usage",usage);
++    if(conditional) {
++      const auto binding=parameters.at("redirect_conditional").at("conditional").at("binding_id");r.set("binding_id",binding);
++      auto receipt=Json::object();receipt.set("version","bzs-http-redirect-conditional-1");receipt.set("request_url",redirect_original);receipt.set("final_url",url);receipt.set("binding_id",binding);r.set("redirect_revalidation",receipt);
++    }
++    return alter?alter(parameters,r):r;
++  }
++};
++TEST(http_redirect_proof_caches_original_without_creating_a_global_alias) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  auto first=web.read("a",redirect_args());CHECK(!first.at("from_cache").flag());CHECK(first.at("cache").at("redirect_hops").num()==1);
++  CHECK(web.read("a",redirect_args()).at("from_cache").flag());CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());CHECK(w.requests==1);
++  CHECK(!s.cached("a",url));rejects([&]{web.read("b",redirect_args("cache_only"));},"E_NOT_CACHED");
++  web.read("a",args());CHECK(web.read("a",args()).at("from_cache").flag());CHECK(w.requests==2);
++}
++TEST(http_redirect_proof_survives_restart_and_expires_at_prefix_intersection) {
++  Temp t;RedirectWorker w;{Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());}
++  Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});w.now+=9999;CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());
++  ++w.now;rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==1);
++  auto renewed=web.read("a",redirect_args());CHECK(!renewed.at("from_cache").flag());CHECK(renewed.at("fetch").at("revalidated").flag());CHECK(w.calls.back().has("redirect_conditional"));CHECK(!w.calls.back().has("conditional"));
++  CHECK(w.calls.back().at("url").str()==redirect_original);CHECK(w.calls.back().at("redirect_conditional").at("conditional").at("url").str()==url);
++}
++TEST(http_redirect_profile_changes_require_a_complete_attempt) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());w.profile=sha256("changed-profile");
++  rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==1);
++  auto fresh=web.read("a",redirect_args());CHECK(fresh.at("fetch").at("http_status").num()==200);CHECK(w.requests==2);
++}
++TEST(legacy_redirects_without_proof_keep_original_conservative_contract) {
++  Temp t;RedirectWorker w;w.legacy=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  web.read("a",redirect_args());web.read("a",redirect_args());CHECK(w.requests==2);CHECK(!s.revalidation_base("a",redirect_original));
++  CHECK(!w.calls.back().has("redirect_conditional")&&!w.calls.back().has("conditional"));rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
++}
++TEST(http_redirect_each_hop_requires_explicit_cacheable_lifetime) {
++  for(const auto* control:{"","no-cache","max-age=0"}) {
++    Temp t;RedirectWorker w;w.prefix_control=control;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++    web.read("a",redirect_args());web.read("a",redirect_args());CHECK(w.requests==2);CHECK(!s.cached("a",redirect_original)->at("meta").has("http_redirect_chain"));CHECK(!s.revalidation_base("a",redirect_original));
++    rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
++  }
++}
++TEST(http_redirect_no_store_creates_no_new_body_and_invalidates_bound_old_reuse) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());w.prefix_control="no-store";
++  rejects([&]{web.read("a",redirect_args("refresh"));},"E_CACHE_POLICY");CHECK(s.stats("a").at("snapshots").num()==1);
++  CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
++  CHECK(!s.cached("a",redirect_original)->at("meta").has("http_redirect_chain"));rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
++  rejects([&]{web.read("b",redirect_args());},"E_CACHE_POLICY");CHECK(s.stats("b").at("snapshots").num()==0);
++}
++TEST(http_redirect_304_batch_accounts_for_every_request_and_redirect_body) {
++  Temp t;RedirectWorker w;w.hops=2;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());
++  const auto id=s.read_many_submit("a",{redirect_original},"redirect-304",{}).at("job_id").str();auto lease=s.lease_next_read();CHECK(lease.has_value());web.execute_read(*lease);
++  const auto job=s.job_get("a",id);CHECK(job.at("state").str()=="succeeded");CHECK(job.at("usage").at("external_requests").num()==3);CHECK(job.at("usage").at("content_bytes").num()==6);CHECK(job.at("usage").at("reserved_bytes").num()==0);
++  CHECK(s.cached("a",redirect_original)->at("canonical_text").str()=="cache fixture body");CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
++}
++TEST(http_redirect_target_deletion_blocks_reuse_but_not_owned_history) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());auto target=web.read("a",args());s.erase("a",target.at("document_id").str());
++  rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",redirect_original));
++  CHECK(s.range("a",first.at("snapshot_id").str(),0,100).at("text").str()=="cache fixture body");CHECK(w.requests==2);
++}
++TEST(http_redirect_target_deletion_during_profile_rpc_is_checked_at_hit) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());auto target=web.read("a",args());bool done=false;
++  w.during_profile=[&]{if(!done){done=true;s.erase("a",target.at("document_id").str());}};
++  rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==2);
++}
++TEST(http_redirect_304_same_snapshot_metadata_race_is_not_retried) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());bool nested=false;
++  w.during=[&]{if(!nested){nested=true;++w.now;web.read("a",redirect_args("refresh"));}};
++  rejects([&]{web.read("a",redirect_args("refresh"));},"E_REVALIDATION_STALE");CHECK(w.requests==3);CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());
++}
++TEST(http_redirect_304_cannot_erase_inflight_final_publication_restriction) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());bool observed=false;
++  const auto denied=Json::parse(R"({"version":"bzs-publication-1","index_allowed":false,"snippet_allowed":false,"follow_allowed":false,"snippet_text":"","snippet_title":"","directives":["noindex","nosnippet","nofollow"],"diagnostics":[]})");
++  w.during=[&]{if(!observed){observed=true;s.observe_web_publication("a",redirect_original,url,denied,s.publication_fence("a",redirect_original));}};
++  auto result=web.read("a",redirect_args("refresh"));CHECK(!result.at("indexed").flag());CHECK(!s.cached("a",redirect_original)->at("publication").at("follow_allowed").flag());
++  CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
++}
++TEST(http_redirect_changed_prefix_never_accepts_a_late_final_304) {
++  Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());w.hops=2;
++  rejects([&]{web.read("a",redirect_args("refresh"));},"E_WORKER_PROTOCOL");CHECK(w.requests==2);CHECK(!s.cached("a",redirect_original)->at("meta").has("http_redirect_chain"));
++  rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
++}
++TEST(http_redirect_proof_protocol_tampering_cannot_replace_retained_body) {
++  for(const auto* kind:{"observations","profile","usage","receipt"}) {
++    Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());
++    w.alter=[&](const Json&,Json response) {
++      if(std::string(kind)=="observations")response.set("http_redirect_observations",Json::array());
++      else if(std::string(kind)=="profile")response.at("http_freshness").set("request_profile",sha256("other"));
++      else if(std::string(kind)=="usage")response.at("usage").set("content_bytes",std::int64_t{0});
++      else response.at("redirect_revalidation").set("binding_id",sha256("other"));
++      return response;
++    };
++    rejects([&]{web.read("a",redirect_args("refresh"));},"E_WORKER_PROTOCOL");CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");CHECK(w.requests==2);
++  }
++}
++
++TEST(http_redirect_proof_bytes_are_charged_and_refunded_on_full_replacement) {
++  Temp t;RedirectWorker w;w.legacy=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());
++  const auto before=s.stats("a").at("content_bytes").num();const auto old=s.cached("a",redirect_original)->at("meta");
++  w.legacy=false;++w.now;auto proof=web.read("a",redirect_args("refresh"));const auto meta=s.cached("a",redirect_original)->at("meta");
++  auto old_http=Json::object(),new_http=Json::object();for(const auto* key:{"http_cache","http_freshness","http_redirect_chain","http_revalidation"}) {if(old.has(key))old_http.set(key,old.at(key));if(meta.has(key))new_http.set(key,meta.at(key));}
++  const auto delta=static_cast<std::int64_t>(new_http.canonical().size())-static_cast<std::int64_t>(old_http.canonical().size());
++  CHECK(delta>0);CHECK(s.stats("a").at("content_bytes").num()==before+delta);CHECK(proof.at("snapshot_id").str()==first.at("snapshot_id").str());
++  w.legacy=true;w.force200=true;++w.now;web.read("a",redirect_args("refresh"));CHECK(!s.cached("a",redirect_original)->at("meta").has("http_redirect_chain"));CHECK(s.stats("a").at("content_bytes").num()==before);
++}
++TEST(http_redirect_304_metadata_growth_rolls_back_at_owner_quota) {
++  Temp t;RedirectWorker w;std::int64_t used=0;std::string before;
++  {Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());used=s.stats("a").at("content_bytes").num();before=s.cached("a",redirect_original)->canonical();}
++  StoreOptions options;options.max_bytes_per_owner=used;Store s(t.path/"db",[&]{return w.now;},options);WebService web(s,w,{});++w.now;
++  rejects([&]{web.read("a",redirect_args("refresh"));},"E_QUOTA");CHECK(s.stats("a").at("content_bytes").num()==used);CHECK(s.cached("a",redirect_original)->canonical()==before);CHECK(w.requests==2);
++}
++TEST(http_redirect_hop_and_encoded_limits_are_not_trusted_from_worker) {
++  for(bool oversized:{false,true}) {
++    Temp t;RedirectWorker w;w.hops=oversized?2:6;if(oversized)w.prefix_control="max-age=10, extension=\""+std::string(4000,'x')+"\"";
++    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});rejects([&]{web.read("a",redirect_args());},"E_WORKER_PROTOCOL");CHECK(s.stats("a").at("snapshots").num()==0);
++  }
++}
++TEST(http_redirect_expiry_is_rechecked_after_profile_rpc_before_reuse) {
++  for(const auto* mode:{"cache_only","cache_first"}) {
++    Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",redirect_args());bool once=false;
++    w.during_profile=[&]{if(!once){once=true;w.now+=10000;}};
++    if(std::string(mode)=="cache_only") {rejects([&]{web.read("a",redirect_args(mode));},"E_CACHE_STALE");CHECK(w.requests==1);}
++    else {CHECK(!web.read("a",redirect_args(mode)).at("from_cache").flag());CHECK(w.requests==2);}
++  }
++}
++
+ }
+ int main(){int failed=0;for(const auto& [name,test]:cases){try{test();std::cout<<"PASS "<<name<<'\n';}catch(const std::exception& e){++failed;std::cout<<"FAIL "<<name<<": "<<e.what()<<'\n';}}std::cout<<cases.size()<<" cases, "<<assertions<<" assertions, "<<failed<<" failed\n";return failed?1:0;}

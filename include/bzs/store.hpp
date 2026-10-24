@@ -198,7 +198,7 @@ namespace bzs {
     std::optional<RevalidationBase> revalidation_base(const std::string& owner,const std::string& url);
     Json snapshot(const std::string& owner, const std::string& snapshot_id);
     // A UTF-8-safe window of the canonical text (read_range).
-    Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes);
+    Json range(const std::string& owner, const std::string& snapshot_id, std::int64_t start_byte, std::int64_t max_bytes, const Json& http_guard=Json());
     Json erase(const std::string& owner, const std::string& document_id);
     Json search(const std::string& owner, const Query& query, std::int64_t max_candidates=2000, std::int64_t limit=200);
     // One response with the same local visibility rules; no durable session.

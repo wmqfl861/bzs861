@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "created_at_utc": "2026-10-24T05:03:52.329727+00:00",
+  "reviewer": "/root/revocation",
+  "implementation_author": "/root/source_policy",
+  "integrator_and_full_gate_owner": "/root",
+  "scope": "Additive independent review of the public aggregate/private final publication correction and frozen prior redirect-cache regressions.",
+  "decision": "All independent additive and unchanged native probes passed on the bound current sources/library; no unresolved blocker found in this reviewed scope. The root-owned complete p2-2-v4 gates are not declared passed by this report.",
+  "main_tree_modified_by_reviewer": false,
+  "production_or_formal_tests_written_by_reviewer": false,
+  "binding": {
+    "base_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+    "root_execution_inputs": "root-gates/p2-2-v4/execution-inputs.json",
+    "root_execution_inputs_sha256": "f8ed3a2d6f1f54e6f1284a123889ee15bece751c04aa65c01a38a9cc8cc773f1",
+    "root_frozen_files": 220,
+    "all_root_frozen_files_still_match": true,
+    "python_bound_file_count": 65,
+    "all_python_inputs_match_root_freeze": true,
+    "native_bound_source_file_count": 40,
+    "all_native_inputs_match_root_freeze": true,
+    "native_library_sha256": "fba67dbd752682bdcf0ae8acb690b1232b398492b79caba8202757175d81a242",
+    "native_library_and_copy_unchanged": true,
+    "aggregate_followup_patch_sha256": "ef42d0c586c51c90e6ead2be32862249d87073dc355c33f65dc6a2a91f60ba3e",
+    "python_report": "aggregate-addendum/actual-python-v3/report.json",
+    "python_report_sha256": "9476f8218177d16df7968d1528c2a62d745695d3682d1959d1eea98fd4c04381",
+    "native_report": "aggregate-addendum/actual-native-v3/report.json",
+    "native_report_sha256": "6385c9814fe60d15b32873b61130af3539ebd73722ebf0df1cffe5db523cfde1",
+    "static_review": "aggregate-addendum/static-review.json",
+    "static_review_sha256": "fa268092dee10a3876236778bf83c13fb9f9450930981630d52a6be972df5109"
+  },
+  "correction_to_prior_review": {
+    "prior_report_sha256": "a6658e0ea57183e240510a6b57a82d933b6e55f76f2d27f8211ae6824c215c8f",
+    "prior_archive_sha256": "0dcc1fac67c5c464f7acc6462f429395d9b34e9b4112233a63db7ba7d02a0d05",
+    "prior_report_preserved": "prior-frozen-review/FINAL_REVIEW.json",
+    "old_six_case_probe_sha256": "d3b2f35f94884809beb4d8f5f0597df3fa4c1fd40d58a3bb093f39e7078967c2",
+    "error": "The old independent routed200-prefix-only case incorrectly expected the public Worker publication record to be final-only. The baseline failure of that one case was therefore not a valid product defect, and the later 6/6 result incorrectly accepted a regression of the original aggregate contract.",
+    "detector": "The unchanged original test_crawl_worker aggregate site-ceiling regression failed in root p2-2-v2: publication snippet_text/title remained exposed when only the original redirect URI matched links_only.",
+    "original_failure_log": "root-gates/p2-2-v2/ctest.log",
+    "original_failure_log_sha256": "bd6bb7ce6ef1e9745666d079046dc653df183134d2e3e3192285a1f71a26edfb",
+    "unchanged_original_formal_test_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+    "disposition": "The earlier no-unresolved-blocker conclusion is superseded for aggregate compatibility. The old source, raw logs, counts, report and archive remain unchanged and are not reclassified as final acceptance. The separate routed304 final-observation and Core A/C isolation findings remain valid and are covered by unchanged/new passing probes.",
+    "corrected_contract": "Public 200 publication includes original/intermediate/final site ceilings. A private exact-final wrapper distinguishes final policy when needed; a fully verified receipt can imply equality when the wrapper is omitted. Routed304 publication_observation remains final-only."
+  },
+  "independent_results": [
+    {
+      "name": "worker-aggregate-final",
+      "passed": 14,
+      "total": 14,
+      "exit_code": 0,
+      "kind": "actual Worker coordinator and SiteRegistry; completed-fetch mock; no HTTP"
+    },
+    {
+      "name": "canonical-proof-size",
+      "passed": 5,
+      "total": 5,
+      "exit_code": 0,
+      "kind": "unchanged helper-vs-actual-json-c scalar encoding probe"
+    },
+    {
+      "name": "aggregate-final-native",
+      "passed": 24,
+      "total": 24,
+      "exit_code": 0,
+      "kind": "new frozen real Core/Store with completed Worker responses"
+    },
+    {
+      "name": "direct-route-failure",
+      "exit_code": 0,
+      "unchanged_assertions": true
+    },
+    {
+      "name": "redirect-publication-scope",
+      "passed_scenarios": 2,
+      "exit_code": 0,
+      "unchanged_assertions": true
+    },
+    {
+      "name": "direct-indexed-projection",
+      "exit_code": 0,
+      "unchanged_assertions": true
+    },
+    {
+      "name": "oversized-conditional-v2",
+      "exit_code": 0,
+      "unchanged_assertions": true
+    }
+  ],
+  "specific_evidence": [
+    "Eight native combinations of equal/explicit final policy and cacheable/no-cache/TTL0/aggregate-metadata omission all preserved independent C current/frozen snippets and cache while A was restricted during the request.",
+    "Metadata omission samples used a valid 7558-byte proof with 16557-byte combined HTTP fields: no persisted chain, no routed revalidation base and E_CACHE_STALE for A cache_only, while final history scope remained correct.",
+    "All fifteen malformed/ineligible private wrapper scenarios returned E_WORKER_PROTOCOL without a replacement snapshot or extra origin call.",
+    "C own final noindex still retracted both current/frozen results and tightened cached indexed projection, while historical canonical bodies remained readable.",
+    "The unchanged oversized conditional sample remained proof7558/metadata16157/grant8403 with no base and exactly one full refresh (two total origin calls).",
+    "Canonical-size samples stayed inclusive at8192 and omitted proofs at8194/8206; no wire-bound widening."
+  ],
+  "counting_and_limits": [
+    "Independent case/probe numbers are not added to formal CTest/native/Python product acceptance totals; coverage overlaps intentionally.",
+    "No complete suite, sanitizer run or real HTTP test was executed by this reviewer in this addendum. Root owns those gates.",
+    "p2-2-v4 full gate is parent-owned and was still executing when this report was created. Only its already-frozen inputs are bound here.",
+    "The previous six-case Worker probe was not rerun or modified to force success; the new fourteen-case contract probe explicitly replaces its incorrect full200 assumption.",
+    "No source approvals, permanent retention semantics, schema, public API or product deadline limits were changed by the reviewer."
+  ]
+}

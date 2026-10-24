@@ -1,0 +1,39 @@
+{
+  "role": "independent source review and exact integrated-library replay of frozen probes",
+  "decision": "original v1 blockers corrected on replay; residual pre-existing direct indexed-field projection mismatch remains, parent authorized followup before final acceptance",
+  "patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+  "library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+  "source_binding": "all 17 patch-manifest files matched integrated main during replay; full headers/library copies preserved",
+  "results": {
+    "direct_route_failure_probe": "exit 0: old HTTP reuse invalidated after new 301 then503; original history readable; no extra request",
+    "redirect_publication_scope_probe": "exit 1: both response/preexisting branches passed A-only scope separation, current/frozen C preservation, later final noindex current/frozen withdrawal; then both fail final direct cache indexed projection",
+    "worker_publication_scope_probe": "exit 0: all six completed-response coordinator cases pass; no real HTTP",
+    "direct_indexed_projection_comparison": "same exit 1 and byte-identical output on pre-P2-2 library ec53b77e and v2 library 16867194; cache_only_indexed=true while current_search_count=0; no real indexing/privacy bypass observed"
+  },
+  "source_review": [
+    "route comparison now considers old direct metadata while retaining snapshot+metadata CAS invalidation",
+    "revalidation_base freezes final identity before all-chain ceilings; decode_not_modified requires that identity",
+    "304 commit validates retained final policy floor and applies final current ceiling only to final identity",
+    "proven-chain publication history seals final identity using final-only history; aggregate uses full-chain history",
+    "equal final/aggregate policies compact only after restrictions, preserving unchanged-revalidation snapshot identity",
+    "worker proof200 and routed304 final fields use final site identity; aggregate Core bindings still cover all URLs; legacy behavior retained"
+  ],
+  "residual": {
+    "code_path": "Store::snapshot_locked exposes stored index_allowed plus current site mode; direct cached WebService::window lacks new current-page projection because http_guard was conditional on proof",
+    "evidence": "projection-comparison.json",
+    "parent_decision": "Extend existing cache-hit guard/current publication projection to direct reads; preserve explicit document.read/range historical defaults; add permanent native regression; rerun original unmodified scope probe against final library",
+    "scope_probe_unexecuted_tail": "Its history and exact-request-count assertions after the failing direct-cache field assertion were not reached; no claim those tail assertions passed"
+  },
+  "evidence": {
+    "native-report.json": "cdfdc2976cda5d8ec10fa0a0526e6d8a1b91413b74016bc27ff4f6f33adae1ca",
+    "worker-report.json": "3727430ef18387a7031345445bb2d7e834c8360e7caf51c7fc51096e46bc6ba9",
+    "projection-comparison.json": "f037b96ca5bd07bbc59e5db47683b0c6d761612bafa8f4b5f8ba48683ab798b3",
+    "direct_indexed_projection_probe.cpp": "4671ac7f9464ae929d23993bfcd127b43e3ac9a119bdac6f1519445503dcc202"
+  },
+  "limits": [
+    "No production or formal-test files edited by reviewer",
+    "No full gate or native-suite count claimed; root owns formal complete validation",
+    "Original probes and previous failure reports preserved without rewriting",
+    "Worker unit result is not Core+Worker+HTTP end-to-end acceptance"
+  ]
+}

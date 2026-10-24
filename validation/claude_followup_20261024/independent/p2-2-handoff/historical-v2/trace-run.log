@@ -1,0 +1,21 @@
+RUN positive_owner_and_prefix_expiry
+PASS positive_owner_and_prefix_expiry
+RUN all_alias_deletions_and_revival
+ALIAS https://independent-chain.example/middle
+ALIAS https://independent-chain.example/final
+ALIAS https://INDEPENDENT-CHAIN.EXAMPLE:443/middle
+ALIAS https://independent-chain.example/%6Diddle
+FAIL all_alias_deletions_and_revival expected error E_CACHE_STALE
+RUN inflight_alias_delete_known_usage
+INFLIGHT_ALIAS https://independent-chain.example/middle
+INFLIGHT_STATE failed ERROR "E_TARGET_DELETED" REQUESTS 3
+INFLIGHT_ALIAS https://INDEPENDENT-CHAIN.EXAMPLE:443/%66inal
+INFLIGHT_STATE succeeded ERROR null REQUESTS 3
+FAIL inflight_alias_delete_known_usage assertion: job.at("state").str()=="failed"
+RUN final_history_304_is_monotone
+PASS final_history_304_is_monotone
+RUN shared_payer_cancel_routed_settlement
+PASS shared_payer_cancel_routed_settlement
+RUN same_snapshot_metadata_cas
+PASS same_snapshot_metadata_cas
+SUMMARY cases=6 checks=209 failures=2 external_network_requests=0

@@ -1,0 +1,57 @@
+{
+  "role": "independent diagnostic comparison for residual direct indexed-field failure; not green acceptance",
+  "source": "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+  "source_sha256": "4671ac7f9464ae929d23993bfcd127b43e3ac9a119bdac6f1519445503dcc202",
+  "frozen_fixture_source": "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+  "frozen_fixture_source_sha256": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+  "results": [
+    {
+      "label": "pre-p2-2",
+      "library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+      "compile_argv": [
+        "c++",
+        "-std=c++20",
+        "-I/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/include",
+        "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+        "/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-p2-redirect-review-revocation-v2/projection-pre-p2-2/probe"
+      ],
+      "compile_exit_code": 0,
+      "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_exit_code": 1,
+      "binary_sha256": "c2d192ee3cb3debed510925fed2a47f28a29481f00f93c6233ba66631826fb05",
+      "run_log_sha256": "493b83a7273bde41fbb18610ed2802dd82fbf61404faf90d6c5613eed532e393",
+      "output": "{\"cache_only_indexed\":true,\"current_search_count\":0,\"history_retained\":true,\"origin_requests\":1,\"snapshot_indexed\":true}\n"
+    },
+    {
+      "label": "p2-2-v2",
+      "library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+      "compile_argv": [
+        "c++",
+        "-std=c++20",
+        "-I/tmp/bzs-p2-redirect-review-revocation-v2/include",
+        "/tmp/bzs-p2-redirect-review-revocation-v2/direct_indexed_projection_probe.cpp",
+        "/tmp/bzs-p2-redirect-review-revocation-v2/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-p2-redirect-review-revocation-v2/projection-p2-2-v2/probe"
+      ],
+      "compile_exit_code": 0,
+      "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_exit_code": 1,
+      "binary_sha256": "2ccadc5c010605eef9e732d55fb089c6db71fab754c01a190475b1fd2bf901fd",
+      "run_log_sha256": "493b83a7273bde41fbb18610ed2802dd82fbf61404faf90d6c5613eed532e393",
+      "output": "{\"cache_only_indexed\":true,\"current_search_count\":0,\"history_retained\":true,\"origin_requests\":1,\"snapshot_indexed\":true}\n"
+    }
+  ]
+}

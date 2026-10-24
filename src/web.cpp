@@ -59,6 +59,24 @@ namespace bzs {
       if(query!=std::string::npos&&query+1<rest.size())result+='?'+component(std::string_view(rest).substr(query+1),true);
       return result;
     }
+    bool redirect_route_changed(const Json& meta,const Json& response) {
+      // A newly observed route can supersede an old direct representation too.
+      // Invalidation remains bound to that exact snapshot and metadata below.
+      if(!meta.has("final_url")||!meta.at("final_url").is_string()||
+         !meta.has("redirects")||!meta.at("redirects").is_array())return false;
+      if(response.has("redirects")&&response.at("redirects").is_array()) {
+        const auto prior=meta.at("redirects"),observed=response.at("redirects");
+        for(std::size_t i=0;i<observed.size();++i)
+          if(i>=prior.size()||!observed.at(i).is_string()||observed.at(i).str()!=prior.at(i).str())return true;
+        const auto status=response.has("status")&&response.at("status").is_string()?response.at("status").str():"";
+        if(status=="ok"||status=="not_modified")
+          return observed.canonical()!=prior.canonical()||!response.has("final_url")||response.at("final_url").str()!=meta.at("final_url").str();
+        // A newly observed redirect whose target failed admission/completion
+        // cannot keep an older alias alive merely because its target was not reached.
+        if(response.has("http_redirect_observations")&&response.at("http_redirect_observations").is_array()&&response.at("http_redirect_observations").size()!=0)return true;
+      }
+      return false;
+    }
     std::vector<std::string> split(std::string_view s, char sep) {
       std::vector<std::string> out;
       std::size_t start=0;
@@ -673,7 +691,7 @@ namespace bzs {
     if(answered)cache_put(cache_key, out, partial,source_generation);
     return out;
   }
-  Json WebService::window(const std::string& owner, const Json& snap, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at) {
+  Json WebService::window(const std::string& owner, const Json& snap, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at,const Json& http_guard) {
     auto meta=snap.at("meta");
     Json out=Json::object();
     out.set("snapshot_id", snap.at("snapshot_id"));
@@ -686,7 +704,12 @@ namespace bzs {
     out.set("from_cache", from_cache);
     out.set("indexed", snap.at("indexed"));
     out.set("site_publication",snap.at("site_publication"));
-    out.set("content", store_.range(owner, snap.at("snapshot_id").str(), start, max_bytes));
+    auto content=store_.range(owner, snap.at("snapshot_id").str(), start, max_bytes,http_guard);
+    if(content.has("http_publication_projection")) {
+      const auto current=content.at("http_publication_projection");out.set("indexed",current.at("indexed"));out.set("site_publication",current.at("site_publication"));
+      auto range=Json::object();for(const auto& key:content.keys())if(key!="http_publication_projection")range.set(key,content.at(key));content=std::move(range);
+    }
+    out.set("content",content);
     out.set("links_count", static_cast<std::int64_t>(snap.at("links").size()));
     out.set("metadata", meta.has("metadata")?meta.at("metadata"):Json::object());
     Json fetch=Json::object();
@@ -714,11 +737,7 @@ namespace bzs {
     auto cached=store_.cached(owner, url);
     const auto cache_status=[&] {
       const auto meta=cached?cached->at("meta"):Json::object();
-      auto status=http_freshness(meta.has("http_freshness")?meta.at("http_freshness"):Json(),store_.now(),max_age);
-      if(!meta.has("final_url")||meta.at("final_url").str()!=url||!meta.has("redirects")||meta.at("redirects").size()!=0) {
-        status.set("fresh",false);status.set("reason","redirect_chain_not_cached");
-      }
-      return status;
+      return http_read_freshness(meta,url,store_.now(),max_age);
     };
     const auto matching_profile=[&] {
       // Local RPC only: no origin request. The worker configuration can change
@@ -739,31 +758,41 @@ namespace bzs {
       return cached&&cached->at("meta").has("http_freshness")&&
         current==cached->at("meta").at("http_freshness").at("request_profile").str();
     };
+    const auto cached_window=[&] {
+      const auto meta=cached->at("meta");auto guard=Json::object();
+      guard.set("version","bzs-http-cache-hit-1");guard.set("url",url);
+      guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("max_age_s",max_age);
+      return window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num(),guard);
+    };
     if(freshness=="cache_only") {
       require(cached.has_value(), "E_NOT_CACHED", "No stored snapshot for this URL; use freshness=cache_first or refresh", 404);
       require(cache_status().at("fresh").flag()&&matching_profile(),"E_CACHE_STALE","Stored representation requires origin validation; cache_only cannot perform network requests",409);
       const auto current=cache_status();
       require(current.at("fresh").flag(),"E_CACHE_STALE","Stored representation expired while checking the worker profile",409);
-      auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
+      auto out=cached_window();out.set("cache",current);return out;
     }
     if(freshness=="cache_first"&&cached&&cache_status().at("fresh").flag()&&matching_profile()) {
       // The local profile RPC may wait long enough to cross the origin's TTL.
       const auto current=cache_status();
       if(current.at("fresh").flag()) {
-        auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num());out.set("cache",current);return out;
+        try { auto out=cached_window();out.set("cache",current);return out; }
+        catch(const Error& error) { if(error.code!="E_CACHE_STALE")throw; }
       }
     }
     Json params=Json::object();
     params.set("url", url);
     params.set("timeout_ms", timeout);
     const auto base=store_.revalidation_base(owner,url);
-    if(base)params.set("conditional",base->conditional);
+    if(base) {
+      if(base->conditional.at("url").str()==url)params.set("conditional",base->conditional);
+      else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
+    }
     auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
     if(r.has("http_freshness")) {
       const auto record=validate_http_freshness(r.at("http_freshness"),required_string(r,"final_url",4096));
       std::lock_guard lock(cache_mutex_);last_read_profile_=record.at("request_profile").str();
     }
-    if(cached&&http_response_restricts_cache(r,store_.now()))
+    if(cached&&(http_response_restricts_cache(r,store_.now(),url)||redirect_route_changed(cached->at("meta"),r)))
       store_.invalidate_web_cache(owner,url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
     const auto redirect_observations=decode_redirect_observations(url,r);
     std::optional<Json> observation;
@@ -784,7 +813,7 @@ namespace bzs {
     try {
       auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
       auto out=window(owner,snap,start,max_bytes,false,artifact.meta.at("fetched_at_ms").num());
-      out.set("cache",http_freshness(artifact.meta.has("http_freshness")?artifact.meta.at("http_freshness"):Json(),store_.now(),max_age));return out;
+      out.set("cache",http_read_freshness(artifact.meta,url,store_.now(),max_age));return out;
     } catch(const Error& error) {
       if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
         apply_observations();
@@ -869,6 +898,9 @@ namespace bzs {
   WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty) {
     require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     auto status=opt_string(r, "status");
+    if(r.has("representation_publication"))
+      require(status=="ok"&&r.has("http_status")&&r.at("http_status").is_integer()&&r.at("http_status").num()==200&&
+              r.has("publication")&&r.has("http_redirect_chain"),"E_WORKER_PROTOCOL","Final publication needs a complete HTTP 200 redirect receipt",502);
     if(status!="ok"&&!(allow_empty&&status=="empty_content")) {
       std::string detail=opt_string(r, "error");
       if(r.has("http_status")&&r.at("http_status").is_integer()) {
@@ -877,6 +909,7 @@ namespace bzs {
       }
       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
     }
+    require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
       require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str())&&r.at(key).str().find('\0')==std::string::npos,"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
@@ -899,6 +932,7 @@ namespace bzs {
       }
     }
     require(!incomplete||r.has("publication"),"E_WORKER_PROTOCOL","Incomplete HTTP body needs an explicit non-publishing policy",502);
+    require(!incomplete||!r.has("representation_publication"),"E_WORKER_PROTOCOL","A truncated response cannot distinguish a final publication grant",502);
     std::string final_url;
     try {
       final_url=normalize_iri(r.at("final_url").str());
@@ -921,11 +955,29 @@ namespace bzs {
         const auto observation=decode_publication(r.at("publication_observation"),url,final_url,r.at("redirects"));
         require(publication_covers(parsed.publication,observation),"E_WORKER_PROTOCOL","Read artifact would relax its response's restrictive observation",502);
       }
-      const auto final_policy=decode_publication(r.at("publication"),final_url,final_url,Json::array());
+      auto final_policy=decode_publication(r.at("publication"),final_url,final_url,Json::array());
+      if(r.has("representation_publication")) {
+        try {
+          const auto record=r.at("representation_publication");record.allowed({"version","url","publication"});
+          require(record.size()==3&&record.at("version").str()=="bzs-http-representation-publication-1"&&
+                  record.at("url").str()==r.at("final_url").str(),"E_WORKER_PROTOCOL","Final publication identity is not bound to its response",502);
+          // A complete receipt proves scope, not cache freshness. A no-cache
+          // chain can still describe a complete newly fetched representation.
+          (void)validate_http_redirect_receipt(r,url);
+          const auto delivered_final=validate_publication(record.at("publication"));
+          require(publication_covers(validate_publication(r.at("publication")),delivered_final),
+                  "E_WORKER_PROTOCOL","Aggregate publication would relax its final representation",502);
+          if(r.has("publication_observation"))
+            require(publication_covers(delivered_final,validate_publication(r.at("publication_observation"))),
+                    "E_WORKER_PROTOCOL","Final publication would relax its actual response observation",502);
+          final_policy=decode_publication(delivered_final,final_url,final_url,Json::array());
+          require(publication_covers(parsed.publication,final_policy),"E_WORKER_PROTOCOL","Aggregate publication would relax current final restrictions",502);
+        } catch(const Error& e) {throw Error("E_WORKER_PROTOCOL",std::string("Invalid final representation publication: ")+e.what(),502);}
+      }
       if(incomplete)require(!final_policy.at("index_allowed").flag()&&!final_policy.at("snippet_allowed").flag()&&!final_policy.at("follow_allowed").flag(),"E_WORKER_PROTOCOL","Incomplete HTTP body cannot publish an allowing policy",502);
       const auto redirects=decode_redirect_observations(url,r);
       for(std::size_t i=0;i<redirects.size();++i)parsed.publication=meet_publication(parsed.publication,redirects.at(i).at("publication"));
-      if(parsed.publication.canonical()!=final_policy.canonical())parsed.representation_publication=final_policy;
+      if(r.has("http_redirect_chain")||parsed.publication.canonical()!=final_policy.canonical())parsed.representation_publication=final_policy;
       parsed.index_allowed=parsed.publication.at("index_allowed").flag();
     }
     if(r.has("links")&&r.at("links").is_array()) {
@@ -951,26 +1003,67 @@ namespace bzs {
       require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
       meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
     }
+    if(r.has("http_redirect_chain")) {
+      require(!incomplete,"E_WORKER_PROTOCOL","A truncated response cannot prove a reusable redirect representation",502);
+      const auto chain=validate_http_redirect_receipt(r,url);
+      if(status=="ok"&&r.at("http_status").num()==200) {
+        // Core-only, transient scope grant, including equal policies whose
+        // optional wrapper was omitted. Store consumes it before persistence.
+        auto scope=Json::object();scope.set("version","bzs-final-publication-scope-1");scope.set("url",final_url);
+        meta.set("validated_final_publication_scope",scope);
+      }
+      if(http_redirect_chain_cacheable(chain)) {
+        auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
+        // The optional proof must fit the existing aggregate metadata allowance.
+        // Its policy observations were already enforced before this omission.
+        if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
+      }
+    }
     return {std::move(doc),std::move(parsed),std::move(meta)};
   }
   WebService::ReadArtifact WebService::decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base) {
     require(base.has_value(),"E_WORKER_PROTOCOL","Unsolicited 304 has no retained representation",502);
+    const auto final_url=base->conditional.at("url").str();const bool routed=final_url!=url;
     require(response.at("status").str()=="not_modified"&&response.at("http_status").num()==304&&
-            response.at("final_url").str()==url&&response.at("binding_id").str()==base->conditional.at("binding_id").str(),
+            response.at("final_url").str()==final_url&&response.at("binding_id").str()==base->conditional.at("binding_id").str(),
             "E_WORKER_PROTOCOL","304 response is not bound to its exact representation",502);
-    require(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery")&&!response.has("publication")&&
-            (!response.has("redirects")||(response.at("redirects").is_array()&&response.at("redirects").size()==0)),
-            "E_WORKER_PROTOCOL","304 cannot carry a replacement body or redirect chain",502);
+    require(!response.has("html")&&!response.has("text")&&!response.has("page")&&!response.has("discovery")&&!response.has("publication")&&!response.has("representation_publication"),
+            "E_WORKER_PROTOCOL","304 cannot carry a replacement body or allowing publication",502);
+    Json chain;
+    if(routed) {
+      require(base->meta.has("http_redirect_chain")&&response.has("redirect_revalidation"),"E_WORKER_PROTOCOL","Redirect 304 lacks a versioned route grant",502);
+      const auto receipt=response.at("redirect_revalidation");receipt.allowed({"version","request_url","final_url","binding_id"});
+      require(receipt.size()==4&&receipt.at("version").str()=="bzs-http-redirect-conditional-1"&&receipt.at("request_url").str()==url&&
+              receipt.at("final_url").str()==final_url&&receipt.at("binding_id").str()==base->conditional.at("binding_id").str(),
+              "E_WORKER_PROTOCOL","Redirect 304 route receipt changed",502);
+      chain=validate_http_redirect_receipt(response,url,true);
+      require(response.at("redirects").canonical()==base->meta.at("redirects").canonical(),"E_WORKER_PROTOCOL","Redirect 304 changed its exact prefix",502);
+      require(http_redirect_storage_allowed(response,url,store_.now()),"E_CACHE_POLICY","304 redirect policy forbids persistent reuse",409);
+    } else {
+      require(!response.has("redirect_revalidation")&&!response.has("http_redirect_chain")&&
+              (!response.has("redirects")||(response.at("redirects").is_array()&&response.at("redirects").size()==0)),
+              "E_WORKER_PROTOCOL","Direct 304 cannot carry a redirect chain",502);
+    }
     ReadArtifact artifact{base->document,base->parsed,Json::parse(base->meta.dump(),8*1024*1024)};
+    // Store captures the original final policy before applying any chain-wide
+    // ceiling. Never derive it from an aggregate already restricted by a hop.
+    if(routed)require(artifact.parsed.representation_publication.has("version"),
+                      "E_WORKER_PROTOCOL","Redirect revalidation lacks its final publication identity",502);
     artifact.meta.set("http_cache",merge_http_cache(base->meta.at("http_cache"),response.at("http_cache")));
     if(response.has("http_freshness")) {
-      auto policy=validate_http_freshness(response.at("http_freshness"),url);
+      auto policy=validate_http_freshness(response.at("http_freshness"),final_url);
       if(base->meta.has("http_freshness"))policy=merge_http_freshness(base->meta.at("http_freshness"),policy);
       require(http_freshness(policy,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","304 policy forbids persistent reuse",409);
       artifact.meta.set("http_freshness",policy);
     } else {
-      // A legacy worker cannot renew an unreported response policy.
-      auto conservative=Json::object();for(const auto& key:artifact.meta.keys())if(key!="http_freshness")conservative.set(key,artifact.meta.at(key));artifact.meta=std::move(conservative);
+      auto conservative=Json::object();for(const auto& key:artifact.meta.keys())if(key!="http_freshness"&&key!="http_redirect_chain")conservative.set(key,artifact.meta.at(key));artifact.meta=std::move(conservative);
+    }
+    if(routed) {
+      require(http_redirect_chain_cacheable(chain),"E_REVALIDATION_STALE","Redirect 304 cannot renew an uncacheable prefix",409);
+      artifact.meta.set("http_redirect_chain",chain);
+      const auto observations=decode_redirect_observations(url,response);artifact.meta.set("redirect_publication_observations",observations);
+      for(std::size_t i=0;i<observations.size();++i)artifact.parsed.publication=meet_publication(artifact.parsed.publication,observations.at(i).at("publication"));
+      artifact.parsed.index_allowed=artifact.parsed.publication.at("index_allowed").flag();
     }
     artifact.meta.set("fetched_at_ms",store_.now());artifact.meta.set("http_status",std::int64_t{304});artifact.meta.set("revalidated",true);
     auto bound=Json::object();bound.set("version","bzs-http-revalidation-1");bound.set("base_snapshot_id",base->snapshot_id);
@@ -1021,7 +1114,10 @@ namespace bzs {
       params.set("attempt_id",lease.attempt_id);
       const auto cached=store_.cached(lease.owner,lease.url);
       const auto base=store_.revalidation_base(lease.owner,lease.url);
-      if(base)params.set("conditional",base->conditional);
+      if(base) {
+        if(base->conditional.at("url").str()==lease.url)params.set("conditional",base->conditional);
+        else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
+      }
       const auto response=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
       require(response.is_object()&&response.has("status")&&response.at("status").is_string()&&
               response.has("usage")&&response.at("usage").is_object(),
@@ -1036,9 +1132,9 @@ namespace bzs {
               (response.at("status").str()!="ok"||(used_requests>0&&used_bytes>0)),
               "E_WORKER_PROTOCOL","Read usage exceeds the durable grant",502);
       requests=used_requests;bytes=used_bytes;
-      if(cached&&http_response_restricts_cache(response,store_.now()))
+      if(cached&&(http_response_restricts_cache(response,store_.now(),lease.url)||redirect_route_changed(cached->at("meta"),response)))
         store_.invalidate_web_cache(lease.owner,lease.url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
-      if(response.at("status").str()=="not_modified")require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
+      if(response.at("status").str()=="not_modified"&&!response.has("redirect_revalidation"))require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","304 must account for one request and zero body bytes",502);
       redirect_observations=decode_redirect_observations(lease.url,response);
       observation=decode_observation(lease.url,response);if(observation)observed_url=normalize_iri(response.at("final_url").str());
       const auto status=response.at("status").str();

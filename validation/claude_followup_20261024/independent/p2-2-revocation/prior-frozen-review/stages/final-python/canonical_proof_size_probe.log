@@ -1,0 +1,48 @@
+{
+  "scope": "Worker helper vs actual json-c scalar encoding; no HTTP",
+  "json_c_library": "libjson-c.so.5",
+  "passed": 5,
+  "total": 5,
+  "cases": [
+    {
+      "final_uri_bytes": 100,
+      "consumer_canonical_bytes": 758,
+      "worker_encoded_size": 758,
+      "proof_emitted": true,
+      "expected_proof_emitted": true,
+      "passed": true
+    },
+    {
+      "final_uri_bytes": 3816,
+      "consumer_canonical_bytes": 8190,
+      "worker_encoded_size": 8190,
+      "proof_emitted": true,
+      "expected_proof_emitted": true,
+      "passed": true
+    },
+    {
+      "final_uri_bytes": 3817,
+      "consumer_canonical_bytes": 8192,
+      "worker_encoded_size": 8192,
+      "proof_emitted": true,
+      "expected_proof_emitted": true,
+      "passed": true
+    },
+    {
+      "final_uri_bytes": 3818,
+      "consumer_canonical_bytes": 8194,
+      "worker_encoded_size": 8194,
+      "proof_emitted": false,
+      "expected_proof_emitted": false,
+      "passed": true
+    },
+    {
+      "final_uri_bytes": 3824,
+      "consumer_canonical_bytes": 8206,
+      "worker_encoded_size": 8206,
+      "proof_emitted": false,
+      "expected_proof_emitted": false,
+      "passed": true
+    }
+  ]
+}

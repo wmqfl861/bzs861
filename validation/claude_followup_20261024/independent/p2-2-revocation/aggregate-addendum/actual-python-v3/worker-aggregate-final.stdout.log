@@ -1,0 +1,377 @@
+{
+  "scope": "independent additive public-aggregate/private-final contract; completed-fetch stub, no HTTP",
+  "passed": 14,
+  "total": 14,
+  "cases": [
+    {
+      "name": "200-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": {
+        "version": "bzs-http-representation-publication-1",
+        "url": "https://scope-review.example/open/page",
+        "publication": {
+          "version": "bzs-publication-1",
+          "index_allowed": true,
+          "snippet_allowed": true,
+          "follow_allowed": true,
+          "snippet_text": "scopeprobe final text",
+          "snippet_title": "scopeprobe",
+          "directives": [],
+          "diagnostics": []
+        }
+      },
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "200-final-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "200-intermediate-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": {
+        "version": "bzs-http-representation-publication-1",
+        "url": "https://scope-review.example/open/page",
+        "publication": {
+          "version": "bzs-publication-1",
+          "index_allowed": true,
+          "snippet_allowed": true,
+          "follow_allowed": true,
+          "snippet_text": "scopeprobe final text",
+          "snippet_title": "scopeprobe",
+          "directives": [],
+          "diagnostics": []
+        }
+      },
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "200-all-route",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "200-unrelated-scope",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": true,
+        "follow_allowed": true,
+        "snippet_text": "scopeprobe final text",
+        "snippet_title": "scopeprobe",
+        "directives": [],
+        "diagnostics": []
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "200-final-noindex",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": false,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [
+          "noindex"
+        ],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": {
+        "version": "bzs-http-representation-publication-1",
+        "url": "https://scope-review.example/open/page",
+        "publication": {
+          "version": "bzs-publication-1",
+          "index_allowed": false,
+          "snippet_allowed": false,
+          "follow_allowed": true,
+          "snippet_text": "",
+          "snippet_title": "",
+          "directives": [
+            "noindex"
+          ],
+          "diagnostics": []
+        }
+      },
+      "final_observation": {
+        "version": "bzs-publication-1",
+        "index_allowed": false,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [
+          "noindex"
+        ],
+        "diagnostics": []
+      },
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "304-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "not_modified",
+      "public_aggregate": null,
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "304-final-only",
+      "passed": true,
+      "failures": [],
+      "status": "not_modified",
+      "public_aggregate": null,
+      "private_final": null,
+      "final_observation": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "conditional_publication_ceiling",
+          "site_links_only"
+        ]
+      },
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "direct304-final-only",
+      "passed": true,
+      "failures": [],
+      "status": "not_modified",
+      "public_aggregate": null,
+      "private_final": null,
+      "final_observation": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "conditional_publication_ceiling",
+          "site_links_only"
+        ]
+      },
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "legacy200-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "direct200-final-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "203-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": null,
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "empty200-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "empty_content",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "empty_extraction_restriction",
+          "site_links_only"
+        ]
+      },
+      "completed_fetch_calls": 1
+    },
+    {
+      "name": "truncated200-original-only",
+      "passed": true,
+      "failures": [],
+      "status": "ok",
+      "public_aggregate": {
+        "version": "bzs-publication-1",
+        "index_allowed": false,
+        "snippet_allowed": false,
+        "follow_allowed": false,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [
+          "nofollow",
+          "noindex",
+          "nosnippet"
+        ],
+        "diagnostics": [
+          "incomplete_http_body",
+          "site_links_only"
+        ]
+      },
+      "private_final": null,
+      "final_observation": {
+        "version": "bzs-publication-1",
+        "index_allowed": false,
+        "snippet_allowed": false,
+        "follow_allowed": false,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [
+          "nofollow",
+          "noindex",
+          "nosnippet"
+        ],
+        "diagnostics": [
+          "incomplete_http_body",
+          "site_links_only"
+        ]
+      },
+      "completed_fetch_calls": 1
+    }
+  ]
+}

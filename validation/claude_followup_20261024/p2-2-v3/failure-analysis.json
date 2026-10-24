@@ -1,0 +1,12 @@
+{
+  "status": "failed execution environment; no source changes made for retry",
+  "ctest": "15 native targets passed; 11 HTTP targets could not start local socket fixtures; python_worker reached the unchanged 180-second timeout",
+  "observed_error": "socket.socket() PermissionError: [Errno 1] Operation not permitted under default sandbox",
+  "local_bind_after_approved_execution": [
+    "127.0.0.1",
+    54721
+  ],
+  "retry": "p2-2-v4 full CTest, pytest and native sanitizers with local loopback permitted by execution approval",
+  "test_assertions_timeouts_and_selection_changed": false,
+  "original_logs_retained": true
+}

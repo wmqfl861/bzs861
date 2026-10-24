@@ -1,0 +1,52 @@
+{
+  "role": "independent frozen negative baseline; before P2-2, not a P2-2-v1 runtime result",
+  "library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+  "source_library_unchanged": true,
+  "probe_sha256": "b4f60d96d10fcf702171c439d5fc8e469bd3af11686e01eea94c58756f40935b",
+  "git_head_observed": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+  "headers": {
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "b819d91dbd6230445a44bf4bf2abac7cb90f4299a12a8e43ef7a72edceef2a80",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "include/bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "include/bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "69770a9f9cada9ba412cce3859719d81e7fdc909e3ab4165fda8aff9cc334f07",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "include/bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "include/bzs/web.hpp": "68e2959787d80cd2a7c1c54e3cd255164e9f523557aa1f62f1037e698530f627"
+  },
+  "compile": {
+    "argv": [
+      "c++",
+      "-std=c++20",
+      "-I/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/include",
+      "/tmp/bzs-p2-redirect-review-revocation-v1/direct_route_failure_probe.cpp",
+      "/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-p2-redirect-review-revocation-v1/baseline-p2-1/probe"
+    ],
+    "exit_code": 0,
+    "seconds": 1.4135823249816895,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "exit_code": 1,
+    "seconds": 0.03421211242675781,
+    "log_sha256": "5307ea6693aac6238190fcc6dda9734f769e8a51a664d08018113e86fe1d193d",
+    "expected_old_code_failure": true,
+    "output": "refresh=E_FETCH_HTTP\nFAIL cache_only accepted superseded direct body; from_cache=1\n",
+    "binary_sha256": "3387c2ae33bcae1c3462b5c934e4d8f4dd17c48a527eda55a714816ea84907b5"
+  }
+}

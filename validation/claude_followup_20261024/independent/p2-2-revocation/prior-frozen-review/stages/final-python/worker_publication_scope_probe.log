@@ -1,0 +1,116 @@
+{
+  "scope": "isolated coordinator unit; completed-response stub; no real HTTP",
+  "passed": 6,
+  "total": 6,
+  "cases": [
+    {
+      "name": "routed304-prefix-only",
+      "passed": true,
+      "status": "not_modified",
+      "expected_final_restricted": false,
+      "actual_final_restricted": false,
+      "final_publication_record": null,
+      "completed_response_calls": 1
+    },
+    {
+      "name": "routed304-final-only",
+      "passed": true,
+      "status": "not_modified",
+      "expected_final_restricted": true,
+      "actual_final_restricted": true,
+      "final_publication_record": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "conditional_publication_ceiling",
+          "site_links_only"
+        ]
+      },
+      "completed_response_calls": 1
+    },
+    {
+      "name": "direct304-final-only",
+      "passed": true,
+      "status": "not_modified",
+      "expected_final_restricted": true,
+      "actual_final_restricted": true,
+      "final_publication_record": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "conditional_publication_ceiling",
+          "site_links_only"
+        ]
+      },
+      "completed_response_calls": 1
+    },
+    {
+      "name": "routed200-prefix-only",
+      "passed": true,
+      "status": "ok",
+      "expected_final_restricted": false,
+      "actual_final_restricted": false,
+      "final_publication_record": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": true,
+        "follow_allowed": true,
+        "snippet_text": "scopeprobe final text",
+        "snippet_title": "scopeprobe",
+        "directives": [],
+        "diagnostics": []
+      },
+      "completed_response_calls": 1
+    },
+    {
+      "name": "routed200-final-only",
+      "passed": true,
+      "status": "ok",
+      "expected_final_restricted": true,
+      "actual_final_restricted": true,
+      "final_publication_record": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "completed_response_calls": 1
+    },
+    {
+      "name": "legacy200-prefix-only",
+      "passed": true,
+      "status": "ok",
+      "expected_final_restricted": true,
+      "actual_final_restricted": true,
+      "final_publication_record": {
+        "version": "bzs-publication-1",
+        "index_allowed": true,
+        "snippet_allowed": false,
+        "follow_allowed": true,
+        "snippet_text": "",
+        "snippet_title": "",
+        "directives": [],
+        "diagnostics": [
+          "site_links_only"
+        ]
+      },
+      "completed_response_calls": 1
+    }
+  ]
+}

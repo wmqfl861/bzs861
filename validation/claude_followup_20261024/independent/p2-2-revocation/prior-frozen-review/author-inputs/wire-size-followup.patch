@@ -1,0 +1,94 @@
+diff --git a/docs/HTTP_REDIRECT_CACHE.md b/docs/HTTP_REDIRECT_CACHE.md
+--- a/docs/HTTP_REDIRECT_CACHE.md
++++ b/docs/HTTP_REDIRECT_CACHE.md
+@@ -31,7 +31,7 @@
+ 
+ Worker 另行返回有界的 `http_redirect_observations`（最多 20 条，规范 JSON 最多 512 KiB），每条恰好包含实际 `url`、3xx `http_status`、`http_freshness`。即使后续准入、预算、网络或提取失败，这些已经收到的限制仍保留。Core 验证它们属于本次实际响应前缀且不超过已知请求用量。完整证明必须与这些观察逐条一致。
+ 
+-证明超过 8 KiB 或无法覆盖整个请求时，Worker 不授予复用资格，仍报告限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账，无新增表或 schema 迁移。
++私有协议的编码大小按 Core `Json::canonical` 的 UTF-8 字节计数，包括字符串键和值中的斜杠转义；Worker 的大小预检采用同一口径，不改变实际 JSON 传输或全局序列化器。证明超过 8 KiB 或无法覆盖整个请求时，Worker 省略可选证明，仍返回本次完整读取结果与限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账，无新增表或 schema 迁移。
+ 
+ 任何实际中间响应的 no-store、非法 Cache-Control 或 Worker 标记 invalid 的原始字段，都会阻止本次原始 URL 读取产生新的持久正文，返回 `E_CACHE_POLICY`。这是本项目当前没有瞬时正文通道时的保守规则；并不声称 HTTP 标准禁止对另一个独立授权资源单独缓存。此前合法取得的正文仍可作为历史证据读取，其 HTTP 复用资格则按旧 snapshot ID + metadata hash 失效。失败的迟到回执不能删除后来成功刷新建立的新缓存身份。
+ 
+diff --git a/python/bzs/worker/redirect_cache.py b/python/bzs/worker/redirect_cache.py
+--- a/python/bzs/worker/redirect_cache.py
++++ b/python/bzs/worker/redirect_cache.py
+@@ -21,8 +21,11 @@
+ 
+ 
+ def encoded_size(value: Any) -> int:
+-    return len(json.dumps(value, ensure_ascii=False, sort_keys=True,
+-                          separators=(",", ":")).encode("utf-8"))
++    # Core Json::canonical uses json-c's default scalar encoding, which escapes
++    # every slash in string keys/values. Measure that same private-protocol form
++    # without changing the actual JSON transport or the global serializer.
++    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
++    return len(encoded.replace("/", "\\/").encode("utf-8"))
+ 
+ 
+ def _uri(value: Any) -> bool:
+diff --git a/python/tests/test_http_redirect_cache.py b/python/tests/test_http_redirect_cache.py
+--- a/python/tests/test_http_redirect_cache.py
++++ b/python/tests/test_http_redirect_cache.py
+@@ -9,7 +9,10 @@
+ from multidict import CIMultiDict
+ 
+ from bzs.worker.netguard import NetPolicy
+-from bzs.worker.redirect_cache import CONDITIONAL_VERSION, MAX_CHAIN_BYTES, validate_redirect_conditional
++from bzs.worker.redirect_cache import (
++    CHAIN_VERSION, CONDITIONAL_VERSION, MAX_CHAIN_BYTES, encoded_size, make_chain,
++    validate_redirect_conditional,
++)
+ from bzs.worker.server import Worker
+ from bzs.worker.sites import SiteRegistry
+ 
+@@ -71,6 +74,49 @@
+             "redirects": [hop["target_url"] for hop in proof["hops"]], "conditional": conditional}
+ 
+ 
++def test_private_encoded_size_matches_core_slashes_backslashes_and_utf8():
++    # The literal's Core json-c canonical encoding is 65 UTF-8 bytes. Plain
++    # json.dumps omits six slash escapes and must not define this protocol cap.
++    value = {"path/key": ["https://host.example/a/b", "a\\b/c", "中文"]}
++    assert encoded_size(value) == 65
++
++
++@pytest.mark.parametrize("length,core_bytes", [(3825, 8190), (3826, 8192), (3827, 8194), (3833, 8206), (3834, 8208)])
++def test_optional_proof_boundary_uses_core_canonical_bytes(length, core_bytes):
++    original = "https://bounds.example/start"
++    prefix = "https://bounds.example/"
++    final = prefix + "x" * (length - len(prefix))
++    profile = "a" * 64
++    freshness = {"version": "bzs-http-freshness-1", "url": original, "request_profile": profile,
++                 "cache_control": "max-age=60", "vary": "", "date": "", "age": "", "expires": "", "pragma": "",
++                 "received_at_ms": 1700000000000, "response_delay_ms": 0, "invalid": False}
++    hops = [{"url": original, "target_url": final, "http_status": 301,
++             "content_bytes": 0, "http_freshness": freshness}]
++    expected = {"version": CHAIN_VERSION, "request_url": original, "final_url": final, "hops": hops}
++    assert encoded_size(expected) == core_bytes
++    result = make_chain(original, final, hops, profile)
++    assert (result is not None) is (core_bytes <= MAX_CHAIN_BYTES)
++    if result is not None:
++        assert result == expected
++
++
++@pytest.mark.parametrize("prefix_control", ["max-age=60", "no-store"])
++async def test_oversized_optional_proof_keeps_complete_body_and_prefix_observations(redirect_worker, prefix_control):
++    worker, server, calls, state = redirect_worker
++    target = "/" + "p" * 4000
++    assert len(str(server.make_url(target))) <= 4096
++    state.update(target=target, prefix_control=prefix_control)
++    result = await worker.fetch_extract(params(server, bounded=True))
++    assert result["status"] == "ok" and result["http_status"] == 200 and result["text"]
++    assert result["final_url"] == str(server.make_url(target))
++    assert "http_redirect_chain" not in result
++    observations = result["http_redirect_observations"]
++    assert len(observations) == 1 and observations[0]["url"] == str(server.make_url("/start"))
++    assert observations[0]["http_freshness"]["cache_control"] == prefix_control
++    assert [item["path"] for item in calls] == ["/start", target]
++    assert result["usage"] == {"external_requests": 2, "content_bytes": 4 + len(BODY)}
++
++
+ def links_only_site(worker, server, tmp_path, prefix):
+     site = {"id": "redirect-scope", "enabled": True, "origin": str(server.make_url("/")).rstrip("/"),
+             "path_prefixes": [prefix], "review": {

@@ -1,0 +1,92 @@
+diff --git a/docs/HTTP_REDIRECT_CACHE.md b/docs/HTTP_REDIRECT_CACHE.md
+--- a/docs/HTTP_REDIRECT_CACHE.md
++++ b/docs/HTTP_REDIRECT_CACHE.md
+@@ -46,7 +46,7 @@
+ | redirects | 原证明中的完整 target URI 列表，1–5 项、无循环 |
+ | conditional | 现有六字段 `bzs-http-revalidation-1`，其中 url 必须是 final URI |
+ 
+-整个授权最多 8192 字节，未知字段、重复身份、错误类型、非 HTTP URI、用户信息、片段以及同时发送两种条件授权都在 attempt 留存或网络派发前拒绝。它不是公开 HTTP/MCP/CLI 参数。
++整个授权最多 8192 字节，未知字段、重复身份、错误类型、非 HTTP URI、用户信息、片段以及同时发送两种条件授权都在 attempt 留存或网络派发前拒绝。它不是公开 HTTP/MCP/CLI 参数。 Core 在提供可选 revalidation base 前同时检查实际授权的编码大小：已保存的证明和总 HTTP 元数据能容纳，不代表重复 URI 与 validator 的条件授权也能容纳。无法在该上限内编码时，本次已授权读取直接执行完整 GET，不先失败再重试，也不扩大上限；没有派发绑定条件就仍不能接受 304。
+ 
+ Worker 重新走每个实际 HTTP 跳转，保留原有 SSRF、连接约束、跨来源头清理、单一 deadline 和请求/正文预算。只有实际前缀与授权完全相同，且最终实际请求 profile 与 validator 的 profile 相符，才在精确 final URI 的这次 GET 上安装其自己的 If-None-Match / If-Modified-Since。条件头不会从前一跳继承；若 conditioned final 又返回跳转，下一 URI 同样不继承这些验证器。
+ 
+diff --git a/src/store.cpp b/src/store.cpp
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -950,7 +950,15 @@
+       base.parsed.publication=current_publication_ceiling_locked(owner,meta.at("redirects").at(i).str(),base.parsed.publication);
+     if(base.parsed.representation_publication.has("version"))base.parsed.representation_publication=current_publication_ceiling_locked(owner,final_url,base.parsed.representation_publication);
+     base.parsed.index_allowed=base.parsed.publication.at("index_allowed").flag();
+-    base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));return base;
++    base.meta=meta;base.conditional=http_conditional(cache,sha256(owner+"\n"+base.snapshot_id+"\n"+base.metadata_sha256));
++    if(!direct) {
++      // A reusable proof can fit storage while its optional conditional grant
++      // exceeds the separate wire bound. Skip that optimization before dispatch;
++      // the same authorized read will fetch a complete representation once.
++      try { (void)http_redirect_conditional(meta.at("http_redirect_chain"),base.conditional); }
++      catch(const Error& error) { if(error.code!="E_WORKER_PROTOCOL")throw;return std::nullopt; }
++    }
++    return base;
+   }
+   Json Store::snapshot(const std::string& owner, const std::string& id) {
+     std::lock_guard lock(mutex_);
+diff --git a/tests/cache_freshness.cpp b/tests/cache_freshness.cpp
+--- a/tests/cache_freshness.cpp
++++ b/tests/cache_freshness.cpp
+@@ -436,6 +436,56 @@
+   const auto stored=s.ingest_web("a",document,parsed,meta,s.deletion_generation("a",url));CHECK(!stored.at("meta").has("publication_fence"));
+   const auto hit=web.read("a",args("cache_only"));CHECK(hit.at("from_cache").flag());CHECK(hit.at("indexed").flag());CHECK(hit.at("snapshot_id").str()==stored.at("snapshot_id").str());CHECK(w.requests==0);
+ }
++Json oversized_redirect_grant_response(Json response) {
++  const auto prefix=std::string("https://cache.example/");const auto final=prefix+std::string(3500-prefix.size(),'x');
++  response.set("final_url",final);auto redirects=Json::array();redirects.push(Json::string(final));response.set("redirects",redirects);
++  response.at("http_freshness").set("url",final);response.at("http_cache").set("url",final);
++  response.at("http_cache").set("etag","\""+std::string(1022,'v')+"\"");
++  response.at("http_redirect_chain").set("final_url",final);
++  response.at("http_redirect_chain").at("hops").at(std::size_t{0}).set("target_url",final);
++  return response;
++}
++void oversized_grant_is_optional(Store& store) {
++  const auto meta=store.cached("a",redirect_original)->at("meta");CHECK(meta.has("http_redirect_chain"));
++  CHECK(meta.at("http_redirect_chain").canonical().size()<=8192);
++  auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness","http_redirect_chain"})accounted.set(key,meta.at(key));CHECK(accounted.canonical().size()<=16384);
++  const auto conditional=http_conditional(meta.at("http_cache"),sha256("oversized-grant-boundary"));
++  auto encoded=Json::object();encoded.set("version","bzs-http-redirect-conditional-1");encoded.set("request_url",redirect_original);encoded.set("redirects",meta.at("redirects"));encoded.set("conditional",conditional);
++  CHECK(encoded.canonical().size()>8192);
++  rejects([&]{(void)http_redirect_conditional(meta.at("http_redirect_chain"),conditional);},"E_WORKER_PROTOCOL");
++  CHECK(!store.revalidation_base("a",redirect_original));
++}
++TEST(oversized_optional_redirect_grant_uses_one_full_refresh_without_retry) {
++  Temp t;RedirectWorker w;w.force200=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  w.alter=[](const Json& parameters,Json response) {CHECK(!parameters.has("conditional")&&!parameters.has("redirect_conditional"));return oversized_redirect_grant_response(response);};
++  const auto first=web.read("a",redirect_args());oversized_grant_is_optional(s);
++  CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());CHECK(w.requests==1);
++  ++w.now;const auto refreshed=web.read("a",redirect_args("refresh"));CHECK(w.requests==2);CHECK(!refreshed.at("from_cache").flag());CHECK(refreshed.at("fetch").at("http_status").num()==200);
++  CHECK(refreshed.at("snapshot_id").str()==first.at("snapshot_id").str());CHECK(refreshed.at("content").at("text").str()=="cache fixture body");
++}
++TEST(oversized_optional_redirect_grant_batch_keeps_full_get_known_usage) {
++  Temp t;RedirectWorker w;w.force200=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  w.alter=[](const Json& parameters,Json response) {CHECK(!parameters.has("conditional")&&!parameters.has("redirect_conditional"));return oversized_redirect_grant_response(response);};
++  web.read("a",redirect_args());oversized_grant_is_optional(s);
++  const auto job=s.read_many_submit("a",{redirect_original},"oversized-grant-full",{});const auto lease=s.lease_next_read();CHECK(lease.has_value());web.execute_read(*lease);
++  const auto result=s.job_get("a",job.at("job_id").str());CHECK(result.at("state").str()=="succeeded");CHECK(w.requests==2);
++  CHECK(result.at("usage").at("external_requests").num()==2);CHECK(result.at("usage").at("content_bytes").num()==21);
++  CHECK(result.at("usage").at("unknown_requests_charged").num()==0);CHECK(result.at("usage").at("reserved_requests").num()==0);
++}
++TEST(oversized_optional_redirect_grant_does_not_authorize_unsolicited_304) {
++  Temp t;RedirectWorker w;w.force200=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
++  w.alter=[&](const Json& parameters,Json response) {
++    CHECK(!parameters.has("conditional")&&!parameters.has("redirect_conditional"));response=oversized_redirect_grant_response(response);
++    if(w.requests==1)return response;
++    auto unbound=Json::object();for(const auto& key:response.keys())if(key!="html"&&key!="text")unbound.set(key,response.at(key));
++    unbound.set("status","not_modified");unbound.set("http_status",std::int64_t{304});unbound.set("binding_id",sha256("ungranted"));unbound.at("usage").set("content_bytes",std::int64_t{3});return unbound;
++  };
++  const auto first=web.read("a",redirect_args());oversized_grant_is_optional(s);const auto meta=s.cached("a",redirect_original)->at("meta").canonical();
++  w.now+=5000;rejects([&]{web.read("a",redirect_args("refresh"));},"E_WORKER_PROTOCOL");CHECK(w.requests==2);
++  CHECK(s.cached("a",redirect_original)->at("meta").canonical()==meta);CHECK(s.stats("a").at("snapshots").num()==1);
++  CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
++  w.now=epoch+10000;rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==2);
++}
+ 
+ }
+ int main(){int failed=0;for(const auto& [name,test]:cases){try{test();std::cout<<"PASS "<<name<<'\n';}catch(const std::exception& e){++failed;std::cout<<"FAIL "<<name<<": "<<e.what()<<'\n';}}std::cout<<cases.size()<<" cases, "<<assertions<<" assertions, "<<failed<<" failed\n";return failed?1:0;}

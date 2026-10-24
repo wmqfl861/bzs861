@@ -1,0 +1,18 @@
+{
+  "baseline_head_at_prepare": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "old_e2e_cases": 6,
+  "new_e2e_cases": [
+    "test_failed_new_http_route_invalidates_the_old_direct_cache",
+    "test_http_chain_batch_304_accounts_for_each_request_and_redirect_body",
+    "test_http_chain_cache_is_owner_scoped_without_a_global_final_alias",
+    "test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator"
+  ],
+  "original_e2e_cases_AST_equal": true,
+  "runtime_input_matches": {
+    "python/tests/test_http_redirect_cache.py": true,
+    "python/bzs/worker/redirect_cache.py": true,
+    "python/bzs/worker/server.py": true,
+    "python/bzs/worker/freshness.py": true,
+    "python/bzs/worker/fetch.py": true
+  }
+}

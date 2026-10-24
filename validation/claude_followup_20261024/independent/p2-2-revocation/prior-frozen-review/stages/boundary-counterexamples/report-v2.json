@@ -1,0 +1,32 @@
+{
+  "role": "independent counterexample on exact frozen P2-2-v2 library before optional-grant fix",
+  "source": "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+  "source_sha256": "06d2995b4e666eb336244518156300cece5ab3ae39287f795d11da6036034b3b",
+  "included_fixture_sha256": "745ddd1041a38b0df5b6b189564f331e86bdcb4cbf00ae107595c6ffa3ccb81c",
+  "library_sha256": "168671945312ad17f35221cbc8fcfaba3c6c5b95294bbb5c9e2a616a69d2f426",
+  "compile_argv": [
+    "c++",
+    "-std=c++20",
+    "-I/tmp/bzs-p2-redirect-review-revocation-v2/include",
+    "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/oversized_conditional_probe_v2.cpp",
+    "/tmp/bzs-p2-redirect-review-revocation-v2/libbzs_core.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/tmp/bzs-p2-redirect-review-revocation-boundary-v1/probe-v2"
+  ],
+  "compile_exit": 0,
+  "compile_seconds": 1.4811301231384277,
+  "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "first_probe_draft": "oversized_conditional_probe.cpp retained but never executed; v2 removes erroneous base-presence assumption and explicitly prohibits condition dispatch",
+  "run": {
+    "exit_code": 1,
+    "seconds": 0.13512277603149414,
+    "binary_sha256": "c1ac804194cea11a43064c2bd0d5daa32c3ac42fb6110bcfa653123cbbf45ae4",
+    "log_sha256": "beac3ac58b27da18874412ef52ae986237fa419b9d50e40eaedf209a3dcf2386",
+    "output": "proof_bytes=7558 metadata_bytes=16157 conditional_bytes=8403 base_supplied=1\nrefresh=E_WORKER_PROTOCOL message=Redirect condition exceeds its encoded bound\norigin_calls=1\nFAIL Optional oversized conditional blocked an otherwise authorized full refresh\n"
+  }
+}

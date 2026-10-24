@@ -1,0 +1,52 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "stage": "Final C++ replay; complete Python wire source binding pending",
+  "role": {
+    "independent_of_p2_2_implementation": true,
+    "authored_prior_shared_read_implementation": true,
+    "shared_case": "P2-2 interaction regression only; not independent sign-off of prior shared-read implementation",
+    "root_files_modified": false,
+    "production_or_formal_tests_authored": false
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p2-2/redirect_independent_probe_final"
+    ],
+    "started_utc": "2026-10-24T04:40:05.415669+00:00",
+    "duration_seconds": 0.9676773490009509,
+    "exit_code": 2,
+    "binary_sha256": "a8d756a485fec6b21a1636f556de9fb1e0a7b8f4c5107cf4de32fa7a0b8f133b",
+    "mode_before": "0o755",
+    "mode_after": "0o755",
+    "original_probe_sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb",
+    "library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+    "log_sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d",
+    "external_network_requests": 0
+  },
+  "result": {
+    "cases": 6,
+    "checks": 209,
+    "passed_cases": 4,
+    "failed_cases": 2,
+    "known_failures": "Same two stronger reverse-percent equivalence expectations as original v2; no assertions changed",
+    "log_byte_identical_to_original_v2": true,
+    "original_log_sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d"
+  },
+  "original_review_sha256": "7618ad31bed9bd2ec2e0e0e01b067b26eb78b5e75f51306cacaf2458e0c5c647",
+  "conclusion": "No new difference in the independently exercised P2-2 interactions. Within inherited exact/map_url identity scope, original pass conclusions remain. This is not a claim that all six cases passed.",
+  "followup_static_review": {
+    "direct_cache_hit": "All cache hits now carry a Store guard for current snapshot, metadata hash, freshness and indexed projection. Chain alias fence remains conditional on a stored chain; direct caches do not acquire an unnecessary redirect-proof requirement. Historical document.range with omitted guard retains old semantics.",
+    "oversized_optional_grant": "Store preflights the actual routed conditional before dispatch. Protocol-size failure returns no revalidation base and performs the already-authorized full read once, preserving unsolicited304 rejection and existing budgets. No changes to URL equivalence or shared-read settlement."
+  },
+  "limits": [
+    "Independent six-case runtime does not add separate direct-hit or grant-size assertions; those followup changes were statically reviewed and parent formal native tests own their runtime regression.",
+    "Await final Python wire-size alignment and whole-source freeze before complete input binding.",
+    "Original percent failures, before-after observations and v2 evidence remain unchanged.",
+    "No real network, production code, formal repository test or root file changed by this reviewer."
+  ],
+  "bindings": {
+    "final_cpp_inputs_json_sha256": "c7099c5ab290de7e50b032f7b8445ae2d8ce9d43c716fd1516338b2c0c445adb",
+    "final_library_sha256": "f7af8cd19a5c56946b43123acd697b7d3cb094f3464a0822214cfa386a886aa5",
+    "frozen_probe_sha256": "f3e914c0249153d63f64665a8dd5bcef22a12494b1703552049e7df24ad7a7bb"
+  }
+}

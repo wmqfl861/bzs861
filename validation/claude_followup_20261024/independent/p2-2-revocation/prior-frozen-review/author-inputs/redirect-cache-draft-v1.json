@@ -1,0 +1,188 @@
+{
+  "role": "author-provided isolated draft and preview only; not root integration or independent approval",
+  "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "repository_modified": false,
+  "audit_branch_modified": false,
+  "patch": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.patch",
+  "patch_sha256": "2c7aa627fd3a2d4437f1c6271680b561ac9df5cafa1ba84d5133b23506765c77",
+  "files": [
+    {
+      "path": "docs/HTTP_FRESHNESS.md",
+      "before_sha256": "95ecd2a8d54fe71344f077a9b85c039a373c87a5f91bca8d2a76280f22ffd484",
+      "after_sha256": "1972c4bf3385b86e25b6eadb2ac485ce0de577cc38044e8025e36b598bc6047d"
+    },
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "before_sha256": null,
+      "after_sha256": "37cc458a2443e16e9d502e4e5095d8b8a7dbcd8a75756bf2b8009e452d16b917"
+    },
+    {
+      "path": "docs/HTTP_REVALIDATION.md",
+      "before_sha256": "00c804569cd6c5a9096be5ef2dfd102f4e3d1681bfeb6e77a98c1c1d96f135bd",
+      "after_sha256": "2cfaddc799ced9e780af115bf6acd569a0d4fc12f6066b302492b81fcb06747c"
+    },
+    {
+      "path": "include/bzs/http_cache.hpp",
+      "before_sha256": "158ea18dc0e672ad3a9bc35b3ec4ccfd9b57c065e15f1f7b1c430b0ee9f076d3",
+      "after_sha256": "0c95e001df51680d9651d453f599dbe856d9011bb2e87689f20b47e31d365fb0"
+    },
+    {
+      "path": "include/bzs/store.hpp",
+      "before_sha256": "67e224d362239899082902b61ed2848ac9e6e3354b26ff5831eeec840f99851d",
+      "after_sha256": "387fa69abab1a06ae2a7dd67491d43d219f44052423821bd06cd17e73e703173"
+    },
+    {
+      "path": "include/bzs/web.hpp",
+      "before_sha256": "68e2959787d80cd2a7c1c54e3cd255164e9f523557aa1f62f1037e698530f627",
+      "after_sha256": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+    },
+    {
+      "path": "python/bzs/worker/fetch.py",
+      "before_sha256": "c9ced0d80b19ecad233ec9d426cfbe6657b3915a5912519ac497a2b3359828a2",
+      "after_sha256": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c"
+    },
+    {
+      "path": "python/bzs/worker/freshness.py",
+      "before_sha256": "4da0be636698fea12901fda15ea2cf2a73b13a50d5fd0b9cde86f4357aad1074",
+      "after_sha256": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66"
+    },
+    {
+      "path": "python/bzs/worker/redirect_cache.py",
+      "before_sha256": null,
+      "after_sha256": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21"
+    },
+    {
+      "path": "python/bzs/worker/server.py",
+      "before_sha256": "776a21edef4633b5be2e7daf57635b69c18f0b90521c98c4cb48ff6f6253d6dd",
+      "after_sha256": "6e77b7b2df7923946a2a121e7547fb94655dfae46265f9251f11e772a7c20af7"
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "before_sha256": null,
+      "after_sha256": "1782e694f84a2d29ab7e2df0215b1e2f7921847484f313d806e27c3d3fed9bd2"
+    },
+    {
+      "path": "src/http_cache.cpp",
+      "before_sha256": "571915113ff36d283db3192d898266e234cf777a740dfce744bae618d9105f35",
+      "after_sha256": "41224f371896711fd29cec4f09db042c262f507da75f6bac4788c2e7871a8dcf"
+    },
+    {
+      "path": "src/store.cpp",
+      "before_sha256": "034a0b18d588e8b7324e9471953829e3154fd4532f3ae81299ea1ec0a6cfeccb",
+      "after_sha256": "75263e508520e801f4dd19335c54eda1e2dea8420bbeed2074325392f471b1c8"
+    },
+    {
+      "path": "src/web.cpp",
+      "before_sha256": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+      "after_sha256": "77c71458d9829b174656fda40efaea66b7d1b149a57c11007affe4369b5e8f89"
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "before_sha256": "317924e552960abad8238ef3af2439fb36b23d31e830f945fec70a96ebdb0efd",
+      "after_sha256": "a1fe055e68a1457048683e78d207314d48b50aa94f999fadb2960ad4cdf1d54e"
+    }
+  ],
+  "limits": {
+    "proof_hops": 5,
+    "proof_encoded_bytes": 8192,
+    "route_encoded_bytes": 8192,
+    "cache_metadata_total_bytes": 16384,
+    "policy_observation_count": 20,
+    "policy_observation_encoded_bytes": 524288
+  },
+  "preview": {
+    "apply_check_exact_baseline_exit": 0,
+    "python_ast": "passed",
+    "native_runtime": "not executed; no object build/link; four translation units only syntax-checked",
+    "cpp_syntax": {
+      "initial": "http_cache.cpp/web.cpp/cache_freshness.cpp passed; Store lacked explicit web.hpp include; original diagnostic retained",
+      "after_fix": "Store syntax passed"
+    },
+    "python_lock_environment": "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+    "python_runs": [
+      {
+        "log": "draft-worker-v1.log",
+        "result": "1 passed / 20 fixture setup errors: sandbox socket PermissionError; no business assertion failure"
+      },
+      {
+        "log": "draft-worker-v2.log",
+        "result": "21 passed; initial new draft tests"
+      },
+      {
+        "log": "draft-worker-related-v3.log",
+        "result": "156 passed (135 unchanged related baseline cases + initial 21 draft cases)"
+      },
+      {
+        "log": "draft-worker-v4.log",
+        "result": "22 passed; added conditioned-final redirect validator isolation"
+      }
+    ],
+    "python_runtime_input_matches": [
+      {
+        "path": "python/tests/test_http_redirect_cache.py",
+        "runtime_equals_frozen": true
+      },
+      {
+        "path": "python/bzs/worker/redirect_cache.py",
+        "runtime_equals_frozen": true
+      },
+      {
+        "path": "python/bzs/worker/server.py",
+        "runtime_equals_frozen": true
+      },
+      {
+        "path": "python/bzs/worker/freshness.py",
+        "runtime_equals_frozen": true
+      },
+      {
+        "path": "python/bzs/worker/fetch.py",
+        "runtime_equals_frozen": true
+      }
+    ]
+  },
+  "required_before_acceptance": [
+    "Root apply after P2-1 in requested fix order",
+    "Native focused runtime including new 17 cases",
+    "Original E2E/cache/revalidation/shared/batch/site/publication/deletion regressions",
+    "Full CTest and full locked pytest",
+    "Full required ASan gate",
+    "Independent lifecycle/proof/byte-accounting review"
+  ],
+  "preserved_logs": [
+    {
+      "file": "draft-apply-check-v1.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320",
+      "bytes": 7
+    },
+    {
+      "file": "draft-cpp-syntax-v1.log",
+      "sha256": "05d2853a780547b55d80d6bcec715ea5e58f98005bf8b179c210498e84cd1ce0",
+      "bytes": 1228
+    },
+    {
+      "file": "draft-cpp-syntax-v2.log",
+      "sha256": "a15dab7672ef13e170f66b5bd1a428af77caafb3d9b2df78d30d4c213cad0649",
+      "bytes": 17
+    },
+    {
+      "file": "draft-worker-related-v3.log",
+      "sha256": "f1ebc5852207f36686e72b45415d4dc12dfb5ef3ca6a70273b604884594e74cf",
+      "bytes": 260
+    },
+    {
+      "file": "draft-worker-v1.log",
+      "sha256": "e740885a009dfea829e7230208bbd95aa4f609f70bfacc2faf84699c5a1c7377",
+      "bytes": 75829
+    },
+    {
+      "file": "draft-worker-v2.log",
+      "sha256": "9a7a96f6a2aa433e74e3355a2a128f0c15665c0daf69a19488ecd8d1c6acf427",
+      "bytes": 99
+    },
+    {
+      "file": "draft-worker-v4.log",
+      "sha256": "d2fb1c09eb6c4dfeaaef85edc26e1673b84f5217c553cd8281c3d1a3247eed0f",
+      "bytes": 99
+    }
+  ]
+}

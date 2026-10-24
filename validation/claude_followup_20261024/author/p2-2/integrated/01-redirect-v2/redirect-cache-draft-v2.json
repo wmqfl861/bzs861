@@ -1,0 +1,166 @@
+{
+  "role": "Author isolated draft and preview only; main integration, compiled Core runtime, and independent acceptance remain parent-owned",
+  "repository_modified": false,
+  "audit_branch_modified": false,
+  "baseline_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "baseline_selected_files_equal_current_main": true,
+  "patch": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v2.patch",
+  "patch_sha256": "2989bc6ad77e4213b26291338d66d964e845f48b7e8739afec99b7a339ad0941",
+  "files": [
+    {
+      "path": "docs/HTTP_FRESHNESS.md",
+      "before_sha256": "eb67c49b8344dee6a93ea1c1f5b76056306fc306cc90d53ac1c34248a399850c",
+      "after_sha256": "dddc34bc8ca5c5d8f721c9a0bd011ef6b0e57cd5263fca90068be0d14663c1ec"
+    },
+    {
+      "path": "docs/HTTP_REDIRECT_CACHE.md",
+      "before_sha256": null,
+      "after_sha256": "089b0bd0c49676cd6e06fac6a7c1d3358ee8328bc46b19003eeb78ac23850df7"
+    },
+    {
+      "path": "docs/HTTP_REVALIDATION.md",
+      "before_sha256": "c2f24178087941b3483fbd4cdf2d8faa0e26685912fc08ed449b56c1df4c8a96",
+      "after_sha256": "8ef72dddad5da040b48a2d8094420125843b2aa3ae64739310f28cf53ed25795"
+    },
+    {
+      "path": "include/bzs/http_cache.hpp",
+      "before_sha256": "b819d91dbd6230445a44bf4bf2abac7cb90f4299a12a8e43ef7a72edceef2a80",
+      "after_sha256": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b"
+    },
+    {
+      "path": "include/bzs/store.hpp",
+      "before_sha256": "69770a9f9cada9ba412cce3859719d81e7fdc909e3ab4165fda8aff9cc334f07",
+      "after_sha256": "35f8d701ca1b8ecb169a068c1a029779d01b0e7805b23c9ebd8010a57c79da72"
+    },
+    {
+      "path": "include/bzs/web.hpp",
+      "before_sha256": "68e2959787d80cd2a7c1c54e3cd255164e9f523557aa1f62f1037e698530f627",
+      "after_sha256": "ebb061f7d8dd996de344fd87e58efb8297d71ae8001941a0adf62ed2bdc2c397"
+    },
+    {
+      "path": "python/bzs/worker/fetch.py",
+      "before_sha256": "c9ced0d80b19ecad233ec9d426cfbe6657b3915a5912519ac497a2b3359828a2",
+      "after_sha256": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c"
+    },
+    {
+      "path": "python/bzs/worker/freshness.py",
+      "before_sha256": "4da0be636698fea12901fda15ea2cf2a73b13a50d5fd0b9cde86f4357aad1074",
+      "after_sha256": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66"
+    },
+    {
+      "path": "python/bzs/worker/redirect_cache.py",
+      "before_sha256": null,
+      "after_sha256": "2bd19c21b54aa09069a86e7a676e41cb9ba0e9502ac77a6084d77eed3a4e7b21"
+    },
+    {
+      "path": "python/bzs/worker/server.py",
+      "before_sha256": "776a21edef4633b5be2e7daf57635b69c18f0b90521c98c4cb48ff6f6253d6dd",
+      "after_sha256": "e7c549642ec04622aad237407864109d1e648459a3fa8b82437d8c582d9fa1b9"
+    },
+    {
+      "path": "python/tests/test_http_redirect_cache.py",
+      "before_sha256": null,
+      "after_sha256": "daf82ea441afc19345dc139bfdbc6c05e9c49e025c76f4380cd6c81edb4ea183"
+    },
+    {
+      "path": "src/http_cache.cpp",
+      "before_sha256": "a644491c895ba485bf8e72649df975acc98dd4b97350ee5bac2d2c0213ee5d9d",
+      "after_sha256": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b"
+    },
+    {
+      "path": "src/publication.cpp",
+      "before_sha256": "c3a34a6c873a496f35870782f9da15415039af01334098a324c21f5f9ab5d802",
+      "after_sha256": "7f55ab41b110ce1b3a96b7ad68288bdda28f554602cc805f3f1815afd3ca4717"
+    },
+    {
+      "path": "src/store.cpp",
+      "before_sha256": "ab5d1ca8491f071cdab948dda363db4fc32e5e0a2fe4529109b87f0718bc1805",
+      "after_sha256": "4fd13314ce37d1347dc465139c469fe22ecdf58d03611566612603b9bbb47681"
+    },
+    {
+      "path": "src/web.cpp",
+      "before_sha256": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+      "after_sha256": "84881494880754e085421cc27192f4b3a7a05573c69549fc2f84103b31115de0"
+    },
+    {
+      "path": "tests/cache_freshness.cpp",
+      "before_sha256": "c7c2c057ac92fa6094fdc5f1ed659be7b981259d80191791cac6370e38ec3654",
+      "after_sha256": "84debb90e19241912494c10f57db2a7c5b03b8040062664f8cb7e61e0e9b8084"
+    },
+    {
+      "path": "tests/e2e_cache_freshness.py",
+      "before_sha256": "04b5862794ad3ddc2579987780b4a0a455f73481535a9b0b8d67bde444777b88",
+      "after_sha256": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c"
+    }
+  ],
+  "v1_preserved": {
+    "path": "/tmp/bzs-p2-source-policy-20261024/redirect-cache-draft-v1.patch",
+    "sha256": "2c7aa627fd3a2d4437f1c6271680b561ac9df5cafa1ba84d5133b23506765c77"
+  },
+  "v2_changes_from_v1": [
+    "Rebased all changed files onto current P1/P2-1, preserving their exact preimage bytes",
+    "Invalidate old direct representation on observed changed redirect route even if the final response fails; preserve snapshot+metadata CAS against late results",
+    "Capture old final publication policy before applying current full-chain ceilings; validate retained final policy floor during 304 commit",
+    "For new proven chains, preserve final-URI-only history in prepare_web_publication_locked; normalize equal policies only after all sealing to retain unchanged snapshot identity",
+    "Worker proof 200 and new-route 304 final observation uses only final site identity; Core still applies full-chain site bindings to aggregate; legacy no-proof behavior preserved",
+    "Four new existing-suite native cases cover direct route failures/CAS, response-before-during intermediate restrictions, repeated304, final-own noindex, independent current/frozen hits, and original-only site ceilings",
+    "Three new local HTTP Worker test cases verify final site scope for proof200/routed304 and rejected routed304",
+    "Four new Core+Worker+HTTP cases in existing e2e_cache_freshness.py; original six test methods AST-identical; no new CTest target"
+  ],
+  "limits": {
+    "proof_hops": 5,
+    "proof_encoded_bytes": 8192,
+    "route_encoded_bytes": 8192,
+    "cache_metadata_total_bytes": 16384,
+    "policy_observation_count": 20,
+    "policy_observation_encoded_bytes": 524288
+  },
+  "preview": {
+    "apply_check_current_main_exit": 0,
+    "python_AST": "all draft Python files parse",
+    "original_e2e_test_AST_preserved": true,
+    "existing_e2e_total_cases": 10,
+    "new_native_case_count": 21,
+    "new_worker_pytest_cases": 25,
+    "worker_related_pytest": "218 passed in 5.14s; focused /tmp overlay using current locked dependencies; no external origin",
+    "cpp_syntax": "http_cache.cpp, web.cpp, store.cpp, publication.cpp, cache_freshness.cpp all exit 0; no object files/link",
+    "native_runtime": "not executed by draft author",
+    "Core_Worker_HTTP_e2e": "prepared and AST checked; not executed by draft author",
+    "full_CTest_full_pytest_ASan": "not executed by draft author",
+    "runtime_input_matches": {
+      "python/tests/test_http_redirect_cache.py": true,
+      "python/bzs/worker/redirect_cache.py": true,
+      "python/bzs/worker/server.py": true,
+      "python/bzs/worker/freshness.py": true,
+      "python/bzs/worker/fetch.py": true
+    }
+  },
+  "required_before_acceptance": [
+    "Independent reviewers inspect v2 and replay frozen probes against integrated exact library",
+    "Root executes new native and real Core+Worker+HTTP E2E regression",
+    "Full current CTest, full locked pytest, required ASan gate in requested order",
+    "Capture exact integration/test inputs and retain prior failure evidence"
+  ],
+  "clarification_to_readonly_tail_report": {
+    "S2": "S2 scope/status and freeze decision unchanged; no new freeze or acceptance declared",
+    "P2-9": "Not included in this repair round; prior analysis does not introduce an additional approval requirement"
+  },
+  "logs": [
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-cpp-syntax.log",
+      "sha256": "1ab02010ad5a2a1929bd0ab795c50616bd0209cc19d2ffbb61bc0b1917719f5b"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-worker-related.log",
+      "sha256": "351cb7d7e202e679c6fa79c70ae2b35cbfc3dcc6f62e06ddc3740735421f637a"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-ast-runtime.json",
+      "sha256": "0bdf3756a8171542dd65cdb5f1b2fd602f2dff073cf27e0cdbf234cf64f99b35"
+    },
+    {
+      "path": "/tmp/bzs-p2-source-policy-20261024/draft-v2-apply-check.log",
+      "sha256": "28d3b9e880a77975493dc7e359144c0295a4f694cfe0af4f928c22307bc5c320"
+    }
+  ]
+}

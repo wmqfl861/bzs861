@@ -64,7 +64,7 @@ Worker 用稳定 JSON 编码对 `version`、GET 方法和所有显式请求头�
 
 304 的其他缺失 HTTP 字段仍返回空串。持久化时，核心只用非空字段更新旧 `http_cache`，不能通过省略字段删除原来的缓存限制。完整 200 则建立一份新的元数据；如果新 200 不再具有可用元数据，应清理旧的验证器绑定。
 
-以下情况返回 `E_HTTP_REVALIDATION`，不自动执行完整 GET：没有派发条件、profile 变化后收到 304、HTTP/soft redirect 后收到 304、验证器冲突、不支持的 Vary、非法缓存字段、截断或出现正文。即使结果失败，已经收到的 noindex/nosnippet 等限制仍向核心报告。
+以下情况返回 `E_HTTP_REVALIDATION`，不自动执行完整 GET：没有派发条件、profile 变化后收到 304、没有完整 HTTP 链授权的 HTTP redirect 后收到 304、任何 soft redirect 后收到 304、验证器冲突、不支持的 Vary、非法缓存字段、截断或出现正文。即使结果失败，已经收到的 noindex/nosnippet 等限制仍向核心报告。
 
 条件头在**每次 HTTP 跳转后移除，包括同源跳转**，soft redirect 后也不继承。自动页面/robots 请求仍是单个 HTTP hop，下一跳由核心另行派发并重新核验站点、robots 与预算。
 
@@ -116,3 +116,7 @@ robots只检查同owner/origin/清单的最新记录再判断有效期，不向�
 ## 0.1.10 独立新鲜度补充
 
 条件验证器协议仍保守，页面缓存限制改由独立`http_freshness`记录约束。没有ETag不代表允许默认缓存；no-store、no-cache、Age/Date/Expires等具体行为见[HTTP_FRESHNESS](HTTP_FRESHNESS.md)。该补充不改变304的原正文权限、删除、发布和表示身份屏障。
+
+## 完整 HTTP 跳转链授权
+
+显式 `fetch.extract` 新增与直接 `conditional` 互斥的 `bzs-http-redirect-conditional-1` 包装；只有已保存完整逐跳证明、重新从原 URI 走完相同实际前缀，才能在精确 final URI 使用其自身 validator。它不是把条件头从前一跳继承到下一跳。链 304 按 N+1 个实际请求和已消费的 redirect body 字节计费，继续使用同一正文绑定与旧发布序号。旧直接协议、无证明 redirect、soft redirect、自动 map/crawl 单跳准入均保持原边界，详见 [HTTP_REDIRECT_CACHE](HTTP_REDIRECT_CACHE.md)。
