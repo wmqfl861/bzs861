@@ -3,9 +3,12 @@
 #include "bzs/util.hpp"
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <filesystem>
 #include <functional>
 #include <iostream>
+#include <map>
+#include <mutex>
 #include <set>
 #include <string>
 #include <thread>
@@ -38,6 +41,7 @@ Json child(const Json& request,const std::string& url){
 }
 struct Worker:WorkerPort{
   std::int64_t now=1700000000000;
+  std::mutex calls_mutex;
   std::vector<std::pair<std::string,std::string>> calls;
   std::function<Json(const Json&,Json)> alter_map;
   Json read(const Json& p)const{
@@ -59,7 +63,7 @@ struct Worker:WorkerPort{
   }
   Json call(const std::string& method,const Json& p,int)override{
     if(method=="fetch.cancel")return Json::object();
-    calls.emplace_back(method,p.at("url").str());
+    {std::lock_guard lock(calls_mutex);calls.emplace_back(method,p.at("url").str());}
     if(method=="fetch.extract")return read(p);
     if(method=="map.fetch"){auto r=map(p);return alter_map?alter_map(p,r):r;}
     throw std::runtime_error("unexpected worker method");
@@ -131,9 +135,177 @@ TEST(worker_loop_gives_batch_and_discovery_categories_progress){
   Temp t;Worker worker;Store s(t.path/"db",[&]{return worker.now;});WebService web(s,worker,{},SiteRegistry(manifest()));FixtureCatalog fixtures(BZS_FIXTURE_DIR);
   auto read_id=submit(s,"loop-long",20);auto map_id=web.submit_map("alice",map_args(urls("loop-map",1),"loop-map")).at("job_id").str();
   auto thread=start_worker(s,fixtures,&web);bool done=false;
-  for(int poll=0;poll<1000;++poll){if(s.job_get("alice",map_id).at("state").str()=="succeeded"){done=true;break;}std::this_thread::sleep_for(std::chrono::milliseconds(5));}
+  for(int poll=0;poll<1000;++poll){if(s.job_get("alice",map_id).at("state").str()=="succeeded"&&s.job_get("alice",read_id).at("succeeded_items").num()>=2){done=true;break;}std::this_thread::sleep_for(std::chrono::milliseconds(5));}
   thread.request_stop();thread.join();CHECK(done);CHECK(s.job_get("alice",read_id).at("succeeded_items").num()>0);
-  CHECK(worker.calls.size()>=4);CHECK(worker.calls[0].first=="fetch.extract");CHECK(worker.calls[1].first=="map.fetch");CHECK(worker.calls[2].first=="fetch.extract");CHECK(worker.calls[3].first=="map.fetch");
+  // Categories now run independently: strict global read/map alternation was
+  // the old serial implementation, not a fairness promise. Their own durable
+  // ordering (read positions and robots before content) remains unchanged.
+  std::vector<std::string> reads,maps;
+  for(const auto& [method,url]:worker.calls)(method=="fetch.extract"?reads:maps).push_back(url);
+  CHECK(reads.size()>=2);CHECK(reads[0]==urls("loop-long",20)[0]);CHECK(reads[1]==urls("loop-long",20)[1]);
+  CHECK(maps.size()==2);CHECK(maps[0]==std::string(origin)+"/robots.txt");CHECK(maps[1]==urls("loop-map",1)[0]);
+}
+
+
+// These gates prove ordering, not a latency target: blocked work cannot return
+// until the test releases it, while the other categories must finish first.
+Json search_manifest(){
+  return Json::parse(R"({"version":1,"sources":[{"id":"fair-search","provider":"synthetic","index_family":"fair-search","capability":"web","kind":"api","enabled":true,"default":true,"min_interval_ms":0,"daily_cap":1000,"params":{"adapter":"offline_fixture","base_url":"https://search.example/search"},"contract":{"id":"fair-search","provider_id":"synthetic","index_family":"fair-search","logical_service_id":"fair-search","capability":"web","endpoint":"https://search.example/search","adapter_id":"offline_fixture","enabled":true,"review":{"status":"approved","payment_scheme":"no_payment","automated_access":"approved","checked_at":"1970-01-01T00:00:00Z","expires_at":"2999-01-01T00:00:00Z","terms_url":"https://search.example/terms","cache_policy":"allowed_with_limits","redistribution_policy":"allowed_with_limits","approved_by":"offline-dispatcher-fixture"},"limits":{"shared_budget_key":"fair-search","max_concurrency":1,"min_interval_ms":0,"request_quota":1000,"quota_window_seconds":86400}}}]})");
+}
+std::string submit_search(WebService& web,const std::string& key,const std::string& owner="carol"){
+  auto args=Json::object();args.set("query","dispatcher "+key);args.set("idempotency_key",key);
+  return web.submit_search(owner,args).at("session_id").str();
+}
+struct GatedWorker:Worker{
+  std::mutex mutex;
+  std::condition_variable changed;
+  std::set<std::string> held,throw_once;
+  std::map<std::string,std::size_t> entered,active,peak;
+  std::size_t active_total=0,peak_total=0;
+  bool gate_expired=false;
+  void hold(const std::string& method){std::lock_guard lock(mutex);held.insert(method);}
+  void release_all(){std::lock_guard lock(mutex);held.clear();changed.notify_all();}
+  bool wait_entered(const std::string& method,std::size_t count=1){
+    std::unique_lock lock(mutex);return changed.wait_for(lock,std::chrono::seconds(5),[&]{return entered[method]>=count;});
+  }
+  Json call(const std::string& method,const Json& params,int timeout)override{
+    if(method=="fetch.cancel")return Json::object();
+    bool fail=false,expired=false;
+    {
+      std::unique_lock lock(mutex);++entered[method];peak[method]=std::max(peak[method],++active[method]);
+      peak_total=std::max(peak_total,++active_total);changed.notify_all();
+      if(!changed.wait_for(lock,std::chrono::seconds(15),[&]{return !held.contains(method);}))gate_expired=expired=true;
+      fail=throw_once.erase(method)!=0;
+    }
+    auto leave=[&]{std::lock_guard lock(mutex);--active[method];--active_total;changed.notify_all();};
+    try{
+      if(expired)throw std::runtime_error("test gate was not released");
+      if(fail)throw std::runtime_error("synthetic unreported RPC failure");
+      Json result;
+      if(method=="search.multi"){
+        auto entries=Json::object();for(std::size_t i=0;i<params.at("sources").size();++i)
+          entries.set(params.at("sources").at(i).str(),Json::parse(R"({"status":"empty","hits":[]})"));
+        result=Json::object();result.set("results",entries);
+      }else result=Worker::call(method,params,timeout);
+      leave();return result;
+    }catch(...){leave();throw;}
+  }
+};
+struct ReleaseGates{GatedWorker& worker;~ReleaseGates(){worker.release_all();}};
+template<class Predicate>bool eventually(Predicate predicate){
+  const auto end=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+  do{if(predicate())return true;std::this_thread::sleep_for(std::chrono::milliseconds(5));}while(std::chrono::steady_clock::now()<end);
+  return predicate();
+}
+void category_progress_while_blocked(const std::string& blocked){
+  Temp t;GatedWorker worker;Store store(t.path/"db",[&]{return worker.now;});
+  WebService web(store,worker,SourceRegistry(search_manifest()),SiteRegistry(manifest()));FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+  worker.hold(blocked);std::string read,map,search;
+  auto submit_category=[&](const std::string& method){
+    if(method=="fetch.extract")read=submit(store,"gate-read",1);
+    else if(method=="map.fetch")map=web.submit_map("bob",map_args(urls("gate-map",1),"gate-map")).at("job_id").str();
+    else search=submit_search(web,"gate-search");
+  };
+  submit_category(blocked);auto background=start_worker(store,fixtures,&web);ReleaseGates cleanup{worker};
+  const bool entered=worker.wait_entered(blocked);
+  for(const auto* method:{"fetch.extract","map.fetch","search.multi"})if(method!=blocked)submit_category(method);
+  const auto fixture=store.job_create("dave","plain","while-rpc-held").at("job_id").str();
+  const bool progress=eventually([&]{
+    return (blocked=="fetch.extract"||store.job_get("alice",read).at("state").str()=="succeeded")&&
+      (blocked=="map.fetch"||store.job_get("bob",map).at("state").str()=="succeeded")&&
+      (blocked=="search.multi"||store.session_get("carol",search).at("state").str()=="completed")&&
+      store.job_get("dave",fixture).at("state").str()=="succeeded";
+  });
+  const auto before_release=blocked=="search.multi"?store.session_get("carol",search):
+    store.job_get(blocked=="fetch.extract"?"alice":"bob",blocked=="fetch.extract"?read:map);
+  background.request_stop();worker.release_all();background.join();
+  CHECK(entered);CHECK(progress);CHECK(before_release.at("state").str()=="running");CHECK(!worker.gate_expired);
+  for(const auto* method:{"fetch.extract","map.fetch","search.multi"})CHECK(worker.peak[method]==1);
+  CHECK(worker.peak_total>=2);CHECK(worker.peak_total<=3);CHECK(worker.active_total==0);
+  CHECK(store.job_get("alice",read).at("usage").at("unknown_requests_charged").num()==0);
+  CHECK(store.job_get("bob",map).at("usage").at("unknown_requests_charged").num()==0);
+}
+TEST(blocked_read_does_not_block_discovery_search_or_fixture){category_progress_while_blocked("fetch.extract");}
+TEST(blocked_discovery_does_not_block_read_search_or_fixture){category_progress_while_blocked("map.fetch");}
+TEST(blocked_search_does_not_block_read_discovery_or_fixture){category_progress_while_blocked("search.multi");}
+
+TEST(all_background_rpc_lanes_are_bounded_and_stop_before_taking_more_work){
+  Temp t;GatedWorker worker;Store store(t.path/"db",[&]{return worker.now;});
+  WebService web(store,worker,SourceRegistry(search_manifest()),SiteRegistry(manifest()));FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+  for(const auto* method:{"fetch.extract","map.fetch","search.multi"})worker.hold(method);
+  auto read=submit(store,"first-read",2);
+  auto map=web.submit_map("bob",map_args(urls("first-map",2),"first-map")).at("job_id").str();
+  auto search=submit_search(web,"first-search");
+  auto background=start_worker(store,fixtures,&web);ReleaseGates cleanup{worker};
+  bool entered=true;for(const auto* method:{"fetch.extract","map.fetch","search.multi"})entered=worker.wait_entered(method)&&entered;
+  background.request_stop();
+  const auto waiting_read=submit(store,"after-stop-read",1,"erin");
+  const auto waiting_map=web.submit_map("frank",map_args(urls("after-stop-map",1),"after-stop-map")).at("job_id").str();
+  const auto waiting_search=submit_search(web,"after-stop-search","grace");
+  worker.release_all();background.join();
+  const auto waiting_fixture=store.job_create("heidi","plain","after-stop-fixture").at("job_id").str();
+  CHECK(entered);CHECK(!background.joinable());CHECK(!worker.gate_expired);CHECK(worker.peak_total==3);CHECK(worker.active_total==0);
+  for(const auto* method:{"fetch.extract","map.fetch","search.multi"}){CHECK(worker.entered[method]==1);CHECK(worker.peak[method]==1);}
+  CHECK(store.job_get("erin",waiting_read).at("state").str()=="queued");
+  CHECK(store.job_get("frank",waiting_map).at("state").str()=="queued");
+  CHECK(store.session_get("grace",waiting_search).at("state").str()=="queued");
+  CHECK(store.job_get("heidi",waiting_fixture).at("state").str()=="queued");
+  CHECK(store.job_get("alice",read).at("succeeded_items").num()==1);CHECK(store.job_get("alice",read).at("pending_items").num()==1);
+  CHECK(store.job_get("bob",map).at("usage").at("external_requests").num()==1);
+  CHECK(store.session_get("carol",search).at("state").str()=="completed");
+}
+
+TEST(background_read_failure_retains_unknown_usage_and_other_lanes_keep_progressing){
+  Temp t;GatedWorker worker;Store store(t.path/"db",[&]{return worker.now;});
+  WebService web(store,worker,SourceRegistry(search_manifest()),SiteRegistry(manifest()));FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+  worker.hold("fetch.extract");worker.throw_once.insert("fetch.extract");
+  const auto read=submit(store,"unknown-rpc",1);
+  auto background=start_worker(store,fixtures,&web);ReleaseGates cleanup{worker};const bool entered=worker.wait_entered("fetch.extract");
+  const auto queued=submit(store,"known-after-failure",1,"bob");
+  const auto search=submit_search(web,"after-unknown-rpc");
+  const bool other_progress=eventually([&]{return store.session_get("carol",search).at("state").str()=="completed";});
+  worker.release_all();const bool recovered=eventually([&]{return store.job_get("bob",queued).at("state").str()=="succeeded";});
+  background.request_stop();background.join();CHECK(entered);CHECK(other_progress);CHECK(recovered);CHECK(!worker.gate_expired);
+  const auto failed=store.job_get("alice",read);CHECK(failed.at("state").str()=="failed");
+  CHECK(failed.at("usage").at("external_requests").num()==0);CHECK(failed.at("usage").at("unknown_requests_charged").num()>0);
+  CHECK(failed.at("usage").at("unknown_bytes_charged").num()>0);CHECK(failed.at("dispatches").num()==1);
+  CHECK(store.job_get("bob",queued).at("usage").at("external_requests").num()==1);CHECK(worker.entered["fetch.extract"]==2);
+}
+
+
+TEST(concurrent_background_responses_keep_cancellation_publication_fences){
+  Temp t;GatedWorker worker;Store store(t.path/"db",[&]{return worker.now;});
+  WebService web(store,worker,SourceRegistry(search_manifest()),SiteRegistry(manifest()));FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+  const auto map_url=urls("cancel-map",1)[0];
+  const auto map=web.submit_crawl("bob",map_args({map_url},"cancel-map")).at("job_id").str();
+  auto robots=web.lease_map();CHECK(robots);web.execute_map(*robots);
+  for(const auto* method:{"fetch.extract","map.fetch","search.multi"})worker.hold(method);
+  const auto read=submit(store,"cancel-read",1);const auto search=submit_search(web,"cancel-search");
+  auto background=start_worker(store,fixtures,&web);ReleaseGates cleanup{worker};
+  const bool reads=worker.wait_entered("fetch.extract"),maps=worker.wait_entered("map.fetch",2),searches=worker.wait_entered("search.multi");
+  store.job_control("alice",read,"cancel");store.job_control("bob",map,"cancel");store.session_cancel("carol",search);
+  const auto fixture=store.job_create("dave","plain","while-cancelling").at("job_id").str();
+  const bool independent=eventually([&]{return store.job_get("dave",fixture).at("state").str()=="succeeded";});
+  background.request_stop();worker.release_all();background.join();
+  CHECK(reads);CHECK(maps);CHECK(searches);CHECK(independent);CHECK(!worker.gate_expired);
+  CHECK(store.job_get("alice",read).at("state").str()=="cancelled");CHECK(store.job_get("bob",map).at("state").str()=="cancelled");
+  CHECK(store.session_get("carol",search).at("state").str()=="cancelled");
+  CHECK(!store.cached("alice",urls("cancel-read",1)[0]));CHECK(!store.cached("bob",map_url));
+  CHECK(store.job_get("alice",read).at("usage").at("external_requests").num()==1);
+  CHECK(store.job_get("alice",read).at("usage").at("unknown_requests_charged").num()==0);
+  CHECK(store.job_get("bob",map).at("usage").at("external_requests").num()==2);
+  CHECK(store.job_get("bob",map).at("usage").at("unknown_requests_charged").num()==0);
+}
+
+TEST(background_handle_move_and_fixture_only_shutdown_leave_no_detached_lanes){
+  Temp t;Store store(t.path/"db");FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+  const auto first=store.job_create("alice","plain","fixture-only").at("job_id").str();
+  auto original=start_worker(store,fixtures);auto moved=std::move(original);decltype(original) assigned;assigned=std::move(moved);
+  CHECK(!original.joinable());CHECK(!moved.joinable());CHECK(assigned.joinable());
+  CHECK(eventually([&]{return store.job_get("alice",first).at("state").str()=="succeeded";}));
+  assigned.request_stop();assigned.join();CHECK(!assigned.joinable());
+  const auto pending=store.job_create("alice","developer","after-fixture-stop").at("job_id").str();
+  CHECK(store.job_get("alice",pending).at("state").str()=="queued");
 }
 
 TEST(calendar_stop_and_finite_date_query_negative_controls_survive_interleaved_restart){

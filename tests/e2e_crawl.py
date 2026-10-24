@@ -729,6 +729,53 @@ class CrawlEndToEnd(unittest.TestCase):
         self.assertEqual(len(edges), 30)
         self.assertTrue(all(row["followed"] and not row["reason"] for row in edges))
 
+    def test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress(self):
+        gate = "dispatcher-read"
+        path = "/crawl/gate/" + gate
+        self.stack.control_fixture(close_gates=[gate])
+        try:
+            read = self.ok("read_many.submit", {"urls": [self.stack.url(path)],
+                "idempotency_key": gate, "per_page_timeout_ms": 20000})
+            self.wait_until(lambda: self.stack.counts().get(("bzs-crawl.test", path), 0) == 1,
+                            "read did not enter the held real HTTP response", seconds=5)
+            crawl = self.submit(["/crawl/dispatcher-other"], "dispatcher-while-read", "bzs-fair.test", max_depth=0)
+            fixture = self.ok("job.create", {"fixture_id": "plain", "idempotency_key": "dispatcher-fixture"})
+            # The first response remains held: this is a happens-before proof,
+            # not a wall-clock performance threshold for network operations.
+            self.wait_until(lambda: self.ok("job.get", {"job_id": crawl["job_id"]})["state"] == "succeeded",
+                            "crawl could not finish while the read response was held", seconds=5)
+            self.wait_until(lambda: self.ok("job.get", {"job_id": fixture["job_id"]})["state"] == "succeeded",
+                            "fixture ingest could not finish while the read response was held", seconds=5)
+            self.assertEqual(self.ok("job.get", {"job_id": read["job_id"]})["state"], "running")
+            self.assertEqual(self.stack.counts()[("bzs-crawl.test", path)], 1)
+        finally:
+            self.stack.control_fixture(release_gates=[gate])
+        final = self.completed(read["job_id"])
+        self.assertEqual(final["state"], "succeeded", final)
+        self.assertEqual(final["usage"]["external_requests"], 1)
+        self.assertEqual(final["usage"]["unknown_requests_charged"], 0)
+
+    def test_26_blocked_crawl_allows_real_worker_read_progress(self):
+        gate = "dispatcher-crawl"
+        path = "/crawl/gate/" + gate
+        self.stack.control_fixture(close_gates=[gate])
+        try:
+            crawl = self.submit([path], gate, max_depth=0, per_request_timeout_ms=20000)
+            self.wait_until(lambda: self.stack.counts().get(("bzs-crawl.test", path), 0) == 1,
+                            "crawl did not enter the held real HTTP response", seconds=5)
+            read_path = "/crawl/dispatcher-independent-read"
+            read = self.ok("read_many.submit", {"urls": [self.stack.url(read_path, "bzs-fair.test")],
+                "idempotency_key": "dispatcher-while-crawl"})
+            self.wait_until(lambda: self.ok("job.get", {"job_id": read["job_id"]})["state"] == "succeeded",
+                            "read could not finish while the crawl response was held", seconds=5)
+            self.assertEqual(self.ok("job.get", {"job_id": crawl["job_id"]})["state"], "running")
+            self.assertEqual(self.stack.counts()[("bzs-fair.test", read_path)], 1)
+        finally:
+            self.stack.control_fixture(release_gates=[gate])
+        final = self.completed(crawl["job_id"])
+        self.assertEqual(final["state"], "succeeded", final)
+        self.assertEqual(final["usage"]["unknown_requests_charged"], 0)
+
     def test_99_manifest_mismatch_retains_refusal_without_body_dispatch(self):
         path = self.stack.root / "sites.json"
         data = json.loads(path.read_text())

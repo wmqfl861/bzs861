@@ -43,6 +43,7 @@ def inputs() -> dict[str, str]:
              if name and not name.startswith(b"validation/")}
     paths.add(str(Path(__file__).resolve().relative_to(ROOT)))
     paths.add(str(GUARD.relative_to(ROOT)))
+    paths.add(str((OUT / "summarize_stage.py").relative_to(ROOT)))
     return {name: sha(ROOT / name) for name in sorted(paths)}
 
 
@@ -66,7 +67,7 @@ def record(stage: str, name: str, argv: list[str], *, asan: bool = False,
     if not manifest.exists():
         save(manifest, {"source_base_commit": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
-            "scope": "Actual non-validation tree bytes plus this recorder; dirty implementation/test changes are captured by their hashes.",
+            "scope": "Actual non-validation tree bytes plus this recorder, native guard and result collector; dirty implementation/test changes are captured by their hashes.",
             "files": current})
     if json.loads(manifest.read_bytes())["files"] != current:
         raise RuntimeError("Inputs changed within a stage; choose a new stage label after reviewing the change")
@@ -80,7 +81,8 @@ def record(stage: str, name: str, argv: list[str], *, asan: bool = False,
     log_path = folder / (name + ".log")
     timed_out = False
     # Capture output in memory until the child has exited. A completed log is
-    # then written once; concurrent inspection cannot observe a partial file.
+    # then written once. Only a completed command record and matching hashes
+    # establish acceptance; the file write itself is not an atomic rename.
     # The original streaming recorder and its incomplete log remain retained.
     if log_path.exists():
         raise FileExistsError(log_path)
@@ -219,6 +221,8 @@ def full_stage(stage: str) -> None:
     record(stage, "prepare-asan-executables", [str(PYTHON), str(Path(__file__)), "prepare-executables", "build-asan"], build=True)
     record(stage, "guard-asan-native", [str(PYTHON), str(Path(__file__)), "guard-ctest", stage, "build-asan"], build=True)
     record(stage, "asan", [str(PYTHON), str(Path(__file__)), "sanitizers", stage], asan=True)
+    # Zero exit codes alone do not prove all required output was retained.
+    subprocess.run([str(PYTHON), str(OUT / "summarize_stage.py"), stage], check=True, cwd=ROOT)
     print(json.dumps({"stage": stage, "all_required_gates": "passed"}), flush=True)
 
 

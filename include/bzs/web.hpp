@@ -11,7 +11,9 @@
 #include <string_view>
 #include <vector>
 namespace bzs {
-  // Worker RPC port. searchd implements it over loopback HTTP; tests use a fake.
+  // Worker RPC port. Calls from HTTP business threads and independent background
+  // lanes may overlap; implementations must support concurrent calls. searchd
+  // gives each RPC its own loopback HTTP connection; tests use a synchronized fake.
   struct WorkerPort {
     virtual ~WorkerPort()=default;
     virtual Json call(const std::string& method, const Json& params, int timeout_ms)=0;

@@ -1,0 +1,255 @@
+{
+  "issue": "P2-6",
+  "base_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "status": "fixed within fixed per-category lane scope",
+  "source_sha256": {
+    "apps/searchd/main.cpp": "fe7606b1a8c900f4612c29acc766a4a38c793d0ff2a4e8336a294b6352caf291",
+    "include/bzs/service.hpp": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1",
+    "include/bzs/web.hpp": "d51d28f1232d04e4e17af6a9c3be7635609d9d381db2f40309c885860751b675",
+    "src/service.cpp": "175f71a6f2fe037171edec611ef032e9548ae6da614f7022dfd9b89eeee31cf3",
+    "tests/fairness.cpp": "525543d1613054c1e04bf4fdc3fc31b2ef4026f5bed16818d42da0a408869996",
+    "tests/e2e_crawl.py": "be95a24b70129e94904576ae22d97e86280fd1a9e8025c3f45118eafd08c804c",
+    "docs/BACKGROUND_DISPATCH.md": "e18ae048b2bf5a7f6a33ba14e96e46e53a513e427166112ee0815ed2bdc4952b"
+  },
+  "baseline": {
+    "library_sha256": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "server_sha256": "5da5f8a8439f9def84f621a42f9baa8bcde7057b55ef24dc1df50645b30bd518",
+    "regression_binary_sha256": "d93502757c0294a94aa6b4107b3771cb20b2dd51737a433e4090c698dd329b44",
+    "final_formal_regression_source_sha256": "525543d1613054c1e04bf4fdc3fc31b2ef4026f5bed16818d42da0a408869996",
+    "native_gate_controls": "3 expected failures: other categories could not finish before held response release",
+    "real_worker_gate_controls": "2 expected failures on actual preserved server; final Python production files match baseline"
+  },
+  "final_author_validation": {
+    "debug": {
+      "record": "fairness-debug-final.json",
+      "cases": 18,
+      "assertions": 339,
+      "failures": 0
+    },
+    "asan_ubsan": {
+      "record": "fairness-asan-final-host.json",
+      "cases": 18,
+      "assertions": 339,
+      "failures": 0,
+      "detect_leaks": true
+    },
+    "crawl_e2e": {
+      "record": "e2e-crawl-final.json",
+      "cases": 26,
+      "failures": 0,
+      "new_gate_cases": 2
+    }
+  },
+  "new_native_cases": [
+    "blocked_read_does_not_block_discovery_search_or_fixture",
+    "blocked_discovery_does_not_block_read_search_or_fixture",
+    "blocked_search_does_not_block_read_discovery_or_fixture",
+    "all_background_rpc_lanes_are_bounded_and_stop_before_taking_more_work",
+    "background_read_failure_retains_unknown_usage_and_other_lanes_keep_progressing",
+    "concurrent_background_responses_keep_cancellation_publication_fences",
+    "background_handle_move_and_fixture_only_shutdown_leave_no_detached_lanes"
+  ],
+  "preserved_failures": [
+    {
+      "record": "fairness-asan-final.json",
+      "classification": "LeakSanitizer runtime failed under tracing sandbox; no pass claimed",
+      "resolution": "same source and binary with leak detection enabled passed outside tracing sandbox in fairness-asan-final-host.json"
+    }
+  ],
+  "scope_and_limits": [
+    "One lane per fixture/read/map+crawl/search; no unbounded task threads or in-memory preleases.",
+    "All requested lanes start behind shared latch; partial startup stops all then releases latch and joins. Startup resource failure path reviewed statically, not fault-injected.",
+    "Shutdown requests stop for every lane before joining; in-flight RPC retains original finite deadlines, accounting and publication fences. No immediate socket abort claim.",
+    "WorkerPort concurrent calls verified via actual Core HTTP RPC, real Python Worker and synthetic loopback HTTP.",
+    "Within-category slow work and source/site/host quotas can still delay later work. Map and crawl intentionally share one lane.",
+    "Original global strict alternation was removed because categories are independent; original per-category sequence asserted.",
+    "Author evidence only; root must run integrated complete CTest/pytest/all 15 ASan programs and exact published-head Linux/Windows CI.",
+    "No real source enabled; six owner decisions and historical validation unchanged."
+  ],
+  "commands": [
+    {
+      "record": "baseline-blocked-discovery.json",
+      "record_sha256": "f9cf88f98ef4b278be598c9668060d448a5c6e70975dc754cfce68bf5eca75dd",
+      "log": "baseline-blocked-discovery.log",
+      "log_sha256": "7f2e6d62e18e32a5e5293cf6fc826ca3af6d2e066bd172f32d0693725fb504c5",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "baseline-blocked-read.json",
+      "record_sha256": "c44b310f2b055179b374ba6b75ba089e295e2a1cc88d665c81c76edcd0516000",
+      "log": "baseline-blocked-read.log",
+      "log_sha256": "a09f18722f5138251cfeb3934bcf3b2520f200e934835fd58d836a6bf4ac888a",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "baseline-blocked-search.json",
+      "record_sha256": "93442062cbb0964cf872a1d441a675187aa699a8b58bcadab83822d6e0e5b4dd",
+      "log": "baseline-blocked-search.log",
+      "log_sha256": "aea274a3bf8fb9afb0c7d0a32646c8a69b19402516027b6975811c59b499eacf",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "baseline-final-discovery.json",
+      "record_sha256": "320010a7f4223d78929443f64f70cf04628d802e4e6a9499b71f736915b86bf6",
+      "log": "baseline-final-discovery.log",
+      "log_sha256": "7f2e6d62e18e32a5e5293cf6fc826ca3af6d2e066bd172f32d0693725fb504c5",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "baseline-final-read.json",
+      "record_sha256": "ef8813d02a06123efe557172ab918228d2ae407357802c4ece3273bae9282262",
+      "log": "baseline-final-read.log",
+      "log_sha256": "a09f18722f5138251cfeb3934bcf3b2520f200e934835fd58d836a6bf4ac888a",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "baseline-final-search.json",
+      "record_sha256": "a1e64feed9d31a7214d6c87f580a979d0710d6084a284451c4a0a3aeb33a5837",
+      "log": "baseline-final-search.log",
+      "log_sha256": "aea274a3bf8fb9afb0c7d0a32646c8a69b19402516027b6975811c59b499eacf",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "build-asan-v2.json",
+      "record_sha256": "5cc5c4d292cca96c8af5cf8e1b439cba80d6bd9ba75ffd2fc65a7ce7b6c53d50",
+      "log": "build-asan-v2.log",
+      "log_sha256": "54ab285e9c62723872b201fa72da0f8ac3088a36a44fcd2d7e6a9474fd6cc330",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "build-asan.json",
+      "record_sha256": "876f87a82727fee8c18c33f3e79f03dc9e0c31b276d62535558b802b4b9165bb",
+      "log": "build-asan.log",
+      "log_sha256": "8ffb6fb5d9ca98cb8dc1138f82bf8759d91914910debe9fc513493ff6033cbde",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "build-debug-v2.json",
+      "record_sha256": "35b5309baf5b7688331cbd96ebb379cb2a0201de7c0ba983aa70316eaa1cc95f",
+      "log": "build-debug-v2.log",
+      "log_sha256": "413491ebead2932e7b97e19d681529f533631deda6c36960ecd4214cf59043aa",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "build-debug-v3.json",
+      "record_sha256": "ceaf8c332e68ab3fc84a034889d4225370a029c63f3bb1a56d74bd4162fb77b8",
+      "log": "build-debug-v3.log",
+      "log_sha256": "98baff36e0aa9c3ace0cca1b1a767bc15b4a8990a6f9d58186fa7f74d067f72f",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "build-debug.json",
+      "record_sha256": "c9d009a094f74e2cc5810114134573980ff60f89dc18604d297deca4b5b51ced",
+      "log": "build-debug.log",
+      "log_sha256": "3bf5e7cbfd997005054a2d3e03e23643ebc19efb269ef741c75cd29d499250d7",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "compile-baseline-regression-final.json",
+      "record_sha256": "e1bb9ff0bcaf443bdff67d9514a2283386da20e3cc8d266b47b47ee9e9a9f0ef",
+      "log": "compile-baseline-regression-final.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "compile-baseline-regression.json",
+      "record_sha256": "1910e36d8ecce6c99a790b3b46d0c2e9960d716c94b7b8f8c5c54e84c2f5a846",
+      "log": "compile-baseline-regression.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "configure-asan.json",
+      "record_sha256": "dcf1b0adcdf2bb04a2fdc154d62d745fe062f33360ddab97e55e7d0f0f6bb5bc",
+      "log": "configure-asan.log",
+      "log_sha256": "c7a08ee7a9801039921fd7a8b748aee6ab3cd80aba4a16daaac0100d9b2cd3f9",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "e2e-crawl-final.json",
+      "record_sha256": "26dd86dd506a4cfc4cf72fcd29e72b9afb654bb49b10e8d96b3bb037a873400a",
+      "log": "e2e-crawl-final.log",
+      "log_sha256": "eac9d117d9dc12ae6bbe94484663f5f1d03790637622cca60f88370eca142099",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "e2e-crawl-full.json",
+      "record_sha256": "48d687b6fa5df9eea09f8d90c4237367a7e248eaf1109e37f8c19cb4505b845e",
+      "log": "e2e-crawl-full.log",
+      "log_sha256": "66e01936e0cdec77cab1cd1b99995cc5c6de79c0b469ab5ccd125e99a5877cc8",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "e2e-gates-baseline.json",
+      "record_sha256": "7f0b3d8423c1ffd836895d1d5e70af36d5ae4a77ae25deaff3d272c5a82c68e7",
+      "log": "e2e-gates-baseline.log",
+      "log_sha256": "87123fd8f2ae0978f631316ae60871408110dfd1437aa271d0959b43cc2a9052",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "e2e-gates-debug.json",
+      "record_sha256": "12474a9127f0fbb2ee1297826aea91c33302a6e728f9db5c6bdd3eb3536bebbd",
+      "log": "e2e-gates-debug.log",
+      "log_sha256": "b9c814e3ff85616089d8e6adb217c1c44c4ee1d058cd3ccbc25c085ba12ecefa",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "fairness-asan-final-host.json",
+      "record_sha256": "ca31ab10ed2d10cd9320b27d6fbd4a138bf27877e65ff3514ab3ebb2efd66d13",
+      "log": "fairness-asan-final-host.log",
+      "log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "fairness-asan-final.json",
+      "record_sha256": "490da81693660a2c1dffd15ff6741c228450e0c8d104effbaf04d44425560678",
+      "log": "fairness-asan-final.log",
+      "log_sha256": "87d9a204a12098a57b4d855e48bdb90b6ede21d4714739fe19d0055611c3d450",
+      "exit_code": 1,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "fairness-debug-final.json",
+      "record_sha256": "1bb10a0e29fd799454e56788b52c173425adecc8f4d8c56469742bb605ba7c66",
+      "log": "fairness-debug-final.log",
+      "log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "fairness-debug-v2.json",
+      "record_sha256": "a58efbe6d1770983554067249b53439e9532bd4c939fa0d19b2b425d8e35317a",
+      "log": "fairness-debug-v2.log",
+      "log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    },
+    {
+      "record": "fairness-debug.json",
+      "record_sha256": "eabdea9876b8bb8da89977e4e34661c33ad0781fca24b81a56f4f5d82723aab5",
+      "log": "fairness-debug.log",
+      "log_sha256": "1bbe325dc78989dd8f8323e0ed6582a88cdd98a3a7a795ae37e50460cc4c45fd",
+      "exit_code": 0,
+      "inputs_unchanged": true
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+--- run.py
++++ run_capture.py
+@@ -43,6 +43,7 @@
+              if name and not name.startswith(b"validation/")}
+     paths.add(str(Path(__file__).resolve().relative_to(ROOT)))
+     paths.add(str(GUARD.relative_to(ROOT)))
++    paths.add(str((OUT / "summarize_stage.py").relative_to(ROOT)))
+     return {name: sha(ROOT / name) for name in sorted(paths)}
+ 
+ 
+@@ -66,7 +67,7 @@
+     if not manifest.exists():
+         save(manifest, {"source_base_commit": subprocess.check_output(
+             ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+-            "scope": "Actual non-validation tree bytes plus this recorder; dirty implementation/test changes are captured by their hashes.",
++            "scope": "Actual non-validation tree bytes plus this recorder, native guard and result collector; dirty implementation/test changes are captured by their hashes.",
+             "files": current})
+     if json.loads(manifest.read_bytes())["files"] != current:
+         raise RuntimeError("Inputs changed within a stage; choose a new stage label after reviewing the change")
+@@ -79,15 +80,22 @@
+     tick = time.monotonic()
+     log_path = folder / (name + ".log")
+     timed_out = False
+-    with log_path.open("x", encoding="utf-8") as log:
+-        try:
+-            result = subprocess.run(argv, cwd=ROOT, env={**os.environ, **environment},
+-                                    stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
+-            code = result.returncode
+-        except subprocess.TimeoutExpired:
+-            timed_out = True
+-            code = 124
+-            log.write("\nAudit command process watchdog expired.\n")
++    # Capture output in memory until the child has exited. A completed log is
++    # then written once. Only a completed command record and matching hashes
++    # establish acceptance; the file write itself is not an atomic rename.
++    # The original streaming recorder and its incomplete log remain retained.
++    if log_path.exists():
++        raise FileExistsError(log_path)
++    try:
++        result = subprocess.run(argv, cwd=ROOT, env={**os.environ, **environment},
++                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
++        code, output = result.returncode, result.stdout
++    except subprocess.TimeoutExpired as error:
++        timed_out = True
++        code = 124
++        output = (error.stdout or b"") + b"\nAudit command process watchdog expired.\n"
++    with log_path.open("xb") as log:
++        log.write(output)
+     after = binaries()
+     unchanged = inputs() == current
+     value = {"argv": argv, "cwd": str(ROOT), "started_at_utc": started,
+@@ -213,6 +221,8 @@
+     record(stage, "prepare-asan-executables", [str(PYTHON), str(Path(__file__)), "prepare-executables", "build-asan"], build=True)
+     record(stage, "guard-asan-native", [str(PYTHON), str(Path(__file__)), "guard-ctest", stage, "build-asan"], build=True)
+     record(stage, "asan", [str(PYTHON), str(Path(__file__)), "sanitizers", stage], asan=True)
++    # Zero exit codes alone do not prove all required output was retained.
++    subprocess.run([str(PYTHON), str(OUT / "summarize_stage.py"), stage], check=True, cwd=ROOT)
+     print(json.dumps({"stage": stage, "all_required_gates": "passed"}), flush=True)
+ 
+ 

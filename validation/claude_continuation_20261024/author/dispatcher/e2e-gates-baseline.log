@@ -1,0 +1,28 @@
+test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress (__main__.CrawlEndToEnd.test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress) ... FAIL
+test_26_blocked_crawl_allows_real_worker_read_progress (__main__.CrawlEndToEnd.test_26_blocked_crawl_allows_real_worker_read_progress) ... FAIL
+
+======================================================================
+FAIL: test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress (__main__.CrawlEndToEnd.test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/tests/e2e_crawl.py", line 745, in test_25_blocked_read_allows_real_worker_crawl_and_fixture_progress
+    self.wait_until(lambda: self.ok("job.get", {"job_id": crawl["job_id"]})["state"] == "succeeded",
+  File "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/tests/e2e_crawl.py", line 109, in wait_until
+    self.assertLess(time.monotonic(), until, description)
+AssertionError: 35548.402208547 not less than 35548.39469391 : crawl could not finish while the read response was held
+
+======================================================================
+FAIL: test_26_blocked_crawl_allows_real_worker_read_progress (__main__.CrawlEndToEnd.test_26_blocked_crawl_allows_real_worker_read_progress)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/tests/e2e_crawl.py", line 769, in test_26_blocked_crawl_allows_real_worker_read_progress
+    self.wait_until(lambda: self.ok("job.get", {"job_id": read["job_id"]})["state"] == "succeeded",
+  File "/workspace/scratch/e2371129386d/bzs861-next-dispatcher/tests/e2e_crawl.py", line 109, in wait_until
+    self.assertLess(time.monotonic(), until, description)
+AssertionError: 35553.606104349 not less than 35553.593262367 : read could not finish while the crawl response was held
+
+----------------------------------------------------------------------
+Ran 2 tests in 10.791s
+
+FAILED (failures=2)
+{"crawl_e2e_tests": 2, "failures": 2, "errors": 0, "seconds": 10.792}

@@ -6,6 +6,10 @@
 #include <openssl/crypto.h>
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
+#include <latch>
+#include <memory>
+#include <mutex>
 #include <set>
 #ifndef _WIN32
 #include <sys/stat.h>
@@ -363,29 +367,50 @@ namespace bzs {
     }
     throw Error("E_CAPABILITY_UNAVAILABLE", "Operation is unavailable in this build; inspect capabilities", 422);
   }
-  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures, WebService* web) {
-    return std::jthread([&store,&fixtures,web](std::stop_token stop) {
+  namespace {
+    template<class Step> void background_lane(std::stop_token stop,Step step) {
+      std::mutex wait_mutex;
+      std::condition_variable_any wake;
       while(!stop.stop_requested()) {
-        std::optional<Lease> l;
-        try {
-          l=store.lease_next();
-          if(l) {
-            const auto&doc=fixtures.get(l->fixture_id);
-            auto parsed=parse_document(doc.raw, doc.content_type, doc.title);
-            if(!stop.stop_requested())store.complete(*l, doc, parsed);
+        step(stop);
+        std::unique_lock lock(wait_mutex);
+        wake.wait_for(lock,stop,std::chrono::milliseconds(20),[]{return false;});
+      }
+    }
+  }
+  BackgroundWorker::BackgroundWorker(Store& store,const FixtureCatalog& fixtures,WebService* web) {
+    // Do not admit work until every requested lane exists. A partial startup
+    // can therefore stop and join without waiting on an already-dispatched RPC.
+    const auto ready=std::make_shared<std::latch>(1);
+    try {
+      lanes_[0]=std::jthread([&store,&fixtures,ready](std::stop_token token) {
+        ready->wait();
+        background_lane(token,[&](std::stop_token stop) {
+          std::optional<Lease> l;
+          try {
+            l=store.lease_next();
+            if(l) {
+              const auto&doc=fixtures.get(l->fixture_id);
+              auto parsed=parse_document(doc.raw, doc.content_type, doc.title);
+              if(!stop.stop_requested())store.complete(*l, doc, parsed);
+            }
+          }catch(const Error&e) {
+            if(l)try {
+              store.fail(*l, e.code);
+            }catch(...) {
+            }
+          } catch(...) {
+            if(l)try {
+              store.fail(*l, "E_INTERNAL");
+            }catch(...) {
+            }
           }
-        }catch(const Error&e) {
-          if(l)try {
-            store.fail(*l, e.code);
-          }catch(...) {
-          }
-        } catch(...) {
-          if(l)try {
-            store.fail(*l, "E_INTERNAL");
-          }catch(...) {
-          }
-        }
-        if(web&&!stop.stop_requested()) {
+        });
+      });
+      if(!web) { ready->count_down();return; }
+      lanes_[1]=std::jthread([&store,web,ready](std::stop_token token) {
+        ready->wait();
+        background_lane(token,[&](std::stop_token stop) {
           std::optional<ReadLease> read;
           try {
             read=store.lease_next_read();
@@ -398,8 +423,11 @@ namespace bzs {
             // reservation; recovery marks this attempt unknown, never free.
             if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) {}
           }
-        }
-        if(web&&!stop.stop_requested()) {
+        });
+      });
+      lanes_[2]=std::jthread([&store,web,ready](std::stop_token token) {
+        ready->wait();
+        background_lane(token,[&](std::stop_token stop) {
           std::optional<MapLease> map;
           try {
             map=web->lease_map();
@@ -410,16 +438,46 @@ namespace bzs {
           } catch(...) {
             if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) {}
           }
-        }
-        if(web&&!stop.stop_requested()) {
+        });
+      });
+      lanes_[3]=std::jthread([&store,web,ready](std::stop_token token) {
+        ready->wait();
+        background_lane(token,[&](std::stop_token stop) {
           std::optional<SearchLease> search;
           try {
             search=web->lease_search();
             if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
           }catch(...) { if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) {} }
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-      }
-    });
+        });
+      });
+      ready->count_down();
+    } catch(...) {
+      // If starting a later lane fails, stop all earlier lanes before joining
+      // one. No detached execution may outlive a failed construction.
+      request_stop();
+      ready->count_down();
+      join();
+      throw;
+    }
+  }
+  BackgroundWorker::~BackgroundWorker() { request_stop();join(); }
+  BackgroundWorker& BackgroundWorker::operator=(BackgroundWorker&& other) noexcept {
+    if(this!=&other) { request_stop();join();lanes_=std::move(other.lanes_); }
+    return *this;
+  }
+  bool BackgroundWorker::request_stop() noexcept {
+    bool requested=false;
+    for(auto& lane:lanes_)requested=lane.request_stop()||requested;
+    return requested;
+  }
+  bool BackgroundWorker::joinable() const noexcept {
+    for(const auto& lane:lanes_)if(lane.joinable())return true;
+    return false;
+  }
+  void BackgroundWorker::join() {
+    for(auto& lane:lanes_)if(lane.joinable())lane.join();
+  }
+  BackgroundWorker start_worker(Store& store,const FixtureCatalog& fixtures,WebService* web) {
+    return BackgroundWorker(store,fixtures,web);
   }
 }

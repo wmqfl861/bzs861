@@ -1,0 +1,71 @@
+{
+  "reviewer": "independent retry_after agent; not recorder author",
+  "verdict": "The byte-capture change preserves child status, watchdog rejection, input/binary drift rejection and completed-record hashing. One transitive dependency hash omission is reported separately; no product input or active root validation log was touched.",
+  "inputs": {
+    "scope": "Read-only snapshots of validation scripts; no running stage log inspected.",
+    "files": {
+      "run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+      "run_capture.py": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+      "guard.py": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+      "summarize_stage.py": "e6654299ed577336fb974d1137f0a5b51bd3603a788aa859b9707e452cce2b20"
+    }
+  },
+  "scope": "Static read-only comparison against original run.py plus isolated record() probes. The current snapshot includes additional collector binding/invocation and corrected non-atomic write wording, so it is not described as a single-hunk-only change.",
+  "capture_findings": [
+    "subprocess.run receives identical argv/cwd/environment/timeout; stdout=PIPE and stderr=STDOUT replace streaming to an open text file. Successful child output is captured as bytes, then written once after subprocess completion.",
+    "A completed command JSON and matching hashes establish acceptance; open/write is not an atomic rename and a concurrent reader could observe an incomplete physical write before command metadata exists.",
+    "Nonzero child exit is preserved. Timeout becomes exit124 with captured TimeoutExpired.stdout and an explicit watchdog marker, and remains a failure.",
+    "Preexisting log paths prevent launching the child; exclusive binary write still refuses replacement. Command metadata remains exclusive-create.",
+    "Source inputs are checked before and after; a successful child cannot override source drift or non-build artifact drift.",
+    "Full-stage result collection is now invoked with check=True; collector verifies complete CTest counts, successful commands, manifest/log hashes and fifteen unique native markers with matching pass summaries."
+  ],
+  "dependency_finding": {
+    "severity": "evidence-binding gap; rectify for subsequent stages or bind original dependency explicitly for frozen stages",
+    "detail": "guard.py imports NATIVE and ROOT from run.py, while run_capture.inputs excludes validation files and adds only itself, guard.py and summarize_stage.py. This snapshot does not automatically bind imported run.py.",
+    "reviewed_original_run_sha256": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+    "required_action": "Include run.py in new-stage manifests. Do not change a frozen stage; retain and compare the actual imported original bytes and their SHA separately."
+  },
+  "probe": {
+    "passed": true,
+    "checks": 25,
+    "cases": [
+      "Byte-exact combined stdout/stderr including non-UTF8 and output above pipe capacity",
+      "Existing-log refusal before a duplicate child side effect",
+      "Exit7 and its output preserved",
+      "Timeout124 with pre-timeout output and watchdog marker",
+      "Source drift rejects successful child as wrapper125",
+      "Binary drift rejects successful child as wrapper125"
+    ],
+    "scope": "Five local child processes plus duplicate prevention exercise frozen record() only; isolated enumeration hooks; no production test gates claimed."
+  },
+  "limits": [
+    "Enumeration hooks in the local probe intentionally select isolated fixture files; this is not a rerun of project CTest/pytest/sanitizer gates.",
+    "This review does not certify any active or historical stage result by itself and did not inspect running logs.",
+    "In-memory capture retains the entire output; no atomic-write or constant-memory property is claimed."
+  ],
+  "evidence_sha256": {
+    "probe.py": "b5ae19b7a0b2843c437a008290fe3669a11b4005e1598fa7cb00e5e51c1fbf3b",
+    "diff.patch": "cbb5ebac59d4bae3ad3bc4c55074ade300d1886f5faef7f9f3caf17a9b5489c8",
+    "execution.json": "6732985d772a4e1cc9ec7ad86632d0f3c8d8b642b46ac6fc99dcc1325a63ca7f",
+    "inputs.json": "26a02ef715621d7a5f4e9865c0f0a747c6266b59db048030f351c25025d08f81",
+    "snapshot/run_capture.py": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+    "snapshot/run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+    "snapshot/summarize_stage.py": "e6654299ed577336fb974d1137f0a5b51bd3603a788aa859b9707e452cce2b20",
+    "snapshot/guard.py": "faaffcf864ec5e0158dc2b07cf42040adb80d5ba28f495b6f9b339c1d5c75f4d",
+    "runs/timeout/execution-inputs.json": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+    "runs/timeout/child-command.json": "de596e850bfbf9c2235edb4d003aafd2e5c5736a90ad2b96e476633584dd9849",
+    "runs/timeout/child.log": "d6f741d7fd2d0237783fa75cc1e4a11b58ac55254ad2bd512d9d6b6f257ce15d",
+    "runs/success/execution-inputs.json": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+    "runs/success/child-command.json": "f3c4cb6f62102ce16a366d2502eb99f9329897b26cb07c3515baf0b38bf356d4",
+    "runs/success/child.log": "3f0abee89eab5c1de651a07b2f881c9ad8abe05f3ce94439a9de06316499d196",
+    "runs/source-drift/execution-inputs.json": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+    "runs/source-drift/child-command.json": "e93f05254b389231adc8d3ca2f5727342e84ce7b037e9be3ed3b463d77bc5580",
+    "runs/source-drift/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runs/binary-drift/execution-inputs.json": "19dbc19c3b7b606161694f7c3f0bc59e634a0a7b00512c339cae0f703e3b97af",
+    "runs/binary-drift/child-command.json": "237fc404043c5baa2c62df00f7e6d684375199d46e5d03adbed84ee3375e8520",
+    "runs/binary-drift/child.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runs/nonzero/execution-inputs.json": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+    "runs/nonzero/child-command.json": "1fcb6dd7156c67d2f59fbf81b1d7456f53f5d507af1d17a993c5b02ada6fd022",
+    "runs/nonzero/child.log": "0f1fcdc2382e33d879d9599701d948f391e53aeba24826b9d229233ab82d4937"
+  }
+}

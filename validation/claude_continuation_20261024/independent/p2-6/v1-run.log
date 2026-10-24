@@ -1,0 +1,20 @@
+sqlite3.ProgrammingError: Cannot operate on a closed database.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/bzs-next-dispatch-independent/probe.py", line 256, in <module>
+    run()
+  File "/tmp/bzs-next-dispatch-independent/probe.py", line 210, in run
+    check(eventually(lambda: cell('SELECT state FROM jobs WHERE id=?', fixture) == 'succeeded'), 'fixture lane has independent progress')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/bzs-next-dispatch-independent/probe.py", line 32, in eventually
+    if predicate():
+       ^^^^^^^^^^^
+  File "/tmp/bzs-next-dispatch-independent/probe.py", line 210, in <lambda>
+    check(eventually(lambda: cell('SELECT state FROM jobs WHERE id=?', fixture) == 'succeeded'), 'fixture lane has independent progress')
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/bzs-next-dispatch-independent/probe.py", line 182, in cell
+    with sqlite3.connect(database.as_uri() + '?mode=ro', uri=True, timeout=2) as db:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.ProgrammingError: Cannot operate on a closed database.

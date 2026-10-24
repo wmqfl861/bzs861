@@ -1,6 +1,7 @@
 #pragma once
 #include "bzs/store.hpp"
 #include "bzs/web.hpp"
+#include <array>
 #include <map>
 #include <thread>
 #include <vector>
@@ -40,5 +41,22 @@ namespace bzs {
     Json dispatch(const Principal& principal, const Json& request);
     Json capabilities() const;
   };
-  std::jthread start_worker(Store& store, const FixtureCatalog& fixtures, WebService* web=nullptr);
+  // Fixed background lanes: fixture ingest, explicit reads, map/crawl, search.
+  // A slow RPC blocks only its lane. Destruction stops every lane before
+  // joining any one of them; Store and WebService must outlive this handle.
+  class BackgroundWorker {
+    std::array<std::jthread,4> lanes_;
+    public:
+    BackgroundWorker()=default;
+    BackgroundWorker(Store& store,const FixtureCatalog& fixtures,WebService* web);
+    ~BackgroundWorker();
+    BackgroundWorker(const BackgroundWorker&)=delete;
+    BackgroundWorker& operator=(const BackgroundWorker&)=delete;
+    BackgroundWorker(BackgroundWorker&&) noexcept=default;
+    BackgroundWorker& operator=(BackgroundWorker&& other) noexcept;
+    bool request_stop() noexcept;
+    bool joinable() const noexcept;
+    void join();
+  };
+  BackgroundWorker start_worker(Store& store, const FixtureCatalog& fixtures, WebService* web=nullptr);
 }

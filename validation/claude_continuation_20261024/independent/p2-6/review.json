@@ -1,0 +1,79 @@
+{
+  "reviewer": "independent retry_after agent; not P2-6/P2-7 author",
+  "verdict": "No blocking correctness finding in reviewed product inputs; independent composed runtime probe passed. Final integrated tree still requires its own hash binding and full gates.",
+  "dispatcher_commit": "a9bac84266ee603e27e3957b80a54387e2c44820",
+  "composition": "Root P2-7 main.cpp with only dispatcher commit one-line BackgroundWorker type adaptation, linked to immutable author P2-6 library; this is an independently composed integration probe, not a final root build claim.",
+  "inputs": {
+    "root/apps/searchd/main.cpp": "2c0e6e569205e68fd60b747865f005fcba6cbea48b923564001f66b35eca2b06",
+    "author/src/service.cpp": "175f71a6f2fe037171edec611ef032e9548ae6da614f7022dfd9b89eeee31cf3",
+    "author/include/bzs/service.hpp": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1",
+    "author/include/bzs/web.hpp": "d51d28f1232d04e4e17af6a9c3be7635609d9d381db2f40309c885860751b675",
+    "author/build/libbzs_core.a": "7e665035cab364818fd92c6098b70adc62a2f0ea62c1584afc356d426b077e45",
+    "combined-main.cpp": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+    "dispatcher-core.a": "7e665035cab364818fd92c6098b70adc62a2f0ea62c1584afc356d426b077e45"
+  },
+  "runtime": {
+    "passed": true,
+    "checks": 50,
+    "physical_rpcs": {
+      "read": 2,
+      "map": 2,
+      "search": 2,
+      "sync": 8
+    },
+    "peak_by_lane": {
+      "read": 1,
+      "map": 1,
+      "search": 1,
+      "sync": 8
+    },
+    "peak_total": 11,
+    "elapsed_seconds": 0.223,
+    "binary_sha256": "47b6c5b4e11a3640c19949b39d59543ac2e37235b0d643da2edba540027f5015",
+    "scope": "Independently composed P2-7 HTTP executor plus P2-6 dispatcher, Linux Debug; synthetic loopback RPC only."
+  },
+  "static_review": [
+    "Four fixed lanes with one lease/RPC in flight per lane; read, shared map/crawl and search have independent synchronous callers. Fixture-only setup starts one lane.",
+    "Shared startup latch prevents any lease admission until requested threads exist; partial construction requests stop on all initialized lanes before releasing latch and joining. No runtime thread-creation failure injection was performed.",
+    "Stop-token-aware condition-variable polling wakes on stop. request_stop visits all lanes before join starts. Destructor and move assignment stop and join old ownership before Store/WebService lifetime ends.",
+    "Existing durable lease, token, publication/owner fences and reservation/unknown-budget logic remain in execute/commit paths. Per-category work stays serial; prior global category alternation is no longer a guarantee.",
+    "Concrete HTTP worker uses independent per-call connections and IO context. Python worker supports concurrent requests; WorkerPort contract now states the concurrent-call requirement.",
+    "Combined HTTP lifetime stops both admission domains before joining, keeps Store/WebService and IO alive while accepted tasks finish, and does not detach execution."
+  ],
+  "independent_runtime_claims": [
+    "With first read/map/search RPCs held, all eight default HTTP business workers accept independent synchronous reads; measured peak is eleven physical RPCs.",
+    "While all eight HTTP requests stay held, completing each first durable search/read/map permits that category second queued task to start and settle; this verifies progress after saturation rather than merely before saturation.",
+    "Each durable category peak remains one; read/map known failure outcomes charge exactly one actual request and zero unknown requests.",
+    "An extra queued read cancelled through HTTP before saturation remains cancelled with zero attempts; call counts show no cancelled/failed replay.",
+    "Health remains available and business job.get returns 503 E_REQUEST_BACKPRESSURE while saturated. After releasing sync work all accepted calls settle, HTTP admission recovers and process exits zero."
+  ],
+  "limits": [
+    "Linux Debug with synthetic loopback Worker; no real external source activation or source audit-state mutation.",
+    "Fixture completion was observed under saturation but may have finished before the eight HTTP calls filled; no stronger after-saturation fixture ordering is claimed.",
+    "This composed build combines the frozen P2-7 main with one BackgroundWorker type adaptation and author P2-6 core. It is not proof of a later root integrated binary until hashes are bound.",
+    "No ASan, TSan, Windows, start-thread failure injection, or arbitrary latency SLA claim from this probe.",
+    "Original 64-connection HTTP limit, per-category serialization, and shared storage/JSON contention remain."
+  ],
+  "preserved_initial_probe_failure": {
+    "cause": "Independent probe SQLite cleanup bug: connection closed inside its transaction context, causing __exit__ to operate on a closed DB. Product is not implicated.",
+    "files": {
+      "probe.py": "3b3af24389e4498c9d5b6ed4fa28c47fc5d991e7676926dfb881b683d5c163bf",
+      "run.log": "f091007731a6476a91c3a12338dea429b30e2c5fd1c5fcba0ae9931d9a13437b",
+      "searchd.log": "29b083c3b72d760fae8266070725e9874d46320f83c26aaa1cb32eed6bb032b7"
+    }
+  },
+  "evidence_sha256": {
+    "inputs.json": "5a949a23b70853fb584578b28033980d0803f9e868f26e4ded74aa5c61738464",
+    "combined-main.cpp": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+    "build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "probe.py": "b9eb0fa86e72cfcefc3730647442935aa7b36902d53c390878ab99867c8bc2fb",
+    "run-v2.log": "7accc83a7fd998e118684c5083270bc175403bce1b21140a6fc37a1016c96e02",
+    "searchd.log": "10c225eb8def86d3887d48f0850d71c531c1fec0f266fdd78f19d0a48992df76",
+    "execution.json": "7accc83a7fd998e118684c5083270bc175403bce1b21140a6fc37a1016c96e02",
+    "v1-probe.py": "3b3af24389e4498c9d5b6ed4fa28c47fc5d991e7676926dfb881b683d5c163bf",
+    "v1-run.log": "f091007731a6476a91c3a12338dea429b30e2c5fd1c5fcba0ae9931d9a13437b",
+    "v1-searchd.log": "29b083c3b72d760fae8266070725e9874d46320f83c26aaa1cb32eed6bb032b7",
+    "v1-failure.json": "acf64eb877c13c203bbaa7fef8f43e016afc9e9998736bf3ed0919892b13fffb"
+  },
+  "archive_guidance": "Archive source, JSON and logs listed here; omit copied static library and binary."
+}

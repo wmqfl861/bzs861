@@ -1,0 +1,174 @@
+{
+  "passed": true,
+  "checks": 25,
+  "scope": "Five local child processes plus duplicate prevention exercise frozen record() only; isolated enumeration hooks; no production test gates claimed.",
+  "recorder_sha256": "8e975db4ed35df6eaf423f454c48db8b65d5466a814929dc641bfbd4778b5f54",
+  "probe_sha256": "b5ae19b7a0b2843c437a008290fe3669a11b4005e1598fa7cb00e5e51c1fbf3b",
+  "cases": [
+    {
+      "stage": "success",
+      "wrapper_exit": 0,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-u",
+          "-c",
+          "import os; os.write(1, b'A'*65536+b'\\xff\\n'); os.write(2, b'B'*65536+b'\\n'); os.write(1,b'end\\n')"
+        ],
+        "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+        "started_at_utc": "2026-10-24T12:01:44.243436+00:00",
+        "elapsed_seconds": 0.013,
+        "exit_code": 0,
+        "process_watchdog_expired": false,
+        "environment_overrides": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+        },
+        "execution_inputs": "execution-inputs.json",
+        "execution_inputs_sha256": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+        "source_inputs_unchanged": true,
+        "build_preparation": false,
+        "binaries_before_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "binaries_after_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "log": "child.log",
+        "log_sha256": "3f0abee89eab5c1de651a07b2f881c9ad8abe05f3ce94439a9de06316499d196"
+      }
+    },
+    {
+      "stage": "nonzero",
+      "wrapper_exit": 7,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-u",
+          "-c",
+          "print('intentional failure'); raise SystemExit(7)"
+        ],
+        "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+        "started_at_utc": "2026-10-24T12:01:44.259811+00:00",
+        "elapsed_seconds": 0.013,
+        "exit_code": 7,
+        "process_watchdog_expired": false,
+        "environment_overrides": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+        },
+        "execution_inputs": "execution-inputs.json",
+        "execution_inputs_sha256": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+        "source_inputs_unchanged": true,
+        "build_preparation": false,
+        "binaries_before_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "binaries_after_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "log": "child.log",
+        "log_sha256": "0f1fcdc2382e33d879d9599701d948f391e53aeba24826b9d229233ab82d4937"
+      }
+    },
+    {
+      "stage": "timeout",
+      "wrapper_exit": 124,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-u",
+          "-c",
+          "import time;print('before timeout',flush=True);time.sleep(2)"
+        ],
+        "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+        "started_at_utc": "2026-10-24T12:01:44.274726+00:00",
+        "elapsed_seconds": 0.202,
+        "exit_code": 124,
+        "process_watchdog_expired": true,
+        "environment_overrides": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+        },
+        "execution_inputs": "execution-inputs.json",
+        "execution_inputs_sha256": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+        "source_inputs_unchanged": true,
+        "build_preparation": false,
+        "binaries_before_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "binaries_after_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "log": "child.log",
+        "log_sha256": "d6f741d7fd2d0237783fa75cc1e4a11b58ac55254ad2bd512d9d6b6f257ce15d"
+      }
+    },
+    {
+      "stage": "source-drift",
+      "wrapper_exit": 125,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-u",
+          "-c",
+          "from pathlib import Path;Path('product.txt').write_bytes(b'changed')"
+        ],
+        "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+        "started_at_utc": "2026-10-24T12:01:44.478959+00:00",
+        "elapsed_seconds": 0.024,
+        "exit_code": 0,
+        "process_watchdog_expired": false,
+        "environment_overrides": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+        },
+        "execution_inputs": "execution-inputs.json",
+        "execution_inputs_sha256": "124c2374abe0e40e933d4148f981ba25b5f592b79481ad5eba8c11cd58cf6e47",
+        "source_inputs_unchanged": false,
+        "build_preparation": false,
+        "binaries_before_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "binaries_after_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "log": "child.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "stage": "binary-drift",
+      "wrapper_exit": 125,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-u",
+          "-c",
+          "from pathlib import Path;Path('binary.fixture').write_bytes(b'changed')"
+        ],
+        "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+        "started_at_utc": "2026-10-24T12:01:44.505310+00:00",
+        "elapsed_seconds": 0.023,
+        "exit_code": 0,
+        "process_watchdog_expired": false,
+        "environment_overrides": {
+          "PYTHONDONTWRITEBYTECODE": "1",
+          "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+        },
+        "execution_inputs": "execution-inputs.json",
+        "execution_inputs_sha256": "19dbc19c3b7b606161694f7c3f0bc59e634a0a7b00512c339cae0f703e3b97af",
+        "source_inputs_unchanged": true,
+        "build_preparation": false,
+        "binaries_before_sha256": {
+          "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+        },
+        "binaries_after_sha256": {
+          "binary.fixture": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+        },
+        "log": "child.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

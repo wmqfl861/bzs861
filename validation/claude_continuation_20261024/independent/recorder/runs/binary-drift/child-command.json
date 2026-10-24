@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-u",
+    "-c",
+    "from pathlib import Path;Path('binary.fixture').write_bytes(b'changed')"
+  ],
+  "cwd": "/tmp/bzs-recorder-review-xwjd5tp8",
+  "started_at_utc": "2026-10-24T12:01:44.505310+00:00",
+  "elapsed_seconds": 0.023,
+  "exit_code": 0,
+  "process_watchdog_expired": false,
+  "environment_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/tmp/bzs-recorder-review-xwjd5tp8/python"
+  },
+  "execution_inputs": "execution-inputs.json",
+  "execution_inputs_sha256": "19dbc19c3b7b606161694f7c3f0bc59e634a0a7b00512c339cae0f703e3b97af",
+  "source_inputs_unchanged": true,
+  "build_preparation": false,
+  "binaries_before_sha256": {
+    "binary.fixture": "97f83f8c1843f17908b976e7a7470dcaec0353d4c3481a5635f4e31e1376feaf"
+  },
+  "binaries_after_sha256": {
+    "binary.fixture": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+  },
+  "log": "child.log",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

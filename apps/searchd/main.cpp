@@ -401,7 +401,7 @@ int main(int argc, char**argv) {
     // executor is destroyed, including exceptional startup/unwind paths.
     RequestExecutor requests(request_threads);
     Listener listener(io, port, service, requests,auth);
-    std::jthread worker_thread;
+    BackgroundWorker worker_thread;
     if(worker)worker_thread=start_worker(store, catalog, web.get());
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
