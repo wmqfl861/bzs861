@@ -122,6 +122,14 @@ def _cache_control(value: str) -> bool:
     return True
 
 
+def _supported_vary(value: str, *, allowed: frozenset[str] = frozenset(("accept-encoding",))) -> bool:
+    # Match the core's bounded ASCII list parser. Empty metadata means absent;
+    # explicit empty response fields are rejected before reaching this parser.
+    if len(value) > 4096 or not value.isascii() or any(ord(char) < 32 or ord(char) == 127 for char in value):
+        return False
+    return not value or all(item.strip(" ").lower() in allowed for item in value.split(","))
+
+
 def validate_cache(value: Any) -> dict[str, str]:
     """Validate a complete metadata object, including records received from core."""
     if not isinstance(value, dict) or set(value) != CACHE_FIELDS or any(not isinstance(item, str) for item in value.values()):
@@ -131,7 +139,7 @@ def validate_cache(value: Any) -> dict[str, str]:
     _validators(value)
     if not _cache_control(value["cache_control"]):
         raise ValueError("HTTP cache controls do not permit this revalidation protocol")
-    if value["vary"]:
+    if not _supported_vary(value["vary"]):
         raise ValueError("Vary selections are outside this revalidation protocol")
     for name in ("date", "expires"):
         if value[name] and not _date(value[name]):
@@ -149,7 +157,7 @@ def response_cache(headers: dict[str, str], *, url: str, profile: str,
     cannot become a conditional base. A 304 failure never requests a fallback.
     Missing 304 fields mean unchanged and must not erase stored restrictions.
     """
-    for name in ("etag", "last-modified", "date", "age", "expires", "cache-control"):
+    for name in ("etag", "last-modified", "date", "age", "expires", "cache-control", "vary"):
         if name in headers and not headers[name]:
             raise ValueError("empty explicit HTTP cache field is invalid")
     result = {"version": VERSION, "url": url, "request_profile": profile}

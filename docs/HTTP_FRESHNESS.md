@@ -6,7 +6,7 @@
 
 ## 行为
 
-`cache_first` 仅复用可证明新鲜的同 owner、精确 URI 和请求 profile 表示。年龄包括 Date / Age、网络响应耗时以及存储后的驻留时间；响应 max-age、s-maxage、Expires 和调用方 max_age_s 共同取较严格上限。没有显式期限但完整报告了缓存字段的响应，采用调用方的有界期限（默认七天）。零期限、no-cache、Pragma no-cache、任意 Vary、非法日期/年龄、时钟回退或未知旧版元数据不能获得默认新鲜度。
+`cache_first` 仅复用可证明新鲜的同 owner、精确 URI 和请求 profile 表示。年龄包括 Date / Age、网络响应耗时以及存储后的驻留时间；响应 max-age、s-maxage、Expires 和调用方 max_age_s 共同取较严格上限。没有显式期限但完整报告了缓存字段的响应，采用调用方的有界期限（默认七天）。零期限、no-cache、Pragma no-cache、不支持的 Vary、非法日期/年龄、时钟回退或未知旧版元数据不能获得默认新鲜度。
 
 `cache_only` 不请求来源；没有快照返回 `E_NOT_CACHED`，已有表示需要验证时返回 `E_CACHE_STALE`。它不是读取任意历史证据的接口；已取得的快照可继续通过 `document.read/range` 按权限读取。`refresh` 总是发起一次已授权刷新；网络失败不会悄悄返回过期正文。must-revalidate 与其他指令都不能触发未授权陈旧回退。
 
@@ -23,3 +23,9 @@
 结果的 `cache` 对象解释 fresh、store_allowed、reason、current_age_ms 和 freshness_lifetime_ms。完整协议与304的权限/发布屏障继续见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。本次不实现通用 Vary 选型、跨用户缓存、瞬时 no-store 流、stale-if-error 或外部代理缓存。
 
 所有HTTP状态在解析之前搬运一次原始缓存字段，完整203/空正文crawl和失败304都不能遗漏限制。重复Pragma按列表保留；重复Date/Age等单值字段保持可检测的无效表示，不取最后一个覆盖前项。接收时间只采样一次，正文提取期间的驻留时间不会归零；本地profile RPC结束后再次核验TTL。已有的截断正文证据可在显式非发布规则下保留，但不会保存可复用的新鲜度或条件验证器。
+
+## Accept-Encoding 选型
+
+页面新鲜度和条件验证只支持缺失的 Vary，或仅由 Accept-Encoding 组成的有界 ASCII 列表。字段名大小写和重复项不改变含义；通配符、其他选型、混合列表、空项、显式空字段及超界字段仍不能获得缓存复用。Accept-Encoding 已包含在实际请求 profile 中；当前 profile 必须与已存表示相同，改变编码选择会使旧缓存失效。304 省略 Vary 时保留原选择，不能抹去既有约束。
+
+robots 的新鲜规则沿用固定 BzsBot User-Agent、text/plain Accept，并允许固定 gzip/deflate Accept-Encoding；其版本化策略身份依赖这些固定选择。新鲜 robots 记录本身不另存 profile，未来使这些头可配置或改变默认值时，必须更新策略身份或增加显式绑定。条件重验证仍要求精确 profile，且只接受上面的较窄 Vary 子集。

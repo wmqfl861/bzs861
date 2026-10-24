@@ -1,0 +1,107 @@
+{
+  "scope": "P2-1 independent read-only review of frozen patch, applied source/docs, and exact-library lightweight probes",
+  "reviewer_role": "independent reviewer; no production code, formal tests, or root workspace files written",
+  "created_at_utc": "2026-10-24T03:11:25.872876+00:00",
+  "conclusion": "passed within the recorded scope; no blocking findings",
+  "patch_sha256": "f6ec0dc78d696c3cb2ad1ea1ab8b3ff6b86b0cc993de51fdc88721669a08aac1",
+  "handoff_note_sha256": "5ec58b8a2528e036028cc165952d2fafe57b1149d34c26e01dc086fc92c78a1e",
+  "candidate_library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+  "before_p2_1_library_sha256": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+  "static_findings": [
+    {
+      "subject": "Supported Vary selection",
+      "result": "Page freshness and conditional metadata accept absence or a bounded ASCII list containing only Accept-Encoding, case-insensitive with duplicates allowed. Empty list members, wildcard, mixed/unknown names, parameters, control/non-ASCII bytes and length >4096 remain unsupported. Explicit empty HTTP Vary is rejected before it can mean omitted metadata.",
+      "sources": [
+        "src/http_cache.cpp supported_vary/validate_http_cache/http_freshness",
+        "python/bzs/worker/revalidation.py _supported_vary/response_cache",
+        "python/bzs/worker/freshness.py response_freshness"
+      ]
+    },
+    {
+      "subject": "Request-profile binding",
+      "result": "Fetcher explicitly fixes gzip, deflate and computes the stored profile from final explicit headers immediately before the same headers are passed to aiohttp. Header names are folded; only resource validators are excluded. Cookie jar and environment proxies remain disabled. The worker checks the current profile before issuing a conditional GET; a changed selection uses the original grant for one complete GET.",
+      "sources": [
+        "python/bzs/worker/revalidation.py request_profile/require_identity",
+        "python/bzs/worker/fetch.py request_headers/fetch/start",
+        "python/bzs/worker/server.py fetch_profile/_fetch_extract/_map_fetch"
+      ]
+    },
+    {
+      "subject": "Core reuse and 304 binding",
+      "result": "Owner/cache identity, current-profile RPC, exact URI/profile/binding, current base compare-and-swap, deletion and publication gates remain. Omitted 304 Vary cannot clear previous Accept-Encoding in either http_cache or http_freshness. Mixed Vary invalidates old reuse without automatic retry while retaining the historical body artifact.",
+      "sources": [
+        "src/web.cpp read/decode_revalidation",
+        "src/http_cache.cpp merge_http_cache/merge_http_freshness",
+        "src/store.cpp revalidation_base/ingest_web_locked",
+        "src/map.cpp lease_next_map/complete_map"
+      ]
+    },
+    {
+      "subject": "Robots fixed-header boundary",
+      "result": "Robots freshness preserves the previously accepted fixed User-Agent/Accept dimensions and adds fixed Accept-Encoding. Conditional robots metadata stays encoding-only. Fresh parsed robots records do not contain a request_profile field; their safety depends on fixed CRAWLER_USER_AGENT, text/plain Accept and gzip/deflate Accept-Encoding within bzs-robots-1. Private/public map parameters cannot override request headers. Future changes to those selections require a policy identity change or explicit stored profile binding.",
+      "sources": [
+        "python/bzs/worker/robots.py POLICY_VERSION/CRAWLER_USER_AGENT/_remaining_freshness/_validate_record",
+        "python/bzs/worker/server.py map_fetch/_map_fetch",
+        "src/map_service.cpp robots validation",
+        "docs/HTTP_FRESHNESS.md Accept-Encoding section"
+      ]
+    },
+    {
+      "subject": "Other restrictions and documented scope",
+      "result": "No-store, no-cache, zero age, unrecognized Vary dimensions, unsupported 304, original grant/accounting, ACL/publication/site approval, backup quarantine and permanent identities are not broadened. Applied docs distinguish private owner freshness from the narrower conditional protocol and explicitly state the robots profile limitation.",
+      "sources": [
+        "docs/HTTP_FRESHNESS.md",
+        "docs/HTTP_REVALIDATION.md",
+        "src/http_cache.cpp controls/cache_control",
+        "python/bzs/worker/revalidation.py _cache_control",
+        "python/bzs/worker/robots.py _remaining_freshness"
+      ]
+    }
+  ],
+  "runtime": {
+    "native_fixed": {
+      "checks": 116,
+      "vary_cases": 27,
+      "exit_code": 0,
+      "library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+      "covered": [
+        "bounded ASCII acceptance/rejection",
+        "no-store/no-cache/private/zero-age restrictions",
+        "URL/profile mismatch rejection",
+        "same-owner and matching-profile public cache reuse",
+        "changed profile cache-only denial",
+        "omitted 304 Vary in both persisted metadata records",
+        "mixed Vary invalidates reuse without retry while body stays available"
+      ],
+      "offline_worker_responses": 4
+    },
+    "native_old_same_source": {
+      "exit_code": 2,
+      "checks_before_expected_failure": 5,
+      "meaning": "Original validator rejects the first supported nonempty Accept-Encoding case; this is the preserved expected before-fix counterexample.",
+      "library_sha256": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89"
+    },
+    "python": {
+      "checks": 108,
+      "exit_code": 0,
+      "covered": [
+        "actual production Fetcher header construction",
+        "profile changes for UA/Accept/Accept-Language/Accept-Encoding, stable under header case and resource-validator changes",
+        "Vary matrix and omitted-vs-explicit-empty response handling",
+        "304 profile mismatch refusal",
+        "fixed robots Vary dimensions, retained body hash/rules, disallow/public decisions",
+        "mixed/wildcard/no-store robots denial"
+      ]
+    },
+    "inputs_unchanged_after_execution": true,
+    "external_network_requests": 0,
+    "command_record": "command-record.json"
+  },
+  "limitations": [
+    "Native Worker responses are explicit offline fixtures; this independent probe does not claim a real HTTP transport or loopback run.",
+    "Python checks invoke production header construction/profile/parser functions without opening sockets. Actual aiohttp request binding was reviewed statically; root formal HTTP and full project gates remain separate evidence.",
+    "The finite matrix and synthetic clock do not replace the full CTest/pytest/ASan gates or a future exact-commit CI run.",
+    "Robots fresh-record reuse assumes its documented fixed header selections; no future dynamic Accept-Encoding configuration is claimed."
+  ],
+  "evidence_policy": "Bundle contains source, JSON and text logs only. Static libraries, executables and runtime databases are excluded."
+}

@@ -39,14 +39,14 @@ Worker 用稳定 JSON 编码对 `version`、GET 方法和所有显式请求头�
 | `etag` | 一个验证器或空串 |
 | `last_modified` | 规范 HTTP 日期或空串 |
 | `cache_control` | 有界的原始合并 Cache-Control 字段，最多 4096 字符，或空串 |
-| `vary` | 本阶段必须为空串 |
+| `vary` | 空串表示缺失，或最多 4096 字符、仅含 Accept-Encoding 的 ASCII 列表 |
 | `date` | 规范 HTTP 日期或空串 |
 | `age` | 1–12 个十进制数字或空串 |
 | `expires` | 规范 HTTP 日期或空串 |
 
-缺失的 HTTP 字段用空串表示。所有日期统一采用不早于 1601 年的规范 IMF-fixdate 子集。显式提供但为空的 ETag、Last-Modified、Date、Age、Expires、Cache-Control 字段无效。重复的单值字段保留为可检测的重复值，不取“最后一个”；Cache-Control 与 Vary 作为列表字段合并后统一检查。
+缺失的 HTTP 字段用空串表示。所有日期统一采用不早于 1601 年的规范 IMF-fixdate 子集。显式提供但为空的 ETag、Last-Modified、Date、Age、Expires、Cache-Control、Vary 字段无效。重复的单值字段保留为可检测的重复值，不取“最后一个”；Cache-Control 与 Vary 作为列表字段合并后统一检查。
 
-本阶段不保存存在任意 `Vary`、`no-store`、`no-cache`、`private`、零 max-age/s-maxage、冲突或重复年龄指令、非法日期、重复验证器或超界字段的条件元数据。没有可用验证器、206、截断、提取失败、空正文或未支持类型也不形成新的条件基底。这些元数据问题不会把已经完整取得、且原本可读的 200 正文改成网络失败；它只不能成为后续条件请求的基础。
+本阶段只允许缺失或仅含 `Accept-Encoding` 的 `Vary`，大小写和重复项可接受；空项、通配符、其他或混合选型仍拒绝。实际 Accept-Encoding 由精确请求 profile 绑定。本阶段不保存存在不支持的 `Vary`、`no-store`、`no-cache`、`private`、零 max-age/s-maxage、冲突或重复年龄指令、非法日期、重复验证器或超界字段的条件元数据。没有可用验证器、206、截断、提取失败、空正文或未支持类型也不形成新的条件基底。这些元数据问题不会把已经完整取得、且原本可读的 200 正文改成网络失败；它只不能成为后续条件请求的基础。
 
 对于 robots，只有完整 200、保留规则并具有正有效期的 `rules` 记录能附带元数据。404/410 的历史允许策略、失败产生的 deny 记录和因 no-cache/max-age=0 清空规则的记录都不符合这个条件。
 

@@ -53,6 +53,34 @@ TEST(restrictive_and_malformed_fields_never_gain_default_freshness) {
   auto r=policy("");r.set("pragma","no-cache");CHECK(!http_freshness(r,epoch,86400).at("fresh").flag());
   CHECK(!http_freshness(Json(),epoch,86400).at("fresh").flag());
 }
+TEST(vary_accept_encoding_is_the_only_supported_nonempty_selection) {
+  for(const auto* value:{"Accept-Encoding","aCcEpT-EnCoDiNg"," Accept-Encoding , ACCEPT-ENCODING "}) {
+    auto r=policy();r.set("vary",value);const auto status=http_freshness(r,epoch+1000,86400);
+    CHECK(status.at("fresh").flag());CHECK(status.at("store_allowed").flag());
+  }
+  for(const auto* value:{" ",",",",Accept-Encoding","Accept-Encoding,","Accept-Encoding,,Accept-Encoding",
+                         "Accept-Encoding, ,Accept-Encoding","*","Accept-Encoding,*","Accept-Encoding,Cookie",
+                         "Accept-Encoding,Accept-Language","Accept-Encoding;mode=fast","\"Accept-Encoding\""}) {
+    auto r=policy();r.set("vary",value);const auto status=http_freshness(r,epoch,86400);
+    CHECK(!status.at("fresh").flag());CHECK(status.at("reason").str()=="unsupported_vary");
+  }
+}
+TEST(accept_encoding_does_not_override_other_cache_restrictions) {
+  for(const auto* control:{"no-cache","max-age=0","must-understand"}) {
+    auto r=policy(control);r.set("vary","Accept-Encoding");CHECK(!http_freshness(r,epoch,86400).at("fresh").flag());
+  }
+  auto r=policy("no-store");r.set("vary","Accept-Encoding");const auto status=http_freshness(r,epoch,86400);
+  CHECK(!status.at("store_allowed").flag());CHECK(status.at("reason").str()=="no_store");
+}
+TEST(accept_encoding_cache_reuse_keeps_owner_and_request_profile_fences) {
+  Temp t;Worker w;w.headers.set("vary","Accept-Encoding, ACCEPT-ENCODING");Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  const auto first=web.read("a",args());CHECK(!first.at("from_cache").flag());
+  const auto hit=web.read("a",args("cache_only"));CHECK(hit.at("from_cache").flag());CHECK(hit.at("snapshot_id").str()==first.at("snapshot_id").str());
+  CHECK(web.read("a",args()).at("from_cache").flag());CHECK(w.requests==1);
+  rejects([&]{web.read("b",args("cache_only"));},"E_NOT_CACHED");
+  w.profile=sha256("changed Accept-Encoding");rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==1);
+  CHECK(!web.read("a",args()).at("from_cache").flag());CHECK(w.requests==2);
+}
 TEST(private_owner_cache_and_quoted_ages_remain_bounded) {
   CHECK(http_freshness(policy("private, max-age=\"60\""),epoch+1000,86400).at("fresh").flag());
   CHECK(!http_freshness(policy("max-age=60,s-maxage=10"),epoch+10000,86400).at("fresh").flag());
@@ -110,8 +138,8 @@ TEST(late_invalidation_cannot_clear_newer_representation) {
   CHECK(web.read("a",args("cache_only")).at("from_cache").flag());
 }
 TEST(merge_304_preserves_omitted_restrictions_and_refreshes_time) {
-  auto old=policy("max-age=10"),update=policy("");update.set("received_at_ms",epoch+10000);
-  auto merged=merge_http_freshness(old,update);CHECK(merged.at("cache_control").str()=="max-age=10");CHECK(http_freshness(merged,epoch+10001,86400).at("fresh").flag());
+  auto old=policy("max-age=10"),update=policy("");old.set("vary","Accept-Encoding");update.set("received_at_ms",epoch+10000);
+  auto merged=merge_http_freshness(old,update);CHECK(merged.at("cache_control").str()=="max-age=10");CHECK(merged.at("vary").str()=="Accept-Encoding");CHECK(http_freshness(merged,epoch+10001,86400).at("fresh").flag());
   update.set("request_profile",sha256("other"));rejects([&]{merge_http_freshness(old,update);},"E_WORKER_PROTOCOL");
 }
 }

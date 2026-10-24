@@ -17,7 +17,7 @@ from typing import Any
 from yarl import URL
 
 from .fetch import FetchAdmissionDenied
-from .revalidation import cache_headers, merge_cache, validate_cache
+from .revalidation import _supported_vary, cache_headers, merge_cache, validate_cache
 from .sources.base import retry_after_ms
 
 POLICY_VERSION = "bzs-robots-1"
@@ -278,10 +278,12 @@ def _remaining_freshness(headers: dict[str, str], now_ms: int, default_ms: int, 
     directives = [value.strip() for value in headers.get("cache-control", "").lower().split(",")]
     if any(value.split("=", 1)[0].strip() in ("no-store", "no-cache") for value in directives):
         return 0
-    vary = {value.strip().lower() for value in headers.get("vary", "").split(",") if value.strip()}
-    # Metadata always uses the fixed crawler UA and text/plain Accept value.
-    # Other Vary dimensions are not part of the persisted record identity.
-    if vary - {"user-agent", "accept"}:
+    # Robots requests fix the crawler UA, text/plain Accept, and gzip/deflate
+    # Accept-Encoding. Their versioned policy identity depends on those fixed
+    # selections; conditional renewal additionally binds the actual profile.
+    vary = headers.get("vary", "")
+    if ("vary" in headers and not vary or
+            not _supported_vary(vary, allowed=frozenset(("user-agent", "accept", "accept-encoding")))):
         return 0
     max_ages = []
     for value in directives:

@@ -1,0 +1,49 @@
+{
+  "scope": "Independent P2-1 exact candidate library probes",
+  "started_at_utc": "2026-10-24T03:10:28.484916+00:00",
+  "root_head": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+  "library_sha256": "ec53b77e77bdcd14ae31ed0485cd62bb7ca2df87a47ce24b002fa6938e876156",
+  "old_library_sha256": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+  "source_inputs_sha256": {
+    "src/http_cache.cpp": "a644491c895ba485bf8e72649df975acc98dd4b97350ee5bac2d2c0213ee5d9d",
+    "include/bzs/http_cache.hpp": "b819d91dbd6230445a44bf4bf2abac7cb90f4299a12a8e43ef7a72edceef2a80",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "tests/cache_freshness.cpp": "c7c2c057ac92fa6094fdc5f1ed659be7b981259d80191791cac6370e38ec3654",
+    "tests/revalidation.cpp": "55c958c546ff692fcddeae5dc4544b573019575c5d79a86b0edb5cf79f40db81",
+    "python/tests/test_http_revalidation.py": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+    "python/bzs/worker/robots.py": "c884b818e1c9e68a1ef55a23836e84c49d59701d47dde8781c05732caef672ed",
+    "python/tests/test_robots.py": "fa8d6c6ca12e1a9b406c8fdc8029b6c9ec84fb03bfefc608c53402156381f33b",
+    "python/bzs/worker/fetch.py": "c9ced0d80b19ecad233ec9d426cfbe6657b3915a5912519ac497a2b3359828a2",
+    "python/bzs/worker/freshness.py": "4da0be636698fea12901fda15ea2cf2a73b13a50d5fd0b9cde86f4357aad1074",
+    "python/bzs/worker/server.py": "776a21edef4633b5be2e7daf57635b69c18f0b90521c98c4cb48ff6f6253d6dd",
+    "src/web.cpp": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+    "src/map.cpp": "52f3d69d78d4b2c62c1d7bbf3f02b27309d9fbe5cb240a03690d42719f19ea00",
+    "src/map_service.cpp": "0fdacda671a76ffee89cb15dc4bca5fc46889eb14488a509c777ce77df9de60e",
+    "docs/HTTP_FRESHNESS.md": "eb67c49b8344dee6a93ea1c1f5b76056306fc306cc90d53ac1c34248a399850c",
+    "docs/HTTP_REVALIDATION.md": "c2f24178087941b3483fbd4cdf2d8faa0e26685912fc08ed449b56c1df4c8a96"
+  },
+  "headers_sha256": {
+    "bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "bzs/error.hpp": "398d730eda65445949844cf2e2ede9ac47def949f08b8a38fa4009194c337b6f",
+    "bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "bzs/http_cache.hpp": "b819d91dbd6230445a44bf4bf2abac7cb90f4299a12a8e43ef7a72edceef2a80",
+    "bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "bzs/service.hpp": "551ce5aedae6aa3b2e89d16f20e0e59e60c95453a128a90263b453414a173c3c",
+    "bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "bzs/store.hpp": "69770a9f9cada9ba412cce3859719d81e7fdc909e3ab4165fda8aff9cc334f07",
+    "bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "bzs/util.hpp": "ed61e7f4a1ac4291db23655ad6df22ca035d531d012adf948bf78beb91ad8991",
+    "bzs/web.hpp": "68e2959787d80cd2a7c1c54e3cd255164e9f523557aa1f62f1037e698530f627"
+  },
+  "probe_inputs_sha256": {
+    "probe.cpp": "161611c2405b916fc83ae5fa74814f6c01bf169bb799578390bb94793396321f",
+    "probe.py": "805d41bcf88f970ea5004d4884c038b0c948b280b97bb5ae4a0c847837743308",
+    "vary-cases.json": "7c5e81080e156db495b8ea1a4faf3c2ccbe5db934523d1fc64877539bb02be64"
+  },
+  "patch_sha256": "f6ec0dc78d696c3cb2ad1ea1ab8b3ff6b86b0cc993de51fdc88721669a08aac1"
+}

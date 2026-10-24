@@ -49,6 +49,26 @@ std::string trim(std::string value) {
   const auto first=value.find_first_not_of(' ');if(first==std::string::npos)return {};
   return value.substr(first,value.find_last_not_of(' ')-first+1);
 }
+// Every supported selection is already part of the exact request profile.
+// Empty metadata means the response omitted Vary; a nonempty list may name
+// only Accept-Encoding. Keep the same bounded ASCII contract as wire fields.
+bool supported_vary(std::string_view value) {
+  if(value.size()>4096||!std::all_of(value.begin(),value.end(),[](unsigned char c){return c>=32&&c<127;}))return false;
+  if(value.empty())return true;
+  constexpr std::string_view supported="accept-encoding";
+  for(;;) {
+    const auto end=value.find(',');auto item=value.substr(0,end);
+    while(!item.empty()&&item.front()==' ')item.remove_prefix(1);
+    while(!item.empty()&&item.back()==' ')item.remove_suffix(1);
+    if(item.size()!=supported.size())return false;
+    for(std::size_t i=0;i<item.size();++i) {
+      const auto c=item[i];const auto folded=c>='A'&&c<='Z'?static_cast<char>(c-'A'+'a'):c;
+      if(folded!=supported[i])return false;
+    }
+    if(end==std::string_view::npos)return true;
+    value.remove_prefix(end+1);
+  }
+}
 bool cache_control(const std::string& value) {
   if(value.empty())return true;
   const auto token=[](const std::string& word) {
@@ -89,7 +109,7 @@ Json validate_http_cache(const Json& record,const std::string& url) {
   protocol(hex(field(record,"request_profile",64)),"Invalid HTTP request profile");
   const auto tag=field(record,"etag",1024),modified=field(record,"last_modified",29);
   protocol(etag(tag)&&date(modified)&&(!tag.empty()||!modified.empty()),"Invalid or missing HTTP validator");
-  protocol(field(record,"vary",4096).empty()&&cache_control(field(record,"cache_control",4096)),"Unsupported HTTP cache policy");
+  protocol(supported_vary(field(record,"vary",4096))&&cache_control(field(record,"cache_control",4096)),"Unsupported HTTP cache policy");
   protocol(date(field(record,"date",29))&&date(field(record,"expires",29)),"Invalid HTTP cache date");
   const auto age=field(record,"age",12);protocol(std::all_of(age.begin(),age.end(),[](char c){return c>='0'&&c<='9';}),"Invalid HTTP cache age");
   return Json::parse(record.canonical());
@@ -183,7 +203,7 @@ Json http_freshness(const Json& input,std::int64_t now,std::int64_t max_age_s) {
   const auto r=validate_http_freshness(input,input.at("url").str());const auto cc=controls(r.at("cache_control").str());
   if(cc.no_store||!cc.valid||r.at("invalid").flag()) {out.set("store_allowed",false);out.set("reason",cc.no_store?"no_store":"invalid_cache_fields");return out;}
   if(cc.no_cache) {out.set("reason","requires_validation");return out;}
-  if(!r.at("vary").str().empty()) {out.set("reason","unsupported_vary");return out;}
+  if(!supported_vary(r.at("vary").str())) {out.set("reason","unsupported_vary");return out;}
   if(r.at("cache_control").str().empty()) {const auto pragma=controls(r.at("pragma").str());if(!pragma.valid||pragma.no_cache) {out.set("reason","pragma_no_cache");return out;}}
   const auto received=r.at("received_at_ms").num();
   if(now<received) {out.set("reason","clock_rollback");return out;}

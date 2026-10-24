@@ -130,3 +130,28 @@ def test_cached_policy_age_includes_response_delay_and_apparent_age(headers, del
         assert record["diagnostics"] == ["robots_cache_revalidation_required"]
     else:
         assert record["state"] == "rules" and record["expires_at_ms"] - now == expected
+
+
+@pytest.mark.parametrize("value", ["Accept-Encoding", "aCcEpT-EnCoDiNg, ACCEPT-ENCODING",
+                                   "User-Agent", "Accept", " User-Agent , Accept , Accept-Encoding "])
+def test_robots_freshness_supports_only_fixed_request_selections(value):
+    record, _ = response_record(origin="https://fixture.test", status="ok", http_status=200,
+                                headers={"content-type": "text/plain", "cache-control": "max-age=60", "vary": value},
+                                body=b"User-agent: BzsBot\nDisallow: /private", truncated=False,
+                                now_ms=1_800_000_000_000)
+    assert record["state"] == "rules" and record["expires_at_ms"] - record["fetched_at_ms"] == 60000
+    assert not rule_decision(record, URL("https://fixture.test/private"))["allowed"]
+
+
+@pytest.mark.parametrize("value", ["", " ", ",", ",Accept-Encoding", "Accept-Encoding,",
+                                   "Accept-Encoding,,Accept", "Accept-Encoding, ,User-Agent", "*",
+                                   "Accept-Encoding,*", "Accept-Encoding,Accept-Language", "User-Agent,Cookie",
+                                   "Accept-Encoding;mode=fast", "Accept-Encoding\t", "Accept-Encoding,é",
+                                   " " * 4082 + "Accept-Encoding"])
+def test_robots_freshness_rejects_unknown_or_ambiguous_vary_selections(value):
+    record, _ = response_record(origin="https://fixture.test", status="ok", http_status=200,
+                                headers={"content-type": "text/plain", "cache-control": "max-age=60", "vary": value},
+                                body=b"User-agent: BzsBot\nDisallow: /private", truncated=False,
+                                now_ms=1_800_000_000_000)
+    assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_cache_revalidation_required"]
+    assert not rule_decision(record, URL("https://fixture.test/public"))["allowed"]

@@ -1,0 +1,8 @@
+{
+  "step": "asan-after-mode-repair wrapper setup",
+  "result": "failed before any native process launched",
+  "cause": "runpy.run_path received a relative recorder path; Path(__file__).relative_to(ROOT) rejected it",
+  "exception": "ValueError: 'validation/claude_followup_20261024/run.py' is not in the subpath of '/workspace/scratch/e2371129386d/bzs861'",
+  "correction": "Resolve the recorder path before loading it; no source, tests, or assertions changed",
+  "native_suite_record": "asan-after-mode-repair-command.json"
+}

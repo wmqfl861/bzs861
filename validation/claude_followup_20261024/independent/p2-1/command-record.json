@@ -1,0 +1,90 @@
+{
+  "input_freeze_sha256": "69fa074155e1079b5e326ae8aee1633ab562032480f91fb71d21bb3142d8d99b",
+  "commands": {
+    "compile-fixed": {
+      "argv": [
+        "g++",
+        "-std=c++20",
+        "-O1",
+        "-I",
+        "/tmp/bzs-independent-claude-review/p2-1/fixed-inputs/include",
+        "/tmp/bzs-independent-claude-review/p2-1/probe.cpp",
+        "/tmp/bzs-independent-claude-review/p2-1/fixed-inputs/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-ljson-c",
+        "-lxml2",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-independent-claude-review/p2-1/probe-fixed"
+      ],
+      "exit_code": 0,
+      "seconds": 1.596,
+      "log": "compile-fixed.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_failure": false
+    },
+    "run-fixed": {
+      "argv": [
+        "/tmp/bzs-independent-claude-review/p2-1/probe-fixed",
+        "/tmp/bzs-independent-claude-review/p2-1/vary-cases.json"
+      ],
+      "exit_code": 0,
+      "seconds": 0.044,
+      "log": "run-fixed.log",
+      "log_sha256": "6de48d17a18c16bd963bd7e64cdbeef01477fef01409b863c5bd530288ae7e8d",
+      "expected_failure": false
+    },
+    "compile-old": {
+      "argv": [
+        "g++",
+        "-std=c++20",
+        "-O1",
+        "-I",
+        "/tmp/bzs-independent-claude-review/p2-1/fixed-inputs/include",
+        "/tmp/bzs-independent-claude-review/p2-1/probe.cpp",
+        "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-ljson-c",
+        "-lxml2",
+        "-pthread",
+        "-o",
+        "/tmp/bzs-independent-claude-review/p2-1/probe-old"
+      ],
+      "exit_code": 0,
+      "seconds": 1.73,
+      "log": "compile-old.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected_failure": false
+    },
+    "run-old-expected-failure": {
+      "argv": [
+        "/tmp/bzs-independent-claude-review/p2-1/probe-old",
+        "/tmp/bzs-independent-claude-review/p2-1/vary-cases.json"
+      ],
+      "exit_code": 2,
+      "seconds": 0.006,
+      "log": "run-old-expected-failure.log",
+      "log_sha256": "2c5363bf6c7d7540d6de8a2eb21e9bd3960c2a4fa0b364c235b24f6da56cab91",
+      "expected_failure": true
+    },
+    "run-python": {
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/tmp/bzs-independent-claude-review/p2-1/probe.py",
+        "/workspace/scratch/e2371129386d/bzs861",
+        "/tmp/bzs-independent-claude-review/p2-1/vary-cases.json"
+      ],
+      "exit_code": 0,
+      "seconds": 0.25,
+      "log": "run-python.log",
+      "log_sha256": "d445493a51e48a7e39de50d6e7a1bb42f24ef57616889ab88bce46c5c2045efb",
+      "expected_failure": false
+    }
+  },
+  "root_inputs_unchanged": true,
+  "root_library_unchanged": true,
+  "snapshot_library_unchanged": true,
+  "probe_sources_unchanged": true
+}

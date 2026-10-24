@@ -1,0 +1,22 @@
+{
+  "issue": "P2-1",
+  "status": "fixed",
+  "ctest": "27/27",
+  "pytest_passed": 1130,
+  "asan_ubsan_native_targets": 15,
+  "asan_result_command": "asan-after-mode-repair-command.json",
+  "independent_native_checks": 116,
+  "independent_python_checks": 108,
+  "independent_baseline": "The same native probe fails the prior P1-3 library on Accept-Encoding.",
+  "regressions": [
+    "bounded ASCII Vary lists: encoding only, case/repetition, unsupported/mixed/wildcard/empty/control/oversize",
+    "exact current request profile and same-owner cache-only binding",
+    "304 omitted Vary inheritance in both metadata contracts; explicit empty remains invalid",
+    "fixed robots User-Agent/Accept/Accept-Encoding and existing freshness restrictions"
+  ],
+  "preserved_failures": [
+    "Initial sanitizer launch: freshly built bzs_tests lost execute bits after preparation; content hash unchanged; no test ran.",
+    "First rerun wrapper used a relative recorder path and failed before launching tests; wrapper-setup-failure.json retains the diagnostic."
+  ],
+  "repair": "Complete 15-program sanitizer suite repeated with the same source/test manifest and binary bytes, checking and recording generated ELF permissions immediately before launch."
+}

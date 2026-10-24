@@ -12,7 +12,8 @@ from aiohttp.test_utils import TestServer
 from multidict import CIMultiDict
 
 from bzs.worker.netguard import NetPolicy
-from bzs.worker.revalidation import CACHE_FIELDS, VERSION, validate_conditional
+from bzs.worker.revalidation import (CACHE_FIELDS, VERSION, merge_cache, response_cache,
+                                     validate_cache, validate_conditional)
 from bzs.worker.server import Worker
 from tests.test_map_worker import cached_rules, grant, site_spec
 
@@ -114,6 +115,82 @@ async def test_full_read_establishes_metadata_and_matching_304_has_no_body(condi
     assert "publication_observation" not in result
 
 
+@pytest.mark.parametrize("value", ["", "Accept-Encoding", "aCcEpT-EnCoDiNg",
+                                   " Accept-Encoding , ACCEPT-ENCODING ", " " * 4081 + "Accept-Encoding"])
+def test_cache_metadata_accepts_bounded_encoding_selections(value):
+    base = response_cache({"etag": '"v1"', "cache-control": "max-age=60"},
+                          url="https://cache.test/page", profile="a" * 64)
+    base["vary"] = value
+    assert validate_cache(base) == base
+
+
+@pytest.mark.parametrize("value", [" ", ",", ",Accept-Encoding", "Accept-Encoding,",
+                                   "Accept-Encoding,,Accept-Encoding", "Accept-Encoding, ,Accept-Encoding",
+                                   "*", "Accept-Encoding,*", "Accept-Encoding,Cookie", "Accept-Encoding,Accept-Language",
+                                   "Accept-Encoding;mode=fast", '"Accept-Encoding"', "Accept_Encoding", "Accept Encoding",
+                                   "Accept-Encoding\t", "Accept-Encoding\r\nInjected: yes", "Accept-Encoding,é",
+                                   " " * 4082 + "Accept-Encoding"])
+def test_cache_metadata_rejects_other_or_ambiguous_encoding_selections(value):
+    base = response_cache({"etag": '"v1"', "cache-control": "max-age=60"},
+                          url="https://cache.test/page", profile="a" * 64)
+    with pytest.raises(ValueError):
+        validate_cache({**base, "vary": value})
+
+
+@pytest.mark.parametrize("headers", [[("Vary", "Accept-Encoding")], [("Vary", "aCcEpT-EnCoDiNg")],
+                                      [("Vary", "Accept-Encoding, ACCEPT-ENCODING")],
+                                      [("Vary", "Accept-Encoding"), ("Vary", "accept-encoding")]])
+async def test_accept_encoding_vary_survives_full_read_and_one_hop_304(conditional_worker, headers):
+    worker, server, calls, state = conditional_worker
+    state["page"]["headers"].extend(headers)
+    first = await worker.fetch_extract(read_grant(server))
+    expected = ",".join(value for _, value in headers)
+    assert first["status"] == "ok" and first["http_cache"]["vary"] == expected
+    assert first["http_freshness"]["vary"] == expected and not first["http_freshness"]["invalid"]
+    assert validate_cache(first["http_cache"]) == first["http_cache"]
+    calls.clear()
+    result = await worker.fetch_extract(read_grant(server, conditional=condition(first["http_cache"])))
+    assert result["status"] == "not_modified" and result["http_status"] == 304
+    assert result["http_cache"]["vary"] == expected and result["binding_id"] == "b" * 64
+    assert result["usage"] == {"external_requests": 1, "content_bytes": 0} and len(calls) == 1
+    assert calls[0]["headers"]["accept-encoding"] == "gzip, deflate"
+    assert calls[0]["headers"]["if-none-match"] == first["http_cache"]["etag"]
+    assert not {"html", "text", "page"}.intersection(result)
+
+
+async def test_304_omitted_vary_preserves_the_prior_encoding_selection(conditional_worker):
+    worker, server, calls, state = conditional_worker
+    state["page"]["headers"].append(("Vary", "Accept-Encoding"))
+    first = await worker.fetch_extract(read_grant(server))
+    state["page"]["headers"] = [(name, value) for name, value in state["page"]["headers"] if name.lower() != "vary"]
+    calls.clear()
+    result = await worker.fetch_extract(read_grant(server, conditional=condition(first["http_cache"])))
+    assert result["status"] == "not_modified" and result["http_cache"]["vary"] == ""
+    assert merge_cache(first["http_cache"], result["http_cache"])["vary"] == "Accept-Encoding"
+    assert result["usage"] == {"external_requests": 1, "content_bytes": 0} and len(calls) == 1
+
+
+async def test_changed_accept_encoding_profile_fetches_one_complete_representation(conditional_worker, monkeypatch):
+    worker, server, calls, state = conditional_worker
+    state["page"]["headers"].append(("Vary", "Accept-Encoding"))
+    first = await worker.fetch_extract(read_grant(server))
+    request_headers = worker.fetcher.request_headers
+
+    def identity_headers(**kwargs):
+        headers = request_headers(**kwargs)
+        headers["Accept-Encoding"] = "identity"
+        return headers
+
+    monkeypatch.setattr(worker.fetcher, "request_headers", identity_headers)
+    calls.clear()
+    result = await worker.fetch_extract(read_grant(server, conditional=condition(first["http_cache"])))
+    assert result["status"] == "ok" and result["http_status"] == 200 and result["text"]
+    assert result["http_cache"]["request_profile"] != first["http_cache"]["request_profile"]
+    assert result["usage"] == {"external_requests": 1, "content_bytes": len(BODY)} and len(calls) == 1
+    assert calls[0]["headers"]["accept-encoding"] == "identity"
+    assert not {"if-none-match", "if-modified-since"}.intersection(calls[0]["headers"])
+
+
 async def test_last_modified_alone_is_sent_without_an_etag(conditional_worker):
     worker, server, calls, state = conditional_worker
     state["page"]["headers"] = [("Last-Modified", MODIFIED)]
@@ -165,7 +242,13 @@ async def test_new_conditional_read_fields_are_strict(conditional_worker, change
     [("ETag", '"one"'), ("ETag", '"two"')],
     [("Last-Modified", MODIFIED), ("Last-Modified", MODIFIED)],
     [("ETag", '"one", "two"')], [("Vary", "*")], [("Vary", "Accept-Language")],
-    [("Vary", "Accept"), ("Vary", "Cookie")], [("Cache-Control", "no-store")],
+    [("Vary", "Accept"), ("Vary", "Cookie")], [("Vary", "Accept-Encoding,Cookie")],
+    [("Vary", "Accept-Encoding"), ("Vary", "*")], [("Vary", "Accept-Encoding"), ("Vary", "")],
+    [("Vary", "Accept-Encoding,")], [("Vary", ",Accept-Encoding")], [("Vary", "Accept-Encoding,,Accept-Encoding")],
+    [("Vary", "")], [("Vary", "Accept-Encoding;mode=fast")],
+    [("Vary", "Accept-Encoding"), ("Cache-Control", "no-store")],
+    [("Vary", "Accept-Encoding"), ("Cache-Control", "no-cache")],
+    [("Vary", "Accept-Encoding"), ("Cache-Control", "private, max-age=60")], [("Cache-Control", "no-store")],
     [("Cache-Control", "no-cache")], [("Cache-Control", "private, max-age=60")],
     [("Cache-Control", "max-age=0")], [("Cache-Control", "max-age=60, max-age=60")],
     [("Cache-Control", "max-age=60"), ("Cache-Control", "no-store")],
@@ -226,7 +309,14 @@ async def test_unsolicited_304_is_never_retried_or_treated_as_content(conditiona
 
 @pytest.mark.parametrize("headers", [[("ETag", '"different"')], [("ETag", '"a"'), ("ETag", '"a"')],
                                       [("Last-Modified", "Thu, 22 Oct 2015 07:28:00 GMT")],
-                                      [("Vary", "User-Agent")], [("Cache-Control", "no-store")],
+                                      [("Vary", "User-Agent")], [("Vary", "Accept-Encoding,Cookie")],
+                                      [("Vary", "Accept-Encoding"), ("Vary", "*")], [("Vary", "Accept-Encoding"), ("Vary", "")],
+                                      [("Vary", "Accept-Encoding,")], [("Vary", ",Accept-Encoding")],
+                                      [("Vary", "Accept-Encoding,,Accept-Encoding")], [("Vary", "")],
+                                      [("Vary", "Accept-Encoding;mode=fast")],
+                                      [("Vary", "Accept-Encoding"), ("Cache-Control", "no-store")],
+                                      [("Vary", "Accept-Encoding"), ("Cache-Control", "no-cache")],
+                                      [("Vary", "Accept-Encoding"), ("Cache-Control", "max-age=0")], [("Cache-Control", "no-store")],
                                       [("Cache-Control", "no-cache")], [("Cache-Control", "max-age=0")],
                                       [("ETag", "")], [("Last-Modified", "")], [("Age", "")]])
 async def test_ambiguous_304_preserves_restrictions_without_retry(conditional_worker, headers):
@@ -324,9 +414,16 @@ async def test_304_preserves_current_site_links_only_ceiling(conditional_worker)
     assert result["publication_observation"]["snippet_text"] == ""
 
 
-async def test_expired_robots_base_only_becomes_fresh_after_a_bound_304(conditional_worker):
+@pytest.mark.parametrize("vary", [None, "Accept-Encoding", "aCcEpT-EnCoDiNg, ACCEPT-ENCODING"])
+async def test_expired_robots_base_only_becomes_fresh_after_a_bound_304(conditional_worker, vary):
     worker, server, calls, state = conditional_worker
+    if vary is not None:
+        state["robots"]["headers"].append(("Vary", vary))
     first = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    assert first["status"] == "ok" and first["http_cache"]["vary"] == (vary or "")
+    assert calls[0]["headers"]["accept"] == "text/plain"
+    assert calls[0]["headers"]["accept-encoding"] == "gzip, deflate"
+    assert calls[0]["headers"]["user-agent"].startswith("BzsBot/")
     base = old_robots_base(first)
     assert base["record"]["expires_at_ms"] < int(time.time() * 1000)
     calls.clear()
@@ -338,6 +435,8 @@ async def test_expired_robots_base_only_becomes_fresh_after_a_bound_304(conditio
     assert result["status"] == "not_modified" and result["usage"] == {"external_requests": 1, "content_bytes": 0}
     assert len(calls) == 1 and calls[0]["headers"]["if-none-match"] == '"robots-v1"'
     record = result["robots"]
+    assert result["http_cache"]["request_profile"] == base["http_cache"]["request_profile"]
+    assert merge_cache(base["http_cache"], result["http_cache"])["vary"] == (vary or "")
     assert record["rules"] == base["record"]["rules"] and record["body_sha256"] == base["record"]["body_sha256"]
     assert 0 < record["expires_at_ms"] - record["fetched_at_ms"] <= 3000
     assert record["expires_at_ms"] > int(time.time() * 1000)
@@ -361,6 +460,9 @@ async def test_robots_304_cannot_erase_omitted_short_cache_lifetime(conditional_
 
 @pytest.mark.parametrize("headers", [[("Cache-Control", "no-cache")], [("Cache-Control", "no-store")],
                                       [("Cache-Control", "max-age=0")], [("Vary", "Cookie")],
+                                      [("Vary", "Accept-Encoding,Cookie")], [("Vary", "Accept-Encoding,")],
+                                      [("Vary", "")], [("Vary", "Accept-Encoding"), ("Cache-Control", "no-store")],
+                                      [("Vary", "Accept-Encoding"), ("Cache-Control", "no-cache")],
                                       [("Age", "120")], [("Expires", MODIFIED)], [("ETag", '"different"')]])
 async def test_robots_304_without_trustworthy_freshness_fails_closed_once(conditional_worker, headers):
     worker, server, calls, state = conditional_worker
