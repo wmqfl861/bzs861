@@ -1,0 +1,264 @@
+diff --git a/docs/SOURCE_BACKOFF.md b/docs/SOURCE_BACKOFF.md
+index 96bcb92417c9ff8088d8d21b4b0379b46901a466..a2ba237af339bf71bc7344e0e766e3fcd8f3592f 100644
+--- a/docs/SOURCE_BACKOFF.md
++++ b/docs/SOURCE_BACKOFF.md
+@@ -23,16 +23,20 @@ S0 Probe 对截断也记录 `retry_after_clamped` / `retry_after_limit_ms`。限
+ 
+ ## 既有冷却与旧数据库
+ 
+-现有失败退避取最大期限，晚到成功不能取消冷却。原 `parse_error` 的配置退避仍为 `cooldown_error_ms × 3`，最大 72 小时；在途的后续 429 或成功不会把这个合法期限缩短成 24 小时。
++现有失败退避取最大绝对期限，晚到成功不能取消冷却。原 `parse_error` 的配置退避仍为 `cooldown_error_ms × 3`，最大 72 小时；在途的后续 429 或成功不会把这个合法期限缩短成 24 小时。每次新报告按报告当时的 Core 时钟计算期限；系统时钟回拨后，合法绝对期限的剩余时间可能超过 24 或 72 小时，此时保留原期限。
+ 
+-旧 schema13 没有记录每次失败种类，最后状态也可能被晚到响应覆盖。因此，自动修复只处理**剩余时间超过原所有合法配置最大值 72 小时**的明确异常记录：
++Core 在现有 `settings` 中按共享来源预算保存 `source_cooldown_proof/<id>` 辅助记录，仅累计**已经过边界检查的新报告**所形成的最大绝对期限。未知旧记录因 SQL `MAX` 留下的更大值不会被当成新证明。证明与报告在同一事务内提交，晚到成功不清除它；双句柄、状态读取和重启后仍保护该合法期限。schema 仍为 13，没有改变表结构。
+ 
+-- 最后状态为 `rate_limited` 时，修复为最后实际请求时间加 24 小时。
+-- 其他最后状态保留原最大 72 小时边界。
+-- 没有有效旧请求时间时，使用首次修复时刻作固定锚点；未来请求时间不会把锚点推到当前时间之后。
++旧 schema 没有每次响应的时间，最后状态也可能被晚到响应覆盖。请求时间不能替代响应时间，`剩余 > 72 小时` 无法证明旧记录非法。因此，无证明历史记录采用**保守的一年极端异常启发式**，仅在以下条件同时成立时自动修复：
+ 
+-修复在 `source_admit`、`source_report` 或 `web.sources` 读取调度状态时，以事务写回一个固定期限，并以 `E_SOURCE_COOLDOWN_CLAMPED:` 标记最后错误。重复查询、重启或其他 owner 查看状态不会滑动续期。旧请求已经足够久远时，修复期限可能已经过去，来源下一次请求仍须通过原启用/审核、最小间隔和日配额检查。
++- 现有期限不受已保存的合法证明覆盖。
++- 现有期限同时超过“当前时间 + 365 天”和“最近已知事件时间 + 365 天”。最近事件取最后请求时间、最后成功时间的较大值。
++- 最近事件时间不在当前时间之后；遇到这种无法解释的回拨或未来时间状态，保留旧期限。
+ 
+-**24–72 小时的模糊存量记录保留**，因为它也可能是合法 parse-error 退避再收到在途 429 后产生；没有完整失败历史时不擅自缩短。来源身份、调用计数、配额、幂等数据和 schema 版本保持。时间加法/剩余时间计算采用有界或饱和运算，避免异常 Worker 值溢出后清掉等待。
++满足上述条件的旧记录，以最近有效事件为固定锚点：最后状态为 `rate_limited` 时加 24 小时，其他状态加 72 小时，同时不低于任何已证明合法期限。没有有效旧事件时间时，仅首次修复使用当前时刻。该启发式能恢复正常时钟下真实旧代码产生的约 31 年等待；它不能从不完整旧列还原所有历史，也不声称能识别全部非法期限。**不足一年或事件时间存在歧义的旧值可能继续保留**。
++
++修复在 `source_admit`、`source_report` 或 `web.sources` 读取调度状态时，以事务写回固定期限，并以 `E_SOURCE_COOLDOWN_CLAMPED:` 标记最后错误。`state.cooldown_last_repair` 持久保留最近一次修复的原期限、修复后期限、固定锚点、观察时间和原因；后续成功不会清掉这项追溯信息。它是最近一次修复记录，并非完整事件日志。
++
++重复查询、重启或其他 owner 查看状态不会滑动续期。旧请求已经足够久远时，修复期限可能已经过去，来源下一次请求仍须通过原启用/审核、最小间隔和日配额检查。来源身份、调用计数、配额、幂等数据和 schema 版本保持。时间加法/剩余时间计算采用有界或饱和运算，避免异常 Worker 值溢出后清掉等待。
+ 
+ 本轮只证明离线正式回归中的边界与状态机行为，不代表已启用或实测任何真实来源。
+diff --git a/src/store.cpp b/src/store.cpp
+index 4b291055ddfbd4d038656fa02223364a79da0d75..06ec8b41719ec1e31a872e1542e80860f1f2ac22 100644
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -85,32 +85,57 @@ namespace bzs {
+         return std::numeric_limits<std::int64_t>::max();
+       return until-now;
+     }
++    Json source_cooldown_proof(sqlite3* db,const std::string& id) {
++      Stmt saved(db,"SELECT value FROM settings WHERE key=?");saved.bind(1,"source_cooldown_proof/"+id);
++      if(!saved.step()) {
++        auto value=Json::object();value.set("version",std::int64_t{1});value.set("verified_until_ms",std::int64_t{0});return value;
++      }
++      auto value=Json::parse(saved.text(0),4096);
++      require(value.is_object()&&value.has("version")&&value.at("version").is_integer()&&value.at("version").num()==1&&
++              value.has("verified_until_ms")&&value.at("verified_until_ms").is_integer()&&value.at("verified_until_ms").num()>=0,
++              "E_STORAGE","Invalid source cooldown proof",500);
++      return value;
++    }
++    void save_source_cooldown_proof(sqlite3* db,const std::string& id,const Json& value) {
++      Stmt save(db,"INSERT INTO settings(key,value)VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value");
++      save.bind(1,"source_cooldown_proof/"+id);save.bind(2,value.dump());save.step();
++    }
+     void repair_source_cooldowns(sqlite3* db,std::int64_t now,const std::string* id=nullptr) {
+-      struct Repair { std::string id,error;std::int64_t until; };
++      struct Repair { std::string id,error;std::int64_t until;Json proof; };
+       std::vector<Repair> repairs;
+       {
+         Stmt rows(db,id?
+-          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error FROM source_state WHERE source_id=?":
+-          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error FROM source_state");
++          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error,last_ok_at FROM source_state WHERE source_id=?":
++          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error,last_ok_at FROM source_state");
+         if(id)rows.bind(1,*id);
+         while(rows.step()) {
+-          // An older late success can hide the original failure kind. Preserve
+-          // the existing maximum parse-error backoff (3 x 24h) in that case.
+-          // A later 429 can likewise follow a valid 72h parse-error fence.
+-          // Without historical failure kinds, only >72h is unambiguously old
+-          // invalid state; never shorten a legitimate MAX-combined deadline.
+-          if(rows.num(3)<=source_cooldown_until(now,source_retry_after_limit_ms*3))continue;
++          auto proof=source_cooldown_proof(db,rows.text(0));
++          const auto verified=proof.at("verified_until_ms").num();
++          // Only individually bounded reports create proof, never an unknown
++          // older MAX. A clock rollback cannot revoke a proven absolute fence.
++          if(rows.num(3)<=verified)continue;
++          const auto event=std::max(rows.num(1),rows.num(5));
++          // The old schema has no response timestamp. An attempt is not its
++          // response, and a late response can replace last_status. Conservatively
++          // retain ambiguous old fences, including future event/rollback state.
++          constexpr auto legacy_extreme=365*source_retry_after_limit_ms;
++          if(event>now||rows.num(3)<=source_cooldown_until(now,legacy_extreme)||
++             rows.num(3)<=source_cooldown_until(event,legacy_extreme))continue;
+           const auto maximum=source_retry_after_limit_ms*(rows.text(2)=="rate_limited"?1:3);
+-          // Persist one fixed deadline, anchored to the actual last attempt
+-          // when it exists. Reading state again must not renew the cooldown.
+-          const auto anchor=rows.num(1)>0?std::min(rows.num(1),now):now;
+-          repairs.push_back({rows.text(0),utf8_prefix("E_SOURCE_COOLDOWN_CLAMPED: legacy source deadline exceeded bounded backoff; "+rows.text(4),300),
+-                             source_cooldown_until(anchor,maximum)});
++          // Persist one fixed deadline, anchored to the most recent known
++          // event when it exists. Reading state must not renew the cooldown.
++          const auto anchor=event>0?event:now;
++          const auto until=std::max(verified,source_cooldown_until(anchor,maximum));
++          auto audit=Json::object();audit.set("original_until_ms",rows.num(3));audit.set("repaired_until_ms",until);
++          audit.set("anchor_ms",anchor);audit.set("observed_at_ms",now);audit.set("reason","unproven_legacy_backoff_over_one_year");
++          proof.set("last_repair",audit);proof.set("verified_until_ms",until);
++          repairs.push_back({rows.text(0),utf8_prefix("E_SOURCE_COOLDOWN_CLAMPED: unproven legacy deadline "+std::to_string(rows.num(3))+" exceeded one year; "+rows.text(4),300),until,proof});
+         }
+       }
+       for(const auto& repair:repairs) {
+         Stmt update(db,"UPDATE source_state SET cooldown_until=?,last_error=? WHERE source_id=?");
+         update.bind(1,repair.until);update.bind(2,repair.error);update.bind(3,repair.id);update.step();
++        save_source_cooldown_proof(db,repair.id,repair.proof);
+       }
+     }
+     std::int64_t scalar(sqlite3*d, const std::string&sql) {
+@@ -1665,6 +1690,13 @@ namespace bzs {
+     u.bind(3, ok?now:(cooldown_ms>0?source_cooldown_until(now,cooldown_ms):0));
+     u.bind(4, id);
+     u.step();
++    if(!ok&&cooldown_ms>0) {
++      auto proof=source_cooldown_proof(db_,id);
++      // Do not bless the unknown older MAX deadline in source_state. This
++      // marker covers only this bounded report and previous proven reports.
++      proof.set("verified_until_ms",std::max(proof.at("verified_until_ms").num(),source_cooldown_until(now,cooldown_ms)));
++      save_source_cooldown_proof(db_,id,proof);
++    }
+     tx.commit();
+   }
+   Json Store::source_states() {
+@@ -1683,6 +1715,8 @@ namespace bzs {
+       j.set("last_ok_at_ms", s.num(5));
+       j.set("last_request_at_ms", s.num(6));
+       j.set("requests_today", s.num(7)==now/86400000?s.num(8):0);
++      const auto proof=source_cooldown_proof(db_,s.text(0));
++      if(proof.has("last_repair"))j.set("cooldown_last_repair",proof.at("last_repair"));
+       out.set(s.text(0), j);
+     }
+     tx.commit();
+diff --git a/tests/unit.cpp b/tests/unit.cpp
+index d5f53d8f3622997fb1ec2f0cea562593a0824782..dd23ccb8c4d74a059ee152a5ed876d83da60ca57 100644
+--- a/tests/unit.cpp
++++ b/tests/unit.cpp
+@@ -1523,6 +1523,128 @@ namespace {
+     CHECK(store.source_admit("rate",0,50).empty());
+     CHECK(store.source_admit("late",0,50)=="cooldown");
+   }
++  TEST(source_cooldown_proof_preserves_legal_deadlines_across_rollback_and_restart) {
++    constexpr std::int64_t started=1800000000000;
++    constexpr std::int64_t day=86400000;
++    for(const std::int64_t delay:{0,60000})for(const auto& late:{"none","rate_limited","ok"}) {
++      Temp t;
++      std::int64_t now=started;
++      const auto path=t.path/"db";
++      const auto deadline=started+delay+3*day;
++      {
++        Store store(path,[&]{return now;});
++        CHECK(store.source_admit("shared",0,50).empty());
++        now+=delay;
++        store.source_report("shared","parse_error","parse",3*day);
++        if(std::string(late)!="none")store.source_report("shared",late,"late",120000);
++        // With delayed report this rollback is still AFTER admission. Attempt
++        // time alone cannot distinguish this legitimate 72h absolute deadline.
++        now=started+(delay?30000:-3600000);
++        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
++        CHECK(store.source_admit("shared",0,50)=="cooldown");
++        store.source_report("shared","ok","another late success",0);
++        CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==deadline);
++      }
++      {
++        Store store(path,[&]{return now;});
++        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
++        // A large rollback still cannot revoke an already proven deadline.
++        now=started-2*365*day;
++        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
++        CHECK(store.source_admit("shared",0,50)=="cooldown");
++        store.source_report("shared","rate_limited","late429",std::numeric_limits<std::int64_t>::max());
++        CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==deadline);
++        now=deadline-1;
++        CHECK(store.source_admit("shared",0,50)=="cooldown");
++        ++now;
++        CHECK(store.source_admit("shared",0,50).empty());
++      }
++    }
++  }
++  TEST(legacy_source_cooldown_repair_retains_ambiguous_and_future_event_state) {
++    Temp t;
++    constexpr std::int64_t started=1800000000000;
++    constexpr std::int64_t day=86400000;
++    std::int64_t now=started;
++    const auto path=t.path/"db";
++    {
++      Store store(path,[&]{return now;});
++      for(const auto& id:{"delayed-parse","ambiguous","future","late-ok"})CHECK(store.source_admit(id,0,50).empty());
++    }
++    // Unproven rows have the old schema's missing response time. These are
++    // deliberately not certified by a new bounded source_report call.
++    database_exec(path,"UPDATE source_state SET last_status='parse_error',cooldown_until=1800259260000 WHERE source_id='delayed-parse';"
++                       "UPDATE source_state SET last_status='rate_limited',cooldown_until=1815552000000 WHERE source_id='ambiguous';"
++                       "UPDATE source_state SET last_status='rate_limited',last_request_at=1800000060000,cooldown_until=2799999999000 WHERE source_id='future';"
++                       "UPDATE source_state SET last_status='ok',last_ok_at=1800000020000,cooldown_until=2799999999000 WHERE source_id='late-ok';");
++    now=started+30000;
++    {
++      Store store(path,[&]{return now;});
++      const auto states=store.source_states();
++      CHECK(states.at("delayed-parse").at("cooldown_remaining_ms").num()==3*day+30000);
++      CHECK(states.at("ambiguous").at("cooldown_remaining_ms").num()==180*day-30000);
++      CHECK(states.at("future").at("cooldown_remaining_ms").num()==2799999999000LL-now);
++      CHECK(!states.at("future").has("cooldown_last_repair"));
++      CHECK(states.at("late-ok").at("cooldown_remaining_ms").num()==3*day-10000);
++      const auto audit=states.at("late-ok").at("cooldown_last_repair");
++      CHECK(audit.at("original_until_ms").num()==2799999999000LL);
++      CHECK(audit.at("repaired_until_ms").num()==started+20000+3*day);
++      CHECK(audit.at("anchor_ms").num()==started+20000);
++      CHECK(audit.at("reason").str()=="unproven_legacy_backoff_over_one_year");
++      CHECK(database_scalar(path,"PRAGMA user_version")==13);
++    }
++    now=started+61000;
++    Store store(path,[&]{return now;});
++    const auto states=store.source_states();
++    CHECK(states.at("future").at("cooldown_remaining_ms").num()==day-1000);
++    CHECK(states.at("future").at("cooldown_last_repair").at("anchor_ms").num()==started+60000);
++    CHECK(states.at("late-ok").at("cooldown_last_repair").at("observed_at_ms").num()==started+30000);
++  }
++  TEST(source_cooldown_proof_never_certifies_unknown_older_max) {
++    Temp t;
++    constexpr std::int64_t started=1800000000000;
++    constexpr std::int64_t unknown=started+100LL*86400000;
++    std::int64_t now=started;
++    const auto path=t.path/"db";
++    {
++      Store store(path,[&]{return now;});
++      CHECK(store.source_admit("shared",0,50).empty());
++      database_exec(path,"UPDATE source_state SET cooldown_until=1808640000000,last_status='rate_limited' WHERE source_id='shared';");
++      store.source_report("shared","rate_limited","new bounded response",120000);
++      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==unknown);
++      CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==started+120000);
++      store.source_report("shared","ok","late success",0);
++    }
++    Store store(path,[&]{return now;});
++    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==unknown-now);
++    CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==started+120000);
++  }
++  TEST(source_cooldown_proof_and_repair_are_transactional) {
++    Temp t;
++    std::int64_t now=1800000000000;
++    const auto path=t.path/"db";
++    Store store(path,[&]{return now;});
++    CHECK(store.source_admit("shared",0,50).empty());
++    database_exec(path,"CREATE TRIGGER reject_cooldown_proof BEFORE INSERT ON settings WHEN NEW.key LIKE 'source_cooldown_proof/%' BEGIN SELECT RAISE(ABORT,'proof fixture'); END;");
++    rejects([&]{store.source_report("shared","rate_limited","429",60000);},"E_STORAGE");
++    CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==0);
++    CHECK(database_scalar(path,"SELECT failures FROM source_state WHERE source_id='shared'")==0);
++    CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='source_cooldown_proof/shared'")==0);
++    database_exec(path,"DROP TRIGGER reject_cooldown_proof;");
++    store.source_report("shared","rate_limited","429",60000);
++    database_exec(path,"UPDATE source_state SET cooldown_until=2799999999000 WHERE source_id='shared';"
++                       "CREATE TRIGGER reject_cooldown_proof BEFORE UPDATE ON settings WHEN NEW.key LIKE 'source_cooldown_proof/%' BEGIN SELECT RAISE(ABORT,'proof fixture'); END;");
++    rejects([&]{store.source_states();},"E_STORAGE");
++    CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==2799999999000LL);
++    CHECK(database_scalar(path,"SELECT last_error='429' FROM source_state WHERE source_id='shared'")==1);
++    CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==now+60000);
++    database_exec(path,"DROP TRIGGER reject_cooldown_proof;");
++    const auto state=store.source_states().at("shared");
++    CHECK(state.at("cooldown_remaining_ms").num()==86400000);
++    CHECK(state.at("requests_today").num()==1);
++    CHECK(state.at("consecutive_failures").num()==1);
++    CHECK(state.at("cooldown_last_repair").at("original_until_ms").num()==2799999999000LL);
++  }
+   TEST(web_search_bounds_old_worker_retry_after_and_reports_new_worker_clamping) {
+     struct Input { std::int64_t retry;bool present,already_clamped; };
+     const Input inputs[]={{0,false,false},{-1,true,false},{120000,true,false},{86400000,true,false},

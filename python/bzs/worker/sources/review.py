@@ -74,6 +74,9 @@ def validate_spec(spec: dict[str, Any]) -> None:
     _need(_integer(limits.get("max_concurrency"), 1, 100), "invalid source concurrency")
     _need(_integer(spec.get("min_interval_ms", 1000), 0, 3600000), "invalid source interval")
     _need(_integer(spec.get("daily_cap", 500), 0, 1000000), "invalid daily source quota")
+    for key in ("cooldown_blocked_ms", "cooldown_rate_ms", "cooldown_error_ms"):
+        if key in spec:
+            _need(_integer(spec[key], 0, 86400000), "invalid source cooldown: " + key)
     _need(limits.get("min_interval_ms") == spec.get("min_interval_ms", 1000) and
           type(limits.get("min_interval_ms")) is int, "source interval differs from contract")
     _need(limits.get("request_quota") == spec.get("daily_cap", 500) and

@@ -1,0 +1,21 @@
+{
+  "purpose": "Preserve the exact rejected first product input and its correction independently of unpublished author commit IDs. Apply the first patch to genuine GitHub baseline 590, then the correction; every non-validation path was independently reconstructed and compared with the corresponding author commit. The first patch intentionally contains the rejected rollback behavior and is evidence only.",
+  "patches": [
+    {
+      "patch": "first-attempt-product.patch",
+      "sha256": "528e0bd5a54a284b3037485f8fcd23c996c9af3c3d09b1796ab4d2a620a76c61",
+      "from_author_commit": "59081e14fdda765844031e13f874e588334f1a36",
+      "to_author_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+      "all_non_validation_git_blobs_equal": true,
+      "reconstructed_tree_with_baseline_validation": "2efac13b3705811339535bc51203e689ae63bca1"
+    },
+    {
+      "patch": "clock-correction-product.patch",
+      "sha256": "142148b77e00b2c3def5682f60b2b3ee1c5f5928aa02c3165c53ab815d98676d",
+      "from_author_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+      "to_author_commit": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "all_non_validation_git_blobs_equal": true,
+      "reconstructed_tree_with_baseline_validation": "cea37dcb391fd2ebdd022801cf373dda046b3e78"
+    }
+  ]
+}

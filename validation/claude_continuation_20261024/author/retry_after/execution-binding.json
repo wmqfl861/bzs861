@@ -1,0 +1,69 @@
+{
+  "baseline_head": "59081e14fdda765844031e13f874e588334f1a36",
+  "note": "Per-command inputs capture the author worktree containing the new regression tests. Baseline Python actually executed the separately archived baseline production modules below, verified byte-for-byte against git; baseline native tests linked the preserved baseline library from baseline-inputs.json. These mappings disambiguate production code from author/test inputs.",
+  "baseline_python": {
+    "python/bzs/__init__.py": "5976cd3f3dfdd994256418ccbac4bcd2cff4aaa23f349a71c529357de67e6634",
+    "python/bzs/cli.py": "9811608c61447b4fa071c77fe44d853bbf4154d5c957f3e7595d560c9913b6a2",
+    "python/bzs/config.py": "cee85154b2f1532725638b8b2371c9d3d5a2dcc8c400bf38de40d8937b6ee009",
+    "python/bzs/core_client.py": "663bd765f82d40912fa3f695b71b35033e26202c90582e50b0451eae46b82fc2",
+    "python/bzs/evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+    "python/bzs/evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+    "python/bzs/evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+    "python/bzs/golden.py": "93ceb831eb3b10de9729d5f1047029dd2c6e5e05c65a559669d3768125bd99ad",
+    "python/bzs/mcp_auth.py": "6cc7f4e7905da0f4119a1c51e4fc71086ac432b413844f38bcc8def62f64b634",
+    "python/bzs/mcp_server.py": "89dac6312dfd027515ab777ce69e480032af945f7bf9eab0870963efb16d37aa",
+    "python/bzs/probe.py": "8d6b918f19c85e3a0f2515aa885a43065bdee1f2c1efc1aba884cb1e9a5e9303",
+    "python/bzs/probe_format.py": "96fede0a2f755c5ab61eadfdc88f70fd89688bde05d25363b6f0391c477abe85",
+    "python/bzs/probe_state.py": "daca8d069117210e012c15757cbd098445b2192099f48c17e841b7ea18cb176a",
+    "python/bzs/replay.py": "bb74844f7276983654e7e313614e949e74b7845e858226abc3bf2bb19e653c7d",
+    "python/bzs/urls.py": "c5d603044bfdd2718f0cc27723d6f15a9adb63562c67a7bc64ff4f2653f17a52",
+    "python/bzs/worker/__init__.py": "7a5bb9cb7c00f6243565bf13172863ebe8c10e5f983cb3f25b1a38824400eb7e",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+    "python/bzs/worker/fetch.py": "6dd2c0b0918a1a0cb7148f2fd4bd27428f3285b71f278481bdafa4ffea8e0c3f",
+    "python/bzs/worker/freshness.py": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+    "python/bzs/worker/netguard.py": "c1c2c9c8de2c30a93143e32621734fff4570c60370f858a7aba538d983cb8738",
+    "python/bzs/worker/publication.py": "59bbf263ed2b918d26a15601d794cbd570b91fccd7d8be15a81e15a07a2caa7c",
+    "python/bzs/worker/redirect_cache.py": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "python/bzs/worker/robots.py": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694",
+    "python/bzs/worker/server.py": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2",
+    "python/bzs/worker/sites.py": "e48495c0c9ea66bf1e92f0be3e9734c7e9fc6d04a19dbc9be71ff67a5f10a0aa",
+    "python/bzs/worker/sources/__init__.py": "0aa94db1a1abf5a0f7ad10cea6f92764de8f264e468c61d1640da8db65346da1",
+    "python/bzs/worker/sources/apis.py": "5341bdcaad7660b460974e49f8a7cdc8b42c02a1e5945de2078af6ed77cbf47a",
+    "python/bzs/worker/sources/base.py": "0a1ed9504c4c4c364ea101a253350bf51b667c794544db0857fff76167560bb4",
+    "python/bzs/worker/sources/engines.py": "9dd91248e7c5a3561d0a13236a56209f2980170476bbd951c7ac2db6bafbcb12",
+    "python/bzs/worker/sources/review.py": "8933620897a460c8f359ee15720fc197219410b9e9b6a57b0c90acaf25ec8f2e"
+  },
+  "new_test_hashes": {
+    "python/tests/test_sources.py": "0414ea763197beae7c4df13bf6b44290dcd7048362c8f082755a13a99fdc51c3",
+    "python/tests/test_probe.py": "20b840bbd5a15579ae14dca50df0c973519ee05544848fe9583d2d217b544f6c",
+    "tests/unit.cpp": "4115e63ead467ce559029739003c6b8e74b8b69df18fa1b698af0fa349b26d72"
+  },
+  "artifacts": {
+    "/tmp/bzs-next-retry-baseline/libbzs_core.a": {
+      "sha256": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+      "bytes": 28004326
+    },
+    "/tmp/bzs-next-retry-baseline/bzs_tests": {
+      "sha256": "9047b603bb34d203bfed2a1ae02323754d45d4c342289b2c3f98e2302112009d",
+      "bytes": 13286144
+    },
+    "/tmp/bzs-next-retry-baseline/legacy-old": {
+      "sha256": "88ea8a74af55e232f71cebce529c3ee6d6d2ca9da248a97d30a224176f004c2a",
+      "bytes": 9671864
+    },
+    "/tmp/bzs-next-retry-baseline/legacy-current": {
+      "sha256": "8015224d3f9e0c77396f1414eb2c8d0515465b12e63cd8d5606bda8303744e6e",
+      "bytes": 9716936
+    },
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build/libbzs_core.a": {
+      "sha256": "f95ae7f89bbdf8c4178f6def755822eea2cd776a55355fe318507704b852986a",
+      "bytes": 28070150
+    },
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build/bzs_tests": {
+      "sha256": "2ed53668ca68bcb6026248096cb49ec887852fc8febd62701a109b880e1b720c",
+      "bytes": 13331272
+    }
+  }
+}

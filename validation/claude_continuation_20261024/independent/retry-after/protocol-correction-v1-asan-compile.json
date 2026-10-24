@@ -1,0 +1,24 @@
+{
+  "compile_argv": [
+    "g++",
+    "-g",
+    "-std=c++20",
+    "-fsanitize=address,undefined",
+    "-fno-omit-frame-pointer",
+    "-I/tmp/bzs-independent-next-retry/headers-correction-v1",
+    "/tmp/bzs-independent-next-retry/protocol.cpp",
+    "/tmp/bzs-independent-next-retry/libbzs_core-correction-v1-asan.a",
+    "-lsqlite3",
+    "-lcrypto",
+    "-lxml2",
+    "-ljson-c",
+    "-pthread",
+    "-o",
+    "/tmp/bzs-independent-next-retry/protocol-correction-v1-asan"
+  ],
+  "compile_exit": 0,
+  "source_sha256": "e15e26509754264ed528e6fa35d7e8f72fd1cc14038a6cfad46738dd52d630d5",
+  "library_sha256": "9ddd7d58d165eb55490ca877c5a01c0102ce314e96168ddcc99c29e878ab2396",
+  "binary_sha256": "9fdd451216136afa7ad743138edac6f2c68ec5e18a5dc9c51bd796283dac5bf1",
+  "compile_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

@@ -24,6 +24,7 @@ from ..extract import looks_like_challenge
 from ..fetch import FetchResult, Fetcher, decode_body
 
 API_USER_AGENT = "bzs861/0.1 (personal search tool; https://github.com/wmqfl861/bzs861)"
+SOURCE_RETRY_AFTER_LIMIT_MS = 24 * 60 * 60 * 1000
 _TAGS = re.compile(r"<[^>]+>")
 _SPACE = re.compile(r"\s+")
 
@@ -44,7 +45,11 @@ class SourceError(Exception):
         super().__init__(message)
         self.status = status
         self.http_status = http_status
-        self.retry_after_ms = retry_after_ms
+        # This exception belongs to search adapters. Keep the general HTTP
+        # parser below unchanged: robots/site requests have a different policy.
+        self.retry_after_clamped = status == "rate_limited" and retry_after_ms > SOURCE_RETRY_AFTER_LIMIT_MS
+        self.retry_after_ms = (min(max(0, retry_after_ms), SOURCE_RETRY_AFTER_LIMIT_MS)
+                               if status == "rate_limited" else retry_after_ms)
         self.result: FetchResult | None = None
 
 

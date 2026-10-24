@@ -1,0 +1,46 @@
+[
+  {
+    "label": "baseline",
+    "compile_argv": [
+      "g++",
+      "-std=c++20",
+      "-I/tmp/bzs-search-lock-baseline/include",
+      "/tmp/bzs-independent-next-retry/clock_rollback.cpp",
+      "/tmp/bzs-continuation-baseline/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-next-retry/clock-baseline"
+    ],
+    "exit_code": 0,
+    "source_sha256": "25b4e6d32a0463311f781dcf1e1c85788d6c32c0da8d1ace033397c671f6ba35",
+    "library_sha256": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "binary_sha256": "47dfe5b509e5d644cfc59d821309298b39c337b6fa57e84e72f7ccdfa163dbab",
+    "log": "late_rate=0 original=1800259200000 after_backward_clock=1800259200000 shortened_ms=0 remaining=262800000\nlate_rate=1 original=1800259200000 after_backward_clock=1800259200000 shortened_ms=0 remaining=262800000\n"
+  },
+  {
+    "label": "current",
+    "compile_argv": [
+      "g++",
+      "-std=c++20",
+      "-I/workspace/scratch/e2371129386d/bzs861-next-retry/include",
+      "/tmp/bzs-independent-next-retry/clock_rollback.cpp",
+      "/workspace/scratch/e2371129386d/bzs861-next-retry/build/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-next-retry/clock-current"
+    ],
+    "exit_code": 1,
+    "source_sha256": "25b4e6d32a0463311f781dcf1e1c85788d6c32c0da8d1ace033397c671f6ba35",
+    "library_sha256": "f95ae7f89bbdf8c4178f6def755822eea2cd776a55355fe318507704b852986a",
+    "binary_sha256": "c7299e0e5f26dbb62782a3aaf1cd11ff073bff5a49422b566b67c621f2f6bfbb",
+    "log": "late_rate=0 original=1800259200000 after_backward_clock=1800255600000 shortened_ms=3600000 remaining=259200000\nlate_rate=1 original=1800259200000 after_backward_clock=1800082800000 shortened_ms=176400000 remaining=86400000\n"
+  }
+]

@@ -1,0 +1,208 @@
+{
+  "stage": "p2-9",
+  "execution_inputs_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "commands": [
+    {
+      "record": "p2-9/asan-command.json",
+      "sha256": "afa755702e1bb24f1d50a209d16a11a524124dd740b9358e63db37de7472c1cc",
+      "log": "p2-9/asan.log",
+      "log_sha256": "75f51bd911d5a4d6beb3c2c8014622961e6ffb08b84edac3a57248dfdbe8fb78",
+      "elapsed_seconds": 205.884
+    },
+    {
+      "record": "p2-9/build-asan-command.json",
+      "sha256": "31ab6a6c2ee241cc979edf1c69f5ffb9e14b5962bab48f25cee448daa7205718",
+      "log": "p2-9/build-asan.log",
+      "log_sha256": "908225357b00ff7a3e88d7d14184cb3688c79c9d0f734aff0edc0d957868534d",
+      "elapsed_seconds": 63.045
+    },
+    {
+      "record": "p2-9/build-debug-command.json",
+      "sha256": "e9c7e42ff097307a975f36758d441e55de50e3c5d327d6ca876503f8718b99b7",
+      "log": "p2-9/build-debug.log",
+      "log_sha256": "61d0c0823a670d5875adce5115b8285ab9f75ac1f366e9a4e0fdbde71d203a5e",
+      "elapsed_seconds": 47.652
+    },
+    {
+      "record": "p2-9/configure-asan-command.json",
+      "sha256": "db7ae628e063f9f5603dc662f8cc757261df80788dff345467334817bfd4a5c5",
+      "log": "p2-9/configure-asan.log",
+      "log_sha256": "13046ebf891ac84b4abf815e62205856413716c4b5ac5422f982364b590edd03",
+      "elapsed_seconds": 1.879
+    },
+    {
+      "record": "p2-9/configure-debug-command.json",
+      "sha256": "573e2db0dccb223dae5f2631cd2aa55746d4f884ff146fbde1b0e3dbc47e582b",
+      "log": "p2-9/configure-debug.log",
+      "log_sha256": "89a7eda6a1f0cb864ba34f0e2341ef37daf14608a916d0091a76a70613ac29fe",
+      "elapsed_seconds": 1.912
+    },
+    {
+      "record": "p2-9/ctest-command.json",
+      "sha256": "a9d0726169175faeb19e492c1d17a697b86a33d502c2d725a04f563e9b6aba52",
+      "log": "p2-9/ctest.log",
+      "log_sha256": "291819e4512e178ccaf0f3422d5cd4efe98b9bd3a252e87fd8859575dd5556aa",
+      "elapsed_seconds": 97.208
+    },
+    {
+      "record": "p2-9/guard-asan-native-command.json",
+      "sha256": "906399968f5ee06af58320bcfcc99d83e21f7b90e332bf6ece0739095bb133f7",
+      "log": "p2-9/guard-asan-native.log",
+      "log_sha256": "6a404c22b6f05335cdbf39a53ffcd930559017cd25166fcf5a499adf4aaf6ee5",
+      "elapsed_seconds": 1.411
+    },
+    {
+      "record": "p2-9/guard-debug-native-command.json",
+      "sha256": "69ae967999d747bdefe90dc0e6da1a696e417165f91201506f1a44381470c959",
+      "log": "p2-9/guard-debug-native.log",
+      "log_sha256": "52d0d1522d80a9eeb7feed0f066855edbb5cb9fbdda774bc804a113741429e05",
+      "elapsed_seconds": 1.054
+    },
+    {
+      "record": "p2-9/prepare-asan-executables-command.json",
+      "sha256": "20f8043ef71693c326e314c8bda592d6be87cb32a523fed7c02cd69f49e29f5b",
+      "log": "p2-9/prepare-asan-executables.log",
+      "log_sha256": "a5307d042288898ce6e53324bce6ea91bd54f28ee100b75d578b27cfeb92e3a0",
+      "elapsed_seconds": 0.896
+    },
+    {
+      "record": "p2-9/prepare-debug-executables-command.json",
+      "sha256": "fd1edfc177d80039a3e527437c3c19d0f86890fba07f8936769aaad9978ff47f",
+      "log": "p2-9/prepare-debug-executables.log",
+      "log_sha256": "7d5b943a2a0c38539cb29d2abd103dc5b46afc2903eb61d44e7ff4dabe2048b6",
+      "elapsed_seconds": 0.906
+    },
+    {
+      "record": "p2-9/pytest-command.json",
+      "sha256": "b8a34070c6a873c9273620f5ca44a539bc3afff0d5e2eefc78d676502b69fe9f",
+      "log": "p2-9/pytest.log",
+      "log_sha256": "b42c43880761851b4c0ef7890679e2fa90eb5f5e65ee8cc9bdd0b6c5a12b2ff8",
+      "elapsed_seconds": 18.79
+    }
+  ],
+  "sanitizer_stage": "p2-9",
+  "sanitizer_inputs_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "ctest": {
+    "tests": 27,
+    "failures": 0,
+    "disabled": 0,
+    "skipped": 0
+  },
+  "pytest_passed": 1281,
+  "sanitizers": {
+    "native_programs": [
+      "bzs_tests",
+      "bzs_batch_tests",
+      "bzs_map_tests",
+      "bzs_crawl_tests",
+      "bzs_site_publication_tests",
+      "bzs_contract_tests",
+      "bzs_retention_tests",
+      "bzs_fairness_tests",
+      "bzs_session_tests",
+      "bzs_revalidation_tests",
+      "bzs_revocation_tests",
+      "bzs_source_publication_tests",
+      "bzs_cache_freshness_tests",
+      "bzs_search_mode_tests",
+      "bzs_capacity_cycles_tests"
+    ],
+    "cases": 493,
+    "program_results": [
+      {
+        "target": "bzs_tests",
+        "cases": 105,
+        "assertions": 2034,
+        "failures": 0
+      },
+      {
+        "target": "bzs_batch_tests",
+        "cases": 30,
+        "assertions": 801,
+        "failures": 0
+      },
+      {
+        "target": "bzs_map_tests",
+        "cases": 24,
+        "assertions": 462,
+        "failures": 0
+      },
+      {
+        "target": "bzs_crawl_tests",
+        "cases": 54,
+        "assertions": 2798,
+        "failures": 0
+      },
+      {
+        "target": "bzs_site_publication_tests",
+        "cases": 32,
+        "assertions": 1203,
+        "failures": 0
+      },
+      {
+        "target": "bzs_contract_tests",
+        "cases": 55,
+        "assertions": 269,
+        "failures": 0
+      },
+      {
+        "target": "bzs_retention_tests",
+        "cases": 19,
+        "assertions": 480,
+        "failures": 0
+      },
+      {
+        "target": "bzs_fairness_tests",
+        "cases": 18,
+        "assertions": 339,
+        "failures": 0
+      },
+      {
+        "target": "bzs_session_tests",
+        "cases": 23,
+        "assertions": 298,
+        "failures": 0
+      },
+      {
+        "target": "bzs_revalidation_tests",
+        "cases": 24,
+        "assertions": 372,
+        "failures": 0
+      },
+      {
+        "target": "bzs_revocation_tests",
+        "cases": 12,
+        "assertions": 146,
+        "failures": 0
+      },
+      {
+        "target": "bzs_source_publication_tests",
+        "cases": 20,
+        "assertions": 180,
+        "failures": 0
+      },
+      {
+        "target": "bzs_cache_freshness_tests",
+        "cases": 51,
+        "assertions": 640,
+        "failures": 0
+      },
+      {
+        "target": "bzs_search_mode_tests",
+        "cases": 22,
+        "assertions": 382,
+        "failures": 0
+      },
+      {
+        "target": "bzs_capacity_cycles_tests",
+        "cases": 4,
+        "assertions": 4800,
+        "failures": 0
+      }
+    ],
+    "assertions": 15204,
+    "failures": 0
+  },
+  "all_required_gates": "passed",
+  "collector_sha256": "e6654299ed577336fb974d1137f0a5b51bd3603a788aa859b9707e452cce2b20"
+}

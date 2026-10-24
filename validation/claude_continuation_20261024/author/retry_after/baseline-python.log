@@ -1,0 +1,246 @@
+FFFFFFFFFFFFFFFFFF.FFFFFFFFFFFFFFFFFFFF                                  [100%]
+=================================== FAILURES ===================================
+______ test_search_retry_after_seconds_are_bounded_and_explicit[-0-False] ______
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_____ test_search_retry_after_seconds_are_bounded_and_explicit[0-0-False] ______
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+__ test_search_retry_after_seconds_are_bounded_and_explicit[120-120000-False] __
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_ test_search_retry_after_seconds_are_bounded_and_explicit[86400-86400000-False] _
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_ test_search_retry_after_seconds_are_bounded_and_explicit[86401-86400000-True] _
+python/tests/test_sources.py:119: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_ms == expected
+E   AssertionError: assert 86401000 == 86400000
+E    +  where 86401000 = SourceError('HTTP 429').retry_after_ms
+E    +    where SourceError('HTTP 429') = <ExceptionInfo SourceError('HTTP 429') tblen=3>.value
+_ test_search_retry_after_seconds_are_bounded_and_explicit[999999999-86400000-True] _
+python/tests/test_sources.py:119: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_ms == expected
+E   AssertionError: assert 999999999000 == 86400000
+E    +  where 999999999000 = SourceError('HTTP 429').retry_after_ms
+E    +    where SourceError('HTTP 429') = <ExceptionInfo SourceError('HTTP 429') tblen=3>.value
+____ test_search_retry_after_seconds_are_bounded_and_explicit[huge-decimal] ____
+python/tests/test_sources.py:119: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_ms == expected
+E   AssertionError: assert 4611686018427387903 == 86400000
+E    +  where 4611686018427387903 = SourceError('HTTP 429').retry_after_ms
+E    +    where SourceError('HTTP 429') = <ExceptionInfo SourceError('HTTP 429') tblen=3>.value
+_____ test_search_retry_after_seconds_are_bounded_and_explicit[-1-0-False] _____
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+____ test_search_retry_after_seconds_are_bounded_and_explicit[1.5-0-False] _____
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_ test_search_retry_after_seconds_are_bounded_and_explicit[\uff11\uff12\uff13-0-False] _
+python/tests/test_sources.py:120: in test_search_retry_after_seconds_are_bounded_and_explicit
+    assert caught.value.retry_after_clamped is clamped
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+__________ test_search_retry_after_http_dates_use_the_same_bound[-1] ___________
+python/tests/test_sources.py:132: in test_search_retry_after_http_dates_use_the_same_bound
+    assert caught.value.retry_after_clamped is (seconds > 86400)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+__________ test_search_retry_after_http_dates_use_the_same_bound[120] __________
+python/tests/test_sources.py:132: in test_search_retry_after_http_dates_use_the_same_bound
+    assert caught.value.retry_after_clamped is (seconds > 86400)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_________ test_search_retry_after_http_dates_use_the_same_bound[86400] _________
+python/tests/test_sources.py:132: in test_search_retry_after_http_dates_use_the_same_bound
+    assert caught.value.retry_after_clamped is (seconds > 86400)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'SourceError' object has no attribute 'retry_after_clamped'. Did you mean: 'retry_after_ms'?
+_________ test_search_retry_after_http_dates_use_the_same_bound[86401] _________
+python/tests/test_sources.py:131: in test_search_retry_after_http_dates_use_the_same_bound
+    assert caught.value.retry_after_ms == min(86400000, max(0, seconds * 1000))
+E   AssertionError: assert 86401000 == 86400000
+E    +  where 86401000 = SourceError('HTTP 429').retry_after_ms
+E    +    where SourceError('HTTP 429') = <ExceptionInfo SourceError('HTTP 429') tblen=3>.value
+E    +  and   86400000 = min(86400000, 86401000)
+E    +    where 86401000 = max(0, (86401 * 1000))
+_______ test_search_retry_after_http_dates_use_the_same_bound[999999999] _______
+python/tests/test_sources.py:131: in test_search_retry_after_http_dates_use_the_same_bound
+    assert caught.value.retry_after_ms == min(86400000, max(0, seconds * 1000))
+E   AssertionError: assert 999999999000 == 86400000
+E    +  where 999999999000 = SourceError('HTTP 429').retry_after_ms
+E    +    where SourceError('HTTP 429') = <ExceptionInfo SourceError('HTTP 429') tblen=3>.value
+E    +  and   86400000 = min(86400000, 999999999000)
+E    +    where 999999999000 = max(0, (999999999 * 1000))
+_ test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body0-120] _
+python/tests/test_sources.py:144: in test_search_api_backoff_and_headers_cannot_extend_the_source_bound
+    assert caught.value.retry_after_ms == 86400000 and caught.value.retry_after_clamped
+E   AssertionError: assert (999999999000 == 86400000)
+E    +  where 999999999000 = SourceError('Stack Exchange asked to back off').retry_after_ms
+E    +    where SourceError('Stack Exchange asked to back off') = <ExceptionInfo SourceError('Stack Exchange asked to back off') tblen=3>.value
+_ test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body1-999999999] _
+python/tests/test_sources.py:144: in test_search_api_backoff_and_headers_cannot_extend_the_source_bound
+    assert caught.value.retry_after_ms == 86400000 and caught.value.retry_after_clamped
+E   AssertionError: assert (999999999000 == 86400000)
+E    +  where 999999999000 = SourceError('Stack Exchange asked to back off').retry_after_ms
+E    +    where SourceError('Stack Exchange asked to back off') = <ExceptionInfo SourceError('Stack Exchange asked to back off') tblen=3>.value
+_ test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body2-120] _
+python/tests/test_sources.py:144: in test_search_api_backoff_and_headers_cannot_extend_the_source_bound
+    assert caught.value.retry_after_ms == 86400000 and caught.value.retry_after_clamped
+E   AssertionError: assert (999999999000 == 86400000)
+E    +  where 999999999000 = SourceError('upstream API requested backoff').retry_after_ms
+E    +    where SourceError('upstream API requested backoff') = <ExceptionInfo SourceError('upstream API requested backoff') tblen=4>.value
+_ test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_blocked_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_rate_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+_ test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_error_ms] _
+python/tests/test_sources.py:164: in test_worker_rejects_invalid_source_cooldown_configuration
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE SourceReviewError
+____ test_bounded_retry_after_keeps_shared_worker_fence_until_exact_expiry _____
+python/tests/test_sources.py:268: in test_bounded_retry_after_keeps_shared_worker_fence_until_exact_expiry
+    assert limited_result["retry_after_ms"] == limited_result["retry_after_limit_ms"] == 86400000
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'retry_after_limit_ms'
+__ test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source ___
+python/tests/test_probe.py:231: in test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source
+    assert row["retry_after_ms"] == row["retry_after_limit_ms"] == 86400000
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'retry_after_limit_ms'
+----------------------------- Captured stdout call -----------------------------
+[ddg] q1: rate_limited hits=0 0ms
+=========================== short test summary info ============================
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[-0-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[0-0-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[120-120000-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[86400-86400000-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[86401-86400000-True]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[999999999-86400000-True]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[huge-decimal]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[-1-0-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[1.5-0-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_seconds_are_bounded_and_explicit[\uff11\uff12\uff13-0-False]
+FAILED python/tests/test_sources.py::test_search_retry_after_http_dates_use_the_same_bound[-1]
+FAILED python/tests/test_sources.py::test_search_retry_after_http_dates_use_the_same_bound[120]
+FAILED python/tests/test_sources.py::test_search_retry_after_http_dates_use_the_same_bound[86400]
+FAILED python/tests/test_sources.py::test_search_retry_after_http_dates_use_the_same_bound[86401]
+FAILED python/tests/test_sources.py::test_search_retry_after_http_dates_use_the_same_bound[999999999]
+FAILED python/tests/test_sources.py::test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body0-120]
+FAILED python/tests/test_sources.py::test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body1-999999999]
+FAILED python/tests/test_sources.py::test_search_api_backoff_and_headers_cannot_extend_the_source_bound[body2-120]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[-1-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[86400001-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[True-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1000-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[1.5-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_blocked_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_rate_ms]
+FAILED python/tests/test_sources.py::test_worker_rejects_invalid_source_cooldown_configuration[None-cooldown_error_ms]
+FAILED python/tests/test_sources.py::test_bounded_retry_after_keeps_shared_worker_fence_until_exact_expiry
+FAILED python/tests/test_probe.py::test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source
+38 failed, 1 passed, 82 deselected in 0.85s

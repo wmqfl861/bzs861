@@ -6,6 +6,7 @@ import json
 import time
 from email.utils import format_datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -106,6 +107,64 @@ def test_http_date_retry_after_is_preserved_for_source_cooldown(monkeypatch):
     assert retry_after_ms({"retry-after": "3600"}, now=now.timestamp()) == 3600000
 
 
+@pytest.mark.parametrize("header,expected,clamped", [
+    ("", 0, False), ("0", 0, False), ("120", 120000, False),
+    ("86400", 86400000, False), ("86401", 86400000, True),
+    ("999999999", 86400000, True), pytest.param("9" * 20000, 86400000, True, id="huge-decimal"),
+    ("-1", 0, False), ("1.5", 0, False), ("１２３", 0, False),
+])
+def test_search_retry_after_seconds_are_bounded_and_explicit(header, expected, clamped):
+    with pytest.raises(SourceError) as caught:
+        run(BingHtml, "limited", status=429, headers={"retry-after": header})
+    assert caught.value.retry_after_ms == expected
+    assert caught.value.retry_after_clamped is clamped
+    assert caught.value.status == "rate_limited"
+
+
+@pytest.mark.parametrize("seconds", [-1, 120, 86400, 86401, 999999999])
+def test_search_retry_after_http_dates_use_the_same_bound(monkeypatch, seconds):
+    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
+    monkeypatch.setattr("bzs.worker.sources.base.time.time", lambda: now.timestamp())
+    header = format_datetime(now + dt.timedelta(seconds=seconds), usegmt=True)
+    with pytest.raises(SourceError) as caught:
+        run(Wikipedia, "limited", status=429, headers={"retry-after": header})
+    assert caught.value.retry_after_ms == min(86400000, max(0, seconds * 1000))
+    assert caught.value.retry_after_clamped is (seconds > 86400)
+
+
+@pytest.mark.parametrize("body,header", [
+    ({"items": [], "backoff": 999999999}, "120"),
+    ({"items": [], "backoff": 120}, "999999999"),
+    ({"error_id": 502, "error_name": "throttle_violation", "backoff": 999999999}, "120"),
+])
+def test_search_api_backoff_and_headers_cannot_extend_the_source_bound(body, header):
+    with pytest.raises(SourceError) as caught:
+        run(StackExchange, json.dumps(body), ctype="application/json", headers={"retry-after": header})
+    assert caught.value.status == "rate_limited"
+    assert caught.value.retry_after_ms == 86400000 and caught.value.retry_after_clamped
+
+
+def test_search_backoff_cap_does_not_change_robots_retry_after():
+    from bzs.worker.robots import response_record
+
+    # The common parser remains faithful to the site policy's longer delay.
+    assert retry_after_ms({"retry-after": "172800"}) == 172800000
+    record, retry = response_record(origin="https://fixture.example", status="http_error", http_status=429,
+                                   headers={"retry-after": "172800"}, body=b"limited", truncated=False,
+                                   now_ms=1000000)
+    assert retry == 172800000 and record["state"] == "deny_all"
+    assert record["expires_at_ms"] == 1000000 + 86400000
+
+
+@pytest.mark.parametrize("key", ["cooldown_blocked_ms", "cooldown_rate_ms", "cooldown_error_ms"])
+@pytest.mark.parametrize("value", [-1, 86400001, True, "1000", 1.5, None])
+def test_worker_rejects_invalid_source_cooldown_configuration(key, value):
+    spec = fakeweb.manifest(1)["sources"][0]
+    spec[key] = value
+    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
+        SourceSet([spec], None)
+
+
 def test_default_manifest_has_no_enabled_or_executable_sources():
     specs = load_manifest(Path(__file__).resolve().parents[2] / "config" / "sources.json")
     assert specs and all(spec["enabled"] is False and spec["contract"]["enabled"] is False for spec in specs)
@@ -186,6 +245,36 @@ def shared_budget_specs(interval_ms=0):
         spec["contract"]["limits"].update(shared_budget_key="fixture-service", min_interval_ms=interval_ms)
         spec["params"]["base_url"] = spec["contract"]["endpoint"] = f"https://{spec['id']}.example/search"
     return specs
+
+
+async def test_bounded_retry_after_keeps_shared_worker_fence_until_exact_expiry(monkeypatch):
+    now = [1000.0]
+    monkeypatch.setattr("bzs.worker.sources.time", SimpleNamespace(monotonic=lambda: now[0]))
+    sources = SourceSet(shared_budget_specs(), None)
+    calls = []
+
+    async def limited(*args):
+        calls.append("ddg")
+        raise SourceError("rate_limited", "HTTP 429", 429, 999999999000)
+
+    async def other(*args):
+        calls.append("bing")
+        return [], res("")
+
+    monkeypatch.setattr(sources.adapters["ddg"], "search", limited)
+    monkeypatch.setattr(sources.adapters["bing"], "search", other)
+    limited_result = await sources.run_one("ddg", "fixture", 5, None, 1)
+    assert limited_result["status"] == "rate_limited"
+    assert limited_result["retry_after_ms"] == limited_result["retry_after_limit_ms"] == 86400000
+    assert limited_result["retry_after_clamped"] is True
+    assert sources.cooldown_until["fixture-service"] == 87400.0
+    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "skipped"
+    now[0] = 87399.999
+    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "skipped"
+    assert calls == ["ddg"]
+    now[0] = 87400.0
+    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "empty"
+    assert calls == ["ddg", "bing"]
 
 
 async def test_shared_budget_spaces_actual_fast_adapter_starts_across_hosts(monkeypatch):

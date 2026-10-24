@@ -619,7 +619,20 @@ namespace bzs {
         }
         std::int64_t cooldown=0;
         if(status=="blocked"||status=="challenge")cooldown=s->cooldown_blocked_ms;
-        else if(status=="rate_limited")cooldown=std::max(s->cooldown_rate_ms, std::clamp(opt_int(x, "retry_after_ms", 0),std::int64_t{0},(std::int64_t{1}<<62)-1));
+        else if(status=="rate_limited") {
+          const auto reported=opt_int(x,"retry_after_ms",0);
+          const auto retry=std::clamp(reported,std::int64_t{0},source_retry_after_limit_ms);
+          const bool clamped=reported>source_retry_after_limit_ms||
+            (x.has("retry_after_clamped")&&x.at("retry_after_clamped").is_bool()&&x.at("retry_after_clamped").flag());
+          cooldown=std::max(s->cooldown_rate_ms,retry);
+          r.set("retry_after_ms",retry);
+          r.set("cooldown_ms",cooldown);
+          r.set("retry_after_clamped",clamped);
+          if(clamped) {
+            r.set("retry_after_limit_ms",source_retry_after_limit_ms);
+            error="E_RETRY_AFTER_CLAMPED: source backoff limited to 24 hours; "+error;
+          }
+        }
         else if(status=="parse_error")cooldown=s->cooldown_error_ms*3;
         else if(status!="ok"&&status!="empty")cooldown=s->cooldown_error_ms;
         store_.source_report(s->budget_key, status.empty()?"error":status, error, cooldown);

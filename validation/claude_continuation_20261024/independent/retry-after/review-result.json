@@ -1,0 +1,131 @@
+{
+  "reviewer": "independent search_lock agent; not the P2-9 author",
+  "subject_commit": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+  "base_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "first_reviewed_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+  "status": "pass_after_blocking_finding_fixed",
+  "open_blocking_findings": [],
+  "closed_findings": [
+    {
+      "id": "IR-P2-9-001",
+      "finding": "Initial legacy cooldown repair shortened legal absolute 72h deadlines after clock rollback, including delayed reports and later 429 responses.",
+      "observed_at": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+      "fixed_at": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "first_reproduction": "clock-rollback-result.json",
+      "expanded_reproduction": "matrix-before-fix.json",
+      "retest": "matrix-correction-v1.json",
+      "sanitizer_retest": "matrix-correction-v1-asan.json"
+    }
+  ],
+  "independent_execution": {
+    "debug": {
+      "temporal_matrix_scenarios": 24,
+      "protocol_scenarios": 24,
+      "protocol_checks": 252,
+      "proof_legacy_scenarios": 24,
+      "proof_legacy_checks": 233,
+      "all_passed": true
+    },
+    "asan_ubsan": {
+      "same_native_scenarios": 72,
+      "detect_leaks": true,
+      "all_passed": true
+    },
+    "python": {
+      "independently_authored_cases": 6,
+      "formal_probe_cases_reexecuted": 3,
+      "all_passed": true,
+      "loaded_modules": 24,
+      "input_hashes_unchanged": true
+    }
+  },
+  "artifact_binding": {
+    "all_74_final_inputs_match_git": true,
+    "old_and_each_new_header_set_matches_its_commit": true,
+    "author_32_baseline_python_hash_claims_match_git": true,
+    "debug_library_sha256": "c777930bbaab84631aca5b85904497b4d3f083fc3f96c13e881438c5f73c9bac",
+    "asan_library_sha256": "9ddd7d58d165eb55490ca877c5a01c0102ce314e96168ddcc99c29e878ab2396"
+  },
+  "scope_limits": [
+    "This is an independent focused review of the P2-9 branch, not the integrated main full CTest/pytest/15-target ASan or GitHub CI verdict.",
+    "The unproven legacy one-year threshold is a conservative heuristic; incomplete old records cannot prove all historical deadlines invalid.",
+    "The legacy boundary fixtures in proof_legacy.cpp are explicit SQLite fixtures. Actual old-code production and old/new/old compatibility evidence is supplied separately by the author and was inspected.",
+    "No real source was enabled or contacted; reserved project-owner decisions remain unchanged."
+  ],
+  "supporting_author_evidence_inspected": [
+    "validation/claude_continuation_20261024/author/retry_after/clock-fix-legacy-old-seed.log",
+    "validation/claude_continuation_20261024/author/retry_after/clock-fix-legacy-current.log",
+    "validation/claude_continuation_20261024/author/retry_after/clock-fix-legacy-old-reopen.log",
+    "validation/claude_continuation_20261024/author/retry_after/clock-fix-debug.log",
+    "validation/claude_continuation_20261024/author/retry_after/clock-fix-asan.log"
+  ],
+  "copied_evidence_files": [
+    "baseline-python-binding-checked.json",
+    "clock-baseline-compile.log",
+    "clock-baseline.log",
+    "clock-current-compile.log",
+    "clock-current.log",
+    "clock-rollback-result.json",
+    "clock_matrix.cpp",
+    "clock_rollback.cpp",
+    "correction-v1-inputs.json",
+    "final-commit-binding.json",
+    "header-and-baseline-binding.json",
+    "matrix-743-compile.log",
+    "matrix-743.log",
+    "matrix-baseline-compile.log",
+    "matrix-baseline.log",
+    "matrix-before-fix.json",
+    "matrix-correction-v1-asan-compile.json",
+    "matrix-correction-v1-asan-compile.log",
+    "matrix-correction-v1-asan.json",
+    "matrix-correction-v1-asan.log",
+    "matrix-correction-v1-compile.log",
+    "matrix-correction-v1.json",
+    "matrix-correction-v1.log",
+    "proof-legacy-correction-v1-asan-compile.json",
+    "proof-legacy-correction-v1-asan-compile.log",
+    "proof-legacy-correction-v1-asan.json",
+    "proof-legacy-correction-v1-asan.log",
+    "proof-legacy-correction-v1-compile.log",
+    "proof-legacy-correction-v1.json",
+    "proof-legacy-correction-v1.log",
+    "proof_legacy.cpp",
+    "protocol-743-compile.log",
+    "protocol-743-result.json",
+    "protocol-743.log",
+    "protocol-correction-v1-asan-compile.json",
+    "protocol-correction-v1-asan-compile.log",
+    "protocol-correction-v1-asan.json",
+    "protocol-correction-v1-asan.log",
+    "protocol-correction-v1-compile.log",
+    "protocol-correction-v1.json",
+    "protocol-correction-v1.log",
+    "protocol.cpp",
+    "python-correction-v1.json",
+    "python-correction-v1.log",
+    "python-v1.log",
+    "run_native_sanitizers.py",
+    "run_python_review.py",
+    "test_worker_independent.py"
+  ],
+  "reviewed_patch_argv": [
+    "git",
+    "diff",
+    "--unified=0",
+    "59081e14fdda765844031e13f874e588334f1a36",
+    "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+    "--",
+    "src/store.cpp",
+    "src/web.cpp",
+    "include/bzs/web.hpp",
+    "python/bzs/probe.py",
+    "python/bzs/worker/sources/base.py",
+    "python/bzs/worker/sources/__init__.py",
+    "python/bzs/worker/sources/review.py",
+    "tests/unit.cpp",
+    "python/tests/test_sources.py",
+    "python/tests/test_probe.py",
+    "docs/SOURCE_BACKOFF.md"
+  ]
+}

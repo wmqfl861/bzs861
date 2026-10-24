@@ -212,6 +212,32 @@ async def test_shared_service_reservations_and_stops_survive_completed_resume(tm
     assert resumed["budgets"]["shared-fixture"] == budget
 
 
+async def test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source(tmp_path, scripted, monkeypatch):
+    manifest, golden, out = inputs(tmp_path, sources=2, quota=2, shared=True)
+    now = [1000000]
+    monkeypatch.setattr(probe_module, "_now_ms", lambda: now[0])
+
+    async def limited(source, query, limit):
+        _, response = result(query)
+        error = SourceError("rate_limited", "HTTP 429", 429, 999999999000)
+        response.http_status = 429
+        error.result = response
+        raise error
+
+    scripted.handler = limited
+    report = await run_probe(manifest, golden, out)
+    assert len(scripted.calls) == 1
+    row = report["rows"][0]
+    assert row["retry_after_ms"] == row["retry_after_limit_ms"] == 86400000
+    assert row["retry_after_clamped"] is True
+    budget = copy.deepcopy(report["budgets"]["shared-fixture"])
+    assert budget["cooldown_until_ms"] == now[0] + 86400000
+    assert budget["used"] == 1 and budget["stopped"] and budget["stop_reason"] == "rate_limited"
+    now[0] += 2 * 86400000
+    resumed = await run_probe(manifest, golden, out, resume=True)
+    assert len(scripted.calls) == 1 and resumed["budgets"]["shared-fixture"] == budget
+
+
 async def test_shared_service_quota_counts_both_source_aliases(tmp_path, scripted):
     manifest, golden, out = inputs(tmp_path, sources=2, quota=2, shared=True)
 

@@ -11,6 +11,8 @@
 #include <string_view>
 #include <vector>
 namespace bzs {
+  // Search-source backoff is bounded independently of automatic-site/robots policy.
+  inline constexpr std::int64_t source_retry_after_limit_ms=24LL*60*60*1000;
   // Worker RPC port. Calls from HTTP business threads and independent background
   // lanes may overlap; implementations must support concurrent calls. searchd
   // gives each RPC its own loopback HTTP connection; tests use a synchronized fake.

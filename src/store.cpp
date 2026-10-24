@@ -74,6 +74,70 @@ namespace bzs {
         done_=true;
       }
     };
+    std::int64_t source_cooldown_until(std::int64_t now,std::int64_t delay) {
+      delay=std::max<std::int64_t>(0,delay);
+      return now>std::numeric_limits<std::int64_t>::max()-delay?
+        std::numeric_limits<std::int64_t>::max():now+delay;
+    }
+    std::int64_t source_cooldown_remaining(std::int64_t until,std::int64_t now) {
+      if(until<=now)return 0;
+      if(now<0&&until>std::numeric_limits<std::int64_t>::max()+now)
+        return std::numeric_limits<std::int64_t>::max();
+      return until-now;
+    }
+    Json source_cooldown_proof(sqlite3* db,const std::string& id) {
+      Stmt saved(db,"SELECT value FROM settings WHERE key=?");saved.bind(1,"source_cooldown_proof/"+id);
+      if(!saved.step()) {
+        auto value=Json::object();value.set("version",std::int64_t{1});value.set("verified_until_ms",std::int64_t{0});return value;
+      }
+      auto value=Json::parse(saved.text(0),4096);
+      require(value.is_object()&&value.has("version")&&value.at("version").is_integer()&&value.at("version").num()==1&&
+              value.has("verified_until_ms")&&value.at("verified_until_ms").is_integer()&&value.at("verified_until_ms").num()>=0,
+              "E_STORAGE","Invalid source cooldown proof",500);
+      return value;
+    }
+    void save_source_cooldown_proof(sqlite3* db,const std::string& id,const Json& value) {
+      Stmt save(db,"INSERT INTO settings(key,value)VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value");
+      save.bind(1,"source_cooldown_proof/"+id);save.bind(2,value.dump());save.step();
+    }
+    void repair_source_cooldowns(sqlite3* db,std::int64_t now,const std::string* id=nullptr) {
+      struct Repair { std::string id,error;std::int64_t until;Json proof; };
+      std::vector<Repair> repairs;
+      {
+        Stmt rows(db,id?
+          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error,last_ok_at FROM source_state WHERE source_id=?":
+          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error,last_ok_at FROM source_state");
+        if(id)rows.bind(1,*id);
+        while(rows.step()) {
+          auto proof=source_cooldown_proof(db,rows.text(0));
+          const auto verified=proof.at("verified_until_ms").num();
+          // Only individually bounded reports create proof, never an unknown
+          // older MAX. A clock rollback cannot revoke a proven absolute fence.
+          if(rows.num(3)<=verified)continue;
+          const auto event=std::max(rows.num(1),rows.num(5));
+          // The old schema has no response timestamp. An attempt is not its
+          // response, and a late response can replace last_status. Conservatively
+          // retain ambiguous old fences, including future event/rollback state.
+          constexpr auto legacy_extreme=365*source_retry_after_limit_ms;
+          if(event>now||rows.num(3)<=source_cooldown_until(now,legacy_extreme)||
+             rows.num(3)<=source_cooldown_until(event,legacy_extreme))continue;
+          const auto maximum=source_retry_after_limit_ms*(rows.text(2)=="rate_limited"?1:3);
+          // Persist one fixed deadline, anchored to the most recent known
+          // event when it exists. Reading state must not renew the cooldown.
+          const auto anchor=event>0?event:now;
+          const auto until=std::max(verified,source_cooldown_until(anchor,maximum));
+          auto audit=Json::object();audit.set("original_until_ms",rows.num(3));audit.set("repaired_until_ms",until);
+          audit.set("anchor_ms",anchor);audit.set("observed_at_ms",now);audit.set("reason","unproven_legacy_backoff_over_one_year");
+          proof.set("last_repair",audit);proof.set("verified_until_ms",until);
+          repairs.push_back({rows.text(0),utf8_prefix("E_SOURCE_COOLDOWN_CLAMPED: unproven legacy deadline "+std::to_string(rows.num(3))+" exceeded one year; "+rows.text(4),300),until,proof});
+        }
+      }
+      for(const auto& repair:repairs) {
+        Stmt update(db,"UPDATE source_state SET cooldown_until=?,last_error=? WHERE source_id=?");
+        update.bind(1,repair.until);update.bind(2,repair.error);update.bind(3,repair.id);update.step();
+        save_source_cooldown_proof(db,repair.id,repair.proof);
+      }
+    }
     std::int64_t scalar(sqlite3*d, const std::string&sql) {
       Stmt s(d, sql);
       require(s.step(), "E_STORAGE", "Scalar missing", 500);
@@ -1633,6 +1697,7 @@ namespace bzs {
     Stmt add(db_, "INSERT OR IGNORE INTO source_state(source_id)VALUES(?)");
     add.bind(1, id);
     add.step();
+    repair_source_cooldowns(db_,now,&id);
     Stmt s(db_, "SELECT cooldown_until,last_request_at,day,requests_today FROM source_state WHERE source_id=?");
     s.bind(1, id);
     require(s.step(), "E_STORAGE", "Missing source state", 500);
@@ -1659,35 +1724,54 @@ namespace bzs {
     Stmt add(db_, "INSERT OR IGNORE INTO source_state(source_id)VALUES(?)");
     add.bind(1, id);
     add.step();
+    repair_source_cooldowns(db_,now,&id);
     bool ok=status=="ok"||status=="empty";
+    const auto maximum=source_retry_after_limit_ms*(status=="parse_error"?3:1);
+    const bool clamped=!ok&&cooldown_ms>maximum;
+    cooldown_ms=std::clamp(cooldown_ms,std::int64_t{0},maximum);
+    auto diagnostic=error;
+    if(clamped&&!diagnostic.starts_with("E_RETRY_AFTER_CLAMPED:"))
+      diagnostic="E_RETRY_AFTER_CLAMPED: source backoff exceeded bounded policy; "+diagnostic;
     // A slow success may arrive after a newer CAPTCHA/rate-limit response.
     // It must not cancel a cooldown that is still in force.
     Stmt u(db_, ok?
       "UPDATE source_state SET failures=0,last_status=?,last_error=?,last_ok_at=? WHERE source_id=?":
       "UPDATE source_state SET failures=failures+1,last_status=?,last_error=?,cooldown_until=MAX(cooldown_until,?) WHERE source_id=?");
     u.bind(1, status);
-    u.bind(2, utf8_prefix(error, 300));
-    u.bind(3, ok?now:(cooldown_ms>0?now+cooldown_ms:0));
+    u.bind(2, utf8_prefix(diagnostic, 300));
+    u.bind(3, ok?now:(cooldown_ms>0?source_cooldown_until(now,cooldown_ms):0));
     u.bind(4, id);
     u.step();
+    if(!ok&&cooldown_ms>0) {
+      auto proof=source_cooldown_proof(db_,id);
+      // Do not bless the unknown older MAX deadline in source_state. This
+      // marker covers only this bounded report and previous proven reports.
+      proof.set("verified_until_ms",std::max(proof.at("verified_until_ms").num(),source_cooldown_until(now,cooldown_ms)));
+      save_source_cooldown_proof(db_,id,proof);
+    }
     tx.commit();
   }
   Json Store::source_states() {
     std::lock_guard lock(mutex_);
+    Tx tx(db_);
     Json out=Json::object();
     auto now=clock_();
+    repair_source_cooldowns(db_,now);
     Stmt s(db_, "SELECT source_id,cooldown_until,failures,last_status,last_error,last_ok_at,last_request_at,day,requests_today FROM source_state");
     while(s.step()) {
       Json j=Json::object();
-      j.set("cooldown_remaining_ms", std::max<std::int64_t>(0, s.num(1)-now));
+      j.set("cooldown_remaining_ms", source_cooldown_remaining(s.num(1),now));
       j.set("consecutive_failures", s.num(2));
       j.set("last_status", s.text(3));
       j.set("last_error", s.text(4));
       j.set("last_ok_at_ms", s.num(5));
       j.set("last_request_at_ms", s.num(6));
       j.set("requests_today", s.num(7)==now/86400000?s.num(8):0);
+      const auto proof=source_cooldown_proof(db_,s.text(0));
+      if(proof.has("last_repair"))j.set("cooldown_last_repair",proof.at("last_repair"));
       out.set(s.text(0), j);
     }
+    tx.commit();
     return out;
   }
   Json Store::backup(const std::filesystem::path& dst) {

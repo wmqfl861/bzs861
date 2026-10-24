@@ -20,7 +20,7 @@ from .worker.fetch import Fetcher
 from .worker.netguard import NetPolicy
 from .worker.sources import SourceSet, load_manifest
 from .worker.sources.review import SourceReviewError, require_review
-from .worker.sources.base import SourceError
+from .worker.sources.base import SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
 
 
 def _utc_now() -> str:
@@ -291,6 +291,8 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
                     except SourceError as exc:
                         response, retry_ms = exc.result, exc.retry_after_ms
                         row.update(status=exc.status, error=str(exc)[:300], retry_after_ms=retry_ms)
+                        if exc.retry_after_clamped:
+                            row.update(retry_after_clamped=True, retry_after_limit_ms=SOURCE_RETRY_AFTER_LIMIT_MS)
                     except asyncio.TimeoutError:
                         row.update(status="timeout", error="source timed out")
                     except asyncio.CancelledError:
@@ -315,7 +317,8 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
                         if row["status"] in ("blocked", "challenge"):
                             cooldown = spec.get("cooldown_blocked_ms", 30 * 60 * 1000)
                         elif row["status"] == "rate_limited":
-                            cooldown = max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), retry_ms)
+                            cooldown = min(SOURCE_RETRY_AFTER_LIMIT_MS,
+                                           max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), retry_ms))
                         budget["cooldown_until_ms"] = max(budget["cooldown_until_ms"], _now_ms() + cooldown)
                     # The response and stop decision are durable before another queued
                     # adapter in the same service obtains its concurrency slot.

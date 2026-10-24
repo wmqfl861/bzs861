@@ -12,6 +12,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <set>
 #include <thread>
@@ -1473,6 +1474,265 @@ namespace {
     CHECK(s.source_admit("x", 1000, 2)=="cooldown");
     now+=60000;
     CHECK(s.source_admit("x", 1000, 2)=="");
+  }
+  TEST(source_retry_after_is_bounded_persistent_and_saturating) {
+    Temp t;
+    std::int64_t now=5000000;
+    {
+      Store store(t.path/"db",[&]{return now;});
+      CHECK(store.source_admit("shared",0,50).empty());
+      store.source_report("shared","rate_limited","429",std::numeric_limits<std::int64_t>::max());
+      const auto state=store.source_states().at("shared");
+      CHECK(state.at("cooldown_remaining_ms").num()==86400000);
+      CHECK(state.at("last_error").str().starts_with("E_RETRY_AFTER_CLAMPED:"));
+      CHECK(state.at("consecutive_failures").num()==1);
+      CHECK(state.at("requests_today").num()==1);
+      store.source_report("shared","ok","",0);
+      CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==86400000);
+    }
+    now+=86400000-1;
+    {
+      Store store(t.path/"db",[&]{return now;});
+      CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==1);
+      CHECK(store.source_admit("shared",0,50)=="cooldown");
+      ++now;
+      CHECK(store.source_admit("shared",0,50).empty());
+    }
+    now=std::numeric_limits<std::int64_t>::max()-1000;
+    Store overflow(t.path/"overflow",[&]{return now;});
+    CHECK(overflow.source_admit("fixture",0,50).empty());
+    overflow.source_report("fixture","rate_limited","429",std::numeric_limits<std::int64_t>::max());
+    CHECK(overflow.source_states().at("fixture").at("cooldown_remaining_ms").num()==1000);
+    now+=1000;
+    CHECK(overflow.source_states().at("fixture").at("cooldown_remaining_ms").num()==0);
+    CHECK(overflow.source_admit("fixture",0,50).empty());
+  }
+  TEST(source_retry_after_does_not_shorten_prior_parse_error_or_ordinary_waits) {
+    Temp t;
+    std::int64_t now=5000000;
+    Store store(t.path/"db",[&]{return now;});
+    CHECK(store.source_admit("shared",0,50).empty());
+    store.source_report("shared","parse_error","parse",3LL*86400000);
+    store.source_report("shared","rate_limited","429",std::numeric_limits<std::int64_t>::max());
+    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==3LL*86400000);
+    store.source_report("shared","ok","",0);
+    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==3LL*86400000);
+    now+=86400000;
+    CHECK(store.source_admit("shared",0,50)=="cooldown");
+    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==2LL*86400000);
+    CHECK(store.source_admit("ordinary",0,50).empty());
+    store.source_report("ordinary","rate_limited","429",120000);
+    CHECK(store.source_states().at("ordinary").at("cooldown_remaining_ms").num()==120000);
+    store.source_report("ordinary","rate_limited","429",-1);
+    CHECK(store.source_states().at("ordinary").at("cooldown_remaining_ms").num()==120000);
+  }
+  TEST(legacy_source_cooldown_repair_has_a_fixed_anchor_and_keeps_accounting) {
+    Temp t;
+    std::int64_t now=5000000;
+    const auto path=t.path/"db";
+    {
+      Store store(path,[&]{return now;});
+      for(const auto& id:{"rate","late","parse","ambiguous"}) {
+        CHECK(store.source_admit(id,0,50).empty());
+        store.source_report(id,"rate_limited","429",60000);
+      }
+      store.source_report("late","ok","",0);
+      store.source_report("parse","parse_error","parse",3LL*86400000);
+      store.source_report("no-attempt","rate_limited","429",60000);
+    }
+    // On-disk shape and status combinations produced by the old unbounded
+    // code, including a late successful response and a missing attempt stamp.
+    database_exec(path,"UPDATE source_state SET cooldown_until=999999999000 WHERE source_id IN ('rate','late','no-attempt');"
+                       "UPDATE source_state SET cooldown_until=177800000 WHERE source_id='ambiguous';");
+    now+=3600000;
+    {
+      Store store(path,[&]{return now;});
+      CHECK(store.source_admit("rate",0,50)=="cooldown");
+      const auto states=store.source_states();
+      CHECK(states.at("rate").at("cooldown_remaining_ms").num()==86400000-3600000);
+      CHECK(states.at("late").at("cooldown_remaining_ms").num()==3LL*86400000-3600000);
+      CHECK(states.at("parse").at("cooldown_remaining_ms").num()==3LL*86400000-3600000);
+      CHECK(states.at("ambiguous").at("cooldown_remaining_ms").num()==2LL*86400000-3600000);
+      CHECK(states.at("no-attempt").at("cooldown_remaining_ms").num()==86400000);
+      CHECK(states.at("rate").at("last_error").str().starts_with("E_SOURCE_COOLDOWN_CLAMPED:"));
+      CHECK(states.at("rate").at("consecutive_failures").num()==1);
+      CHECK(states.at("rate").at("requests_today").num()==1);
+      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='rate'")==5000000+86400000);
+      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='no-attempt'")==now+86400000);
+    }
+    now+=3600000;
+    {
+      Store store(path,[&]{return now;});
+      const auto states=store.source_states();
+      CHECK(states.at("rate").at("cooldown_remaining_ms").num()==86400000-2*3600000);
+      CHECK(states.at("no-attempt").at("cooldown_remaining_ms").num()==86400000-3600000);
+      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='rate'")==5000000+86400000);
+    }
+    now=5000000+86400000;
+    Store store(path,[&]{return now;});
+    CHECK(store.source_admit("rate",0,50).empty());
+    CHECK(store.source_admit("late",0,50)=="cooldown");
+  }
+  TEST(source_cooldown_proof_preserves_legal_deadlines_across_rollback_and_restart) {
+    constexpr std::int64_t started=1800000000000;
+    constexpr std::int64_t day=86400000;
+    for(const std::int64_t delay:{0,60000})for(const auto& late:{"none","rate_limited","ok"}) {
+      Temp t;
+      std::int64_t now=started;
+      const auto path=t.path/"db";
+      const auto deadline=started+delay+3*day;
+      {
+        Store store(path,[&]{return now;});
+        CHECK(store.source_admit("shared",0,50).empty());
+        now+=delay;
+        store.source_report("shared","parse_error","parse",3*day);
+        if(std::string(late)!="none")store.source_report("shared",late,"late",120000);
+        // With delayed report this rollback is still AFTER admission. Attempt
+        // time alone cannot distinguish this legitimate 72h absolute deadline.
+        now=started+(delay?30000:-3600000);
+        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
+        CHECK(store.source_admit("shared",0,50)=="cooldown");
+        store.source_report("shared","ok","another late success",0);
+        CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==deadline);
+      }
+      {
+        Store store(path,[&]{return now;});
+        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
+        // A large rollback still cannot revoke an already proven deadline.
+        now=started-2*365*day;
+        CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==deadline-now);
+        CHECK(store.source_admit("shared",0,50)=="cooldown");
+        store.source_report("shared","rate_limited","late429",std::numeric_limits<std::int64_t>::max());
+        CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==deadline);
+        now=deadline-1;
+        CHECK(store.source_admit("shared",0,50)=="cooldown");
+        ++now;
+        CHECK(store.source_admit("shared",0,50).empty());
+      }
+    }
+  }
+  TEST(legacy_source_cooldown_repair_retains_ambiguous_and_future_event_state) {
+    Temp t;
+    constexpr std::int64_t started=1800000000000;
+    constexpr std::int64_t day=86400000;
+    std::int64_t now=started;
+    const auto path=t.path/"db";
+    {
+      Store store(path,[&]{return now;});
+      for(const auto& id:{"delayed-parse","ambiguous","future","late-ok"})CHECK(store.source_admit(id,0,50).empty());
+    }
+    // Unproven rows have the old schema's missing response time. These are
+    // deliberately not certified by a new bounded source_report call.
+    database_exec(path,"UPDATE source_state SET last_status='parse_error',cooldown_until=1800259260000 WHERE source_id='delayed-parse';"
+                       "UPDATE source_state SET last_status='rate_limited',cooldown_until=1815552000000 WHERE source_id='ambiguous';"
+                       "UPDATE source_state SET last_status='rate_limited',last_request_at=1800000060000,cooldown_until=2799999999000 WHERE source_id='future';"
+                       "UPDATE source_state SET last_status='ok',last_ok_at=1800000020000,cooldown_until=2799999999000 WHERE source_id='late-ok';");
+    now=started+30000;
+    {
+      Store store(path,[&]{return now;});
+      const auto states=store.source_states();
+      CHECK(states.at("delayed-parse").at("cooldown_remaining_ms").num()==3*day+30000);
+      CHECK(states.at("ambiguous").at("cooldown_remaining_ms").num()==180*day-30000);
+      CHECK(states.at("future").at("cooldown_remaining_ms").num()==2799999999000LL-now);
+      CHECK(!states.at("future").has("cooldown_last_repair"));
+      CHECK(states.at("late-ok").at("cooldown_remaining_ms").num()==3*day-10000);
+      const auto audit=states.at("late-ok").at("cooldown_last_repair");
+      CHECK(audit.at("original_until_ms").num()==2799999999000LL);
+      CHECK(audit.at("repaired_until_ms").num()==started+20000+3*day);
+      CHECK(audit.at("anchor_ms").num()==started+20000);
+      CHECK(audit.at("reason").str()=="unproven_legacy_backoff_over_one_year");
+      CHECK(database_scalar(path,"PRAGMA user_version")==13);
+    }
+    now=started+61000;
+    Store store(path,[&]{return now;});
+    const auto states=store.source_states();
+    CHECK(states.at("future").at("cooldown_remaining_ms").num()==day-1000);
+    CHECK(states.at("future").at("cooldown_last_repair").at("anchor_ms").num()==started+60000);
+    CHECK(states.at("late-ok").at("cooldown_last_repair").at("observed_at_ms").num()==started+30000);
+  }
+  TEST(source_cooldown_proof_never_certifies_unknown_older_max) {
+    Temp t;
+    constexpr std::int64_t started=1800000000000;
+    constexpr std::int64_t unknown=started+100LL*86400000;
+    std::int64_t now=started;
+    const auto path=t.path/"db";
+    {
+      Store store(path,[&]{return now;});
+      CHECK(store.source_admit("shared",0,50).empty());
+      database_exec(path,"UPDATE source_state SET cooldown_until=1808640000000,last_status='rate_limited' WHERE source_id='shared';");
+      store.source_report("shared","rate_limited","new bounded response",120000);
+      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==unknown);
+      CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==started+120000);
+      store.source_report("shared","ok","late success",0);
+    }
+    Store store(path,[&]{return now;});
+    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==unknown-now);
+    CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==started+120000);
+  }
+  TEST(source_cooldown_proof_and_repair_are_transactional) {
+    Temp t;
+    std::int64_t now=1800000000000;
+    const auto path=t.path/"db";
+    Store store(path,[&]{return now;});
+    CHECK(store.source_admit("shared",0,50).empty());
+    database_exec(path,"CREATE TRIGGER reject_cooldown_proof BEFORE INSERT ON settings WHEN NEW.key LIKE 'source_cooldown_proof/%' BEGIN SELECT RAISE(ABORT,'proof fixture'); END;");
+    rejects([&]{store.source_report("shared","rate_limited","429",60000);},"E_STORAGE");
+    CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==0);
+    CHECK(database_scalar(path,"SELECT failures FROM source_state WHERE source_id='shared'")==0);
+    CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='source_cooldown_proof/shared'")==0);
+    database_exec(path,"DROP TRIGGER reject_cooldown_proof;");
+    store.source_report("shared","rate_limited","429",60000);
+    database_exec(path,"UPDATE source_state SET cooldown_until=2799999999000 WHERE source_id='shared';"
+                       "CREATE TRIGGER reject_cooldown_proof BEFORE UPDATE ON settings WHEN NEW.key LIKE 'source_cooldown_proof/%' BEGIN SELECT RAISE(ABORT,'proof fixture'); END;");
+    rejects([&]{store.source_states();},"E_STORAGE");
+    CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='shared'")==2799999999000LL);
+    CHECK(database_scalar(path,"SELECT last_error='429' FROM source_state WHERE source_id='shared'")==1);
+    CHECK(database_scalar(path,"SELECT json_extract(value,'$.verified_until_ms') FROM settings WHERE key='source_cooldown_proof/shared'")==now+60000);
+    database_exec(path,"DROP TRIGGER reject_cooldown_proof;");
+    const auto state=store.source_states().at("shared");
+    CHECK(state.at("cooldown_remaining_ms").num()==86400000);
+    CHECK(state.at("requests_today").num()==1);
+    CHECK(state.at("consecutive_failures").num()==1);
+    CHECK(state.at("cooldown_last_repair").at("original_until_ms").num()==2799999999000LL);
+  }
+  TEST(web_search_bounds_old_worker_retry_after_and_reports_new_worker_clamping) {
+    struct Input { std::int64_t retry;bool present,already_clamped; };
+    const Input inputs[]={{0,false,false},{-1,true,false},{120000,true,false},{86400000,true,false},
+                          {86400001,true,false},{999999999000LL,true,false},
+                          {std::numeric_limits<std::int64_t>::max(),true,false},{86400000,true,true}};
+    for(const auto& input:inputs) {
+      Temp t;
+      std::int64_t now=5000000;
+      Store store(t.path/"db",[&]{return now;});
+      auto manifest=reviewed_sources(obj(R"({"version":1,"sources":[{"id":"fixture","provider":"fixture","index_family":"fixture","capability":"web","kind":"api","enabled":true,"default":true,"min_interval_ms":0,"cooldown_rate_ms":600000}]})"));
+      FakeWorker worker;
+      worker.handler=[&](const std::string& method,const Json&) {
+        CHECK(method=="search.multi");
+        auto result=obj(R"({"results":{"fixture":{"status":"rate_limited","error":"HTTP 429","http_status":429,"hits":[]}}})");
+        if(input.present)result.at("results").at("fixture").set("retry_after_ms",input.retry);
+        if(input.already_clamped)result.at("results").at("fixture").set("retry_after_clamped",true);
+        return result;
+      };
+      WebService web(store,worker,SourceRegistry(manifest));
+      const auto result=web.search("alice",obj(R"({"query":"bounded source retry"})"));
+      const auto row=result.at("sources").at(0);
+      const auto expected=std::min<std::int64_t>(86400000,std::max<std::int64_t>(0,input.retry));
+      const bool clamped=input.retry>86400000||input.already_clamped;
+      CHECK(row.at("status").str()=="rate_limited");
+      CHECK(row.at("retry_after_ms").num()==expected);
+      CHECK(row.at("cooldown_ms").num()==std::max<std::int64_t>(600000,expected));
+      CHECK(row.at("retry_after_clamped").flag()==clamped);
+      if(clamped) {
+        CHECK(row.at("retry_after_limit_ms").num()==86400000);
+        CHECK(row.at("error").str().starts_with("E_RETRY_AFTER_CLAMPED:"));
+      }
+      CHECK(result.at("usage").at("external_requests").num()==1);
+      const auto source=web.sources().at("sources").at(0);
+      CHECK(source.at("enabled").flag()&&source.at("configured_enabled").flag());
+      CHECK(source.at("state").at("cooldown_remaining_ms").num()==std::max<std::int64_t>(600000,expected));
+      CHECK(web.search("bob",obj(R"({"query":"another owner"})")).at("sources").at(0).at("reason").str()=="cooldown");
+      CHECK(worker.calls.size()==1);
+    }
   }
   TEST(migrate_both_schema_two_layouts_preserves_records) {
     for(bool claude_s1:{false,true}) {

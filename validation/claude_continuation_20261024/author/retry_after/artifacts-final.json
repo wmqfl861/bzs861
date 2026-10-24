@@ -1,0 +1,41 @@
+{
+  "artifacts": {
+    "build/bzs_tests": {
+      "sha256": "2ed53668ca68bcb6026248096cb49ec887852fc8febd62701a109b880e1b720c",
+      "bytes": 13331272
+    },
+    "build/libbzs_core.a": {
+      "sha256": "f95ae7f89bbdf8c4178f6def755822eea2cd776a55355fe318507704b852986a",
+      "bytes": 28070150
+    },
+    "build-asan/bzs_tests": {
+      "sha256": "06dfd00865f00386cb55dfd6b329152224f0552228deb51910f4ff08f7c60624",
+      "bytes": 42204208
+    },
+    "build-asan/libbzs_core.a": {
+      "sha256": "8db758b5d8f98e9cf26185ea3521ad8ac1fdb9495eb6aa2735f8666ff0697848",
+      "bytes": 54970690
+    },
+    "validation/claude_continuation_20261024/author/retry_after/legacy_probe.cpp": {
+      "sha256": "8ef4aa57ff28602680e849e88c4663e6795c17db693780571d81bac6dec7f9ba",
+      "bytes": 493
+    },
+    "validation/claude_continuation_20261024/author/retry_after/record.py": {
+      "sha256": "03f12f903df82be88c97ad136fa2e9cd8f9d2ba0f2a6432b271a3a2d6d379757",
+      "bytes": 1078
+    }
+  },
+  "production_and_tests": {
+    "include/bzs/web.hpp": "5ab90be7686d59edee1e404a07cdc8f994c180750b0671e21736a91faa6d6cb2",
+    "python/bzs/probe.py": "c9428ec621d26f4495a7426c3a1e83110a1b00cab9c7393f6d6786479777848d",
+    "python/bzs/worker/sources/__init__.py": "cad2a941a86126b7919e56940abfe125f234aa40c25eb83898e1665dfa69f816",
+    "python/bzs/worker/sources/base.py": "1d92a8ee66c0e084fdaa51e25f3236a2b441bd1e1352f1126bae9448b2917621",
+    "python/bzs/worker/sources/review.py": "83611553d36a148c29b54e557c63ebccf618abd7250a0b430ddfcc43853042eb",
+    "python/tests/test_probe.py": "20b840bbd5a15579ae14dca50df0c973519ee05544848fe9583d2d217b544f6c",
+    "python/tests/test_sources.py": "0414ea763197beae7c4df13bf6b44290dcd7048362c8f082755a13a99fdc51c3",
+    "src/store.cpp": "9071c7325be1d5bcb80fba92b50d7c786d91c01203637d11a03f783dfba1aa40",
+    "src/web.cpp": "48474fd5393627a7238777dfa106faf14346da771b5747445d534ee06235b80e",
+    "tests/unit.cpp": "4115e63ead467ce559029739003c6b8e74b8b69df18fa1b698af0fa349b26d72"
+  },
+  "author_scope": "P2-9 focused validation, independent and full integrated gates not claimed"
+}

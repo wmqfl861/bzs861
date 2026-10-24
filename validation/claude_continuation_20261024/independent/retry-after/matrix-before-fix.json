@@ -1,0 +1,52 @@
+[
+  {
+    "label": "baseline",
+    "compile_argv": [
+      "g++",
+      "-std=c++20",
+      "-I/tmp/bzs-search-lock-baseline/include",
+      "/tmp/bzs-independent-next-retry/clock_matrix.cpp",
+      "/tmp/bzs-continuation-baseline/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-next-retry/matrix-baseline"
+    ],
+    "argv": [
+      "/tmp/bzs-independent-next-retry/matrix-baseline"
+    ],
+    "exit_code": 0,
+    "source_sha256": "136c210f8ff3aa46962c60b081dd86236a16c367f0936f6617851b869f9e29e0",
+    "library_sha256": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "binary_sha256": "f0df8a2fd38d4e486d77d6a45ef4847055a84f7ec2770a69f5b61d0ec06a57b6",
+    "log_sha256": "f3208236e436a97b5d8e16ddf9d7440780f4f3df07649f2bb007d11a8a91a39a"
+  },
+  {
+    "label": "743",
+    "compile_argv": [
+      "g++",
+      "-std=c++20",
+      "-I/tmp/bzs-independent-next-retry/headers-743",
+      "/tmp/bzs-independent-next-retry/clock_matrix.cpp",
+      "/tmp/bzs-independent-next-retry/libbzs_core-743.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-lxml2",
+      "-ljson-c",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-next-retry/matrix-743"
+    ],
+    "argv": [
+      "/tmp/bzs-independent-next-retry/matrix-743"
+    ],
+    "exit_code": 1,
+    "source_sha256": "136c210f8ff3aa46962c60b081dd86236a16c367f0936f6617851b869f9e29e0",
+    "library_sha256": "f95ae7f89bbdf8c4178f6def755822eea2cd776a55355fe318507704b852986a",
+    "binary_sha256": "811dd77b32bdb8d0e8aae840242c6ce092b33d7089da2ab04eeb51ad10d30d8d",
+    "log_sha256": "e97ed4721ab8717e5fa7525e9d4d02d10124a7ac1e0e78bb652501a7d79669eb"
+  }
+]

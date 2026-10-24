@@ -10,7 +10,7 @@ from typing import Any
 
 from ..fetch import Fetcher
 from .apis import Arxiv, GitHubRepos, HackerNews, Marginalia, StackExchange, Wikipedia
-from .base import Adapter, SourceError
+from .base import Adapter, SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
 from .review import SourceReviewError, require_review, validate_spec
 from .engines import BaiduHtml, BingHtml, DuckDuckGoHtml, MojeekHtml, So360Html, SogouHtml
 
@@ -126,7 +126,8 @@ class SourceSet:
                         if exc.status in ("blocked", "challenge"):
                             cooldown = spec.get("cooldown_blocked_ms", 30 * 60 * 1000)
                         elif exc.status == "rate_limited":
-                            cooldown = max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), exc.retry_after_ms)
+                            cooldown = min(SOURCE_RETRY_AFTER_LIMIT_MS,
+                                           max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), exc.retry_after_ms))
                         else:
                             cooldown = spec.get("cooldown_error_ms", 5 * 60 * 1000)
                         # Set the worker fence before releasing its semaphore, so queued
@@ -143,6 +144,9 @@ class SourceSet:
                 out["http_status"] = exc.http_status
             if exc.retry_after_ms:
                 out["retry_after_ms"] = exc.retry_after_ms
+            if exc.retry_after_clamped:
+                out["retry_after_clamped"] = True
+                out["retry_after_limit_ms"] = SOURCE_RETRY_AFTER_LIMIT_MS
         except asyncio.TimeoutError:
             out = {"status": "timeout", "error": "source timed out", "hits": []}
         except Exception as exc:  # adapter bugs must not take the worker down

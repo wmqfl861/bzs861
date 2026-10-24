@@ -1,0 +1,50 @@
+{
+  "prior_fix_commit": "743f79d72698897041b8eb1cc2db85dc5ee6b990",
+  "baseline_commit": "59081e14fdda765844031e13f874e588334f1a36",
+  "scope": "Follow-up fixes independently discovered rollback shortening. Author unit suite and preserved legacy replay only; full integrated CTest/pytest/15-native sanitizer gates are recorded separately by root.",
+  "files": {
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/src/store.cpp": "68d7dd557c2b5e703af68e7283ac0a650b0ba84c77985e9e3e7d89ddbb65890d",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/tests/unit.cpp": "28a7cb871cccc12a1101a5335b9c5625bbc187dffb220047dbc14f44baf0b881",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/docs/SOURCE_BACKOFF.md": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build/libbzs_core.a": "c777930bbaab84631aca5b85904497b4d3f083fc3f96c13e881438c5f73c9bac",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build/bzs_tests": "5a7fc1f1e307cf1224f97e3e58197c245b3d564d4b53e37a1b2c67916a3e0f30",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build-asan/libbzs_core.a": "9ddd7d58d165eb55490ca877c5a01c0102ce314e96168ddcc99c29e878ab2396",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/build-asan/bzs_tests": "56dd032cc078f4182666e85137c861e7b04288c785b39418673bfd1e78306bb1",
+    "/tmp/bzs-independent-next-retry/libbzs_core-743.a": "f95ae7f89bbdf8c4178f6def755822eea2cd776a55355fe318507704b852986a",
+    "/tmp/bzs-next-retry-baseline/clock-fix-743-tests": "01336dee14aeef15a937580bf4f906a6c65c4c79f19bf12ad20e63759c774d15",
+    "/tmp/bzs-next-retry-baseline/libbzs_core.a": "f85a24a621742fa2e8541559e270321a7f3fffe6991018460502bce49bdd74c9",
+    "/tmp/bzs-next-retry-baseline/legacy-old": "88ea8a74af55e232f71cebce529c3ee6d6d2ca9da248a97d30a224176f004c2a",
+    "/tmp/bzs-next-retry-baseline/legacy-clock-fix": "07018187d913eccc16cc5bf4e743529aaadfd0ed7910cf1c956b5d9d3b0cd085",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/validation/claude_continuation_20261024/author/retry_after/legacy_probe.cpp": "8ef4aa57ff28602680e849e88c4663e6795c17db693780571d81bac6dec7f9ba",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/validation/claude_continuation_20261024/author/retry_after/clock-rollback-before-fix.cpp": "25b4e6d32a0463311f781dcf1e1c85788d6c32c0da8d1ace033397c671f6ba35",
+    "/workspace/scratch/e2371129386d/bzs861-next-retry/validation/claude_continuation_20261024/author/retry_after/clock-rollback-before-fix.json": "4513bdd2b635ee1d5406c2927319d619be572e0f6ddb22933a6922d334830de7"
+  },
+  "command_binding": {
+    "clock-fix-743": "Current formal unit.cpp, unchanged 743 public headers, linked to independently preserved libbzs_core-743.a; inputs map in command metadata describes author files, not the linked production implementation.",
+    "clock-fix-debug": "Current formal unit.cpp and rebuilt Debug current production.",
+    "clock-fix-asan": "Same source/test input as Debug, own ASan/UBSan build with LSan enabled; not root build-asan.",
+    "clock-fix-legacy-old-seed": "Actual baseline590 library linked into preserved legacy-old, creates a fresh on-disk 31-year state.",
+    "clock-fix-legacy-current": "Current library linked into legacy-clock-fix inspects and persists bounded repair.",
+    "clock-fix-legacy-old-reopen": "Actual baseline590 program reopens repaired DB and observes the same persisted deadline."
+  },
+  "results": {
+    "clock-fix-743": {
+      "passed": 92,
+      "tests": 96,
+      "assertions": 1485,
+      "exit_code": 1
+    },
+    "clock-fix-debug": {
+      "passed": 96,
+      "tests": 96,
+      "assertions": 1638,
+      "exit_code": 0
+    },
+    "clock-fix-asan": {
+      "passed": 96,
+      "tests": 96,
+      "assertions": 1638,
+      "exit_code": 0
+    }
+  }
+}

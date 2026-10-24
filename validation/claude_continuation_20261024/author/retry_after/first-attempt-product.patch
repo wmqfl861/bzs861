@@ -1,0 +1,600 @@
+diff --git a/docs/SOURCE_BACKOFF.md b/docs/SOURCE_BACKOFF.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..96bcb92417c9ff8088d8d21b4b0379b46901a466
+--- /dev/null
++++ b/docs/SOURCE_BACKOFF.md
+@@ -0,0 +1,38 @@
++# 搜索来源退避上限
++
++搜索来源的 `Retry-After` 和 API `backoff` 每次最多形成 **24 小时**的新限流等待。秒数和 HTTP-date 在正常范围内按原值保留；配置的 `cooldown_rate_ms` 与该等待取较大值。超过上限的值不会变成数十年的持久冷却，也不会改变来源的配置启用、审核或发布状态。
++
++这个上限仅适用于搜索来源。通用 HTTP `Retry-After` 解析、自动站点/robots 的等待与拒绝规则保持原有合同。遇限流仍返回 `rate_limited`，本次搜索为 partial；不会立即重试、切换身份或自动启用来源。
++
++## 对外诊断
++
++同步 `web.search` 的来源结果，对 `rate_limited` 增加以下兼容字段。持久搜索执行复用同一退避策略，内部保存完整来源结果；本次不新增会话诊断接口。
++
++| 字段 | 含义 |
++| --- | --- |
++| `retry_after_ms` | 经过 0–86400000 毫秒边界约束的上游要求；缺失、负数或非整数旧 Worker 字段按 0 处理 |
++| `cooldown_ms` | 本次配置冷却与有界上游等待的较大值；不是当前共享预算剩余等待的替代值 |
++| `retry_after_clamped` | 上游值超长，或 Worker 已报告截断；无论旧 Worker 是否提供此字段，Core 都独立检查数值 |
++| `retry_after_limit_ms` | 发生截断时为 86400000 |
++
++截断事件的 `error` 和 `web.sources` 的 `state.last_error` 以 `E_RETRY_AFTER_CLAMPED:` 标识。后续响应仍按原逻辑更新最后状态/错误；这些字段不是永久事件日志。`state.cooldown_remaining_ms` 继续报告当前持久共享预算的真实剩余等待。
++
++Worker 在释放共享来源并发槽之前安装同样有界的冷却栅栏。已排队的同服务适配器在期限前不能开始新请求。Source manifest 的三个 `cooldown_*_ms` 字段在 Worker 和 Core 均要求整数 0–86400000，布尔值不视为整数。
++
++S0 Probe 对截断也记录 `retry_after_clamped` / `retry_after_limit_ms`。限流后本次 probe 仍停止该共享服务预算；即使冷却已到期，resume 也不会重新执行已停止、已完成或结果未知的工作。
++
++## 既有冷却与旧数据库
++
++现有失败退避取最大期限，晚到成功不能取消冷却。原 `parse_error` 的配置退避仍为 `cooldown_error_ms × 3`，最大 72 小时；在途的后续 429 或成功不会把这个合法期限缩短成 24 小时。
++
++旧 schema13 没有记录每次失败种类，最后状态也可能被晚到响应覆盖。因此，自动修复只处理**剩余时间超过原所有合法配置最大值 72 小时**的明确异常记录：
++
++- 最后状态为 `rate_limited` 时，修复为最后实际请求时间加 24 小时。
++- 其他最后状态保留原最大 72 小时边界。
++- 没有有效旧请求时间时，使用首次修复时刻作固定锚点；未来请求时间不会把锚点推到当前时间之后。
++
++修复在 `source_admit`、`source_report` 或 `web.sources` 读取调度状态时，以事务写回一个固定期限，并以 `E_SOURCE_COOLDOWN_CLAMPED:` 标记最后错误。重复查询、重启或其他 owner 查看状态不会滑动续期。旧请求已经足够久远时，修复期限可能已经过去，来源下一次请求仍须通过原启用/审核、最小间隔和日配额检查。
++
++**24–72 小时的模糊存量记录保留**，因为它也可能是合法 parse-error 退避再收到在途 429 后产生；没有完整失败历史时不擅自缩短。来源身份、调用计数、配额、幂等数据和 schema 版本保持。时间加法/剩余时间计算采用有界或饱和运算，避免异常 Worker 值溢出后清掉等待。
++
++本轮只证明离线正式回归中的边界与状态机行为，不代表已启用或实测任何真实来源。
+diff --git a/include/bzs/web.hpp b/include/bzs/web.hpp
+index d8a19de71fb85ad63b1f9e5dcca69fd2c967ce6a..77a8962c108b3acb27fbdd173edd017a5ae1efc9 100644
+--- a/include/bzs/web.hpp
++++ b/include/bzs/web.hpp
+@@ -11,6 +11,8 @@
+ #include <string_view>
+ #include <vector>
+ namespace bzs {
++  // Search-source backoff is bounded independently of automatic-site/robots policy.
++  inline constexpr std::int64_t source_retry_after_limit_ms=24LL*60*60*1000;
+   // Worker RPC port. searchd implements it over loopback HTTP; tests use a fake.
+   struct WorkerPort {
+     virtual ~WorkerPort()=default;
+diff --git a/python/bzs/probe.py b/python/bzs/probe.py
+index 798a732c8bdaa05f6c63f3ac3ff6e54b10eac60a..a5b92dc059bfae4cac8c7c68104c547660463034 100644
+--- a/python/bzs/probe.py
++++ b/python/bzs/probe.py
+@@ -20,7 +20,7 @@ from .worker.fetch import Fetcher
+ from .worker.netguard import NetPolicy
+ from .worker.sources import SourceSet, load_manifest
+ from .worker.sources.review import SourceReviewError, require_review
+-from .worker.sources.base import SourceError
++from .worker.sources.base import SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
+ 
+ 
+ def _utc_now() -> str:
+@@ -291,6 +291,8 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
+                     except SourceError as exc:
+                         response, retry_ms = exc.result, exc.retry_after_ms
+                         row.update(status=exc.status, error=str(exc)[:300], retry_after_ms=retry_ms)
++                        if exc.retry_after_clamped:
++                            row.update(retry_after_clamped=True, retry_after_limit_ms=SOURCE_RETRY_AFTER_LIMIT_MS)
+                     except asyncio.TimeoutError:
+                         row.update(status="timeout", error="source timed out")
+                     except asyncio.CancelledError:
+@@ -315,7 +317,8 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
+                         if row["status"] in ("blocked", "challenge"):
+                             cooldown = spec.get("cooldown_blocked_ms", 30 * 60 * 1000)
+                         elif row["status"] == "rate_limited":
+-                            cooldown = max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), retry_ms)
++                            cooldown = min(SOURCE_RETRY_AFTER_LIMIT_MS,
++                                           max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), retry_ms))
+                         budget["cooldown_until_ms"] = max(budget["cooldown_until_ms"], _now_ms() + cooldown)
+                     # The response and stop decision are durable before another queued
+                     # adapter in the same service obtains its concurrency slot.
+diff --git a/python/bzs/worker/sources/__init__.py b/python/bzs/worker/sources/__init__.py
+index e67cb36754601df10202da09185deeee87c06d35..54955790ec236010650547add78bc7008b589f6b 100644
+--- a/python/bzs/worker/sources/__init__.py
++++ b/python/bzs/worker/sources/__init__.py
+@@ -10,7 +10,7 @@ from typing import Any
+ 
+ from ..fetch import Fetcher
+ from .apis import Arxiv, GitHubRepos, HackerNews, Marginalia, StackExchange, Wikipedia
+-from .base import Adapter, SourceError
++from .base import Adapter, SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
+ from .review import SourceReviewError, require_review, validate_spec
+ from .engines import BaiduHtml, BingHtml, DuckDuckGoHtml, MojeekHtml, So360Html, SogouHtml
+ 
+@@ -126,7 +126,8 @@ class SourceSet:
+                         if exc.status in ("blocked", "challenge"):
+                             cooldown = spec.get("cooldown_blocked_ms", 30 * 60 * 1000)
+                         elif exc.status == "rate_limited":
+-                            cooldown = max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), exc.retry_after_ms)
++                            cooldown = min(SOURCE_RETRY_AFTER_LIMIT_MS,
++                                           max(spec.get("cooldown_rate_ms", 10 * 60 * 1000), exc.retry_after_ms))
+                         else:
+                             cooldown = spec.get("cooldown_error_ms", 5 * 60 * 1000)
+                         # Set the worker fence before releasing its semaphore, so queued
+@@ -143,6 +144,9 @@ class SourceSet:
+                 out["http_status"] = exc.http_status
+             if exc.retry_after_ms:
+                 out["retry_after_ms"] = exc.retry_after_ms
++            if exc.retry_after_clamped:
++                out["retry_after_clamped"] = True
++                out["retry_after_limit_ms"] = SOURCE_RETRY_AFTER_LIMIT_MS
+         except asyncio.TimeoutError:
+             out = {"status": "timeout", "error": "source timed out", "hits": []}
+         except Exception as exc:  # adapter bugs must not take the worker down
+diff --git a/python/bzs/worker/sources/base.py b/python/bzs/worker/sources/base.py
+index 6c6f95253e13d9aaea63a9f4f2ac65357b5a085a..1b094d3f0ca6abfc5b5d20c93d5651e9be1a97fd 100644
+--- a/python/bzs/worker/sources/base.py
++++ b/python/bzs/worker/sources/base.py
+@@ -24,6 +24,7 @@ from ..extract import looks_like_challenge
+ from ..fetch import FetchResult, Fetcher, decode_body
+ 
+ API_USER_AGENT = "bzs861/0.1 (personal search tool; https://github.com/wmqfl861/bzs861)"
++SOURCE_RETRY_AFTER_LIMIT_MS = 24 * 60 * 60 * 1000
+ _TAGS = re.compile(r"<[^>]+>")
+ _SPACE = re.compile(r"\s+")
+ 
+@@ -44,7 +45,11 @@ class SourceError(Exception):
+         super().__init__(message)
+         self.status = status
+         self.http_status = http_status
+-        self.retry_after_ms = retry_after_ms
++        # This exception belongs to search adapters. Keep the general HTTP
++        # parser below unchanged: robots/site requests have a different policy.
++        self.retry_after_clamped = status == "rate_limited" and retry_after_ms > SOURCE_RETRY_AFTER_LIMIT_MS
++        self.retry_after_ms = (min(max(0, retry_after_ms), SOURCE_RETRY_AFTER_LIMIT_MS)
++                               if status == "rate_limited" else retry_after_ms)
+         self.result: FetchResult | None = None
+ 
+ 
+diff --git a/python/bzs/worker/sources/review.py b/python/bzs/worker/sources/review.py
+index 6518d93ff8011e18ea5f1a3753ad2181fd174159..b2b36125130d70ebc184366a3d5e48e21434807c 100644
+--- a/python/bzs/worker/sources/review.py
++++ b/python/bzs/worker/sources/review.py
+@@ -74,6 +74,9 @@ def validate_spec(spec: dict[str, Any]) -> None:
+     _need(_integer(limits.get("max_concurrency"), 1, 100), "invalid source concurrency")
+     _need(_integer(spec.get("min_interval_ms", 1000), 0, 3600000), "invalid source interval")
+     _need(_integer(spec.get("daily_cap", 500), 0, 1000000), "invalid daily source quota")
++    for key in ("cooldown_blocked_ms", "cooldown_rate_ms", "cooldown_error_ms"):
++        if key in spec:
++            _need(_integer(spec[key], 0, 86400000), "invalid source cooldown: " + key)
+     _need(limits.get("min_interval_ms") == spec.get("min_interval_ms", 1000) and
+           type(limits.get("min_interval_ms")) is int, "source interval differs from contract")
+     _need(limits.get("request_quota") == spec.get("daily_cap", 500) and
+diff --git a/python/tests/test_probe.py b/python/tests/test_probe.py
+index 528920dfe9d729bbd9abcb949b9c7180c6f0cb28..09e1b38981f5ace3841254a9c544b35661fc2ceb 100644
+--- a/python/tests/test_probe.py
++++ b/python/tests/test_probe.py
+@@ -212,6 +212,32 @@ async def test_shared_service_reservations_and_stops_survive_completed_resume(tm
+     assert resumed["budgets"]["shared-fixture"] == budget
+ 
+ 
++async def test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source(tmp_path, scripted, monkeypatch):
++    manifest, golden, out = inputs(tmp_path, sources=2, quota=2, shared=True)
++    now = [1000000]
++    monkeypatch.setattr(probe_module, "_now_ms", lambda: now[0])
++
++    async def limited(source, query, limit):
++        _, response = result(query)
++        error = SourceError("rate_limited", "HTTP 429", 429, 999999999000)
++        response.http_status = 429
++        error.result = response
++        raise error
++
++    scripted.handler = limited
++    report = await run_probe(manifest, golden, out)
++    assert len(scripted.calls) == 1
++    row = report["rows"][0]
++    assert row["retry_after_ms"] == row["retry_after_limit_ms"] == 86400000
++    assert row["retry_after_clamped"] is True
++    budget = copy.deepcopy(report["budgets"]["shared-fixture"])
++    assert budget["cooldown_until_ms"] == now[0] + 86400000
++    assert budget["used"] == 1 and budget["stopped"] and budget["stop_reason"] == "rate_limited"
++    now[0] += 2 * 86400000
++    resumed = await run_probe(manifest, golden, out, resume=True)
++    assert len(scripted.calls) == 1 and resumed["budgets"]["shared-fixture"] == budget
++
++
+ async def test_shared_service_quota_counts_both_source_aliases(tmp_path, scripted):
+     manifest, golden, out = inputs(tmp_path, sources=2, quota=2, shared=True)
+ 
+diff --git a/python/tests/test_sources.py b/python/tests/test_sources.py
+index cf084bcda1aa1515223068517f70cd1e093717e7..fe7af46e961622226f04ed182c1746dde3a15ffd 100644
+--- a/python/tests/test_sources.py
++++ b/python/tests/test_sources.py
+@@ -6,6 +6,7 @@ import json
+ import time
+ from email.utils import format_datetime
+ from pathlib import Path
++from types import SimpleNamespace
+ 
+ import pytest
+ 
+@@ -106,6 +107,64 @@ def test_http_date_retry_after_is_preserved_for_source_cooldown(monkeypatch):
+     assert retry_after_ms({"retry-after": "3600"}, now=now.timestamp()) == 3600000
+ 
+ 
++@pytest.mark.parametrize("header,expected,clamped", [
++    ("", 0, False), ("0", 0, False), ("120", 120000, False),
++    ("86400", 86400000, False), ("86401", 86400000, True),
++    ("999999999", 86400000, True), pytest.param("9" * 20000, 86400000, True, id="huge-decimal"),
++    ("-1", 0, False), ("1.5", 0, False), ("１２３", 0, False),
++])
++def test_search_retry_after_seconds_are_bounded_and_explicit(header, expected, clamped):
++    with pytest.raises(SourceError) as caught:
++        run(BingHtml, "limited", status=429, headers={"retry-after": header})
++    assert caught.value.retry_after_ms == expected
++    assert caught.value.retry_after_clamped is clamped
++    assert caught.value.status == "rate_limited"
++
++
++@pytest.mark.parametrize("seconds", [-1, 120, 86400, 86401, 999999999])
++def test_search_retry_after_http_dates_use_the_same_bound(monkeypatch, seconds):
++    now = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
++    monkeypatch.setattr("bzs.worker.sources.base.time.time", lambda: now.timestamp())
++    header = format_datetime(now + dt.timedelta(seconds=seconds), usegmt=True)
++    with pytest.raises(SourceError) as caught:
++        run(Wikipedia, "limited", status=429, headers={"retry-after": header})
++    assert caught.value.retry_after_ms == min(86400000, max(0, seconds * 1000))
++    assert caught.value.retry_after_clamped is (seconds > 86400)
++
++
++@pytest.mark.parametrize("body,header", [
++    ({"items": [], "backoff": 999999999}, "120"),
++    ({"items": [], "backoff": 120}, "999999999"),
++    ({"error_id": 502, "error_name": "throttle_violation", "backoff": 999999999}, "120"),
++])
++def test_search_api_backoff_and_headers_cannot_extend_the_source_bound(body, header):
++    with pytest.raises(SourceError) as caught:
++        run(StackExchange, json.dumps(body), ctype="application/json", headers={"retry-after": header})
++    assert caught.value.status == "rate_limited"
++    assert caught.value.retry_after_ms == 86400000 and caught.value.retry_after_clamped
++
++
++def test_search_backoff_cap_does_not_change_robots_retry_after():
++    from bzs.worker.robots import response_record
++
++    # The common parser remains faithful to the site policy's longer delay.
++    assert retry_after_ms({"retry-after": "172800"}) == 172800000
++    record, retry = response_record(origin="https://fixture.example", status="http_error", http_status=429,
++                                   headers={"retry-after": "172800"}, body=b"limited", truncated=False,
++                                   now_ms=1000000)
++    assert retry == 172800000 and record["state"] == "deny_all"
++    assert record["expires_at_ms"] == 1000000 + 86400000
++
++
++@pytest.mark.parametrize("key", ["cooldown_blocked_ms", "cooldown_rate_ms", "cooldown_error_ms"])
++@pytest.mark.parametrize("value", [-1, 86400001, True, "1000", 1.5, None])
++def test_worker_rejects_invalid_source_cooldown_configuration(key, value):
++    spec = fakeweb.manifest(1)["sources"][0]
++    spec[key] = value
++    with pytest.raises(SourceReviewError, match="invalid source cooldown"):
++        SourceSet([spec], None)
++
++
+ def test_default_manifest_has_no_enabled_or_executable_sources():
+     specs = load_manifest(Path(__file__).resolve().parents[2] / "config" / "sources.json")
+     assert specs and all(spec["enabled"] is False and spec["contract"]["enabled"] is False for spec in specs)
+@@ -188,6 +247,36 @@ def shared_budget_specs(interval_ms=0):
+     return specs
+ 
+ 
++async def test_bounded_retry_after_keeps_shared_worker_fence_until_exact_expiry(monkeypatch):
++    now = [1000.0]
++    monkeypatch.setattr("bzs.worker.sources.time", SimpleNamespace(monotonic=lambda: now[0]))
++    sources = SourceSet(shared_budget_specs(), None)
++    calls = []
++
++    async def limited(*args):
++        calls.append("ddg")
++        raise SourceError("rate_limited", "HTTP 429", 429, 999999999000)
++
++    async def other(*args):
++        calls.append("bing")
++        return [], res("")
++
++    monkeypatch.setattr(sources.adapters["ddg"], "search", limited)
++    monkeypatch.setattr(sources.adapters["bing"], "search", other)
++    limited_result = await sources.run_one("ddg", "fixture", 5, None, 1)
++    assert limited_result["status"] == "rate_limited"
++    assert limited_result["retry_after_ms"] == limited_result["retry_after_limit_ms"] == 86400000
++    assert limited_result["retry_after_clamped"] is True
++    assert sources.cooldown_until["fixture-service"] == 87400.0
++    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "skipped"
++    now[0] = 87399.999
++    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "skipped"
++    assert calls == ["ddg"]
++    now[0] = 87400.0
++    assert (await sources.run_one("bing", "fixture", 5, None, 1))["status"] == "empty"
++    assert calls == ["ddg", "bing"]
++
++
+ async def test_shared_budget_spaces_actual_fast_adapter_starts_across_hosts(monkeypatch):
+     sources = SourceSet(shared_budget_specs(80), None)
+     starts = []
+diff --git a/src/store.cpp b/src/store.cpp
+index 694c1fd485a80a72afe64bd7ae5391bbdf09f394..4b291055ddfbd4d038656fa02223364a79da0d75 100644
+--- a/src/store.cpp
++++ b/src/store.cpp
+@@ -74,6 +74,45 @@ namespace bzs {
+         done_=true;
+       }
+     };
++    std::int64_t source_cooldown_until(std::int64_t now,std::int64_t delay) {
++      delay=std::max<std::int64_t>(0,delay);
++      return now>std::numeric_limits<std::int64_t>::max()-delay?
++        std::numeric_limits<std::int64_t>::max():now+delay;
++    }
++    std::int64_t source_cooldown_remaining(std::int64_t until,std::int64_t now) {
++      if(until<=now)return 0;
++      if(now<0&&until>std::numeric_limits<std::int64_t>::max()+now)
++        return std::numeric_limits<std::int64_t>::max();
++      return until-now;
++    }
++    void repair_source_cooldowns(sqlite3* db,std::int64_t now,const std::string* id=nullptr) {
++      struct Repair { std::string id,error;std::int64_t until; };
++      std::vector<Repair> repairs;
++      {
++        Stmt rows(db,id?
++          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error FROM source_state WHERE source_id=?":
++          "SELECT source_id,last_request_at,last_status,cooldown_until,last_error FROM source_state");
++        if(id)rows.bind(1,*id);
++        while(rows.step()) {
++          // An older late success can hide the original failure kind. Preserve
++          // the existing maximum parse-error backoff (3 x 24h) in that case.
++          // A later 429 can likewise follow a valid 72h parse-error fence.
++          // Without historical failure kinds, only >72h is unambiguously old
++          // invalid state; never shorten a legitimate MAX-combined deadline.
++          if(rows.num(3)<=source_cooldown_until(now,source_retry_after_limit_ms*3))continue;
++          const auto maximum=source_retry_after_limit_ms*(rows.text(2)=="rate_limited"?1:3);
++          // Persist one fixed deadline, anchored to the actual last attempt
++          // when it exists. Reading state again must not renew the cooldown.
++          const auto anchor=rows.num(1)>0?std::min(rows.num(1),now):now;
++          repairs.push_back({rows.text(0),utf8_prefix("E_SOURCE_COOLDOWN_CLAMPED: legacy source deadline exceeded bounded backoff; "+rows.text(4),300),
++                             source_cooldown_until(anchor,maximum)});
++        }
++      }
++      for(const auto& repair:repairs) {
++        Stmt update(db,"UPDATE source_state SET cooldown_until=?,last_error=? WHERE source_id=?");
++        update.bind(1,repair.until);update.bind(2,repair.error);update.bind(3,repair.id);update.step();
++      }
++    }
+     std::int64_t scalar(sqlite3*d, const std::string&sql) {
+       Stmt s(d, sql);
+       require(s.step(), "E_STORAGE", "Scalar missing", 500);
+@@ -1581,6 +1620,7 @@ namespace bzs {
+     Stmt add(db_, "INSERT OR IGNORE INTO source_state(source_id)VALUES(?)");
+     add.bind(1, id);
+     add.step();
++    repair_source_cooldowns(db_,now,&id);
+     Stmt s(db_, "SELECT cooldown_until,last_request_at,day,requests_today FROM source_state WHERE source_id=?");
+     s.bind(1, id);
+     require(s.step(), "E_STORAGE", "Missing source state", 500);
+@@ -1607,27 +1647,36 @@ namespace bzs {
+     Stmt add(db_, "INSERT OR IGNORE INTO source_state(source_id)VALUES(?)");
+     add.bind(1, id);
+     add.step();
++    repair_source_cooldowns(db_,now,&id);
+     bool ok=status=="ok"||status=="empty";
++    const auto maximum=source_retry_after_limit_ms*(status=="parse_error"?3:1);
++    const bool clamped=!ok&&cooldown_ms>maximum;
++    cooldown_ms=std::clamp(cooldown_ms,std::int64_t{0},maximum);
++    auto diagnostic=error;
++    if(clamped&&!diagnostic.starts_with("E_RETRY_AFTER_CLAMPED:"))
++      diagnostic="E_RETRY_AFTER_CLAMPED: source backoff exceeded bounded policy; "+diagnostic;
+     // A slow success may arrive after a newer CAPTCHA/rate-limit response.
+     // It must not cancel a cooldown that is still in force.
+     Stmt u(db_, ok?
+       "UPDATE source_state SET failures=0,last_status=?,last_error=?,last_ok_at=? WHERE source_id=?":
+       "UPDATE source_state SET failures=failures+1,last_status=?,last_error=?,cooldown_until=MAX(cooldown_until,?) WHERE source_id=?");
+     u.bind(1, status);
+-    u.bind(2, utf8_prefix(error, 300));
+-    u.bind(3, ok?now:(cooldown_ms>0?now+cooldown_ms:0));
++    u.bind(2, utf8_prefix(diagnostic, 300));
++    u.bind(3, ok?now:(cooldown_ms>0?source_cooldown_until(now,cooldown_ms):0));
+     u.bind(4, id);
+     u.step();
+     tx.commit();
+   }
+   Json Store::source_states() {
+     std::lock_guard lock(mutex_);
++    Tx tx(db_);
+     Json out=Json::object();
+     auto now=clock_();
++    repair_source_cooldowns(db_,now);
+     Stmt s(db_, "SELECT source_id,cooldown_until,failures,last_status,last_error,last_ok_at,last_request_at,day,requests_today FROM source_state");
+     while(s.step()) {
+       Json j=Json::object();
+-      j.set("cooldown_remaining_ms", std::max<std::int64_t>(0, s.num(1)-now));
++      j.set("cooldown_remaining_ms", source_cooldown_remaining(s.num(1),now));
+       j.set("consecutive_failures", s.num(2));
+       j.set("last_status", s.text(3));
+       j.set("last_error", s.text(4));
+@@ -1636,6 +1685,7 @@ namespace bzs {
+       j.set("requests_today", s.num(7)==now/86400000?s.num(8):0);
+       out.set(s.text(0), j);
+     }
++    tx.commit();
+     return out;
+   }
+   Json Store::backup(const std::filesystem::path& dst) {
+diff --git a/src/web.cpp b/src/web.cpp
+index 6a2fa38ca7cb723df5aba617360c7203ea6d321e..a117b32300b9ed5a040127376590b73599d5aaac 100644
+--- a/src/web.cpp
++++ b/src/web.cpp
+@@ -619,7 +619,20 @@ namespace bzs {
+         }
+         std::int64_t cooldown=0;
+         if(status=="blocked"||status=="challenge")cooldown=s->cooldown_blocked_ms;
+-        else if(status=="rate_limited")cooldown=std::max(s->cooldown_rate_ms, std::clamp(opt_int(x, "retry_after_ms", 0),std::int64_t{0},(std::int64_t{1}<<62)-1));
++        else if(status=="rate_limited") {
++          const auto reported=opt_int(x,"retry_after_ms",0);
++          const auto retry=std::clamp(reported,std::int64_t{0},source_retry_after_limit_ms);
++          const bool clamped=reported>source_retry_after_limit_ms||
++            (x.has("retry_after_clamped")&&x.at("retry_after_clamped").is_bool()&&x.at("retry_after_clamped").flag());
++          cooldown=std::max(s->cooldown_rate_ms,retry);
++          r.set("retry_after_ms",retry);
++          r.set("cooldown_ms",cooldown);
++          r.set("retry_after_clamped",clamped);
++          if(clamped) {
++            r.set("retry_after_limit_ms",source_retry_after_limit_ms);
++            error="E_RETRY_AFTER_CLAMPED: source backoff limited to 24 hours; "+error;
++          }
++        }
+         else if(status=="parse_error")cooldown=s->cooldown_error_ms*3;
+         else if(status!="ok"&&status!="empty")cooldown=s->cooldown_error_ms;
+         store_.source_report(s->budget_key, status.empty()?"error":status, error, cooldown);
+diff --git a/tests/unit.cpp b/tests/unit.cpp
+index 5fb4759ce6856cb42526968137297d0b54778438..d5f53d8f3622997fb1ec2f0cea562593a0824782 100644
+--- a/tests/unit.cpp
++++ b/tests/unit.cpp
+@@ -10,6 +10,7 @@
+ #include <fstream>
+ #include <functional>
+ #include <iostream>
++#include <limits>
+ #include <memory>
+ #include <set>
+ #include <thread>
+@@ -1424,6 +1425,143 @@ namespace {
+     now+=60000;
+     CHECK(s.source_admit("x", 1000, 2)=="");
+   }
++  TEST(source_retry_after_is_bounded_persistent_and_saturating) {
++    Temp t;
++    std::int64_t now=5000000;
++    {
++      Store store(t.path/"db",[&]{return now;});
++      CHECK(store.source_admit("shared",0,50).empty());
++      store.source_report("shared","rate_limited","429",std::numeric_limits<std::int64_t>::max());
++      const auto state=store.source_states().at("shared");
++      CHECK(state.at("cooldown_remaining_ms").num()==86400000);
++      CHECK(state.at("last_error").str().starts_with("E_RETRY_AFTER_CLAMPED:"));
++      CHECK(state.at("consecutive_failures").num()==1);
++      CHECK(state.at("requests_today").num()==1);
++      store.source_report("shared","ok","",0);
++      CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==86400000);
++    }
++    now+=86400000-1;
++    {
++      Store store(t.path/"db",[&]{return now;});
++      CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==1);
++      CHECK(store.source_admit("shared",0,50)=="cooldown");
++      ++now;
++      CHECK(store.source_admit("shared",0,50).empty());
++    }
++    now=std::numeric_limits<std::int64_t>::max()-1000;
++    Store overflow(t.path/"overflow",[&]{return now;});
++    CHECK(overflow.source_admit("fixture",0,50).empty());
++    overflow.source_report("fixture","rate_limited","429",std::numeric_limits<std::int64_t>::max());
++    CHECK(overflow.source_states().at("fixture").at("cooldown_remaining_ms").num()==1000);
++    now+=1000;
++    CHECK(overflow.source_states().at("fixture").at("cooldown_remaining_ms").num()==0);
++    CHECK(overflow.source_admit("fixture",0,50).empty());
++  }
++  TEST(source_retry_after_does_not_shorten_prior_parse_error_or_ordinary_waits) {
++    Temp t;
++    std::int64_t now=5000000;
++    Store store(t.path/"db",[&]{return now;});
++    CHECK(store.source_admit("shared",0,50).empty());
++    store.source_report("shared","parse_error","parse",3LL*86400000);
++    store.source_report("shared","rate_limited","429",std::numeric_limits<std::int64_t>::max());
++    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==3LL*86400000);
++    store.source_report("shared","ok","",0);
++    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==3LL*86400000);
++    now+=86400000;
++    CHECK(store.source_admit("shared",0,50)=="cooldown");
++    CHECK(store.source_states().at("shared").at("cooldown_remaining_ms").num()==2LL*86400000);
++    CHECK(store.source_admit("ordinary",0,50).empty());
++    store.source_report("ordinary","rate_limited","429",120000);
++    CHECK(store.source_states().at("ordinary").at("cooldown_remaining_ms").num()==120000);
++    store.source_report("ordinary","rate_limited","429",-1);
++    CHECK(store.source_states().at("ordinary").at("cooldown_remaining_ms").num()==120000);
++  }
++  TEST(legacy_source_cooldown_repair_has_a_fixed_anchor_and_keeps_accounting) {
++    Temp t;
++    std::int64_t now=5000000;
++    const auto path=t.path/"db";
++    {
++      Store store(path,[&]{return now;});
++      for(const auto& id:{"rate","late","parse","ambiguous"}) {
++        CHECK(store.source_admit(id,0,50).empty());
++        store.source_report(id,"rate_limited","429",60000);
++      }
++      store.source_report("late","ok","",0);
++      store.source_report("parse","parse_error","parse",3LL*86400000);
++      store.source_report("no-attempt","rate_limited","429",60000);
++    }
++    // On-disk shape and status combinations produced by the old unbounded
++    // code, including a late successful response and a missing attempt stamp.
++    database_exec(path,"UPDATE source_state SET cooldown_until=999999999000 WHERE source_id IN ('rate','late','no-attempt');"
++                       "UPDATE source_state SET cooldown_until=177800000 WHERE source_id='ambiguous';");
++    now+=3600000;
++    {
++      Store store(path,[&]{return now;});
++      CHECK(store.source_admit("rate",0,50)=="cooldown");
++      const auto states=store.source_states();
++      CHECK(states.at("rate").at("cooldown_remaining_ms").num()==86400000-3600000);
++      CHECK(states.at("late").at("cooldown_remaining_ms").num()==3LL*86400000-3600000);
++      CHECK(states.at("parse").at("cooldown_remaining_ms").num()==3LL*86400000-3600000);
++      CHECK(states.at("ambiguous").at("cooldown_remaining_ms").num()==2LL*86400000-3600000);
++      CHECK(states.at("no-attempt").at("cooldown_remaining_ms").num()==86400000);
++      CHECK(states.at("rate").at("last_error").str().starts_with("E_SOURCE_COOLDOWN_CLAMPED:"));
++      CHECK(states.at("rate").at("consecutive_failures").num()==1);
++      CHECK(states.at("rate").at("requests_today").num()==1);
++      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='rate'")==5000000+86400000);
++      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='no-attempt'")==now+86400000);
++    }
++    now+=3600000;
++    {
++      Store store(path,[&]{return now;});
++      const auto states=store.source_states();
++      CHECK(states.at("rate").at("cooldown_remaining_ms").num()==86400000-2*3600000);
++      CHECK(states.at("no-attempt").at("cooldown_remaining_ms").num()==86400000-3600000);
++      CHECK(database_scalar(path,"SELECT cooldown_until FROM source_state WHERE source_id='rate'")==5000000+86400000);
++    }
++    now=5000000+86400000;
++    Store store(path,[&]{return now;});
++    CHECK(store.source_admit("rate",0,50).empty());
++    CHECK(store.source_admit("late",0,50)=="cooldown");
++  }
++  TEST(web_search_bounds_old_worker_retry_after_and_reports_new_worker_clamping) {
++    struct Input { std::int64_t retry;bool present,already_clamped; };
++    const Input inputs[]={{0,false,false},{-1,true,false},{120000,true,false},{86400000,true,false},
++                          {86400001,true,false},{999999999000LL,true,false},
++                          {std::numeric_limits<std::int64_t>::max(),true,false},{86400000,true,true}};
++    for(const auto& input:inputs) {
++      Temp t;
++      std::int64_t now=5000000;
++      Store store(t.path/"db",[&]{return now;});
++      auto manifest=reviewed_sources(obj(R"({"version":1,"sources":[{"id":"fixture","provider":"fixture","index_family":"fixture","capability":"web","kind":"api","enabled":true,"default":true,"min_interval_ms":0,"cooldown_rate_ms":600000}]})"));
++      FakeWorker worker;
++      worker.handler=[&](const std::string& method,const Json&) {
++        CHECK(method=="search.multi");
++        auto result=obj(R"({"results":{"fixture":{"status":"rate_limited","error":"HTTP 429","http_status":429,"hits":[]}}})");
++        if(input.present)result.at("results").at("fixture").set("retry_after_ms",input.retry);
++        if(input.already_clamped)result.at("results").at("fixture").set("retry_after_clamped",true);
++        return result;
++      };
++      WebService web(store,worker,SourceRegistry(manifest));
++      const auto result=web.search("alice",obj(R"({"query":"bounded source retry"})"));
++      const auto row=result.at("sources").at(0);
++      const auto expected=std::min<std::int64_t>(86400000,std::max<std::int64_t>(0,input.retry));
++      const bool clamped=input.retry>86400000||input.already_clamped;
++      CHECK(row.at("status").str()=="rate_limited");
++      CHECK(row.at("retry_after_ms").num()==expected);
++      CHECK(row.at("cooldown_ms").num()==std::max<std::int64_t>(600000,expected));
++      CHECK(row.at("retry_after_clamped").flag()==clamped);
++      if(clamped) {
++        CHECK(row.at("retry_after_limit_ms").num()==86400000);
++        CHECK(row.at("error").str().starts_with("E_RETRY_AFTER_CLAMPED:"));
++      }
++      CHECK(result.at("usage").at("external_requests").num()==1);
++      const auto source=web.sources().at("sources").at(0);
++      CHECK(source.at("enabled").flag()&&source.at("configured_enabled").flag());
++      CHECK(source.at("state").at("cooldown_remaining_ms").num()==std::max<std::int64_t>(600000,expected));
++      CHECK(web.search("bob",obj(R"({"query":"another owner"})")).at("sources").at(0).at("reason").str()=="cooldown");
++      CHECK(worker.calls.size()==1);
++    }
++  }
+   TEST(migrate_both_schema_two_layouts_preserves_records) {
+     for(bool claude_s1:{false,true}) {
+       Temp t;
