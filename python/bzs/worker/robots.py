@@ -95,6 +95,14 @@ def _matches(pattern: str, target: str) -> bool:
     return not last or target.find(last, position) >= 0
 
 
+def _unrelated_invalid_agent(value: str, wanted: str) -> bool:
+    # This is only an exclusion check, never a repaired matching token. Keep
+    # damaged wildcard/self identifiers conservative, including split names.
+    # Unknown non-ASCII or identifier-free values cannot be safely classified.
+    identifier = re.sub(r"[^A-Za-z_-]", "", value).lower()
+    return value.isascii() and bool(identifier) and "*" not in value and wanted not in identifier
+
+
 def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, Any]:
     """Select and merge the applicable groups from at most 512 KiB of UTF-8.
 
@@ -121,6 +129,8 @@ def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, A
         return deny("robots_invalid_utf8")
     if any(ord(c) < 32 and c not in "\r\n\t" or ord(c) == 127 for c in text):
         return deny("robots_control_character")
+    wanted = product_token.lower()
+    ignored_agents = False
     groups: list[tuple[list[str], list[dict[str, Any]], bool]] = []
     agents: list[str] = []
     rules: list[dict[str, Any]] = []
@@ -142,12 +152,19 @@ def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, A
         field, value = (part.strip(" \t") for part in line.split(":", 1))
         field = field.lower()
         if field == "user-agent":
-            if value != "*" and not _PRODUCT.fullmatch(value):
-                return deny("robots_invalid_product_token")
+            # Even an unrelated invalid agent starts a new group after rules.
+            # Keep a nonmatching member so its rules cannot leak into the
+            # previous group, while valid members of this same group survive.
             if saw_rule:
                 groups.append((agents, rules, invalid))
                 agents, rules, invalid, saw_rule = [], [], False, False
-            agents.append(value.lower())
+            if value != "*" and not _PRODUCT.fullmatch(value):
+                if not _unrelated_invalid_agent(value, wanted):
+                    return deny("robots_invalid_product_token")
+                agents.append("")
+                ignored_agents = True
+            else:
+                agents.append(value.lower())
         elif field in ("allow", "disallow"):
             if not agents:
                 continue
@@ -172,7 +189,6 @@ def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, A
                     result["diagnostics"].append("sitemap_limit")
     if agents:
         groups.append((agents, rules, invalid))
-    wanted = product_token.lower()
     selected = [group for group in groups if wanted in group[0]]
     if not selected:
         selected = [group for group in groups if "*" in group[0]]
@@ -188,6 +204,8 @@ def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, A
     result["sitemaps"] = sitemaps
     if malformed:
         result["diagnostics"].append("ignored_unknown_lines")
+    if ignored_agents:
+        result["diagnostics"].append("ignored_unrelated_product_tokens")
     return result
 
 

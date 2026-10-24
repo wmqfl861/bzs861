@@ -1,0 +1,18 @@
+{
+  "issue": "P2-3",
+  "status": "fixed",
+  "ctest": "27/27; zero skipped",
+  "pytest_passed": 1217,
+  "asan_ubsan_native_targets": 15,
+  "independent_cases": 16,
+  "independent_assertions": 58,
+  "independent_review": "../independent/p2-3/actual/probe-report.json",
+  "regressions": [
+    "Three observed foreign UA forms before/between/after applicable groups",
+    "Mixed valid and unrelated invalid members preserve valid group rules",
+    "Empty rules still separate groups; unrepresentable applicable rules stay denied",
+    "Malformed self/wildcard/unknown identities and raw invalid UTF-8 remain fail closed"
+  ],
+  "adoption": "Isolate clearly unrelated malformed identifiers instead of truncating malformed identifiers into apparently valid matches. Source/site approval and enabled state are unchanged.",
+  "author_precheck": "91 passed on the draft; same suite on original code had 33 failed and 58 passed. These author counts are not independent or added to full-suite totals."
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "unapplied_draft",
+  "repository": "/workspace/scratch/e2371129386d/bzs861",
+  "base_observed_head": "87154c0dfd6fdabea6cbdec78c8011db8e94f865",
+  "patch": "/tmp/bzs-p2-robots-revocation-20261024/robots-group-isolation-draft.patch",
+  "patch_sha256": "f32ba5f546a03e35265b5266c430ebc428345b7b3d7dc67206c2745e24eb38e4",
+  "inputs": [
+    {
+      "path": "python/bzs/worker/robots.py",
+      "input_sha256": "e13d91be0613b58988f3b0e8ab644cc79c0b9f7449345d784f99f3bd7b9fc482",
+      "draft_sha256": "2cf5e9310f66dfdebafeb4f404953bc70d129db140158b86d95074fa56d742b2"
+    },
+    {
+      "path": "python/tests/test_robots.py",
+      "input_sha256": "7407460b7c4d4ac1b921884235ae320a8df7edd6524a2becd15e11f925512d21",
+      "draft_sha256": "b3611b6dd2e9cf5ea9e3b269b93e249fe43fb1678cb2c414d8e701493a1cce75"
+    }
+  ],
+  "git_apply_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "verification": {
+    "python_ast_parse": "passed",
+    "production_build": "not_run",
+    "tests": "not_run"
+  },
+  "workspace_mutations": []
+}

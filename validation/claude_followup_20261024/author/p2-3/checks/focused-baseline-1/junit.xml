@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="33" skipped="0" tests="91" time="0.537" timestamp="2026-10-24T10:57:13.187986+08:00" hostname="e3ab84622d41"><testcase classname="tests.test_robots" name="test_specific_groups_merge_case_insensitively_without_wildcard_rules" time="0.001" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /locked-/locked-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: OtherBot\nDisallow: /-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[Disallow: /\nUser-agent: BzsBot-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /\nUser-agent: BzsBot-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow:\nUser-agent: OtherBot\nDisallow: /-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /locked\nAllow: /locked/public-/locked/public/doc-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /locked\nAllow: /locked-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nAllow: /locked\nDisallow: /locked-/locked-True]" time="0.001" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /Locked-/locked-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /one$-/one/more-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /one$-/one-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /*.gif$-/images/a.gif-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: *.gif$-/images/a.gif-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /*.gif$-/images/a.gif?view=1-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /a*b\nAllow: /ab-/ab-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /a*b*c$-/axxbxxc-False]" time="0.001" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /a*b*c$-/axxbxxc/more-True]" time="0.001" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /query?private=1$-/query?private=1-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /query?private=1$-/query?private=10-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /query$-/query#client-only-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /topic%23secret-/topic#secret-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /topic%23secret-/topic%23secret-False]" time="0.001" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /foo/%62ar-/foo/bar-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /foo/bar-/foo/%62ar-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /foo%2fbar-/foo/bar-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /foo%2fbar-/foo%2Fbar-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /\u4e2d\u6587-/%E4%B8%AD%E6%96%87-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /%E4%B8%AD%E6%96%87-/\u4e2d\u6587-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /\u4e2d\u6587*\nAllow: /%E4%B8%AD%E6%96%87$-/\u4e2d\u6587-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /literal%2A.html-/literal*.html-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /literal%2A.html-/literalXXX.html-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /literal%24-/literal$-False]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: /literal%24-/literal-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_versioned_path_comparison[User-agent: *\nDisallow: / # trailing comment-/robots.txt-True]" time="0.000" /><testcase classname="tests.test_robots" name="test_unknown_records_and_comments_do_not_end_a_group" time="0.000" /><testcase classname="tests.test_robots" name="test_damaged_policy_never_silently_turns_into_allow[User-agent: BzsBot\nDisallow: /\xff-robots_invalid_utf8]" time="0.000" /><testcase classname="tests.test_robots" name="test_damaged_policy_never_silently_turns_into_allow[User-agent: BzsBot\nDisallow: /\x00secret-robots_control_character]" time="0.000" /><testcase classname="tests.test_robots" name="test_damaged_policy_never_silently_turns_into_allow[User-agent: BzsBot\nDisallow /secret-robots_malformed_policy_directive]" time="0.001" /><testcase classname="tests.test_robots" name="test_damaged_policy_never_silently_turns_into_allow[User-agent: BzsBot/1\nDisallow: /-robots_invalid_product_token]" time="0.000" /><testcase classname="tests.test_robots" name="test_damaged_policy_never_silently_turns_into_allow[User-agent: BzsBot\nDisallow: /broken path-robots_unrepresentable_applicable_rule]" time="0.007" /><testcase classname="tests.test_robots" name="test_parser_accepts_full_512_kib_and_rejects_larger_body" time="0.058" /><testcase classname="tests.test_robots" name="test_large_wildcard_pattern_uses_bounded_nonrecursive_matching" time="0.002" /><testcase classname="tests.test_robots" name="test_duplicate_rules_are_deduplicated_without_losing_allow_tie" time="0.000" /><testcase classname="tests.test_robots" name="test_cached_policy_age_includes_response_delay_and_apparent_age[headers0-5000-45000]" time="0.001" /><testcase classname="tests.test_robots" name="test_cached_policy_age_includes_response_delay_and_apparent_age[headers1-1500-None]" time="0.000" /><testcase classname="tests.test_robots" name="test_cached_policy_age_includes_response_delay_and_apparent_age[headers2-0-None]" time="0.001" /><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-BzsBot-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = 'BzsBot', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-BzsBot-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = 'BzsBot', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-BzsBot-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = 'BzsBot', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-*-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = '*', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-*-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = '*', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[0-*-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = '*', position = 0
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-BzsBot-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = 'BzsBot', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-BzsBot-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = 'BzsBot', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-BzsBot-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = 'BzsBot', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-*-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = '*', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-*-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = '*', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[1-*-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = '*', position = 1
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-BzsBot-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = 'BzsBot', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-BzsBot-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = 'BzsBot', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-BzsBot-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = 'BzsBot', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-*-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = '*', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-*-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = '*', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_unrelated_invalid_user_agents_keep_group_boundaries[2-*-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = '*', position = 2
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("position", [0, 1, 2])
+    def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+        groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+                  f"User-agent: {agent}\nDisallow: /secret\n"]
+        groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+        record = parse_robots("".join(groups).encode())
+&gt;       assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:143: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-BzsBot-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = 'BzsBot', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-BzsBot-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = 'BzsBot', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-BzsBot-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = 'BzsBot', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-*-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = '*', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-*-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = '*', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[False-*-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = '*', foreign_first = False
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-BzsBot-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = 'BzsBot', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-BzsBot-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = 'BzsBot', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-BzsBot-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = 'BzsBot', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-*-360Spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = '360Spider', agent = '*', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-*-Sogou web spider]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Sogou web spider', agent = '*', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ignored_invalid_member_does_not_discard_valid_members_of_same_group[True-*-Googlebot-Image/1.0]" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">foreign = 'Googlebot-Image/1.0', agent = '*', foreign_first = True
+
+    @pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+    @pytest.mark.parametrize("agent", ["BzsBot", "*"])
+    @pytest.mark.parametrize("foreign_first", [False, True])
+    def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+        agents = [foreign, agent] if foreign_first else [agent, foreign]
+        text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+        record = parse_robots(text.encode())
+&gt;       assert record["state"] == "rules" and len(record["rules"]) == 2
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:157: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_empty_rule_still_delimits_an_ignored_invalid_agent_group" time="0.000"><failure message="AssertionError: assert ('deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all)">def test_empty_rule_still_delimits_an_ignored_invalid_agent_group():
+        body = (b"User-agent: BzsBot\nDisallow:\n"
+                b"User-agent: 360Spider\nDisallow: /\n"
+                b"User-agent: BzsBot\nDisallow: /new\n")
+        record = parse_robots(body)
+&gt;       assert record["state"] == "rules" and record["rules"] == [{"pattern": "/new", "allow": False}]
+E       AssertionError: assert ('deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all)
+
+tests/test_robots.py:167: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule" time="0.001"><failure message="AssertionError: assert ('deny_all' == 'deny_all'&#10;  &#10;    deny_all and ['robots_inva...roduct_token'] == ['robots_unre...licable_rule']&#10;  &#10;  At index 0 diff: 'robots_invalid_product_token' != 'robots_unrepresentable_applicable_rule'&#10;  Use -v to get more diff)">def test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule():
+        record = parse_robots(b"User-agent: BzsBot\nUser-agent: 360Spider\nDisallow: /broken path\n")
+&gt;       assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_unrepresentable_applicable_rule"]
+E       AssertionError: assert ('deny_all' == 'deny_all'
+E         
+E           deny_all and ['robots_inva...roduct_token'] == ['robots_unre...licable_rule']
+E         
+E         At index 0 diff: 'robots_invalid_product_token' != 'robots_unrepresentable_applicable_rule'
+E         Use -v to get more diff)
+
+tests/test_robots.py:174: AssertionError</failure></testcase><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[BzsBot/1]" time="0.001" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[bzsbot 1]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[BzsBot2]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[Bzs Bot]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[Other, BzsBot/1]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[*bot]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[*/1]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[* BzsBot]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[360]" time="0.000" /><testcase classname="tests.test_robots" name="test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed[\u722c\u866b]" time="0.000" /><testcase classname="tests.test_robots" name="test_invalid_agent_classification_is_relative_to_the_selected_product" time="0.000"><failure message="AssertionError: assert 'deny_all' == 'rules'&#10;  &#10;  - rules&#10;  + deny_all">def test_invalid_agent_classification_is_relative_to_the_selected_product():
+        body = b"User-agent: Sogou web spider\nDisallow: /\nUser-agent: *\nAllow: /\n"
+&gt;       assert parse_robots(body)["state"] == "rules"
+E       AssertionError: assert 'deny_all' == 'rules'
+E         
+E         - rules
+E         + deny_all
+
+tests/test_robots.py:187: AssertionError</failure></testcase></testsuite></testsuites>

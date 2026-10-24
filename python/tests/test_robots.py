@@ -94,6 +94,63 @@ def test_damaged_policy_never_silently_turns_into_allow(body, reason):
     assert not rule_decision(parsed, URL("https://fixture.test/private"))["allowed"]
 
 
+@pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+@pytest.mark.parametrize("agent", ["BzsBot", "*"])
+@pytest.mark.parametrize("position", [0, 1, 2])
+def test_unrelated_invalid_user_agents_keep_group_boundaries(foreign, agent, position):
+    groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+              f"User-agent: {agent}\nDisallow: /secret\n"]
+    groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+    record = parse_robots("".join(groups).encode())
+    assert record["state"] == "rules" and record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+    assert record["rules"] == [{"pattern": "/locked", "allow": False}, {"pattern": "/secret", "allow": False}]
+    for path in ("/locked", "/secret/child"):
+        assert not rule_decision(record, URL("https://fixture.test" + path))["allowed"]
+    assert rule_decision(record, URL("https://fixture.test/public"))["allowed"]
+
+
+@pytest.mark.parametrize("foreign", ["360Spider", "Sogou web spider", "Googlebot-Image/1.0"])
+@pytest.mark.parametrize("agent", ["BzsBot", "*"])
+@pytest.mark.parametrize("foreign_first", [False, True])
+def test_ignored_invalid_member_does_not_discard_valid_members_of_same_group(foreign, agent, foreign_first):
+    agents = [foreign, agent] if foreign_first else [agent, foreign]
+    text = "".join(f"User-agent: {value}\n" for value in agents) + "Disallow: /private\nAllow: /private/public\n"
+    record = parse_robots(text.encode())
+    assert record["state"] == "rules" and len(record["rules"]) == 2
+    assert not rule_decision(record, URL("https://fixture.test/private"))["allowed"]
+    assert rule_decision(record, URL("https://fixture.test/private/public"))["allowed"]
+
+
+def test_empty_rule_still_delimits_an_ignored_invalid_agent_group():
+    body = (b"User-agent: BzsBot\nDisallow:\n"
+            b"User-agent: 360Spider\nDisallow: /\n"
+            b"User-agent: BzsBot\nDisallow: /new\n")
+    record = parse_robots(body)
+    assert record["state"] == "rules" and record["rules"] == [{"pattern": "/new", "allow": False}]
+    assert rule_decision(record, URL("https://fixture.test/public"))["allowed"]
+    assert not rule_decision(record, URL("https://fixture.test/new"))["allowed"]
+
+
+def test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule():
+    record = parse_robots(b"User-agent: BzsBot\nUser-agent: 360Spider\nDisallow: /broken path\n")
+    assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_unrepresentable_applicable_rule"]
+
+
+@pytest.mark.parametrize("value", ["BzsBot/1", "bzsbot 1", "BzsBot2", "Bzs Bot", "Other, BzsBot/1",
+                                   "*bot", "*/1", "* BzsBot", "", "360", "爬虫"])
+def test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed(value):
+    record = parse_robots((f"User-agent: {value}\nDisallow: /\nUser-agent: *\nAllow: /\n").encode())
+    assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_invalid_product_token"]
+    assert not rule_decision(record, URL("https://fixture.test/public"))["allowed"]
+
+
+def test_invalid_agent_classification_is_relative_to_the_selected_product():
+    body = b"User-agent: Sogou web spider\nDisallow: /\nUser-agent: *\nAllow: /\n"
+    assert parse_robots(body)["state"] == "rules"
+    record = parse_robots(body, "Sogou")
+    assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_invalid_product_token"]
+
+
 def test_parser_accepts_full_512_kib_and_rejects_larger_body():
     prefix = b"User-agent: BzsBot\nDisallow: /private\n#"
     body = prefix + b" " * (MAX_ROBOTS_BYTES - len(prefix))

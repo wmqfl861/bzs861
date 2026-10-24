@@ -1,0 +1,45 @@
+{
+  "kind": "isolated_focused_draft_test",
+  "baseline_production_with_draft_tests": false,
+  "patch_sha256": "fb6cf00896b6f4e4048a4e11fb8b24cb736ebb20308e8c5af9a48d42f4ca0839",
+  "source_inputs_sha256": "c60c2154fbb1f95c4acb51b4330dd7a22aedcbfaf90e6ff7b8b73517e0884ebf",
+  "started_at_utc": "2026-10-24T02:56:58.390527+00:00",
+  "elapsed_seconds": 0.6663135400003739,
+  "command_argv": [
+    "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/pytest-tmp",
+    "--junitxml",
+    "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/junit.xml",
+    "tests/test_robots.py"
+  ],
+  "cwd": "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/runtime/python",
+  "environment": {
+    "PYTHONPATH": "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/runtime/python",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "module_identity": {
+    "python": "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+    "version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "robots": "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/runtime/python/bzs/worker/robots.py",
+    "fetch": "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/runtime/python/bzs/worker/fetch.py",
+    "revalidation": "/tmp/bzs-p2-robots-revocation-20261024/checks/focused-fixed-1/runtime/python/bzs/worker/revalidation.py"
+  },
+  "exit_code": 0,
+  "junit_counts": {
+    "tests": 91,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_unchanged_after_test": true,
+  "stdout_sha256": "ddcafaddb1d2bbbf2fab0de4a2907ecdf5c8bcf2cfc448993af445401eb4153b",
+  "junit_sha256": "1c65a5e3d4b6a30c64a1bbbae6febf1ba6048a46973dbc399a89136d36cd7947",
+  "full_project_gates": "not_run",
+  "workspace_mutations": []
+}

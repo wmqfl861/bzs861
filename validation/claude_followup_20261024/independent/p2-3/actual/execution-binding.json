@@ -1,0 +1,74 @@
+{
+  "role": "independent reviewer source_policy; P2-3 production/formal tests authored by revocation; root applies/freezes/full-tests",
+  "started_at_utc": "2026-10-24T05:10:15.857243+00:00",
+  "finished_at_utc": "2026-10-24T05:10:16.103420+00:00",
+  "command": [
+    "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+    "/tmp/bzs-p2-34-independent-source-20261024/independent_probe.py",
+    "--suite",
+    "robots",
+    "--label",
+    "actual-main-p2-3-frozen-input",
+    "--output",
+    "/tmp/bzs-p2-34-independent-source-20261024/p2-3-actual-v1/probe-report.json"
+  ],
+  "cwd": "/workspace/scratch/e2371129386d/bzs861",
+  "environment_overrides": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/scratch/e2371129386d/bzs861/python"
+  },
+  "scope": "same previously frozen pure-Python robots suite directly imports actual main; no DNS/HTTP/native build/source writes",
+  "head_before": "1bac5c3b4e5c56df33e6f8de3a65bd5989e70c8b",
+  "head_after": "1bac5c3b4e5c56df33e6f8de3a65bd5989e70c8b",
+  "source_hashes_before": {
+    "python/bzs/worker/robots.py": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694",
+    "python/bzs/worker/fetch.py": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "python/bzs/worker/server.py": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2",
+    "docs/SITE_DISCOVERY.md": "e2e5efa44d5f3736ea608dae76d170f639e9f3abbfee76d9bf83e2abd9eda6b9"
+  },
+  "source_hashes_after": {
+    "python/bzs/worker/robots.py": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694",
+    "python/bzs/worker/fetch.py": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "python/bzs/worker/server.py": "c4eb98b48f5674bd46ca98ec4b18a46a591b9f689289574697e43e76e4c40dc2",
+    "docs/SITE_DISCOVERY.md": "e2e5efa44d5f3736ea608dae76d170f639e9f3abbfee76d9bf83e2abd9eda6b9"
+  },
+  "source_unchanged": true,
+  "probe_sha256_before": "2115ee59ba0667bbb5d67cf5335894a2d3173cf8628f14f9afade53325a209e9",
+  "probe_sha256_after": "2115ee59ba0667bbb5d67cf5335894a2d3173cf8628f14f9afade53325a209e9",
+  "exit_code": 0,
+  "passed": 16,
+  "total": 16,
+  "assertions": 58,
+  "probe_report_sha256": "aea9fe86453c7fbc9a2f7377cff8f05db75abac6b55ca1d3dac734813685dc31",
+  "stdout_sha256": "aea9fe86453c7fbc9a2f7377cff8f05db75abac6b55ca1d3dac734813685dc31",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "loaded_modules": {
+    "bzs.worker.robots": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/robots.py",
+      "sha256": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694"
+    },
+    "bzs.worker.fetch": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/fetch.py",
+      "sha256": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c"
+    },
+    "bzs.worker.discovery": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/discovery.py",
+      "sha256": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605"
+    },
+    "bzs.worker.revalidation": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/revalidation.py",
+      "sha256": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092"
+    }
+  },
+  "prior_negative_run": "None was executed by this independent reviewer; no earlier result has been overwritten.",
+  "not_claimed": [
+    "author focused results as independent evidence",
+    "P2-4 execution or acceptance",
+    "live Worker/network integration",
+    "whole pytest/CTest/ASan acceptance"
+  ]
+}

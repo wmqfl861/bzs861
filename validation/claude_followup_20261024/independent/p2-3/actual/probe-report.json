@@ -1,0 +1,127 @@
+{
+  "role": "independent probe author source_policy; production patches authored by revocation",
+  "label": "actual-main-p2-3-frozen-input",
+  "suite": "robots",
+  "scope": "pure Python functions; no HTTP, DNS, native build or source writes",
+  "probe_sha256": "2115ee59ba0667bbb5d67cf5335894a2d3173cf8628f14f9afade53325a209e9",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "input_modules": {
+    "bzs.worker.robots": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/robots.py",
+      "sha256": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694"
+    },
+    "bzs.worker.fetch": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/fetch.py",
+      "sha256": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c"
+    },
+    "bzs.worker.discovery": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/discovery.py",
+      "sha256": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605"
+    },
+    "bzs.worker.revalidation": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/revalidation.py",
+      "sha256": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092"
+    }
+  },
+  "passed": 16,
+  "total": 16,
+  "assertions": 58,
+  "cases": [
+    {
+      "suite": "robots",
+      "name": "foreign_group_cannot_allow_a_previously_denied_path",
+      "passed": true,
+      "assertions": 7
+    },
+    {
+      "suite": "robots",
+      "name": "valid_member_in_mixed_group_foreign_first_False",
+      "passed": true,
+      "assertions": 5
+    },
+    {
+      "suite": "robots",
+      "name": "valid_member_in_mixed_group_foreign_first_True",
+      "passed": true,
+      "assertions": 5
+    },
+    {
+      "suite": "robots",
+      "name": "empty_rule_still_ends_previous_group_at_next_agent",
+      "passed": true,
+      "assertions": 4
+    },
+    {
+      "suite": "robots",
+      "name": "wildcard_fallback_and_specific_group_precedence_remain",
+      "passed": true,
+      "assertions": 4
+    },
+    {
+      "suite": "robots",
+      "name": "invalid_rule_scope_survives_agent_classification",
+      "passed": true,
+      "assertions": 4
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'BzsBot/2.1'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'B.z.s.Bot'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'Bzs Bot'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'Other,BzsBot/2'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'*/2'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_''",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'2026'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "malformed_self_or_ambiguous_agent_'ＢｚｓＢｏｔ'",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "robots",
+      "name": "classification_is_relative_to_requested_product",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "robots",
+      "name": "raw_invalid_utf8_never_becomes_an_ignored_foreign_group",
+      "passed": true,
+      "assertions": 3
+    }
+  ]
+}
