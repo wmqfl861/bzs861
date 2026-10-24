@@ -1,0 +1,43 @@
+{
+  "purpose": "Independent small P1-3 exact-predicate oracle, overflow and bounded AND/owner probe",
+  "started_at_utc": "2026-10-24T03:03:29.941266+00:00",
+  "preparation_correction": "First optional candidate harness used a nonexistent AST args key; preserved source/log separately. This version uses published children/child fields. No product change.",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_3_candidates_probe_v2.cpp": "1f3e832a16ed094b88010621917ac1a220063971ad14422bd31f3ad817acda52",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs.json": "38b36acd2562e535851e88e152861de351e9a40f69a14ff4f2666e6dfc50063c"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/include",
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe_v2.cpp",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe_v2"
+    ],
+    "exit_code": 0,
+    "seconds": 1.545,
+    "log": "p1_3_candidates_v2_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe_v2"
+    ],
+    "exit_code": 0,
+    "seconds": 0.289,
+    "log": "p1_3_candidates_v2_run.log",
+    "log_sha256": "93ddb7dd35a9ef35f5d293acfaec4f61f9c9f234796fa87210a1eb7421f7611d"
+  },
+  "inputs_still_match": true,
+  "binary_sha256": "e598a09a7e03a570d2e36920d4df295a9583247a541c80dc3209756ea28bfbc2"
+}

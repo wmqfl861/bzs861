@@ -11,6 +11,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <set>
 #include <thread>
 #include <vector>
 using namespace bzs;
@@ -509,13 +510,111 @@ namespace {
     }
     auto phrase=s.search("alice", q("\"app\""));
     CHECK(phrase.at("frozen_count").num()==1);
-    CHECK(phrase.at("retrieval").str()=="bounded_scan_recent");
+    CHECK(phrase.at("retrieval").str()=="fts5_substring_verified");
     auto mixed=s.search("alice", q("test"));
     CHECK(mixed.at("frozen_count").num()==4);
     CHECK(mixed.at("retrieval").str()=="fts5_bm25_verified");
     CHECK(s.search("alice", q("_ ")).at("frozen_count").num()==1);
     auto partial=s.search("alice", q("test"), 1, 10);
     CHECK(partial.at("scanned_candidates").num()==1&&partial.at("partial").flag());
+  }
+  TEST(substring_index_finds_old_phrases_symbols_and_multilingual_text_before_budget) {
+    std::int64_t now=1800000000000;Store store(":memory:",[&]{return now;});
+    const auto target=store.ingest("alice",text("https://old.example/rare/urlneedle", "commonword machine learning c++ node.js café Москва apple sqlite fts5 prefix😀suffix", "Rare title"));
+    for(int i=0;i<2100;++i) {
+      ++now;store.ingest("alice",text("https://new.example/"+std::to_string(i),"commonword filler unrelated content","ordinary"));
+    }
+    for(int i=0;i<30;++i) { ++now;store.ingest("bob",text("https://private.example/"+std::to_string(i),"commonword machine learning c++ node.js café Москва apple sqlite fts5 prefix😀suffix","private")); }
+    for(const auto* expression:{"\"machine learning\"","c++","node.js","café","Москва","\"app\"","\"achine learn\"","\"sqlite fts\"","fé","😀",
+                                "commonword AND \"machine learning\"","\"machine learning\" OR \"unseen phrase\"","\"machine learning\" NOT absent",
+                                "site:old.example \"machine learning\"","filetype:txt \"machine learning\""}) {
+      const auto once=store.search_once("alice",q(expression),1,100);
+      CHECK(once.at("returned_count").num()==1);CHECK(once.at("hits").at(0).at("snapshot_id").str()==target.at("snapshot_id").str());
+      CHECK(once.at("scanned_candidates").num()==1);CHECK(!once.at("partial").flag());
+    }
+    const auto url_query=parse_query(Json::parse(R"({"op":"phrase","field":"url","value":"rare/urlneedle"})"));
+    CHECK(store.search_once("alice",url_query,1).at("returned_count").num()==1);
+    CHECK(store.search_once("alice",q("\"rare/urlneedle\""),1).at("returned_count").num()==0);
+    const auto frozen=store.search("alice",q("\"machine learning\""),1,100);
+    CHECK(store.page("alice",frozen.at("session_id").str(),"",100).at("hits").at(0).at("snapshot_id").str()==target.at("snapshot_id").str());
+    CHECK(store.search_once("alice",q("commonword"),1,100).at("partial").flag());
+    CHECK(store.search_once("alice",q("NOT absent"),1,100).at("partial").flag());
+    store.ingest("alice",text("https://old.example/rare/urlneedle","replacement content","replacement"));
+    CHECK(store.search_once("alice",q("\"machine learning\"")).at("returned_count").num()==0);
+    CHECK(store.page("alice",frozen.at("session_id").str(),"",100).at("hits").at(0).at("snapshot_id").str()==target.at("snapshot_id").str());
+    store.erase("alice",target.at("document_id").str());
+    CHECK(store.search_once("alice",url_query).at("returned_count").num()==0);
+  }
+  TEST(substring_candidates_preserve_exact_matching_across_fields_and_boolean_shapes) {
+    Store store(":memory:");
+    std::vector<SourceDocument> docs={
+      text("https://x.example/URLonlyneedle","machine learning sqlite fts5 café prefix😀suffix","apple"),
+      text("https://x.example/two","ac++ c++foo node.jsx CAFÉ москва test\u0301x","machine"),
+      text("https://x.example/three","C++14 node.js testé Москва e\u0301","learning"),
+      text("https://x.example/four","unrelated","café 中文"),
+      text("https://x.example/five","xxfoobar _ foo_bar test_test","title")};
+    for(const auto& doc:docs)store.ingest("alice",doc);
+    std::vector<Query> queries;
+    for(const auto* expression:{"\"app\"","\"achine learn\"","\"sqlite fts\"","c++","node.js","café","CAFÉ","Москва","москва","fé","😀","test","e\u0301",
+         "\"_\"","foo_bar","\"machine learning\"","\"machine learning\" OR café","c++ AND NOT node.js","NOT \"machine learning\"","c++ OR NOT café",
+         "intitle:café","inbody:café","\"URLonlyneedle\""})queries.push_back(q(expression));
+    for(const auto* field:{"any","title","body","url"}) { auto ast=Json::object();ast.set("op","phrase");ast.set("field",field);ast.set("value",field==std::string("url")?"URLonlyneedle":"machine learning");queries.push_back(parse_query(ast)); }
+    for(const auto& query:queries) {
+      std::set<std::string> expected,actual;
+      for(const auto& doc:docs)if(matches(query,doc.title,doc.raw,doc.url,"x.example",doc.content_type))expected.insert(doc.url);
+      const auto response=store.search_once("alice",query,2000,100);const auto hits=response.at("hits");
+      for(std::size_t i=0;i<hits.size();++i)actual.insert(hits.at(i).at("url").str());
+      CHECK(actual==expected);CHECK(!response.at("partial").flag());
+    }
+  }
+  TEST(substring_overflow_keeps_exact_matches_and_bounds_derived_fields) {
+    std::string high_entropy;
+    for(std::uint32_t cp=0x10000;cp<0x10000+23000;++cp) {
+      high_entropy+=static_cast<char>(0xf0|(cp>>18));high_entropy+=static_cast<char>(0x80|((cp>>12)&0x3f));
+      high_entropy+=static_cast<char>(0x80|((cp>>6)&0x3f));high_entropy+=static_cast<char>(0x80|(cp&0x3f));
+    }
+    CHECK(indexed_grams(high_entropy,'b')=="boverflow");
+    Store store(":memory:");store.ingest("alice",text("https://x.example/entropy",high_entropy,"neutral"));
+    auto exact=q(high_entropy.substr(high_entropy.size()-12));
+    const auto found=store.search_once("alice",exact,1,100);CHECK(found.at("returned_count").num()==1);CHECK(!found.at("partial").flag());
+    const auto absent=store.search_once("alice",q("\"not present\""),1,100);CHECK(absent.at("scanned_candidates").num()==1);CHECK(absent.at("returned_count").num()==0);CHECK(!absent.at("partial").flag());
+    auto large=Json::object(),groups=Json::array();large.set("op","or");
+    for(int group=0;group<4;++group) {
+      auto branch=Json::object(),leaves=Json::array();branch.set("op","or");
+      for(int leaf=0;leaf<60;++leaf) { auto item=Json::object();item.set("op","phrase");item.set("value",high_entropy.substr(static_cast<std::size_t>(group*60+leaf)*4,80));leaves.push(item); }
+      branch.set("children",leaves);groups.push(branch);
+    }
+    large.set("children",groups);const auto query=parse_query(large);
+    CHECK(!substring_candidates(query));CHECK(store.search_once("alice",query,1,100).at("returned_count").num()==1);
+  }
+  TEST(known_word_index_upgrade_is_atomic_and_preserves_business_rows) {
+    Temp temp;const auto path=temp.path/"db";const auto clock=[] {return std::int64_t{1800000000000};};
+    Json snapshot,evidence,session,page,job;
+    {
+      Store store(path,clock);const auto doc=store.ingest("alice",text("https://x.example/upgrade","machine learning café","old index"));
+      snapshot=store.snapshot("alice",doc.at("snapshot_id").str());evidence=store.evidence("alice",doc.at("snapshot_id").str(),0,7);
+      session=store.search("alice",q("machine"));page=store.page("alice",session.at("session_id").str(),"",100);
+      job=store.job_create("alice","fixture","upgrade-key");
+    }
+    // The unchanged bzs/2 word tokenizer is the old derived format. The separate
+    // recorded compatibility probe also creates this database with real 442 code.
+    database_exec(path,"DROP TABLE substring_fts; UPDATE settings SET value='bzs-ascii-cjk/2' WHERE key='fts_tokenizer_version'; CREATE TRIGGER reject_index_marker BEFORE UPDATE ON settings WHEN NEW.key='fts_tokenizer_version' BEGIN SELECT RAISE(ABORT,'migration fixture'); END;");
+    rejects([&]{Store blocked(path,clock);},"E_STORAGE");
+    CHECK(database_scalar(path,"SELECT COUNT(*) FROM sqlite_master WHERE name='substring_fts'")==0);
+    CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
+    database_exec(path,"DROP TRIGGER reject_index_marker;");
+    {
+      Store upgraded(path,clock);
+      CHECK(upgraded.search_once("alice",q("\"achine learn\"")).at("returned_count").num()==1);
+      CHECK(upgraded.snapshot("alice",snapshot.at("snapshot_id").str()).canonical()==snapshot.canonical());
+      CHECK(upgraded.evidence_get("alice",evidence.at("evidence_id").str()).at("quote").str()=="machine");
+      CHECK(upgraded.page("alice",session.at("session_id").str(),"",100).canonical()==page.canonical());
+      CHECK(upgraded.job_get("alice",job.at("job_id").str()).at("state").str()=="queued");
+      CHECK(upgraded.job_create("alice","fixture","upgrade-key").at("reused").flag());
+    }
+    CHECK(database_scalar(path,"SELECT COUNT(*) FROM substring_fts")==1);
+    database_exec(path,"UPDATE settings SET value='unknown-index/999' WHERE key='fts_tokenizer_version';");
+    rejects([&]{Store unknown(path,clock);},"E_SCHEMA_VERSION");
   }
   TEST(store_updates_index) {
     Temp t;
@@ -1355,7 +1454,7 @@ namespace {
       }
       CHECK(database_scalar(path,"PRAGMA user_version")==13);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
-      CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2'")==1);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2+codepoint-grams/1'")==1);
     }
   }
   TEST(schema_two_quarantine_is_checked_before_migration) {

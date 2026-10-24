@@ -1,0 +1,42 @@
+{
+  "purpose": "Independent small P1-3 exact-predicate oracle, overflow and bounded AND/owner probe",
+  "started_at_utc": "2026-10-24T03:03:09.444336+00:00",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_3_candidates_probe.cpp": "4fdc4a8a7a5f38b6284221446abb8a3d352285b2b974b02be06a0da2fb192365",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs.json": "38b36acd2562e535851e88e152861de351e9a40f69a14ff4f2666e6dfc50063c"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/include",
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe.cpp",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe"
+    ],
+    "exit_code": 0,
+    "seconds": 1.466,
+    "log": "p1_3_candidates_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_3_candidates_probe"
+    ],
+    "exit_code": 1,
+    "seconds": 0.18,
+    "log": "p1_3_candidates_run.log",
+    "log_sha256": "ebaf70d085c5d028ca9e202daa17aeac3da749ce5c5b833201f3b1f7aaf09275"
+  },
+  "inputs_still_match": true,
+  "binary_sha256": "35a274b17c7a920fa9217f4041e84e5decaff97d66165a592f4ec722cec902a5"
+}

@@ -1,0 +1,44 @@
+{
+  "purpose": "Independent genuine 442 fixture preparation, draft run 1",
+  "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "started_at_utc": "2026-10-24T02:52:47.112942+00:00",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_3_migration_probe.cpp": "79da7f74c23c2360f0bf8fd533de574c5a18f0ad6aa2d2bf73ab1b6b4fee44ef",
+    "/tmp/bzs-claude-baseline-artifacts/libbzs_core-debug.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "/tmp/bzs-independent-claude-review/headers-44253a7-manifest.json": "fc1ff9b1038ff3959d95d5ff34c0292d1a285ab7f7e8d3d97c81e04f07a953e3"
+  },
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/tmp/bzs-independent-claude-review/headers-44253a7",
+      "/tmp/bzs-independent-claude-review/p1_3_migration_probe.cpp",
+      "/tmp/bzs-claude-baseline-artifacts/libbzs_core-debug.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_3_migration_old_draft1"
+    ],
+    "exit_code": 0,
+    "seconds": 3.016,
+    "log": "p1_3_draft1_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "create": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_3_migration_old_draft1",
+      "create",
+      "/tmp/bzs-independent-claude-review/p1-3-draft-fixture-01"
+    ],
+    "exit_code": 0,
+    "seconds": 0.138,
+    "log": "p1_3_draft1_create.log",
+    "log_sha256": "736d6ba3ec5a021440c2befaf6259e053eea33a5e49c8e38d1e9f5dd7c3c03af"
+  },
+  "inputs_still_match": true
+}

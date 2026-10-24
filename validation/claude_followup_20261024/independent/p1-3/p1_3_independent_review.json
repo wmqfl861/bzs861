@@ -1,0 +1,85 @@
+{
+  "scope": "P1-3 independent genuine-old-library migration and small candidate-semantics review",
+  "reviewer_role": "independent reviewer for this Claude follow-up; no production implementation or formal repository tests authored",
+  "created_at_utc": "2026-10-24T03:04:23.617647+00:00",
+  "conclusion": "passed within the recorded independent scope; no blocking finding",
+  "baseline": {
+    "commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "library_sha256": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+    "schema_user_version": 13,
+    "format_marker": "bzs-ascii-cjk/2",
+    "creation_checks": 1475,
+    "creation_method": "Actual original library and original exported headers; public API business fixture setup; SQL reads only; old Store closed before new-library open; no PRAGMA lowering"
+  },
+  "candidate": {
+    "base_head_at_capture": "87154c0dfd6fdabea6cbdec78c8011db8e94f865",
+    "library_sha256": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+    "input_manifest": "p1_3_fixed_inputs.json",
+    "schema_user_version": 13,
+    "format_marker": "bzs-ascii-cjk/2+codepoint-grams/1",
+    "source_and_headers_unchanged_after_probe": true,
+    "root_library_unchanged_after_probe": true
+  },
+  "migration": {
+    "upgrade_checks": 1649,
+    "old_binary_rejection_checks": 635,
+    "existing_tables": 44,
+    "raw_unchanged_existing_tables": 43,
+    "changed_existing_table_names": [
+      "settings"
+    ],
+    "only_permitted_existing_row_change": "settings.fts_tokenizer_version value; all other settings rows and all 44 original column lists preserved",
+    "new_tables": [
+      "substring_fts",
+      "substring_fts_config",
+      "substring_fts_content",
+      "substring_fts_data",
+      "substring_fts_idx"
+    ],
+    "word_index_membership_preserved": true,
+    "new_index_membership_matches_existing_word_index": true,
+    "frozen_pages_and_real_cursor_preserved": true,
+    "snapshot_revisions_and_evidence_preserved": true,
+    "permanent_job_and_search_keys_replay_and_conflict_preserved": true,
+    "known_unknown_reserved_accounting_preserved": true,
+    "active_and_paused_read_map_crawl_rows_preserved": true,
+    "robots_source_state_and_revocation_tombstone_preserved": true,
+    "deletion_and_noindex_nosnippet_watermarks_preserved": true,
+    "quarantine_first_result": "E_RESTORE_QUARANTINED; no backup business-row/catalog/format migration",
+    "old_binary_result": "E_SCHEMA_VERSION; upgraded database business rows/catalog unchanged",
+    "pristine_old_fixture_sha256s_unchanged": true,
+    "integrity_check": "ok",
+    "foreign_key_violations": 0,
+    "existing_public_response_canonical_json_preserved": true,
+    "actual_old_table_column_lists_equal_after_upgrade": true
+  },
+  "candidate_semantics": {
+    "command_record": "p1_3_candidates_v2_command.json",
+    "checks": 313,
+    "query_shapes": 152,
+    "exact_document_comparisons": 1368,
+    "result_set_mismatches": 0,
+    "coverage": [
+      "term/phrase/literal in any/title/body/url fields",
+      "ASCII-only case folding, Unicode combining characters, CJK, supplementary characters and emoji",
+      "AND/OR/NOT shapes compared with existing exact matches() predicate",
+      "65536-gram field overflow stays in the safe candidate set",
+      "word/substring AND intersection before max_candidates=1",
+      "other-owner exact hits and newer nonmatching rows do not consume the one-candidate result"
+    ],
+    "preparation_failure": {
+      "command_record": "p1_3_candidates_command.json",
+      "exit_code": 1,
+      "error": "Unknown field: args",
+      "classification": "Independent optional harness used nonexistent AST key after 193 checks; product rejected it correctly. Original source/log retained. v2 uses published children/child syntax. No production changes."
+    }
+  },
+  "external_network_requests": 0,
+  "limitations": [
+    "Independent Linux Debug probes do not substitute for the root full CTest/pytest/ASan gates or future CI.",
+    "Migration evidence covers the concrete actual 442 fixture, not arbitrary corrupted databases or simultaneous live old/new binaries.",
+    "Preservation is of table columns, typed row content, catalog and public responses, not physical SQLite file bytes; adding derived indexes changes the database file.",
+    "The finite candidate corpus is not an exhaustive proof over all possible Unicode strings or query trees; fallback and overflow paths retain the existing candidate-budget/partial semantics."
+  ],
+  "runtime_files_policy": "Do not commit databases, WAL/SHM files, static libraries or probe binaries; deliver source, logs and JSON evidence only."
+}

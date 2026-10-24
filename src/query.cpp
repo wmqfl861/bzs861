@@ -283,10 +283,58 @@ namespace bzs {
       // The bzs/2 tokenizer splits ASCII words on every non-[a-z0-9_]
       // character and gives every CJK character a position. These are the
       // only leaf shapes whose exact matches are guaranteed FTS candidates.
-      // General Unicode substrings, phrases and symbol literals need a scan.
+      // General Unicode substrings, phrases and symbol literals use the supplementary index.
       if(!(n.op=="term"&&all_word(value))&&!is_cjk_text(value))return std::nullopt;
       auto prefix=n.field=="title"?"title : ":(n.field=="body"?"body : ":"");
       return std::string(prefix)+fts_quote(value);
+    }
+    constexpr std::size_t substring_expression_limit=32768;
+    std::optional<std::string> substring_fts(const QueryNode& n) {
+      // Negating a superset can exclude a true match. Keep NOT unconstrained.
+      if(n.op=="not")return std::nullopt;
+      if(n.op=="and"||n.op=="or") {
+        const bool conjunction=n.op=="and";
+        const auto separator=conjunction?" AND ":" OR ";
+        std::string result;
+        for(const auto& child:n.children) {
+          auto candidate=substring_fts(child);
+          if(!candidate) {
+            if(!conjunction)return std::nullopt;
+            continue;
+          }
+          const auto part="("+*candidate+")";
+          const auto separator_size=result.empty()?std::size_t{0}:std::string_view(separator).size();
+          if(result.size()+separator_size+part.size()>substring_expression_limit) {
+            // Omitting an AND constraint widens safely. Omitting an OR branch
+            // would lose its exact matches, so the whole OR must be unconstrained.
+            if(!conjunction)return std::nullopt;
+            continue;
+          }
+          if(!result.empty())result+=separator;
+          result+=part;
+        }
+        if(result.empty())return std::nullopt;
+        return result;
+      }
+      if(n.op!="term"&&n.op!="phrase"&&n.op!="literal")return std::nullopt;
+      const auto grams=query_substring_grams(n.value);
+      if(grams.empty())return std::nullopt;
+      const auto in_field=[&](char field) {
+        std::string result="((";
+        for(std::size_t i=0;i<grams.size();++i) {
+          if(i)result+=" AND ";
+          result+=fts_quote(std::string(1,field)+grams[i]);
+        }
+        result+=") OR "+fts_quote(std::string(1,field)+"overflow")+")";
+        return result;
+      };
+      if(n.field=="title")return in_field('t');
+      if(n.field=="body")return in_field('b');
+      if(n.field=="url")return in_field('r');
+      if(n.field!="any")return std::nullopt;
+      // A leaf must match entirely in title or entirely in body. URL is not
+      // included in the published `any` field semantics.
+      return "("+in_field('t')+" OR "+in_field('b')+")";
     }
     void collect_leaves(const QueryNode& n, std::vector<const QueryNode*>& out) {
       if(n.op=="not")return;
@@ -360,13 +408,16 @@ namespace bzs {
   std::optional<std::string> fts_candidates(const Query& q) {
     return fts(q.root);
   }
+  std::optional<std::string> substring_candidates(const Query& q) {
+    return substring_fts(q.root);
+  }
   std::string fts_index_text(std::string_view text) {
     auto out=ascii_lower(text);
     for(char&c:out)if(!word_char(static_cast<unsigned char>(c)))c=' ';
     return out;
   }
   int score_match(const QueryNode& q, std::string_view title, std::string_view body) {
-    // Used only by the bounded fallback scan: title hits weigh more, body hits are capped.
+    // Used by substring candidates and fallback scans: title hits weigh more, body hits are capped.
     auto lt=ascii_lower(title), lb=ascii_lower(body);
     int n=0;
     for(const auto* leaf:positive_leaves(q)) {

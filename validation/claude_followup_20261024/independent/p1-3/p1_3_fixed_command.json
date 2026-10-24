@@ -1,0 +1,59 @@
+{
+  "purpose": "Independent genuine 442 to P1-3 codepoint gram index migration; same frozen probe source",
+  "started_at_utc": "2026-10-24T03:01:31.163269+00:00",
+  "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "inputs_sha256": {
+    "/tmp/bzs-independent-claude-review/p1_3_migration_probe.cpp": "79da7f74c23c2360f0bf8fd533de574c5a18f0ad6aa2d2bf73ab1b6b4fee44ef",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a": "9066e286f4b287f928571f8fb550d0f356b7574cb612a087dca45172a590ac89",
+    "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs.json": "38b36acd2562e535851e88e152861de351e9a40f69a14ff4f2666e6dfc50063c",
+    "/tmp/bzs-independent-claude-review/p1_3_input_freeze.json": "584ca3013f5e77b9e3b8851b593ce0c83a57b8b9907a033c2671bd0d3bf3f900"
+  },
+  "pristine_copy_matches_before_run": true,
+  "compile": {
+    "argv": [
+      "g++",
+      "-std=c++20",
+      "-O1",
+      "-I",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/include",
+      "/tmp/bzs-independent-claude-review/p1_3_migration_probe.cpp",
+      "/tmp/bzs-independent-claude-review/p1_3_fixed_inputs/libbzs_core.a",
+      "-lsqlite3",
+      "-lcrypto",
+      "-ljson-c",
+      "-lxml2",
+      "-pthread",
+      "-o",
+      "/tmp/bzs-independent-claude-review/p1_3_migration_fixed"
+    ],
+    "exit_code": 0,
+    "seconds": 3.214,
+    "log": "p1_3_fixed_compile.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "verify": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_3_migration_fixed",
+      "verify",
+      "/tmp/bzs-independent-claude-review/p1-3-upgrade-fixture-01"
+    ],
+    "exit_code": 0,
+    "seconds": 0.104,
+    "log": "p1_3_fixed_verify.log",
+    "log_sha256": "3a24d7ffacb69abe28afd4faa0f963224617fd615adfb6c06ae6d1f89ff12d00"
+  },
+  "old_binary_rejection": {
+    "argv": [
+      "/tmp/bzs-independent-claude-review/p1_3_migration_old_draft1",
+      "reject-upgraded",
+      "/tmp/bzs-independent-claude-review/p1-3-upgrade-fixture-01"
+    ],
+    "exit_code": 0,
+    "seconds": 0.032,
+    "log": "p1_3_fixed_old_binary_rejection.log",
+    "log_sha256": "f79344a6759568579266bf3971bfd1368a3d5b93635571f4414b1693a9c44e7d"
+  },
+  "inputs_still_match": true,
+  "pristine_old_fixture_still_matches": true,
+  "fixed_binary_sha256": "925237f75379cadaceedec69b2b07a03f043a2133e968986b2d1e083bb871d10"
+}

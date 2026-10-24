@@ -205,7 +205,7 @@ void Store::sweep_site_publication_locked() {
   while(rows.step()) {
     ++count;last=rows.num(0);
     if(site_publication_mode_locked(rows.text(3),rows.text(4),rows.num(5),rows.text(2),rows.text(6))>=2) {
-      Sql remove(db_,"DELETE FROM content_fts WHERE document_id=?");remove.bind(1,rows.text(1));remove.step();
+      remove_document_index_locked(rows.text(1));
     }
   }
   Sql update(db_,"UPDATE site_publication_state SET sweep_after=?,sweep_complete=? WHERE singleton=1");update.bind(1,last);update.bind(2,count<128?1:0);update.step();
@@ -406,17 +406,18 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
   // host/default-port/fragment aliases cannot retain a public index entry.
   Sql remove(db_,"DELETE FROM content_fts WHERE owner=? AND document_id IN (SELECT id FROM documents WHERE owner=? AND (url_key=? OR representation_key=?))");
   remove.bind(1,owner);remove.bind(2,owner);remove.bind(3,key);remove.bind(4,key);remove.step();
+  Sql substring(db_,"DELETE FROM substring_fts WHERE rowid IN (SELECT rowid FROM documents WHERE owner=? AND (url_key=? OR representation_key=?))");
+  substring.bind(1,owner);substring.bind(2,key);substring.bind(3,key);substring.step();
   if(!index) {
     // Once hidden by noindex, a frozen row cannot reappear after a later allow.
     // Explicit immutable snapshots and evidence remain available to their owner.
     Sql retract(db_,"DELETE FROM session_rows WHERE document_id IN (SELECT id FROM documents WHERE owner=? AND (url_key=? OR representation_key=?)) OR (representation_key=? AND session_id IN (SELECT id FROM sessions WHERE owner=?))");
     retract.bind(1,owner);retract.bind(2,key);retract.bind(3,key);retract.bind(4,key);retract.bind(5,owner);retract.step();
   } else {
-    Sql index_rows(db_,"SELECT d.id,s.title,s.canonical_text FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND (d.url_key=? OR d.representation_key=?) AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2");
+    Sql index_rows(db_,"SELECT d.id,s.title,s.canonical_text,d.url FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND (d.url_key=? OR d.representation_key=?) AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2");
     index_rows.bind(1,owner);index_rows.bind(2,key);index_rows.bind(3,key);
     while(index_rows.step()) {
-      Sql insert(db_,"INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
-      insert.bind(1,index_rows.text(0));insert.bind(2,owner);insert.bind(3,index_rows.text(1));insert.bind(4,index_rows.text(2));insert.step();
+      index_document_locked(owner,index_rows.text(0),index_rows.text(1),index_rows.text(2),index_rows.text(3));
     }
   }
 }

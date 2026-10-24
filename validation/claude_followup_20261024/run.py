@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import stat
 import sys
 import time
 
@@ -102,21 +103,51 @@ def record(stage: str, name: str, argv: list[str], *, asan: bool = False,
     return value
 
 
+def prepare_executables(folder: str) -> None:
+    if folder not in ("build", "build-asan"):
+        raise ValueError("Only known local build outputs may be prepared")
+    targets = NATIVE + (["searchd", "searchctl"] if folder == "build" else [])
+    repairs = []
+    for name in targets:
+        path = ROOT / folder / name
+        if not path.is_file() or path.is_symlink():
+            raise RuntimeError("Expected regular built executable: " + str(path))
+        mode = stat.S_IMODE(path.stat().st_mode)
+        if not mode & stat.S_IXUSR:
+            # Generated executables have occasionally lost only their mode in
+            # this workspace. Verify and retain bytes; never repair source files.
+            with path.open("rb") as stream:
+                if stream.read(4) != b"\x7fELF":
+                    raise RuntimeError("Expected compiled ELF executable")
+            before = sha(path)
+            path.chmod(mode | 0o111)
+            if sha(path) != before:
+                raise RuntimeError("Executable content changed during mode repair")
+            repairs.append({"path": str(path.relative_to(ROOT)), "mode_before": oct(mode),
+                            "mode_after": oct(stat.S_IMODE(path.stat().st_mode)), "sha256": before})
+    print(json.dumps({"built_executables_checked": len(targets), "mode_only_repairs": repairs}), flush=True)
+
+
 def full_stage(stage: str) -> None:
     record(stage, "configure-debug", ["cmake", "--preset", "dev", "-DBZS_PYTHON=" + str(PYTHON),
                                      "-DBZS_REQUIRE_PYTHON_TESTS=ON"], build=True)
     record(stage, "build-debug", ["cmake", "--build", "--preset", "dev", "-j2"], build=True)
+    record(stage, "prepare-debug-executables", [str(PYTHON), str(Path(__file__)), "prepare-executables", "build"], build=True)
     record(stage, "ctest", ["ctest", "--preset", "dev", "--parallel", "2", "--verbose", "--output-junit",
                             str(OUT / stage / "ctest.xml")])
     record(stage, "pytest", [str(PYTHON), "-m", "pytest", "python/tests", "-q", "-p", "no:cacheprovider"])
     record(stage, "configure-asan", ["cmake", "--preset", "asan", "-DBZS_PYTHON=" + str(PYTHON),
                                     "-DBZS_REQUIRE_PYTHON_TESTS=ON"], build=True)
     record(stage, "build-asan", ["cmake", "--build", "--preset", "asan-core", "-j2"], build=True)
+    record(stage, "prepare-asan-executables", [str(PYTHON), str(Path(__file__)), "prepare-executables", "build-asan"], build=True)
     record(stage, "asan", [str(PYTHON), str(Path(__file__)), "sanitizers"], asan=True)
     print(json.dumps({"stage": stage, "all_required_gates": "passed"}), flush=True)
 
 
 def main() -> None:
+    if len(sys.argv) == 3 and sys.argv[1] == "prepare-executables":
+        prepare_executables(sys.argv[2])
+        return
     if sys.argv[1:] == ["sanitizers"]:
         for target in NATIVE:
             argv = [str(ROOT / "build-asan" / target)]

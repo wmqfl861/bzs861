@@ -224,6 +224,12 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 ## 本地操作
 
+本地查询使用原 bzs/2 词项索引和子串辅助索引；短语、符号字面量、非 ASCII 子串及 URL 字段先取安全候选，再由同一精确匹配器验证。混合 AND 查询在候选上限前求两类候选的交集，词项 BM25 和匹配语义保持不变。辅助路径标为 `fts5_substring_verified`；只有无法构造安全正向候选的表达式仍用 `bounded_scan_recent`。候选和返回上限仍生效，预算不足时 `partial=true`，不承诺无限召回。
+
+辅助索引每字段最多 65536 个不同的 1–3 codepoint gram，字段超限以显式 overflow 标记继续进入原文复核；不会静默截掉后半正文。仅折叠 ASCII 大小写，不做 Unicode casefold、去重音或规范化。索引内容是可重建派生数据，快照和证据字节不变。
+
+已知旧 bzs/2 索引会在一个事务中补建辅助表并更新既有 `fts_tokenizer_version` 兼容标记；业务 schema 仍为 13，失败则整体回滚。升级前停止旧 Core，升级后的库拒绝旧二进制重新打开；此闸门不支持新旧进程混用同一数据库。备份恢复隔离规则保持原状。
+
 MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mode=single`（替代原 `total_frozen`）。连续单次调用不占用冻结会话配额；需稳定分页的调用仍使用 `search` / `search.page`，其配额与有效期不变。两条路径复用相同的 owner、删除、站点/页面发布约束及摘要处理。
 
 | 操作 | 说明 |

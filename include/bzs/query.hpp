@@ -18,9 +18,14 @@ namespace bzs {
   };
   Query parse_query(const Json& input);
   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type);
-  // Safe optional FTS candidate query. Unsupported expressions use a bounded scan,
+  // Safe optional word-FTS candidate query. Other shapes use substring candidates,
   // never a lossy approximation which could silently drop matching documents.
   std::optional<std::string> fts_candidates(const Query& q);
+  // Supplementary FTS5/ascii/detail=none candidate expression over indexed_grams.
+  // These are necessary substring grams, not replacements for exact matching.
+  // nullopt denotes an unconstrained candidate set; callers retain a safe word
+  // anchor or the bounded scan. Every emitted leaf includes its overflow marker.
+  std::optional<std::string> substring_candidates(const Query& q);
   // Legacy schema-2 ASCII projection. Schema 3 indexes immutable text with
   // the bzs tokenizer; document text and evidence never use this projection.
   std::string fts_index_text(std::string_view text);

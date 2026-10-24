@@ -72,6 +72,9 @@ namespace bzs {
     std::int64_t site_publication_manifest_generation_=0;
     bool site_publication_legacy_withdrawn_=false;
     Json search_impl(const std::string& owner,const Query& query,std::int64_t max_candidates,std::int64_t limit,bool freeze);
+    void remove_document_index_locked(const std::string& id);
+    void index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url);
+    void index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url);
     void migrate();
     void migrate_revocations_locked();
     void require_principal_active_locked(const std::string& owner);

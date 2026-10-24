@@ -1,0 +1,51 @@
+{
+  "scope": "Independent genuine 44253a7 database fixture; no schema pragma edits or new-library creation",
+  "prepared_at_utc": "2026-10-24T02:53:50.331173+00:00",
+  "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+  "source_sha256": "79da7f74c23c2360f0bf8fd533de574c5a18f0ad6aa2d2bf73ab1b6b4fee44ef",
+  "baseline_library_sha256": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+  "old_binary_sha256": "cc795b3966744df8dbe86ad1e3e7477c45389e2520125152d213ca009ba2e3d6",
+  "create_command_record": "p1_3_draft1_command.json",
+  "pristine_fixture": "/tmp/bzs-independent-claude-review/p1-3-draft-fixture-01",
+  "upgrade_working_copy": "/tmp/bzs-independent-claude-review/p1-3-upgrade-fixture-01",
+  "files": {
+    "fixtures/manifest.json": {
+      "sha256": "95dab791292bd87943ed2ebb9671fda172608e1d6ef5df731e99dfa44e7a8896",
+      "bytes": 75
+    },
+    "old_creation.json": {
+      "sha256": "6ddc70ec0bd41b60a993d6826c91222257b9871907d5a56f39af6fa0dbc549f1",
+      "bytes": 134336
+    },
+    "quarantined-old-backup.db": {
+      "sha256": "071354e6f3da9b27fedd0294cd07566176d37ffadf82cac3be946702064d4568",
+      "bytes": 569344
+    },
+    "quarantined-old-backup.db-shm": {
+      "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb",
+      "bytes": 32768
+    },
+    "quarantined-old-backup.db-wal": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "store.db": {
+      "sha256": "d72c48729f67e66b559a4b335ac30735728bc9b5bc9b161c05cad56f6afb18c9",
+      "bytes": 569344
+    },
+    "store.db-shm": {
+      "sha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb",
+      "bytes": 32768
+    },
+    "store.db-wal": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "working_copy_matches_pristine": true,
+  "old_table_count": 44,
+  "schema_user_version": 13,
+  "old_format": "bzs-ascii-cjk/2",
+  "new_library_verification": "pending; new implementation not integrated at fixture creation",
+  "runtime_files_policy": "Only probe source, logs and JSON evidence should be copied to validation; SQLite files and binaries remain transient."
+}

@@ -1,0 +1,31 @@
+{
+  "issue": "P1-3",
+  "status": "fixed",
+  "ctest": "27/27",
+  "pytest_passed": 1052,
+  "asan_ubsan_native_targets": 15,
+  "core_preflight": "87 cases / 1309 assertions",
+  "independent_review": "../independent/p1-3/p1_3_independent_review.json",
+  "independent_migration_checks": {
+    "original_library_fixture": 1475,
+    "new_library_upgrade": 1649,
+    "old_binary_rejection": 635
+  },
+  "independent_candidate_oracle": {
+    "checks": 313,
+    "query_shapes": 152,
+    "document_comparisons": 1368,
+    "differences": 0
+  },
+  "regressions": [
+    "oldest phrase/symbol/non-CJK Unicode beyond 2100 recent documents",
+    "AND candidate intersection and owner filtering before candidate limit",
+    "overflow widens to verified candidates without silently losing matches",
+    "atomic legacy word-index migration, rollback, frozen pages, snapshots and permanent identities"
+  ],
+  "limits": [
+    "Negative-only queries remain bounded scans with honest partial results",
+    "Stop older Core processes before opening the new index format; live mixed-version access is unsupported"
+  ],
+  "build_environment": "One generated sanitizer executable required a recorded mode-only repair; SHA-256 unchanged before tests."
+}

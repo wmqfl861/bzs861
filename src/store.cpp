@@ -149,6 +149,7 @@ namespace bzs {
      requests_today INTEGER NOT NULL DEFAULT 0);
  )SQL";
     const char* fts_schema="CREATE VIRTUAL TABLE content_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,title,body,tokenize='bzs');";
+    const char* substring_schema="CREATE VIRTUAL TABLE substring_fts USING fts5(document_id UNINDEXED,owner UNINDEXED,grams,tokenize='ascii',detail=none,columnsize=0);";
     bool has_column(sqlite3* db,const char* table,const char* column) {
       Stmt columns(db,std::string("PRAGMA table_info(")+table+")");
       while(columns.step())if(columns.text(1)==column)return true;
@@ -198,6 +199,7 @@ namespace bzs {
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
     require(version>=0&&version<=13,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    bool rebuild_substrings=version<3;
     Tx tx(db_);
     if(version>0) {
       Stmt quarantine(db_,"SELECT value FROM settings WHERE key='restore_quarantine'");
@@ -275,8 +277,15 @@ namespace bzs {
       tokenizer.step();
     } else {
       Stmt tokenizer(db_,"SELECT value FROM settings WHERE key='fts_tokenizer_version'");
-      require(tokenizer.step()&&tokenizer.text(0)==fts_tokenizer_version,"E_SCHEMA_VERSION",
+      require(tokenizer.step()&&(tokenizer.text(0)==fts_tokenizer_version||tokenizer.text(0)==fts_index_format_version),"E_SCHEMA_VERSION",
               "Index tokenizer version requires an explicit migration",409);
+      rebuild_substrings=tokenizer.text(0)==fts_tokenizer_version;
+    }
+    if(rebuild_substrings) {
+      exec(db_,"DROP TABLE IF EXISTS substring_fts;");exec(db_,substring_schema);
+    } else {
+      Stmt index(db_,"SELECT 1 FROM sqlite_master WHERE type='table' AND name='substring_fts'");
+      require(index.step(),"E_SCHEMA_VERSION","Substring index is missing; restore a complete database",409);
     }
     if(version<4) {
       if(!has_column(db_,"jobs","kind"))exec(db_,"ALTER TABLE jobs ADD COLUMN kind TEXT NOT NULL DEFAULT 'fixture.ingest';");
@@ -512,6 +521,15 @@ namespace bzs {
     }
     // Permanent key history must not make active-detail counts scan that history.
     exec(db_,"CREATE INDEX IF NOT EXISTS jobs_unarchived_owner ON jobs(owner) WHERE archived_at=0;");
+    if(rebuild_substrings) {
+      // Preserve the existing word-index membership and immutable snapshots.
+      // Policy SQL functions are registered after migration; reads still check
+      // current publication and the startup sweep can retract either index.
+      Stmt rows(db_,"SELECT d.id,d.owner,s.title,s.canonical_text,d.url FROM content_fts f JOIN documents d ON d.id=f.document_id AND d.owner=f.owner JOIN snapshots s ON s.id=d.current_snapshot WHERE d.deleted=0 AND s.index_allowed=1");
+      while(rows.step())index_substrings_locked(rows.text(1),rows.text(0),rows.text(2),rows.text(3),rows.text(4));
+      Stmt marker(db_,"UPDATE settings SET value=? WHERE key='fts_tokenizer_version'");
+      marker.bind(1,std::string(fts_index_format_version));marker.step();
+    }
     tx.commit();
   }
   std::int64_t Store::epoch_locked(const std::string& owner) {
@@ -601,6 +619,23 @@ namespace bzs {
       freed+=bytes;
     }
     if(!doomed.empty())usage_add_locked(owner, -freed, -static_cast<std::int64_t>(doomed.size()));
+  }
+  void Store::remove_document_index_locked(const std::string& id) {
+    Stmt word(db_,"DELETE FROM content_fts WHERE document_id=?");word.bind(1,id);word.step();
+    Stmt substring(db_,"DELETE FROM substring_fts WHERE rowid=(SELECT rowid FROM documents WHERE id=?)");
+    substring.bind(1,id);substring.step();
+  }
+  void Store::index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url) {
+    // Align the derived rowid with the document for bounded replacements and
+    // candidate intersections; field prefixes distinguish title/body/URL.
+    const auto grams=indexed_grams(title,'t')+" "+indexed_grams(body,'b')+" "+indexed_grams(url,'r');
+    Stmt index(db_,"INSERT INTO substring_fts(rowid,document_id,owner,grams) SELECT rowid,id,owner,? FROM documents WHERE id=? AND owner=?");
+    index.bind(1,grams);index.bind(2,id);index.bind(3,owner);index.step();
+  }
+  void Store::index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url) {
+    Stmt word(db_,"INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
+    word.bind(1,id);word.bind(2,owner);word.bind(3,title);word.bind(4,body);word.step();
+    index_substrings_locked(owner,id,title,body,url);
   }
   Json Store::ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind) {
     require_principal_active_locked(owner);
@@ -740,18 +775,11 @@ namespace bzs {
     }
     usage_add_locked(owner, bytes, 1);
     if(!preserve_current) {
-    Stmt del(db_, "DELETE FROM content_fts WHERE document_id=?");
-    del.bind(1, did);
-    del.step();
+    remove_document_index_locked(did);
     Stmt active_policy(db_,"SELECT 1 FROM document_publication WHERE owner=? AND url_key IN (?,?) AND index_allowed=0");
     active_policy.bind(1,owner);active_policy.bind(2,url_key);active_policy.bind(3,representation_key);
     if(parsed.index_allowed&&!active_policy.step()&&site_publication_mode_locked(source_kind,site_bindings,site_generation,input.url,meta_json)<2) {
-      Stmt ix(db_, "INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
-      ix.bind(1, did);
-      ix.bind(2, owner);
-      ix.bind(3, parsed.title);
-      ix.bind(4, parsed.text);
-      ix.step();
+      index_document_locked(owner,did,parsed.title,parsed.text,input.url);
     }
     if(parsed.publication.has("version")&&!stale_publication) {
       publish_policy_locked(owner,url_key,sid,parsed.publication);
@@ -921,9 +949,7 @@ namespace bzs {
     size.bind(1, id);
     size.step();
     auto freed=size.num(0), count=size.num(1);
-    Stmt ix(db_, "DELETE FROM content_fts WHERE document_id=?");
-    ix.bind(1, id);
-    ix.step();
+    remove_document_index_locked(id);
     // Evidence, frozen search rows and their cursors that point at these snapshots cascade away;
     // other documents, sessions and jobs of the same owner are unaffected (B2).
     Stmt snap(db_, "DELETE FROM snapshots WHERE document_id=?");
@@ -976,6 +1002,7 @@ namespace bzs {
       require(n.num(0)<64, "E_QUOTA", "Too many active search sessions; wait for expiry", 429);
     }
     auto fts=fts_candidates(q);
+    const auto substrings=substring_candidates(q);
     std::string sql;
     if(fts) {
       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
@@ -984,6 +1011,14 @@ namespace bzs {
  WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY r LIMIT ?)SQL";
+      if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
+        " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
+    } else if(substrings) {
+      sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
+ FROM substring_fts JOIN documents d ON d.rowid=substring_fts.rowid JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
+ WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
+ AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
+ ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
     } else {
       sql=R"SQL(SELECT d.id,s.id,s.title,s.canonical_text,d.url,d.host,s.content_type,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
@@ -992,12 +1027,13 @@ namespace bzs {
     }
     Stmt c(db_, sql);
     int bind=1;
-    if(fts) {
-      c.bind(bind++, *fts);
-      c.bind(bind++, owner);
+    if(fts||substrings) {
+      c.bind(bind++,fts?*fts:*substrings);
+      c.bind(bind++,owner);
     }
-    c.bind(bind++, owner);
-    c.bind(bind, max_candidates+1);
+    c.bind(bind++,owner);
+    if(fts&&substrings) { c.bind(bind++,*substrings);c.bind(bind++,owner); }
+    c.bind(bind,max_candidates+1);
     struct Hit {
       std::string doc, snap;
       std::int64_t score,publication_generation;
@@ -1025,7 +1061,7 @@ namespace bzs {
       hits.resize(static_cast<std::size_t>(limit));
       partial=true;
     }
-    auto retrieval=fts?"fts5_bm25_verified":"bounded_scan_recent";
+    auto retrieval=fts?"fts5_bm25_verified":substrings?"fts5_substring_verified":"bounded_scan_recent";
     if(!freeze) {
       Json results=Json::array();
       if(!hits.empty()) {
