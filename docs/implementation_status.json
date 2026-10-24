@@ -1,20 +1,18 @@
 {
   "version": "0.1.10",
-  "stage": "S2 takeover five increments with deadline settlement and Windows test-process watchdog correction",
-  "recorded_at": "2026-10-23",
-  "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+  "stage": "Claude audit followup corrections; S2 scope/status and freeze decision unchanged; accepted-package counts unchanged",
+  "recorded_at": "2026-10-24",
+  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
   "integration_inputs": {
-    "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
-    "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
-    "baseline_schema": 12,
+    "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
+    "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+    "review_branch_read_only": true,
+    "baseline_schema": 13,
     "schema": 13,
-    "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
-    "plan": "docs/handoff/S2_TAKEOVER_20261023.md",
-    "deadline_correction_baseline": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
-    "deadline_correction_author_commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
-    "deadline_execution_inputs": "validation/s2_takeover/deadline-followup-execution-inputs.json",
-    "windows_watchdog_baseline": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
-    "windows_watchdog_execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json"
+    "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+    "scope": "Audit followup only; source selection/review/enablement, S2 scope/status and freeze decision, validation policy, backup quarantine, permanent identities and scraping adapters remain unchanged.",
+    "evidence_directory": "validation/claude_followup_20261024"
   },
   "status_counts": {
     "partial": 37,
@@ -49,13 +47,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/s2_takeover/windows-watchdog-report.json",
-  "current_verification": "passed_focused_local_windows_watchdog_correction_scope_limited",
-  "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
-  "github_ci": "previous_fcb58e46_linux_27_of_27_and_15_sanitizers_passed_windows_16_of_17_crawl_watchdog_timeout_retained; verify_exact_new_published_commit",
-  "independent_review": "root_authored_test_only_watchdog_and_output_change_reviewed_by_two_non_authors; prior_product_reviews_preserved; full_product_signoff_not_performed",
+  "current_test_report": "validation/claude_followup_20261024/README.md",
+  "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
+  "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
+  "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
+  "independent_review": "Per-issue and cross-item reviewer roles, findings and exact input bindings are recorded in the batch validation record.",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/s2_takeover/windows-watchdog-review.json",
+  "review_record": "validation/claude_followup_20261024/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -71,7 +69,8 @@
     "validation/s2_next_five/json-race-report.json",
     "validation/s2_takeover/final-report.json",
     "validation/s2_takeover/ci-followup-report.json",
-    "validation/s2_takeover/deadline-followup-report.json"
+    "validation/s2_takeover/deadline-followup-report.json",
+    "validation/s2_takeover/windows-watchdog-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -2631,132 +2630,11 @@
     }
   ],
   "current_results": {
-    "status": "passed_focused_local_windows_watchdog_correction_scope_limited",
-    "scope": "Only the changed crawl test harness was rebuilt and executed locally; unchanged production full-suite evidence is separately historical.",
-    "focused_debug": {
-      "passed_suites": 1,
-      "failed_suites": 0,
-      "skipped_suites": 0,
-      "suite": "crawl",
-      "cases": 54,
-      "assertions": 2798,
-      "elapsed_seconds": 5.6439,
-      "run_lines": 54,
-      "pass_lines": 54,
-      "original_registration_order_confirmed": true,
-      "linux_watchdog_seconds": 45,
-      "junit": {
-        "path": "windows-watchdog-debug.xml",
-        "sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9"
-      },
-      "command": {
-        "record": "windows-watchdog-debug-command.json",
-        "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
-        "argv": [
-          "ctest",
-          "--test-dir",
-          "build",
-          "-R",
-          "^crawl$",
-          "--verbose",
-          "--output-on-failure",
-          "--output-junit",
-          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
-        ],
-        "exit_code": 0,
-        "elapsed_seconds": 5.673,
-        "log": "windows-watchdog-debug.log",
-        "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
-        "execution_inputs_and_binary_hashes_unchanged": true
-      }
-    },
-    "focused_asan_ubsan": {
-      "passed_suites": 1,
-      "failed_suites": 0,
-      "skipped_suites": 0,
-      "suite": "crawl",
-      "cases": 54,
-      "assertions": 2798,
-      "elapsed_seconds": 20.79,
-      "run_lines": 54,
-      "pass_lines": 54,
-      "original_registration_order_confirmed": true,
-      "linux_watchdog_seconds": 45,
-      "junit": {
-        "path": "windows-watchdog-asan.xml",
-        "sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4"
-      },
-      "command": {
-        "record": "windows-watchdog-asan-command.json",
-        "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
-        "argv": [
-          "ctest",
-          "--test-dir",
-          "build-asan",
-          "-R",
-          "^crawl$",
-          "--verbose",
-          "--output-on-failure",
-          "--output-junit",
-          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
-        ],
-        "exit_code": 0,
-        "elapsed_seconds": 20.817,
-        "log": "windows-watchdog-asan.log",
-        "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
-        "execution_inputs_and_binary_hashes_unchanged": true
-      }
-    },
-    "leak_detection_enabled": true,
-    "undefined_behavior_halt_enabled": true,
-    "unchanged_production_binaries_sha256": {
-      "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
-      "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
-      "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
-    },
-    "historical_unchanged_runtime_validation": {
-      "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
-      "report": {
-        "path": "deadline-followup-report.json",
-        "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
-      },
-      "local_ctest_passed": 27,
-      "local_sanitizer_executables_passed": 15,
-      "native_cases": 418,
-      "native_assertions": 13106,
-      "python_tests": 1049,
-      "contracts": 34,
-      "planning_guards": 13,
-      "genuine_schema_upgrade": "12 to 13; 39 legacy tables; 310 old-preparation and 1184 upgrade assertions",
-      "independent_store_probe": "6 cases / 92 assertions",
-      "rerun_for_this_test_only_correction": false
-    },
-    "previous_remote_ci": {
-      "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
-      "run_id": 39954357148,
-      "conclusion": "failure",
-      "linux": "success",
-      "linux_ctest_passed": 27,
-      "linux_sanitizer_executables_passed": 15,
-      "linux_native_cases": 418,
-      "linux_native_assertions": 13106,
-      "windows": "failure",
-      "windows_ctest_passed": 16,
-      "windows_ctest_total": 17,
-      "windows_failed_suite": "crawl",
-      "windows_crawl_timeout_seconds": 45.02,
-      "windows_completed_native_suites": 14,
-      "windows_completed_native_cases": 364,
-      "windows_completed_native_assertions": 10308,
-      "windows_crawl_completed_cases": "unknown; no case output before timeout",
-      "windows_search_modes_cases": 22,
-      "windows_http_cli_cases": 20,
-      "windows_http_revocation_cases": 4
-    },
-    "new_remote_ci": "Require successful actual Linux and Windows jobs on the containing published commit; also confirm the three Windows effective watchdogs in its verbose log.",
-    "counting_note": "Focused reruns overlap historical suites and do not add new product acceptance. The failed prior crawl is not counted as passed."
+    "status": "not_embedded_here; consult_exact_batch_record",
+    "record": "validation/claude_followup_20261024/README.md",
+    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
   },
-  "baseline_version": "0.1.9",
+  "baseline_version": "0.1.10",
   "planned_work_packages": 83,
   "s2_acceptance": "not_completed",
   "historical_review_records": [
@@ -2771,12 +2649,10 @@
     "validation/s2_takeover/deadline-followup-review.json"
   ],
   "verification_binding": {
-    "status": "test_only_execution_inputs_and_focused_local_evidence_bound_by_containing_git_commit",
-    "report": "validation/s2_takeover/windows-watchdog-report.json",
-    "source_manifest": "validation/s2_takeover/windows-watchdog-source-manifest.json",
-    "execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json",
-    "executed_binary_identity": "Only Debug and ASan crawl test executables rebuilt; both production libraries and searchd hashes unchanged; formal focused commands bind all binary hashes.",
-    "remote_ci": "Previous fcb Linux success and Windows crawl timeout are historical; require actual containing SHA Linux/Windows completion and effective Windows watchdog values.",
+    "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "record": "validation/claude_followup_20261024/README.md",
+    "remote_ci": "Consult the batch record for the exact published commit and its actual Linux/Windows result.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -4333,5 +4209,166 @@
       "remote_ci": "The previous 199eb635 Windows pass proves the SQLite correction only; verify the actual containing new SHA on both platforms.",
       "actions_url": "https://github.com/wmqfl861/bzs861/actions"
     }
+  },
+  "historical_verification_0_1_10_windows_watchdog": {
+    "stage": "S2 takeover five increments with deadline settlement and Windows test-process watchdog correction",
+    "recorded_at": "2026-10-23",
+    "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+    "integration_inputs": {
+      "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+      "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
+      "baseline_schema": 12,
+      "schema": 13,
+      "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
+      "plan": "docs/handoff/S2_TAKEOVER_20261023.md",
+      "deadline_correction_baseline": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+      "deadline_correction_author_commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+      "deadline_execution_inputs": "validation/s2_takeover/deadline-followup-execution-inputs.json",
+      "windows_watchdog_baseline": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+      "windows_watchdog_execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json"
+    },
+    "current_test_report": "validation/s2_takeover/windows-watchdog-report.json",
+    "current_verification": "passed_focused_local_windows_watchdog_correction_scope_limited",
+    "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
+    "github_ci": "previous_fcb58e46_linux_27_of_27_and_15_sanitizers_passed_windows_16_of_17_crawl_watchdog_timeout_retained; verify_exact_new_published_commit",
+    "independent_review": "root_authored_test_only_watchdog_and_output_change_reviewed_by_two_non_authors; prior_product_reviews_preserved; full_product_signoff_not_performed",
+    "full_product_independent_review": "not_performed",
+    "review_record": "validation/s2_takeover/windows-watchdog-review.json",
+    "current_results": {
+      "status": "passed_focused_local_windows_watchdog_correction_scope_limited",
+      "scope": "Only the changed crawl test harness was rebuilt and executed locally; unchanged production full-suite evidence is separately historical.",
+      "focused_debug": {
+        "passed_suites": 1,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "suite": "crawl",
+        "cases": 54,
+        "assertions": 2798,
+        "elapsed_seconds": 5.6439,
+        "run_lines": 54,
+        "pass_lines": 54,
+        "original_registration_order_confirmed": true,
+        "linux_watchdog_seconds": 45,
+        "junit": {
+          "path": "windows-watchdog-debug.xml",
+          "sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9"
+        },
+        "command": {
+          "record": "windows-watchdog-debug-command.json",
+          "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
+          "argv": [
+            "ctest",
+            "--test-dir",
+            "build",
+            "-R",
+            "^crawl$",
+            "--verbose",
+            "--output-on-failure",
+            "--output-junit",
+            "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 5.673,
+          "log": "windows-watchdog-debug.log",
+          "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
+          "execution_inputs_and_binary_hashes_unchanged": true
+        }
+      },
+      "focused_asan_ubsan": {
+        "passed_suites": 1,
+        "failed_suites": 0,
+        "skipped_suites": 0,
+        "suite": "crawl",
+        "cases": 54,
+        "assertions": 2798,
+        "elapsed_seconds": 20.79,
+        "run_lines": 54,
+        "pass_lines": 54,
+        "original_registration_order_confirmed": true,
+        "linux_watchdog_seconds": 45,
+        "junit": {
+          "path": "windows-watchdog-asan.xml",
+          "sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4"
+        },
+        "command": {
+          "record": "windows-watchdog-asan-command.json",
+          "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
+          "argv": [
+            "ctest",
+            "--test-dir",
+            "build-asan",
+            "-R",
+            "^crawl$",
+            "--verbose",
+            "--output-on-failure",
+            "--output-junit",
+            "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 20.817,
+          "log": "windows-watchdog-asan.log",
+          "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
+          "execution_inputs_and_binary_hashes_unchanged": true
+        }
+      },
+      "leak_detection_enabled": true,
+      "undefined_behavior_halt_enabled": true,
+      "unchanged_production_binaries_sha256": {
+        "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+        "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+        "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
+      },
+      "historical_unchanged_runtime_validation": {
+        "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+        "report": {
+          "path": "deadline-followup-report.json",
+          "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
+        },
+        "local_ctest_passed": 27,
+        "local_sanitizer_executables_passed": 15,
+        "native_cases": 418,
+        "native_assertions": 13106,
+        "python_tests": 1049,
+        "contracts": 34,
+        "planning_guards": 13,
+        "genuine_schema_upgrade": "12 to 13; 39 legacy tables; 310 old-preparation and 1184 upgrade assertions",
+        "independent_store_probe": "6 cases / 92 assertions",
+        "rerun_for_this_test_only_correction": false
+      },
+      "previous_remote_ci": {
+        "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+        "run_id": 39954357148,
+        "conclusion": "failure",
+        "linux": "success",
+        "linux_ctest_passed": 27,
+        "linux_sanitizer_executables_passed": 15,
+        "linux_native_cases": 418,
+        "linux_native_assertions": 13106,
+        "windows": "failure",
+        "windows_ctest_passed": 16,
+        "windows_ctest_total": 17,
+        "windows_failed_suite": "crawl",
+        "windows_crawl_timeout_seconds": 45.02,
+        "windows_completed_native_suites": 14,
+        "windows_completed_native_cases": 364,
+        "windows_completed_native_assertions": 10308,
+        "windows_crawl_completed_cases": "unknown; no case output before timeout",
+        "windows_search_modes_cases": 22,
+        "windows_http_cli_cases": 20,
+        "windows_http_revocation_cases": 4
+      },
+      "new_remote_ci": "Require successful actual Linux and Windows jobs on the containing published commit; also confirm the three Windows effective watchdogs in its verbose log.",
+      "counting_note": "Focused reruns overlap historical suites and do not add new product acceptance. The failed prior crawl is not counted as passed."
+    },
+    "verification_binding": {
+      "status": "test_only_execution_inputs_and_focused_local_evidence_bound_by_containing_git_commit",
+      "report": "validation/s2_takeover/windows-watchdog-report.json",
+      "source_manifest": "validation/s2_takeover/windows-watchdog-source-manifest.json",
+      "execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json",
+      "executed_binary_identity": "Only Debug and ASan crawl test executables rebuilt; both production libraries and searchd hashes unchanged; formal focused commands bind all binary hashes.",
+      "remote_ci": "Previous fcb Linux success and Windows crawl timeout are historical; require actual containing SHA Linux/Windows completion and effective Windows watchdog values.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    },
+    "baseline_version": "0.1.9"
   }
 }

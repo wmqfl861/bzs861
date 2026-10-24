@@ -1,0 +1,599 @@
+--- a/HANDOFF_START_HERE.md
++++ b/HANDOFF_START_HERE.md
+@@ -1,6 +1,16 @@
+ # bzs861 · 当前开发入口
+ 
+-**更新：2026-10-23｜当前范围：0.1.10 接手后的五项增量｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
++**更新：2026-10-24｜当前开发：Claude 审计后续修正｜已发布版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
++
++本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续。审计分支 `review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 仅作只读材料，没有合并；八项原问题的实测与语义限定见[基线结论](validation/claude_followup_20261024/baseline-findings.json)。按 P1-2、P1-1、P1-3、P2-1 至 P2-4 的顺序修复，P2-5 的原查询补丁另经评审。逐项回归、独立反例、失败记录和准确执行输入见[本批验证记录](validation/claude_followup_20261024/)。
++
++当前代码涉及无持久会话的 `search.once`、永久身份与活动明细容量分离、词项与子串候选索引、仅 Accept-Encoding 的 Vary 支持、显式读取的逐跳缓存证明及 robots/字符集/查询匹配修正。接口与边界见 [API](docs/API.md)、[任务保留](docs/JOB_RETENTION.md)、[HTTP 跳转缓存](docs/HTTP_REDIRECT_CACHE.md)；各项状态以实际冻结代码和验证记录为准。本页不预先声明整批最终门禁、发布提交或远端 CI 已完成，也不产生新版本或新 tag。
++
++来源选审启用、S2 冻结状态、validation 入库政策、backup 隔离、永久幂等身份保留与抓取适配器六项决定保持。17 条来源仍全部禁用，站点登记为空；S0/S1/S2 均未完整签收。
++
++## 0.1.10 历史基线与验证
++
++以下记录上一轮五项增量及其后续修正，不代替本批新输入的验证。
+ 
+ 本轮从已发布0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`、schema12接续。基线的Linux/Windows [CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547) 已核对成功；最终输入须另核对自己的精确提交CI。schema13组合来源发布、主体撤权及共享请求迁移，保留0.1.9的JSON并发修复与条件重验证。
+ 
+@@ -8,13 +18,13 @@
+ 
+ 随后以 `199eb635ca90c657dff673fbf88bed44e7c4b40b` 发布测试连接释放修正及两条资源回归，该次生产代码不变，证据见[HTTP清理后续报告](validation/s2_takeover/ci-followup-report.json)。其 [CI 39950116698](https://github.com/wmqfl861/bzs861/actions/runs/39950116698) 的Windows17/17通过，Linux为26/27：原一秒恢复测试出现额外source_unknown事件。整体期限触发的RPC超时分类及原子终态结算随后修正，完整验证见[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)，原E2E保持。
+ 
+-该生产修正发布为 `fcb58e4679a5bbdff17319b7b4ebff7019733eab`，其 [CI 39954357148](https://github.com/wmqfl861/bzs861/actions/runs/39954357148) 的Linux27/27及15套sanitizer通过；Windows16/17，唯一失败为crawl整个进程45.02秒超时，无法从旧缓冲输出确认完成到了哪个用例。当前仅为Windows设置core90秒、crawl和site_publication120秒的有限watchdog，并增加crawl逐例即时RUN/PASS与耗时。54个原用例、断言、生产源码和二进制保持，Linux属性不变；[当前报告](validation/s2_takeover/windows-watchdog-report.json)分别记录本轮聚焦验证、未变生产库的历史全量成绩及原失败。新提交仍须取得自己的实际双平台CI，不据调整后的进程上限宣称产品性能验收完成。
++该生产修正发布为 `fcb58e4679a5bbdff17319b7b4ebff7019733eab`，其 [CI 39954357148](https://github.com/wmqfl861/bzs861/actions/runs/39954357148) 的Linux27/27及15套sanitizer通过；Windows16/17，唯一失败为crawl整个进程45.02秒超时，无法从旧缓冲输出确认完成到了哪个用例。该次仅为Windows设置core90秒、crawl和site_publication120秒的有限watchdog，并增加crawl逐例即时RUN/PASS与耗时。54个原用例、断言、生产源码和二进制保持，Linux属性不变；[该次报告](validation/s2_takeover/windows-watchdog-report.json)分别记录本轮聚焦验证、未变生产库的历史全量成绩及原失败。后续提交仍须取得自己的实际双平台CI，不据调整后的进程上限宣称产品性能验收完成。
+ 
+ | 入口 | 内容 |
+ | --- | --- |
+-| [本轮五项范围](docs/handoff/S2_TAKEOVER_20261023.md) | 接手来源、原工作包与验收映射、实施边界 |
++| [上一轮五项范围](docs/handoff/S2_TAKEOVER_20261023.md) | 接手来源、原工作包与验收映射、实施边界 |
+ | [当前进度](docs/DEVELOPMENT_STATUS.md)、[机器状态](docs/implementation_status.json) | 实际实现、未完成部分和本轮验证状态 |
+-| [当前Windows watchdog报告](validation/s2_takeover/windows-watchdog-report.json)、[截止时间报告](validation/s2_takeover/deadline-followup-report.json) | 当前测试设施修正与前次生产全量验证分开记录；原失败、命令和独立复核保留 |
++| [历史 Windows watchdog 报告](validation/s2_takeover/windows-watchdog-report.json)、[截止时间报告](validation/s2_takeover/deadline-followup-report.json) | 该次测试设施修正与前次生产全量验证分开记录；原失败、命令和独立复核保留 |
+ | [来源发布](docs/SOURCE_PUBLICATION.md)、[主体撤权](docs/PRINCIPAL_REVOCATION.md) | 持久政策收紧、管理员入口与恢复边界 |
+ | [HTTP新鲜度](docs/HTTP_FRESHNESS.md)、[共享读取](docs/SHARED_READS.md)、[搜索预设](docs/SEARCH_MODES.md) | 缓存与取消语义、预算和公开接口 |
+ | [蓝图](docs/planning/development_blueprint_v1.2.md)、[切片计划](docs/planning/slices_v1.2.json) | 原83包/161验收/10切片，依赖与验收语义保留 |
+--- a/README.md
++++ b/README.md
+@@ -1,10 +1,10 @@
+ # 不周山搜索工具 · bzs861
+ 
+-**状态：0.1.10 接手后的五项增量。** 从已发布0.1.9继续，增加搜索来源持久发布限制、管理员主体撤权、独立HTTP缓存新鲜度、可分别取消的共享批读，以及fast/balanced/deep搜索执行预算。范围见[接手计划](docs/handoff/S2_TAKEOVER_20261023.md)，实际验证见[当前报告](validation/s2_takeover/windows-watchdog-report.json)。S0、S1、S2的完整验收仍未完成。
++**状态：Claude 审计后续修正；已发布版本仍为 0.1.10。** 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，保留只读审计材料，先复现八项问题，再按约定顺序修复。无会话本地查询、永久身份容量、候选索引、HTTP 缓存、robots、字符集及查询匹配的代码范围与限制见 [API](docs/API.md)；逐项输入、真实失败和执行结果见[本批验证记录](validation/claude_followup_20261024/)。整批最终门禁、发布提交及远端 CI 以该记录为准，此处不预写通过或新版本。S0、S1、S2 的完整验收仍未完成。
+ 
+-生产实现原 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。当前仅调整Windows三个测试进程上限并增加crawl逐例即时进度，生产源码及二进制保持；聚焦验证与旧失败证据见当前报告，完整公开CI按新精确SHA对应的Actions核对。
++上一轮 0.1.10 生产实现的历史 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。该次 watchdog 修正只调整 Windows 三个测试进程上限并增加 crawl 逐例即时进度，生产源码及二进制保持；其聚焦验证与原失败见[历史报告](validation/s2_takeover/windows-watchdog-report.json)，这些成绩不代替本批改动的验证。
+ 
+-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[验证说明](validation/s2_takeover/README.md)区分作者、独立反例、真实升级和最终整合输入，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
++目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
+ 
+ 
+ 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
+@@ -13,10 +13,10 @@
+ 
+ | 能力 | 当前边界 |
+ |---|---|
+-| 本地导入、搜索与证据 | 保留显式 HTML/TXT 导入、不可变快照、冻结分页、UTF-8 字节定位、原文查找、用户隔离和权限复核 |
++| 本地导入、搜索与证据 | 显式 HTML/TXT 导入、不可变快照；`search.once` 单次返回不创建持久会话，原冻结分页、UTF-8 定位和权限复核保留 |
+ | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
+ | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
+-| 网页读取候选实现 | 缓存指令独立于validator；完整表示按年龄/profile复用或条件刷新，no-store无新持久快照，cache_only陈旧则拒绝；直接出站仍受连接层策略限制 |
++| 网页读取候选实现 | 缓存指令独立于 validator；直达或有完整证明的 HTTP 链按年龄/profile 复用，逐跳期限、删除和发布约束保持；no-store 无新持久快照 |
+ | 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务在派发时共享一次读取，逐订阅取消和一次计费，收据原子提交 |
+ | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
+ | 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
+@@ -25,9 +25,9 @@
+ | 搜索执行模式 | 可查看fast/balanced/deep来源数、候选数和期限上限；覆盖只可收紧，报告省略来源；只搜索，不自动读取或调用模型 |
+ | 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
+ | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
+-| 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
++| 检索改进候选实现 | 词项 BM25 与子串辅助索引先取安全候选，再按原精确语义复核；预算仍有界，overflow 回原文复核，片段按 UTF-8 字节定位 |
+ | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
+-| 任务历史回收 | 至少七天后压缩稳定终态明细，永久保留 key/指纹/计费摘要；活动与未结算任务受保护，无引用过期 robots 可回收 |
++| 任务历史回收 | 至少七天后压缩稳定终态明细，永久 key/指纹/计费摘要不占未压缩明细容量；活动、暂停与未结算任务仍受保护 |
+ | 持久调度与会话 | 批读与map/crawl持久轮转；联网搜索冻结版本、游标和元数据事件，支持重连、去重、取消、过期与背压 |
+ | 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结、来源贡献与外部消融配对；固定全池IDCG，缺失/失败不当空结果，完整质量门禁仍阻塞 |
+ | 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
+@@ -156,6 +156,8 @@
+ 
+ ## 已有数据与后续范围
+ 
++当前业务 schema 仍为13；子串辅助索引使用新的兼容标记，升级前须停止旧 Core。新版完成升级后旧二进制不能重新打开该库，不支持新旧进程混用；真实 442 旧库升级证据见[本批记录](validation/claude_followup_20261024/independent/p1-3/)。
++
+ 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
+ 
+ 下一步继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
+--- a/docs/DEVELOPMENT_STATUS.md
++++ b/docs/DEVELOPMENT_STATUS.md
+@@ -1,8 +1,16 @@
+-# 开发进度：0.1.10 接手后的五项增量
++# 开发进度：Claude 审计后续修正（已发布版本仍为 0.1.10）
+ 
+-更新：2026-10-23。本轮从另一会话已发布的0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`、schema12继续。真实远端main与原工作区一致，来源策略未提交测试草稿已保留并审查；基线[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)的Linux/Windows成功只证明该旧输入。范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)，本轮证据见[验证说明](../validation/s2_takeover/README.md)和[当前报告](../validation/s2_takeover/windows-watchdog-report.json)。
++更新：2026-10-24。本批以 `44253a752f945fdfab9810192e583b39fe5f6d83` 为基线，审计分支 `review/claude-2026-10-24` 保持只读；先复现全部八项，再按约定顺序修复。原复现的语义限定见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)，各阶段正式回归、完整门禁、独立反例和失败记录见[本批验证记录](../validation/claude_followup_20261024/)。整批最终输入、发布 SHA 和远端 CI 在实际完成后另行绑定，不从某个单项或旧输入推导通过；没有新 tag 或版本声明。
+ 
+-## 五项实现与实际边界
++本批涉及 MCP 单次本地查询、永久身份与明细容量分离、保留原匹配语义的子串候选索引、精确 request profile 下的 Accept-Encoding、逐跳 HTTP 缓存协议、无关损坏 robots 标识隔离、声明字符集与查询字段大小写折叠。具体接口以 [API](API.md)、[任务保留](JOB_RETENTION.md)、[HTTP 新鲜度](HTTP_FRESHNESS.md)、[HTTP 跳转缓存](HTTP_REDIRECT_CACHE.md) 和实际冻结代码为准；这些修正不签收新的完整工作包。
++
++当前 schema 仍为13，辅助索引通过既有兼容标记从 `bzs-ascii-cjk/2` 升级到 `bzs-ascii-cjk/2+codepoint-grams/1`。须先停止旧 Core，再由新版打开升级；旧二进制之后拒绝重新打开，不支持混用。真实 442 旧库在副本上的升级、原业务行与冻结结果、旧二进制拒绝和隔离对照证据见[独立迁移记录](../validation/claude_followup_20261024/independent/p1-3/)。它与上一轮 schema12→13 的39表证据分别保留。
++
++来源选审启用、S2 冻结状态、validation 入库政策、backup 隔离、永久幂等身份保留和抓取适配器六项决定保持。17条来源仍全部禁用、站点为空；原83包/161验收/10切片与37部分、46未开始、0完整签收均不变。
++
++以下是上一轮 0.1.10 五项增量与后续发布的历史说明；其“本次/本轮”指对应历史输入，不能作为当前审计修正的验证结论。
++
++## 历史五项实现与实际边界
+ 
+ | 增量 | 实现 | 保留的边界 |
+ | --- | --- | --- |
+@@ -18,7 +26,7 @@
+ 
+ 独立缓存审查保留真实反例：203和空正文crawl遗漏no-store，失败304收紧后旧缓存仍可复用，重复Pragma丢失早先限制，截断证据被误拒；还核对Worker profile RPC期间过期、提取耗时重置响应年龄。原始失败和修复后证据分别保留，固定回归进入CTest/Python与CI，不能用移除断言、盲目重试或忽略失败替代修复。
+ 
+-schema13仅追加来源规则、主体撤权及共享请求结构。真实基线0.1.9静态库新建schema12数据库，再由当前库升级副本；39张旧表的旧列逐表比较行数及内容摘要，覆盖快照/证据、删除、来源配额、robots、local/web会话、各状态任务及压缩摘要。旧元数据不会虚构新鲜度；旧web会话需显式激活来源清单。旧、新backup继续隔离。真实升级、跨组件独立审核与作者自测的角色和输入分别记录。
++上一轮 schema12→13 追加来源规则、主体撤权及共享请求结构。真实基线0.1.9静态库新建schema12数据库，再由该次库升级副本；39张旧表的旧列逐表比较行数及内容摘要，覆盖快照/证据、删除、来源配额、robots、local/web会话、各状态任务及压缩摘要。旧元数据不会虚构新鲜度；旧web会话需显式激活来源清单。旧、新backup继续隔离。真实升级、跨组件独立审核与作者自测的角色和输入分别记录。
+ 
+ ## 规划与剩余验收
+ 
+@@ -28,9 +36,9 @@
+ 
+ 继续完成通用共享取消、独立撤销journal/恢复连续性、广泛长期爬虫与会话故障、跨owner公共集合、跨节点及完整依赖验收；动态页面、文档、模型研究、私人资料、订阅和Windows完整安装包按原切片推进。原黄金40条字节和20/15/5划分、原合同/锁、历史validation全部保持。
+ 
+-## 本轮验证与交付
++## 上一轮验证与交付（历史）
+ 
+-作者聚焦测试、独立反例、真实旧库升级和最终整合门禁分开记录；最终实际数量、二进制与源码哈希以[当前报告](../validation/s2_takeover/windows-watchdog-report.json)为准。Linux完整CTest不允许把跳过当通过，ASan/UBSan开启泄漏检测，原合同和计划守卫保留。Windows继续执行原生与HTTP阻塞门槛，完整Worker打包仍属S9。
++作者聚焦测试、独立反例、真实旧库升级和最终整合门禁分开记录；该次实际数量、二进制与源码哈希以[历史报告](../validation/s2_takeover/windows-watchdog-report.json)为准。Linux完整CTest不允许把跳过当通过，ASan/UBSan开启泄漏检测，原合同和计划守卫保留。Windows继续执行原生与HTTP阻塞门槛，完整Worker打包仍属S9。
+ 
+ 首次生产实现的历史 `final-v2` 冻结222个执行输入，12条最终命令运行前后均一致。Linux完整 **27/27套CTest通过、0跳过**，其中15套原生共413个用例/12,906条断言，Python为1,049项；另以 `detect_leaks=1` 完成 **15/15套ASan/UBSan**。原合同34组、计划守卫13组、依赖检查与历史保持检查通过。真实旧库建库310条断言、升级1184条断言通过；共享读取独立探针以最终库重链重放3例/99条断言通过。这些重复覆盖不累加为产品验收数量。
+ 
+@@ -60,4 +68,4 @@
+ 
+ 45秒上限沿用自该套件35例时，当前54例，前两次实际Windows完成分别为43.00和40.36秒。本次core44.80/45秒和site_publication56.88/60秒也接近上限，因此只为Windows将core设为90秒、crawl及site_publication设为120秒。全部保留有限阻塞式超时；原要求没有将此进程watchdog定义为产品性能阈值，业务期限、SQLite持久化配置和正式性能验收要求保持。多个套件耗时增加是观察结果，没有同机对照可确定宿主原因，也不能从超时日志排除某个crawl用例停滞。
+ 
+-crawl仅增加chrono计时与main逐例立即刷出的RUN/PASS，原54个测试函数、fixture、断言、注册顺序与失败退出语义保持。新冻结230个执行输入，本地Debug为54/54例、2,798断言（5.64秒），ASan/UBSan为同54例/2,798断言（20.79秒），开启泄漏检测。生产源码及Debug/ASan生产库、searchd哈希保持；本轮没有把历史完整27套、15套sanitizer或真实升级冒充新执行。Linux生成后的27套属性保持，实际Windows90/120/120秒与新SHA的完整双平台结果仍须在发布后核对。当前证据见[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)，既有1,325份validation原字节保留，正式37/46/0进度不变。
++crawl仅增加chrono计时与main逐例立即刷出的RUN/PASS，原54个测试函数、fixture、断言、注册顺序与失败退出语义保持。新冻结230个执行输入，本地Debug为54/54例、2,798断言（5.64秒），ASan/UBSan为同54例/2,798断言（20.79秒），开启泄漏检测。生产源码及Debug/ASan生产库、searchd哈希保持；本轮没有把历史完整27套、15套sanitizer或真实升级冒充新执行。Linux生成后的27套属性保持，实际Windows90/120/120秒与新SHA的完整双平台结果仍须在发布后核对。该次证据见[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)，既有1,325份validation原字节保留，正式37/46/0进度不变。
+--- a/docs/handoff/NEXT_AGENT.md
++++ b/docs/handoff/NEXT_AGENT.md
+@@ -1,8 +1,14 @@
+ # 下一会话接手顺序
+ 
+-更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[当前Windows watchdog报告](../../validation/s2_takeover/windows-watchdog-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI。原[生产实现报告](../../validation/s2_takeover/final-report.json)、[HTTP清理报告](../../validation/s2_takeover/ci-followup-report.json)和[截止时间报告](../../validation/s2_takeover/deadline-followup-report.json)作为各自历史输入保留。
++更新：2026-10-24。当前接续 Claude 审计修正，已发布版本仍为0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读 HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[本批基线结论](../../validation/claude_followup_20261024/baseline-findings.json)、[本批验证记录](../../validation/claude_followup_20261024/)和[机器状态](../implementation_status.json)，再核对实际包含提交与其CI。上一轮 schema12→13、截止时间与 Windows watchdog 报告保留为历史，不代替本批验证。
+ 
+-## 当前基线与接口
++本批基线为 `44253a752f945fdfab9810192e583b39fe5f6d83`，只读审计材料为 `30f058557e3f7ebb873e9780759323b49cfe9636`。修复顺序为 P1-2→P1-1→P1-3→P2-1..4，P2-5 原补丁评审后接纳；先核查已有阶段与剩余工作，不重写原失败或审计材料。最终完整输入、发布提交及双平台CI没有预先声明通过，不创建新 tag。
++
++本地单次查询用 `search.once`；需要稳定分页仍用 `search/search.page`。永久任务/搜索幂等身份保留，明细容量独立计数。子串索引升级仍是 schema13，但必须先停止旧 Core，不能让新旧格式进程混用数据库；真实旧库升级及隔离证据见本批独立 p1-3 记录。显式跳转缓存的逐跳准入、计费、删除和原始/最终发布范围见 [HTTP_REDIRECT_CACHE](../HTTP_REDIRECT_CACHE.md)；反向 percent 身份等价仍是已记录的既存边界。
++
++以下为上一轮接口和历史证据，段内“当前/本次”均限于对应历史修正。
++
++## 上一轮基线与保留接口
+ 
+ 本轮接手基线为0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`，CI39725326547成功。当前schema13组合来源发布、主体撤权与共享批读。真实schema12建库升级的可重放探针、旧39表摘要和备份隔离证据在validation/s2_takeover/migration，不能用手造旧表或修改user_version替代。
+ 
+@@ -22,7 +28,7 @@
+ 
+ ## 接续开发
+ 
+-先修当前精确提交上任何真实失败，再按原蓝图扩展剩余S2工作。完整B-24仍需直接读取、crawl/search、迟到订阅与更广取消矩阵；AUTH-01仍需独立撤销journal、恢复连续性及远程多客户端隔离；MODE-01后续读取/模型能力必须有真实实现与独立预算，不可仅改标签。
++先完成当前审计修正剩余项、精确最终输入的完整门禁和独立复核，再按原蓝图处理剩余S2工作；六项保留决定与S2冻结状态不变。完整B-24仍需直接读取、crawl/search、迟到订阅与更广取消矩阵；AUTH-01仍需独立撤销journal、恢复连续性及远程多客户端隔离；MODE-01后续读取/模型能力必须有真实实现与独立预算，不可仅改标签。
+ 
+ QA-02先取得真实人工标签/裁决与目标环境证据，冻结方法/阈值后才比较质量；不得AI填人审、看holdout调参或用合成成绩冒充真实消融。S0保留真实来源审核/实测门槛；广泛长时、物理断电、跨owner集合、跨节点与依赖完整性不由有限回归代替。
+ 
+--- a/docs/GITHUB_HANDOFF.md
++++ b/docs/GITHUB_HANDOFF.md
+@@ -1,10 +1,16 @@
+ # GitHub 交付与开发历史
+ 
+-更新：2026-10-23。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
++更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+ 
+-## 当前增量与已交付输入
++## 当前审计后续开发
+ 
+-当前范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/windows-watchdog-report.json)，发布前报告不预写未来自身SHA或CI成功。
++本批从已发布 main `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，已发布版本仍为0.1.10，没有新 tag。`review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 只读，不合并或修改审计材料；实际复现见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)。八项修正按约定顺序推进，每项保留正式回归、完整门禁、独立反例与原始失败，准确结果和提交表见[本批验证记录](../validation/claude_followup_20261024/)。
++
++本页不预写整批最终门禁、未来发布 SHA 或远端 CI 成功。发布前须核对真实远端父提交、精确冻结输入和工作树；非强制更新后再核对实际 commit/tree 及该 SHA 的 Linux/Windows 结果。来源选审启用、S2冻结、validation入库、backup隔离、永久幂等保留与抓取适配器决定不变。
++
++## 已交付输入与历史来源
++
++上一轮范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/windows-watchdog-report.json)，发布前报告不预写未来自身SHA或CI成功。
+ 
+ | 已交付输入 / 历史来源 | 提交 | 说明 |
+ |---|---|---|
+@@ -34,7 +40,7 @@
+ 
+ 截止时间修正从199eb635继续，生产变更为src/web.cpp与src/sessions.cpp的超时分类和原子终态结算；追加5项search_modes原生回归及说明。[截止时间报告](../validation/s2_takeover/deadline-followup-report.json)绑定完整重新验证，原final-v2、HTTP清理报告及全部既有validation保留。已发布为fcb58e46，其实际Linux通过、Windows进程超时结果见上表。
+ 
+-当前从fcb58e46修正Windows测试watchdog与crawl输出观察性：仅CMakeLists.txt中的Windows core90/crawl120/site_publication120秒和tests/crawl.cpp的计时/即时输出，生产源码、原54例及断言不变。新[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)绑定聚焦验证及原始失败；不以新的进程上限宣称性能验收。发布须以完整fcb58e4679a5bbdff17319b7b4ebff7019733eab为精确父提交，核对新tree，实际Windows日志须确认三个新时限及全部17套通过，Linux仍须完成原27套及15套sanitizer。
++44253a7 从fcb58e46修正Windows测试watchdog与crawl输出观察性：仅CMakeLists.txt中的Windows core90/crawl120/site_publication120秒和tests/crawl.cpp的计时/即时输出，生产源码、原54例及断言不变。新[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)绑定聚焦验证及原始失败；不以新的进程上限宣称性能验收。该次发布以完整fcb58e4679a5bbdff17319b7b4ebff7019733eab为父提交；对应Windows时限及双平台结果只证明该次输入。本批实际父提交和 CI 必须重新核对。
+ 
+ ## 原始历史为何不同
+ 
+@@ -47,6 +53,6 @@
+ 
+ ## 证据分期
+ 
+-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；当前0.1.10为 `validation/s2_takeover/`。旧证据不覆盖、不改名冒充新运行。
++`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；当前审计后续为 `validation/claude_followup_20261024/`。旧证据不覆盖、不改名冒充新运行。
+ 
+ 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -245,7 +245,7 @@
+ 
+ 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
+ 
+-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前 schema 11 保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列，并增加联网会话/版本/事件。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
++删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前业务 schema 为13，保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列、schema11 的联网会话/版本/事件及后续 HTTP 元数据、来源发布、主体撤权和共享读取结构。子串辅助索引通过既有 `fts_tokenizer_version` 兼容标记单独迁移；升级前须停止旧 Core，不支持新旧格式进程混用。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
+ 
+ ## worker RPC 与错误
+ 
+--- a/docs/implementation_status.json
++++ b/docs/implementation_status.json
+@@ -1,20 +1,18 @@
+ {
+   "version": "0.1.10",
+-  "stage": "S2 takeover five increments with deadline settlement and Windows test-process watchdog correction",
+-  "recorded_at": "2026-10-23",
+-  "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
++  "stage": "Claude audit followup corrections; S2 freeze and accepted-package counts unchanged",
++  "recorded_at": "2026-10-24",
++  "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
+   "integration_inputs": {
+-    "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
+-    "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
+-    "baseline_schema": 12,
++    "main": "44253a752f945fdfab9810192e583b39fe5f6d83",
++    "tree": "a4c60c4daf197ed60ab12a00a430cd0372c7a7ac",
++    "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
++    "review_branch_read_only": true,
++    "baseline_schema": 13,
+     "schema": 13,
+-    "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
+-    "plan": "docs/handoff/S2_TAKEOVER_20261023.md",
+-    "deadline_correction_baseline": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
+-    "deadline_correction_author_commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
+-    "deadline_execution_inputs": "validation/s2_takeover/deadline-followup-execution-inputs.json",
+-    "windows_watchdog_baseline": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+-    "windows_watchdog_execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json"
++    "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
++    "scope": "Audit followup only; source approvals, S2 freeze, validation policy, backup quarantine, permanent identities and scraping adapters retained.",
++    "evidence_directory": "validation/claude_followup_20261024"
+   },
+   "status_counts": {
+     "partial": 37,
+@@ -49,13 +47,13 @@
+   "planned_acceptance_suite_executed": false,
+   "s0_live_sources": "not_completed",
+   "s1_acceptance": "not_completed",
+-  "current_test_report": "validation/s2_takeover/windows-watchdog-report.json",
+-  "current_verification": "passed_focused_local_windows_watchdog_correction_scope_limited",
+-  "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
+-  "github_ci": "previous_fcb58e46_linux_27_of_27_and_15_sanitizers_passed_windows_16_of_17_crawl_watchdog_timeout_retained; verify_exact_new_published_commit",
+-  "independent_review": "root_authored_test_only_watchdog_and_output_change_reviewed_by_two_non_authors; prior_product_reviews_preserved; full_product_signoff_not_performed",
++  "current_test_report": "validation/claude_followup_20261024/README.md",
++  "current_verification": "per_issue_records_available; final_batch_results_are_not_predeclared",
++  "upstream_baseline_reproduction": "All eight audit findings were reproduced on exact 44253a7 with recorded semantic limits; see validation/claude_followup_20261024/baseline-findings.json. Genuine 442 old-library index migration evidence is separate from historical schema12-to-13 evidence.",
++  "github_ci": "not_predeclared_for_audit_followup; verify_exact_published_commit_after_publication",
++  "independent_review": "Per-issue independent evidence retained; cross-item final review and exact final-input binding belong in the batch validation record.",
+   "full_product_independent_review": "not_performed",
+-  "review_record": "validation/s2_takeover/windows-watchdog-review.json",
++  "review_record": "validation/claude_followup_20261024/README.md",
+   "historical_reports": [
+     "validation/test_report.json",
+     "validation/takeover/test_report.json",
+@@ -71,7 +69,8 @@
+     "validation/s2_next_five/json-race-report.json",
+     "validation/s2_takeover/final-report.json",
+     "validation/s2_takeover/ci-followup-report.json",
+-    "validation/s2_takeover/deadline-followup-report.json"
++    "validation/s2_takeover/deadline-followup-report.json",
++    "validation/s2_takeover/windows-watchdog-report.json"
+   ],
+   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
+   "features": [
+@@ -2631,132 +2630,11 @@
+     }
+   ],
+   "current_results": {
+-    "status": "passed_focused_local_windows_watchdog_correction_scope_limited",
+-    "scope": "Only the changed crawl test harness was rebuilt and executed locally; unchanged production full-suite evidence is separately historical.",
+-    "focused_debug": {
+-      "passed_suites": 1,
+-      "failed_suites": 0,
+-      "skipped_suites": 0,
+-      "suite": "crawl",
+-      "cases": 54,
+-      "assertions": 2798,
+-      "elapsed_seconds": 5.6439,
+-      "run_lines": 54,
+-      "pass_lines": 54,
+-      "original_registration_order_confirmed": true,
+-      "linux_watchdog_seconds": 45,
+-      "junit": {
+-        "path": "windows-watchdog-debug.xml",
+-        "sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9"
+-      },
+-      "command": {
+-        "record": "windows-watchdog-debug-command.json",
+-        "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
+-        "argv": [
+-          "ctest",
+-          "--test-dir",
+-          "build",
+-          "-R",
+-          "^crawl$",
+-          "--verbose",
+-          "--output-on-failure",
+-          "--output-junit",
+-          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
+-        ],
+-        "exit_code": 0,
+-        "elapsed_seconds": 5.673,
+-        "log": "windows-watchdog-debug.log",
+-        "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
+-        "execution_inputs_and_binary_hashes_unchanged": true
+-      }
+-    },
+-    "focused_asan_ubsan": {
+-      "passed_suites": 1,
+-      "failed_suites": 0,
+-      "skipped_suites": 0,
+-      "suite": "crawl",
+-      "cases": 54,
+-      "assertions": 2798,
+-      "elapsed_seconds": 20.79,
+-      "run_lines": 54,
+-      "pass_lines": 54,
+-      "original_registration_order_confirmed": true,
+-      "linux_watchdog_seconds": 45,
+-      "junit": {
+-        "path": "windows-watchdog-asan.xml",
+-        "sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4"
+-      },
+-      "command": {
+-        "record": "windows-watchdog-asan-command.json",
+-        "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
+-        "argv": [
+-          "ctest",
+-          "--test-dir",
+-          "build-asan",
+-          "-R",
+-          "^crawl$",
+-          "--verbose",
+-          "--output-on-failure",
+-          "--output-junit",
+-          "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
+-        ],
+-        "exit_code": 0,
+-        "elapsed_seconds": 20.817,
+-        "log": "windows-watchdog-asan.log",
+-        "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
+-        "execution_inputs_and_binary_hashes_unchanged": true
+-      }
+-    },
+-    "leak_detection_enabled": true,
+-    "undefined_behavior_halt_enabled": true,
+-    "unchanged_production_binaries_sha256": {
+-      "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
+-      "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
+-      "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
+-    },
+-    "historical_unchanged_runtime_validation": {
+-      "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+-      "report": {
+-        "path": "deadline-followup-report.json",
+-        "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
+-      },
+-      "local_ctest_passed": 27,
+-      "local_sanitizer_executables_passed": 15,
+-      "native_cases": 418,
+-      "native_assertions": 13106,
+-      "python_tests": 1049,
+-      "contracts": 34,
+-      "planning_guards": 13,
+-      "genuine_schema_upgrade": "12 to 13; 39 legacy tables; 310 old-preparation and 1184 upgrade assertions",
+-      "independent_store_probe": "6 cases / 92 assertions",
+-      "rerun_for_this_test_only_correction": false
+-    },
+-    "previous_remote_ci": {
+-      "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
+-      "run_id": 39954357148,
+-      "conclusion": "failure",
+-      "linux": "success",
+-      "linux_ctest_passed": 27,
+-      "linux_sanitizer_executables_passed": 15,
+-      "linux_native_cases": 418,
+-      "linux_native_assertions": 13106,
+-      "windows": "failure",
+-      "windows_ctest_passed": 16,
+-      "windows_ctest_total": 17,
+-      "windows_failed_suite": "crawl",
+-      "windows_crawl_timeout_seconds": 45.02,
+-      "windows_completed_native_suites": 14,
+-      "windows_completed_native_cases": 364,
+-      "windows_completed_native_assertions": 10308,
+-      "windows_crawl_completed_cases": "unknown; no case output before timeout",
+-      "windows_search_modes_cases": 22,
+-      "windows_http_cli_cases": 20,
+-      "windows_http_revocation_cases": 4
+-    },
+-    "new_remote_ci": "Require successful actual Linux and Windows jobs on the containing published commit; also confirm the three Windows effective watchdogs in its verbose log.",
+-    "counting_note": "Focused reruns overlap historical suites and do not add new product acceptance. The failed prior crawl is not counted as passed."
++    "status": "not_embedded_here; consult_exact_batch_record",
++    "record": "validation/claude_followup_20261024/README.md",
++    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; neither their sum nor old-input results count as planned product acceptance."
+   },
+-  "baseline_version": "0.1.9",
++  "baseline_version": "0.1.10",
+   "planned_work_packages": 83,
+   "s2_acceptance": "not_completed",
+   "historical_review_records": [
+@@ -2771,12 +2649,10 @@
+     "validation/s2_takeover/deadline-followup-review.json"
+   ],
+   "verification_binding": {
+-    "status": "test_only_execution_inputs_and_focused_local_evidence_bound_by_containing_git_commit",
+-    "report": "validation/s2_takeover/windows-watchdog-report.json",
+-    "source_manifest": "validation/s2_takeover/windows-watchdog-source-manifest.json",
+-    "execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json",
+-    "executed_binary_identity": "Only Debug and ASan crawl test executables rebuilt; both production libraries and searchd hashes unchanged; formal focused commands bind all binary hashes.",
+-    "remote_ci": "Previous fcb Linux success and Windows crawl timeout are historical; require actual containing SHA Linux/Windows completion and effective Windows watchdog values.",
++    "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
++    "baseline": "44253a752f945fdfab9810192e583b39fe5f6d83",
++    "record": "validation/claude_followup_20261024/README.md",
++    "remote_ci": "No future SHA, tag or CI result is predeclared; exact published commit must be checked.",
+     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+   },
+   "source_availability": {
+@@ -4333,5 +4209,166 @@
+       "remote_ci": "The previous 199eb635 Windows pass proves the SQLite correction only; verify the actual containing new SHA on both platforms.",
+       "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+     }
++  },
++  "historical_verification_0_1_10_windows_watchdog": {
++    "stage": "S2 takeover five increments with deadline settlement and Windows test-process watchdog correction",
++    "recorded_at": "2026-10-23",
++    "baseline": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
++    "integration_inputs": {
++      "main": "3ef86c653a2e2085848d5cdb151d66392c6af49a",
++      "tree": "d5219c5d58e8dfef48a97f08df5b71dbc9b538f1",
++      "baseline_schema": 12,
++      "schema": 13,
++      "scope": "Five bounded continuation increments; MODE-01 becomes partial, original requirements and deferred semantics preserved.",
++      "plan": "docs/handoff/S2_TAKEOVER_20261023.md",
++      "deadline_correction_baseline": "199eb635ca90c657dff673fbf88bed44e7c4b40b",
++      "deadline_correction_author_commit_local": "93ffe39b0dc95e591cbc05500947cd5ef7bb9349",
++      "deadline_execution_inputs": "validation/s2_takeover/deadline-followup-execution-inputs.json",
++      "windows_watchdog_baseline": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
++      "windows_watchdog_execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json"
++    },
++    "current_test_report": "validation/s2_takeover/windows-watchdog-report.json",
++    "current_verification": "passed_focused_local_windows_watchdog_correction_scope_limited",
++    "upstream_baseline_reproduction": "Exact published 3ef86c6 schema12 library created the old database; final schema13 library upgraded a copy, preserving 39 legacy tables. Original cache and integrated failure evidence remains intact.",
++    "github_ci": "previous_fcb58e46_linux_27_of_27_and_15_sanitizers_passed_windows_16_of_17_crawl_watchdog_timeout_retained; verify_exact_new_published_commit",
++    "independent_review": "root_authored_test_only_watchdog_and_output_change_reviewed_by_two_non_authors; prior_product_reviews_preserved; full_product_signoff_not_performed",
++    "full_product_independent_review": "not_performed",
++    "review_record": "validation/s2_takeover/windows-watchdog-review.json",
++    "current_results": {
++      "status": "passed_focused_local_windows_watchdog_correction_scope_limited",
++      "scope": "Only the changed crawl test harness was rebuilt and executed locally; unchanged production full-suite evidence is separately historical.",
++      "focused_debug": {
++        "passed_suites": 1,
++        "failed_suites": 0,
++        "skipped_suites": 0,
++        "suite": "crawl",
++        "cases": 54,
++        "assertions": 2798,
++        "elapsed_seconds": 5.6439,
++        "run_lines": 54,
++        "pass_lines": 54,
++        "original_registration_order_confirmed": true,
++        "linux_watchdog_seconds": 45,
++        "junit": {
++          "path": "windows-watchdog-debug.xml",
++          "sha256": "d74d221c9abd48eeb80241bc85cd6b0716c294843c37aa4afba8d8e0f8931fc9"
++        },
++        "command": {
++          "record": "windows-watchdog-debug-command.json",
++          "record_sha256": "ae99cb87da15b6dec5f73196f09de737f4cc09ac42f6546e3e5d44fa730a715b",
++          "argv": [
++            "ctest",
++            "--test-dir",
++            "build",
++            "-R",
++            "^crawl$",
++            "--verbose",
++            "--output-on-failure",
++            "--output-junit",
++            "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-debug.xml"
++          ],
++          "exit_code": 0,
++          "elapsed_seconds": 5.673,
++          "log": "windows-watchdog-debug.log",
++          "log_sha256": "dcf518b3ca4a3d3d8179447cb7e61d7d17490f03ef2a925d0117f21aad65696d",
++          "execution_inputs_and_binary_hashes_unchanged": true
++        }
++      },
++      "focused_asan_ubsan": {
++        "passed_suites": 1,
++        "failed_suites": 0,
++        "skipped_suites": 0,
++        "suite": "crawl",
++        "cases": 54,
++        "assertions": 2798,
++        "elapsed_seconds": 20.79,
++        "run_lines": 54,
++        "pass_lines": 54,
++        "original_registration_order_confirmed": true,
++        "linux_watchdog_seconds": 45,
++        "junit": {
++          "path": "windows-watchdog-asan.xml",
++          "sha256": "d6333ef69e5df63c887adf84ae370bf2d5337da97324594ecd01c866c06b92f4"
++        },
++        "command": {
++          "record": "windows-watchdog-asan-command.json",
++          "record_sha256": "6f48649b04d841acdbd0bd8d1459f6dd3fbde97b54ad11071cea59151c01da4a",
++          "argv": [
++            "ctest",
++            "--test-dir",
++            "build-asan",
++            "-R",
++            "^crawl$",
++            "--verbose",
++            "--output-on-failure",
++            "--output-junit",
++            "/workspace/scratch/e2371129386d/bzs861/validation/s2_takeover/windows-watchdog-asan.xml"
++          ],
++          "exit_code": 0,
++          "elapsed_seconds": 20.817,
++          "log": "windows-watchdog-asan.log",
++          "log_sha256": "9832f8a2532c98acc7709a057f2f55a5c643ba41d0e7580a3d80e86125e553d0",
++          "execution_inputs_and_binary_hashes_unchanged": true
++        }
++      },
++      "leak_detection_enabled": true,
++      "undefined_behavior_halt_enabled": true,
++      "unchanged_production_binaries_sha256": {
++        "build/libbzs_core.a": "31495783054fd4071572897d1bebecfc74be92c46ca6c0c01d2af9b4f977d9ff",
++        "build/searchd": "fa3661b908eaaaa043fcdfc1df281a615150f926d59b0abfc390a2bbb7f12e34",
++        "build-asan/libbzs_core.a": "d5d0af7e5bbc38cf4bf46d99f2f37508a6013f7358d7e9d73570a0f7a73a9e54"
++      },
++      "historical_unchanged_runtime_validation": {
++        "containing_commit": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
++        "report": {
++          "path": "deadline-followup-report.json",
++          "sha256": "ee63db5f837a794cd4492f2d44c161d192153bee401692b45c35a44d19128aa4"
++        },
++        "local_ctest_passed": 27,
++        "local_sanitizer_executables_passed": 15,
++        "native_cases": 418,
++        "native_assertions": 13106,
++        "python_tests": 1049,
++        "contracts": 34,
++        "planning_guards": 13,
++        "genuine_schema_upgrade": "12 to 13; 39 legacy tables; 310 old-preparation and 1184 upgrade assertions",
++        "independent_store_probe": "6 cases / 92 assertions",
++        "rerun_for_this_test_only_correction": false
++      },
++      "previous_remote_ci": {
++        "head_sha": "fcb58e4679a5bbdff17319b7b4ebff7019733eab",
++        "run_id": 39954357148,
++        "conclusion": "failure",
++        "linux": "success",
++        "linux_ctest_passed": 27,
++        "linux_sanitizer_executables_passed": 15,
++        "linux_native_cases": 418,
++        "linux_native_assertions": 13106,
++        "windows": "failure",
++        "windows_ctest_passed": 16,
++        "windows_ctest_total": 17,
++        "windows_failed_suite": "crawl",
++        "windows_crawl_timeout_seconds": 45.02,
++        "windows_completed_native_suites": 14,
++        "windows_completed_native_cases": 364,
++        "windows_completed_native_assertions": 10308,
++        "windows_crawl_completed_cases": "unknown; no case output before timeout",
++        "windows_search_modes_cases": 22,
++        "windows_http_cli_cases": 20,
++        "windows_http_revocation_cases": 4
++      },
++      "new_remote_ci": "Require successful actual Linux and Windows jobs on the containing published commit; also confirm the three Windows effective watchdogs in its verbose log.",
++      "counting_note": "Focused reruns overlap historical suites and do not add new product acceptance. The failed prior crawl is not counted as passed."
++    },
++    "verification_binding": {
++      "status": "test_only_execution_inputs_and_focused_local_evidence_bound_by_containing_git_commit",
++      "report": "validation/s2_takeover/windows-watchdog-report.json",
++      "source_manifest": "validation/s2_takeover/windows-watchdog-source-manifest.json",
++      "execution_inputs": "validation/s2_takeover/windows-watchdog-execution-inputs.json",
++      "executed_binary_identity": "Only Debug and ASan crawl test executables rebuilt; both production libraries and searchd hashes unchanged; formal focused commands bind all binary hashes.",
++      "remote_ci": "Previous fcb Linux success and Windows crawl timeout are historical; require actual containing SHA Linux/Windows completion and effective Windows watchdog values.",
++      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
++    },
++    "baseline_version": "0.1.9"
+   }
+ }

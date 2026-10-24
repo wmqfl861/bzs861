@@ -1,0 +1,48 @@
+{
+  "author": "/root/handoff_audit",
+  "scope": "Documentation-only draft; no main-tree writes, production code or formal tests. Root must review/apply before final execution input freeze.",
+  "base_commit": "026dafb783e1a922abffaf03fc3667f0167d2561",
+  "files": {
+    "HANDOFF_START_HERE.md": {
+      "before_sha256": "34da64a999ee45584bf11f0ee400fb6c73a71445d14333337cde145f40d72c91",
+      "after_sha256": "08334d0543fa66426b5ca30c90895dcf80138ceb95b9dcfeca47929a86ed242a"
+    },
+    "README.md": {
+      "before_sha256": "5d6305a9308aa53b349bfb6ec03a7360ad4278e6e5a60d9e37783b51fa199b9c",
+      "after_sha256": "268433cc06f9e5c262210560f9ebe74757471b8a30e9f79e1d4f007e45b8616d"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_sha256": "f682efd79fc3012d6cb601c4c71ebeaedaf71b69b3d4e52ac6138d3879a2c494",
+      "after_sha256": "edffaa242f93ba9f403070ab1ee15e4c2c1cb3cf1239ab8a80951ebae1bce0a7"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_sha256": "83709e7e73fb56bbafc8cf57e3843eaefec3d60a497b419c7a40b2d7d5980998",
+      "after_sha256": "36ea057953b174aff1555cdd649412234377e0add4296cb367abd75ce7015b37"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_sha256": "76662fec5cdcd42bf5ed108501ae9c33e1d91df6677423122214724473d496d5",
+      "after_sha256": "78fbf1ee747d372c47aea21bed96bd949ce7ab4e68e82041a7c70cbea85a2020"
+    },
+    "docs/API.md": {
+      "before_sha256": "144dd9a4c639499b73b08fbb713a83f88d0d6212841d598f2cc90f007fac9768",
+      "after_sha256": "d3d68515902b3c56a47e4c6e5e55e766fbe35c5762a22d25ded302588d21df4c"
+    },
+    "docs/implementation_status.json": {
+      "before_sha256": "142c92f3827edf08c998f2effbf19deb9aa43743eba569fed0df0e192b701367",
+      "after_sha256": "60eea9ee5a1631c4a5490c6a214513d05e2c7a8f52b76b0d92fd0b268cf15ad6"
+    }
+  },
+  "patch_sha256": "585b9ee3813a73cd3593d8eb06d56eec49c4432e3abb3931e09eff37aca8059c",
+  "unchanged_release_version": "0.1.10",
+  "no_new_tag": true,
+  "pending_batch_record": "validation/claude_followup_20261024/README.md",
+  "retained_status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "historical_fields_preserved": true,
+  "reviewer_conflict_disclosure": "This agent authored the validation-only launcher draft and this documentation draft; root must independently review them. Product cross-item review does not self-sign those authored changes.",
+  "supersedes_draft_sha256": "ee98a8eae708bbc67f42f52a48e97b947298b0e67817e6d485c54f948d02bedb",
+  "draft_correction": "Also preserve the old baseline_version and point current results to the batch record without future-pass or permanently pending runtime claims."
+}

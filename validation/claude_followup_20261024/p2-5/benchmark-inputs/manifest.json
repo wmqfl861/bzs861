@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "created_utc": "2026-10-24T04:52:43.930606+00:00",
+  "role": "independent read-only benchmark author; no production changes",
+  "original_source": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/scan_blocking.cpp",
+  "original_sha256": "531278f68e06bbe09c4705eacf83c5a5799e5a9ec123c1d7a7d443dae8c3b618",
+  "variant_sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+  "diff_sha256": "a1442c72b7cac6783cc1266f0e1c52fab33893632a2d5ffc03392946ce28b513",
+  "change": "Only the two query string literals changed; original file and every other byte preserved.",
+  "queries": [
+    "NOT \"alpha beta\"",
+    "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\""
+  ],
+  "defaults": {
+    "documents": 2000,
+    "requested_body_bytes": 204800,
+    "search_owner": "alice",
+    "concurrent_stats_owner": "bob",
+    "max_candidates": 2000,
+    "limit": 200
+  },
+  "static_review": [
+    "Parser::atom accepts unary NOT and quoted phrases; Parser::and_expr accepts conjunctions of NOT atoms.",
+    "Both fts() and substring_fts() return unconstrained for NOT. With every AND child unconstrained, no candidate index can eliminate these documents.",
+    "The four phrases do not occur in the repeated lorem body, so each NOT is true and all AND branches must be evaluated.",
+    "The existing positive benchmark is not an overflow benchmark: substring_max_field_grams bounds distinct grams, not scanned codepoints.",
+    "Store::search_impl holds its mutex through candidate validation. The variant measures remaining blocking under the original workload shape; one observation cannot establish a general performance ratio."
+  ],
+  "source_evidence": {
+    "src/query.cpp": "ad8b5452ad77a899ec8f37afa4ec7cf0e178e7a15cc7418dd4a519b9cead3707",
+    "src/tokenizer.cpp": "4003fe648f414476c76881c74b5cfc9149055284cf65bfa8a5e84cf2d6fda4c0",
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec"
+  },
+  "execution": {
+    "compiled": false,
+    "run": false,
+    "reason": "Root will run the frozen original and variant once against final Release with no parallel build."
+  }
+}

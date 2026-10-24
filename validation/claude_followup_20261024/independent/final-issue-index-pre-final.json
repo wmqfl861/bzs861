@@ -1,0 +1,1875 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_issue_regression_index_draft",
+  "created_at_utc": "2026-10-24T05:35:00.123227+00:00",
+  "author_role": "source_policy: factual source/log index for parent independent verification; P2-2 implementation author; independent reviewer for P2-3/P2-4",
+  "repository_root": "/workspace/scratch/e2371129386d/bzs861",
+  "observed_head": "54dec2cef34fa7777660b0851220f99869d3f596",
+  "working_tree_note": "The current P2-5 source and documentation candidate is applied over this HEAD; this is not a clean-tree or published-commit assertion.",
+  "scope": {
+    "main_repository_written": false,
+    "product_tests_executed_for_this_index": false,
+    "product_builds_executed_for_this_index": false,
+    "new_implementation_review": false,
+    "source_lookup": "Read-only git and file/AST inspection",
+    "evidence_lookup": "Completed-stage JSON, XML and logs; SHA-256 bindings checked without executing product tests",
+    "acceptance": "Draft fact index only; parent verification and final delivery remain separate"
+  },
+  "counting_rules": [
+    "CTest totals count 27 registered suites; python_worker is present and not skipped.",
+    "Standalone pytest totals count parameterized cases and overlap Python execution within CTest; they are not added to CTest totals.",
+    "ASan/UBSan totals count 15 native programs with successful exits and leak detection enabled; they overlap the native suites.",
+    "Formal function-name counts are not runtime case counts. Repeated stages, previews and independent probes are not added to final totals.",
+    "Only successful full-stage records are selected below; earlier failures and repairs remain retained at their original paths.",
+    "Current source hashes and completed-stage execution-input hashes are distinct fields, because later fixes may extend the same test files."
+  ],
+  "issues": [
+    {
+      "id": "P1-2",
+      "subject": "MCP local search uses a single response without allocating a persistent frozen search session",
+      "integration_commit": "f0e8219e2202447805cfbb03c83116eca30d5645",
+      "completed_stage": "p1-2",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p1-2/result.json",
+        "sha256": "30d8148d145632cd97ff26eac977a60758b91ae9b9a13b54bd4cdf0bdd59b73f"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p1-2/execution-inputs.json",
+        "sha256": "9b447c79129ecddb7097f33e8e827e820b2d9ffff8504c429177e47c69926646"
+      },
+      "execution_source_base_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+      "formal_tests": [
+        {
+          "path": "python/tests/test_mcp_sessions.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+          "completed_stage_input_sha256": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_local_single_response_never_allocates_a_frozen_session",
+              "change": "new_in_integration_commit",
+              "current_line": 88,
+              "integration_line": 88,
+              "pytest_selector": "python/tests/test_mcp_sessions.py::test_local_single_response_never_allocates_a_frozen_session",
+              "parameterized_function": true
+            }
+          ]
+        },
+        {
+          "path": "tests/e2e_web.py",
+          "ctest_target": "e2e_web",
+          "current_sha256": "70defd96a1823954c3395fd6e233446c8deeab5fb684afadffb88f15b11fdf8b",
+          "completed_stage_input_sha256": "70defd96a1823954c3395fd6e233446c8deeab5fb684afadffb88f15b11fdf8b",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "EndToEnd.test_09_mcp_stdio",
+              "change": "extended_existing",
+              "current_line": 352,
+              "integration_line": 352,
+              "pytest_selector": "tests/e2e_web.py::EndToEnd::test_09_mcp_stdio",
+              "parameterized_function": false
+            }
+          ]
+        },
+        {
+          "path": "tests/http_revocation.py",
+          "ctest_target": "http_revocation",
+          "current_sha256": "c253cb9acb1dedaa017b635608f1c65fa388c581a4e7d88afbf346c50b2c85b9",
+          "completed_stage_input_sha256": "c253cb9acb1dedaa017b635608f1c65fa388c581a4e7d88afbf346c50b2c85b9",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "RevocationHTTP.test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation",
+              "change": "extended_existing",
+              "current_line": 71,
+              "integration_line": 71,
+              "pytest_selector": "tests/http_revocation.py::RevocationHTTP::test_existing_capabilities_and_pending_work_stay_denied_after_restart_and_token_rotation",
+              "parameterized_function": false
+            }
+          ]
+        },
+        {
+          "path": "tests/site_publication.cpp",
+          "ctest_target": "site_publication",
+          "current_sha256": "a0d163ceedc8b2f7a1a3afdcb89bb39468e603aeb4fc1ee89e47616856279d1d",
+          "completed_stage_input_sha256": "a0d163ceedc8b2f7a1a3afdcb89bb39468e603aeb4fc1ee89e47616856279d1d",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "restart_links_only_with_zero_http_restricts_stored_and_frozen_publication",
+              "change": "extended_existing_via_shared_projection_helper",
+              "current_line": 88,
+              "integration_line": 88
+            },
+            {
+              "name": "restart_rejected_review_with_zero_http_withdraws_stored_and_frozen_publication",
+              "change": "extended_existing_via_shared_projection_helper",
+              "current_line": 89,
+              "integration_line": 89
+            },
+            {
+              "name": "restart_expired_review_with_zero_http_withdraws_stored_and_frozen_publication",
+              "change": "extended_existing_via_shared_projection_helper",
+              "current_line": 90,
+              "integration_line": 90
+            }
+          ]
+        },
+        {
+          "path": "tests/unit.cpp",
+          "ctest_target": "core",
+          "current_sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "completed_stage_input_sha256": "5855bda3a300e25a71953339c52c888ec5cc68005b3dcd460b004199ae707279",
+          "current_bytes_equal_completed_stage": false,
+          "tests": [
+            {
+              "name": "single_response_search_has_no_lifetime_or_active_session_cost",
+              "change": "new_in_integration_commit",
+              "current_line": 461,
+              "integration_line": 460
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-2/ctest-command.json",
+            "sha256": "2810e788a42cdb1439a6c010c43a1f95fbf14e833f21377658353fc28e0f239e"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-2/ctest.log",
+            "sha256": "3d955014252d368338e90b4e1dee9af94fc788730d0faf1d0acafffafebae668"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:35:50.526101+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p1-2/ctest.xml",
+            "sha256": "6c088601798b98320166a1b9c80b748c6e3588dc5595658e905359e317dc5f3d"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-2/pytest-command.json",
+            "sha256": "85e714c970d0d72b1d10ff19b426cbcfdac7ac1d37a1ad9a768c2b5fe9a908dd"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-2/pytest.log",
+            "sha256": "c345330e6d0c8a0640829fcccf31f8ce0c5a9835b23f11ff76aa9f4274d822b2"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:38:38.447410+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1052,
+          "summary_line": "1052 passed in 16.91s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-2/asan-command.json",
+            "sha256": "5ab05ef7ecde90d7a7c16bc221e30d8506f341bc11c000e164c5a5b45aa07b07"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-2/asan.log",
+            "sha256": "da0bcd40a7a559b7c04cae7b425d8fba49648f7f17bb777982f8a253e0a76c00"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:40:03.686533+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      }
+    },
+    {
+      "id": "P1-1",
+      "subject": "Permanent identities do not consume future active-work admission after supported terminal retention",
+      "integration_commit": "87154c0dfd6fdabea6cbdec78c8011db8e94f865",
+      "completed_stage": "p1-1-v2",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p1-1-v2/result.json",
+        "sha256": "74f031ca764f12e12507a60463a9558e161833eefe312328c0175ebddfaece3f"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p1-1-v2/execution-inputs.json",
+        "sha256": "78ee1481b4e79f746d42950673147106b889594c3d9059b4cd1fafb77bee768d"
+      },
+      "execution_source_base_commit": "f0e8219e2202447805cfbb03c83116eca30d5645",
+      "formal_tests": [
+        {
+          "path": "tests/retention.cpp",
+          "ctest_target": "retention",
+          "current_sha256": "9868e2b3652e9a7566d80f8c2446c041d8df76776f486bc30795f2ad450072bd",
+          "completed_stage_input_sha256": "9868e2b3652e9a7566d80f8c2446c041d8df76776f486bc30795f2ad450072bd",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "unarchived_job_capacity_remains_bounded_per_owner_and_globally",
+              "change": "new_in_integration_commit",
+              "current_line": 216,
+              "integration_line": 216
+            },
+            {
+              "name": "real_terminal_fixture_compaction_releases_capacity_without_losing_identity",
+              "change": "new_in_integration_commit",
+              "current_line": 224,
+              "integration_line": 224
+            },
+            {
+              "name": "fixture_retention_covers_stable_terminal_states_and_keeps_paused_work",
+              "change": "new_in_integration_commit",
+              "current_line": 254,
+              "integration_line": 254
+            },
+            {
+              "name": "global_capacity_can_reclaim_revoked_owners_without_restoring_access",
+              "change": "new_in_integration_commit",
+              "current_line": 266,
+              "integration_line": 266
+            }
+          ]
+        },
+        {
+          "path": "tests/sessions.cpp",
+          "ctest_target": "sessions",
+          "current_sha256": "9a5f424b430371f3c690ad79cd7c1bad5916d7b417dfbfe1bf6d0f5abdf13d20",
+          "completed_stage_input_sha256": "9a5f424b430371f3c690ad79cd7c1bad5916d7b417dfbfe1bf6d0f5abdf13d20",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "permanent_search_receipts_do_not_exhaust_future_admission",
+              "change": "new_in_integration_commit",
+              "current_line": 176,
+              "integration_line": 176
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/ctest-command.json",
+            "sha256": "5dbf268e79e43f5330472fb5dd00aaf08ff542a13c77140883c2da18779b0948"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/ctest.log",
+            "sha256": "6fc979e4df0e7202454ac63136446a605e14e406909137bad32f365522334a32"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:49:39.451783+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/ctest.xml",
+            "sha256": "065146f546e05f7f3941c078c5b0204d4d4a2d559fd6bd9ce5886996d2a8e784"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/pytest-command.json",
+            "sha256": "b30a357675f5e261979717657780c85165b7dc89989f82ecea96afc64d3d7854"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/pytest.log",
+            "sha256": "2e88f9838e7a864382e548ee9a9a139471f4289afeb9112516495004c535f6f9"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:51:09.366562+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1052,
+          "summary_line": "1052 passed in 16.03s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/asan-after-mode-repair-command.json",
+            "sha256": "8c1375f1a09022538ecf1efb40bceb5d21527fe23eea41c77b54956f586a97f1"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-1-v2/asan-after-mode-repair.log",
+            "sha256": "01a5e8b3cf12c78862cd5c571241cda6bb08bbd63c9acd99726c88e8cedbf592"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T02:56:22.292855+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      },
+      "preserved_failures": [
+        "p1-1/ctest: generated crawl executable mode 0644, no test execution",
+        "p1-1-v2/asan: generated final capacity executable mode 0644, 14 targets passed before launch failure"
+      ],
+      "repair": "Only executable file modes restored; binary hashes unchanged. Successful full sanitizer rerun uses the exact same source/test input manifest as successful CTest and pytest."
+    },
+    {
+      "id": "P1-3",
+      "subject": "Verified substring candidates avoid the recent-document blind spot while preserving bounded exact verification",
+      "integration_commit": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+      "completed_stage": "p1-3",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p1-3/result.json",
+        "sha256": "b607cea38449fe56610675efe0ed0f78898ab698a63bbf8dde30a30c4926e54f"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p1-3/execution-inputs.json",
+        "sha256": "948497a7a7cc5f252b23d52d2ad965dbf7c832a64a8aaf48483505befea30397"
+      },
+      "execution_source_base_commit": "87154c0dfd6fdabea6cbdec78c8011db8e94f865",
+      "formal_tests": [
+        {
+          "path": "tests/unit.cpp",
+          "ctest_target": "core",
+          "current_sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "completed_stage_input_sha256": "40a5eb46d186f117787d008019d66ddcf1e74edaf40eabde4f9e909971f80a6f",
+          "current_bytes_equal_completed_stage": false,
+          "tests": [
+            {
+              "name": "store_candidate_predicate_agreement",
+              "change": "extended_existing",
+              "current_line": 494,
+              "integration_line": 494
+            },
+            {
+              "name": "substring_index_finds_old_phrases_symbols_and_multilingual_text_before_budget",
+              "change": "new_in_integration_commit",
+              "current_line": 521,
+              "integration_line": 521
+            },
+            {
+              "name": "substring_candidates_preserve_exact_matching_across_fields_and_boolean_shapes",
+              "change": "new_in_integration_commit",
+              "current_line": 548,
+              "integration_line": 548
+            },
+            {
+              "name": "substring_overflow_keeps_exact_matches_and_bounds_derived_fields",
+              "change": "new_in_integration_commit",
+              "current_line": 570,
+              "integration_line": 570
+            },
+            {
+              "name": "known_word_index_upgrade_is_atomic_and_preserves_business_rows",
+              "change": "new_in_integration_commit",
+              "current_line": 590,
+              "integration_line": 590
+            },
+            {
+              "name": "migrate_both_schema_two_layouts_preserves_records",
+              "change": "extended_existing",
+              "current_line": 1427,
+              "integration_line": 1407
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-3/ctest-command.json",
+            "sha256": "20a3ea397431b5cea09279d96e6c094077c1a01c7f61a360c8f5e4637caee32b"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-3/ctest.log",
+            "sha256": "afab22172fb2d14c8fa5a7b6b90154840282960ef83df3a29915d4c723a92bfa"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:01:33.422494+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p1-3/ctest.xml",
+            "sha256": "85daa0aefa4713a5416d23596881e1c395b8ab0f075360ed930ff6ff9b8c27c1"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-3/pytest-command.json",
+            "sha256": "d04f21fd18dc95df6131959e8f3792dc1c7635f4b9cc993eb4c1394f32131ec8"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-3/pytest.log",
+            "sha256": "750ea4f77def0af13f9273b21eaba41b78a7a7a0053ba2ad68f586e90ca8b79b"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:03:03.033929+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1052,
+          "summary_line": "1052 passed in 15.90s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p1-3/asan-command.json",
+            "sha256": "830e155b4e5a6f0b190d52f2941866638b3d5fccc9dd02728deee3495d210c8a"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p1-3/asan.log",
+            "sha256": "d67bb9b293c4d18899e79208f6760999ac9a68c9aeb396b6ebf5fd53f9748c42"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:04:23.244764+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      },
+      "limits": [
+        "Negative-only queries remain bounded scans with honest partial results",
+        "Stop older Core processes before opening the new index format; live mixed-version access is unsupported"
+      ],
+      "build_environment": "One generated sanitizer executable required a recorded mode-only repair; SHA-256 unchanged before tests."
+    },
+    {
+      "id": "P2-1",
+      "subject": "Accept-Encoding Vary is accepted only within the fixed exact request profile",
+      "integration_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+      "completed_stage": "p2-1",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p2-1/result.json",
+        "sha256": "c6a531afd5b358696666f0c44175409d70fa32ff4de0c1c9303844073cf11016"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p2-1/execution-inputs.json",
+        "sha256": "75b5dcbbba41115f44f3143ed8a8fbca12acfcab614210d4faac80c574c80cb7"
+      },
+      "execution_source_base_commit": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+      "formal_tests": [
+        {
+          "path": "python/tests/test_http_revalidation.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+          "completed_stage_input_sha256": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_cache_metadata_accepts_bounded_encoding_selections",
+              "change": "new_in_integration_commit",
+              "current_line": 120,
+              "integration_line": 120,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_cache_metadata_accepts_bounded_encoding_selections",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_cache_metadata_rejects_other_or_ambiguous_encoding_selections",
+              "change": "new_in_integration_commit",
+              "current_line": 133,
+              "integration_line": 133,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_cache_metadata_rejects_other_or_ambiguous_encoding_selections",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_accept_encoding_vary_survives_full_read_and_one_hop_304",
+              "change": "new_in_integration_commit",
+              "current_line": 143,
+              "integration_line": 143,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_accept_encoding_vary_survives_full_read_and_one_hop_304",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_304_omitted_vary_preserves_the_prior_encoding_selection",
+              "change": "new_in_integration_commit",
+              "current_line": 161,
+              "integration_line": 161,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_304_omitted_vary_preserves_the_prior_encoding_selection",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_changed_accept_encoding_profile_fetches_one_complete_representation",
+              "change": "new_in_integration_commit",
+              "current_line": 173,
+              "integration_line": 173,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_changed_accept_encoding_profile_fetches_one_complete_representation",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_full_200_remains_readable_but_unsafe_cache_headers_cannot_be_retained",
+              "change": "extended_existing",
+              "current_line": 260,
+              "integration_line": 260,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_full_200_remains_readable_but_unsafe_cache_headers_cannot_be_retained",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_ambiguous_304_preserves_restrictions_without_retry",
+              "change": "extended_existing",
+              "current_line": 322,
+              "integration_line": 322,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_ambiguous_304_preserves_restrictions_without_retry",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_expired_robots_base_only_becomes_fresh_after_a_bound_304",
+              "change": "extended_existing",
+              "current_line": 418,
+              "integration_line": 418,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_expired_robots_base_only_becomes_fresh_after_a_bound_304",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_robots_304_without_trustworthy_freshness_fails_closed_once",
+              "change": "extended_existing",
+              "current_line": 467,
+              "integration_line": 467,
+              "pytest_selector": "python/tests/test_http_revalidation.py::test_robots_304_without_trustworthy_freshness_fails_closed_once",
+              "parameterized_function": true
+            }
+          ]
+        },
+        {
+          "path": "python/tests/test_robots.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+          "completed_stage_input_sha256": "fa8d6c6ca12e1a9b406c8fdc8029b6c9ec84fb03bfefc608c53402156381f33b",
+          "current_bytes_equal_completed_stage": false,
+          "tests": [
+            {
+              "name": "test_robots_freshness_supports_only_fixed_request_selections",
+              "change": "new_in_integration_commit",
+              "current_line": 194,
+              "integration_line": 137,
+              "pytest_selector": "python/tests/test_robots.py::test_robots_freshness_supports_only_fixed_request_selections",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_robots_freshness_rejects_unknown_or_ambiguous_vary_selections",
+              "change": "new_in_integration_commit",
+              "current_line": 208,
+              "integration_line": 151,
+              "pytest_selector": "python/tests/test_robots.py::test_robots_freshness_rejects_unknown_or_ambiguous_vary_selections",
+              "parameterized_function": true
+            }
+          ]
+        },
+        {
+          "path": "tests/cache_freshness.cpp",
+          "ctest_target": "cache_freshness",
+          "current_sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+          "completed_stage_input_sha256": "c7c2c057ac92fa6094fdc5f1ed659be7b981259d80191791cac6370e38ec3654",
+          "current_bytes_equal_completed_stage": false,
+          "tests": [
+            {
+              "name": "vary_accept_encoding_is_the_only_supported_nonempty_selection",
+              "change": "new_in_integration_commit",
+              "current_line": 56,
+              "integration_line": 56
+            },
+            {
+              "name": "accept_encoding_does_not_override_other_cache_restrictions",
+              "change": "new_in_integration_commit",
+              "current_line": 68,
+              "integration_line": 68
+            },
+            {
+              "name": "accept_encoding_cache_reuse_keeps_owner_and_request_profile_fences",
+              "change": "new_in_integration_commit",
+              "current_line": 75,
+              "integration_line": 75
+            },
+            {
+              "name": "merge_304_preserves_omitted_restrictions_and_refreshes_time",
+              "change": "extended_existing",
+              "current_line": 140,
+              "integration_line": 140
+            }
+          ]
+        },
+        {
+          "path": "tests/revalidation.cpp",
+          "ctest_target": "revalidation",
+          "current_sha256": "55c958c546ff692fcddeae5dc4544b573019575c5d79a86b0edb5cf79f40db81",
+          "completed_stage_input_sha256": "55c958c546ff692fcddeae5dc4544b573019575c5d79a86b0edb5cf79f40db81",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "accept_encoding_vary_metadata_uses_bounded_ascii_list_semantics",
+              "change": "new_in_integration_commit",
+              "current_line": 68,
+              "integration_line": 68
+            },
+            {
+              "name": "accept_encoding_304_merge_keeps_selection_and_profile_identity",
+              "change": "new_in_integration_commit",
+              "current_line": 80,
+              "integration_line": 80
+            },
+            {
+              "name": "accept_encoding_conditional_refresh_retains_the_bound_body",
+              "change": "new_in_integration_commit",
+              "current_line": 90,
+              "integration_line": 90
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-1/ctest-command.json",
+            "sha256": "e3accc9dae53cab7b91ea1406b7c8917fdf3a714e3e9e3fd5ca8e4129a479db3"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-1/ctest.log",
+            "sha256": "3d10ce7006a3af1b0b06ff39c1be90df8afe14da937e25e9401f848c1d1ef3ae"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:08:12.029283+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p2-1/ctest.xml",
+            "sha256": "85ffccc6f9832a6a50e1644ee9bf31beb1d51beadb23ec1e98fe62487a7eeb44"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-1/pytest-command.json",
+            "sha256": "db44813025da91953d6be93dc5b38d233c60291be4eed3682be69b5bfd0cf964"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-1/pytest.log",
+            "sha256": "c012cd21bbd3fcbd9e320552c76d814d84ee07c954e6cd95acadb01f2da1d5ec"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:09:41.534263+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1130,
+          "summary_line": "1130 passed in 15.94s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-1/asan-after-mode-repair-command.json",
+            "sha256": "4559fcb22d49731e6f0646f9341d5b46672182533c80d99177c64f9b77e77fca"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-1/asan-after-mode-repair.log",
+            "sha256": "89398420ed7c58f5256b45ad59032aba3753483734711d5b44098f645161209d"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T03:12:27.530332+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      },
+      "preserved_failures": [
+        "Initial sanitizer launch: freshly built bzs_tests lost execute bits after preparation; content hash unchanged; no test ran.",
+        "First rerun wrapper used a relative recorder path and failed before launching tests; wrapper-setup-failure.json retains the diagnostic."
+      ],
+      "repair": "Complete 15-program sanitizer suite repeated with the same source/test manifest and binary bytes, checking and recording generated ELF permissions immediately before launch."
+    },
+    {
+      "id": "P2-2",
+      "subject": "Verified HTTP redirect chains retain bounded cache and exact final revalidation authority",
+      "integration_commit": "1bac5c3b4e5c56df33e6f8de3a65bd5989e70c8b",
+      "completed_stage": "p2-2-v4",
+      "status_from_completed_stage": "fixed within the explicitly documented supported HTTP chain and URI identity scope",
+      "result": {
+        "path": "validation/claude_followup_20261024/p2-2-v4/result.json",
+        "sha256": "2a3bf81780b8921fca82e55a3b298ec8e05b5345bf773b3d5e9e532e47a5ebfc"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p2-2-v4/execution-inputs.json",
+        "sha256": "f8ed3a2d6f1f54e6f1284a123889ee15bece751c04aa65c01a38a9cc8cc773f1"
+      },
+      "execution_source_base_commit": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+      "formal_tests": [
+        {
+          "path": "python/tests/test_crawl_worker.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+          "completed_stage_input_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+          "current_bytes_equal_completed_stage": false,
+          "tests": [
+            {
+              "name": "test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes",
+              "change": "preserved_original_compatibility_regression",
+              "current_line": 191,
+              "integration_line": 191,
+              "pytest_selector": "python/tests/test_crawl_worker.py::test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes",
+              "parameterized_function": true
+            }
+          ]
+        },
+        {
+          "path": "python/tests/test_http_redirect_cache.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+          "completed_stage_input_sha256": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_private_encoded_size_matches_core_slashes_backslashes_and_utf8",
+              "change": "new_in_integration_commit",
+              "current_line": 79,
+              "integration_line": 79,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_private_encoded_size_matches_core_slashes_backslashes_and_utf8",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_optional_proof_boundary_uses_core_canonical_bytes",
+              "change": "new_in_integration_commit",
+              "current_line": 87,
+              "integration_line": 87,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_optional_proof_boundary_uses_core_canonical_bytes",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_oversized_optional_proof_keeps_complete_body_and_prefix_observations",
+              "change": "new_in_integration_commit",
+              "current_line": 106,
+              "integration_line": 106,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_oversized_optional_proof_keeps_complete_body_and_prefix_observations",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_http_chain_final_publication_excludes_original_only_site_rules",
+              "change": "new_in_integration_commit",
+              "current_line": 136,
+              "integration_line": 136,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_http_chain_final_publication_excludes_original_only_site_rules",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_rejected_routed_304_does_not_attribute_original_site_rule_to_final",
+              "change": "new_in_integration_commit",
+              "current_line": 166,
+              "integration_line": 166,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_rejected_routed_304_does_not_attribute_original_site_rule_to_final",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_complete_http_chain_reports_each_actual_cache_policy",
+              "change": "new_in_integration_commit",
+              "current_line": 179,
+              "integration_line": 179,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_complete_http_chain_reports_each_actual_cache_policy",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix",
+              "change": "new_in_integration_commit",
+              "current_line": 203,
+              "integration_line": 203,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_redirect_304_conditions_only_the_exact_final_uri_and_charges_prefix",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt",
+              "change": "new_in_integration_commit",
+              "current_line": 219,
+              "integration_line": 219,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_changed_prefix_rejoining_old_final_is_one_full_authorized_attempt",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_new_redirect_from_conditioned_final_never_forwards_its_validator",
+              "change": "new_in_integration_commit",
+              "current_line": 231,
+              "integration_line": 231,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_new_redirect_from_conditioned_final_never_forwards_its_validator",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_changed_read_profile_disables_old_conditions_without_retry",
+              "change": "new_in_integration_commit",
+              "current_line": 245,
+              "integration_line": 245,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_changed_read_profile_disables_old_conditions_without_retry",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_304_after_changed_prefix_is_rejected_without_implicit_full_get",
+              "change": "new_in_integration_commit",
+              "current_line": 256,
+              "integration_line": 256,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_304_after_changed_prefix_is_rejected_without_implicit_full_get",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_soft_redirects_never_create_http_chain_proof",
+              "change": "new_in_integration_commit",
+              "current_line": 267,
+              "integration_line": 267,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_soft_redirects_never_create_http_chain_proof",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_no_store_prefix_survives_a_later_ssrf_refusal",
+              "change": "new_in_integration_commit",
+              "current_line": 276,
+              "integration_line": 276,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_no_store_prefix_survives_a_later_ssrf_refusal",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_request_grant_stops_before_final_without_resetting_for_hops",
+              "change": "new_in_integration_commit",
+              "current_line": 286,
+              "integration_line": 286,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_request_grant_stops_before_final_without_resetting_for_hops",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_body_grant_stops_inside_redirect_without_dispatching_final",
+              "change": "new_in_integration_commit",
+              "current_line": 296,
+              "integration_line": 296,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_body_grant_stops_inside_redirect_without_dispatching_final",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_ambiguous_location_can_never_become_reusable_proof",
+              "change": "new_in_integration_commit",
+              "current_line": 304,
+              "integration_line": 304,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_ambiguous_location_can_never_become_reusable_proof",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_redirect_condition_is_strict_before_attempt_retention_or_dispatch",
+              "change": "new_in_integration_commit",
+              "current_line": 313,
+              "integration_line": 313,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_redirect_condition_is_strict_before_attempt_retention_or_dispatch",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_redirect_grant_never_accepts_non_http_or_private_credentials_as_identity",
+              "change": "new_in_integration_commit",
+              "current_line": 339,
+              "integration_line": 339,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_redirect_grant_never_accepts_non_http_or_private_credentials_as_identity",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_complete_receipt_distinguishes_scope_without_granting_cache_lifetime",
+              "change": "new_in_integration_commit",
+              "current_line": 349,
+              "integration_line": 349,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_complete_receipt_distinguishes_scope_without_granting_cache_lifetime",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_actual_final_noindex_remains_in_both_publication_scopes",
+              "change": "new_in_integration_commit",
+              "current_line": 360,
+              "integration_line": 360,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_actual_final_noindex_remains_in_both_publication_scopes",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_final_scope_record_is_absent_without_a_complete_successful_200",
+              "change": "new_in_integration_commit",
+              "current_line": 373,
+              "integration_line": 373,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_final_scope_record_is_absent_without_a_complete_successful_200",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_final_scope_maximum_ascii_fields_keep_existing_rpc_bound",
+              "change": "new_in_integration_commit",
+              "current_line": 399,
+              "integration_line": 399,
+              "pytest_selector": "python/tests/test_http_redirect_cache.py::test_final_scope_maximum_ascii_fields_keep_existing_rpc_bound",
+              "parameterized_function": false
+            }
+          ]
+        },
+        {
+          "path": "tests/cache_freshness.cpp",
+          "ctest_target": "cache_freshness",
+          "current_sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+          "completed_stage_input_sha256": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "http_redirect_proof_caches_original_without_creating_a_global_alias",
+              "change": "new_in_integration_commit",
+              "current_line": 180,
+              "integration_line": 180
+            },
+            {
+              "name": "http_redirect_proof_survives_restart_and_expires_at_prefix_intersection",
+              "change": "new_in_integration_commit",
+              "current_line": 187,
+              "integration_line": 187
+            },
+            {
+              "name": "http_redirect_profile_changes_require_a_complete_attempt",
+              "change": "new_in_integration_commit",
+              "current_line": 194,
+              "integration_line": 194
+            },
+            {
+              "name": "legacy_redirects_without_proof_keep_original_conservative_contract",
+              "change": "new_in_integration_commit",
+              "current_line": 199,
+              "integration_line": 199
+            },
+            {
+              "name": "http_redirect_each_hop_requires_explicit_cacheable_lifetime",
+              "change": "new_in_integration_commit",
+              "current_line": 204,
+              "integration_line": 204
+            },
+            {
+              "name": "http_redirect_no_store_creates_no_new_body_and_invalidates_bound_old_reuse",
+              "change": "new_in_integration_commit",
+              "current_line": 211,
+              "integration_line": 211
+            },
+            {
+              "name": "http_redirect_304_batch_accounts_for_every_request_and_redirect_body",
+              "change": "new_in_integration_commit",
+              "current_line": 218,
+              "integration_line": 218
+            },
+            {
+              "name": "http_redirect_target_deletion_blocks_reuse_but_not_owned_history",
+              "change": "new_in_integration_commit",
+              "current_line": 224,
+              "integration_line": 224
+            },
+            {
+              "name": "http_redirect_target_deletion_during_profile_rpc_is_checked_at_hit",
+              "change": "new_in_integration_commit",
+              "current_line": 229,
+              "integration_line": 229
+            },
+            {
+              "name": "http_redirect_304_same_snapshot_metadata_race_is_not_retried",
+              "change": "new_in_integration_commit",
+              "current_line": 234,
+              "integration_line": 234
+            },
+            {
+              "name": "http_redirect_304_cannot_erase_inflight_final_publication_restriction",
+              "change": "new_in_integration_commit",
+              "current_line": 239,
+              "integration_line": 239
+            },
+            {
+              "name": "http_redirect_changed_prefix_never_accepts_a_late_final_304",
+              "change": "new_in_integration_commit",
+              "current_line": 246,
+              "integration_line": 246
+            },
+            {
+              "name": "http_redirect_failed_new_route_invalidates_previously_direct_cache",
+              "change": "new_in_integration_commit",
+              "current_line": 259,
+              "integration_line": 259
+            },
+            {
+              "name": "http_redirect_late_route_failure_cannot_clear_new_direct_metadata",
+              "change": "new_in_integration_commit",
+              "current_line": 275,
+              "integration_line": 275
+            },
+            {
+              "name": "http_redirect_intermediate_policy_never_becomes_independent_final_policy",
+              "change": "new_in_integration_commit",
+              "current_line": 295,
+              "integration_line": 295
+            },
+            {
+              "name": "http_redirect_original_site_ceiling_still_limits_only_its_aggregate",
+              "change": "new_in_integration_commit",
+              "current_line": 333,
+              "integration_line": 333
+            },
+            {
+              "name": "http_redirect_proof_protocol_tampering_cannot_replace_retained_body",
+              "change": "new_in_integration_commit",
+              "current_line": 350,
+              "integration_line": 350
+            },
+            {
+              "name": "http_redirect_proof_bytes_are_charged_and_refunded_on_full_replacement",
+              "change": "new_in_integration_commit",
+              "current_line": 363,
+              "integration_line": 363
+            },
+            {
+              "name": "http_redirect_304_metadata_growth_rolls_back_at_owner_quota",
+              "change": "new_in_integration_commit",
+              "current_line": 373,
+              "integration_line": 373
+            },
+            {
+              "name": "http_redirect_hop_and_encoded_limits_are_not_trusted_from_worker",
+              "change": "new_in_integration_commit",
+              "current_line": 379,
+              "integration_line": 379
+            },
+            {
+              "name": "http_redirect_expiry_is_rechecked_after_profile_rpc_before_reuse",
+              "change": "new_in_integration_commit",
+              "current_line": 385,
+              "integration_line": 385
+            },
+            {
+              "name": "direct_cache_hits_project_current_noindex_without_rewriting_history",
+              "change": "new_in_integration_commit",
+              "current_line": 393,
+              "integration_line": 393
+            },
+            {
+              "name": "direct_cache_hit_rechecks_publication_after_profile_rpc",
+              "change": "new_in_integration_commit",
+              "current_line": 409,
+              "integration_line": 409
+            },
+            {
+              "name": "direct_cache_hit_rechecks_same_snapshot_metadata_after_profile_rpc",
+              "change": "new_in_integration_commit",
+              "current_line": 415,
+              "integration_line": 415
+            },
+            {
+              "name": "direct_cache_guard_does_not_require_a_redirect_publication_fence",
+              "change": "new_in_integration_commit",
+              "current_line": 431,
+              "integration_line": 431
+            },
+            {
+              "name": "oversized_optional_redirect_grant_uses_one_full_refresh_without_retry",
+              "change": "new_in_integration_commit",
+              "current_line": 458,
+              "integration_line": 458
+            },
+            {
+              "name": "oversized_optional_redirect_grant_batch_keeps_full_get_known_usage",
+              "change": "new_in_integration_commit",
+              "current_line": 466,
+              "integration_line": 466
+            },
+            {
+              "name": "oversized_optional_redirect_grant_does_not_authorize_unsolicited_304",
+              "change": "new_in_integration_commit",
+              "current_line": 475,
+              "integration_line": 475
+            },
+            {
+              "name": "explicit_final_policy_preserves_worker_aggregate_and_independent_final",
+              "change": "new_in_integration_commit",
+              "current_line": 500,
+              "integration_line": 500
+            },
+            {
+              "name": "final_publication_wrapper_is_strictly_versioned_typed_and_bound",
+              "change": "new_in_integration_commit",
+              "current_line": 519,
+              "integration_line": 519
+            },
+            {
+              "name": "final_publication_wrapper_requires_complete_successful_200",
+              "change": "new_in_integration_commit",
+              "current_line": 539,
+              "integration_line": 539
+            },
+            {
+              "name": "final_publication_wrapper_cannot_relax_actual_response_or_aggregate",
+              "change": "new_in_integration_commit",
+              "current_line": 554,
+              "integration_line": 554
+            },
+            {
+              "name": "bodyless_304_cannot_supply_final_publication_wrapper",
+              "change": "new_in_integration_commit",
+              "current_line": 567,
+              "integration_line": 567
+            },
+            {
+              "name": "complete_uncacheable_receipt_keeps_final_history_separate",
+              "change": "new_in_integration_commit",
+              "current_line": 574,
+              "integration_line": 574
+            },
+            {
+              "name": "worker_cannot_inject_the_core_final_scope_marker",
+              "change": "new_in_integration_commit",
+              "current_line": 605,
+              "integration_line": 605
+            }
+          ]
+        },
+        {
+          "path": "tests/e2e_cache_freshness.py",
+          "ctest_target": "e2e_cache_freshness",
+          "current_sha256": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+          "completed_stage_input_sha256": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "CacheFreshness.test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator",
+              "change": "new_in_integration_commit",
+              "current_line": 183,
+              "integration_line": 183,
+              "pytest_selector": "tests/e2e_cache_freshness.py::CacheFreshness::test_http_chain_original_cache_survives_restart_and_refreshes_only_final_validator",
+              "parameterized_function": false
+            },
+            {
+              "name": "CacheFreshness.test_http_chain_batch_304_accounts_for_each_request_and_redirect_body",
+              "change": "new_in_integration_commit",
+              "current_line": 205,
+              "integration_line": 205,
+              "pytest_selector": "tests/e2e_cache_freshness.py::CacheFreshness::test_http_chain_batch_304_accounts_for_each_request_and_redirect_body",
+              "parameterized_function": false
+            },
+            {
+              "name": "CacheFreshness.test_http_chain_cache_is_owner_scoped_without_a_global_final_alias",
+              "change": "new_in_integration_commit",
+              "current_line": 227,
+              "integration_line": 227,
+              "pytest_selector": "tests/e2e_cache_freshness.py::CacheFreshness::test_http_chain_cache_is_owner_scoped_without_a_global_final_alias",
+              "parameterized_function": false
+            },
+            {
+              "name": "CacheFreshness.test_failed_new_http_route_invalidates_the_old_direct_cache",
+              "change": "new_in_integration_commit",
+              "current_line": 256,
+              "integration_line": 256,
+              "pytest_selector": "tests/e2e_cache_freshness.py::CacheFreshness::test_failed_new_http_route_invalidates_the_old_direct_cache",
+              "parameterized_function": false
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/ctest-command.json",
+            "sha256": "d52b7ffb491322734071c72a197604c74da82992ba23500b28308fe0635a19f3"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/ctest.log",
+            "sha256": "4f30b4b1445cfff9f68bcfa34e3634f0a74ff50fda5f1f59d2632615b52bfe25"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:01:48.824563+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/ctest.xml",
+            "sha256": "cb98762c514c375a54d9a4c708cba54381103d7cacfe406de7cee9db1dd10b41"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/pytest-command.json",
+            "sha256": "b63cded84c36f2cbd03284d81f18c5cf394b966793f5e7f2f416894e790c0259"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/pytest.log",
+            "sha256": "51caec386da3f96f9e1e54291073271dbcb07d48e059114a4d819714fb1bc6b3"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:03:22.552011+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1173,
+          "summary_line": "1173 passed in 15.91s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/asan-command.json",
+            "sha256": "e7bdae8f91bf1c0ffa9f914af5c515d38d4fe16b77b91aa2afba22e564f35f52"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-2-v4/asan.log",
+            "sha256": "6a6358da07657efa8d84601e8aa199ef2eed6d77a38c3d3ebdb7c099256f1a61"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:04:52.682810+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      },
+      "preserved_failures": [
+        "p2-2: interrupted candidate after canonical slash-size mismatch was found",
+        "p2-2-v2: real original Worker aggregate-publication regression, plus two generated ELF mode launch failures",
+        "p2-2-v3: default sandbox denied socket creation (EPERM); all 15 native targets passed, HTTP fixtures failed and original Python watchdog expired"
+      ],
+      "remaining_limits": [
+        "Only complete bounded HTTP chains with explicit positive lifetime qualify for reuse; soft/unproven chains retain full reads",
+        "Existing reverse percent URL identities remain distinct; documented and independently compared with baseline",
+        "No source enablement, S2 decision, retention-policy change, backup restoration or scraper change"
+      ],
+      "verification_environment": "p2-2-v4 uses approved local-loopback execution. Validation-only hash-bound native launch guard preserves all original argv, properties, test timeouts and exit status. Product CMake and CI unchanged.",
+      "native_cache_regressions": "51 cases / 640 assertions",
+      "role_boundary": "This entry inventories the author-owned implementation and existing formal evidence. It is not an independent code review or new validation of P2-2.",
+      "independent_evidence_qualification": "All four unchanged protocol/cache probes passed; handoff six-case probe remains four passed/two existing reverse-percent identity assumptions failed, unchanged from prior versions.",
+      "original_worker_contract_guard": "The original /redirect assertion in test_explicit_read_ceiling_matches_both_original_and_final_redirect_scopes caught the rejected v2 aggregate-publication regression. The assertion was preserved; the completed v4 stage passed it."
+    },
+    {
+      "id": "P2-3",
+      "subject": "Clearly unrelated malformed robots agents do not discard applicable groups",
+      "integration_commit": "026dafb783e1a922abffaf03fc3667f0167d2561",
+      "completed_stage": "p2-3",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p2-3/result.json",
+        "sha256": "0f3afd480c553cccecb2ccf9b7a099a797399d08afdf0fcbdf0a111a3f084add"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p2-3/execution-inputs.json",
+        "sha256": "f87ccdc2db4443d67078a085e493d01bf836dd6b0993b21c018d314deb9b983f"
+      },
+      "execution_source_base_commit": "1bac5c3b4e5c56df33e6f8de3a65bd5989e70c8b",
+      "formal_tests": [
+        {
+          "path": "python/tests/test_robots.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+          "completed_stage_input_sha256": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_damaged_policy_never_silently_turns_into_allow",
+              "change": "preserved_existing_strict_control",
+              "current_line": 91,
+              "integration_line": 91,
+              "pytest_selector": "python/tests/test_robots.py::test_damaged_policy_never_silently_turns_into_allow",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_unrelated_invalid_user_agents_keep_group_boundaries",
+              "change": "new_in_integration_commit",
+              "current_line": 100,
+              "integration_line": 100,
+              "pytest_selector": "python/tests/test_robots.py::test_unrelated_invalid_user_agents_keep_group_boundaries",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_ignored_invalid_member_does_not_discard_valid_members_of_same_group",
+              "change": "new_in_integration_commit",
+              "current_line": 115,
+              "integration_line": 115,
+              "pytest_selector": "python/tests/test_robots.py::test_ignored_invalid_member_does_not_discard_valid_members_of_same_group",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_empty_rule_still_delimits_an_ignored_invalid_agent_group",
+              "change": "new_in_integration_commit",
+              "current_line": 124,
+              "integration_line": 124,
+              "pytest_selector": "python/tests/test_robots.py::test_empty_rule_still_delimits_an_ignored_invalid_agent_group",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule",
+              "change": "new_in_integration_commit",
+              "current_line": 134,
+              "integration_line": 134,
+              "pytest_selector": "python/tests/test_robots.py::test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed",
+              "change": "new_in_integration_commit",
+              "current_line": 141,
+              "integration_line": 141,
+              "pytest_selector": "python/tests/test_robots.py::test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_invalid_agent_classification_is_relative_to_the_selected_product",
+              "change": "new_in_integration_commit",
+              "current_line": 147,
+              "integration_line": 147,
+              "pytest_selector": "python/tests/test_robots.py::test_invalid_agent_classification_is_relative_to_the_selected_product",
+              "parameterized_function": false
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-3/ctest-command.json",
+            "sha256": "d09bf68f677320e95add6061faa6276d2933a7d975be23a1a75b74915d80e240"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-3/ctest.log",
+            "sha256": "b11327389f488c5347a5a2050ebf67f6209c91c5aaeaf299ccd72fe04680de84"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:09:39.476728+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p2-3/ctest.xml",
+            "sha256": "ab17a8de287d42f325174a06837014b84e4c11f53d7475b482886b7815d43ff1"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-3/pytest-command.json",
+            "sha256": "a3c6a1ad321de34bcadca7e6157dec3acffbd476c1006b58898f2d7f1d6a07ae"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-3/pytest.log",
+            "sha256": "6734b23cfcc5afc7767349c756400958ff20f40eb7b3df53b237023003ea1ccf"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:11:14.627804+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1217,
+          "summary_line": "1217 passed in 16.69s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-3/asan-command.json",
+            "sha256": "8ebe13c6b1ade95bdd7a642701513647b7422746ce0547150a45fed47a1c6034"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-3/asan.log",
+            "sha256": "5847891879512f64e2249d287d7a4f0e053a06a769c957f5d30496483196ffb1"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:11:41.280684+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      }
+    },
+    {
+      "id": "P2-4",
+      "subject": "Usable declared text encodings replace damaged bytes without changing the encoding of valid text",
+      "integration_commit": "54dec2cef34fa7777660b0851220f99869d3f596",
+      "completed_stage": "p2-4",
+      "status_from_completed_stage": "fixed",
+      "result": {
+        "path": "validation/claude_followup_20261024/p2-4/result.json",
+        "sha256": "8f32ba8506fb997e2c11ac74c7f4f863d6a525dc3edac82cb63675d195aa013f"
+      },
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p2-4/execution-inputs.json",
+        "sha256": "e14a971e5971390f939256e1ba60c0f57f5c6798d1d83723527d1b673b052782"
+      },
+      "execution_source_base_commit": "026dafb783e1a922abffaf03fc3667f0167d2561",
+      "formal_tests": [
+        {
+          "path": "python/tests/test_crawl_worker.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+          "completed_stage_input_sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage",
+              "change": "new_in_integration_commit",
+              "current_line": 613,
+              "integration_line": 613,
+              "pytest_selector": "python/tests/test_crawl_worker.py::test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage",
+              "parameterized_function": false
+            }
+          ]
+        },
+        {
+          "path": "python/tests/test_discovery.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724",
+          "completed_stage_input_sha256": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links",
+              "change": "new_in_integration_commit",
+              "current_line": 407,
+              "integration_line": 407,
+              "pytest_selector": "python/tests/test_discovery.py::test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_xml_charset_damage_remains_strict_and_cannot_publish_a_valid_prefix",
+              "change": "new_in_integration_commit",
+              "current_line": 414,
+              "integration_line": 414,
+              "pytest_selector": "python/tests/test_discovery.py::test_xml_charset_damage_remains_strict_and_cannot_publish_a_valid_prefix",
+              "parameterized_function": false
+            }
+          ]
+        },
+        {
+          "path": "python/tests/test_extract.py",
+          "ctest_target": "python_worker",
+          "current_sha256": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038",
+          "completed_stage_input_sha256": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038",
+          "current_bytes_equal_completed_stage": true,
+          "tests": [
+            {
+              "name": "test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset",
+              "change": "new_in_integration_commit",
+              "current_line": 75,
+              "integration_line": 75,
+              "pytest_selector": "python/tests/test_extract.py::test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail",
+              "change": "new_in_integration_commit",
+              "current_line": 81,
+              "integration_line": 81,
+              "pytest_selector": "python/tests/test_extract.py::test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes",
+              "change": "new_in_integration_commit",
+              "current_line": 86,
+              "integration_line": 86,
+              "pytest_selector": "python/tests/test_extract.py::test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes",
+              "parameterized_function": false
+            },
+            {
+              "name": "test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding",
+              "change": "new_in_integration_commit",
+              "current_line": 93,
+              "integration_line": 93,
+              "pytest_selector": "python/tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes",
+              "change": "new_in_integration_commit",
+              "current_line": 102,
+              "integration_line": 102,
+              "pytest_selector": "python/tests/test_extract.py::test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes",
+              "change": "new_in_integration_commit",
+              "current_line": 108,
+              "integration_line": 108,
+              "pytest_selector": "python/tests/test_extract.py::test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes",
+              "parameterized_function": true
+            },
+            {
+              "name": "test_invalid_meta_codec_uses_the_existing_undeclared_guess_order",
+              "change": "new_in_integration_commit",
+              "current_line": 114,
+              "integration_line": 114,
+              "pytest_selector": "python/tests/test_extract.py::test_invalid_meta_codec_uses_the_existing_undeclared_guess_order",
+              "parameterized_function": false
+            }
+          ]
+        }
+      ],
+      "gate_results": {
+        "ctest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-4/ctest-command.json",
+            "sha256": "0a3c015e3d175ec61c9c7a1a39874664724bd7790a2d83edc876ddd6ceb315b9"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-4/ctest.log",
+            "sha256": "5e2ba05385d903e73ebd41ae042cdab137276ffd66b943cde88bb8c485c98ebb"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:16:14.016139+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "xml": {
+            "path": "validation/claude_followup_20261024/p2-4/ctest.xml",
+            "sha256": "0b25cf8304c528058f5a0826c3e77e54358c3c72269edecd4c3b5f0344fb0cfe"
+          },
+          "passed": 27,
+          "total": 27,
+          "failures": 0,
+          "disabled": 0,
+          "skipped": 0,
+          "python_worker_present_and_not_skipped": true
+        },
+        "pytest": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-4/pytest-command.json",
+            "sha256": "afb9bab0e47aca5c3b85751477e48be2f026747580e9db45527678d38eda5334"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-4/pytest.log",
+            "sha256": "c5fe4d084609c85244e1e42fee93782dc4a7de50797ea6ede6f452eca7d1353f"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:17:47.331237+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "passed": 1242,
+          "summary_line": "1242 passed in 16.23s",
+          "count_is_parameterized_cases_not_function_names": true
+        },
+        "asan_ubsan": {
+          "command": {
+            "path": "validation/claude_followup_20261024/p2-4/asan-command.json",
+            "sha256": "a7fc835f4564680a9564e3d44dd3d09aa453dec8af07e62f73f26161af5a0385"
+          },
+          "log": {
+            "path": "validation/claude_followup_20261024/p2-4/asan.log",
+            "sha256": "580b049aeb9158c02de76d80431436bca45bdc17158492e0b19bd3f8398a983f"
+          },
+          "exit_code": 0,
+          "started_at_utc": "2026-10-24T05:18:13.252234+00:00",
+          "source_inputs_unchanged": true,
+          "process_watchdog_expired": false,
+          "environment": {
+            "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+            "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+          },
+          "native_targets_completed": 15,
+          "native_targets": [
+            "bzs_tests",
+            "bzs_batch_tests",
+            "bzs_map_tests",
+            "bzs_crawl_tests",
+            "bzs_site_publication_tests",
+            "bzs_contract_tests",
+            "bzs_retention_tests",
+            "bzs_fairness_tests",
+            "bzs_session_tests",
+            "bzs_revalidation_tests",
+            "bzs_revocation_tests",
+            "bzs_source_publication_tests",
+            "bzs_cache_freshness_tests",
+            "bzs_search_mode_tests",
+            "bzs_capacity_cycles_tests"
+          ]
+        }
+      }
+    },
+    {
+      "id": "P2-5",
+      "subject": "Lazily lower each used field once within one AST matches invocation",
+      "status": "in_progress_not_claimed_passed",
+      "status_basis": "The parent requested an index while the complete p2-5 gate was running. This draft deliberately does not collect or infer an overall pass from partial command artifacts.",
+      "integration_commit": null,
+      "execution_inputs": {
+        "path": "validation/claude_followup_20261024/p2-5/execution-inputs.json",
+        "sha256": "d887d9e93e1b7dc5aa542fd4dc452dd1fe6c44094933276e86f876bae1f14ffd"
+      },
+      "execution_source_base_commit": "54dec2cef34fa7777660b0851220f99869d3f596",
+      "formal_tests": [
+        {
+          "path": "tests/unit.cpp",
+          "ctest_target": "core",
+          "current_sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "stage_input_sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+          "tests": [
+            {
+              "name": "compound_matching_keeps_fields_and_documents_independent",
+              "change": "new_in_current_frozen_candidate",
+              "current_line": 1063
+            }
+          ]
+        }
+      ],
+      "completed_gate_totals": null,
+      "limits": [
+        "The once claim applies within one matcher invocation; scoring, highlighting, candidate handling and concurrency are not thereby optimized.",
+        "No new speedup or timing claim is made from the earlier audit benchmark."
+      ]
+    }
+  ],
+  "retained_early_review": {
+    "report_path": "/tmp/bzs-p2-source-policy-20261024/audit-tail-readonly.json",
+    "report_sha256": "341f308302f6600a4eb56cc3af99c5e7a817d24128322d7a709209e23dd3a63f",
+    "report_observed_head": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+    "report_working_tree_note": "P2-1 integration is in progress in the parent-owned main worktree. Hashes identify the actual files read; this is not a clean-tree or test-freeze claim.",
+    "report_time_precision": "The original report binds a commit and in-progress P2-1 worktree state, not an explicit wall-clock timestamp.",
+    "original_bytes_preserved": true,
+    "not_revalidated_for_this_index": true,
+    "wording_corrections": [
+      {
+        "field": "owner_decisions_preserved",
+        "early_text": "S2 remains frozen",
+        "delivery_text": "S2 范围、状态及是否冻结的决定保持现状；不宣告新的冻结或验收。"
+      },
+      {
+        "field": "P2-9.action",
+        "delivery_text": "P2-9 不属于本批指定修复范围，未实施 24 小时上限；不表述为必须再获用户批准，也不把这项审批当作六项保留决定之一。"
+      },
+      {
+        "field": "P2-8",
+        "delivery_text": "存在真实的隔离备份；缺少的是受支持的恢复及重新提供服务的协调流程。"
+      }
+    ],
+    "findings": [
+      {
+        "id": "P2-6",
+        "status": "Still structurally true; retained scheduler limitation, not a new regression",
+        "locations": [
+          "src/service.cpp:366-423",
+          "apps/searchd/main.cpp:321-322",
+          "src/web.cpp:execute_read"
+        ],
+        "evidence": "One start_worker jthread synchronously executes at most a fixture lease, a read lease, a map lease and a persistent-search lease per iteration before its 20 ms sleep. A synchronous read RPC delays advancement of that shared background dispatcher.",
+        "limits": "The read grant is capped at 55,000 ms with a 5,000 ms RPC allowance. This does not prove a specific delay occurred, and foreground HTTP calls use a different path; do not claim every request is blocked by one background read.",
+        "locations_are_historical": true,
+        "disposition": "Not changed in this specified repair batch; this is retained early-review evidence, not a fresh runtime or load test."
+      },
+      {
+        "id": "P2-7",
+        "status": "Still structurally true; retained HTTP executor capacity limitation",
+        "locations": [
+          "apps/searchd/main.cpp:143-175",
+          "apps/searchd/main.cpp:248",
+          "apps/searchd/main.cpp:337-341",
+          "apps/searchd/main.cpp:HttpWorker::call",
+          "src/web.cpp:WebService::read"
+        ],
+        "evidence": "Session::received calls service_.dispatch synchronously on the bounded IO pool (default 8). HttpWorker::call synchronously runs its own RPC io_context. The web.read maximum 60,000 ms plus 5,000 ms RPC allowance can occupy those outer IO threads.",
+        "limits": "The /healthz business path is fast and avoids Store/auth work, but it has no reserved executor. Saturating every IO thread can delay health; a single slow request with spare threads need not do so. No load reproduction was run here.",
+        "locations_are_historical": true,
+        "disposition": "Not changed in this specified repair batch; this is retained early-review evidence, not a fresh runtime or load test."
+      },
+      {
+        "id": "P2-8",
+        "status": "Quarantined restore boundary remains intentional; audit wording overstates it",
+        "locations": [
+          "src/store.cpp:205-207",
+          "src/store.cpp:1562-1610",
+          "docs/adr/0004-single-user-first-remote-mcp-later.md:3-15",
+          "docs/adr/0001-offline-bootstrap.md:18",
+          "docs/PRINCIPAL_REVOCATION.md:62",
+          "docs/API.md:244"
+        ],
+        "evidence": "backup.create performs an actual complete SQLite backup into a closed, quarantined artifact and atomically publishes it without overwrite. Normal Store opening refuses quarantine. There is no supported product restore/reconciliation-to-serving command.",
+        "correction": "Backup artifacts exist. Safe restoration to a serving instance remains unimplemented and intentionally fail-closed; this is not equivalent to no backup, nor proof that restoration can never be implemented.",
+        "locations_are_historical": true,
+        "disposition": "Not changed in this specified repair batch; this is retained early-review evidence, not a fresh runtime or load test.",
+        "delivery_note": "A real isolated SQLite backup exists. The missing capability is a supported restore/reconciliation-to-serving workflow; backup isolation remains unchanged."
+      },
+      {
+        "id": "P2-9",
+        "status": "Very long upstream cooldown is accepted and persisted; not a manifest disable",
+        "locations": [
+          "python/bzs/worker/sources/base.py:66-79",
+          "src/web.cpp:604",
+          "src/store.cpp:1497-1559",
+          "python/tests/test_sources.py:86-106",
+          "tests/unit.cpp:1393-1405",
+          "tests/unit.cpp:1612-1618"
+        ],
+        "evidence": "Retry-After is bounded only by (1<<62)-1 ms. Core takes the maximum of its configured cooldown and the upstream value; source_report stores MAX(existing cooldown_until, new until). Source admission checks it across restarts. A late success does not clear the cooldown.",
+        "runtime_readonly_observation": {
+          "input_seconds": "999999999",
+          "result_ms": 999999999000,
+          "oversized_input": "999999999999999999999999999",
+          "oversized_result_ms": 4611686018427387903
+        },
+        "limits": "This can make a budget key unavailable for roughly 31.7 years, but does not change source enabled/review state. It may apply to sources sharing that key. No live source was requested; default source disabling remains intact.",
+        "locations_are_historical": true,
+        "disposition": "Not changed in this specified repair batch; this is retained early-review evidence, not a fresh runtime or load test.",
+        "delivery_note": "No 24-hour Retry-After cap was implemented because P2-9 is outside the specified fixes for this batch. This index does not impose additional user approval or identify such approval as one of the six retained decisions."
+      }
+    ]
+  },
+  "six_decisions_unchanged": [
+    "Source approval and enabling remain explicit",
+    "S2 scope, status and whether to freeze remain as previously decided; no new freeze or acceptance is declared",
+    "Validation evidence remains committed",
+    "Backups remain isolated",
+    "Idempotency remains permanent",
+    "Fetching adapters remain in scope"
+  ],
+  "main_source_files_observed_sha256": {
+    "python/tests/test_crawl_worker.py": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+    "python/tests/test_discovery.py": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724",
+    "python/tests/test_extract.py": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038",
+    "python/tests/test_http_redirect_cache.py": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+    "python/tests/test_http_revalidation.py": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+    "python/tests/test_mcp_sessions.py": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+    "python/tests/test_robots.py": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+    "tests/cache_freshness.cpp": "3ce43a4ecb641275458e595e2e614fd95dde115e88faa4242f2f560a30461f44",
+    "tests/e2e_cache_freshness.py": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+    "tests/e2e_web.py": "70defd96a1823954c3395fd6e233446c8deeab5fb684afadffb88f15b11fdf8b",
+    "tests/http_revocation.py": "c253cb9acb1dedaa017b635608f1c65fa388c581a4e7d88afbf346c50b2c85b9",
+    "tests/retention.cpp": "9868e2b3652e9a7566d80f8c2446c041d8df76776f486bc30795f2ad450072bd",
+    "tests/revalidation.cpp": "55c958c546ff692fcddeae5dc4544b573019575c5d79a86b0edb5cf79f40db81",
+    "tests/sessions.cpp": "9a5f424b430371f3c690ad79cd7c1bad5916d7b417dfbfe1bf6d0f5abdf13d20",
+    "tests/site_publication.cpp": "a0d163ceedc8b2f7a1a3afdcb89bb39468e603aeb4fc1ee89e47616856279d1d",
+    "tests/unit.cpp": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec"
+  }
+}

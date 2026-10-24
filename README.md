@@ -1,10 +1,10 @@
 # 不周山搜索工具 · bzs861
 
-**状态：0.1.10 接手后的五项增量。** 从已发布0.1.9继续，增加搜索来源持久发布限制、管理员主体撤权、独立HTTP缓存新鲜度、可分别取消的共享批读，以及fast/balanced/deep搜索执行预算。范围见[接手计划](docs/handoff/S2_TAKEOVER_20261023.md)，实际验证见[当前报告](validation/s2_takeover/windows-watchdog-report.json)。S0、S1、S2的完整验收仍未完成。
+**状态：Claude 审计后续修正；已发布版本仍为 0.1.10。** 本批从 `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，保留只读审计材料，先复现八项问题，再按约定顺序修复。无会话本地查询、永久身份容量、候选索引、HTTP 缓存、robots、字符集及查询匹配的代码范围与限制见 [API](docs/API.md)；逐项输入、真实失败和执行结果见[本批验证记录](validation/claude_followup_20261024/)。准确执行结果、提交与 CI 见该记录。S0、S1、S2 的完整验收仍未完成。
 
-生产实现原 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。当前仅调整Windows三个测试进程上限并增加crawl逐例即时进度，生产源码及二进制保持；聚焦验证与旧失败证据见当前报告，完整公开CI按新精确SHA对应的Actions核对。
+上一轮 0.1.10 生产实现的历史 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。该次 watchdog 修正只调整 Windows 三个测试进程上限并增加 crawl 逐例即时进度，生产源码及二进制保持；其聚焦验证与原失败见[历史报告](validation/s2_takeover/windows-watchdog-report.json)，这些成绩不代替本批改动的验证。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[验证说明](validation/s2_takeover/README.md)区分作者、独立反例、真实升级和最终整合输入，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
 
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
@@ -13,10 +13,10 @@
 
 | 能力 | 当前边界 |
 |---|---|
-| 本地导入、搜索与证据 | 保留显式 HTML/TXT 导入、不可变快照、冻结分页、UTF-8 字节定位、原文查找、用户隔离和权限复核 |
+| 本地导入、搜索与证据 | 显式 HTML/TXT 导入、不可变快照；`search.once` 单次返回不创建持久会话，原冻结分页、UTF-8 定位和权限复核保留 |
 | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
 | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
-| 网页读取候选实现 | 缓存指令独立于validator；完整表示按年龄/profile复用或条件刷新，no-store无新持久快照，cache_only陈旧则拒绝；直接出站仍受连接层策略限制 |
+| 网页读取候选实现 | 缓存指令独立于 validator；直达或有完整证明的 HTTP 链按年龄/profile 复用，逐跳期限、删除和发布约束保持；no-store 无新持久快照 |
 | 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务在派发时共享一次读取，逐订阅取消和一次计费，收据原子提交 |
 | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
 | 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
@@ -25,9 +25,9 @@
 | 搜索执行模式 | 可查看fast/balanced/deep来源数、候选数和期限上限；覆盖只可收紧，报告省略来源；只搜索，不自动读取或调用模型 |
 | 来源探测与回放 | 唯一运行、预留与检查点、显式恢复、不覆盖旧样本；原始响应按 SHA-256 绑定，可离线比较完整解析结果 |
 | 黄金查询集 | 原有 40 条内容保持不变，补充冻结清单与开发/回归/保留集元数据；按来源能力跨类别选样，默认排除保留集 |
-| 检索改进候选实现 | 中文索引、BM25 与带字节区间的原文片段；与既有精确字面和查询语义一起回归 |
+| 检索改进候选实现 | 词项 BM25 与子串辅助索引先取安全候选，再按原精确语义复核；预算仍有界，overflow 回原文复核，片段按 UTF-8 字节定位 |
 | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
-| 任务历史回收 | 至少七天后压缩稳定终态明细，永久保留 key/指纹/计费摘要；活动与未结算任务受保护，无引用过期 robots 可回收 |
+| 任务历史回收 | 至少七天后压缩稳定终态明细，永久 key/指纹/计费摘要不占未压缩明细容量；活动、暂停与未结算任务仍受保护 |
 | 持久调度与会话 | 批读与map/crawl持久轮转；联网搜索冻结版本、游标和元数据事件，支持重连、去重、取消、过期与背压 |
 | 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结、来源贡献与外部消融配对；固定全池IDCG，缺失/失败不当空结果，完整质量门禁仍阻塞 |
 | 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
@@ -155,6 +155,8 @@ ctest --preset dev
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
 ## 已有数据与后续范围
+
+当前业务 schema 仍为13；子串辅助索引使用新的兼容标记，升级前须停止旧 Core。新版完成升级后旧二进制不能重新打开该库，不支持新旧进程混用；真实 442 旧库升级证据见[本批记录](validation/claude_followup_20261024/independent/p1-3/)。
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 

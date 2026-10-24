@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "created_at_utc": "2026-10-24T05:31:55.413421+00:00",
+  "reviewer": "/root/handoff_audit",
+  "scope": "Final product delta static review after P2-4 and actual application of P2-5, its formal regression and independently reviewed documentation. No test reruns, main-tree writes or network actions.",
+  "decision": "No residual production blocker found in this incremental static review; wait for the integrator-owned exact-input full-stage result before final execution binding.",
+  "binding": {
+    "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "current_head": "54dec2cef34fa7777660b0851220f99869d3f596",
+    "root_execution_inputs": "validation/claude_followup_20261024/p2-5/execution-inputs.json",
+    "root_execution_inputs_sha256": "d887d9e93e1b7dc5aa542fd4dc452dd1fe6c44094933276e86f876bae1f14ffd",
+    "file_count": 220,
+    "input_mismatches": [],
+    "previous_p2_4_inputs_sha256": "e14a971e5971390f939256e1ba60c0f57f5c6798d1d83723527d1b673b052782",
+    "added_inputs": [],
+    "removed_inputs": [],
+    "changed_inputs": [
+      "HANDOFF_START_HERE.md",
+      "README.md",
+      "docs/API.md",
+      "docs/DEVELOPMENT_STATUS.md",
+      "docs/GITHUB_HANDOFF.md",
+      "docs/handoff/NEXT_AGENT.md",
+      "docs/implementation_status.json",
+      "src/query.cpp",
+      "tests/unit.cpp"
+    ],
+    "runtime_library_replay": "No new runtime probe in this delta; existing per-issue evidence retained, full current gates are root-owned."
+  },
+  "p2_5": {
+    "actual_source_sha256": "16b4929866e2cd4c5b1b972d6d137890670bb5f59d571ca0f6c023312fa4b1e5",
+    "actual_formal_test_sha256": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+    "patch_checks": {
+      "original_query_patch": {
+        "sha256": "7f18f239d60c46e0f3bc45e6663560f129fdce0e4bc28659089d8379c3ef8803",
+        "reverse_apply_check_exit": 0,
+        "output": ""
+      },
+      "formal_regression_patch": {
+        "sha256": "3dac439372522700cb7b73ac79cba02b36630c8b7682b96c134d977afe420470",
+        "reverse_apply_check_exit": 0,
+        "output": ""
+      }
+    },
+    "production_delta": {
+      "file": "src/query.cpp",
+      "added_lines": 24,
+      "removed_lines": 11
+    },
+    "formal_test_delta": {
+      "file": "tests/unit.cpp",
+      "added_lines": 20,
+      "removed_lines": 0,
+      "case": "compound_matching_keeps_fields_and_documents_independent",
+      "new_assertion_executions": 16
+    },
+    "reviewed_properties": [
+      "A new LoweredFields object is created on the stack within each matches invocation after host/type filters.",
+      "Separate optional<string> storage for title/body/url is populated lazily once. Returned string_views borrow stable engaged storage; it is not reset or moved during recursive evaluation.",
+      "Recursive AND/OR/NOT borrow the same object, retain short-circuit order, and do not share state across documents or calls. Empty strings remain engaged caches, not repeated work.",
+      "Unqualified any searches title/body only; explicit url remains separate. Original leaf matcher, symbol boundaries, phrase substring semantics and ASCII-only fold are unchanged.",
+      "No Store locking, candidate budget, result ranking, score_match or highlight behavior was altered by this patch."
+    ],
+    "limits": "At most one ASCII fold per accessed field per matches call. This does not remove the Store mutex, all parsing/scoring/highlight folding or the bounded-scan fallback, and no total-performance factor is independently asserted."
+  },
+  "p2_4": {
+    "committed_as": "54dec2cef34fa7777660b0851220f99869d3f596",
+    "result_record": "validation/claude_followup_20261024/p2-4/result.json",
+    "result_sha256": "8f32ba8506fb997e2c11ac74c7f4f863d6a525dc3edac82cb63675d195aa013f",
+    "observed_integrator_record": {
+      "ctest": "27/27; zero skipped",
+      "pytest_passed": 1242,
+      "asan_ubsan_native_targets": 15,
+      "independent_cases": 15,
+      "independent_assertions": 32,
+      "source_and_approval_policy_changed": false
+    },
+    "current_decoder_sha256": "6dd2c0b0918a1a0cb7148f2fd4bd27428f3285b71f278481bdafa4ffea8e0c3f",
+    "integration_observation": "Decode changes apply to display text; robots still decodes raw bytes strictly and XML parses raw bytes. Physical HTTP byte accounting and source approvals remain outside display decoding. This reviewer did not repeat the author or separate independent decoder probes."
+  },
+  "preservation": {
+    "historical_442_validation_files": 1351,
+    "historical_validation_mismatches": [],
+    "original_audit_files": 11,
+    "original_audit_mismatches": [],
+    "protected_files": {
+      "CMakeLists.txt": {
+        "sha256": "03072c82f801d01fe087ee3ac4647b3a44eca88cb7d57fc022bb7d365cdf1768",
+        "equals_442": true
+      },
+      ".github/workflows/ci.yml": {
+        "sha256": "f161f06fc04fd19e52343943bf0188309894f11b2f7689c0cc753b4a9025d05d",
+        "equals_442": true
+      },
+      "config/sources.json": {
+        "sha256": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+        "equals_442": true
+      },
+      "config/sites.json": {
+        "sha256": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+        "equals_442": true
+      },
+      "docs/planning/development_blueprint_v1.2.md": {
+        "sha256": "75552ba49a9380bbe21902864165040d7b66969a26fbc6009fd65540aa733f6a",
+        "equals_442": true
+      },
+      "docs/planning/slices_v1.2.json": {
+        "sha256": "01e436a36c4b3d8d3b99acabe0b4a24eb9a2028c4fa76d516471bd2937d5e69a",
+        "equals_442": true
+      },
+      "tests/e2e_session_recovery.py": {
+        "sha256": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+        "equals_442": true
+      },
+      "tests/crawl.cpp": {
+        "sha256": "a41d87eadd1292a198e2a75797de210e78813ed9dceafba8d198e61dea27f06f",
+        "equals_442": true
+      }
+    },
+    "crawl_worker_and_http_fixture_delta_numstat": "18\t0\tpython/tests/test_crawl_worker.py\n1\t0\ttests/http_revocation.py",
+    "fixture_note": "The original crawl Worker file has an added charset regression rather than whole-file equality after P2-4. The original recovery and crawl native test bytes remain equal to442. P1-2 adds search.once to HTTP principal-revocation coverage.",
+    "approved_documentation_bytes_match_v3": true,
+    "documentation_byte_mismatches": [],
+    "documentation_review_attribution": "Root independently checked application/old field preservation and /root/source_policy independently reviewed semantics. This agent authored the documentation draft and does not self-sign it.",
+    "validation_launcher_attribution": "This agent authored the launcher draft; root review owns its approval. Only input identity is checked here."
+  },
+  "unchanged_decisions": {
+    "source_selection_review_enablement": {
+      "registered": 17,
+      "enabled": 0,
+      "contract_enabled": 0
+    },
+    "S2": "Scope, status and the decision whether to freeze remain unchanged; this report does not assert S2 is frozen.",
+    "validation_policy": "Historical evidence remains committed and immutable.",
+    "backup": "Restored databases remain quarantined until independent reconciliation.",
+    "permanent_idempotency": "IDs/keys/fingerprints retained; only eligible details compacted.",
+    "scraping_adapters": "No changes since442 to python/bzs/worker/sources.",
+    "formal_status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    }
+  },
+  "known_non_green_independent_boundary": {
+    "probe": "Original six-case redirect independent probe",
+    "cases_passed": 4,
+    "cases_failed": 2,
+    "checks": 209,
+    "failure_scope": "Existing reverse-percent URI identity assumptions, shown equal before and after; exact and map_url host/default-port identity scope is documented.",
+    "do_not_relabel_as_all_passed": true,
+    "latest_bound_probe_library_sha256": "fba67dbd752682bdcf0ae8acb690b1232b398492b79caba8202757175d81a242",
+    "original_final_log_sha256": "598a0c0879daf6f92441c4afae54e7c60e6ca3a5d09974c26706b933350f619d",
+    "scope_note": "P2-5 changes query matching, not the redirected cache protocol; no extra replay was requested or performed in this static delta."
+  },
+  "earlier_cross_item_review": {
+    "path": "../integration-static-review-pre-final-v2.json",
+    "sha256": "300d58cea51c29b34bcbcc99d3322f28e7ddaaaf4a7fe61e5bd932e3b36d2e1c",
+    "role": "Retained initial cross-component findings; this additive record supersedes its pending P2-4/P2-5 input state."
+  },
+  "pending_binding": {
+    "final_root_stage_result": "Await integrator result/log and unchanged input binding. Do not treat current in-progress CTest/pytest/ASan as passed.",
+    "remote_ci": "No current batch remote CI observed or asserted.",
+    "full_product_acceptance": "No S0/S1/S2 or whole-work-package signoff performed."
+  }
+}

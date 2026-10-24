@@ -1,8 +1,14 @@
 # 下一会话接手顺序
 
-更新：2026-10-23。当前增量是0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读根目录HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[接手范围](S2_TAKEOVER_20261023.md)、[当前Windows watchdog报告](../../validation/s2_takeover/windows-watchdog-report.json)和[机器状态](../implementation_status.json)，再核对包含报告的实际提交及其CI。原[生产实现报告](../../validation/s2_takeover/final-report.json)、[HTTP清理报告](../../validation/s2_takeover/ci-followup-report.json)和[截止时间报告](../../validation/s2_takeover/deadline-followup-report.json)作为各自历史输入保留。
+更新：2026-10-24。当前接续 Claude 审计修正，已发布版本仍为0.1.10，唯一推送目标为[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。先读 HANDOFF_START_HERE.md、[当前进度](../DEVELOPMENT_STATUS.md)、[本批基线结论](../../validation/claude_followup_20261024/baseline-findings.json)、[本批验证记录](../../validation/claude_followup_20261024/)和[机器状态](../implementation_status.json)，再核对实际包含提交与其CI。上一轮 schema12→13、截止时间与 Windows watchdog 报告保留为历史，不代替本批验证。
 
-## 当前基线与接口
+本批基线为 `44253a752f945fdfab9810192e583b39fe5f6d83`，只读审计材料为 `30f058557e3f7ebb873e9780759323b49cfe9636`。修复顺序为 P1-2→P1-1→P1-3→P2-1..4，P2-5 原补丁评审后接纳；先核查已有阶段与剩余工作，不重写原失败或审计材料。本批实际输入、执行结果、准确提交与双平台 CI 见本批验证记录。
+
+本地单次查询用 `search.once`；需要稳定分页仍用 `search/search.page`。永久任务/搜索幂等身份保留，明细容量独立计数。子串索引升级仍是 schema13，但必须先停止旧 Core，不能让新旧格式进程混用数据库；真实旧库升级及隔离证据见本批独立 p1-3 记录。显式跳转缓存的逐跳准入、计费、删除和原始/最终发布范围见 [HTTP_REDIRECT_CACHE](../HTTP_REDIRECT_CACHE.md)；反向 percent 身份等价仍是已记录的既存边界。
+
+以下为上一轮接口和历史证据，段内“当前/本次”均限于对应历史修正。
+
+## 上一轮基线与保留接口
 
 本轮接手基线为0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`，CI39725326547成功。当前schema13组合来源发布、主体撤权与共享批读。真实schema12建库升级的可重放探针、旧39表摘要和备份隔离证据在validation/s2_takeover/migration，不能用手造旧表或修改user_version替代。
 
@@ -22,7 +28,7 @@ HTTP修正提交199eb635的CI39950116698又在Linux原恢复test_06出现queued/
 
 ## 接续开发
 
-先修当前精确提交上任何真实失败，再按原蓝图扩展剩余S2工作。完整B-24仍需直接读取、crawl/search、迟到订阅与更广取消矩阵；AUTH-01仍需独立撤销journal、恢复连续性及远程多客户端隔离；MODE-01后续读取/模型能力必须有真实实现与独立预算，不可仅改标签。
+先查本批记录中的未完成项与准确提交验证，再按原蓝图处理剩余 S2 工作；六项保留决定不变，S2 范围、状态及是否冻结的决定保持现状。完整B-24仍需直接读取、crawl/search、迟到订阅与更广取消矩阵；AUTH-01仍需独立撤销journal、恢复连续性及远程多客户端隔离；MODE-01后续读取/模型能力必须有真实实现与独立预算，不可仅改标签。
 
 QA-02先取得真实人工标签/裁决与目标环境证据，冻结方法/阈值后才比较质量；不得AI填人审、看holdout调参或用合成成绩冒充真实消融。S0保留真实来源审核/实测门槛；广泛长时、物理断电、跨owner集合、跨节点与依赖完整性不由有限回归代替。
 

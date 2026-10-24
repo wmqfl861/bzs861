@@ -1,10 +1,16 @@
 # GitHub 交付与开发历史
 
-更新：2026-10-23。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
+更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
-## 当前增量与已交付输入
+## 当前审计后续开发
 
-当前范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/windows-watchdog-report.json)，发布前报告不预写未来自身SHA或CI成功。
+本批从已发布 main `44253a752f945fdfab9810192e583b39fe5f6d83` 接续，已发布版本仍为0.1.10。`review/claude-2026-10-24` 的 `30f058557e3f7ebb873e9780759323b49cfe9636` 只读，不合并或修改审计材料；实际复现见[基线结论](../validation/claude_followup_20261024/baseline-findings.json)。八项修正按约定顺序推进，每项保留正式回归、完整门禁、独立反例与原始失败，准确结果和提交表见[本批验证记录](../validation/claude_followup_20261024/)。
+
+本批准确输入、执行结果、提交与 CI 见本批验证记录。发布前须核对真实远端父提交、精确冻结输入和工作树；非强制更新后再核对实际 commit/tree 及该 SHA 的 Linux/Windows 结果。来源选审启用、validation 入库、backup 隔离、永久幂等保留与抓取适配器决定不变；S2 范围、状态及是否冻结的决定保持现状。
+
+## 已交付输入与历史来源
+
+上一轮范围为 **0.1.10 接手后的五项增量**。本轮起点是0.1.9 `3ef86c653a2e2085848d5cdb151d66392c6af49a`，tree `d5219c5d58e8dfef48a97f08df5b71dbc9b538f1`；其[CI 39725326547](https://github.com/wmqfl861/bzs861/actions/runs/39725326547)已核对Linux/Windows成功。该成绩只证明基线。本轮范围见[接手计划](handoff/S2_TAKEOVER_20261023.md)与[当前报告](../validation/s2_takeover/windows-watchdog-report.json)，发布前报告不预写未来自身SHA或CI成功。
 
 | 已交付输入 / 历史来源 | 提交 | 说明 |
 |---|---|---|
@@ -28,13 +34,13 @@
 
 交付前读取远端 main 与预期旧 SHA，先完成代码、复核和实际测试，再以非强制更新发布。提交的 tree 必须与本地已验证内容相同；远端前进时先检查新差异，不覆盖未知修改。发布后获取实际 commit/tree，将本地副本对齐，并核对对应 Linux/Windows 的实际步骤和结论。
 
-当前报告由包含它的 Git 提交绑定，不预写未来自身 SHA 或未来 CI 成功。最终 SHA 与 CI 以实际发布记录为准。
+各期报告由包含它的实际 Git 提交绑定；准确 SHA 与 CI 以各期发布记录为准。
 
 0.1.10首次发布之后的连接释放修正只改变tests/http_revocation.py及说明/证据，生产实现和CI门槛不变。它使用独立的[后续报告](../validation/s2_takeover/ci-followup-report.json)与冻结输入，不覆盖原final-v2。该次HTTP修正发布以a06e7e9为精确父提交，已核对199eb635的实际tree及Linux/Windows：Windows通过，Linux另有期限事件失败；原Windows失败仍原样保留。
 
 截止时间修正从199eb635继续，生产变更为src/web.cpp与src/sessions.cpp的超时分类和原子终态结算；追加5项search_modes原生回归及说明。[截止时间报告](../validation/s2_takeover/deadline-followup-report.json)绑定完整重新验证，原final-v2、HTTP清理报告及全部既有validation保留。已发布为fcb58e46，其实际Linux通过、Windows进程超时结果见上表。
 
-当前从fcb58e46修正Windows测试watchdog与crawl输出观察性：仅CMakeLists.txt中的Windows core90/crawl120/site_publication120秒和tests/crawl.cpp的计时/即时输出，生产源码、原54例及断言不变。新[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)绑定聚焦验证及原始失败；不以新的进程上限宣称性能验收。发布须以完整fcb58e4679a5bbdff17319b7b4ebff7019733eab为精确父提交，核对新tree，实际Windows日志须确认三个新时限及全部17套通过，Linux仍须完成原27套及15套sanitizer。
+44253a7 从fcb58e46修正Windows测试watchdog与crawl输出观察性：仅CMakeLists.txt中的Windows core90/crawl120/site_publication120秒和tests/crawl.cpp的计时/即时输出，生产源码、原54例及断言不变。新[watchdog报告](../validation/s2_takeover/windows-watchdog-report.json)绑定聚焦验证及原始失败；不以新的进程上限宣称性能验收。该次发布以完整fcb58e4679a5bbdff17319b7b4ebff7019733eab为父提交；对应Windows时限及双平台结果只证明该次输入。本批实际父提交和 CI 必须重新核对。
 
 ## 原始历史为何不同
 
@@ -47,6 +53,6 @@
 
 ## 证据分期
 
-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；当前0.1.10为 `validation/s2_takeover/`。旧证据不覆盖、不改名冒充新运行。
+`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；当前审计后续为 `validation/claude_followup_20261024/`。旧证据不覆盖、不改名冒充新运行。
 
 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。

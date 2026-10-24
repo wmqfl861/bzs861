@@ -1060,6 +1060,26 @@ namespace {
     CHECK(matches(q("C#"), "", "C#12 features", "", "", ""));
     CHECK(matches(q("\"sqlite fts\""), "", "sqlite fts5 tables", "", "", ""));
   }
+  TEST(compound_matching_keeps_fields_and_documents_independent) {
+    const auto query=parse_query(Json::parse(R"({"op":"or","children":[{"op":"and","children":[{"op":"phrase","field":"title","value":"alpha beta"},{"op":"literal","field":"body","value":"C++"},{"op":"not","child":{"op":"term","field":"body","value":"java"}}]},{"op":"and","children":[{"op":"phrase","field":"body","value":"café Москва"},{"op":"literal","field":"url","value":"node.js"}]}]})"));
+    struct Document {std::string title,body,url;bool expected;};
+    const std::vector<Document> documents={
+      {"ALPHA BETA guide","Modern C++20 library","https://example.test/plain",true},
+      {"ALPHA BETA guide","Modern C++20 JAVA bridge","https://example.test/plain",false},
+      {"neutral","alpha beta C++","https://example.test/plain",false},
+      {"alpha beta C++","neutral","https://example.test/plain",false},
+      {"neutral","A café Москва guide","https://example.test/NODE.JS",true},
+      {"café Москва","neutral","https://example.test/node.js",false},
+      {"neutral","A CAFÉ МОСКВА guide","https://example.test/node.js",false},
+      {"neutral","A café Москва guide","https://example.test/node.jsx",false}
+    };
+    // Repeat in both directions: no field/document may inherit a previous
+    // leaf's lowered text, and non-ASCII case folding remains unsupported.
+    for(int pass=0;pass<2;++pass)for(std::size_t i=0;i<documents.size();++i) {
+      const auto& doc=documents[pass==0?i:documents.size()-1-i];
+      CHECK(matches(query,doc.title,doc.body,doc.url,"example.test","text/plain")==doc.expected);
+    }
+  }
   TEST(html_main_excludes_siblings) {
     auto p=parse_document("<html><body><main><p>MAIN_CONTENT</p></main><aside>SIDEBAR</aside><div>COMMENTS</div></body></html>", "text/html");
     CHECK(p.text=="MAIN_CONTENT");

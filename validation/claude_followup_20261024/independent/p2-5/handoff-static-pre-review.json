@@ -1,0 +1,20 @@
+{
+  "role": "Independent read-only P2-5 static review; no production or formal tests authored",
+  "checked_at_utc": "2026-10-24T04:51:47.189873+00:00",
+  "original_patch_sha256": "7f18f239d60c46e0f3bc45e6663560f129fdce0e4bc28659089d8379c3ef8803",
+  "proposed_semantic_regression_sha256": "3dac439372522700cb7b73ac79cba02b36630c8b7682b96c134d977afe420470",
+  "current_query_cpp_sha256": "ad8b5452ad77a899ec8f37afa4ec7cf0e178e7a15cc7418dd4a519b9cead3707",
+  "decision": "Suitable for adoption with requested stage gates; no new static blocker found",
+  "reasoning": [
+    "Cache object is local to each matches call; three fields own independent optional strings, no shared cross-document state.",
+    "Recursive evaluation borrows one stable object; a populated cache is not reassigned, so returned string_view stays live during recursion.",
+    "Host/type early rejection, AND/OR short circuit, NOT, any excluding URL, ASCII-only folding and leaf boundary behavior remain unchanged.",
+    "Proposed8 documents evaluated forwards/backwards16 times cover field isolation, prior-document leakage, C++20 and node.jsx literal boundaries and non-ASCII case behavior with correct expectations."
+  ],
+  "limits": [
+    "Only repeated lowercase conversion within a matches call is removed. score_match/highlight still have separate processing.",
+    "Store mutex scope is unchanged, and the patch does not claim all scanning contention is removed.",
+    "No fresh performance ratio, compilation or complete gate pass claimed by this static review."
+  ],
+  "root_files_modified": false
+}

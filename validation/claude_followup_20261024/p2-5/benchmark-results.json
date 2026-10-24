@@ -1,0 +1,51 @@
+{
+  "stage_inputs_sha256": "d887d9e93e1b7dc5aa542fd4dc452dd1fe6c44094933276e86f876bae1f14ffd",
+  "release_library_sha256": "385bff9799a53e147ff8905679a7d40b0c116a9951e33ec168e7a1aa7f7ef813",
+  "documents": 2000,
+  "requested_body_bytes": 204800,
+  "runs": [
+    {
+      "name": "original",
+      "source": "validation/claude_followup_20261024/p2-5/benchmark-inputs/scan_blocking_original.cpp",
+      "source_sha256": "531278f68e06bbe09c4705eacf83c5a5799e5a9ec123c1d7a7d443dae8c3b618",
+      "binary": "/tmp/bzs-p2-5-final-release-benchmarks/scan_blocking_original",
+      "binary_sha256": "9208a62106f7ff2f0ef29c756e07c1b05971e3132b5fa3fe9755dd1de02b5a95",
+      "mode_before": "0o755",
+      "mode_after": "0o755",
+      "command": "benchmark-original-command.json",
+      "log": "benchmark-original.log",
+      "log_sha256": "cff8b352a6598b69be13e2158299bd9c0d917f3d7d0c853076166fdfcd333a03",
+      "exit_code": 0,
+      "output_lines": [
+        "2000 docs x 200 KiB",
+        "query \"alpha beta\"                                                                search=1 ms, worst concurrent stats()=0 ms, retrieval=fts5_substring_verified",
+        "query \"alpha beta\" OR \"gamma delta\" OR \"epsilon zeta\" OR \"eta theta\"              search=1 ms, worst concurrent stats()=0 ms, retrieval=fts5_substring_verified"
+      ]
+    },
+    {
+      "name": "negative",
+      "source": "validation/claude_followup_20261024/p2-5/benchmark-inputs/scan_blocking_negative.cpp",
+      "source_sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+      "binary": "/tmp/bzs-p2-5-final-release-benchmarks/scan_blocking_negative",
+      "binary_sha256": "09c11d13db3050ee06afe95e0d35ae150e7aadc096cf60a3a9680653768ba8fc",
+      "mode_before": "0o755",
+      "mode_after": "0o755",
+      "command": "benchmark-negative-command.json",
+      "log": "benchmark-negative.log",
+      "log_sha256": "8c9ec5408105000db8894dc6f6d18ae5b58b1cf65d0498ed9ea8a0a25ecedfbf",
+      "exit_code": 0,
+      "output_lines": [
+        "2000 docs x 200 KiB",
+        "query NOT \"alpha beta\"                                                            search=1704 ms, worst concurrent stats()=1704 ms, retrieval=bounded_scan_recent",
+        "query NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\" search=2103 ms, worst concurrent stats()=2103 ms, retrieval=bounded_scan_recent"
+      ]
+    }
+  ],
+  "limitations": [
+    "One observation per executable on this machine; no general ratio, SLA or timing regression threshold.",
+    "The unchanged original absent-positive workload can be excluded by the P1-3 substring index. This does not isolate the lowercase patch.",
+    "The all-NOT variant changes only the two queries and deliberately retains bounded scan and Store mutex blocking.",
+    "The patch caches ASCII lowering only inside matches(); scoring, per-leaf scans and the Store-wide lock remain.",
+    "The substring field limit counts distinct grams, not body codepoints or bytes."
+  ]
+}

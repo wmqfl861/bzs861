@@ -233,21 +233,33 @@ namespace bzs {
       if(last=='+'||last=='#')return !(ascii_alpha(next)||next=='_'||next=='+'||next=='#');
       return true;
     }
-    bool eval(const QueryNode& n, std::string_view title, std::string_view body, std::string_view url) {
+    // Each field is ASCII-lowered at most once per document, on first use.
+    // Previously every leaf re-lowered the whole body (up to 1 MiB) per visit.
+    struct LoweredFields {
+      std::string_view title, body, url;
+      mutable std::optional<std::string> lower_title, lower_body, lower_url;
+      static std::string_view get(std::string_view raw, std::optional<std::string>& cache) {
+        if(!cache)cache=ascii_lower(raw);
+        return *cache;
+      }
+    };
+    bool eval(const QueryNode& n, const LoweredFields& f) {
       if(n.op=="and")return std::all_of(n.children.begin(), n.children.end(), [&](const auto& c) {
-        return eval(c, title, body, url);
+        return eval(c, f);
       });
       if(n.op=="or")return std::any_of(n.children.begin(), n.children.end(), [&](const auto& c) {
-        return eval(c, title, body, url);
+        return eval(c, f);
       });
-      if(n.op=="not")return !eval(n.children.at(0), title, body, url);
-      auto in=[&](std::string_view hay) {
-        return !leaf_matches(ascii_lower(hay), n, 1).empty();
+      if(n.op=="not")return !eval(n.children.at(0), f);
+      auto in=[&](std::string_view hay_lower) {
+        return !leaf_matches(hay_lower, n, 1).empty();
       };
-      if(n.field=="title")return in(title);
-      if(n.field=="body")return in(body);
-      if(n.field=="url")return in(url);
-      return in(title)||in(body);
+      const auto title=[&] { return LoweredFields::get(f.title, f.lower_title); };
+      const auto body=[&] { return LoweredFields::get(f.body, f.lower_body); };
+      if(n.field=="title")return in(title());
+      if(n.field=="body")return in(body());
+      if(n.field=="url")return in(LoweredFields::get(f.url, f.lower_url));
+      return in(title())||in(body());
     }
     std::string fts_quote(std::string_view v) {
       std::string s="\"";
@@ -403,7 +415,8 @@ namespace bzs {
   bool matches(const Query& q, std::string_view title, std::string_view body, std::string_view url, std::string_view host, std::string_view type) {
     for(const auto& h:q.hosts)if(host!=h && !(host.size()>h.size()&&host.ends_with("."+h)))return false;
     for(const auto&t:q.types)if(type!=t)return false;
-    return eval(q.root, title, body, url);
+    const LoweredFields fields{title, body, url, std::nullopt, std::nullopt, std::nullopt};
+    return eval(q.root, fields);
   }
   std::optional<std::string> fts_candidates(const Query& q) {
     return fts(q.root);

@@ -1,0 +1,121 @@
+{
+  "role": "Independent read-only current-state analysis; no production/test/audit files changed",
+  "head": "4cf254aca0698f72b9c64660871c0c03782e29cd",
+  "working_tree_note": "P2-1 integration is in progress in the parent-owned main worktree. Hashes identify the actual files read; this is not a clean-tree or test-freeze claim.",
+  "files_sha256": {
+    "src/service.cpp": "b10ed8808e297c972714170275d8bc6c4728b4499578b38fbcdb380a9c7c5e75",
+    "apps/searchd/main.cpp": "6b4df84c76928d6ac2f231816fcd7719fd11df84063f1e870ddf59eb4d1c68e5",
+    "src/web.cpp": "10b5d73b26d9140fb09e430dff08627ec74c573511f618c4f6a6213ee60a6f69",
+    "src/store.cpp": "ab5d1ca8491f071cdab948dda363db4fc32e5e0a2fe4529109b87f0718bc1805",
+    "src/query.cpp": "ad8b5452ad77a899ec8f37afa4ec7cf0e178e7a15cc7418dd4a519b9cead3707",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "python/bzs/worker/sources/base.py": "0a1ed9504c4c4c364ea101a253350bf51b667c794544db0857fff76167560bb4",
+    "python/tests/test_sources.py": "533712807c27f15d69191523fc5b58e1ab59d79e7da86be51d6d7e373d19196c",
+    "tests/unit.cpp": "40a5eb46d186f117787d008019d66ddcf1e74edaf40eabde4f9e909971f80a6f",
+    "tests/revocation.cpp": "b161dd3383e4023006ca3cfce3d252a8e788f96b0fff31d514486221d76ab46d",
+    "docs/API.md": "144dd9a4c639499b73b08fbb713a83f88d0d6212841d598f2cc90f007fac9768",
+    "docs/PRINCIPAL_REVOCATION.md": "19ada47a25654eac3987bcc7c8432f1d50edc0ab2212cd095a4ab3a675704a62",
+    "docs/adr/0004-single-user-first-remote-mcp-later.md": "02d50e563d22b61db2f846abb0470a1e3dba215d961dcf272ded959f49ac6b28",
+    "docs/adr/0001-offline-bootstrap.md": "3f74097b2e8c6daba93597b8771d15b5e50c13084fdc8aa94cf8b182e465b71f"
+  },
+  "scope": {
+    "executed": [
+      "git apply --check for the unchanged audit query-lowercase-once.patch (exit 0)",
+      "Pure retry_after_ms evaluation: 999999999 => 999999999000 ms; 999999999999999999999999999 => 4611686018427387903 ms"
+    ],
+    "not_executed": [
+      "No load/timing benchmark",
+      "No C++ build or link",
+      "No complete test gates",
+      "No code changes or audit-branch merge"
+    ]
+  },
+  "findings": [
+    {
+      "id": "P2-6",
+      "status": "Still structurally true; retained scheduler limitation, not a new regression",
+      "locations": [
+        "src/service.cpp:366-423",
+        "apps/searchd/main.cpp:321-322",
+        "src/web.cpp:execute_read"
+      ],
+      "evidence": "One start_worker jthread synchronously executes at most a fixture lease, a read lease, a map lease and a persistent-search lease per iteration before its 20 ms sleep. A synchronous read RPC delays advancement of that shared background dispatcher.",
+      "limits": "The read grant is capped at 55,000 ms with a 5,000 ms RPC allowance. This does not prove a specific delay occurred, and foreground HTTP calls use a different path; do not claim every request is blocked by one background read.",
+      "action": "No fix in this task; scheduler/concurrency redesign is separate."
+    },
+    {
+      "id": "P2-7",
+      "status": "Still structurally true; retained HTTP executor capacity limitation",
+      "locations": [
+        "apps/searchd/main.cpp:143-175",
+        "apps/searchd/main.cpp:248",
+        "apps/searchd/main.cpp:337-341",
+        "apps/searchd/main.cpp:HttpWorker::call",
+        "src/web.cpp:WebService::read"
+      ],
+      "evidence": "Session::received calls service_.dispatch synchronously on the bounded IO pool (default 8). HttpWorker::call synchronously runs its own RPC io_context. The web.read maximum 60,000 ms plus 5,000 ms RPC allowance can occupy those outer IO threads.",
+      "limits": "The /healthz business path is fast and avoids Store/auth work, but it has no reserved executor. Saturating every IO thread can delay health; a single slow request with spare threads need not do so. No load reproduction was run here.",
+      "action": "No fix in this task."
+    },
+    {
+      "id": "P2-8",
+      "status": "Quarantined restore boundary remains intentional; audit wording overstates it",
+      "locations": [
+        "src/store.cpp:205-207",
+        "src/store.cpp:1562-1610",
+        "docs/adr/0004-single-user-first-remote-mcp-later.md:3-15",
+        "docs/adr/0001-offline-bootstrap.md:18",
+        "docs/PRINCIPAL_REVOCATION.md:62",
+        "docs/API.md:244"
+      ],
+      "evidence": "backup.create performs an actual complete SQLite backup into a closed, quarantined artifact and atomically publishes it without overwrite. Normal Store opening refuses quarantine. There is no supported product restore/reconciliation-to-serving command.",
+      "correction": "Backup artifacts exist. Safe restoration to a serving instance remains unimplemented and intentionally fail-closed; this is not equivalent to no backup, nor proof that restoration can never be implemented.",
+      "action": "Keep the explicit owner decision, revocation reconciliation and backup isolation. No manual quarantine bypass or relaxation proposed."
+    },
+    {
+      "id": "P2-9",
+      "status": "Very long upstream cooldown is accepted and persisted; not a manifest disable",
+      "locations": [
+        "python/bzs/worker/sources/base.py:66-79",
+        "src/web.cpp:604",
+        "src/store.cpp:1497-1559",
+        "python/tests/test_sources.py:86-106",
+        "tests/unit.cpp:1393-1405",
+        "tests/unit.cpp:1612-1618"
+      ],
+      "evidence": "Retry-After is bounded only by (1<<62)-1 ms. Core takes the maximum of its configured cooldown and the upstream value; source_report stores MAX(existing cooldown_until, new until). Source admission checks it across restarts. A late success does not clear the cooldown.",
+      "runtime_readonly_observation": {
+        "input_seconds": "999999999",
+        "result_ms": 999999999000,
+        "oversized_input": "999999999999999999999999999",
+        "oversized_result_ms": 4611686018427387903
+      },
+      "limits": "This can make a budget key unavailable for roughly 31.7 years, but does not change source enabled/review state. It may apply to sources sharing that key. No live source was requested; default source disabling remains intact.",
+      "action": "Do not introduce the audit suggested 24 hour cap without a separate policy decision: it changes how upstream wait instructions are honored."
+    },
+    {
+      "id": "P2-5",
+      "status": "Unchanged audit patch applies cleanly to current P1-3 query.cpp; statically compatible local optimization",
+      "locations": [
+        "src/query.cpp:236-251",
+        "src/query.cpp:292-334",
+        "src/query.cpp:403-426",
+        "src/store.cpp:984-1064",
+        "include/bzs/query.hpp:3"
+      ],
+      "evidence": "The patch creates one call-local LoweredFields object per matches invocation, lazily ASCII-lowers each used field once, and shares it through AST recursion. It preserves field scoping, short-circuit AND/OR, NOT and existing leaf matching. P1-3 substring candidate generation/index changes are untouched; optional is already directly included.",
+      "limits": "The Store mutex, candidate limit, SQL/text copies, separate scoring/highlight lowering and scheduler/HTTP concurrency are unchanged. The once claim applies only within one matcher invocation, not the whole query pipeline. Current P1-3 may select fewer candidates, so the old approximately 32 percent timing is not a new or generally transferable measurement.",
+      "action": "May apply after parent review and the requested regression/full gates; describe as avoiding repeated field lowering in AST verification, not solving query concurrency or demonstrating a new speedup."
+    }
+  ],
+  "owner_decisions_preserved": [
+    "Source approval/enabling remains explicit",
+    "S2 remains frozen",
+    "Validation is committed",
+    "Backups remain isolated",
+    "Idempotency is permanent",
+    "Fetching adapters remain in scope"
+  ],
+  "audit_patch_sha256": "7f18f239d60c46e0f3bc45e6663560f129fdce0e4bc28659089d8379c3ef8803",
+  "audit_report_sha256": "1063a29bbe4fb25749780778754cc01d0ab3bfb5fd9db1e2f5fd7e2d31ad2545"
+}

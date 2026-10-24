@@ -1,0 +1,11 @@
+--- scan_blocking_original.cpp
++++ scan_blocking_negative.cpp
+@@ -23,7 +23,7 @@
+   for (int i = 0; i < docs; ++i)
+     store.ingest("alice", {"https://example.com/" + std::to_string(i), body + std::to_string(i), "text/plain", "Doc"});
+   std::printf("%d docs x %zu KiB\n", docs, bytes / 1024);
+-  for (const char* q : {"\"alpha beta\"", "\"alpha beta\" OR \"gamma delta\" OR \"epsilon zeta\" OR \"eta theta\""}) {
++  for (const char* q : {"NOT \"alpha beta\"", "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\""}) {
+     std::atomic<bool> done{false};
+     long long worst = 0;
+     std::thread probe([&] {

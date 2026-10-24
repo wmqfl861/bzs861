@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "created_at_utc": "2026-10-24T05:22:39.258215+00:00",
+  "reviewer": "/root/handoff_audit",
+  "role": "Independent static product integration review, with disclosed authorship boundaries.",
+  "decision": "No new production blocker found in the reviewed P1-2/P1-1/P1-3/P2-1/P2-2/P2-3 integration. This is a partial preparatory review, not the final all-input or remote-CI conclusion.",
+  "scope": {
+    "baseline_commit": "44253a752f945fdfab9810192e583b39fe5f6d83",
+    "reviewed_head": "026dafb783e1a922abffaf03fc3667f0167d2561",
+    "working_tree": [
+      "python/bzs/worker/fetch.py",
+      "python/tests/test_crawl_worker.py",
+      "python/tests/test_discovery.py",
+      "python/tests/test_extract.py"
+    ],
+    "root_input_manifest": "validation/claude_followup_20261024/p2-4/execution-inputs.json",
+    "root_input_manifest_sha256": "e14a971e5971390f939256e1ba60c0f57f5c6798d1d83723527d1b673b052782",
+    "static_proof": "static-inputs-p2-4-pending.json",
+    "static_proof_sha256": "52e8066eef9ade826ec4d52fe6fe155af7388929e35d73c4c80b4c66fe4a6942",
+    "new_product_tests_run": 0,
+    "network_requests": 0,
+    "main_tree_files_written": 0,
+    "drafts_only_under_tmp": true
+  },
+  "authorship_boundaries": [
+    "The reviewer wrote independent probes in earlier phases; these are separate from production and formal tests.",
+    "The reviewer authored the older shared-read increment before this audit; current shared-read interaction observations do not independently sign off that original implementation.",
+    "The reviewer authored the validation-only launch-guard draft, which root independently reviewed/applied. This review does not self-sign the launcher.",
+    "At root request this reviewer drafted documentation-only updates under /tmp. Root must review/apply and bind those bytes before final gates; this is not an independent review of the reviewer-authored draft."
+  ],
+  "cross_component_findings": [
+    {
+      "id": "local_once_and_frozen_projection",
+      "finding": "search.once and frozen search use search_impl; freeze=false avoids session maintenance/admission, sessions/session_rows/cursors/stream receipt writes and reuses local_result_sql/local_result. Subject, owner, current snapshot visibility, deletion and page/site publication remain checked. Policy refresh may still write protective state; no claim of zero SQLite writes.",
+      "sources": [
+        "src/store.cpp:local_result_sql/local_result",
+        "src/store.cpp:Store::search_impl",
+        "src/service.cpp:search.once",
+        "python/bzs/mcp_server.py:search_local"
+      ],
+      "prior_evidence": "validation/claude_followup_20261024/independent/p1-2"
+    },
+    {
+      "id": "permanent_identity_vs_capacity",
+      "finding": "Admissions count unarchived details. Owner maintenance and global-pressure max-eight maintenance share the seven-day created/deadline/lease bounds, terminal-state and unsettled-grant checks. IDs, keys, fingerprints, budgets and revocations remain. Internal summaries do not return foreign owners to the requesting caller; public getters retain principal gates. search receipts remain durable without lifetime admission quotas.",
+      "sources": [
+        "src/retention.cpp:eligible/job_capacity_locked/compact_jobs_locked",
+        "src/store.cpp:job_locked/job_details_locked/job_create",
+        "src/map.cpp:map_job_locked/map_job_details_locked",
+        "src/sessions.cpp:capacity/local_stream_locked"
+      ],
+      "prior_evidence": "validation/claude_followup_20261024/independent/p1-1"
+    },
+    {
+      "id": "candidate_indexes_and_cache_publication",
+      "finding": "Word and substring candidate predicates intersect before max_candidates; exact matches still filter candidates. Ingest/replacement/delete/publication retraction/reindex update both indexes through common helpers. Noindex frozen-row retraction, current authorization filters, and independent original/final redirect publication remain after cache reuse. The validated final scope marker is consumed before metadata persistence; it does not grant cache authority.",
+      "sources": [
+        "src/store.cpp:index_document_locked/remove_document_index_locked/search_impl/ingest_locked",
+        "src/publication.cpp:prepare_web_publication_locked/publish_policy_locked",
+        "src/query.cpp:fts/substring_fts",
+        "src/tokenizer.cpp:indexed_grams/query_substring_grams"
+      ],
+      "prior_evidence": [
+        "validation/claude_followup_20261024/independent/p1-3",
+        "validation/claude_followup_20261024/independent/p2-2-handoff",
+        "validation/claude_followup_20261024/independent/p2-2-addendum-review.json"
+      ]
+    },
+    {
+      "id": "cache_profile_and_chain",
+      "finding": "Accept-Encoding-only cache variants bind the exact explicit request headers. Routed refresh performs the original route, installs validators only at the exact final identity, and keeps every-hop usage and Store CAS/publication/deletion constraints. Automatic map/crawl do not accept the new routed grant. Existing omitted-304 Vary inheritance remains conservative.",
+      "sources": [
+        "src/http_cache.cpp",
+        "src/web.cpp",
+        "src/store.cpp:revalidation_base/range/invalidate_web_cache",
+        "python/bzs/worker/fetch.py",
+        "python/bzs/worker/revalidation.py",
+        "python/bzs/worker/redirect_cache.py",
+        "python/bzs/worker/server.py"
+      ],
+      "prior_evidence": [
+        "validation/claude_followup_20261024/independent/p2-1",
+        "validation/claude_followup_20261024/independent/p2-2-handoff"
+      ]
+    },
+    {
+      "id": "robots_and_charset_boundary",
+      "finding": "Malformed clearly foreign ASCII UA records delimit their group; the nonmatching sentinel preserves valid same-group members and keeps applicable invalid rules denied. Self/wildcard/unknown/invalid UTF-8 remain fail-closed. Existing cached deny decisions may remain until normal expiry, which is conservative. P2-4 display decoding is separate from raw robots UTF-8 and XML parsing; source/site approval and headers are not relaxed by that pending change.",
+      "sources": [
+        "python/bzs/worker/robots.py:parse_robots",
+        "python/bzs/worker/fetch.py:decode_body",
+        "python/bzs/worker/discovery.py:XML parse/_html_tree",
+        "python/bzs/worker/server.py:map_fetch/fetch_extract"
+      ],
+      "attribution": "Static review of current frozen source, including the pending P2-4 diff; P2-3 runtime evidence belongs to its recorded author/independent/root roles."
+    },
+    {
+      "id": "index_upgrade_and_restore",
+      "finding": "Known original bzs/2 format is upgraded transactionally to codepoint-grams/1 while business user_version remains13; restore quarantine is checked before migration. The genuine 442 library fixture/probe is separate from synthetic migration tests. Existing snapshots, evidence, frozen results and permanent identities were checked in that prior proof. Stop old Core before upgrading; a still-open old process is not made safe by the reopen guard.",
+      "sources": [
+        "src/store.cpp:Store::migrate",
+        "include/bzs/tokenizer.hpp",
+        "docs/API.md"
+      ],
+      "prior_evidence": "validation/claude_followup_20261024/independent/p1-3"
+    }
+  ],
+  "retained_decisions": {
+    "unchanged": [
+      "source selection/review/enablement",
+      "S2 freeze status",
+      "validation committed as before",
+      "backup quarantine",
+      "permanent idempotency identity retention",
+      "scraping adapters"
+    ],
+    "sources": {
+      "registered": 17,
+      "top_level_enabled": 0,
+      "contract_enabled": 0,
+      "site_registrations": 0
+    },
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "formal_plan": "83 work packages /161 original acceptance items /10 slices; no new whole-package acceptance inferred from test counts.",
+    "proof": "41 checked paths cover unchanged planning, CI/CMake, source/site configurations, fixture/golden files and scraping adapters."
+  },
+  "preservation": {
+    "original_audit_files": 11,
+    "original_audit_mismatches": [],
+    "baseline_validation_files": 1351,
+    "baseline_validation_mismatches": [],
+    "root_inputs_checked": 220,
+    "root_input_mismatches": [],
+    "test_configuration": "CMakeLists.txt and .github/workflows/ci.yml equal 442 bytes; original recovery/crawl tests retained. Changed expectations align with the explicitly changed capacity/retrieval/format contracts, and Vary invalid cases are expanded. No native/CTest watchdog or CI target removal found.",
+    "validation_launcher": "Only validation-run generated command prefixes use the root-reviewed launch guard; this reviewer authored that draft and is not its independent approver."
+  },
+  "existing_phase_results": {
+    "p1-2": {
+      "record": "validation/claude_followup_20261024/p1-2/result.json",
+      "sha256": "30d8148d145632cd97ff26eac977a60758b91ae9b9a13b54bd4cdf0bdd59b73f",
+      "ctest": "27/27",
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    },
+    "p1-1-v2": {
+      "record": "validation/claude_followup_20261024/p1-1-v2/result.json",
+      "sha256": "74f031ca764f12e12507a60463a9558e161833eefe312328c0175ebddfaece3f",
+      "ctest": "27/27",
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    },
+    "p1-3": {
+      "record": "validation/claude_followup_20261024/p1-3/result.json",
+      "sha256": "b607cea38449fe56610675efe0ed0f78898ab698a63bbf8dde30a30c4926e54f",
+      "ctest": "27/27",
+      "pytest_passed": 1052,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    },
+    "p2-1": {
+      "record": "validation/claude_followup_20261024/p2-1/result.json",
+      "sha256": "c6a531afd5b358696666f0c44175409d70fa32ff4de0c1c9303844073cf11016",
+      "ctest": "27/27",
+      "pytest_passed": 1130,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    },
+    "p2-2-v4": {
+      "record": "validation/claude_followup_20261024/p2-2-v4/result.json",
+      "sha256": "2a3bf81780b8921fca82e55a3b298ec8e05b5345bf773b3d5e9e532e47a5ebfc",
+      "ctest": "27/27; zero skipped",
+      "pytest_passed": 1173,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    },
+    "p2-3": {
+      "record": "validation/claude_followup_20261024/p2-3/result.json",
+      "sha256": "0f3afd480c553cccecb2ccf9b7a099a797399d08afdf0fcbdf0a111a3f084add",
+      "ctest": "27/27; zero skipped",
+      "pytest_passed": 1217,
+      "asan_ubsan_native_targets": 15,
+      "attribution": "Existing integrator-owned stage result, read only; not a new reviewer runtime execution."
+    }
+  },
+  "known_limits_and_corrected_claims": [
+    "Original six-case redirect probe remains four cases passed and two reverse-percent identity assumptions failed,209 checks; current output matches earlier replays. Same-source baseline comparisons show the URI-equivalence gap predates this fix. Do not claim all six passed or universal URI-equivalent deletion.",
+    "P2-2-v2 had a real original Worker aggregate-publication regression; its failure was not an infrastructure-only problem. Final aggregate/final separation fixed the contract and original test was retained.",
+    "P2-2-v2 also had generated ELF execute-mode launch failures; v3 had sandbox socket EPERM and the original watchdog expiration. Their raw records remain; only v4 has the later root-owned successful full-stage record.",
+    "Permanent identities still consume physical storage; global max-eight compaction is bounded maintenance, not universal GC, and some count projections still scan retained owner history.",
+    "Substring overflow widens to exact verification; candidates and results remain bounded/partial. The Store mutex and other score/highlight folding are not removed by the pending per-matches lowercase optimization.",
+    "Robots cached records do not carry a separate request_profile. Existing fixed headers and policy version are the identity constraint; future header configurability requires a version/binding change.",
+    "No live source approval, user-environment quality evaluation, generalized URI identity migration, distributed coordination, arbitrary-crash acceptance or S2 signoff follows from these tests."
+  ],
+  "documentation_followup": {
+    "finding": "docs/API.md still called schema11 current; top-level handoff/status documents still described prior watchdog work as current.",
+    "draft_patch": "docs-draft/v2/documentation-followup.patch",
+    "draft_patch_sha256": "585b9ee3813a73cd3593d8eb06d56eec49c4432e3abb3931e09eff37aca8059c",
+    "status": "Draft supplied to root; no main-tree edit by this reviewer. Root review/application and final-input binding pending."
+  },
+  "pending": {
+    "P2-4": "Root full stage in progress at this snapshot; independent source_policy review owned elsewhere. No completion claim here.",
+    "P2-5": "Reviewed original patch/regression only; not applied at this snapshot.",
+    "final_input_delta_review": "Required after parent provides exact final manifest, including approved documentation.",
+    "global_gates": "Root-owned; no final all-phase verdict embedded.",
+    "publication_and_remote_ci": "Not checked or declared by this preparatory review."
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "issue": "P2-5",
+  "status": "partial optimization; Store-wide lock blocking remains",
+  "ctest": "27/27; zero skipped",
+  "pytest_passed": 1242,
+  "asan_ubsan_native_targets": 15,
+  "planning_gates": "contracts, 83-package/161-mapping structure, 13 plan guards passed; no new product acceptance",
+  "execution_inputs_sha256": "d887d9e93e1b7dc5aa542fd4dc452dd1fe6c44094933276e86f876bae1f14ffd",
+  "execution_input_files": 220,
+  "formal_regression": "compound_matching_keeps_fields_and_documents_independent",
+  "formal_regression_assertions": 16,
+  "independent_reviews": [
+    "../independent/p2-5/revocation-static-review.json",
+    "../independent/p2-5/handoff-static-pre-review.json"
+  ],
+  "adopted_original_patch_sha256": "7f18f239d60c46e0f3bc45e6663560f129fdce0e4bc28659089d8379c3ef8803",
+  "precise_scope": "Each visited field is ASCII-lowered at most once per matches() invocation. Boolean, field, boundary and ASCII-only semantics remain.",
+  "remaining_limits": [
+    "Store::search_impl mutex still spans candidate iteration, matching, scoring and result processing",
+    "score_match() independently lowers title/body; per-leaf scans and text copies remain",
+    "Negative-only queries retain bounded scan and honest partial results"
+  ],
+  "verified_commands": [
+    {
+      "command": "planning-contracts-command.json",
+      "command_sha256": "227ab1fed1113ff5b90c9c0223052e122fcbc0e97403cdf1608b25e46f53496c",
+      "log": "planning-contracts.log",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0
+    },
+    {
+      "command": "planning-check-command.json",
+      "command_sha256": "ac4a5aa02241b227e47896d0490d4a5a365a3d1e1e893f4f64d88202fc907ce1",
+      "log": "planning-check.log",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0
+    },
+    {
+      "command": "plan-guard-command.json",
+      "command_sha256": "995a92cf2b7804a11f7c4dc62dd3a84333dee5fb91c6cda2bd330ab23c7e87f0",
+      "log": "plan-guard.log",
+      "log_sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+      "exit_code": 0
+    },
+    {
+      "command": "configure-debug-command.json",
+      "command_sha256": "38bfa22de8d2dcc272b8ed10fb69481ce80c28c74fa2eaf9ccda9e225ea9efae",
+      "log": "configure-debug.log",
+      "log_sha256": "0fc301241908faaee347d84206af9af60dd9890e2342fc8aea9c9997a534c78f",
+      "exit_code": 0
+    },
+    {
+      "command": "build-debug-command.json",
+      "command_sha256": "3339697eee1e09aa9347b4bed6ed12d39e6fe5c0e9762911efab22d88144c863",
+      "log": "build-debug.log",
+      "log_sha256": "7db5b1e648ae5232c3d0af6b05394d65bd5f173fc41d51ee9bc7399e90be6c58",
+      "exit_code": 0
+    },
+    {
+      "command": "prepare-debug-executables-command.json",
+      "command_sha256": "ed1879e853153648e39fdab354e1c4e1f693631dd4a751518f30d39f3769c7ab",
+      "log": "prepare-debug-executables.log",
+      "log_sha256": "fcb0fe28cf1d06e62c7633ab85381b4b7e14b0f64130feb6f01b6110e2e795ca",
+      "exit_code": 0
+    },
+    {
+      "command": "guard-debug-native-command.json",
+      "command_sha256": "7e8dd2b5996ea6da596235b35e494a85634ac85aeb11a639a7950160b1c985eb",
+      "log": "guard-debug-native.log",
+      "log_sha256": "9d147162f97750ede0ceb90ae6e6ccc5e6158f0195899b412c31732a6947b4e5",
+      "exit_code": 0
+    },
+    {
+      "command": "ctest-command.json",
+      "command_sha256": "4b28daa37d14b2d487467a20db1da3afb2122b7be8af01c440c75c18d182b400",
+      "log": "ctest.log",
+      "log_sha256": "3a23dc6596611782d0c73b939dbff8ab68e913cbf7fdbf061e5ebab96e88cdcf",
+      "exit_code": 0
+    },
+    {
+      "command": "pytest-command.json",
+      "command_sha256": "826fca9a61b92e9619fd17a218533ee07139a99773bc66078488d45dd1643f38",
+      "log": "pytest.log",
+      "log_sha256": "9e284c095c2a0425c974115a139aa539f5d5350f2a4f3ae3075888845aeab4e7",
+      "exit_code": 0
+    },
+    {
+      "command": "configure-asan-command.json",
+      "command_sha256": "b75db289aa1485169065f99159b2b161255bd1b17f3c8f84a4abb5bdcc168983",
+      "log": "configure-asan.log",
+      "log_sha256": "78b40de09e6472ac5fdefeb8bdc695f4a6653afe1ffe9653d6390abe2f8e4736",
+      "exit_code": 0
+    },
+    {
+      "command": "build-asan-command.json",
+      "command_sha256": "5cf368abbd6c1be83cfe373a3597b8a83b09998be715fdba8bb1ed033a195485",
+      "log": "build-asan.log",
+      "log_sha256": "bb874d0a903298dcef9c71ecc636f55e5ca413ce961f8001e7817bc661d06df0",
+      "exit_code": 0
+    },
+    {
+      "command": "prepare-asan-executables-command.json",
+      "command_sha256": "eb1e96360602a0f25af19d94097bc859fdfdffa8e8e872eb3bbe081550e4c2dc",
+      "log": "prepare-asan-executables.log",
+      "log_sha256": "be2ef375a7f6ac6ba8d7c37d9edef69a0e44466e0f160bb8486e52f9b02ec699",
+      "exit_code": 0
+    },
+    {
+      "command": "guard-asan-native-command.json",
+      "command_sha256": "190558a02e382fd3465f79556c7b5f4d45f4e4e586fe2553f8edc685614b478a",
+      "log": "guard-asan-native.log",
+      "log_sha256": "019f31eeadb02cf28129fce86b5bdbc47e8eac3ea4453e09bad661cd523015d9",
+      "exit_code": 0
+    },
+    {
+      "command": "asan-command.json",
+      "command_sha256": "f0bd19dcad3f2531ef047b0dc20a9f950b0610634881ce670079e5fc711d3101",
+      "log": "asan.log",
+      "log_sha256": "e89a89c8b67222bbb45f521379587017e80cf52fef1b2fa2ae4bdabc18a7f0e0",
+      "exit_code": 0
+    }
+  ]
+}

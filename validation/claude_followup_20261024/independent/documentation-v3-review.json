@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "role": "Independent documentation reviewer /root/source_policy; v3 draft author is /root/handoff_audit; root owns application and final validation",
+  "created_at_utc": "2026-10-24T05:28:59.286006+00:00",
+  "scope": "Read-only static review of v3 documentation and repository consumers; no new product tests, build, main-tree edit or acceptance declaration",
+  "reviewed_main_head": "026dafb783e1a922abffaf03fc3667f0167d2561",
+  "reviewed_main_state": "P2-4 source was applied/frozen while documentation remained a separate /tmp draft. Seven main documentation preimages matched v3 during review.",
+  "patch": "/tmp/bzs-independent-claude-review/cross-item/docs-draft/v3/documentation-followup.patch",
+  "patch_sha256": "2060aa86045e5cd2cfa9442b3dbd20a276cd11fc6d295cc964486c057aa5c21b",
+  "draft_manifest": "/tmp/bzs-independent-claude-review/cross-item/docs-draft/v3/manifest.json",
+  "draft_manifest_sha256": "3819b06b0f8912bf5462c8457bce45582976a181ed67e754bd1b96267126e0d6",
+  "files": {
+    "HANDOFF_START_HERE.md": {
+      "before_sha256": "34da64a999ee45584bf11f0ee400fb6c73a71445d14333337cde145f40d72c91",
+      "after_sha256": "923278993b9ff0a6ab48fdf45017cb438efbf599908ad26136ec0c672a4f5b5b"
+    },
+    "README.md": {
+      "before_sha256": "5d6305a9308aa53b349bfb6ec03a7360ad4278e6e5a60d9e37783b51fa199b9c",
+      "after_sha256": "e83812d028f08bef84807dbeb15fa080f68885e00e33ad260b648ff2846c8f70"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "before_sha256": "f682efd79fc3012d6cb601c4c71ebeaedaf71b69b3d4e52ac6138d3879a2c494",
+      "after_sha256": "f9379f47a4918cc8ef211936f2bd50b2c88634d81a565bb1d6878bf5ec6b23aa"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "before_sha256": "83709e7e73fb56bbafc8cf57e3843eaefec3d60a497b419c7a40b2d7d5980998",
+      "after_sha256": "6074af919838bc1872907328d113a2c9b08330b584daa284f2f21c9d5f0ab7e8"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "before_sha256": "76662fec5cdcd42bf5ed108501ae9c33e1d91df6677423122214724473d496d5",
+      "after_sha256": "1aa23fd089e9c6d63fd7f9125682ed19cb87e9a379ef88c5841931ede1e4e833"
+    },
+    "docs/API.md": {
+      "before_sha256": "144dd9a4c639499b73b08fbb713a83f88d0d6212841d598f2cc90f007fac9768",
+      "after_sha256": "d3d68515902b3c56a47e4c6e5e55e766fbe35c5762a22d25ded302588d21df4c"
+    },
+    "docs/implementation_status.json": {
+      "before_sha256": "142c92f3827edf08c998f2effbf19deb9aa43743eba569fed0df0e192b701367",
+      "after_sha256": "459c932db827ad9ff85ce507cd213335a14a80e43874ddf5724340a6a38b6cf7"
+    }
+  },
+  "machine_status_review": {
+    "json_parses": true,
+    "changed_top_level_keys": [
+      "stage",
+      "recorded_at",
+      "baseline",
+      "integration_inputs",
+      "current_test_report",
+      "current_verification",
+      "upstream_baseline_reproduction",
+      "github_ci",
+      "independent_review",
+      "review_record",
+      "historical_reports",
+      "current_results",
+      "baseline_version",
+      "verification_binding"
+    ],
+    "old_top_level_keys_removed": [],
+    "old_top_level_types_changed": [],
+    "historical_archive_key": "historical_verification_0_1_10_windows_watchdog",
+    "thirteen_replaced_values_preserved_exactly": {
+      "stage": true,
+      "recorded_at": true,
+      "baseline": true,
+      "integration_inputs": true,
+      "current_test_report": true,
+      "current_verification": true,
+      "upstream_baseline_reproduction": true,
+      "github_ci": true,
+      "independent_review": true,
+      "review_record": true,
+      "current_results": true,
+      "baseline_version": true,
+      "verification_binding": true
+    },
+    "historical_reports_original_list_is_exact_prefix": true,
+    "features_array_preserved_exactly": true,
+    "features_count": 83,
+    "derived_feature_status_counts": {
+      "partial": 37,
+      "not_started": 46
+    },
+    "declared_status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "planned_work_packages": 83,
+    "planned_acceptance_items": 161,
+    "full_work_packages_accepted": 0,
+    "milestones_accepted": [],
+    "slices_accepted": [],
+    "release_version_unchanged": true,
+    "current_report": "validation/claude_followup_20261024/README.md",
+    "current_report_exists_at_review": true,
+    "no_current_future_pass_or_ci_result_embedded": true,
+    "historical_passed_values_remain_explicitly_historical": true
+  },
+  "consumer_review": {
+    "searched_active_areas": [
+      "src",
+      "include",
+      "apps",
+      "python/bzs",
+      "python/tests",
+      "tools",
+      "docs/planning/tools",
+      ".github",
+      "CMakeLists.txt",
+      "CMakePresets.json"
+    ],
+    "searched_historical_area": "validation scripts, excluding JSON/Markdown result dumps when identifying code consumers",
+    "active_fixed_json_loader_for_current_test_report_or_verification_binding_found": false,
+    "historical_consumers": "Preservation scripts read features/counts/acceptance semantics or hash/copy source files; no inspected consumer dereferences the current report strings as mandatory JSON.",
+    "type_and_path_conclusion": "current_test_report/review_record remain strings, current_results/verification_binding remain objects; new report paths resolve to existing README. No repository consumer incompatibility found.",
+    "limit": "Static repository search/read only; no claim about unknown external consumers or product execution.",
+    "files_sha256": {
+      "tools/test_plan_guard.py": "4ab82c7135ca2f9739b8c42faaf4f21defad2df03843305fd0fcc013bb6bea13",
+      "docs/planning/tools/plan_v1_2.py": "e3eb778ef29176bd2ca07d9d9b4dec132bf946e8afd9fa9ecca64d78298fe6ef",
+      ".github/workflows/ci.yml": "f161f06fc04fd19e52343943bf0188309894f11b2f7689c0cc753b4a9025d05d",
+      "validation/claude_followup_20261024/run.py": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+      "validation/s2_takeover/check_preservation.py": "596eda874eb1a4b026243feebaef88e35a68499b823c0a07d1a43ef06f12a7c3",
+      "validation/s2_takeover/windows_watchdog_followup/check_preservation.py": "cf57417ac6a4190c97a39835677c922cf208e262cbfb8ffe95ea9c87d4f54144",
+      "validation/s2_next_five/evidence/plan-independent/check_plan_preservation.py": "cccd0da03d19dff7ee33c029461b6ede7b72681754fb44735395b0f108d8caa3"
+    }
+  },
+  "schema_and_index_review": {
+    "business_schema": 13,
+    "compatibility_setting": "fts_tokenizer_version",
+    "old_marker": "bzs-ascii-cjk/2",
+    "new_marker": "bzs-ascii-cjk/2+codepoint-grams/1",
+    "matches_current_store_and_tokenizer_source": true,
+    "old_binary_rejection_evidence": "validation/claude_followup_20261024/independent/p1-3/old_binary_rejection.json reports E_SCHEMA_VERSION, schema13, unchanged business rows/catalog",
+    "genuine_migration_evidence": "new_verification.json records44 existing tables preserved, only settings.fts_tokenizer_version permitted to change, quarantine preceding migration, public replay preservation",
+    "conclusion": "Stop old Core before index migration; old binary refuses later reopen; no simultaneous mixed-version operation is promised. Historical schema12-to13 evidence is separately labelled."
+  },
+  "retained_decisions": [
+    "Source selection/review/enablement unchanged; actual configuration17 sources,0 enabled,0 registered sites",
+    "S2 scope/status and whether to freeze remain the existing owner decision; no new freeze or acceptance declared",
+    "validation evidence retention/archival policy unchanged",
+    "backup quarantine remains; no restore-continuity claim",
+    "Permanent idempotency identities retained; no deletion permission introduced",
+    "Fetch/scraping adapters retained"
+  ],
+  "source_and_primary_evidence_sha256": {
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "validation/claude_followup_20261024/independent/p1-3/old_binary_rejection.json": "28f66ecb2e0bb33c0d18cbe916b11a75b9895ff6576f41da3d4d1f6c66635c4c",
+    "validation/claude_followup_20261024/independent/p1-3/new_verification.json": "f9bb3d24849bcaab3da8c642b58e685d2d14d025f555901e9110c090a05acb63",
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+  },
+  "new_relative_markdown_targets_missing": [],
+  "blocking_findings": [],
+  "integration_only_suggestions": [
+    {
+      "id": "DOC-I1",
+      "severity": "nonblocking integration step",
+      "observation": "Batch README at review still primarily contains baseline and required-gates sections.",
+      "action": "Before final delivery add actual per-issue/final-input/independent-review/CI record links so the machine record pointers lead to complete current evidence.",
+      "requires_v3_text_change": false,
+      "requires_new_product_test": false
+    },
+    {
+      "id": "DOC-I2",
+      "severity": "nonblocking integration step",
+      "observation": "Documentation already describes the query lowercase optimization scheduled as P2-5.",
+      "action": "Apply/deliver the reviewed P2-5 together with these closeout docs; do not publish docs alone with that implementation omitted.",
+      "requires_v3_text_change": false,
+      "requires_new_product_test": false
+    }
+  ],
+  "conclusion": "No blocking finding in v3; suitable for root application under the stated final integration sequence.",
+  "not_performed": [
+    "main-tree write",
+    "modification of documentation draft or author manifest",
+    "new product test",
+    "compile/link",
+    "remote CI verification",
+    "full product or stage acceptance"
+  ]
+}

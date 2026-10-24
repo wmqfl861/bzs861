@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "created_at_utc": "2026-10-24T05:30:50.173697+00:00",
+  "reviewer": "/root/revocation",
+  "role": "Independent static review of root-applied original audit P2-5 patch and new formal semantic regression. Reviewer did not author these production/test edits.",
+  "repository": "/workspace/scratch/e2371129386d/bzs861",
+  "base_commit": "54dec2cef34fa7777660b0851220f99869d3f596",
+  "decision": "No blocking semantic, lifetime or cache-isolation issue found in the exact reviewed diff. Accept as a local matches() optimization, pending root-owned runtime gates. Store-wide lock blocking remains.",
+  "blocking_findings": [],
+  "inputs": {
+    "src/query.cpp": "16b4929866e2cd4c5b1b972d6d137890670bb5f59d571ca0f6c023312fa4b1e5",
+    "tests/unit.cpp": "777c902b5e431379b6e616d72c6a988315cc6b5dace7908deaa1437dbebb09ec",
+    "src/util.cpp": "091cee6a65eabccee1bc9a0a6cba943ec6421000932682e4225100c73adebf8b",
+    "src/store.cpp": "69d06a853621fbe44d852e560aa83ca69a1fff8aee231ee58b961a74f8f0fa5c",
+    "include/bzs/query.hpp": "4a8d707552c815eb2187dff5b2b2c3ae6f8c15808507d374727d16602343b5cc",
+    "src/tokenizer.cpp": "4003fe648f414476c76881c74b5cfc9149055284cf65bfa8a5e84cf2d6fda4c0",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec"
+  },
+  "original_read_only_audit_patch": {
+    "path": "/tmp/bzs-review/docs/reviews/claude-2026-10-24/query-lowercase-once.patch",
+    "sha256": "7f18f239d60c46e0f3bc45e6663560f129fdce0e4bc28659089d8379c3ef8803",
+    "same_added_and_removed_query_lines": true,
+    "comparison": "Exact added/deleted source line sequence compared; git index hashes and hunk line offsets differ because P1-3 was already integrated."
+  },
+  "diffs": {
+    "src/query.cpp_sha256": "21354bea8d6bb5a2872f9ba6ae8d0a5a87108a818a728b1d020eeec60c54c9fd",
+    "tests/unit.cpp_sha256": "2b9d336fdd60b25031286ce1bedd31b7ce512c1482d5d0c6b059ba4f1f952e65",
+    "formal_test_change_is_additive_only": true,
+    "new_formal_test": "compound_matching_keeps_fields_and_documents_independent"
+  },
+  "semantic_review": [
+    {
+      "finding": "ASCII folding semantics are unchanged.",
+      "evidence": [
+        "src/util.cpp:42 ascii_lower copies the input and changes only A-Z to a-z.",
+        "src/query.cpp:236-268 caches that same function output; leaf_matches and boundary_ok are unchanged."
+      ],
+      "assessment": "Accented and Cyrillic case distinctions remain byte-sensitive. Phrase raw-substring and literal/version/language-symbol boundary rules are preserved."
+    },
+    {
+      "finding": "Boolean traversal and field selection are unchanged.",
+      "evidence": [
+        "eval still uses synchronous all_of/any_of and unary not with identical short circuit order.",
+        "Explicit title/body/url leaves use only their corresponding field. any remains title OR body, excluding URL."
+      ],
+      "assessment": "Caching changes repeated conversion work, not Boolean evaluation or the eligible fields."
+    },
+    {
+      "finding": "Host and content-type filters remain before field-cache construction.",
+      "evidence": [
+        "src/query.cpp:415 matches performs the original host/type loops before constructing LoweredFields."
+      ],
+      "assessment": "Rejected documents do not allocate lowered fields; filter semantics and early exits are preserved."
+    },
+    {
+      "finding": "FTS candidate construction, substring gram semantics, ranking and persistence are not changed by this diff.",
+      "evidence": [
+        "Only eval and its matches call site have changed source lines."
+      ],
+      "assessment": "P1-3 candidate completeness and permanent search/session semantics remain outside this local change."
+    }
+  ],
+  "lifetime_and_isolation_review": [
+    "LoweredFields is a new stack-local object for each matches() invocation. It is neither static nor thread_local and is not stored in Query or Store.",
+    "The title, body and URL have three separate optional<string> caches. Every recursive node receives the same object by const reference; only that invocation local mutable cache storage changes.",
+    "A cache is assigned at most once. An empty lowered string still engages optional, so empty fields do not accidentally trigger repeated initialization.",
+    "Returned string_view values refer to the owned optional strings. No cache is reset, moved or resized after its initialization, and all uses are synchronous before matches returns; no reference escapes.",
+    "Input string_views remain valid for the full call. In Store the temporary strings produced by c.text() live until the calling full expression ends, after matches/eval have returned.",
+    "Sequential documents and simultaneous matches calls cannot inherit this local state. The immutable Query AST and original caller strings are not modified.",
+    "The local object can retain copies of all fields actually visited until the call finishes. This is bounded by one title, one body and one URL per call, not by leaf count or document count."
+  ],
+  "formal_regression_review": {
+    "execution_by_reviewer": "not_run; static evaluation only",
+    "documents": 8,
+    "orders": [
+      "forward",
+      "reverse"
+    ],
+    "expected_checks": 16,
+    "assessed_cases": [
+      {
+        "document": 1,
+        "expected": true,
+        "reason": "Uppercase ASCII title folds to the title phrase; C++20 preserves the existing permitted language-symbol suffix; java is absent."
+      },
+      {
+        "document": 2,
+        "expected": false,
+        "reason": "Uppercase JAVA folds and negation rejects the otherwise matching document. This catches reuse of the previous document body cache."
+      },
+      {
+        "document": 3,
+        "expected": false,
+        "reason": "The title phrase appears only in body; it must not satisfy an explicit title leaf."
+      },
+      {
+        "document": 4,
+        "expected": false,
+        "reason": "The C++ literal appears only in title; it must not satisfy the explicit body leaf. Reusing title cache for body would create a false positive."
+      },
+      {
+        "document": 5,
+        "expected": true,
+        "reason": "Exact non-ASCII phrase in body plus ASCII-uppercase NODE.JS in URL exercises independent body/URL caches and a successful alternate OR branch."
+      },
+      {
+        "document": 6,
+        "expected": false,
+        "reason": "The body phrase is present only in title and cannot satisfy the body leaf."
+      },
+      {
+        "document": 7,
+        "expected": false,
+        "reason": "CAF\u00c9 and \u041c\u041e\u0421\u041a\u0412\u0410 do not equal caf\u00e9 and \u041c\u043e\u0441\u043a\u0432\u0430 under ASCII-only folding; full Unicode case folding would change this result."
+      },
+      {
+        "document": 8,
+        "expected": false,
+        "reason": "node.jsx does not match the node.js literal because the following ASCII word character violates the unchanged literal boundary."
+      }
+    ],
+    "effectiveness": "Positive and negative documents with reused Query and both visitation orders meaningfully detect shared-field or cross-document caches. The test asserts public matching semantics rather than mirroring the implementation or imposing timing thresholds.",
+    "limits": "It is a semantic regression, not a measurement of conversion counts, thread scheduling or total search performance. Existing phrase/literal/any-field query suites remain relevant; no duplicate suite was run here."
+  },
+  "remaining_performance_and_lock_limits": [
+    {
+      "status": "unchanged",
+      "finding": "Store::search_impl holds its one mutex across SQL candidate traversal, matches(), scoring, sorting and frozen-result work.",
+      "evidence": [
+        "src/store.cpp:1065 lock_guard",
+        "src/store.cpp:1130-1131 matches and score_match inside that lock"
+      ],
+      "implication": "Other operations using that Store mutex, including another owner stats(), may still wait for the entire search."
+    },
+    {
+      "status": "unchanged",
+      "finding": "Each leaf still searches the field for its own term/phrase/literal; only repeated ASCII conversion within matches() is removed.",
+      "evidence": [
+        "src/query.cpp:leaf_matches"
+      ],
+      "implication": "This does not turn arbitrary compound matching into a single scan or eliminate candidate-count costs."
+    },
+    {
+      "status": "unchanged",
+      "finding": "score_match() independently ASCII-lowers title and body again for fallback/substring hits, including negative-only matches before it finds no positive leaves.",
+      "evidence": [
+        "src/query.cpp:432-440",
+        "src/store.cpp:1131"
+      ],
+      "implication": "The precise improvement is at most one conversion per visited field per matches() call, not per complete Store search pipeline."
+    },
+    {
+      "status": "benchmark_scope",
+      "finding": "The original repetitive 2000 by 200KiB workload is not forced into overflow: the 65536 index bound counts distinct grams, not input codepoints.",
+      "evidence": [
+        "src/tokenizer.cpp:indexed_grams",
+        "include/bzs/tokenizer.hpp:substring_max_field_grams"
+      ],
+      "implication": "The original absent-positive queries can benefit chiefly from P1-3 candidate exclusion; the frozen all-NOT variant intentionally exercises the remaining scan and lock path."
+    }
+  ],
+  "performance_label": "P2-5 is a local optimization; the original broad Store blocking issue remains. Do not claim lock removal, a complete blocking fix or a general speedup ratio from a single benchmark observation.",
+  "benchmark_inputs_preserved": {
+    "original_sha256": "531278f68e06bbe09c4705eacf83c5a5799e5a9ec123c1d7a7d443dae8c3b618",
+    "negative_variant_sha256": "fe1409cd7c011999cabb80a807a47fcb878f4256b07a51cb0ef0f4d86134d7d6",
+    "reviewer_execution": "not_run; root owns final Release observations"
+  },
+  "actions": {
+    "main_tree_writes": false,
+    "tests_written": false,
+    "production_edits": false,
+    "builds_run": false,
+    "test_suites_run": false,
+    "benchmarks_run": false,
+    "only_new_file": "/tmp/bzs-p2-5-negative-benchmark-revocation-20261024/query-patch-independent-review.json"
+  },
+  "root_gate_status": "Root will run the final frozen complete gates; this static review does not assert their results.",
+  "reviewed_inputs_unchanged_after_review": true
+}
