@@ -103,22 +103,29 @@ class FetchResult:
 
 
 def decode_body(body: bytes, header_charset: str | None) -> tuple[str, str]:
-    """Decode with header charset, BOM, <meta charset>, then UTF-8 / GB18030 / CP1252."""
-    candidates: list[str] = []
-    if header_charset:
-        candidates.append(header_charset)
+    """Honor BOM or a usable declared text encoding, replacing damaged bytes.
+
+    Guess UTF-8 / GB18030 / CP1252 only when no usable declaration exists.
+    This display decoder is separate from strict raw robots/XML parsing.
+    """
     if body.startswith(codecs.BOM_UTF8):
-        candidates.insert(0, "utf-8-sig")
+        return body.decode("utf-8-sig", errors="replace"), "utf-8-sig"
+    declared: list[str] = [header_charset] if header_charset else []
     m = _META_CHARSET.search(body[:4096])
     if m:
-        candidates.append(m.group(1).decode("ascii", "ignore"))
-    candidates += ["utf-8", "gb18030", "cp1252"]
-    for name in candidates:
+        declared.append(m.group(1).decode("ascii"))
+    for name in declared:
         name = _ALIASES.get(name.lower(), name.lower())
         try:
-            codecs.lookup(name)
+            # bytes.decode rejects unknown and non-text codecs; some known
+            # codecs (for example IDNA) also cannot use replacement decoding.
+            return body.decode(name, errors="replace"), name
+        except (LookupError, UnicodeError, TypeError):
+            continue
+    for name in ("utf-8", "gb18030", "cp1252"):
+        try:
             return body.decode(name), name
-        except (LookupError, UnicodeDecodeError):
+        except UnicodeDecodeError:
             continue
     return body.decode("utf-8", errors="replace"), "utf-8-replace"
 

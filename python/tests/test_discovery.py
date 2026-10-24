@@ -402,3 +402,18 @@ def test_bytes_only_input_and_empty_document_are_distinct_from_bad_options():
     result = parse(b" \n\t")
     assert result["parse_status"] == "invalid"
     assert result["diagnostics"]["errors"] == ["empty_document"]
+
+
+def test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links():
+    body = b'<html><head><title>It\x92s readable</title></head><body><a href="/' + "中文".encode() + b'">Link</a></body></html>'
+    result = parse(body, content_type="text/html; charset=UTF-8")
+    assert result["parse_status"] == "ok"
+    assert urls(result) == ["https://site.example/%E4%B8%AD%E6%96%87"]
+
+
+def test_xml_charset_damage_remains_strict_and_cannot_publish_a_valid_prefix():
+    body = (b'<?xml version="1.0" encoding="UTF-8"?><urlset><url><loc>/good</loc></url>'
+            b'<url><loc>/bad-\x92</loc></url></urlset>')
+    result = parse(body, content_type="application/xml; charset=UTF-8")
+    assert result["parse_status"] == "invalid" and urls(result) == []
+    assert result["diagnostics"]["errors"] == ["malformed_xml"]

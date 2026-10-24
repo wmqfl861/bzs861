@@ -1,0 +1,19 @@
+{
+  "issue": "P2-4",
+  "status": "fixed",
+  "ctest": "27/27; zero skipped",
+  "pytest_passed": 1242,
+  "asan_ubsan_native_targets": 15,
+  "independent_cases": 15,
+  "independent_assertions": 32,
+  "independent_review": "../independent/p2-4/actual/probe-report.json",
+  "regressions": [
+    "Declared UTF-8/ASCII damage replaces invalid bytes without switching the entire page to another encoding",
+    "UTF-8 BOM priority, usable HTTP header then meta charset, existing undeclared UTF-8/GB18030/CP1252 guessing order",
+    "Unknown/nontext/unusable codecs fall back without applying text transforms",
+    "HTML Unicode links and physical HTTP byte accounting remain correct",
+    "Raw robots UTF-8 and malformed XML remain strict and cannot publish a valid prefix"
+  ],
+  "author_precheck": "190 passed on isolated updated pure cases; original decoder had 18 failures and 172 passes. Two authorized local HTTP cases passed. These are not independent or added to full-suite totals.",
+  "source_and_approval_policy_changed": false
+}

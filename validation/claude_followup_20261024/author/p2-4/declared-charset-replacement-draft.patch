@@ -1,0 +1,143 @@
+--- a/python/bzs/worker/fetch.py
++++ b/python/bzs/worker/fetch.py
+@@ -97,22 +97,29 @@
+ 
+ 
+ def decode_body(body: bytes, header_charset: str | None) -> tuple[str, str]:
+-    """Decode with header charset, BOM, <meta charset>, then UTF-8 / GB18030 / CP1252."""
+-    candidates: list[str] = []
+-    if header_charset:
+-        candidates.append(header_charset)
++    """Honor BOM or a usable declared text encoding, replacing damaged bytes.
++
++    Guess UTF-8 / GB18030 / CP1252 only when no usable declaration exists.
++    This display decoder is separate from strict raw robots/XML parsing.
++    """
+     if body.startswith(codecs.BOM_UTF8):
+-        candidates.insert(0, "utf-8-sig")
++        return body.decode("utf-8-sig", errors="replace"), "utf-8-sig"
++    declared: list[str] = [header_charset] if header_charset else []
+     m = _META_CHARSET.search(body[:4096])
+     if m:
+-        candidates.append(m.group(1).decode("ascii", "ignore"))
+-    candidates += ["utf-8", "gb18030", "cp1252"]
+-    for name in candidates:
++        declared.append(m.group(1).decode("ascii"))
++    for name in declared:
+         name = _ALIASES.get(name.lower(), name.lower())
+         try:
+-            codecs.lookup(name)
++            # bytes.decode rejects unknown and non-text codecs; some known
++            # codecs (for example IDNA) also cannot use replacement decoding.
++            return body.decode(name, errors="replace"), name
++        except (LookupError, UnicodeError, TypeError):
++            continue
++    for name in ("utf-8", "gb18030", "cp1252"):
++        try:
+             return body.decode(name), name
+-        except (LookupError, UnicodeDecodeError):
++        except UnicodeDecodeError:
+             continue
+     return body.decode("utf-8", errors="replace"), "utf-8-replace"
+ 
+--- a/python/tests/test_extract.py
++++ b/python/tests/test_extract.py
+@@ -69,3 +69,50 @@
+     assert text == "中文"
+     text, _ = decode_body("<p>中文</p>".encode("gb18030"), None)
+     assert "中文" in text
++
++
++@pytest.mark.parametrize("declared", ["utf-8", "UTF-8", "utf8", "ascii"])
++def test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset(declared):
++    text, charset = decode_body(b"<p>It\x92s readable text.</p>", declared)
++    assert text == "<p>It\ufffds readable text.</p>"
++    assert charset == ("ascii" if declared == "ascii" else "utf-8")
++
++
++def test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail():
++    text, charset = decode_body("<p>中文</p>".encode("gb18030") + b"\xff", "GBK")
++    assert text == "<p>中文</p>\ufffd" and charset == "gb18030"
++
++
++def test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes():
++    body = '<html><head><meta charset="windows-1252"></head><body>中文 It'.encode() + b"\x92s</body></html>"
++    text, charset = decode_body(body, "utf-8")
++    assert "中文 It\ufffds" in text and charset == "utf-8"
++
++
++@pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
++def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
++    body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
++    text, charset = decode_body(body, header)
++    assert "It\ufffds readable." in text and charset == "utf-8"
++
++
++@pytest.mark.parametrize("header,body", [("unknown-charset", b"literal text"),
++                                        ("base64_codec", b"aGVsbG8="), ("hex_codec", b"6869"),
++                                        ("rot_13", b"uryyb"), ("idna", b"xn--bcher-kva")])
++def test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes(header, body):
++    text, charset = decode_body(body, header)
++    assert text == body.decode("ascii") and charset == "utf-8"
++
++
++@pytest.mark.parametrize("header", [None, "windows-1252", "unknown-charset", "base64_codec"])
++def test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes(header):
++    body = b'\xef\xbb\xbf<meta charset="gbk"><p>' + "中文 It".encode() + b"\x92s</p>"
++    text, charset = decode_body(body, header)
++    assert text == '<meta charset="gbk"><p>中文 It\ufffds</p>' and charset == "utf-8-sig"
++
++
++def test_invalid_meta_codec_uses_the_existing_undeclared_guess_order():
++    body = b'<meta charset="base64_codec"><p>aGVsbG8=</p>'
++    assert decode_body(body, None) == (body.decode(), "utf-8")
++    assert decode_body(b"\x80", None) == ("€", "cp1252")
++    assert decode_body(b"\x81", None) == ("\ufffd", "utf-8-replace")
+--- a/python/tests/test_discovery.py
++++ b/python/tests/test_discovery.py
+@@ -402,3 +402,18 @@
+     result = parse(b" \n\t")
+     assert result["parse_status"] == "invalid"
+     assert result["diagnostics"]["errors"] == ["empty_document"]
++
++
++def test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links():
++    body = b'<html><head><title>It\x92s readable</title></head><body><a href="/' + "中文".encode() + b'">Link</a></body></html>'
++    result = parse(body, content_type="text/html; charset=UTF-8")
++    assert result["parse_status"] == "ok"
++    assert urls(result) == ["https://site.example/%E4%B8%AD%E6%96%87"]
++
++
++def test_xml_charset_damage_remains_strict_and_cannot_publish_a_valid_prefix():
++    body = (b'<?xml version="1.0" encoding="UTF-8"?><urlset><url><loc>/good</loc></url>'
++            b'<url><loc>/bad-\x92</loc></url></urlset>')
++    result = parse(body, content_type="application/xml; charset=UTF-8")
++    assert result["parse_status"] == "invalid" and urls(result) == []
++    assert result["diagnostics"]["errors"] == ["malformed_xml"]
+--- a/python/tests/test_crawl_worker.py
++++ b/python/tests/test_crawl_worker.py
+@@ -610,6 +610,24 @@
+     assert direct["publication"] == result["publication"] and len(calls) == 2
+ 
+ 
++async def test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage(crawl_worker):
++    worker, server, calls, state, *_ = crawl_worker
++    body = ('<html><head><title>UTF-8 中文页面</title></head><body><main><p>'.encode() +
++            b'It\x92s still readable material about bounded requests and safe extraction. ' +
++            '保留正确的中文正文。</p><a href="/中文">Link</a></main></body></html>'.encode())
++    state.update(body=body, headers=[("Content-Type", "text/html; charset=UTF-8")])
++    result = await worker.map_fetch(page_grant(worker, server))
++    assert result["status"] == "ok" and result["page"]["charset"] == "utf-8"
++    assert result["page"]["title"] == "UTF-8 中文页面" and "It\ufffds still readable" in result["page"]["text"]
++    assert "保留正确的中文正文" in result["page"]["text"]
++    assert result["discovery"]["candidates"][0]["url"].endswith("/%E4%B8%AD%E6%96%87")
++    assert result["usage"] == {"external_requests": 1, "content_bytes": len(body)} and len(calls) == 1
++    direct = await worker.fetch_extract({"url": str(server.make_url("/page"))})
++    assert direct["status"] == "ok" and direct["charset"] == "utf-8"
++    assert direct["title"] == result["page"]["title"] and direct["text"] == result["page"]["text"]
++    assert direct["usage"] == {"external_requests": 1, "content_bytes": len(body)} and len(calls) == 2
++
++
+ async def test_page_partial_http_and_oversize_content_type_keep_usage_without_artifacts(crawl_worker):
+     worker, server, calls, state, *_ = crawl_worker
+     state["status"] = 206

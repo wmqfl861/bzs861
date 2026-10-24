@@ -1,0 +1,121 @@
+{
+  "role": "independent probe author source_policy; production patches authored by revocation",
+  "label": "actual-main-p2-4-frozen-input",
+  "suite": "charset",
+  "scope": "pure Python functions; no HTTP, DNS, native build or source writes",
+  "probe_sha256": "2115ee59ba0667bbb5d67cf5335894a2d3173cf8628f14f9afade53325a209e9",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "input_modules": {
+    "bzs.worker.robots": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/robots.py",
+      "sha256": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694"
+    },
+    "bzs.worker.fetch": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/fetch.py",
+      "sha256": "6dd2c0b0918a1a0cb7148f2fd4bd27428f3285b71f278481bdafa4ffea8e0c3f"
+    },
+    "bzs.worker.discovery": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/discovery.py",
+      "sha256": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605"
+    },
+    "bzs.worker.revalidation": {
+      "path": "/workspace/scratch/e2371129386d/bzs861/python/bzs/worker/revalidation.py",
+      "sha256": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092"
+    }
+  },
+  "passed": 15,
+  "total": 15,
+  "assertions": 32,
+  "cases": [
+    {
+      "suite": "charset",
+      "name": "declared_utf8_keeps_valid_unicode_around_damaged_byte",
+      "passed": true,
+      "assertions": 1
+    },
+    {
+      "suite": "charset",
+      "name": "declared_ascii_and_gbk_replace_only_bad_sequences",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "utf8_bom_beats_conflicting_header_meta_and_damage",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "other_declared_text_codecs_replace_without_switching_identity",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "usable_header_remains_ahead_of_conflicting_meta",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_not-a-codec",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_base64_codec",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_hex_codec",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_zlib_codec",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_rot_13",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "unusable_header_falls_back_safely_idna",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "undeclared_guess_order_and_final_replacement_are_unchanged",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "charset",
+      "name": "html_discovery_preserves_valid_unicode_link_after_bad_title_byte",
+      "passed": true,
+      "assertions": 2
+    },
+    {
+      "suite": "charset",
+      "name": "robots_uses_raw_bytes_despite_a_valid_display_declaration",
+      "passed": true,
+      "assertions": 3
+    },
+    {
+      "suite": "charset",
+      "name": "xml_rejects_bad_tail_without_publishing_valid_prefix",
+      "passed": true,
+      "assertions": 3
+    }
+  ]
+}

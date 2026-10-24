@@ -1,0 +1,277 @@
+...................FFFFFFFFFFFF....FFFFF................................ [ 37%]
+.....................................................................F.. [ 75%]
+..............................................                           [100%]
+=================================== FAILURES ===================================
+_ test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[utf-8] _
+
+declared = 'utf-8'
+
+    @pytest.mark.parametrize("declared", ["utf-8", "UTF-8", "utf8", "ascii"])
+    def test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset(declared):
+        text, charset = decode_body(b"<p>It\x92s readable text.</p>", declared)
+>       assert text == "<p>It\ufffds readable text.</p>"
+E       AssertionError: assert '<p>It抯 readable text.</p>' == '<p>It�s readable text.</p>'
+E         
+E         - <p>It�s readable text.</p>
+E         ?      ^^
+E         + <p>It抯 readable text.</p>
+E         ?      ^
+
+tests/test_extract.py:77: AssertionError
+_ test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[UTF-8] _
+
+declared = 'UTF-8'
+
+    @pytest.mark.parametrize("declared", ["utf-8", "UTF-8", "utf8", "ascii"])
+    def test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset(declared):
+        text, charset = decode_body(b"<p>It\x92s readable text.</p>", declared)
+>       assert text == "<p>It\ufffds readable text.</p>"
+E       AssertionError: assert '<p>It抯 readable text.</p>' == '<p>It�s readable text.</p>'
+E         
+E         - <p>It�s readable text.</p>
+E         ?      ^^
+E         + <p>It抯 readable text.</p>
+E         ?      ^
+
+tests/test_extract.py:77: AssertionError
+_ test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[utf8] _
+
+declared = 'utf8'
+
+    @pytest.mark.parametrize("declared", ["utf-8", "UTF-8", "utf8", "ascii"])
+    def test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset(declared):
+        text, charset = decode_body(b"<p>It\x92s readable text.</p>", declared)
+>       assert text == "<p>It\ufffds readable text.</p>"
+E       AssertionError: assert '<p>It抯 readable text.</p>' == '<p>It�s readable text.</p>'
+E         
+E         - <p>It�s readable text.</p>
+E         ?      ^^
+E         + <p>It抯 readable text.</p>
+E         ?      ^
+
+tests/test_extract.py:77: AssertionError
+_ test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[ascii] _
+
+declared = 'ascii'
+
+    @pytest.mark.parametrize("declared", ["utf-8", "UTF-8", "utf8", "ascii"])
+    def test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset(declared):
+        text, charset = decode_body(b"<p>It\x92s readable text.</p>", declared)
+>       assert text == "<p>It\ufffds readable text.</p>"
+E       AssertionError: assert '<p>It抯 readable text.</p>' == '<p>It�s readable text.</p>'
+E         
+E         - <p>It�s readable text.</p>
+E         ?      ^^
+E         + <p>It抯 readable text.</p>
+E         ?      ^
+
+tests/test_extract.py:77: AssertionError
+__ test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail __
+
+    def test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail():
+        text, charset = decode_body("<p>中文</p>".encode("gb18030") + b"\xff", "GBK")
+>       assert text == "<p>中文</p>\ufffd" and charset == "gb18030"
+E       AssertionError: assert ('<p>ÖÐÎÄ</p>ÿ' == '<p>中文</p>�'
+E         
+E         - <p>中文</p>�
+E         + <p>ÖÐÎÄ</p>ÿ)
+
+tests/test_extract.py:83: AssertionError
+_____ test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes _____
+
+    def test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes():
+        body = '<html><head><meta charset="windows-1252"></head><body>中文 It'.encode() + b"\x92s</body></html>"
+        text, charset = decode_body(body, "utf-8")
+>       assert "中文 It\ufffds" in text and charset == "utf-8"
+E       assert ('中文 It�s' in '<html><head><meta charset="windows-1252"></head><body>ä¸\xadæ–‡ It’s</body></html>')
+
+tests/test_extract.py:89: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[None] _
+
+header = None
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[unknown-charset] _
+
+header = 'unknown-charset'
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[base64_codec] _
+
+header = 'base64_codec'
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[hex_codec] _
+
+header = 'hex_codec'
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[rot_13] _
+
+header = 'rot_13'
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[idna] _
+
+header = 'idna'
+
+    @pytest.mark.parametrize("header", [None, "unknown-charset", "base64_codec", "hex_codec", "rot_13", "idna"])
+    def test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding(header):
+        body = b'<html><head><meta charset="utf-8"></head><body>It\x92s readable.</body></html>'
+        text, charset = decode_body(body, header)
+>       assert "It\ufffds readable." in text and charset == "utf-8"
+E       assert ('It�s readable.' in '<html><head><meta charset="utf-8"></head><body>It抯 readable.</body></html>')
+
+tests/test_extract.py:96: AssertionError
+_ test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes[idna-xn--bcher-kva] _
+
+header = 'idna', body = b'xn--bcher-kva'
+
+    @pytest.mark.parametrize("header,body", [("unknown-charset", b"literal text"),
+                                            ("base64_codec", b"aGVsbG8="), ("hex_codec", b"6869"),
+                                            ("rot_13", b"uryyb"), ("idna", b"xn--bcher-kva")])
+    def test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes(header, body):
+        text, charset = decode_body(body, header)
+>       assert text == body.decode("ascii") and charset == "utf-8"
+E       AssertionError: assert ('bücher' == 'xn--bcher-kva'
+E         
+E         - xn--bcher-kva
+E         + bücher)
+
+tests/test_extract.py:104: AssertionError
+____ test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[None] ____
+
+header = None
+
+    @pytest.mark.parametrize("header", [None, "windows-1252", "unknown-charset", "base64_codec"])
+    def test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes(header):
+        body = b'\xef\xbb\xbf<meta charset="gbk"><p>' + "中文 It".encode() + b"\x92s</p>"
+        text, charset = decode_body(body, header)
+>       assert text == '<meta charset="gbk"><p>中文 It\ufffds</p>' and charset == "utf-8-sig"
+E       assert ('ï»¿<meta cha...dæ–‡ It’s</p>' == '<meta charse...p>中文 It�s</p>'
+E         
+E         - <meta charset="gbk"><p>中文 It�s</p>
+E         ?                        ^^   ^
+E         + ï»¿<meta charset="gbk"><p>ä¸­æ–‡ It’s</p>
+E         ? +++                       ^^^^^^   ^)
+
+tests/test_extract.py:111: AssertionError
+_ test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[windows-1252] _
+
+header = 'windows-1252'
+
+    @pytest.mark.parametrize("header", [None, "windows-1252", "unknown-charset", "base64_codec"])
+    def test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes(header):
+        body = b'\xef\xbb\xbf<meta charset="gbk"><p>' + "中文 It".encode() + b"\x92s</p>"
+        text, charset = decode_body(body, header)
+>       assert text == '<meta charset="gbk"><p>中文 It\ufffds</p>' and charset == "utf-8-sig"
+E       assert ('ï»¿<meta cha...dæ–‡ It’s</p>' == '<meta charse...p>中文 It�s</p>'
+E         
+E         - <meta charset="gbk"><p>中文 It�s</p>
+E         ?                        ^^   ^
+E         + ï»¿<meta charset="gbk"><p>ä¸­æ–‡ It’s</p>
+E         ? +++                       ^^^^^^   ^)
+
+tests/test_extract.py:111: AssertionError
+_ test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[unknown-charset] _
+
+header = 'unknown-charset'
+
+    @pytest.mark.parametrize("header", [None, "windows-1252", "unknown-charset", "base64_codec"])
+    def test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes(header):
+        body = b'\xef\xbb\xbf<meta charset="gbk"><p>' + "中文 It".encode() + b"\x92s</p>"
+        text, charset = decode_body(body, header)
+>       assert text == '<meta charset="gbk"><p>中文 It\ufffds</p>' and charset == "utf-8-sig"
+E       assert ('ï»¿<meta cha...dæ–‡ It’s</p>' == '<meta charse...p>中文 It�s</p>'
+E         
+E         - <meta charset="gbk"><p>中文 It�s</p>
+E         ?                        ^^   ^
+E         + ï»¿<meta charset="gbk"><p>ä¸­æ–‡ It’s</p>
+E         ? +++                       ^^^^^^   ^)
+
+tests/test_extract.py:111: AssertionError
+_ test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[base64_codec] _
+
+header = 'base64_codec'
+
+    @pytest.mark.parametrize("header", [None, "windows-1252", "unknown-charset", "base64_codec"])
+    def test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes(header):
+        body = b'\xef\xbb\xbf<meta charset="gbk"><p>' + "中文 It".encode() + b"\x92s</p>"
+        text, charset = decode_body(body, header)
+>       assert text == '<meta charset="gbk"><p>中文 It\ufffds</p>' and charset == "utf-8-sig"
+E       assert ('ï»¿<meta cha...dæ–‡ It’s</p>' == '<meta charse...p>中文 It�s</p>'
+E         
+E         - <meta charset="gbk"><p>中文 It�s</p>
+E         ?                        ^^   ^
+E         + ï»¿<meta charset="gbk"><p>ä¸­æ–‡ It’s</p>
+E         ? +++                       ^^^^^^   ^)
+
+tests/test_extract.py:111: AssertionError
+_ test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links _
+
+    def test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links():
+        body = b'<html><head><title>It\x92s readable</title></head><body><a href="/' + "中文".encode() + b'">Link</a></body></html>'
+        result = parse(body, content_type="text/html; charset=UTF-8")
+        assert result["parse_status"] == "ok"
+>       assert urls(result) == ["https://site.example/%E4%B8%AD%E6%96%87"]
+E       AssertionError: assert ['https://sit...%9F%E6%9E%83'] == ['https://sit...%AD%E6%96%87']
+E         
+E         At index 0 diff: 'https://site.example/%E6%B6%93%EE%85%9F%E6%9E%83' != 'https://site.example/%E4%B8%AD%E6%96%87'
+E         Use -v to get more diff
+
+tests/test_discovery.py:411: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_extract.py::test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[utf-8]
+FAILED tests/test_extract.py::test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[UTF-8]
+FAILED tests/test_extract.py::test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[utf8]
+FAILED tests/test_extract.py::test_declared_encoding_replaces_bad_bytes_without_guessing_another_charset[ascii]
+FAILED tests/test_extract.py::test_declared_gbk_alias_keeps_valid_chinese_and_replaces_only_damaged_tail
+FAILED tests/test_extract.py::test_valid_header_wins_over_conflicting_meta_even_with_damaged_bytes
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[None]
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[unknown-charset]
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[base64_codec]
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[hex_codec]
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[rot_13]
+FAILED tests/test_extract.py::test_usable_meta_is_honored_when_header_is_absent_or_not_a_usable_text_encoding[idna]
+FAILED tests/test_extract.py::test_unknown_or_non_text_header_codec_safely_falls_back_without_transforming_bytes[idna-xn--bcher-kva]
+FAILED tests/test_extract.py::test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[None]
+FAILED tests/test_extract.py::test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[windows-1252]
+FAILED tests/test_extract.py::test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[unknown-charset]
+FAILED tests/test_extract.py::test_utf8_bom_keeps_priority_over_declarations_and_damaged_bytes[base64_codec]
+FAILED tests/test_discovery.py::test_declared_utf8_damage_outside_a_link_does_not_reinterpret_valid_unicode_links
+18 failed, 172 passed in 0.92s

@@ -610,6 +610,24 @@ async def test_page_full_header_charset_is_applied_before_extraction_and_link_re
     assert direct["publication"] == result["publication"] and len(calls) == 2
 
 
+async def test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage(crawl_worker):
+    worker, server, calls, state, *_ = crawl_worker
+    body = ('<html><head><title>UTF-8 中文页面</title></head><body><main><p>'.encode() +
+            b'It\x92s still readable material about bounded requests and safe extraction. ' +
+            '保留正确的中文正文。</p><a href="/中文">Link</a></main></body></html>'.encode())
+    state.update(body=body, headers=[("Content-Type", "text/html; charset=UTF-8")])
+    result = await worker.map_fetch(page_grant(worker, server))
+    assert result["status"] == "ok" and result["page"]["charset"] == "utf-8"
+    assert result["page"]["title"] == "UTF-8 中文页面" and "It\ufffds still readable" in result["page"]["text"]
+    assert "保留正确的中文正文" in result["page"]["text"]
+    assert result["discovery"]["candidates"][0]["url"].endswith("/%E4%B8%AD%E6%96%87")
+    assert result["usage"] == {"external_requests": 1, "content_bytes": len(body)} and len(calls) == 1
+    direct = await worker.fetch_extract({"url": str(server.make_url("/page"))})
+    assert direct["status"] == "ok" and direct["charset"] == "utf-8"
+    assert direct["title"] == result["page"]["title"] and direct["text"] == result["page"]["text"]
+    assert direct["usage"] == {"external_requests": 1, "content_bytes": len(body)} and len(calls) == 2
+
+
 async def test_page_partial_http_and_oversize_content_type_keep_usage_without_artifacts(crawl_worker):
     worker, server, calls, state, *_ = crawl_worker
     state["status"] = 206

@@ -1,0 +1,69 @@
+{
+  "role": "Independent reviewer/probe author source_policy; P2-3/P2-4 production and formal test patches authored by revocation",
+  "probe": "/tmp/bzs-p2-34-independent-source-20261024/independent_probe.py",
+  "probe_sha256": "2115ee59ba0667bbb5d67cf5335894a2d3173cf8628f14f9afade53325a209e9",
+  "patches": {
+    "P2-3": {
+      "path": "/tmp/bzs-p2-robots-revocation-20261024/robots-group-isolation-draft.patch",
+      "sha256": "f32ba5f546a03e35265b5266c430ebc428345b7b3d7dc67206c2745e24eb38e4"
+    },
+    "P2-4": {
+      "path": "/tmp/bzs-p2-charset-revocation-20261024/declared-charset-replacement-draft.patch",
+      "sha256": "89ed4bff714c776ecb97ac40c7dffabc5ad3445808d12d8f1b2c3789876e9cad"
+    }
+  },
+  "observed_main_head": "68ab2dcebf77bcfb10a11c4b8cc7c09da2335635",
+  "main_note": "Main P2-2 integration is running parent-owned gates. P2-3/P2-4 not applied by this reviewer; file hashes record only actual files read.",
+  "observed_files_sha256": {
+    "python/bzs/worker/robots.py": "c884b818e1c9e68a1ef55a23836e84c49d59701d47dde8781c05732caef672ed",
+    "python/bzs/worker/fetch.py": "3289c23025416444d4435ae1efd4988c4aa6bc43d6e53dd378309fddada0c45c",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092"
+  },
+  "static_review": {
+    "blocking_findings": [],
+    "robots": [
+      "Invalid unrelated agent classification is an exclusion only; empty sentinel never becomes an applicable token",
+      "The prior group is flushed on saw_rule before classifying a new User-agent, including after empty Allow/Disallow",
+      "Valid agent members of the same group survive; invalid applicable rules remain fail-closed",
+      "Malformed self/wildcard/non-ASCII/identifier-free agents remain denied; selected product controls exclusion",
+      "UTF-8/raw-byte and rule matching paths are unchanged"
+    ],
+    "charset": [
+      "UTF-8 BOM wins before header/meta selection; damaged bytes replaced under a usable declaration",
+      "Known text header stays ahead of meta even if its byte stream contains invalid sequences",
+      "Unknown/non-text/unusable codec failures fall through to the next declaration or existing strict guess order",
+      "decode_body remains a display/text recovery helper; robots.parse_robots and discovery._xml_tree continue consuming original bytes strictly"
+    ],
+    "apply_check_current_main": {
+      "P2-3": 0,
+      "P2-4": 0
+    }
+  },
+  "probe_scope": {
+    "robots_cases": 16,
+    "charset_cases": 15,
+    "coverage": [
+      "Rule group boundaries and multiple applicable groups",
+      "Mixed agent members in both orders and an empty-rule delimiter",
+      "Wildcard fallback, exact-group priority and ignored foreign malformed rules",
+      "Eight damaged-self/ambiguous token forms plus caller-selected product",
+      "Declared UTF8/ASCII/GB aliases/CP1252/UTF16, conflicting declarations and UTF8 BOM",
+      "Unknown/nontext codecs do not transform bytes; usable meta and fallback order",
+      "HTML valid IRI survives bad title bytes",
+      "Raw robots and malformed XML reject bad bytes without publishing a valid prefix"
+    ],
+    "not_covered": [
+      "No live origins or real HTTP Worker orchestration",
+      "No exhaustive codec registry or REP conformance claim",
+      "No full CTest/pytest/ASan claim"
+    ]
+  },
+  "execution": {
+    "probe_AST": "passed",
+    "probe_runtime": "not executed; frozen before parent provides actual applied inputs",
+    "author_focused_results_reused": false,
+    "main_or_author_patch_mutations": false
+  },
+  "run_policy": "Use PYTHONDONTWRITEBYTECODE=1 and the pinned .venv; point PYTHONPATH at the exact parent-frozen tree; every run records loaded module paths/hashes and refuses to overwrite prior output."
+}

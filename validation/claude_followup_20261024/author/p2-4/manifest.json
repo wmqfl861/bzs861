@@ -1,0 +1,40 @@
+{
+  "kind": "unapplied_draft",
+  "repository": "/workspace/scratch/e2371129386d/bzs861",
+  "base_observed_head": "f0e8219e2202447805cfbb03c83116eca30d5645",
+  "patch": "/tmp/bzs-p2-charset-revocation-20261024/declared-charset-replacement-draft.patch",
+  "patch_sha256": "89ed4bff714c776ecb97ac40c7dffabc5ad3445808d12d8f1b2c3789876e9cad",
+  "inputs": [
+    {
+      "path": "python/bzs/worker/fetch.py",
+      "input_sha256": "c9ced0d80b19ecad233ec9d426cfbe6657b3915a5912519ac497a2b3359828a2",
+      "draft_sha256": "774bcdde9d075d6fac201de0778d671e182d218a99964af4a2a9f81482494d63"
+    },
+    {
+      "path": "python/tests/test_extract.py",
+      "input_sha256": "265e1f05165b76b1cc48ebd199f82d6362f279c09caa2adfe7af43607a948f5f",
+      "draft_sha256": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038"
+    },
+    {
+      "path": "python/tests/test_discovery.py",
+      "input_sha256": "19cf141380877639c98f02df732c8b870adaa5713a47ab8ee724a4c1d6e3133c",
+      "draft_sha256": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724"
+    },
+    {
+      "path": "python/tests/test_crawl_worker.py",
+      "input_sha256": "58aa368acdffe54e5365636ed5b11f42ef2f7682b35e33139ccb969009f1ce5d",
+      "draft_sha256": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7"
+    }
+  ],
+  "git_apply_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "verification": {
+    "python_ast_parse": "passed",
+    "production_build": "not_run",
+    "tests": "not_run"
+  },
+  "workspace_mutations": []
+}

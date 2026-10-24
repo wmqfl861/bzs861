@@ -1,0 +1,232 @@
+EE                                                                       [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage _
+
+tmp_path = PosixPath('/tmp/bzs-p2-charset-revocation-20261024/checks/focused-http-fixed-1/pytest-tmp/test_declared_utf8_damage_pres0')
+
+    @pytest.fixture
+    async def crawl_worker(tmp_path):
+        calls = []
+        state = {"body": PAGE, "headers": [("Content-Type", "text/html")], "status": 200}
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        async def handle(request):
+            calls.append({"path": request.path, "raw_path": request.raw_path, "ua": request.headers.get("User-Agent")})
+            if request.path == "/robots.txt":
+                return web.Response(body=ROBOTS, content_type="text/plain")
+            if request.path == "/redirect":
+                return web.Response(status=302, body=b"jump", headers={"Location": "/page/%61?x=%2f&x=%2F"})
+            if request.path == "/redirect-first":
+                return web.Response(status=302, body=b"first", headers={"Location": "/redirect-restricted"})
+            if request.path == "/redirect-restricted":
+                return web.Response(status=302, body=b"jump", headers=[
+                    ("Location", state.get("redirect_target", "/page/a")),
+                    *state.get("redirect_headers", [("X-Robots-Tag", "BzsBot: noindex")])])
+            if request.path == "/soft-restricted":
+                html = ('<html><head><meta http-equiv="refresh" content="0; url=' +
+                        state.get("soft_target", "/page/a") + '">' +
+                        state.get("soft_policy_html", '<meta name="BzsBot" content="noindex">') +
+                        '</head><body></body></html>')
+                return web.Response(text=html, content_type="text/html")
+            if request.path == "/redirect-private":
+                return web.Response(status=302, body=b"jump", headers={"Location": "/private/target"})
+            if request.path == "/redirect-external":
+                return web.Response(status=302, body=b"jump", headers={"Location": "https://outside.example/page"})
+            if request.path == "/soft":
+                return web.Response(body=b'<html><head><meta http-equiv="refresh" content="0; url=/private/target"></head></html>',
+                                    content_type="text/html")
+            if request.path == "/gzip":
+                return web.Response(body=gzip.compress(PAGE), content_type="text/html", headers={"Content-Encoding": "gzip"})
+            if request.path in ("/exact", "/extra"):
+                response = web.StreamResponse(headers={"Content-Type": "text/html"})
+                await response.prepare(request)
+                await response.write(PAGE)
+                await asyncio.sleep(0.08)
+                try:
+                    if request.path == "/extra":
+                        await response.write(b"!")
+                    await response.write_eof()
+                except ConnectionError:
+                    pass
+                return response
+            if request.path == "/hold":
+                started.set()
+                await release.wait()
+            if request.path == "/timeout":
+                response = web.StreamResponse(headers={"Content-Type": "text/plain", "X-Robots-Tag": "BzsBot: noindex"})
+                await response.prepare(request)
+                await response.write(b"first bytes")
+                started.set()
+                await release.wait()
+                try:
+                    await response.write_eof()
+                except ConnectionError:
+                    pass
+                return response
+            if request.path == "/disconnect":
+                request.transport.close()
+                return web.Response(body=PAGE, headers={"X-Robots-Tag": "noindex"})
+            if request.path == "/xml-safe":
+                return web.Response(body=b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>/later</loc></url></urlset>',
+                                    content_type="application/xml")
+            if request.path == "/xml-dtd":
+                body = f'<!DOCTYPE urlset [<!ENTITY x SYSTEM "http://127.0.0.1:{request.url.port}/secret">]><urlset><url><loc>&x;</loc></url></urlset>'
+                return web.Response(body=body.encode(), content_type="application/xml")
+            if request.path == "/long-content-type":
+                return web.Response(body=PAGE, headers={"Content-Type": "text/html; " + "x" * 1200})
+            return web.Response(status=state["status"], body=state["body"], headers=state["headers"])
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_crawl_worker.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+_ ERROR at setup of test_page_full_header_charset_is_applied_before_extraction_and_link_resolution _
+
+tmp_path = PosixPath('/tmp/bzs-p2-charset-revocation-20261024/checks/focused-http-fixed-1/pytest-tmp/test_page_full_header_charset_0')
+
+    @pytest.fixture
+    async def crawl_worker(tmp_path):
+        calls = []
+        state = {"body": PAGE, "headers": [("Content-Type", "text/html")], "status": 200}
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        async def handle(request):
+            calls.append({"path": request.path, "raw_path": request.raw_path, "ua": request.headers.get("User-Agent")})
+            if request.path == "/robots.txt":
+                return web.Response(body=ROBOTS, content_type="text/plain")
+            if request.path == "/redirect":
+                return web.Response(status=302, body=b"jump", headers={"Location": "/page/%61?x=%2f&x=%2F"})
+            if request.path == "/redirect-first":
+                return web.Response(status=302, body=b"first", headers={"Location": "/redirect-restricted"})
+            if request.path == "/redirect-restricted":
+                return web.Response(status=302, body=b"jump", headers=[
+                    ("Location", state.get("redirect_target", "/page/a")),
+                    *state.get("redirect_headers", [("X-Robots-Tag", "BzsBot: noindex")])])
+            if request.path == "/soft-restricted":
+                html = ('<html><head><meta http-equiv="refresh" content="0; url=' +
+                        state.get("soft_target", "/page/a") + '">' +
+                        state.get("soft_policy_html", '<meta name="BzsBot" content="noindex">') +
+                        '</head><body></body></html>')
+                return web.Response(text=html, content_type="text/html")
+            if request.path == "/redirect-private":
+                return web.Response(status=302, body=b"jump", headers={"Location": "/private/target"})
+            if request.path == "/redirect-external":
+                return web.Response(status=302, body=b"jump", headers={"Location": "https://outside.example/page"})
+            if request.path == "/soft":
+                return web.Response(body=b'<html><head><meta http-equiv="refresh" content="0; url=/private/target"></head></html>',
+                                    content_type="text/html")
+            if request.path == "/gzip":
+                return web.Response(body=gzip.compress(PAGE), content_type="text/html", headers={"Content-Encoding": "gzip"})
+            if request.path in ("/exact", "/extra"):
+                response = web.StreamResponse(headers={"Content-Type": "text/html"})
+                await response.prepare(request)
+                await response.write(PAGE)
+                await asyncio.sleep(0.08)
+                try:
+                    if request.path == "/extra":
+                        await response.write(b"!")
+                    await response.write_eof()
+                except ConnectionError:
+                    pass
+                return response
+            if request.path == "/hold":
+                started.set()
+                await release.wait()
+            if request.path == "/timeout":
+                response = web.StreamResponse(headers={"Content-Type": "text/plain", "X-Robots-Tag": "BzsBot: noindex"})
+                await response.prepare(request)
+                await response.write(b"first bytes")
+                started.set()
+                await release.wait()
+                try:
+                    await response.write_eof()
+                except ConnectionError:
+                    pass
+                return response
+            if request.path == "/disconnect":
+                request.transport.close()
+                return web.Response(body=PAGE, headers={"X-Robots-Tag": "noindex"})
+            if request.path == "/xml-safe":
+                return web.Response(body=b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>/later</loc></url></urlset>',
+                                    content_type="application/xml")
+            if request.path == "/xml-dtd":
+                body = f'<!DOCTYPE urlset [<!ENTITY x SYSTEM "http://127.0.0.1:{request.url.port}/secret">]><urlset><url><loc>&x;</loc></url></urlset>'
+                return web.Response(body=body.encode(), content_type="application/xml")
+            if request.path == "/long-content-type":
+                return web.Response(body=PAGE, headers={"Content-Type": "text/html; " + "x" * 1200})
+            return web.Response(status=state["status"], body=state["body"], headers=state["headers"])
+    
+        app = web.Application()
+        app.router.add_route("*", "/{tail:.*}", handle)
+>       async with TestServer(app) as server:
+                   ^^^^^^^^^^^^^^^
+
+tests/test_crawl_worker.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:216: in __aenter__
+    await self.start_server(loop=self._loop)
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:141: in start_server
+    _sock = self.socket_factory(self.host, self.port, family)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/scratch/e2371129386d/bzs861/.venv/lib/python3.12/site-packages/aiohttp/test_utils.py:79: in get_port_socket
+    s = socket.socket(family, socket.SOCK_STREAM)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <socket.socket fd=-1, family=0, type=0, proto=0>
+family = <AddressFamily.AF_INET: 2>, type = <SocketKind.SOCK_STREAM: 1>
+proto = 0, fileno = None
+
+    def __init__(self, family=-1, type=-1, proto=-1, fileno=None):
+        # For user code address family and type values are IntEnum members, but
+        # for the underlying _socket.socket they're just integers. The
+        # constructor of _socket.socket converts the given argument to an
+        # integer automatically.
+        if fileno is None:
+            if family == -1:
+                family = AF_INET
+            if type == -1:
+                type = SOCK_STREAM
+            if proto == -1:
+                proto = 0
+>       _socket.socket.__init__(self, family, type, proto, fileno)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/socket.py:233: PermissionError
+=========================== short test summary info ============================
+ERROR tests/test_crawl_worker.py::test_declared_utf8_damage_preserves_page_text_links_and_physical_byte_usage
+ERROR tests/test_crawl_worker.py::test_page_full_header_charset_is_applied_before_extraction_and_link_resolution
+2 errors in 0.54s
