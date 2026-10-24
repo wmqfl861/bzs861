@@ -1,0 +1,8 @@
+{
+  "scope": "Reviewer-only path resolution correction; no product command or root write occurred.",
+  "initial_exit_code": 1,
+  "error": "FileNotFoundError: asan-http.log",
+  "cause": "Completed command log is relative to its stage directory, but initial helper resolved it against cwd.",
+  "correction": "Resolve relative log against command metadata parent; keep absolute paths unchanged.",
+  "initial_source": "audit_completed_records_initial.py"
+}

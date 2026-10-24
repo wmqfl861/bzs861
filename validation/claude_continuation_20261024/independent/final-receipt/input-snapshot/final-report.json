@@ -1,0 +1,304 @@
+{
+  "baseline": "59081e14fdda765844031e13f874e588334f1a36",
+  "read_only_review": "30f058557e3f7ebb873e9780759323b49cfe9636",
+  "version": "0.1.10",
+  "integration_order": [
+    "P2-7",
+    "P2-6",
+    "P2-5",
+    "P2-9"
+  ],
+  "fixed_current_scope": [
+    "P2-5",
+    "P2-6",
+    "P2-7",
+    "P2-9"
+  ],
+  "previous_fixed_formal_regressions_retained": [
+    "P1-1",
+    "P1-2",
+    "P1-3",
+    "P2-1",
+    "P2-2",
+    "P2-3",
+    "P2-4"
+  ],
+  "local_full_stages": [
+    {
+      "issue": "P2-7",
+      "record": "p2-7/result.json",
+      "sha256": "f24e2dc190350748f12e55ada0328756bf7254e2b6310f1c2392d9fe93b726ed",
+      "execution_inputs_sha256": "88d3607d2269a677c8e53413460737029325e6c7046478d94008e925ed6f4fe2",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 469,
+      "sanitizer_assertions": 14407,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-6",
+      "record": "p2-6/result.json",
+      "sha256": "c668f015a6de40412d139e61eb68989b4759520fb4ae327eaef9b2d11b3d26f7",
+      "execution_inputs_sha256": "ce9dc6859b4286bbf50a8eaecff6df3c80c4521975f4e0788bfec7dae0185fa3",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 476,
+      "sanitizer_assertions": 14495,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-5",
+      "record": "p2-5/result.json",
+      "sha256": "d7e91d916a7aba1c6a638a4e04960e12481f628f12fb4d4686cd48206a019793",
+      "execution_inputs_sha256": "603e92f8e884a9f8526a4ed4f1cc5a38b4e33d9f0fbc4160e50027580b564425",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 485,
+      "sanitizer_assertions": 14891,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-9",
+      "record": "p2-9/result.json",
+      "sha256": "eefe1972405ed069a42045ef8af77797cfb67bd786ed1238956a0a346168afd8",
+      "execution_inputs_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1281,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 493,
+      "sanitizer_assertions": 15204,
+      "sanitizer_failures": 0
+    }
+  ],
+  "final_full_product_gate": "p2-9/result.json",
+  "final_full_product_gate_sha256": "eefe1972405ed069a42045ef8af77797cfb67bd786ed1238956a0a346168afd8",
+  "final_verification": "final-verification/result.json",
+  "final_verification_sha256": "dde3131addba29b3bc14f041446849e9a16517e7efcd95d175c9f2b52ea50558",
+  "final_documented_inputs": "final-verification/execution-inputs.json",
+  "final_documented_inputs_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "post_full_suite_scope": "Only eight independently reviewed documentation files differ; final-verification/documentation-delta.json proves product/test/build/recorder bytes are unchanged. Extra planning/dependency/HTTP-sanitizer checks are separate, not another complete suite.",
+  "final_http_sanitizer": {
+    "formal_cases": 3,
+    "server_shutdowns_checked": 2,
+    "all_exit_zero": true,
+    "sanitizers_and_leak_detection_enabled": true,
+    "binary_sha256": "ce8d9a0e9cfdf86666b1ba552f0b0052c56ec1f7a9b34f5b07af44c0025d57a2"
+  },
+  "product_commit_mapping": "commit-map.json",
+  "last_product_local_commit": "cd540ee419f80c9ecb2f6ff51e2608b5e93570c3",
+  "last_product_github_commit": "47fab7d62cc831d293c3ded623bd6d0ea6d92ec7",
+  "last_product_tree": "07749b893d6808fcee75e2740fe6c5d2e154da34",
+  "preserved_scope": {
+    "base": "59081e14fdda765844031e13f874e588334f1a36",
+    "script_sha256": "4c4bd8d1545de39296346c6401ca32861fedc74b9c66363c5d991c3876216875",
+    "unchanged_baseline_files": {
+      ".github": 1,
+      "config": 2,
+      "docs": 24,
+      "validation": 2051
+    },
+    "features": 83,
+    "features_raw_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "preserved_historical_objects": [
+      "historical_results_0_1_6",
+      "historical_results_0_1_8",
+      "historical_verification_0_1_8",
+      "historical_results_0_1_9_initial",
+      "historical_verification_0_1_9_initial",
+      "historical_verification_0_1_9_final",
+      "historical_verification_0_1_10_initial",
+      "historical_verification_0_1_10_http_cleanup",
+      "historical_verification_0_1_10_deadline",
+      "historical_verification_0_1_10_windows_watchdog"
+    ],
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "acceptance_items": 161,
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "registered_sites": 0,
+    "version": "0.1.10",
+    "schema": 13,
+    "all_checks_passed": true
+  },
+  "reserved_decisions": {
+    "source_selection_review_enablement": "unchanged; 17 registered, 0 enabled",
+    "S2": "scope, status and freeze decision unchanged",
+    "validation": "new evidence committed; all 2051 old validation files unchanged",
+    "backup_recovery": "quarantine and recovery status unchanged",
+    "idempotency_identity_retention": "permanent policy unchanged",
+    "scraping_adapters": "unchanged"
+  },
+  "remaining_limits": [
+    {
+      "id": "P2-5",
+      "remaining": "SQL candidate selection, per-document copy and final visibility/snippet projection still hold the Store lock; no zero-wait or latency SLA."
+    },
+    {
+      "id": "P2-6",
+      "remaining": "Per-category serialization remains; map/crawl share one lane. Existing budget and host/source admission apply."
+    },
+    {
+      "id": "P2-7",
+      "remaining": "64-connection cap and IO/CPU/shared JSON contention remain. Disconnect does not imply cancellation, and stopping does not guarantee response delivery."
+    },
+    {
+      "id": "P2-8",
+      "status": "仍成立",
+      "remaining": "Supported restore/reconciliation remains unimplemented by reserved owner decision."
+    },
+    {
+      "id": "P2-9",
+      "remaining": "New waits bounded; unproven old waits use the documented 365-day extreme heuristic. Shorter or temporally ambiguous historical values can remain."
+    },
+    {
+      "id": "retained-uri-counterexample",
+      "remaining": "The previous batch reverse-percent URI identity boundary has two unresolved counterexamples; not fixed or newly rerun by this batch."
+    },
+    {
+      "id": "blueprint-acceptance",
+      "remaining": "No new complete work-package, milestone or slice acceptance; other P3/blueprint work remains outside this batch."
+    }
+  ],
+  "evidence_integrity": {
+    "p2_7_initial_sanitizer": "exit0 but incomplete output excluded; exact same 15 binaries and product inputs rerun with complete captured output",
+    "p2_6_transitive_import": "Original stage retained. Post-run corroboration records original imported run.py. New stages directly include it; independent 44-check recorder review passed.",
+    "rejected_p2_9_first_attempt": "743 product input and correction patches reconstruct all non-validation blobs from published590. Original rollback failures and successful a302 correction remain separately recorded.",
+    "original_failed_probes": "Original author ptrace/LSan failures and independent fixture errors retained; no product checks weakened.",
+    "non_utf8_probe_evidence": "Base64 preserves exact raw bytes; copy manifests bind decoded original and stored SHA."
+  },
+  "independent_records": [
+    {
+      "scope": "P2-5 semantic matrix and initial concurrency",
+      "path": "independent/search-lock/review-result.json",
+      "sha256": "dc7b1f30e31e60d49168c2b752a133ff8aa475e019bd837f3de89fdffee2b230"
+    },
+    {
+      "scope": "Final P2-5 Debug/ASan 19 scenarios each",
+      "path": "independent/search-lock-final/debug-asan-review.json",
+      "sha256": "3b7fe93212384fc03feb47e60003333079aaa02c5c4b1bdef1c99bd9aed6d9ed"
+    },
+    {
+      "scope": "Final P2-6/P2-7 runtime 89 checks",
+      "path": "independent/final-http-dispatch/review.json",
+      "sha256": "3afa24003157acd022bf965aa00f295a53a5bb603b9929d3ec11005034deb8ca"
+    },
+    {
+      "scope": "P2-9 independent protocol/proof/temporal cases",
+      "path": "independent/retry-after/review-result.json",
+      "sha256": "0de278af37511afe76abcabf716db976bcd0d478bdef1478ff37f86fad267d29"
+    },
+    {
+      "scope": "Exact integration preservation",
+      "path": "independent/integration/review-result.json",
+      "sha256": "60b0a3d9d95dcc935dae3494d59684ed743d66ac753d976f18e14c6bf6d65939"
+    },
+    {
+      "scope": "Documentation",
+      "path": "independent/documentation/review-result.json",
+      "sha256": "44f05d66fdab2ce5cc8b5cb41ed34e09b6dc3a20175d31bbc60c6782f1863c1c"
+    },
+    {
+      "scope": "Recorder capture",
+      "path": "independent/recorder/review.json",
+      "sha256": "07722ea36e009dc6d15adafa5204723f79f90515812112f56a5ccc20086a9804"
+    },
+    {
+      "scope": "Recorder dependency correction",
+      "path": "independent/recorder-dependency/review.json",
+      "sha256": "c4d1e552751d11263ba12c153cdc1f15b8d9b9b29d1230e1a52ddffbcfa4b202"
+    },
+    {
+      "scope": "Final P2-5 Debug/ASan and adjacent Release observation",
+      "path": "independent/search-lock-final/final-review.json",
+      "sha256": "7eed925e0dbb8d28544f4023e874e81095d38c0db7803a88f56cc85baea89595"
+    }
+  ],
+  "github_verification": {
+    "branch": "main",
+    "expected_previous_sha": "59081e14fdda765844031e13f874e588334f1a36",
+    "force": false,
+    "workflow": ".github/workflows/ci.yml",
+    "workflow_changed": false,
+    "record_location": "GitHub Actions checks attached to the exact final published commit; delivery message links exact run and SHA. No self-referential CI-success commit.",
+    "acceptance_rule": "Exact final head linux and windows jobs must succeed; older runs and intermediate trees do not substitute.",
+    "local_counts_are_not_remote_ci_claims": true
+  },
+  "new_tag_or_release": false,
+  "receipt_scope": "Local product gates complete; final documentation and evidence are bound separately. Independent final receipt review and performance observation are attached before publication.",
+  "performance": {
+    "record": "independent/search-lock-final/final-release/evidence/performance-result.json",
+    "sha256": "fe69828bf08a130cc4253d888ec6d7542f4148fa40115849d0c059cd3a01f32e",
+    "dataset": {
+      "documents": 2000,
+      "target_body_bytes": 204800,
+      "database": ":memory: fresh per process",
+      "actual_body_construction": "Unmodified original repeated-text driver may pad past the target and appends a document number; identical on both runs."
+    },
+    "execution_order": [
+      "old",
+      "new"
+    ],
+    "executions_per_variant": 1,
+    "observations": [
+      {
+        "case": "single_NOT_phrase",
+        "query": "NOT \"alpha beta\"",
+        "old_search_ms": 2567,
+        "new_search_ms": 640,
+        "old_worst_concurrent_stats_ms": 2566,
+        "new_worst_concurrent_stats_ms": 150,
+        "retrieval": "bounded_scan_recent"
+      },
+      {
+        "case": "four_NOT_phrases_AND",
+        "query": "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\"",
+        "old_search_ms": 2573,
+        "new_search_ms": 1202,
+        "old_worst_concurrent_stats_ms": 2573,
+        "new_worst_concurrent_stats_ms": 157,
+        "retrieval": "bounded_scan_recent"
+      }
+    ],
+    "limits": [
+      "Only two query shapes on synthetic 2000 x 200 KiB target bodies; not production latency or throughput acceptance.",
+      "Stats uses the original 20 ms startup delay and 5 ms sampling; the maximum wait is an observation, not a deterministic bound.",
+      "These are sequential single runs, without repeated sampling or confidence intervals.",
+      "Total process time includes index/data construction and must not be reported as query latency.",
+      "No root source or build artifact was modified; no active root logs were read."
+    ]
+  },
+  "publication_preparation": {
+    "directory": "publication-preparation",
+    "scope": "Original read-only GitHub commit/tree/parent responses for the four product objects. Branch ref was still590 when these were recorded; final publication and exact-head CI are separate.",
+    "product_parent_chain_verified": true,
+    "main_before_publication": "59081e14fdda765844031e13f874e588334f1a36",
+    "review_before_publication": "30f058557e3f7ebb873e9780759323b49cfe9636"
+  }
+}

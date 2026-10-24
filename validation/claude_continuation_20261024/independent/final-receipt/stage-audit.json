@@ -1,0 +1,879 @@
+{
+  "stages": [
+    {
+      "stage": "p2-7",
+      "result_sha256": "f24e2dc190350748f12e55ada0328756bf7254e2b6310f1c2392d9fe93b726ed",
+      "inputs_sha256": "88d3607d2269a677c8e53413460737029325e6c7046478d94008e925ed6f4fe2",
+      "product_input_count": 218,
+      "all_product_hashes_match_local_commit": "23cb1ceffbbc0e65dbcbc83baf44ac4a2159fedc",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_summary": "1242 passed in 16.85s",
+      "sanitizer_cases": 469,
+      "sanitizer_assertions": 14407,
+      "programs": [
+        {
+          "target": "bzs_tests",
+          "cases": 88,
+          "assertions": 1325,
+          "failures": 0
+        },
+        {
+          "target": "bzs_batch_tests",
+          "cases": 30,
+          "assertions": 801,
+          "failures": 0
+        },
+        {
+          "target": "bzs_map_tests",
+          "cases": 24,
+          "assertions": 462,
+          "failures": 0
+        },
+        {
+          "target": "bzs_crawl_tests",
+          "cases": 54,
+          "assertions": 2798,
+          "failures": 0
+        },
+        {
+          "target": "bzs_site_publication_tests",
+          "cases": 32,
+          "assertions": 1203,
+          "failures": 0
+        },
+        {
+          "target": "bzs_contract_tests",
+          "cases": 55,
+          "assertions": 269,
+          "failures": 0
+        },
+        {
+          "target": "bzs_retention_tests",
+          "cases": 19,
+          "assertions": 480,
+          "failures": 0
+        },
+        {
+          "target": "bzs_fairness_tests",
+          "cases": 11,
+          "assertions": 251,
+          "failures": 0
+        },
+        {
+          "target": "bzs_session_tests",
+          "cases": 23,
+          "assertions": 298,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revalidation_tests",
+          "cases": 24,
+          "assertions": 372,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revocation_tests",
+          "cases": 12,
+          "assertions": 146,
+          "failures": 0
+        },
+        {
+          "target": "bzs_source_publication_tests",
+          "cases": 20,
+          "assertions": 180,
+          "failures": 0
+        },
+        {
+          "target": "bzs_cache_freshness_tests",
+          "cases": 51,
+          "assertions": 640,
+          "failures": 0
+        },
+        {
+          "target": "bzs_search_mode_tests",
+          "cases": 22,
+          "assertions": 382,
+          "failures": 0
+        },
+        {
+          "target": "bzs_capacity_cycles_tests",
+          "cases": 4,
+          "assertions": 4800,
+          "failures": 0
+        }
+      ],
+      "accepted_sanitizer_folder": "p2-7-asan-repeat",
+      "commands": [
+        {
+          "path": "p2-7/build-asan-command.json",
+          "sha256": "94517a1c131e84eecae66bb0e6a38d2a075471fd93542f69a06497ea15f7e767",
+          "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/build-debug-command.json",
+          "sha256": "6adfd923a0a5370dd4ada96f3a1214d2a5e9df32f329dae41ea6a2d4c66cb3fa",
+          "log_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/configure-asan-command.json",
+          "sha256": "b79a02cd88c05c7c975a08a0b2dc4760a6df83a87efba2ed07156012da186e5a",
+          "log_sha256": "13046ebf891ac84b4abf815e62205856413716c4b5ac5422f982364b590edd03",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/configure-debug-command.json",
+          "sha256": "a2815488a8e677c37a39e2f2e409c133d3d8bd8b896e9043af592634033699cb",
+          "log_sha256": "0fc301241908faaee347d84206af9af60dd9890e2342fc8aea9c9997a534c78f",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/ctest-command.json",
+          "sha256": "eec1fed57a7ca45138e06192a6f938e5f9c2def16291f7ecec8ddc87fc489633",
+          "log_sha256": "2f6bced17c55b989ad0aa18ec2f99927c20aae51969691d35ce1818d167722ae",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-7/guard-asan-native-command.json",
+          "sha256": "6b8e9bc588be84cc2fceda7b8e68bafe76c78acf16ca2c2c97fe1979bcc6c5a9",
+          "log_sha256": "f812a84a3fcd88249a46c1e5c7287846efd619677f03a03e7db55f6626fc35a0",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/guard-debug-native-command.json",
+          "sha256": "3c0427afbaaeb04f2d5f47ad9d75baf6ccd474344e09be523b475399bf89d4bb",
+          "log_sha256": "9109c3f6e0530da363f23be376c20f9586a405e657a828ce28f4dcdd73c92a63",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/prepare-asan-executables-command.json",
+          "sha256": "2411ebdaa87176cb1ff33d615e46c3d1f7ea1b7f71fe00b0e80f470902680edd",
+          "log_sha256": "a5307d042288898ce6e53324bce6ea91bd54f28ee100b75d578b27cfeb92e3a0",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/prepare-debug-executables-command.json",
+          "sha256": "51b9a52eef179bf09ba0bcf9913080ca667124e8eddf5e29af2885524bb33460",
+          "log_sha256": "7d5b943a2a0c38539cb29d2abd103dc5b46afc2903eb61d44e7ff4dabe2048b6",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7/pytest-command.json",
+          "sha256": "eda512fcdc255632e138d7de4f3dc68492ca4a5133aff3f147313ad74aa3580c",
+          "log_sha256": "a6625d6fc15446fb32bc7fc4d22737b468de2ed3fdd2896d6fa7d4dbe8394680",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-7-asan-repeat/asan-command.json",
+          "sha256": "e1023db3d0eba8586f34d8de58033b96489fca75dda858dfb87a4210880c0d03",
+          "log_sha256": "9109673d4dd0744c4bb38d83d133a5259387144434dc00ae99f4e743eb258fe5",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-7-asan-repeat/build-server-command.json",
+          "sha256": "745450548f9d3c3b31a1a38bfe82e1e138e9ad03331ffa0c89817f541acca3a8",
+          "log_sha256": "e1f5d1a015c18c9b6cdaea80ed2d3081ae68adfc8def8585abba007b63482a42",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-7-asan-repeat/http-execution-command.json",
+          "sha256": "c016f38e8f91d7005a7c6d7a99012e43f62dbe298c2df6aac25c4c66d37ef38f",
+          "log_sha256": "189d0ecef648509bedcacdaf7c254881097809cda7be82b497619eeac5ee78ca",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-7-asan-repeat/http-shutdown-sanitizers-command.json",
+          "sha256": "bb50d7027a5f887350e4dd14c986fc169617d0e45c2822c8f6b16724811a2f14",
+          "log_sha256": "23468b2d47c0de58aabd5a30ba1b4e4571f91e9fc10195d5785a457075136a6e",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        }
+      ]
+    },
+    {
+      "stage": "p2-6",
+      "result_sha256": "c668f015a6de40412d139e61eb68989b4759520fb4ae327eaef9b2d11b3d26f7",
+      "inputs_sha256": "ce9dc6859b4286bbf50a8eaecff6df3c80c4521975f4e0788bfec7dae0185fa3",
+      "product_input_count": 219,
+      "all_product_hashes_match_local_commit": "8f753c24e55779bfca840a51037f7b77068f0daa",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_summary": "1242 passed in 17.11s",
+      "sanitizer_cases": 476,
+      "sanitizer_assertions": 14495,
+      "programs": [
+        {
+          "target": "bzs_tests",
+          "cases": 88,
+          "assertions": 1325,
+          "failures": 0
+        },
+        {
+          "target": "bzs_batch_tests",
+          "cases": 30,
+          "assertions": 801,
+          "failures": 0
+        },
+        {
+          "target": "bzs_map_tests",
+          "cases": 24,
+          "assertions": 462,
+          "failures": 0
+        },
+        {
+          "target": "bzs_crawl_tests",
+          "cases": 54,
+          "assertions": 2798,
+          "failures": 0
+        },
+        {
+          "target": "bzs_site_publication_tests",
+          "cases": 32,
+          "assertions": 1203,
+          "failures": 0
+        },
+        {
+          "target": "bzs_contract_tests",
+          "cases": 55,
+          "assertions": 269,
+          "failures": 0
+        },
+        {
+          "target": "bzs_retention_tests",
+          "cases": 19,
+          "assertions": 480,
+          "failures": 0
+        },
+        {
+          "target": "bzs_fairness_tests",
+          "cases": 18,
+          "assertions": 339,
+          "failures": 0
+        },
+        {
+          "target": "bzs_session_tests",
+          "cases": 23,
+          "assertions": 298,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revalidation_tests",
+          "cases": 24,
+          "assertions": 372,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revocation_tests",
+          "cases": 12,
+          "assertions": 146,
+          "failures": 0
+        },
+        {
+          "target": "bzs_source_publication_tests",
+          "cases": 20,
+          "assertions": 180,
+          "failures": 0
+        },
+        {
+          "target": "bzs_cache_freshness_tests",
+          "cases": 51,
+          "assertions": 640,
+          "failures": 0
+        },
+        {
+          "target": "bzs_search_mode_tests",
+          "cases": 22,
+          "assertions": 382,
+          "failures": 0
+        },
+        {
+          "target": "bzs_capacity_cycles_tests",
+          "cases": 4,
+          "assertions": 4800,
+          "failures": 0
+        }
+      ],
+      "accepted_sanitizer_folder": "p2-6",
+      "commands": [
+        {
+          "path": "p2-6/asan-command.json",
+          "sha256": "f7209494f93eb6ec2047a94ef0ab9c4958b4e263561f4cab3501c830e1697316",
+          "log_sha256": "dbdb6b7187906d6a21c24a6207701921893da890f70c2669569795a72738d86e",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-6/build-asan-command.json",
+          "sha256": "a573c79e33e3ca1882814c769f1680181713c0bb8e72dd6082c97fc585cd103a",
+          "log_sha256": "920c0485a7ff138117c3e8a039d1c933b43040492425ab4e1071a2c84f3306ac",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/build-debug-command.json",
+          "sha256": "0bd5a1014940aa395154eaf005a116d18e97b41249e0d8e60799c73c2193d2f1",
+          "log_sha256": "5acb38c64b3a1f1269ff274a6543b23f4d6374bee9b8a745042f49823daf0fff",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/configure-asan-command.json",
+          "sha256": "cfe761b2095a502ee4e0b47ecfbf2e7705b9730298732d9c999058c44bbab4a6",
+          "log_sha256": "13046ebf891ac84b4abf815e62205856413716c4b5ac5422f982364b590edd03",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/configure-debug-command.json",
+          "sha256": "46bbdc1392b92bb3a814f287fea657ba490be7c6c8f70c6b3e70235f83ee0b57",
+          "log_sha256": "0fc301241908faaee347d84206af9af60dd9890e2342fc8aea9c9997a534c78f",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/ctest-command.json",
+          "sha256": "4e072fe6554bc0339b3a121d294771ef1d50e2e6b34cebe301d862477ad46abf",
+          "log_sha256": "949fe95daa7c88ec3974f3a0f5525c7897049b2e2a0cc0a16200c842326b2380",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-6/guard-asan-native-command.json",
+          "sha256": "ae182d346d471de3d8ec2c2b13a5767214aa29934beb381aaba2643bf8f80bf8",
+          "log_sha256": "888cf2f3294a947b3abdbc4f046780845471f47d3405e49284be8dc6b2e0fee9",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/guard-debug-native-command.json",
+          "sha256": "ce721ab09bf76b3bd7b97f270fc4ad3b84fb4de309e21913c2bac72bfc38dafb",
+          "log_sha256": "46c73eeba24c5fd92a1d11e07b4bd7ae7b586792abe7b0e8b0fddd80f4a29853",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/prepare-asan-executables-command.json",
+          "sha256": "6e5ac27074d2a57a14469b8fe20866e4974a165ad77cda875b0691ebf7a1a2fd",
+          "log_sha256": "a5307d042288898ce6e53324bce6ea91bd54f28ee100b75d578b27cfeb92e3a0",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/prepare-debug-executables-command.json",
+          "sha256": "66d8063c1d82da9bd52ccaa4871faf00ad9c344e9caa862902428b4e3dfda88b",
+          "log_sha256": "7d5b943a2a0c38539cb29d2abd103dc5b46afc2903eb61d44e7ff4dabe2048b6",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-6/pytest-command.json",
+          "sha256": "3e4494db55b078ac47eba743071f3e8b2ea922eb0c469c7e7ca50d3fd2e386cb",
+          "log_sha256": "8efe8c42c59fb62380dbbeccad750d4b78b574b543a451121aaa6798eaba910e",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        }
+      ]
+    },
+    {
+      "stage": "p2-5",
+      "result_sha256": "d7e91d916a7aba1c6a638a4e04960e12481f628f12fb4d4686cd48206a019793",
+      "inputs_sha256": "603e92f8e884a9f8526a4ed4f1cc5a38b4e33d9f0fbc4160e50027580b564425",
+      "product_input_count": 220,
+      "all_product_hashes_match_local_commit": "e066753af9bd8888eefa5d694e83f677d09a48a5",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_summary": "1242 passed in 17.64s",
+      "sanitizer_cases": 485,
+      "sanitizer_assertions": 14891,
+      "programs": [
+        {
+          "target": "bzs_tests",
+          "cases": 97,
+          "assertions": 1721,
+          "failures": 0
+        },
+        {
+          "target": "bzs_batch_tests",
+          "cases": 30,
+          "assertions": 801,
+          "failures": 0
+        },
+        {
+          "target": "bzs_map_tests",
+          "cases": 24,
+          "assertions": 462,
+          "failures": 0
+        },
+        {
+          "target": "bzs_crawl_tests",
+          "cases": 54,
+          "assertions": 2798,
+          "failures": 0
+        },
+        {
+          "target": "bzs_site_publication_tests",
+          "cases": 32,
+          "assertions": 1203,
+          "failures": 0
+        },
+        {
+          "target": "bzs_contract_tests",
+          "cases": 55,
+          "assertions": 269,
+          "failures": 0
+        },
+        {
+          "target": "bzs_retention_tests",
+          "cases": 19,
+          "assertions": 480,
+          "failures": 0
+        },
+        {
+          "target": "bzs_fairness_tests",
+          "cases": 18,
+          "assertions": 339,
+          "failures": 0
+        },
+        {
+          "target": "bzs_session_tests",
+          "cases": 23,
+          "assertions": 298,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revalidation_tests",
+          "cases": 24,
+          "assertions": 372,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revocation_tests",
+          "cases": 12,
+          "assertions": 146,
+          "failures": 0
+        },
+        {
+          "target": "bzs_source_publication_tests",
+          "cases": 20,
+          "assertions": 180,
+          "failures": 0
+        },
+        {
+          "target": "bzs_cache_freshness_tests",
+          "cases": 51,
+          "assertions": 640,
+          "failures": 0
+        },
+        {
+          "target": "bzs_search_mode_tests",
+          "cases": 22,
+          "assertions": 382,
+          "failures": 0
+        },
+        {
+          "target": "bzs_capacity_cycles_tests",
+          "cases": 4,
+          "assertions": 4800,
+          "failures": 0
+        }
+      ],
+      "accepted_sanitizer_folder": "p2-5",
+      "commands": [
+        {
+          "path": "p2-5/asan-command.json",
+          "sha256": "e1494ad62d82abfca75e5a54ff9250b374117b267ea5f11c3d087353b96c335d",
+          "log_sha256": "786df82e30e48c79a1aaf1cb350c31cce458969a42e8f3e7234df72b06a3368d",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-5/build-asan-command.json",
+          "sha256": "ab646eaa83963a3fe3e72098b2d2ecd5a832312cf5b7d7c613b4445d403ebaf7",
+          "log_sha256": "2874aa443e9489224a48d3a4687e4458fe0e194ffb23dab487a2912185d85f53",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/build-debug-command.json",
+          "sha256": "23c20c11d3fe310bfde613ea75fcf53bb3a70b24beca9e89f4b18dde3064c739",
+          "log_sha256": "09a4d94b9021961a39f1d3c20df937a6c6f88fba36b597deb55d656e8b9cbbed",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/configure-asan-command.json",
+          "sha256": "71bec9f8e54ad3978b9966f2ff3468e92610ba65b679da41f5c065402b85166f",
+          "log_sha256": "13046ebf891ac84b4abf815e62205856413716c4b5ac5422f982364b590edd03",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/configure-debug-command.json",
+          "sha256": "9e991e07dec0a960d0ef55eaf1064c4962b7fef06b60aa02d98c4db710bbe2d3",
+          "log_sha256": "db406edbd8933df0e0a3cd06671784d18f0d21dcda9fc06ca9ce785a2a7f102c",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/ctest-command.json",
+          "sha256": "17d856462af6efe2d95f3437e4bbd4b2c1ec7c83a1216dfea08bac1532e81930",
+          "log_sha256": "0a87f851c439097f4b4af6d65f75ac265584ecba9e93f0bf224d317993b85f52",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-5/guard-asan-native-command.json",
+          "sha256": "895e53e20300dc7fbab4333e8f3b9c4577b7d73fd7b358b2924fcd4d72615163",
+          "log_sha256": "32f2d8ff2924fc81ab30bcb660e8cb4454af05f59bec380536f92a0d66212ead",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/guard-debug-native-command.json",
+          "sha256": "2e23b9c101cc944f50719f956dcf183f87ace3157f65502ef441828ba2ae920f",
+          "log_sha256": "8b72de639c50d0fc9e897adf968d7559fa96095548c42aae0c7b48e4683d9013",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/prepare-asan-executables-command.json",
+          "sha256": "3d9e0f8d4d1e14b05b700d0540a8b64ed6bb7ec8104bd0b43ab5f6ac20f5694c",
+          "log_sha256": "a391a6d56d7c05d88a9e7f9251552ce0b9bd8ff9df04e5155c2387492e8e14c1",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/prepare-debug-executables-command.json",
+          "sha256": "c38649bab40a23f4cf47f1c482a072d25337a820bf5505662e2f3cf485f4815f",
+          "log_sha256": "c3f618642dfdb2e6cce123bfd0882b01fc3f5d12ab5f38a44852c1513333ed80",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-5/pytest-command.json",
+          "sha256": "5193fb6772edcd8675ad3e5d493c6cfb33ce7185bf8870e14209f98dd1abb682",
+          "log_sha256": "3b8128075684275a3860bfadd058a58ff24775ce63ea9d82590ddef460d31701",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        }
+      ]
+    },
+    {
+      "stage": "p2-9",
+      "result_sha256": "eefe1972405ed069a42045ef8af77797cfb67bd786ed1238956a0a346168afd8",
+      "inputs_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+      "product_input_count": 221,
+      "all_product_hashes_match_local_commit": "cd540ee419f80c9ecb2f6ff51e2608b5e93570c3",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_summary": "1281 passed in 16.96s",
+      "sanitizer_cases": 493,
+      "sanitizer_assertions": 15204,
+      "programs": [
+        {
+          "target": "bzs_tests",
+          "cases": 105,
+          "assertions": 2034,
+          "failures": 0
+        },
+        {
+          "target": "bzs_batch_tests",
+          "cases": 30,
+          "assertions": 801,
+          "failures": 0
+        },
+        {
+          "target": "bzs_map_tests",
+          "cases": 24,
+          "assertions": 462,
+          "failures": 0
+        },
+        {
+          "target": "bzs_crawl_tests",
+          "cases": 54,
+          "assertions": 2798,
+          "failures": 0
+        },
+        {
+          "target": "bzs_site_publication_tests",
+          "cases": 32,
+          "assertions": 1203,
+          "failures": 0
+        },
+        {
+          "target": "bzs_contract_tests",
+          "cases": 55,
+          "assertions": 269,
+          "failures": 0
+        },
+        {
+          "target": "bzs_retention_tests",
+          "cases": 19,
+          "assertions": 480,
+          "failures": 0
+        },
+        {
+          "target": "bzs_fairness_tests",
+          "cases": 18,
+          "assertions": 339,
+          "failures": 0
+        },
+        {
+          "target": "bzs_session_tests",
+          "cases": 23,
+          "assertions": 298,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revalidation_tests",
+          "cases": 24,
+          "assertions": 372,
+          "failures": 0
+        },
+        {
+          "target": "bzs_revocation_tests",
+          "cases": 12,
+          "assertions": 146,
+          "failures": 0
+        },
+        {
+          "target": "bzs_source_publication_tests",
+          "cases": 20,
+          "assertions": 180,
+          "failures": 0
+        },
+        {
+          "target": "bzs_cache_freshness_tests",
+          "cases": 51,
+          "assertions": 640,
+          "failures": 0
+        },
+        {
+          "target": "bzs_search_mode_tests",
+          "cases": 22,
+          "assertions": 382,
+          "failures": 0
+        },
+        {
+          "target": "bzs_capacity_cycles_tests",
+          "cases": 4,
+          "assertions": 4800,
+          "failures": 0
+        }
+      ],
+      "accepted_sanitizer_folder": "p2-9",
+      "commands": [
+        {
+          "path": "p2-9/asan-command.json",
+          "sha256": "afa755702e1bb24f1d50a209d16a11a524124dd740b9358e63db37de7472c1cc",
+          "log_sha256": "75f51bd911d5a4d6beb3c2c8014622961e6ffb08b84edac3a57248dfdbe8fb78",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-9/build-asan-command.json",
+          "sha256": "31ab6a6c2ee241cc979edf1c69f5ffb9e14b5962bab48f25cee448daa7205718",
+          "log_sha256": "908225357b00ff7a3e88d7d14184cb3688c79c9d0f734aff0edc0d957868534d",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/build-debug-command.json",
+          "sha256": "e9c7e42ff097307a975f36758d441e55de50e3c5d327d6ca876503f8718b99b7",
+          "log_sha256": "61d0c0823a670d5875adce5115b8285ab9f75ac1f366e9a4e0fdbde71d203a5e",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/configure-asan-command.json",
+          "sha256": "db7ae628e063f9f5603dc662f8cc757261df80788dff345467334817bfd4a5c5",
+          "log_sha256": "13046ebf891ac84b4abf815e62205856413716c4b5ac5422f982364b590edd03",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/configure-debug-command.json",
+          "sha256": "573e2db0dccb223dae5f2631cd2aa55746d4f884ff146fbde1b0e3dbc47e582b",
+          "log_sha256": "89a7eda6a1f0cb864ba34f0e2341ef37daf14608a916d0091a76a70613ac29fe",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/ctest-command.json",
+          "sha256": "a9d0726169175faeb19e492c1d17a697b86a33d502c2d725a04f563e9b6aba52",
+          "log_sha256": "291819e4512e178ccaf0f3422d5cd4efe98b9bd3a252e87fd8859575dd5556aa",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        },
+        {
+          "path": "p2-9/guard-asan-native-command.json",
+          "sha256": "906399968f5ee06af58320bcfcc99d83e21f7b90e332bf6ece0739095bb133f7",
+          "log_sha256": "6a404c22b6f05335cdbf39a53ffcd930559017cd25166fcf5a499adf4aaf6ee5",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/guard-debug-native-command.json",
+          "sha256": "69ae967999d747bdefe90dc0e6da1a696e417165f91201506f1a44381470c959",
+          "log_sha256": "52d0d1522d80a9eeb7feed0f066855edbb5cb9fbdda774bc804a113741429e05",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/prepare-asan-executables-command.json",
+          "sha256": "20f8043ef71693c326e314c8bda592d6be87cb32a523fed7c02cd69f49e29f5b",
+          "log_sha256": "a5307d042288898ce6e53324bce6ea91bd54f28ee100b75d578b27cfeb92e3a0",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/prepare-debug-executables-command.json",
+          "sha256": "fd1edfc177d80039a3e527437c3c19d0f86890fba07f8936769aaad9978ff47f",
+          "log_sha256": "7d5b943a2a0c38539cb29d2abd103dc5b46afc2903eb61d44e7ff4dabe2048b6",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": false
+        },
+        {
+          "path": "p2-9/pytest-command.json",
+          "sha256": "b8a34070c6a873c9273620f5ca44a539bc3afff0d5e2eefc78d676502b69fe9f",
+          "log_sha256": "b42c43880761851b4c0ef7890679e2fa90eb5f5e65ee8cc9bdd0b6c5a12b2ff8",
+          "exit_code": 0,
+          "input_binding_valid": true,
+          "non_build_binaries_unchanged": true
+        }
+      ]
+    }
+  ],
+  "same_27_ctest_names_in_all_stages": [
+    "batch",
+    "cache_freshness",
+    "capacity_cycles",
+    "contracts",
+    "core",
+    "crawl",
+    "e2e_cache_freshness",
+    "e2e_cache_policy_review",
+    "e2e_crawl",
+    "e2e_crawl_recovery",
+    "e2e_map",
+    "e2e_revalidation",
+    "e2e_revocation",
+    "e2e_session_recovery",
+    "e2e_web",
+    "fairness",
+    "http_cli",
+    "http_revocation",
+    "map",
+    "python_worker",
+    "retention",
+    "revalidation",
+    "revocation",
+    "search_modes",
+    "sessions",
+    "site_publication",
+    "source_publication"
+  ],
+  "p2_7_initial_incomplete_log": {
+    "exit_code": 0,
+    "run_markers": 9,
+    "log_sha256": "6c299782b631dfaec8e7383d3bed84688d890348d8380237ac2c00164d38bc34",
+    "explicitly_excluded": true,
+    "repeat_15_binaries_and_core_library_identical": true,
+    "repeat_product_inputs_identical": true
+  },
+  "final_current_15_native_sanitizer_binaries_match_completed_gate": {
+    "bzs_tests": "c818a76e9ae0bf0da4e7e4b7ff61bb385af4da38f5f9c170dc9a38c11e180fa1",
+    "bzs_batch_tests": "e98a9bb121ab1a5e7ccce0c04b4449bc1a01c0ab033aa2fe5ce77a3e0bb626a4",
+    "bzs_map_tests": "83a65661f274ec43e47ef7fe5cba5d4be3a7f8ceee0bfcfea290329e377faa0e",
+    "bzs_crawl_tests": "35070f4758010a0f0c2482fe165993444fdaaedc76b6c5aeb05259f037f6b4fd",
+    "bzs_site_publication_tests": "61cb97788c202363284d7bd49fd371faf91d51b568a81a288412197eb449c4a9",
+    "bzs_contract_tests": "224614201694685fa07f498b6b70c7b0d0c39b1473a7667ce5f305bd3e6a9b72",
+    "bzs_retention_tests": "d31a1453755b3e3dec18f66f397f1c42e14cbc5737765b4f44d9abb4794b2b6d",
+    "bzs_fairness_tests": "ec825f124c8a9e56332f0289e3a110e64ba3771059a7490fbfe32a8abee998d4",
+    "bzs_session_tests": "3bf9c2e2c498e90740120d6b861e265345f4e4f083ef725e853453ffef6e1e79",
+    "bzs_revalidation_tests": "3358a2882b70c35fe7b39aec24587b0153e3ee84c7f94cd356e7aea61e4050ad",
+    "bzs_revocation_tests": "b17a83acb49ddc5404da60500ae0c765bb422b6b9b1c0bc4699a783d7337bc11",
+    "bzs_source_publication_tests": "24b9f7479b114ea3c6ed79ecbd9a12411f4c969daa4639c545ca3e320ddf1b69",
+    "bzs_cache_freshness_tests": "8d1bc614eef1940a3f0f2d1a68ba631fd0f79850730d9b66c7b593ea3f2aa320",
+    "bzs_search_mode_tests": "780d2c10fc9e12fbe16f26ba8156f09cc3fed6f207eaf187db8af48b15226116",
+    "bzs_capacity_cycles_tests": "b5ea6485bea4992183f8e345a09c0ee1948db9a42bc2f25e9c0277446a2c20e4"
+  },
+  "new_test_execution_performed_by_reviewer": false
+}

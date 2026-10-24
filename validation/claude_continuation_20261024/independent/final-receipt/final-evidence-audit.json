@@ -1,0 +1,1106 @@
+{
+  "final_search_archive": {
+    "manifest_sha256": "11987551338e3ff32043b449d8b61485ba33eba259c30a5fb7d8295659404b16",
+    "old_files_preserved_including_prior_manifest": 55,
+    "new_files_including_final_manifest": 49,
+    "total_files_including_final_manifest": 104,
+    "all_sources_and_archived_bytes_equal": true
+  },
+  "performance": {
+    "report_sha256": "fe69828bf08a130cc4253d888ec6d7542f4148fa40115849d0c059cd3a01f32e",
+    "old_and_new_header_counts": [
+      16,
+      16
+    ],
+    "original_driver_equal_to_published_590": true,
+    "normalized_compile_argv_equal": true,
+    "raw_log_observations_equal_to_report_and_receipt": true,
+    "actual_source_library_and_binary_hashes_match": true,
+    "gap_between_old_completion_and_new_start_seconds": 0.065065,
+    "observations": [
+      {
+        "case": "single_NOT_phrase",
+        "query": "NOT \"alpha beta\"",
+        "old_search_ms": 2567,
+        "new_search_ms": 640,
+        "old_worst_concurrent_stats_ms": 2566,
+        "new_worst_concurrent_stats_ms": 150,
+        "retrieval": "bounded_scan_recent"
+      },
+      {
+        "case": "four_NOT_phrases_AND",
+        "query": "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\"",
+        "old_search_ms": 2573,
+        "new_search_ms": 1202,
+        "old_worst_concurrent_stats_ms": 2573,
+        "new_worst_concurrent_stats_ms": 157,
+        "retrieval": "bounded_scan_recent"
+      }
+    ],
+    "descriptive_only_no_product_test_rerun": true
+  },
+  "recorder": {
+    "archived_files": 24,
+    "all_original_bytes_preserved": true,
+    "verdict": "The byte-capture change preserves child status, watchdog rejection, input/binary drift rejection and completed-record hashing. One transitive dependency hash omission is reported separately; no product input or active root validation log was touched."
+  },
+  "recorder-dependency": {
+    "archived_files": 32,
+    "all_original_bytes_preserved": true,
+    "verdict": "Accepted: imported run.py dependency is now hash-bound; prior evidence-binding finding is resolved for new stages. Existing frozen stage evidence remains unmodified."
+  },
+  "base64_encoded_logs": [
+    {
+      "archive": "recorder",
+      "stored": "runs/success/child.log.base64",
+      "original_sha256": "3f0abee89eab5c1de651a07b2f881c9ad8abe05f3ce94439a9de06316499d196",
+      "bytes": 131079
+    },
+    {
+      "archive": "recorder-dependency",
+      "stored": "runs/success/child.log.base64",
+      "original_sha256": "3f0abee89eab5c1de651a07b2f881c9ad8abe05f3ce94439a9de06316499d196",
+      "bytes": 131079
+    }
+  ],
+  "delegated_http_receipt": {
+    "review_sha256": "bb17725ac2b21f754cecbf95940d208af4aca818cb6afdb5509cb54b513916f4",
+    "manifest_sha256": "5aea399ae9925ceb8645973944bc9042ba7d2d453023c502abe42b8fdf4b8a73",
+    "all_21_archived_files_equal_original": true,
+    "unchanged_http_excerpt_matches_final_receipt": true,
+    "cross_checks": 25,
+    "formal_cases": 3,
+    "listening_servers_clean_exit_zero": 2,
+    "invalid_argument_startup_subprocesses_expected_exit_2": 5,
+    "scope_note": "Two running servers, not only two total searchd subprocesses; no product tests rerun by receipt reviewer."
+  },
+  "committed_author_and_independent_evidence_preserved": [
+    {
+      "source_commit": "1c69836f393aee55032beae4bd027f4d286d1e4b",
+      "prefix": "validation/claude_continuation_20261024/author/search_lock",
+      "original_files_unchanged": 42
+    },
+    {
+      "source_commit": "a30231a802ab05f0bb3f821c51ef03d156d796d8",
+      "prefix": "validation/claude_continuation_20261024/author/retry_after",
+      "original_files_unchanged": 63
+    },
+    {
+      "source_commit": "23a8a646a9ddc45af37b05e00d0ec45be5b96427",
+      "prefix": "validation/claude_continuation_20261024/independent/retry-after",
+      "original_files_unchanged": 52
+    },
+    {
+      "source_commit": "612b254a7e6d7882c1f3d83167dc30e893080e92",
+      "prefix": "validation/claude_continuation_20261024/independent/search-lock",
+      "original_files_unchanged": 41
+    }
+  ],
+  "markdown_links": {
+    "files": 9,
+    "total": 193,
+    "local": 166,
+    "links": [
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "../claude_followup_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "../../docs/LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "../../docs/BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "../../docs/HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "../../docs/SOURCE_BACKOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-7/result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-6/result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-5/result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-9/result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-9/execution-inputs.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "final-verification/result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "final-verification/documentation-delta.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/search-lock/review-result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/search-lock-final/debug-asan-review.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/final-http-dispatch/review.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/retry-after/review-result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/integration/merge-checks.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/documentation/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/search-lock-final/final-release/evidence/performance-result.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-7/validation-status.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "p2-7-asan-repeat/asan-command.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "independent/recorder-dependency/review.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "author/retry_after/first-attempt-product.patch",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "author/retry_after/clock-correction-product.patch",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "author/retry_after/product-input-reconstruction.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "final-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "commit-map.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/workflows/ci.yml",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "validation/claude_continuation_20261024/README.md",
+        "target": "baseline-ci/run.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/SOURCE_BACKOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/handoff/NEXT_AGENT.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/implementation_status.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/claude_followup_20261024/baseline-findings.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/JOB_RETENTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/HTTP_REDIRECT_CACHE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39725326547",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_takeover/ci-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39950116698",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_takeover/deadline-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39954357148",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/handoff/S2_TAKEOVER_20261023.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/implementation_status.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_takeover/deadline-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/SOURCE_PUBLICATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/PRINCIPAL_REVOCATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/HTTP_FRESHNESS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/SHARED_READS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/SEARCH_MODES.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/planning/development_blueprint_v1.2.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/planning/slices_v1.2.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/handoff/NEXT_AGENT.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "docs/GITHUB_HANDOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "HANDOFF_START_HERE.md",
+        "target": "validation/s2_next_five/json-race-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "README.md",
+        "target": "HANDOFF_START_HERE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "README.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/planning/development_blueprint_v1.2.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SECURITY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/DEPENDENCIES.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/S0_PROBE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/API.md#持久批量网页读取",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SITE_DISCOVERY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SITE_CRAWLING.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/JOB_RETENTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/TASK_SCHEDULING.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SEARCH_SESSIONS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/RELEVANCE_EVALUATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SECURITY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s2_takeover/deadline-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "README.md",
+        "target": "HANDOFF_START_HERE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s2_takeover/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s2_next_five/json-race-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s2_next_five/json-race-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/s0_s2_progress/cloud_probe_summary.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "validation/claude_followup_20261024/independent/p1-3/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/CONFIGURATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/SECURITY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/DEPENDENCIES.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/WINDOWS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "docs/DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "README.md",
+        "target": "HANDOFF_START_HERE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "../validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "../validation/s2_five_stages/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "CONFIGURATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "S0_PROBE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SOURCE_BACKOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SOURCE_PUBLICATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SEARCH_SESSIONS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "JOB_RETENTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SITE_DISCOVERY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "TASK_SCHEDULING.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SITE_CRAWLING.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SITE_CRAWLING.md#专门抓取陷阱规则",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SITE_PUBLICATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "HTTP_REVALIDATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SEARCH_MODES.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "PRINCIPAL_REVOCATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "SHARED_READS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/API.md",
+        "target": "HTTP_FRESHNESS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "SOURCE_BACKOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/claude_followup_20261024/baseline-findings.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "JOB_RETENTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "HTTP_FRESHNESS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "HTTP_REDIRECT_CACHE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/claude_followup_20261024/independent/p1-3/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "SOURCE_PUBLICATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "PRINCIPAL_REVOCATION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "HTTP_FRESHNESS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "SHARED_READS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "SEARCH_MODES.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "API.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39945994760",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/s2_takeover/ci-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39950116698",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/s2_takeover/deadline-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39954357148",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/DEVELOPMENT_STATUS.md",
+        "target": "../validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/claude_followup_20261024/baseline-findings.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39725326547",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "handoff/S2_TAKEOVER_20261023.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39207218575",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39125426011",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/39113748316",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "handoff/CLAUDE_S1_REVIEW_20261018.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/s2_takeover/ci-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/s2_takeover/deadline-followup-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/GITHUB_HANDOFF.md",
+        "target": "../validation/s2_takeover/windows-watchdog-report.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/HTTP_EXECUTION.md",
+        "target": "LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/HTTP_EXECUTION.md",
+        "target": "BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/HTTP_EXECUTION.md",
+        "target": "../validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "https://github.com/wmqfl861/bzs861/actions/runs/40067206826",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../../HANDOFF_START_HERE.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../implementation_status.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../../validation/claude_continuation_20261024/README.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../LOCAL_SEARCH_CONCURRENCY.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../BACKGROUND_DISPATCH.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../HTTP_EXECUTION.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../SOURCE_BACKOFF.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "https://github.com/wmqfl861/bzs861",
+        "kind": "external_not_fetched"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../DEVELOPMENT_STATUS.md",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../../validation/claude_followup_20261024/baseline-findings.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../../validation/claude_followup_20261024/",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../implementation_status.json",
+        "kind": "local_destination_exists"
+      },
+      {
+        "source": "docs/handoff/NEXT_AGENT.md",
+        "target": "../HTTP_REDIRECT_CACHE.md",
+        "kind": "local_destination_exists"
+      }
+    ],
+    "anchors_checked": false,
+    "external_network_requests": false
+  },
+  "review_roles": {
+    "P2-5": {
+      "author": "search_lock",
+      "independent_code_and_final_runtime": "dispatcher"
+    },
+    "P2-6": {
+      "author": "dispatcher",
+      "independent_code_and_final_runtime": "retry_after"
+    },
+    "P2-7": {
+      "author": "root",
+      "independent_code_and_final_runtime": "retry_after"
+    },
+    "P2-9": {
+      "author": "retry_after",
+      "independent_code_and_clock_correction": "search_lock"
+    },
+    "documentation": {
+      "author": "dispatcher",
+      "independent": "search_lock"
+    },
+    "recorder": {
+      "author": "root",
+      "independent": "retry_after"
+    },
+    "final_receipt": {
+      "author": "root",
+      "reviewer": "search_lock",
+      "HTTP_helper_review": "retry_after",
+      "note": "Receipt checks evidence and preservation. It does not substitute self-review for the dispatcher P2-5 review."
+    }
+  },
+  "root_modification_or_product_execution": false
+}

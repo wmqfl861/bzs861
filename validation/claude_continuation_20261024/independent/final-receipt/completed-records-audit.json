@@ -1,0 +1,193 @@
+{
+  "targeted_post_document_commands": [
+    {
+      "path": "final-verification/asan-http-command.json",
+      "sha256": "6447eb0eecb6050c083a8757a76be6e355807f948050f64d9e8e6e7cbf09c188",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/verify_http_sanitizer.py",
+        "--server",
+        "/workspace/scratch/e2371129386d/bzs861/build-asan/searchd",
+        "--cli",
+        "/workspace/scratch/e2371129386d/bzs861/build/searchctl",
+        "--test",
+        "HTTPExecution"
+      ],
+      "log_sha256": "f7a5fd521c0c536190af28dee7df9dd2efa83ef005fb9c8ff1e1d34cf9556bcd",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/build-asan-http-command.json",
+      "sha256": "053ac33fe52c25f30efd66830cea65fe0573a8505c0da0859b200333b858ae7b",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-asan",
+        "--target",
+        "searchd",
+        "-j2"
+      ],
+      "log_sha256": "e1f5d1a015c18c9b6cdaea80ed2d3081ae68adfc8def8585abba007b63482a42",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/build-release-core-command.json",
+      "sha256": "4e0990e7e1d3c96e224924116d937f602f98d52aa76d031da87280b63cf99662",
+      "argv": [
+        "cmake",
+        "--build",
+        "build-release",
+        "--target",
+        "bzs_core",
+        "-j2"
+      ],
+      "log_sha256": "8a2ce394306414581901c0b9be492c81eb60b7486b40343f520942a56fd9acd0",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/configure-release-command.json",
+      "sha256": "4c567a719edcbc553a56c8bab3f39e5ed2199070ce2aea48d6b9763f52bbecf6",
+      "argv": [
+        "cmake",
+        "--preset",
+        "release",
+        "-DBZS_PYTHON=/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+      ],
+      "log_sha256": "4b58c7594137a0fc1a06486e8d54f375be510ad07407921fedcdafe9d3ce2794",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/planning-contracts-command.json",
+      "sha256": "adf4164cb9e1d68ad6a6494e0c1368a583b6d1b5dee509c6cd19b46eb4bf7a45",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "docs/planning/tools/validate_contracts.py"
+      ],
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/planning-guard-command.json",
+      "sha256": "44dcc3da74f994dd8dca1cea10558b78ee9aff7bedb2f088550959c4b5ca7fcb",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "tools/test_plan_guard.py"
+      ],
+      "log_sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/planning-structure-command.json",
+      "sha256": "a7fc4a5aaa0f03f3873a8301b6f382c1fca61779c89fb76f1acc1ffa8570a7f9",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "docs/planning/tools/plan_v1_2.py",
+        "check"
+      ],
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/preserved-scope-command.json",
+      "sha256": "388ceadd9e0fee42933bdc59621b028dff930d6f0b7d363a60b6702eef7ec76c",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "/workspace/scratch/e2371129386d/bzs861/validation/claude_continuation_20261024/verify_preserved_scope.py"
+      ],
+      "log_sha256": "31ae2c0788ebebbee4f6d45a58a76b8fc60544adeb13e046a7f50e5df44536ce",
+      "exit_code": 0
+    },
+    {
+      "path": "final-verification/python-dependencies-command.json",
+      "sha256": "b674c537be79cb5fccfea9271e77633e2fe2351fbe7c2ebe9c0c1e3baeeed9a3",
+      "argv": [
+        "/workspace/scratch/e2371129386d/bzs861/.venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "exit_code": 0
+    }
+  ],
+  "targeted_commands_count": 9,
+  "planning_structure": {
+    "read_only": true,
+    "structure_valid": true,
+    "packages": 83,
+    "acceptance_mappings": 161,
+    "slices": 10,
+    "planning_estimate": [
+      418,
+      720
+    ],
+    "product_acceptance_checked": false
+  },
+  "python_dependencies_clean": true,
+  "independent_final_search": [
+    {
+      "variant": "final-debug",
+      "report_sha256": "33988e5232bae07ba1a12c3f349317fd4c2e24b57741b65e3ae45d95b1138cb3",
+      "scenarios": 19,
+      "checks": 191,
+      "log_sha256": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece"
+    },
+    {
+      "variant": "final-asan",
+      "report_sha256": "ab2c72f5693a7b568d5e62d5dc6f6c28a332e2a041a44d6fe0239fc3020a6971",
+      "scenarios": 19,
+      "checks": 191,
+      "log_sha256": "4143bcd488e3ab6ade1b2adbd8f25c212a001d2a70bdbb3c15bcd61204176ece"
+    }
+  ],
+  "independent_final_http_and_dispatch": {
+    "http": {
+      "cases": [
+        {
+          "case": "default_8_saturation_disconnect_recovery",
+          "passed": true,
+          "physical_rpcs": 8,
+          "peak": 8
+        },
+        {
+          "case": "shutdown_with_8_live_dispatches",
+          "passed": true,
+          "physical_rpcs": 8,
+          "peak": 8
+        }
+      ],
+      "checks": 39,
+      "inputs": {
+        "apps/searchd/main.cpp": "d362138a54e6f8287c0702ac66b1755fbc0976dea38f487ce17c40227d4a2e33",
+        "tests/integration.py": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+      },
+      "elapsed_seconds": 0.399,
+      "executable_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+      "scope": "Linux independent real loopback; copy of root Debug server only; no external endpoints and no ASan claim"
+    },
+    "dispatch": {
+      "passed": true,
+      "checks": 50,
+      "physical_rpcs": {
+        "read": 2,
+        "map": 2,
+        "search": 2,
+        "sync": 8
+      },
+      "peak_by_lane": {
+        "read": 1,
+        "map": 1,
+        "search": 1,
+        "sync": 8
+      },
+      "peak_total": 11,
+      "elapsed_seconds": 0.257,
+      "binary_sha256": "88f646c2b091f5d2e6178730fb16a7187c64aa0aa25d84a604e59ab65d8bb4a2",
+      "scope": "Independently composed P2-7 HTTP executor plus P2-6 dispatcher, Linux Debug; synthetic loopback RPC only."
+    }
+  },
+  "counts_not_added_to_product_acceptance": true,
+  "product_commands_executed_by_reviewer": false,
+  "root_modified": false
+}

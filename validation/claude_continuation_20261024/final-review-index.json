@@ -1,0 +1,25 @@
+{
+  "scope": "Final independent receipt audit; only additional validation evidence follows the frozen documentation commit. Product/test/build/documentation inputs remain those already verified.",
+  "final_receipt": {
+    "path": "final-report.json",
+    "sha256": "1debe9dfb43c6e79e140e7289ae8f1034b4ee232ad85bc5d580f2d033a0ccb84"
+  },
+  "final_readme_sha256": "85415103b6cc5a3c1618db78ae869797d36be3beb3b71995b77adfcbd409efd0",
+  "final_execution_inputs_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "independent_final_review": {
+    "path": "independent/final-receipt/review-result.json",
+    "sha256": "feb958c153a5433c6ba4b155305558a199452bd13731e5db1cd7f386091fbe37",
+    "manifest": "independent/final-receipt/artifacts-final.json",
+    "manifest_sha256": "1e23436fe358fd17b1c1ab707929897de3d4e071c3a8a44cbe2a0b8ee51dac92"
+  },
+  "independent_http_sanitizer_review": {
+    "path": "independent/final-http-sanitizer/review.json",
+    "sha256": "bb17725ac2b21f754cecbf95940d208af4aca818cb6afdb5509cb54b513916f4"
+  },
+  "documentation_commit": {
+    "local": "3cb4c074f203e04389a13fbd9bb8419812b55a43",
+    "github": "f2f539e6ea01f83b0af6a5ab436679e4279ecaf2",
+    "tree": "75300f865bd3419bc2e2f6a4eac247ef4ab4c13d"
+  },
+  "final_publication_and_ci": "The delivery message and GitHub Actions identify the exact final descendant SHA. This file does not claim a future CI result or embed its own eventual commit hash."
+}

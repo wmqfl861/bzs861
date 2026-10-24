@@ -1,0 +1,207 @@
+{
+  "reviewer": "/root/search_lock; independent of final receipt, P2-6/P2-7/P2-9 and handoff authors; P2-5 author role disclosed",
+  "verdict": "pass; no blocking mismatch found in the completed receipt and evidence scope",
+  "scope": "Read-only final receipt, completed stage/log/input verification, historical preservation, independent-role mapping, exact document delta, patch reconstruction, final adjacent performance and links. This is not a new product test run or self-review of P2-5 code.",
+  "root_modified": false,
+  "product_tests_rerun": false,
+  "reviewed_frozen_receipt_sha256": "1debe9dfb43c6e79e140e7289ae8f1034b4ee232ad85bc5d580f2d033a0ccb84",
+  "reviewed_frozen_readme_sha256": "85415103b6cc5a3c1618db78ae869797d36be3beb3b71995b77adfcbd409efd0",
+  "final_input_manifest_sha256": "208c82be68801bd297045f6b92cc7b4b34bd006e3fee89f83f7b86fd3653ab90",
+  "final_product_input_manifest_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+  "all_226_current_inputs_match": true,
+  "exact_document_delta_count": 8,
+  "complete_stage_counts": [
+    {
+      "issue": "P2-7",
+      "record": "p2-7/result.json",
+      "sha256": "f24e2dc190350748f12e55ada0328756bf7254e2b6310f1c2392d9fe93b726ed",
+      "execution_inputs_sha256": "88d3607d2269a677c8e53413460737029325e6c7046478d94008e925ed6f4fe2",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 469,
+      "sanitizer_assertions": 14407,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-6",
+      "record": "p2-6/result.json",
+      "sha256": "c668f015a6de40412d139e61eb68989b4759520fb4ae327eaef9b2d11b3d26f7",
+      "execution_inputs_sha256": "ce9dc6859b4286bbf50a8eaecff6df3c80c4521975f4e0788bfec7dae0185fa3",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 476,
+      "sanitizer_assertions": 14495,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-5",
+      "record": "p2-5/result.json",
+      "sha256": "d7e91d916a7aba1c6a638a4e04960e12481f628f12fb4d4686cd48206a019793",
+      "execution_inputs_sha256": "603e92f8e884a9f8526a4ed4f1cc5a38b4e33d9f0fbc4160e50027580b564425",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1242,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 485,
+      "sanitizer_assertions": 14891,
+      "sanitizer_failures": 0
+    },
+    {
+      "issue": "P2-9",
+      "record": "p2-9/result.json",
+      "sha256": "eefe1972405ed069a42045ef8af77797cfb67bd786ed1238956a0a346168afd8",
+      "execution_inputs_sha256": "664e800624784f7b364de1b7eb286a7d534e94abaafc9e586cc4dd5fad864c82",
+      "ctest": {
+        "tests": 27,
+        "failures": 0,
+        "disabled": 0,
+        "skipped": 0
+      },
+      "pytest_passed": 1281,
+      "sanitizer_programs": 15,
+      "sanitizer_cases": 493,
+      "sanitizer_assertions": 15204,
+      "sanitizer_failures": 0
+    }
+  ],
+  "final_core": {
+    "cases": 105,
+    "assertions": 2034,
+    "included_in_493_and_15204": true
+  },
+  "old_baseline_files_unchanged": {
+    ".github": 1,
+    "config": 2,
+    "docs/planning": 24,
+    "validation": 2051
+  },
+  "raw_features_unchanged": 83,
+  "raw_historical_objects_unchanged": 11,
+  "source_state": {
+    "registered": 17,
+    "enabled": 0,
+    "sites": 0
+  },
+  "work_package_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "six_reserved_decisions_unchanged": true,
+  "independent_role_note": "P2-5 code and final runtime/performance are reviewed by dispatcher, not this P2-5 author. HTTP sanitizer is additionally checked by non-HTTP-author retry_after. Final receipt author is root.",
+  "http_sanitizer": {
+    "formal_cases": 3,
+    "successfully_listening_servers_clean_exit_0": 2,
+    "invalid_argument_startup_processes_expected_exit_2": 5,
+    "non_author_read_only_checks": 25,
+    "binary_sha256": "ce8d9a0e9cfdf86666b1ba552f0b0052c56ec1f7a9b34f5b07af44c0025d57a2",
+    "review_sha256": "bb17725ac2b21f754cecbf95940d208af4aca818cb6afdb5509cb54b513916f4"
+  },
+  "performance": {
+    "report_sha256": "fe69828bf08a130cc4253d888ec6d7542f4148fa40115849d0c059cd3a01f32e",
+    "old_and_new_header_counts": [
+      16,
+      16
+    ],
+    "original_driver_equal_to_published_590": true,
+    "normalized_compile_argv_equal": true,
+    "raw_log_observations_equal_to_report_and_receipt": true,
+    "actual_source_library_and_binary_hashes_match": true,
+    "gap_between_old_completion_and_new_start_seconds": 0.065065,
+    "observations": [
+      {
+        "case": "single_NOT_phrase",
+        "query": "NOT \"alpha beta\"",
+        "old_search_ms": 2567,
+        "new_search_ms": 640,
+        "old_worst_concurrent_stats_ms": 2566,
+        "new_worst_concurrent_stats_ms": 150,
+        "retrieval": "bounded_scan_recent"
+      },
+      {
+        "case": "four_NOT_phrases_AND",
+        "query": "NOT \"alpha beta\" AND NOT \"gamma delta\" AND NOT \"epsilon zeta\" AND NOT \"eta theta\"",
+        "old_search_ms": 2573,
+        "new_search_ms": 1202,
+        "old_worst_concurrent_stats_ms": 2573,
+        "new_worst_concurrent_stats_ms": 157,
+        "retrieval": "bounded_scan_recent"
+      }
+    ],
+    "descriptive_only_no_product_test_rerun": true
+  },
+  "retained_failures": [
+    "Original truncated P2-7 exit-zero sanitizer record excluded; same-input complete retry used.",
+    "P2-6 recorder dependency gap retained with explicit post-run corroboration, new manifest correction independently checked.",
+    "743 rollback counterexamples retained and both input patches independently reconstructed from590.",
+    "Original author ptrace/LSan and independent fixture failures preserved; historical URI two counterexamples remain unresolved.",
+    "Reviewer path-resolution helper error retained, corrected in reviewer-only script without product execution."
+  ],
+  "links": {
+    "markdown_links": 193,
+    "local_destinations_exist": 166,
+    "external_urls_not_refetched": 27,
+    "fragment_anchors_reaudited": false
+  },
+  "publication_scope": "Four prepared GitHub commit/tree/parent API records match mapping and local trees. Prepublication main590 and review30f records verified. This does not claim final publication or current-head CI.",
+  "remaining_root_actions": [
+    "Append only independent audit evidence and references while keeping all non-validation inputs fixed.",
+    "Publish final main and verify exact-final-head Linux and Windows CI."
+  ],
+  "remaining_product_limits": [
+    {
+      "id": "P2-5",
+      "remaining": "SQL candidate selection, per-document copy and final visibility/snippet projection still hold the Store lock; no zero-wait or latency SLA."
+    },
+    {
+      "id": "P2-6",
+      "remaining": "Per-category serialization remains; map/crawl share one lane. Existing budget and host/source admission apply."
+    },
+    {
+      "id": "P2-7",
+      "remaining": "64-connection cap and IO/CPU/shared JSON contention remain. Disconnect does not imply cancellation, and stopping does not guarantee response delivery."
+    },
+    {
+      "id": "P2-8",
+      "status": "仍成立",
+      "remaining": "Supported restore/reconciliation remains unimplemented by reserved owner decision."
+    },
+    {
+      "id": "P2-9",
+      "remaining": "New waits bounded; unproven old waits use the documented 365-day extreme heuristic. Shorter or temporally ambiguous historical values can remain."
+    },
+    {
+      "id": "retained-uri-counterexample",
+      "remaining": "The previous batch reverse-percent URI identity boundary has two unresolved counterexamples; not fixed or newly rerun by this batch."
+    },
+    {
+      "id": "blueprint-acceptance",
+      "remaining": "No new complete work-package, milestone or slice acceptance; other P3/blueprint work remains outside this batch."
+    }
+  ],
+  "evidence": {
+    "README.md": "584efb38583014209db434212033ff9d13b6921cac85164e7ef94a6698604936",
+    "reviewed-inputs.json": "63af675b11c4871a5dc01e459451450dae6823d216b9b32963daf025794fdb0b",
+    "stage-audit.json": "5baba9380b932c2e474d0894f9221a0317cf6fcb8f67dbb2a07f6d63cce88d36",
+    "scope-and-mapping-audit.json": "fb19a1730c48e04f61a8e809422d8e2eae6abc19092c76d88893bb2f27db7b8a",
+    "final-evidence-audit.json": "c40dc8bae2494b0b69fdd7addfa5bbb483ec686162c7667fe61bf2fb0ce11f0f",
+    "completed-records-audit.json": "4a69f37be69198631a6c9ab97acd7b66bfe81f5f0597e8322ec4a8300f1bb514",
+    "review-helper-correction.json": "d65d65766b10f476cfe94b78b67b2afac47ef3990137c50d4c86e7288178ee71"
+  }
+}
