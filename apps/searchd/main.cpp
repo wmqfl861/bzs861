@@ -4,11 +4,16 @@
 #include <utility>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <algorithm>
 #include <atomic>
 #include <charconv>
+#include <condition_variable>
 #include <csignal>
+#include <deque>
+#include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -31,6 +36,57 @@ namespace {
     j.set("usage", result.has("usage")&&result.at("usage").is_object()?result.at("usage"):u);
     return j;
   }
+  Json failure(const std::string& id, const Error& error) {
+    auto out=Json::object(), errors=Json::array(), item=Json::object();
+    out.set("request_id",id);out.set("status","failed");out.set("api_version","0.0.1");
+    item.set("code",error.code);item.set("message",error.what());errors.push(item);out.set("errors",errors);
+    return out;
+  }
+  // At most one admitted request per business thread. There is no additional
+  // waiting queue: a saturated executor rejects before Service can reserve any
+  // work. Socket handlers, health checks and transport validation stay on IO.
+  class RequestExecutor {
+    std::mutex mutex_;
+    std::condition_variable wake_;
+    std::deque<std::function<void()>> pending_;
+    std::vector<std::jthread> workers_;
+    const unsigned capacity_;
+    unsigned admitted_=0;
+    bool stopped_=false;
+    void run() {
+      for(;;) {
+        std::function<void()> task;
+        {
+          std::unique_lock lock(mutex_);
+          wake_.wait(lock,[&] {return stopped_||!pending_.empty();});
+          if(stopped_)return;
+          task=std::move(pending_.front());pending_.pop_front();
+        }
+        // The request handler produces its own error envelope. An allocation
+        // or executor failure must still release admission, never retry work.
+        try {task();} catch(...) {std::clog<<"{\"event\":\"request_executor_failure\"}\n";}
+        {std::lock_guard lock(mutex_);--admitted_;}
+      }
+    }
+    public:
+    explicit RequestExecutor(unsigned count):capacity_(count) {
+      try {for(unsigned i=0;i<count;++i)workers_.emplace_back([this] {run();});}
+      catch(...) {stop();join();throw;}
+    }
+    ~RequestExecutor() {stop();join();}
+    bool submit(std::function<void()> task) {
+      std::lock_guard lock(mutex_);
+      if(stopped_||admitted_>=capacity_)return false;
+      pending_.push_back(std::move(task));++admitted_;wake_.notify_one();return true;
+    }
+    void stop() {
+      std::lock_guard lock(mutex_);
+      stopped_=true;
+      admitted_-=static_cast<unsigned>(pending_.size());
+      pending_.clear();wake_.notify_all();
+    }
+    void join() {for(auto& worker:workers_)if(worker.joinable())worker.join();}
+  };
   // Worker RPC over loopback HTTP. Each call owns a short-lived io_context so a slow
   // worker only blocks the request thread that is waiting for it.
   class HttpWorker final:public WorkerPort {
@@ -118,9 +174,35 @@ namespace {
     http::request_parser<http::string_body> parser_;
     http::response<http::string_body> response_;
     Service& service_;
+    RequestExecutor& requests_;
     const Auth&auth_;
     unsigned short port_;
     std::shared_ptr<std::atomic<unsigned>> active_;
+    static void log_request(const std::string& rid,int status,std::int64_t started) {
+      // No query, URL, body, principal or token is logged.
+      auto log=Json::object();log.set("event","request_completed");log.set("request_id",rid);
+      log.set("http_status",static_cast<std::int64_t>(status));log.set("elapsed_ms",now_ms()-started);
+      std::clog<<log.dump()<<'\n';
+    }
+    void dispatch(Principal principal,std::string body,std::string rid,std::int64_t started,
+                  net::any_io_executor executor) {
+      int status=200;
+      std::string output;
+      try {
+        auto result=service_.dispatch(principal,Json::parse(body));
+        output=envelope(rid,result).dump();
+      }catch(const Error& error) {
+        status=error.http_status;output=failure(rid,error).dump();
+      }catch(const std::exception&) {
+        status=500;output="{\"status\":\"failed\",\"errors\":[{\"code\":\"E_INTERNAL\"}]}";
+      }
+      log_request(rid,status,started);
+      auto self=shared_from_this();
+      // The socket and response object are used only on this session's strand.
+      net::post(executor,[self,status,output=std::move(output)] {
+        self->respond(static_cast<http::status>(status),output);
+      });
+    }
     void respond(http::status code, const std::string& body) {
       response_=http::response<http::string_body> {
         code, 11
@@ -166,35 +248,22 @@ namespace {
         auto principal=auth_.authenticate(std::string(req[http::field::authorization]));
         auto ct=ascii_lower(std::string(req[http::field::content_type]));
         require(ct=="application/json"||ct=="application/json; charset=utf-8", "E_CONTENT_TYPE", "Expected application/json", 415);
-        auto request=Json::parse(req.body());
-        auto result=service_.dispatch(principal, request);
-        respond(http::status::ok, envelope(rid, result).dump());
+        auto self=shared_from_this();
+        auto executor=stream_.get_executor();
+        require(requests_.submit([self,principal=std::move(principal),body=std::move(req.body()),rid,started,executor]() mutable {
+          self->dispatch(std::move(principal),std::move(body),std::move(rid),started,executor);
+        }),"E_REQUEST_BACKPRESSURE","Request execution capacity is full; try again later",503);
+        return;
       }catch(const Error&e) {
         status=e.http_status;
-        Json j=Json::object();
-        j.set("request_id", rid);
-        j.set("status", "failed");
-        j.set("api_version", "0.0.1");
-        Json errors=Json::array();
-        Json item=Json::object();
-        item.set("code", e.code);
-        item.set("message", e.what());
-        errors.push(item);
-        j.set("errors", errors);
-        respond(static_cast<http::status>(status), j.dump());
+        respond(static_cast<http::status>(status), failure(rid,e).dump());
       }catch(const std::exception&) {
         status=500;
         respond(http::status::internal_server_error, "{\"status\":\"failed\",\"errors\":[{\"code\":\"E_INTERNAL\"}]}");
       }
-      // No query, URL, body, principal or token is logged.
-      Json log=Json::object();
-      log.set("event", "request_completed");
-      log.set("request_id", rid);
-      log.set("http_status", static_cast<std::int64_t>(status));
-      log.set("elapsed_ms", now_ms()-started);
-      std::clog<<log.dump()<<'\n';
+      log_request(rid,status,started);
     }
-    public: Session(tcp::socket socket, Service&s, const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), auth_(a), port_(port), active_(std::move(active)) {
+    public: Session(tcp::socket socket, Service&s, RequestExecutor& requests,const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), requests_(requests), auth_(a), port_(port), active_(std::move(active)) {
       ++*active_;
       parser_.body_limit(2*1024*1024);
       parser_.header_limit(8192);
@@ -214,9 +283,10 @@ namespace {
     net::io_context&io_;
     tcp::acceptor acceptor_;
     Service& service_;
+    RequestExecutor& requests_;
     const Auth&auth_;
     std::shared_ptr<std::atomic<unsigned>> active_=std::make_shared<std::atomic<unsigned>>(0);
-    public: Listener(net::io_context&io, unsigned short port, Service&s, const Auth&a):io_(io), acceptor_(io), service_(s), auth_(a) {
+    public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),auth_(a) {
       tcp::endpoint ep(net::ip::make_address("127.0.0.1"), port);
       acceptor_.open(ep.protocol());
       acceptor_.set_option(net::socket_base::reuse_address(true));
@@ -229,7 +299,7 @@ namespace {
     void run() {
       acceptor_.async_accept(net::make_strand(io_), [this](beast::error_code ec, tcp::socket socket) {
         if(!ec) {
-          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, auth_, port(), active_)->run();
+          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, requests_,auth_, port(), active_)->run();
           else {
             beast::error_code ignored;
             socket.close(ignored);
@@ -246,13 +316,16 @@ int main(int argc, char**argv) {
     std::string worker_url;
     unsigned short port=8610;
     unsigned threads=8;
+    unsigned request_threads=0;
     bool worker=true;
     for(int i=1; i<argc; ++i) {
       std::string a=argv[i];
       if(a=="--help") {
         std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
+                   "        [--request-threads 1..32]\n"
                    "        [--sites FILE] [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
                    "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n"
+                   "--threads controls IO; request threads default to min(threads,32). Excess business requests receive 503.\n"
                    "Explicit --sites also governs retained web publication while offline; omission keeps the stored policy.\n";
         return 0;
       }
@@ -273,6 +346,12 @@ int main(int argc, char**argv) {
       else if(a=="--worker-token-file")worker_token_file=v;
       else if(a=="--sources")sources_file=v;
       else if(a=="--sites")sites_file=v;
+      else if(a=="--request-threads") {
+        unsigned n=0;
+        auto[p,e]=std::from_chars(v.data(),v.data()+v.size(),n);
+        require(e==std::errc{}&&p==v.data()+v.size()&&n>=1&&n<=32,"E_ARGUMENT","Invalid request thread count");
+        request_threads=n;
+      }
       else if(a=="--threads") {
         unsigned n=0;
         auto[p, e]=std::from_chars(v.data(), v.data()+v.size(), n);
@@ -316,13 +395,18 @@ int main(int argc, char**argv) {
       web=std::make_unique<WebService>(store, *rpc, SourceRegistry::load(sources_file),std::move(sites));
     }
     Service service(store, catalog, state/"backups", web.get());
+    if(request_threads==0)request_threads=std::min(threads,32u);
     net::io_context io;
-    Listener listener(io, port, service, auth);
+    // Declared after IO so request workers are joined before their response
+    // executor is destroyed, including exceptional startup/unwind paths.
+    RequestExecutor requests(request_threads);
+    Listener listener(io, port, service, requests,auth);
     std::jthread worker_thread;
     if(worker)worker_thread=start_worker(store, catalog, web.get());
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
       worker_thread.request_stop();
+      requests.stop();
       io.stop();
     });
     listener.run();
@@ -333,6 +417,7 @@ int main(int argc, char**argv) {
     ready.set("version", BZS_VERSION);
     ready.set("network_mode", web?"worker_mediated":"offline");
     ready.set("threads", static_cast<std::int64_t>(threads));
+    ready.set("request_threads",static_cast<std::int64_t>(request_threads));
     std::cout<<ready.dump()<<std::endl;
     std::vector<std::thread> pool;
     for(unsigned t=1; t<threads; ++t)pool.emplace_back([&io] {
@@ -341,6 +426,7 @@ int main(int argc, char**argv) {
     io.run();
     for(auto& t:pool)t.join();
     worker_thread.request_stop();
+    requests.stop();requests.join();
     return 0;
   }catch(const Error&e) {
     std::cerr<<e.code<<": "<<e.what()<<'\n';

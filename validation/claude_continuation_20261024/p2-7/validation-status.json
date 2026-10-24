@@ -1,0 +1,11 @@
+{
+  "status": "incomplete_sanitizer_evidence_not_accepted_as_full_pass",
+  "command_exit": 0,
+  "log": "asan.log",
+  "log_sha256": "6c299782b631dfaec8e7383d3bed84688d890348d8380237ac2c00164d38bc34",
+  "observed": "Nine RUN_EXEC markers; output stops during bzs_session_tests. The original log and command record are retained unchanged.",
+  "required_action": "Repeat all 15 native programs with complete output capture and validate per-program summaries.",
+  "streaming_recorder_sha256": "e9fc5f2e3f4fe8d58191d70f4f87b9212411db7ff22492b76caa04ec080d27cf",
+  "capture_recorder_sha256": "51b14b6c0a681c712c838eabc45e9f951c0977aed7e5b9ab9a3b0e6c5b2a5257",
+  "cause": "undetermined; no product assertion failure is inferred from missing output"
+}

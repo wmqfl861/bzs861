@@ -1,0 +1,115 @@
+{
+  "reviewer": "independent child agent /root/retry_after (not P2-7 author)",
+  "scope": "P2-7 bounded HTTP business executor, transport isolation and shutdown; no review of own P2-9 implementation",
+  "verdict": "no unresolved blocker found within reviewed P2-7 scope",
+  "reviewed_inputs": {
+    "apps/searchd/main.cpp": "2c0e6e569205e68fd60b747865f005fcba6cbea48b923564001f66b35eca2b06",
+    "tests/integration.py": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+  },
+  "executable_sha256": "29826aeb491435bc84373060b4d78ff79a4b70f79d900bbb87ff88c7ec222214",
+  "runtime_evidence": {
+    "cases": [
+      {
+        "case": "default_8_saturation_disconnect_recovery",
+        "passed": true,
+        "physical_rpcs": 8,
+        "peak": 8
+      },
+      {
+        "case": "shutdown_with_8_live_dispatches",
+        "passed": true,
+        "physical_rpcs": 8,
+        "peak": 8
+      }
+    ],
+    "checks": 39,
+    "inputs": {
+      "apps/searchd/main.cpp": "2c0e6e569205e68fd60b747865f005fcba6cbea48b923564001f66b35eca2b06",
+      "tests/integration.py": "369d68d1b2be18747b6b400f102df7dd346cb3e8fe5b626f348c821ff2a68536"
+    },
+    "elapsed_seconds": 0.381,
+    "executable_sha256": "29826aeb491435bc84373060b4d78ff79a4b70f79d900bbb87ff88c7ec222214",
+    "scope": "Linux independent real loopback; copy of root Debug server only; no external endpoints and no ASan claim"
+  },
+  "static_checks": [
+    "Business JSON parsing and Service dispatch occur only after bounded admission on business threads; rejected calls never enter Service.",
+    "Authentication, route/Host/Origin/content type checks and GET health remain in the IO strand; business RPC wait does not occupy IO.",
+    "Admission counts include executing and pending closures, total <= capacity (1..32); stop discards only not-started closures and active completions each decrement once.",
+    "Each closure owns Session and request data; business work only posts response construction/write to the captured session strand.",
+    "Normal shutdown stops admission and IO, joins request workers while IO and Service still exist, and preserves finite Worker timeout/no-retry semantics.",
+    "Startup RequestExecutor thread creation failure calls stop/join; queued tasks are destroyed while IO/Service still live."
+  ],
+  "limits": [
+    "Independent runtime probes executed Linux Debug only; no Windows, stress/SLA, TSAN or searchd ASan claim.",
+    "Original 64 active-connection limit and five-second socket input/write limits remain; health is not guaranteed under arbitrary connection exhaustion.",
+    "An already admitted disconnected request continues its bounded work; it does not release capacity early, cancel automatically or retry.",
+    "Existing global JSON synchronization and other application locks are outside this HTTP executor review.",
+    "Root full-suite results are separate evidence; this report does not replace exact-final-input full gates or GitHub CI."
+  ],
+  "commands_observed": {
+    "ctest": {
+      "file": "validation/claude_continuation_20261024/p2-7/ctest-command.json",
+      "sha256": "eec1fed57a7ca45138e06192a6f938e5f9c2def16291f7ecec8ddc87fc489633",
+      "keys": [
+        "argv",
+        "cwd",
+        "started_at_utc",
+        "elapsed_seconds",
+        "exit_code",
+        "process_watchdog_expired",
+        "environment_overrides",
+        "execution_inputs",
+        "execution_inputs_sha256",
+        "source_inputs_unchanged",
+        "build_preparation",
+        "binaries_before_sha256",
+        "binaries_after_sha256",
+        "log",
+        "log_sha256"
+      ]
+    },
+    "pytest": {
+      "file": "validation/claude_continuation_20261024/p2-7/pytest-command.json",
+      "sha256": "eda512fcdc255632e138d7de4f3dc68492ca4a5133aff3f147313ad74aa3580c",
+      "keys": [
+        "argv",
+        "cwd",
+        "started_at_utc",
+        "elapsed_seconds",
+        "exit_code",
+        "process_watchdog_expired",
+        "environment_overrides",
+        "execution_inputs",
+        "execution_inputs_sha256",
+        "source_inputs_unchanged",
+        "build_preparation",
+        "binaries_before_sha256",
+        "binaries_after_sha256",
+        "log",
+        "log_sha256"
+      ]
+    }
+  },
+  "artifacts": {
+    "review.py": {
+      "sha256": "4f23ca36fe5132bbe06a2d59574cedee5360f56ed7325eba3d8c89f086ba391d",
+      "bytes": 12240
+    },
+    "run.log": {
+      "sha256": "500901e799b6d33a8c1fd136770454ca15a0c441965e11d4f8039e4a44bf0af0",
+      "bytes": 746
+    },
+    "execution.json": {
+      "sha256": "500901e799b6d33a8c1fd136770454ca15a0c441965e11d4f8039e4a44bf0af0",
+      "bytes": 746
+    },
+    "default-saturation-searchd.log": {
+      "sha256": "158a50c3af5b2e4923220dee6862e2b90fa17f2c7faba1dbe474093201e7d108",
+      "bytes": 3056
+    },
+    "shutdown-searchd.log": {
+      "sha256": "46610f46516043b0fd721386ca5b2ad4a2335da7147bbf5c13b4f8c79fb3f975",
+      "bytes": 1032
+    }
+  }
+}

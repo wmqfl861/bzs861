@@ -1,7 +1,9 @@
 """Real loopback HTTP/CLI tests. Never contacts an external search/model endpoint."""
 from __future__ import annotations
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
@@ -19,7 +21,7 @@ import urllib.request
 CONFIG = None
 
 class RunningServer:
-    def __init__(self, root: Path, no_worker: bool = False):
+    def __init__(self, root: Path, no_worker: bool = False, *, extra_args=()):
         self.root = root
         root.mkdir(parents=True, exist_ok=True)
         self.alice = secrets.token_hex(32)
@@ -31,6 +33,7 @@ class RunningServer:
         ]}), encoding='utf-8')
         self.auth.chmod(0o600)
         self.no_worker = no_worker
+        self.extra_args = list(extra_args)
         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         self.process = None
         self.start()
@@ -41,6 +44,7 @@ class RunningServer:
                '--fixtures', CONFIG.fixtures, '--port', '0']
         if self.no_worker:
             cmd.append('--no-worker')
+        cmd.extend(self.extra_args)
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=self.log, text=True, encoding='utf-8')
         ready = queue.Queue()
         threading.Thread(target=lambda: ready.put(self.process.stdout.readline()), daemon=True).start()
@@ -67,14 +71,14 @@ class RunningServer:
                 self.process.stdout.close()
         self.log.close()
 
-    def call(self, op, params=None, *, token=None, raw=None, extra_headers=None):
+    def call(self, op, params=None, *, token=None, raw=None, extra_headers=None, timeout=15):
         body = raw if raw is not None else json.dumps({'operation': op, 'params': params or {}}, ensure_ascii=False).encode()
         headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (self.alice if token is None else token)}
         if extra_headers:
             headers.update(extra_headers)
         req = urllib.request.Request(f'http://127.0.0.1:{self.port}/api/v0/call', body, headers, method='POST')
         try:
-            with self.opener.open(req, timeout=15) as response:
+            with self.opener.open(req, timeout=timeout) as response:
                 return response.status, json.load(response)
         except urllib.error.HTTPError as response:
             with response:
@@ -393,6 +397,155 @@ class Integration(unittest.TestCase):
         self.assertEqual(oversized.returncode, 2, oversized.stderr)
         self.assertIn('E_CONTENT_TOO_LARGE', oversized.stderr)
         self.assertEqual(self.ok('stats'), before)
+
+
+class HeldWorker:
+    """A real loopback RPC endpoint held until the test explicitly releases it."""
+
+    def __init__(self):
+        self.release = threading.Event()
+        self.condition = threading.Condition()
+        self.calls = 0
+        self.active = 0
+        self.peak = 0
+        fixture = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *_args):
+                pass
+
+            def do_POST(self):
+                size = int(self.headers.get('Content-Length', '0'))
+                if not 0 < size <= 16384:
+                    self.send_error(413)
+                    return
+                request = json.loads(self.rfile.read(size))
+                if self.path != '/rpc' or request['method'] != 'fetch.extract':
+                    self.send_error(400)
+                    return
+                with fixture.condition:
+                    fixture.calls += 1
+                    fixture.active += 1
+                    fixture.peak = max(fixture.peak, fixture.active)
+                    fixture.condition.notify_all()
+                try:
+                    if not fixture.release.wait(15):
+                        self.send_error(504)
+                        return
+                    body = json.dumps({'result': {'status': 'timeout', 'error': 'released test RPC'}}).encode()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Content-Length', str(len(body)))
+                    self.send_header('Connection', 'close')
+                    self.end_headers()
+                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionError):
+                    pass
+                finally:
+                    with fixture.condition:
+                        fixture.active -= 1
+                        fixture.condition.notify_all()
+
+        self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        self.server.daemon_threads = True
+        self.port = self.server.server_address[1]
+        self.thread = threading.Thread(target=lambda: self.server.serve_forever(poll_interval=0.02), daemon=True)
+        self.thread.start()
+
+    def wait_calls(self, count):
+        with self.condition:
+            return self.condition.wait_for(lambda: self.calls >= count, timeout=5)
+
+    def close(self):
+        self.release.set()
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=5)
+
+
+class HTTPExecution(unittest.TestCase):
+    def start_held(self, *, request_threads=None):
+        temp = tempfile.TemporaryDirectory(prefix='bzs-http-executor-')
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        worker = HeldWorker()
+        self.addCleanup(worker.close)
+        token = root / 'worker.token'
+        token.write_text(secrets.token_hex(32), encoding='utf-8')
+        token.chmod(0o600)
+        sources = root / 'sources.json'
+        sources.write_text(json.dumps({'version': 1, 'sources': []}), encoding='utf-8')
+        args = ['--threads', '1', '--worker', f'http://127.0.0.1:{worker.port}',
+                '--worker-token-file', str(token), '--sources', str(sources)]
+        if request_threads is not None:
+            args.extend(['--request-threads', str(request_threads)])
+        server = RunningServer(root, no_worker=True, extra_args=args)
+        # Release RPCs before joining the core, including assertion failures.
+        self.addCleanup(server.stop)
+        self.addCleanup(worker.release.set)
+        return server, worker
+
+    def health_while_held(self, server, worker):
+        self.assertFalse(worker.release.is_set())
+        with server.opener.open(f'http://127.0.0.1:{server.port}/healthz', timeout=3) as response:
+            self.assertEqual(response.status, 200)
+            self.assertTrue(json.load(response)['result']['ready'])
+        self.assertFalse(worker.release.is_set(), 'health must finish before any business RPC is released')
+
+    def test_saturated_requests_leave_health_and_transport_checks_live(self):
+        server, worker = self.start_held()
+        with ThreadPoolExecutor(max_workers=1) as clients:
+            pending = clients.submit(server.call, 'web.read', {'url': 'https://executor.example/held', 'timeout_ms': 10000})
+            try:
+                self.assertTrue(worker.wait_calls(1), 'business request must reach the held RPC')
+                self.health_while_held(server, worker)
+                status, body = server.call('document.ingest', {'url': 'https://executor.example/not-admitted',
+                                          'content': 'must not be committed', 'content_type': 'text/plain'}, timeout=3)
+                self.assertEqual(status, 503, body)
+                self.assertEqual(body['errors'][0]['code'], 'E_REQUEST_BACKPRESSURE')
+                status, body = server.call('stats', token='invalid', timeout=3)
+                self.assertEqual(status, 401, body)
+                self.assertEqual(body['errors'][0]['code'], 'E_AUTH')
+                status, body = server.call('stats', extra_headers={'Origin': 'https://untrusted.example'}, timeout=3)
+                self.assertEqual(status, 403, body)
+                self.assertEqual(body['errors'][0]['code'], 'E_ORIGIN')
+                self.assertEqual(worker.calls, 1, 'rejected work must not be dispatched or retried')
+            finally:
+                worker.release.set()
+            status, body = pending.result(timeout=5)
+            self.assertEqual(status, 504, body)
+            self.assertEqual(body['errors'][0]['code'], 'E_FETCH_TIMEOUT')
+        status, body = server.call('stats')
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body['result']['documents'], 0, '503 must have no business side effects')
+
+    def test_explicit_business_limit_runs_concurrently_on_one_io_thread(self):
+        server, worker = self.start_held(request_threads=2)
+        with ThreadPoolExecutor(max_workers=2) as clients:
+            pending = [clients.submit(server.call, 'web.read', {'url': f'https://executor.example/{i}', 'timeout_ms': 10000})
+                       for i in range(2)]
+            try:
+                self.assertTrue(worker.wait_calls(2), 'both RPCs must start before either is released')
+                self.health_while_held(server, worker)
+                status, body = server.call('web.read', {'url': 'https://executor.example/excess'}, timeout=3)
+                self.assertEqual(status, 503, body)
+                self.assertEqual(body['errors'][0]['code'], 'E_REQUEST_BACKPRESSURE')
+                self.assertEqual(worker.calls, 2)
+                self.assertEqual(worker.peak, 2)
+            finally:
+                worker.release.set()
+            for result in pending:
+                self.assertEqual(result.result(timeout=5)[0], 504)
+        self.assertEqual(server.call('stats')[0], 200, 'completed requests must return their admission slots')
+
+    def test_request_thread_limit_is_validated_before_listening(self):
+        for count in ('0', '33', '-1', 'two', '2x'):
+            with self.subTest(count=count):
+                result = subprocess.run([CONFIG.server, '--request-threads', count], capture_output=True,
+                                        text=True, encoding='utf-8', timeout=5)
+                self.assertEqual(result.returncode, 2)
+                self.assertIn('E_ARGUMENT: Invalid request thread count', result.stderr)
+                self.assertEqual(result.stdout, '')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
