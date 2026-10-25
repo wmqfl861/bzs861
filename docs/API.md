@@ -6,7 +6,7 @@
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
 ```
 
-响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
+成功响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。失败信封保留请求身份、失败状态和 `errors`，不要求存在 `result`；`usage`、`shared_read` 仅在核心提供执行详情时输出，缺少字段不能解释为零消耗。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
 
 ## HTTP 执行与背压
 
@@ -59,6 +59,12 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
 `cache_first` 仅复用按响应指令/年龄和当前请求profile证明新鲜的完整表示；`refresh` 显式刷新；`cache_only` 不访问来源，无快照报`E_NOT_CACHED`、需要验证报`E_CACHE_STALE`。noindex 内容可以在允许的读取路径查看但不进入本地索引。权限、删除和缓存新发布检查不能因命中缓存而跳过。
+
+兼容的并发普通读取现在可在同一 `WebService` 中共享一次在途获取与一次提交。匹配包含 owner、精确规范化 URL、超时、权限/删除/发布捕获、快照与元数据/条件身份及已核实的 Worker 请求 profile；每个调用仍生成自己的窗口，参与本次网络工作的成员均为 `from_cache=false`。`cache_only` 不等待正在抓取的未来结果。每组最多累计 32 个成员，最多登记 64 个开放组；没有证明、超限或同线程重入时独立执行，RPC 返回后停止加入。完整边界见[直接共享读取](DIRECT_SHARED_READS.md)。
+
+`web.read` 成功结果中的 `usage.scope=direct_read` 是本调用新增的物理用量：`payer` 报告 Worker 的实际请求数/响应体字节，`subscriber` 为零。网络结果另有 `shared_read`，包含进程内 `attempt_id`、`role`、`members`、`scope=process` 与 `physical_usage`；这是同一次工作的关联说明，不能把成员的关联用量再次相加。缺少可靠物理回执时，`physical_usage` 与 `payer` 的增量为 `known=false`、请求数/字节为 `null`；`subscriber` 增量仍为 `known=true`、零请求和零字节，同时保留未知物理关联。缓存命中是已知零用量且没有 `shared_read`。
+
+抓取、提交或返回窗口失败时，HTTP 失败信封仍保持原 `status=failed` 和错误码，并在存在执行回执时附同形的 `usage/shared_read`，因此错误不表示没有消耗。CoreClient 保留这些详情；MCP `read_url` 成功时原样透传，失败时保持工具错误并附核心详情 JSON。进程内关联不是持久任务账本，不能据客户端断连推断未执行，也不能在重启后重新查询这份收据。普通读取仍无公开单成员取消句柄，不与 durable 批读或 map/crawl/search 混合。
 
 ## 持久联网搜索会话
 
@@ -289,7 +295,7 @@ crawl 的 `kind=page` 回包返回受限的 `page`、`publication` 与同响应 
 
 已有 `web.read` 刷新、`read_many.submit` 和 `crawl.submit` 内部可使用条件请求，公开参数与MCP工具不增加私有validator输入。完整且可重用的200表示由核心保存精确URI/profile、快照及缓存元数据身份；304只复用该已保存正文，提交时再核对当前表示、删除、租约和发布限制。结果/快照收据可带 `revalidated=true`，但不保证每次刷新都走304。
 
-已知304仍计1个实际HTTP请求、0正文响应字节；未知或无法解释的执行按既有保守预留结算。未经绑定、validator冲突、跳转后的304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
+已知用量的直达304计1个实际HTTP请求、0正文响应字节；具有完整路由授权的N跳304计N+1次请求，并计入已消费的跳转响应体，详见[跳转缓存](HTTP_REDIRECT_CACHE.md)。未知执行在持久任务中按既有保守预留结算；普通直接读取没有该预留账本，物理回执保留 `known=false` 和 `null`，订阅者仍只报告零增量。未经绑定、validator冲突、缺少合法路由证明的跳转304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
 
 robots过期记录仅可作为绑定旧表示重新验证，不能直接放行正文。新304必须保留相同rules/body/清单身份并取得正有效期；较新的拒绝不会因旧记录仍被引用而在回收后消失。schema12的元数据与容量记账、完整合同及保守缓存子集见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。
 

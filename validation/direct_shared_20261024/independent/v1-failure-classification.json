@@ -1,0 +1,66 @@
+{
+  "recorded_at_utc": "2026-10-25T06:31:36.730449+00:00",
+  "candidate_library_sha256": "ea64be39e821893b3da32e37e1180ab151e971f8ddbfd72e188d9d5a3c94c0d8",
+  "original_run_log_sha256": "20521b7ce87cd2e6f676819801465862cfe9a984b17fef6371016cf692e59d39",
+  "records": [
+    {
+      "case": "profile_restrictions_body",
+      "snapshot_historical_index_flag": 1,
+      "snapshot_has_http_freshness": false,
+      "current_document_publication": [
+        {
+          "url_key": "https://independent.example/%70age",
+          "index_allowed": 0,
+          "snippet_allowed": 0,
+          "restriction_generation": 1
+        }
+      ]
+    },
+    {
+      "case": "profile_restrictions_no_store",
+      "snapshot_historical_index_flag": 1,
+      "snapshot_has_http_freshness": false,
+      "current_document_publication": [
+        {
+          "url_key": "https://independent.example/%70age",
+          "index_allowed": 0,
+          "snippet_allowed": 0,
+          "restriction_generation": 1
+        }
+      ]
+    },
+    {
+      "case": "profile_restrictions_failed",
+      "snapshot_historical_index_flag": 1,
+      "snapshot_has_http_freshness": false,
+      "current_document_publication": [
+        {
+          "url_key": "https://independent.example/%70age",
+          "index_allowed": 0,
+          "snippet_allowed": 0,
+          "restriction_generation": 1
+        }
+      ]
+    },
+    {
+      "case": "malformed_usage_does_not_discard_valid_no_store_and_noindex",
+      "snapshot_historical_index_flag": 1,
+      "snapshot_has_http_freshness": true,
+      "current_document_publication": [
+        {
+          "url_key": "https://independent.example/%70age",
+          "index_allowed": 1,
+          "snippet_allowed": 1,
+          "restriction_generation": 0
+        }
+      ]
+    }
+  ],
+  "classification": {
+    "first_three": "Reviewer v1 checked immutable snapshot.indexed instead of current index visibility. Valid restrictions and HTTP cache invalidation are present. New v2 source will check the public Store.search result, retaining the original failure/source.",
+    "last": "Production suspect confirmed at storage level: independent valid no-store/noindex were skipped when the new usage check rejected status ok with zero usage. Current publication remains allowing and HTTP freshness remains present. V2 keeps the no-publication expectation."
+  },
+  "original_source_sha256": "ecf78edb6414ffa6cdd7a523a6ed6c4d70aa2540b9c797ee6c6d6502a29147d4",
+  "corrected_source_sha256": "d30fd6de51ead9a1542e29acf4bd0d9dece323513ff3dbb91d04028e6b7d0c7f",
+  "scope": "Read-only ordinary SQLite tables from the already-closed independent fixtures. No new product execution; actual public search oracle is replayed separately."
+}

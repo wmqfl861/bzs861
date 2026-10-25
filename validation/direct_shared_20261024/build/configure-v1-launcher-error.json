@@ -1,0 +1,21 @@
+{
+  "status": "launcher_error",
+  "command": [
+    "python",
+    "validation/direct_shared_20261024/run.py",
+    "build",
+    "configure-v1",
+    "--build",
+    "--",
+    "cmake",
+    "--preset",
+    "dev",
+    "-DBZS_PYTHON=/workspace/scratch/133513441190/bzs861/.venv/bin/python",
+    "-DBZS_REQUIRE_PYTHON_TESTS=ON"
+  ],
+  "error": "FileNotFoundError: [Errno 2] No such file or directory: --build",
+  "reason": "argparse REMAINDER consumed --build after the stage/name positionals; no cmake process started",
+  "classification": "validation launcher invocation error, not product execution",
+  "retained_inputs": "configure-v1-inputs.json",
+  "retained_log": "configure-v1.log"
+}

@@ -402,17 +402,28 @@ class Integration(unittest.TestCase):
 class HeldWorker:
     """A real loopback RPC endpoint held until the test explicitly releases it."""
 
-    def __init__(self):
+    def __init__(self, response=None):
         self.release = threading.Event()
         self.condition = threading.Condition()
         self.calls = 0
         self.active = 0
         self.peak = 0
+        self.response = response
+        self.profile = hashlib.sha256(b'http-direct-read-receipt-fixture').hexdigest()
         fixture = self
 
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *_args):
                 pass
+
+            def reply(self, result):
+                body = json.dumps({'result': result}, ensure_ascii=False).encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.send_header('Connection', 'close')
+                self.end_headers()
+                self.wfile.write(body)
 
             def do_POST(self):
                 size = int(self.headers.get('Content-Length', '0'))
@@ -420,7 +431,13 @@ class HeldWorker:
                     self.send_error(413)
                     return
                 request = json.loads(self.rfile.read(size))
-                if self.path != '/rpc' or request['method'] != 'fetch.extract':
+                if self.path != '/rpc':
+                    self.send_error(400)
+                    return
+                if request['method'] == 'fetch.profile':
+                    self.reply({'version': 'bzs-http-freshness-1', 'request_profile': fixture.profile})
+                    return
+                if request['method'] != 'fetch.extract':
                     self.send_error(400)
                     return
                 with fixture.condition:
@@ -432,13 +449,9 @@ class HeldWorker:
                     if not fixture.release.wait(15):
                         self.send_error(504)
                         return
-                    body = json.dumps({'result': {'status': 'timeout', 'error': 'released test RPC'}}).encode()
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Content-Length', str(len(body)))
-                    self.send_header('Connection', 'close')
-                    self.end_headers()
-                    self.wfile.write(body)
+                    result = (fixture.response(request['params'], fixture.profile) if fixture.response else
+                              {'status': 'timeout', 'error': 'released test RPC'})
+                    self.reply(result)
                 except (BrokenPipeError, ConnectionError):
                     pass
                 finally:
@@ -546,6 +559,138 @@ class HTTPExecution(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertIn('E_ARGUMENT: Invalid request thread count', result.stderr)
                 self.assertEqual(result.stdout, '')
+
+
+class DirectReadReceipts(unittest.TestCase):
+    """Real HTTP serialization of Core-owned direct-read execution receipts."""
+
+    body_text = 'HTTP receipt 中文 body'
+    failed_body = 'partial 上游 bytes'
+
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory(prefix='bzs-http-direct-receipts-')
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        self.worker = HeldWorker(response=self.worker_response)
+        self.addCleanup(self.worker.close)
+        token = root / 'worker.token'
+        token.write_text(secrets.token_hex(32), encoding='utf-8')
+        token.chmod(0o600)
+        sources = root / 'sources.json'
+        sources.write_text(json.dumps({'version': 1, 'sources': []}), encoding='utf-8')
+        self.server = RunningServer(root, no_worker=True, extra_args=[
+            '--threads', '1', '--request-threads', '1',
+            '--worker', f'http://127.0.0.1:{self.worker.port}',
+            '--worker-token-file', str(token), '--sources', str(sources)])
+        self.addCleanup(self.server.stop)
+        self.addCleanup(self.worker.release.set)
+        # Admission concurrency is covered by the native handshake tests.
+        # These sequential requests exercise actual RPC/HTTP envelopes only.
+        self.worker.release.set()
+
+    def worker_response(self, params, profile):
+        url = params['url']
+        if url.endswith('/known-failure'):
+            return {'status': 'network_error', 'error': 'known physical failure',
+                    'usage': {'external_requests': 1, 'content_bytes': len(self.failed_body.encode('utf-8'))}}
+        if url.endswith('/unknown-failure'):
+            return {'status': 'network_error', 'error': 'physical usage was not reported'}
+        return {
+            'status': 'ok', 'http_status': 200, 'final_url': url,
+            'html': self.body_text, 'text': self.body_text, 'title': 'HTTP receipt fixture',
+            'content_type': 'text/plain', 'extractor': 'http-receipt-fixture/1',
+            'extract_status': 'ok', 'index_allowed': True, 'links': [], 'redirects': [],
+            'warnings': [], 'metadata': {},
+            'usage': {'external_requests': 1, 'content_bytes': len(self.body_text.encode('utf-8'))},
+            'http_freshness': {
+                'version': 'bzs-http-freshness-1', 'url': url, 'request_profile': profile,
+                'cache_control': 'max-age=3600', 'vary': '', 'date': '', 'age': '',
+                'expires': '', 'pragma': '', 'received_at_ms': time.time_ns() // 1_000_000,
+                'response_delay_ms': 0, 'invalid': False}}
+
+    @staticmethod
+    def expected_usage(requests, content_bytes, known=True):
+        return {'scope': 'direct_read', 'external_requests': requests,
+                'content_bytes': content_bytes, 'model_calls': 0, 'known': known}
+
+    def assert_payer_receipt(self, record, requests, content_bytes, known=True):
+        self.assertEqual(record['usage'], self.expected_usage(requests, content_bytes, known))
+        self.assertIs(record['usage']['known'], known)
+        receipt = record['shared_read']
+        self.assertRegex(receipt['attempt_id'], r'\A[0-9a-f]{48}\Z')
+        self.assertEqual(receipt['role'], 'payer')
+        self.assertEqual(receipt['scope'], 'process')
+        self.assertEqual(receipt['members'], 1)
+        self.assertEqual(receipt['physical_usage'], {
+            'external_requests': requests, 'content_bytes': content_bytes, 'known': known})
+        self.assertIs(receipt['physical_usage']['known'], known)
+
+    def test_success_and_cache_hit_preserve_direct_usage_and_receipt(self):
+        url = 'https://receipt.example/success'
+        status, envelope = self.server.call('web.read', {'url': url, 'freshness': 'refresh'})
+        self.assertEqual(status, 200, envelope)
+        self.assertEqual(envelope['status'], 'success')
+        self.assertEqual(envelope['errors'], [])
+        result = envelope['result']
+        self.assertFalse(result['from_cache'])
+        self.assertEqual(result['content']['text'], self.body_text)
+        self.assert_payer_receipt(result, 1, len(self.body_text.encode('utf-8')))
+        self.assertEqual(envelope['usage'], result['usage'], 'HTTP must preserve Core accounting')
+        self.assertEqual(self.worker.calls, 1)
+
+        status, cached = self.server.call('web.read', {'url': url, 'freshness': 'cache_only'})
+        self.assertEqual(status, 200, cached)
+        self.assertEqual(cached['status'], 'success')
+        self.assertEqual(cached['errors'], [])
+        self.assertTrue(cached['result']['from_cache'])
+        self.assertEqual(cached['result']['snapshot_id'], result['snapshot_id'])
+        self.assertEqual(cached['result']['content']['text'], self.body_text)
+        self.assertEqual(cached['usage'], self.expected_usage(0, 0))
+        self.assertEqual(cached['result']['usage'], cached['usage'])
+        self.assertNotIn('shared_read', cached['result'])
+        self.assertNotIn('shared_read', cached)
+        self.assertEqual(self.worker.calls, 1, 'cache_only must not fetch the page again')
+
+    def test_window_error_remains_a_failure_with_its_paid_execution_receipt(self):
+        url = 'https://receipt.example/bad-window'
+        status, envelope = self.server.call('web.read', {
+            'url': url, 'freshness': 'refresh', 'start_byte': 10000})
+        self.assertEqual(status, 400, envelope)
+        self.assertEqual(envelope['status'], 'failed')
+        self.assertEqual(len(envelope['errors']), 1)
+        self.assertEqual(envelope['errors'][0]['code'], 'E_EVIDENCE_RANGE')
+        self.assertNotIn('result', envelope)
+        self.assert_payer_receipt(envelope, 1, len(self.body_text.encode('utf-8')))
+        self.assertEqual(self.worker.calls, 1, 'a failed output window must not retry the fetch')
+
+        status, cached = self.server.call('web.read', {'url': url, 'freshness': 'cache_only'})
+        self.assertEqual(status, 200, cached)
+        self.assertEqual(cached['result']['content']['text'], self.body_text)
+        self.assertEqual(cached['usage'], self.expected_usage(0, 0))
+        self.assertNotIn('shared_read', cached['result'])
+        self.assertEqual(self.worker.calls, 1)
+
+    def test_worker_failures_preserve_known_and_unknown_physical_usage(self):
+        attempts = set()
+        for number, known in enumerate((True, False), start=1):
+            with self.subTest(known=known):
+                path = 'known-failure' if known else 'unknown-failure'
+                status, envelope = self.server.call('web.read', {
+                    'url': 'https://receipt.example/' + path, 'freshness': 'refresh'})
+                self.assertEqual(status, 502, envelope)
+                self.assertEqual(envelope['status'], 'failed')
+                self.assertEqual(len(envelope['errors']), 1)
+                self.assertEqual(envelope['errors'][0]['code'], 'E_FETCH_NETWORK')
+                self.assertNotIn('result', envelope)
+                self.assert_payer_receipt(envelope, 1 if known else None,
+                                          len(self.failed_body.encode('utf-8')) if known else None, known)
+                attempts.add(envelope['shared_read']['attempt_id'])
+                self.assertEqual(self.worker.calls, number, 'failure cannot cause an implicit second fetch')
+        self.assertEqual(len(attempts), 2)
+        status, stats = self.server.call('stats')
+        self.assertEqual(status, 200, stats)
+        self.assertEqual(stats['result']['snapshots'], 0)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

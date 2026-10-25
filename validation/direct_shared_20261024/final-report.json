@@ -1,0 +1,488 @@
+{
+  "status": "passed_local_validation",
+  "recorded_at_utc": "2026-10-25T07:07:02.203044+00:00",
+  "repository": "wmqfl861/bzs861",
+  "baseline_commit": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "baseline_tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+  "baseline_published": true,
+  "working_branch": "work/direct-shared-20261024",
+  "package_version": "0.1.10",
+  "database_schema": {
+    "before": 15,
+    "after": 15,
+    "migration_added": false
+  },
+  "scope": "CACHE-01 / FT-032 / B-24: same-WebService direct read sharing, one commit, independent delivery fences and truthful incremental/associated usage.",
+  "implementation_contract": "../../docs/DIRECT_SHARED_READS.md",
+  "regression": {
+    "new_native_groups": 23,
+    "native_assertions": 3636,
+    "new_python_mcp_tests": 13,
+    "new_http_tests": 3,
+    "formal_source_sha256": "4e94e5e4ed979ff7a67bb5aba34c8540f0a081cf987caf64869b55253fdf163e",
+    "retained_legacy_tests": "Eight unsupported profile branches in six old fixture files; one cache_only counter assertion made relative to prior network calls. Strict inverse-byte checks in preservation.",
+    "author_evidence": [
+      "regression-author/README.md",
+      "mcp/manifest.json",
+      "fake-profile-followup/"
+    ],
+    "counting_rule": "These tests are already included in CTest. Focused, independent and sanitizer executions are not additive product acceptance counts."
+  },
+  "builds": {
+    "debug": {
+      "path": "build/candidate-v5-command.json",
+      "sha256": "11781b15aa5cca2574da99674dd088034781224d7d17bbfd1aba214f758f71d4"
+    },
+    "sanitizers": {
+      "path": "build/asan-v2-command.json",
+      "sha256": "60e8c3253cd18f9aa395a9a9fa6c31a877b2301780770e94b08e567ad9037279"
+    },
+    "all_final_sources_unchanged_during_builds": true
+  },
+  "final_ctest": {
+    "suites": 28,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "disabled": 0,
+    "nested_skips": 0,
+    "native_targets": 16,
+    "native_cases": 544,
+    "native_assertions": 20397,
+    "python_passed": 1294,
+    "python_seconds": 16.62,
+    "duration_seconds": 207.694,
+    "command_record": "final/ctest-v2-command.json",
+    "full_output": "final/ctest-v2-detail.log",
+    "full_output_sha256": "37e8db63d1a13f29eabad9e828262044ce12358dd851f250c8b15b8ee9ad1a38",
+    "junit": "final/ctest-v2-junit.xml",
+    "junit_sha256": "25b8f39894bbf2a54d1fd0b8e860fda9356f5dc4f21caeeef542afb773cc5fee",
+    "native_summaries": [
+      {
+        "cases": 107,
+        "assertions": 2253,
+        "summary": "{\"tests\":107,\"passed\":107,\"assertions\":2253}"
+      },
+      {
+        "cases": 44,
+        "assertions": 1456,
+        "summary": "44 batch tests, 1456 assertions, 0 failures"
+      },
+      {
+        "cases": 24,
+        "assertions": 462,
+        "summary": "24 map tests, 462 assertions, 0 failures"
+      },
+      {
+        "cases": 54,
+        "assertions": 2798,
+        "summary": "54 crawl tests, 2798 assertions, 0 failures"
+      },
+      {
+        "cases": 32,
+        "assertions": 1203,
+        "summary": "32 site publication tests, 1203 assertions, 0 failures"
+      },
+      {
+        "cases": 19,
+        "assertions": 480,
+        "summary": "19 retention tests, 480 assertions, 0 failures"
+      },
+      {
+        "cases": 18,
+        "assertions": 339,
+        "summary": "18 fairness tests, 339 assertions, 0 failures"
+      },
+      {
+        "cases": 23,
+        "assertions": 298,
+        "summary": "23 tests, 298 assertions, 0 failures"
+      },
+      {
+        "cases": 20,
+        "assertions": 180,
+        "summary": "20 source publication tests, 180 assertions, 0 failures"
+      },
+      {
+        "cases": 22,
+        "assertions": 382,
+        "summary": "22 search mode tests, 382 assertions, 0 failures"
+      },
+      {
+        "cases": 24,
+        "assertions": 372,
+        "summary": "24 tests / 372 assertions / 0 failures"
+      },
+      {
+        "cases": 23,
+        "assertions": 3636,
+        "summary": "23 direct shared tests, 3636 assertions, 0 failures"
+      },
+      {
+        "cases": 12,
+        "assertions": 146,
+        "summary": "12/12 tests, 146 assertions"
+      },
+      {
+        "cases": 4,
+        "assertions": 4800,
+        "summary": "4 capacity cycle tests, 4800 assertions, 0 failures, 8578 wall ms"
+      },
+      {
+        "cases": 63,
+        "assertions": 1323,
+        "summary": "63 cases, 1323 assertions, 0 failed"
+      },
+      {
+        "cases": 55,
+        "assertions": 269,
+        "summary": "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions"
+      }
+    ],
+    "counting_rule": "Native and Python counts are components of the 28 suites, not additional suites. Complete LastTest.log provides native summaries."
+  },
+  "final_sanitizers": {
+    "targets": 16,
+    "passed": 16,
+    "failed": 0,
+    "native_cases": 544,
+    "native_assertions": 20397,
+    "same_cases_as_debug": true,
+    "leak_detection_enabled": true,
+    "per_target": [
+      {
+        "target": "bzs_batch_tests",
+        "cases": 44,
+        "assertions": 1456,
+        "summary": "44 batch tests, 1456 assertions, 0 failures",
+        "record": "asan/bzs_batch_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 7.419,
+        "log_sha256": "3ef095134dc1e0cf5acde531130c8fefcaeec67e356e6339f0b89b36c300d61a",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_cache_freshness_tests",
+        "cases": 63,
+        "assertions": 1323,
+        "summary": "63 cases, 1323 assertions, 0 failed",
+        "record": "asan/bzs_cache_freshness_tests-v5-command.json",
+        "exit_code": 0,
+        "duration_seconds": 33.149,
+        "log_sha256": "bd49a4e5c119c7f142e5845e6a26fa4a06254906c49919fcca5109043346fff2",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_capacity_cycles_tests",
+        "cases": 4,
+        "assertions": 4800,
+        "summary": "4 capacity cycle tests, 4800 assertions, 0 failures, 25259 wall ms",
+        "record": "asan/bzs_capacity_cycles_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 26.258,
+        "log_sha256": "0d372f0687808f30472d9853c57aa1e9870fb1c60aafb84c89fc182e489f1d89",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_contract_tests",
+        "cases": 55,
+        "assertions": 269,
+        "summary": "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions",
+        "record": "asan/bzs_contract_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 1.499,
+        "log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_crawl_tests",
+        "cases": 54,
+        "assertions": 2798,
+        "summary": "54 crawl tests, 2798 assertions, 0 failures",
+        "record": "asan/bzs_crawl_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 21.007,
+        "log_sha256": "86659e7c2e726af048fa83dc03236423003309945f7508913cf6436ed65e244f",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_direct_shared_tests",
+        "cases": 23,
+        "assertions": 3636,
+        "summary": "23 direct shared tests, 3636 assertions, 0 failures",
+        "record": "asan/bzs_direct_shared_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 67.847,
+        "log_sha256": "93779d20825592d6512a47bca49e63684dbc71b2d9ead99dde29535c542ef8ca",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_fairness_tests",
+        "cases": 18,
+        "assertions": 339,
+        "summary": "18 fairness tests, 339 assertions, 0 failures",
+        "record": "asan/bzs_fairness_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 4.84,
+        "log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_map_tests",
+        "cases": 24,
+        "assertions": 462,
+        "summary": "24 map tests, 462 assertions, 0 failures",
+        "record": "asan/bzs_map_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 3.637,
+        "log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_retention_tests",
+        "cases": 19,
+        "assertions": 480,
+        "summary": "19 retention tests, 480 assertions, 0 failures",
+        "record": "asan/bzs_retention_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 7.136,
+        "log_sha256": "f5f496eb34ca0cddf62c3586620ae48ad7bfb2a592f5fa89afe55e72896f5afc",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_revalidation_tests",
+        "cases": 24,
+        "assertions": 372,
+        "summary": "24 tests / 372 assertions / 0 failures",
+        "record": "asan/bzs_revalidation_tests-v5-command.json",
+        "exit_code": 0,
+        "duration_seconds": 5.447,
+        "log_sha256": "dba9d17ccc5e6f005fcb64c75ef64fcd7c57708cf10965c88a45b4b5fbc63162",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_revocation_tests",
+        "cases": 12,
+        "assertions": 146,
+        "summary": "12/12 tests, 146 assertions",
+        "record": "asan/bzs_revocation_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 1.829,
+        "log_sha256": "b8d99294a775ce9e3d4ff47c0be9c79108989bf725a1eda6e17cbfbc9c7cf21b",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_search_mode_tests",
+        "cases": 22,
+        "assertions": 382,
+        "summary": "22 search mode tests, 382 assertions, 0 failures",
+        "record": "asan/bzs_search_mode_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 10.788,
+        "log_sha256": "8e3a56d2b9c8f99b747218daf0aea0c74f7917aea8aa7a41fa1869a8d371b2aa",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_session_tests",
+        "cases": 23,
+        "assertions": 298,
+        "summary": "23 tests, 298 assertions, 0 failures",
+        "record": "asan/bzs_session_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 65.341,
+        "log_sha256": "922e9ac7664f3fd1df728d420a337e1a126476beaa7bb295b8deec598b19cded",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_site_publication_tests",
+        "cases": 32,
+        "assertions": 1203,
+        "summary": "32 site publication tests, 1203 assertions, 0 failures",
+        "record": "asan/bzs_site_publication_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 20.249,
+        "log_sha256": "a3fb023f4b81fc2345003e28c5d27c459a4d08f453f8a4bcd90b47a53b3b67ef",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_source_publication_tests",
+        "cases": 20,
+        "assertions": 180,
+        "summary": "20 source publication tests, 180 assertions, 0 failures",
+        "record": "asan/bzs_source_publication_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 3.957,
+        "log_sha256": "a939dac20ea6bbeb4b48fd9fbc8e01d9ff148fb9a40abfe119a10ed4b034fe1f",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      },
+      {
+        "target": "bzs_tests",
+        "cases": 107,
+        "assertions": 2253,
+        "summary": "{\"tests\":107,\"passed\":107,\"assertions\":2253}",
+        "record": "asan/bzs_tests-v4-command.json",
+        "exit_code": 0,
+        "duration_seconds": 19.062,
+        "log_sha256": "8facf6f991d8663889d566ed8d374bdf9d2aeafe2c1609d6ddfd9b7a7ca6824b",
+        "inputs_sha256": "fb401d656ba96c25b44041abdf93ed7689fa3f04ad35d85507c807ac8dc95688"
+      }
+    ],
+    "closure": {
+      "path": "final/sanitizer-closure.json",
+      "sha256": "c46ce8e003327418b0c9d61810b413522695bd6c1ada38bfbe351b78a22327c4"
+    }
+  },
+  "additional_gates": {
+    "original_contract_fixtures": {
+      "passed": 34,
+      "failed": 0,
+      "record": "final/contracts-v2-command.json"
+    },
+    "planning_read_only": {
+      "read_only": true,
+      "structure_valid": true,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "planning_estimate": [
+        418,
+        720
+      ],
+      "product_acceptance_checked": false
+    },
+    "plan_guard": {
+      "suite": "plan_guard",
+      "passed": 13,
+      "failed": 0,
+      "source_inputs_unchanged": true,
+      "product_acceptance_cases_executed": 0
+    },
+    "dependency_check": {
+      "status": "passed",
+      "record": "final/pip-check-v2-command.json"
+    }
+  },
+  "independent_review": {
+    "path": "independent/independent-review.json",
+    "sha256": "4b24eadd01d3d603e18dd5b93ee6b420714f63737573e6e9cb39bea0f51f335b",
+    "verdict": "passed_final_v3_independent_focused_review",
+    "groups": {
+      "candidate-native-v3": {
+        "path": "independent/candidate-native-v3/summary.json",
+        "sha256": "2585f3de6791432fc860772cf7e949c51b1788a626ccca66bd9a9ef56d6bf739",
+        "cases": 13,
+        "checks": 551,
+        "failures": 0
+      },
+      "candidate-extra-v3": {
+        "path": "independent/candidate-extra-v3/summary.json",
+        "sha256": "42a1fbbf13b5e703f02db9ae33c79cd40adbc2bfc39e17c8400bbdb4776b3797",
+        "cases": 3,
+        "checks": 99,
+        "failures": 0
+      },
+      "capacity-candidate-v3": {
+        "path": "independent/capacity-candidate-v3/summary.json",
+        "sha256": "695c53d2176a363d7eb8d2a19ff5dc11ccf31260d68a812978b47f1eb8199b00",
+        "cases": 2,
+        "checks": 29,
+        "failures": 0
+      },
+      "candidate-wire-v3": {
+        "path": "independent/candidate-wire-v3/summary.json",
+        "sha256": "56c2a0fb06adfa0b6180c18faabf134f031c55519dd822f5f819f0b73c8ee05b",
+        "cases": 12,
+        "checks": 137,
+        "failures": 0
+      }
+    },
+    "native_distinct_scenarios": 18,
+    "native_checks": 679,
+    "wire_adapter_scenarios": 12,
+    "wire_adapter_checks": 137,
+    "same_native_scenarios_replayed_with_sanitizers": true,
+    "baseline_provenance": {
+      "path": "independent/baseline-source-provenance.json",
+      "sha256": "9b3976d0f245cfc0ca7784b6f114c0be77916a9ee22113a3a0932f38faa8ddf4"
+    },
+    "baseline_missing_capability": {
+      "path": "independent/baseline-v1/summary.json",
+      "sha256": "cc36e6e9608a465848bcadeda94a3ef4695888a89c0d53d2d5d92d91e926a0af"
+    },
+    "real_capacity_before_after": [
+      {
+        "path": "independent/capacity-baseline-v1/summary.json",
+        "sha256": "17db38adb8c16a8cbf699aba99a4fc5e813cd3d33b6a81e446a20f04a363e4ab"
+      },
+      {
+        "path": "independent/capacity-candidate-v2/summary.json",
+        "sha256": "1f7156032bd0cfdb888cbe5ed1e7caede920cb802e4d1ea36e8ba06dd7b7f377"
+      },
+      {
+        "path": "independent/capacity-candidate-v3/summary.json",
+        "sha256": "695c53d2176a363d7eb8d2a19ff5dc11ccf31260d68a812978b47f1eb8199b00"
+      }
+    ]
+  },
+  "input_binding": {
+    "post_run": {
+      "path": "final/post-run-inputs.json",
+      "sha256": "bd9f7cbf65ac67590aa16eb41fb28b277725c61577d2cf5b026019cd83050eb8"
+    },
+    "tested_input_files": 227,
+    "binaries": 38,
+    "all_final_runtime_gate_input_and_binary_snapshots_equal": true,
+    "all_final_inputs_equal_to_post_run": true,
+    "final_post_test_source_changes": [],
+    "baseline_library_sha256": "35e9e32d2e4b87091ac3aa2688f278a45bee79226bd39cf551ac01edb67d58d0"
+  },
+  "preservation": {
+    "path": "preservation/audit-v3.json",
+    "sha256": "abb2e80e1e9b7099cd41ac8de6b0cafaea49f1b187b371db1e0d4afa97dc6d21",
+    "old_validation_files": 3590,
+    "all_old_validation_baseline_pre_and_post_run_bytes_equal": true,
+    "original_feature_json_bytes_equal": true,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "planned_packages": 83,
+    "planned_acceptance_items": 161,
+    "slices": 10,
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "sites": 0,
+    "read_only_review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+    "six_prior_decisions_unchanged": true,
+    "product_acceptance_checked": false
+  },
+  "documentation_audit": {
+    "path": "docs-audit/audit-final-v5.json",
+    "sha256": "05975007fc7c16f88e336548d61451a040c6b7c605d27bc103f0b93348cadcdf"
+  },
+  "failure_history": "README.md#原失败与修正记录",
+  "remote_publication": {
+    "phase": "local_validation_before_commit_and_publication",
+    "main_push_explicitly_authorized_by_user": true,
+    "observed_parent": {
+      "path": "final/remote-before-publication.json",
+      "sha256": "a6abe309b6e2a28f0d1fa31fa4539e3cdc836459338a2f9a6962ba0e162f81f5"
+    },
+    "new_remote_ci": "not_yet_run_at_report_generation",
+    "baseline_ci_run": 40157161849,
+    "note": "This immutable report precedes publication. After publishing, verify the actual main commit tree and its own push Checks; baseline CI is not evidence for this increment."
+  },
+  "limits": [
+    "Local independent focused evidence only; root full CTest/sanitizer/auxiliary report requires its own final review.",
+    "No current remote CI, main publication, real source/site permission, restart-safe direct ledger, cross-process/service/durable/search/crawl sharing or public direct-cancellation claim.",
+    "No full B-24/CACHE-01 acceptance; original blueprint package/acceptance/slice totals and fixed decisions remain outside this focused increment.",
+    "Runtime binaries, temporary SQLite fixtures and local authentication material are not archive deliverables; text/source/header/log/manifests are retained.",
+    "Only one WebService instance; no cross-instance/process or direct/durable/map/crawl/search coalescing.",
+    "No public direct cancellation ID or durable execution/billing/recovery ledger.",
+    "An outer Service post-return principal check can still throw without execution details; no universal error receipt guarantee.",
+    "No real external source/site requests, paid/model calls, source activation, migration, new tag or package bump.",
+    "Full CACHE-01/B-24 and all product packages remain unsigned; repeated test executions are not new acceptance cases."
+  ],
+  "summary_script_sha256": "1d6a3241bb45d5461e5c6b8e04a4aa96ab995a6104a91d8e86961065f86d0db2"
+}

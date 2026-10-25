@@ -1,0 +1,18 @@
+{
+  "recorded_at_utc": "2026-10-25T07:05:00.577744+00:00",
+  "artifact": "build-asan/bzs_revalidation_tests",
+  "sha256": "cd51c86883db2c892a862ffcdf03fafb1560fa4de2a0965645ae1898ce8cc59a",
+  "matched_closed_build_record": "../build/asan-v2-command.json",
+  "observed_mode_before": "0o644",
+  "mode_after": "0o755",
+  "bytes_unchanged": true,
+  "error": "PermissionError: [Errno 13] Permission denied while subprocess.Popen attempted to execute the artifact",
+  "child_started": false,
+  "failed_attempt_inputs": "bzs_revalidation_tests-v4-inputs.json",
+  "failed_attempt_log": "bzs_revalidation_tests-v4.log",
+  "failed_attempt_log_bytes": 0,
+  "per_target_command_record_absent_due_to_launcher_exception": true,
+  "stderr_scope": "Original traceback was emitted to the tool session; this record summarizes the observed error and does not reconstruct a complete stderr capture.",
+  "cause_scope": "The executable bit was absent; no claim about which earlier actor removed it. Restore execute bits on this verified local build artifact only.",
+  "followup": "Rerun only this target with unchanged leak/UBSan options and sources; retain failed launcher inputs and empty original log."
+}

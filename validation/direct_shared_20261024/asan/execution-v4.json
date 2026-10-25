@@ -1,0 +1,250 @@
+{
+  "started_at_utc": "2026-10-25T06:59:50.659352+00:00",
+  "finished_at_utc": "2026-10-25T07:04:26.702465+00:00",
+  "driver_sha256": "0072427edecdbf080efd7dac97d5e1c8437792c055643ee2a7346b395a1f82f1",
+  "targets": [
+    {
+      "target": "bzs_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_tests-v4",
+        "--",
+        "./build-asan/bzs_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_batch_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_batch_tests-v4",
+        "--",
+        "./build-asan/bzs_batch_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_map_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_map_tests-v4",
+        "--",
+        "./build-asan/bzs_map_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_crawl_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_crawl_tests-v4",
+        "--",
+        "./build-asan/bzs_crawl_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_site_publication_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_site_publication_tests-v4",
+        "--",
+        "./build-asan/bzs_site_publication_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_contract_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_contract_tests-v4",
+        "--",
+        "./build-asan/bzs_contract_tests",
+        "docs/planning/validation/contract_cases.json"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_retention_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_retention_tests-v4",
+        "--",
+        "./build-asan/bzs_retention_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_fairness_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_fairness_tests-v4",
+        "--",
+        "./build-asan/bzs_fairness_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_session_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_session_tests-v4",
+        "--",
+        "./build-asan/bzs_session_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_revalidation_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_revalidation_tests-v4",
+        "--",
+        "./build-asan/bzs_revalidation_tests"
+      ],
+      "recorder_exit_code": 1
+    },
+    {
+      "target": "bzs_direct_shared_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_direct_shared_tests-v4",
+        "--",
+        "./build-asan/bzs_direct_shared_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_capacity_cycles_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_capacity_cycles_tests-v4",
+        "--",
+        "./build-asan/bzs_capacity_cycles_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_revocation_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_revocation_tests-v4",
+        "--",
+        "./build-asan/bzs_revocation_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_source_publication_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_source_publication_tests-v4",
+        "--",
+        "./build-asan/bzs_source_publication_tests"
+      ],
+      "recorder_exit_code": 0
+    },
+    {
+      "target": "bzs_cache_freshness_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_cache_freshness_tests-v4",
+        "--",
+        "./build-asan/bzs_cache_freshness_tests"
+      ],
+      "recorder_exit_code": 1
+    },
+    {
+      "target": "bzs_search_mode_tests",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/run.py",
+        "--asan",
+        "--timeout",
+        "180",
+        "asan",
+        "bzs_search_mode_tests-v4",
+        "--",
+        "./build-asan/bzs_search_mode_tests"
+      ],
+      "recorder_exit_code": 0
+    }
+  ],
+  "all_passed": false,
+  "counting_rule": "These are sanitizer replays of the same native groups, not additional acceptance cases."
+}

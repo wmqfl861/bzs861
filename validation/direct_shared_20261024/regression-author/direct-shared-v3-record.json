@@ -1,0 +1,31 @@
+{
+  "source": "/workspace/scratch/133513441190/bzs861/tests/direct_shared.cpp",
+  "sha256": "c96ee3599771d292f2960ad2a496972cfea4c993de8825d3fa80a244c4773545",
+  "bytes": 46586,
+  "previous_sha256": "db286e51a0c0bbd3ad309c76971ae365bd582b0b6b6e193646a29c7aa8f51429",
+  "previous_full_source_preserved_after_removing_only_new_group": true,
+  "new_group": "malformed_freshness_does_not_skip_independent_noindex_observation",
+  "new_cases": [
+    "request_profile",
+    "version"
+  ],
+  "test_groups": 22,
+  "syntax_check": {
+    "command": [
+      "g++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Iinclude",
+      "-fsyntax-only",
+      "tests/direct_shared.cpp"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "runtime_status": "Not executed by test author. Root owns targeted candidate and final gate execution."
+}

@@ -1,0 +1,316 @@
+{
+  "recorded_at_utc": "2026-10-25T06:46:16.424221+00:00",
+  "verifier_sha256": "72b210cb4d710172023ac1fd6e8281be87788ad9a69a4cb81a63b813c4f53844",
+  "verification_kind": "read_only_archive_integrity_not_test_execution",
+  "scope": "Closed independent manifests, original command/log bytes, before/after declarations, temporary frozen binaries and linked libraries. Historical failed product runs remain failed; a matching archive is not a product pass.",
+  "groups": [
+    {
+      "group": "baseline-v1",
+      "artifact_count_checked": 7,
+      "artifact_manifest_sha256": "2c4260151340959668daea19c9bf51ea03e8042e3e992ce3cb8d2201dd4775ed",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "e164a2d3fcd51aee8922c3bfa1f0d206f92298981f99eeb4eed8e86bb598ae6e",
+          "exit_code": 0,
+          "execution_record_valid": null,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "e6de0aaa3683f09443bef8d8167e9514cd80031af5022a2d80fc3b55d8922fa9",
+          "exit_code": 0,
+          "execution_record_valid": null,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "461f26353386da18e41fb7bdf105180053db8c13db3312a1bb007bad8abe855a",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "cc36e6e9608a465848bcadeda94a3ef4695888a89c0d53d2d5d92d91e926a0af",
+      "summary_status": "baseline_observation_confirmed",
+      "cases": null,
+      "checks": null,
+      "failures": null
+    },
+    {
+      "group": "candidate-extra-asan-v2",
+      "artifact_count_checked": 26,
+      "artifact_manifest_sha256": "b350b1b66ded5ae0663cb9b9a1789d0617736bfcbfd6f763cc7392f5189a93c4",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "46f558d6c0cb8abdd0051271c8be97bb2507cbe5c1d3528ef580ca7372811c7a",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "531db7626d78a16b41e537c734d59caeb1f24dd8a283460e62e588ef3c55711d",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "b36b47f0677ad47707d7c1fa8eece44548d58f0a404546978f3a584f9baea7e3",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "8f67a9bdc9494fb6e064cfd91bf71a79e2d434f2552d7c143c1f2d2750b21a5e",
+      "summary_status": "passed_independent_native_boundaries",
+      "cases": 3,
+      "checks": 99,
+      "failures": 0
+    },
+    {
+      "group": "candidate-extra-v2",
+      "artifact_count_checked": 26,
+      "artifact_manifest_sha256": "2d1c28844e82e4750a7d01a19335a966556b82f848e954761756680c8fb61012",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "9201c2e8a5debd5502174f3d6bb6ca21eedce105debc4465fa6b4d69f7f65682",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "670ccf8dd610eee9ae1379f9cd140a3adc776a68501c58f0d26830cce4ede392",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "3cf4c14dda501e5e94a4d3a893aa7debb9085c0498f64af65fd6465f12f7282c",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "2547928c20d21f499dcbe6a427c1f3404fc2ea7a861ee2371f37e4e5ab6e0e1e",
+      "summary_status": "passed_independent_native_boundaries",
+      "cases": 3,
+      "checks": 99,
+      "failures": 0
+    },
+    {
+      "group": "candidate-native-asan-v2",
+      "artifact_count_checked": 25,
+      "artifact_manifest_sha256": "dbe53558466fd98478a29a14456eef3aea38c2ee8e0cf01572bea46e61f3296e",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "870b9e2f2ef6fbaeccc4ae73bd2aecfefa8a64d64e1f62ab5eea759bc24ebef6",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "a7b57bb55c289133355be3dcfbb91defaafd52199c3c33dfd39bac0aebac1a2e",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "cf018d9d1ef9325b63c4d34395d43eb18bb0e8adddf49f0d02663cb607c4417d",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "40ebabbf063e2fc1cb3f5d35946448c394c26a179856f836a099aa0cc9b917a9",
+      "summary_status": "passed_independent_native_boundaries",
+      "cases": 13,
+      "checks": 551,
+      "failures": 0
+    },
+    {
+      "group": "candidate-native-v1",
+      "artifact_count_checked": 25,
+      "artifact_manifest_sha256": "452fbbad714396fd348d3f4b85a9f3da903a5a3c2aaad18c93bb82d0717258ab",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "3476e1e6869da6302cf0ef776f2bea9ad87db2dc49cd73baa8172fff7771ce9c",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "a334d50b5e4326f4d209366beb68f8910cfd6a1376994e64b1e824084d17b57b",
+          "exit_code": 1,
+          "execution_record_valid": false,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "61bd7ff932a97f8d3a01d98f7b6f6f73f7c28d8ef6037fa34142eaf7808fa20e",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "2d7c3285e6f9d2dfe82e5b24deb6090739e41e29ceb156c275b633b19364d2ff",
+      "summary_status": "independent_native_probe_failed",
+      "cases": 13,
+      "checks": 530,
+      "failures": 4
+    },
+    {
+      "group": "candidate-native-v1-oracle-corrected",
+      "artifact_count_checked": 7,
+      "artifact_manifest_sha256": "b3f8668eaef5a2d13537c4ae5028c191e3e83f535637ccecc8b9524efcbfe4c7",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "f4a3fcc046f84b247e01ad126c2543c79772ced6c974c7eb5655f0705f70b915",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "12d8841e312f08ec92e0a0183f329cebbd5cc1dadba658d72e50f49b0414bc3a",
+          "exit_code": 1,
+          "execution_record_valid": false,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": null,
+      "summary_sha256": "926f4673bdc0c6bc9384d9401c342049130ca005644aaab2de38d596d410142d",
+      "summary_status": "original_candidate_defect_confirmed_with_corrected_oracle",
+      "cases": 13,
+      "checks": 549,
+      "failures": 1
+    },
+    {
+      "group": "candidate-native-v2",
+      "artifact_count_checked": 25,
+      "artifact_manifest_sha256": "1e772c8085dd55e84d9735f03f16bc5e3115ffcbf632da87fc089527d456f31b",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "5870b4440d736774983ef4cdf87f71bee013be5893a9c4a6f55ea34adb694633",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "ff3274f71f2fc6e6c9c0c3c095dc1416caacb9bdad2ccd7c23226783100d6709",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "7ed3838bbe7bed94c3e38a66486f41157f8d138d2813944c2dcecd2b2d9a950c",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "be172000355670a790e619b5bb09d16f4075151907cd841fce36d84ec4f835ae",
+      "summary_status": "passed_independent_native_boundaries",
+      "cases": 13,
+      "checks": 551,
+      "failures": 0
+    },
+    {
+      "group": "candidate-wire-v2",
+      "artifact_count_checked": 40,
+      "artifact_manifest_sha256": "7cb10aef29554b70e436ae25d091e3cbc6eef54fe2230d591635304742f88a8e",
+      "commands": [
+        {
+          "record": "run-command.json",
+          "record_sha256": "cf32b7291edcd57507f82d8bd32b01c264156fca863a7ee822f280db3456ea52",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": null,
+      "summary_sha256": "0b685eb8d63e990b6e46bd850538887e0133b9827a93f1916a78fd8827379261",
+      "summary_status": "passed_independent_wire_and_mcp",
+      "cases": 12,
+      "checks": 137,
+      "failures": 0
+    },
+    {
+      "group": "capacity-baseline-v1",
+      "artifact_count_checked": 26,
+      "artifact_manifest_sha256": "0a91a95de144e8aff720044341c0b3d4cd903712f2746cb94abcef7b343ac4f4",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "a45a1686793ed8fc64178ee259d3691db0a24bd92c8663928fcde499f84a29bf",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "b5e928981adecc21a19b658a91abbbc3a534d91a8f5714648af9e0f3814b2957",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "505bd72e097554bb038bc3c18200701a1e7552b3e22afb2133243147f71de698",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "17db38adb8c16a8cbf699aba99a4fc5e813cd3d33b6a81e446a20f04a363e4ab",
+      "summary_status": "passed_capacity_delivery",
+      "cases": 2,
+      "checks": 22,
+      "failures": 0
+    },
+    {
+      "group": "capacity-candidate-v2",
+      "artifact_count_checked": 26,
+      "artifact_manifest_sha256": "8243f614586d13b3f2dea6ee325c593df4ccc30a0a60b321b6dd3343cf6e4404",
+      "commands": [
+        {
+          "record": "compile-command.json",
+          "record_sha256": "9c6915fb837af9693f1908a6eef210229d6fa67b8c665edc92d2a39909e6df07",
+          "exit_code": 0,
+          "execution_record_valid": true,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        },
+        {
+          "record": "run-command.json",
+          "record_sha256": "6950061df4884b17399cda3a1ca8a01da79ad3c3efead7d4b10d33c59c00135f",
+          "exit_code": 1,
+          "execution_record_valid": false,
+          "log_sha256_matches": true,
+          "changed_inputs": []
+        }
+      ],
+      "binary": {
+        "sha256": "24fd28eaa92493e0007932dfec7463457a8972f04ce7a7564e472cd1b8b7d77e",
+        "current_frozen_binary_matches": true
+      },
+      "summary_sha256": "1f7156032bd0cfdb888cbe5ed1e7caede920cb802e4d1ea36e8ba06dd7b7f377",
+      "summary_status": "capacity_delivery_failed",
+      "cases": 2,
+      "checks": 12,
+      "failures": 2
+    }
+  ],
+  "issues": [],
+  "archive_integrity_passed": true
+}

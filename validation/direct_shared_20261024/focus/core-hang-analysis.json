@@ -1,0 +1,15 @@
+{
+  "classification": "candidate implementation regression, resolved by constructor separation; final validation pending",
+  "observed": [
+    "retained-read-contracts-v1: core CTest timeout at 45 seconds",
+    "core-hang-diagnostic-v1: original json_strict_types case never completes; prior four original groups pass"
+  ],
+  "cause": "Adding a default Json context argument to every Error construction creates a temporary Json while Json::at holds json_gate; its destructor tries to lock the same non-recursive gate before the original throw can unwind the lock.",
+  "fix": "Keep the existing three-argument Error constructor with a default-constructed null details member; reserve the Json context argument for a distinct four-argument constructor used only by direct-read receipt wrapping outside Json locks.",
+  "original_tests_modified": false,
+  "json_implementation_modified": false,
+  "evidence": [
+    "retained-read-contracts-v1.log",
+    "core-hang-diagnostic-v1.log"
+  ]
+}

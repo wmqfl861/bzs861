@@ -1,0 +1,67 @@
+{
+  "recorded_at_utc": "2026-10-25T07:06:48.577284+00:00",
+  "classification": "restricted_execution_environment_cannot_support_leak_sanitizer_process_inspection",
+  "closed_fatal_environment_records": [
+    {
+      "record": "bzs_batch_tests-v3-command.json",
+      "log_sha256": "d0d271c6c9627b58cbf3a6e7b2015d20c9f66f24d332c87f80738884a24754f1",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_contract_tests-v3-command.json",
+      "log_sha256": "ea72644c6a102153c3ff7661f89a85f02375a7d32f8f0e1884fa6d33455f8355",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_crawl_tests-v3-command.json",
+      "log_sha256": "4dfb6fbcef680e82e43cfbbcbd4bc19120f49f74bb19b4933c1622385b1586f3",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_fairness_tests-v3-command.json",
+      "log_sha256": "3cd820c7af4eec3352f0143f4271f9452d68788b96396680379874675e476578",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_map_tests-v3-command.json",
+      "log_sha256": "3b0a2524577ed56eebaf24730db7abbd762e28005a311b7c96ae815bb291ffc9",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_retention_tests-v3-command.json",
+      "log_sha256": "ef799f5d8a8ddc2b72f16159a13f24f831182046476c08971b780c74ddb7ddb9",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_site_publication_tests-v3-command.json",
+      "log_sha256": "419cb1328b6d6089298c18a77113e77447e715e86708dd0da637519bae1f95b0",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    },
+    {
+      "record": "bzs_tests-v3-command.json",
+      "log_sha256": "3239a0e97a3d428408ee077db38eb2a347ce1fe91477ce2b2dca7a40ae083e22",
+      "source_inputs_unchanged": true,
+      "binaries_unchanged": true
+    }
+  ],
+  "incomplete_on_driver_termination": [
+    {
+      "path": "bzs_session_tests-v3.log",
+      "bytes": 1234,
+      "sha256": "93aa9f31046118429fb7e62806e219f8229645d55e3d5270bf74473e8e0c3618",
+      "result": "unknown; no closed command record"
+    }
+  ],
+  "driver_exit_code": 143,
+  "remaining_targets_not_launched_after_stop": true,
+  "detect_leaks_disabled": false,
+  "final_replays": "v4 and explicitly recorded v5 launcher repairs",
+  "counting": "No restricted attempt is counted as a passing sanitizer result. The final selected records each contain actual exit, complete log and input/binary hashes."
+}

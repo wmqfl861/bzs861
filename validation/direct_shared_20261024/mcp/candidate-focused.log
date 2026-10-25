@@ -1,0 +1,240 @@
+......FFFFFFF.                                                           [100%]
+=================================== FAILURES ===================================
+__ test_core_read_failure_preserves_usage_and_sharing_through_mcp[True-payer] __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82da040b0>
+role = 'payer', known = True
+
+    @pytest.mark.parametrize("role", ["payer", "subscriber"])
+    @pytest.mark.parametrize("known", [True, False])
+    async def test_core_read_failure_preserves_usage_and_sharing_through_mcp(monkeypatch, role, known):
+        physical = {"external_requests": 2 if known else None,
+                    "content_bytes": 8192 if known else None, "known": known}
+        details = {
+            "usage": {"scope": "direct_read",
+                      "external_requests": 0 if role == "subscriber" else physical["external_requests"],
+                      "content_bytes": 0 if role == "subscriber" else physical["content_bytes"],
+                      "model_calls": 0, "known": True if role == "subscriber" else known},
+            "shared_read": {"attempt_id": "c" * 48, "role": role, "members": 3, "scope": "process",
+                            "physical_usage": physical},
+        }
+        body = {"status": "failed", "request_id": "fixture-request", "api_version": "0.0.1",
+                "errors": [{"code": "E_FETCH_NETWORK", "message": "来源请求失败"}],
+                "cache": {"must_not_be_error_details": True}, **deepcopy(details)}
+        original = deepcopy(body)
+        client, post = client_with_failure_body(monkeypatch, body)
+    
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.http_status == 502
+        assert str(core_failure.value) == "E_FETCH_NETWORK: 来源请求失败"
+        assert core_failure.value.details == details
+    
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+        message, encoded = str(tool_failure.value).split("\n", 1)
+>       assert message == "E_FETCH_NETWORK: 来源请求失败"
+E       AssertionError: assert 'Error execut...TWORK: 来源请求失败' == 'E_FETCH_NETWORK: 来源请求失败'
+E         
+E         - E_FETCH_NETWORK: 来源请求失败
+E         + Error executing tool read_url: E_FETCH_NETWORK: 来源请求失败
+
+python/tests/test_mcp_read.py:124: AssertionError
+_ test_core_read_failure_preserves_usage_and_sharing_through_mcp[True-subscriber] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d609a90>
+role = 'subscriber', known = True
+
+    @pytest.mark.parametrize("role", ["payer", "subscriber"])
+    @pytest.mark.parametrize("known", [True, False])
+    async def test_core_read_failure_preserves_usage_and_sharing_through_mcp(monkeypatch, role, known):
+        physical = {"external_requests": 2 if known else None,
+                    "content_bytes": 8192 if known else None, "known": known}
+        details = {
+            "usage": {"scope": "direct_read",
+                      "external_requests": 0 if role == "subscriber" else physical["external_requests"],
+                      "content_bytes": 0 if role == "subscriber" else physical["content_bytes"],
+                      "model_calls": 0, "known": True if role == "subscriber" else known},
+            "shared_read": {"attempt_id": "c" * 48, "role": role, "members": 3, "scope": "process",
+                            "physical_usage": physical},
+        }
+        body = {"status": "failed", "request_id": "fixture-request", "api_version": "0.0.1",
+                "errors": [{"code": "E_FETCH_NETWORK", "message": "来源请求失败"}],
+                "cache": {"must_not_be_error_details": True}, **deepcopy(details)}
+        original = deepcopy(body)
+        client, post = client_with_failure_body(monkeypatch, body)
+    
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.http_status == 502
+        assert str(core_failure.value) == "E_FETCH_NETWORK: 来源请求失败"
+        assert core_failure.value.details == details
+    
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+        message, encoded = str(tool_failure.value).split("\n", 1)
+>       assert message == "E_FETCH_NETWORK: 来源请求失败"
+E       AssertionError: assert 'Error execut...TWORK: 来源请求失败' == 'E_FETCH_NETWORK: 来源请求失败'
+E         
+E         - E_FETCH_NETWORK: 来源请求失败
+E         + Error executing tool read_url: E_FETCH_NETWORK: 来源请求失败
+
+python/tests/test_mcp_read.py:124: AssertionError
+_ test_core_read_failure_preserves_usage_and_sharing_through_mcp[False-payer] __
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d69a690>
+role = 'payer', known = False
+
+    @pytest.mark.parametrize("role", ["payer", "subscriber"])
+    @pytest.mark.parametrize("known", [True, False])
+    async def test_core_read_failure_preserves_usage_and_sharing_through_mcp(monkeypatch, role, known):
+        physical = {"external_requests": 2 if known else None,
+                    "content_bytes": 8192 if known else None, "known": known}
+        details = {
+            "usage": {"scope": "direct_read",
+                      "external_requests": 0 if role == "subscriber" else physical["external_requests"],
+                      "content_bytes": 0 if role == "subscriber" else physical["content_bytes"],
+                      "model_calls": 0, "known": True if role == "subscriber" else known},
+            "shared_read": {"attempt_id": "c" * 48, "role": role, "members": 3, "scope": "process",
+                            "physical_usage": physical},
+        }
+        body = {"status": "failed", "request_id": "fixture-request", "api_version": "0.0.1",
+                "errors": [{"code": "E_FETCH_NETWORK", "message": "来源请求失败"}],
+                "cache": {"must_not_be_error_details": True}, **deepcopy(details)}
+        original = deepcopy(body)
+        client, post = client_with_failure_body(monkeypatch, body)
+    
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.http_status == 502
+        assert str(core_failure.value) == "E_FETCH_NETWORK: 来源请求失败"
+        assert core_failure.value.details == details
+    
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+        message, encoded = str(tool_failure.value).split("\n", 1)
+>       assert message == "E_FETCH_NETWORK: 来源请求失败"
+E       AssertionError: assert 'Error execut...TWORK: 来源请求失败' == 'E_FETCH_NETWORK: 来源请求失败'
+E         
+E         - E_FETCH_NETWORK: 来源请求失败
+E         + Error executing tool read_url: E_FETCH_NETWORK: 来源请求失败
+
+python/tests/test_mcp_read.py:124: AssertionError
+_ test_core_read_failure_preserves_usage_and_sharing_through_mcp[False-subscriber] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d6c1d90>
+role = 'subscriber', known = False
+
+    @pytest.mark.parametrize("role", ["payer", "subscriber"])
+    @pytest.mark.parametrize("known", [True, False])
+    async def test_core_read_failure_preserves_usage_and_sharing_through_mcp(monkeypatch, role, known):
+        physical = {"external_requests": 2 if known else None,
+                    "content_bytes": 8192 if known else None, "known": known}
+        details = {
+            "usage": {"scope": "direct_read",
+                      "external_requests": 0 if role == "subscriber" else physical["external_requests"],
+                      "content_bytes": 0 if role == "subscriber" else physical["content_bytes"],
+                      "model_calls": 0, "known": True if role == "subscriber" else known},
+            "shared_read": {"attempt_id": "c" * 48, "role": role, "members": 3, "scope": "process",
+                            "physical_usage": physical},
+        }
+        body = {"status": "failed", "request_id": "fixture-request", "api_version": "0.0.1",
+                "errors": [{"code": "E_FETCH_NETWORK", "message": "来源请求失败"}],
+                "cache": {"must_not_be_error_details": True}, **deepcopy(details)}
+        original = deepcopy(body)
+        client, post = client_with_failure_body(monkeypatch, body)
+    
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.http_status == 502
+        assert str(core_failure.value) == "E_FETCH_NETWORK: 来源请求失败"
+        assert core_failure.value.details == details
+    
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+        message, encoded = str(tool_failure.value).split("\n", 1)
+>       assert message == "E_FETCH_NETWORK: 来源请求失败"
+E       AssertionError: assert 'Error execut...TWORK: 来源请求失败' == 'E_FETCH_NETWORK: 来源请求失败'
+E         
+E         - E_FETCH_NETWORK: 来源请求失败
+E         + Error executing tool read_url: E_FETCH_NETWORK: 来源请求失败
+
+python/tests/test_mcp_read.py:124: AssertionError
+_ test_core_read_failure_without_object_details_keeps_original_mcp_error[extra0] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d216810>
+extra = {}
+
+    @pytest.mark.parametrize("extra", [{}, {"usage": None, "shared_read": []},
+                                       {"usage": 0, "shared_read": False}])
+    async def test_core_read_failure_without_object_details_keeps_original_mcp_error(monkeypatch, extra):
+        body = {"status": "failed", "errors": [{"code": "E_FETCH_NETWORK", "message": "origin unavailable"}],
+                **extra}
+        client, post = client_with_failure_body(monkeypatch, body)
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.details == {}
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+>       assert str(tool_failure.value) == "E_FETCH_NETWORK: origin unavailable"
+E       AssertionError: assert 'Error execut...n unavailable' == 'E_FETCH_NETW...n unavailable'
+E         
+E         - E_FETCH_NETWORK: origin unavailable
+E         + Error executing tool read_url: E_FETCH_NETWORK: origin unavailable
+
+python/tests/test_mcp_read.py:142: AssertionError
+_ test_core_read_failure_without_object_details_keeps_original_mcp_error[extra1] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d293ad0>
+extra = {'usage': None, 'shared_read': []}
+
+    @pytest.mark.parametrize("extra", [{}, {"usage": None, "shared_read": []},
+                                       {"usage": 0, "shared_read": False}])
+    async def test_core_read_failure_without_object_details_keeps_original_mcp_error(monkeypatch, extra):
+        body = {"status": "failed", "errors": [{"code": "E_FETCH_NETWORK", "message": "origin unavailable"}],
+                **extra}
+        client, post = client_with_failure_body(monkeypatch, body)
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.details == {}
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+>       assert str(tool_failure.value) == "E_FETCH_NETWORK: origin unavailable"
+E       AssertionError: assert 'Error execut...n unavailable' == 'E_FETCH_NETW...n unavailable'
+E         
+E         - E_FETCH_NETWORK: origin unavailable
+E         + Error executing tool read_url: E_FETCH_NETWORK: origin unavailable
+
+python/tests/test_mcp_read.py:142: AssertionError
+_ test_core_read_failure_without_object_details_keeps_original_mcp_error[extra2] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fb82d0fb440>
+extra = {'usage': 0, 'shared_read': False}
+
+    @pytest.mark.parametrize("extra", [{}, {"usage": None, "shared_read": []},
+                                       {"usage": 0, "shared_read": False}])
+    async def test_core_read_failure_without_object_details_keeps_original_mcp_error(monkeypatch, extra):
+        body = {"status": "failed", "errors": [{"code": "E_FETCH_NETWORK", "message": "origin unavailable"}],
+                **extra}
+        client, post = client_with_failure_body(monkeypatch, body)
+        with pytest.raises(core_client.CoreError) as core_failure:
+            await client.call("web.read", {"url": "https://example.com/page"})
+        assert core_failure.value.details == {}
+        with pytest.raises(ToolError) as tool_failure:
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page"})
+>       assert str(tool_failure.value) == "E_FETCH_NETWORK: origin unavailable"
+E       AssertionError: assert 'Error execut...n unavailable' == 'E_FETCH_NETW...n unavailable'
+E         
+E         - E_FETCH_NETWORK: origin unavailable
+E         + Error executing tool read_url: E_FETCH_NETWORK: origin unavailable
+
+python/tests/test_mcp_read.py:142: AssertionError
+=========================== short test summary info ============================
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_preserves_usage_and_sharing_through_mcp[True-payer]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_preserves_usage_and_sharing_through_mcp[True-subscriber]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_preserves_usage_and_sharing_through_mcp[False-payer]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_preserves_usage_and_sharing_through_mcp[False-subscriber]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_without_object_details_keeps_original_mcp_error[extra0]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_without_object_details_keeps_original_mcp_error[extra1]
+FAILED python/tests/test_mcp_read.py::test_core_read_failure_without_object_details_keeps_original_mcp_error[extra2]
+7 failed, 7 passed in 1.35s

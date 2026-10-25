@@ -1,0 +1,38 @@
+
+
+TEST(large_valid_snapshots_preserve_legacy_and_shared_read_windows) {
+  const std::string large_body="sharedneedle "+std::string(700*1024,'\x01')+" tail";
+  const auto bytes=static_cast<std::int64_t>(large_body.size());
+  CHECK(large_body.size()<1024*1024);
+  for(bool shared:{false,true}) {
+    Fixture f;if(!shared)f.worker.select_profile(profile,"unavailable");
+    const Worker::Call synthetic{1,read_args().canonical(),profile,65000};
+    auto response=f.worker.page(synthetic);response.set("html",large_body);response.set("text",large_body);
+    response.at("publication").set("snippet_text",large_body);response.at("usage").set("content_bytes",bytes);
+    if(!shared)response=without(response,"http_freshness");
+    const auto encoded=response.dump();CHECK(encoded.size()<24*1024*1024);
+    f.worker.responder([encoded](const Worker::Call&) {return Json::parse(encoded,24*1024*1024);});
+    auto first=read_args();first.set("timeout_ms",std::int64_t{60000});first.set("start_byte",std::int64_t{5});first.set("max_bytes",std::int64_t{32});
+    auto second=read_args();second.set("timeout_ms",std::int64_t{60000});second.set("start_byte",std::int64_t{716790});second.set("max_bytes",std::int64_t{28});
+    Running run(f.worker);const auto payer=run.read(f.web,"alice",first);CHECK(f.worker.wait_requests(1));
+    std::size_t member=0;
+    if(shared) {member=run.read(f.web,"alice",second);CHECK(wait_state(f.web,1,2));}
+    else CHECK(wait_state(f.web,0,0));
+    f.worker.release_all();const auto paid=run.success(payer);
+    usage(paid,"payer",shared?2:1,1,bytes);CHECK(!paid.at("from_cache").flag());
+    CHECK(paid.at("content").at("start_byte").num()==5);
+    CHECK(paid.at("content").at("text").str()==large_body.substr(5,32));
+    if(shared) {
+      const auto associated=run.success(member);same_attempt(paid,associated);usage(associated,"subscriber",2,1,bytes);
+      CHECK(!associated.at("from_cache").flag());CHECK(associated.at("content").at("start_byte").num()==716790);
+      CHECK(associated.at("content").at("text").str()==large_body.substr(716790,28));
+    }
+    const auto frozen=f.store.snapshot("alice",paid.at("snapshot_id").str());
+    CHECK(frozen.at("canonical_text").str()==large_body);CHECK(frozen.at("revision").num()==1);
+    // These independently valid fields exceed 8 MiB only after Store freezes
+    // the complete snapshot with repeated publication snippets and JSON escapes.
+    CHECK(frozen.dump().size()>8*1024*1024);
+    CHECK(frozen.at("publication").at("snippet_text").str()==large_body);
+    CHECK(f.store.stats("alice").at("snapshots").num()==1);CHECK(f.worker.calls().size()==1);CHECK(wait_state(f.web,0,0));
+  }
+}

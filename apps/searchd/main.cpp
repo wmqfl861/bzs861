@@ -40,6 +40,8 @@ namespace {
     auto out=Json::object(), errors=Json::array(), item=Json::object();
     out.set("request_id",id);out.set("status","failed");out.set("api_version","0.0.1");
     item.set("code",error.code);item.set("message",error.what());errors.push(item);out.set("errors",errors);
+    if(error.details.is_object())for(const auto* key:{"usage","shared_read"})
+      if(error.details.has(key))out.set(key,error.details.at(key));
     return out;
   }
   // At most one admitted request per business thread. There is no additional

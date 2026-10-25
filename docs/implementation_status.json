@@ -1,28 +1,26 @@
 {
   "version": "0.1.10",
-  "stage": "Bounded late subscribers for durable read_many; schema15; S2 scope/status and accepted-package counts unchanged",
+  "stage": "Process-local direct web.read coalescing, independent delivery fences and accurate synchronous usage receipts; schema15 unchanged; full packages remain unsigned",
   "recorded_at": "2026-10-24",
-  "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+  "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
   "integration_inputs": {
-    "local_baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
-    "local_tree": "e15b716766e9a2a787660ffd304df2102e4b994c",
-    "local_baseline_published": false,
-    "remote_main": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
-    "remote_tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
-    "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
-    "review_branch_read_only": true,
-    "baseline_schema": 14,
+    "main": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+    "baseline_published": true,
+    "baseline_schema": 15,
     "schema": 15,
     "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
-    "scope": "Durable read_many late admission, immutable payer/grants/capture/lease, durable admission closure and cross-Store atomic liveness; no direct web.read/map/crawl/search sharing.",
-    "evidence_directory": "validation/shared_read_late_20261024",
-    "historical_remote_ci": {
-      "commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
-      "run_id": 40096268557,
+    "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+    "review_branch_read_only": true,
+    "scope": "Same-WebService direct-to-direct sharing only; stable original Worker ordinary-fetch contract; per-member delivery fences and payer/subscriber/unknown receipts; all six retained decisions unchanged.",
+    "evidence_directory": "validation/direct_shared_20261024",
+    "baseline_ci": {
+      "head_sha": "346048b4ae329e750d15f1e35952aab4513e3912",
+      "run_id": 40157161849,
       "linux": "success",
       "windows": "success",
-      "scope": "Historical baseline only, not the unpublished schema14/schema15 inputs.",
-      "url": "https://github.com/wmqfl861/bzs861/actions/runs/40096268557"
+      "scope": "Previous published input only, not validation of this increment.",
+      "url": "https://github.com/wmqfl861/bzs861/actions/runs/40157161849"
     }
   },
   "status_counts": {
@@ -58,13 +56,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/shared_read_late_20261024/README.md",
-  "current_verification": "passed_local_validation; see validation/shared_read_late_20261024/final-report.json for exact inputs, complete logs and independent review; no new remote CI",
-  "upstream_baseline_reproduction": "The frozen real a3 library reproduces late read_many submissions staying queued; original30 batch groups and prior URI evidence remain separate. Consult the new batch report for exact source/binary bindings and retained environment failures.",
-  "github_ci": "not_run_for_unpublished_URI_or_late_subscription_inputs; default-branch publication remains approval-blocked",
-  "independent_review": "Independent original-library migration, cancellation/admission probes, and source/report review are separate from formal regression authors. Consult validation/shared_read_late_20261024/README.md for executed inputs and outcomes.",
+  "current_test_report": "validation/direct_shared_20261024/final-report.json",
+  "current_verification": "Consult the exact current final-report.json and complete command/log bindings; initial defects and later fixes remain separate. No future remote CI is embedded here.",
+  "upstream_baseline_reproduction": "Frozen published346 headers and final-library35e9 reproduce two simultaneous fetches and lost direct usage. See independent/baseline-v1; missing new capability is distinct from candidate regressions.",
+  "github_ci": "Published baseline 346048b4: run40157161849 Linux/Windows success. The direct-read containing commit requires its own actual Checks; prior default-branch publication authorization is present.",
+  "independent_review": "Independent baseline and candidate boundary probes are separate from formal regression authors; original failed oracle and actual receipt restriction defect are retained with corrections. See current batch evidence.",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/shared_read_late_20261024/README.md",
+  "review_record": "validation/direct_shared_20261024/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -84,9 +82,16 @@
     "validation/s2_takeover/windows-watchdog-report.json",
     "validation/claude_followup_20261024/README.md",
     "validation/claude_continuation_20261024/README.md",
-    "validation/uri_deletion_20261024/README.md"
+    "validation/uri_deletion_20261024/README.md",
+    "validation/shared_read_late_20261024/README.md"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
+  "feature_detail_text_scope": {
+    "retained_from": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "frozen_fields": ["features[].candidate_increment", "features[].remaining"],
+    "meaning": "features 数组保留基线原始字节，其中 candidate_increment 与 remaining 是历史候选说明，不是本轮当前能力清单；整包状态和验收数量保持，当前范围由下面各增量 scope、合同和 current_test_report 补充。",
+    "CACHE-01_current_scope": "已发布的 read_many 迟到加入见 late_shared_reads_scope / docs/SHARED_READS.md；本轮普通直接读取共享见 direct_shared_reads_scope / docs/DIRECT_SHARED_READS.md。历史 remaining 中仅派发时共享或普通读取未覆盖的表述不代表当前实现；完整 CACHE-01 / B-24 仍未签收。"
+  },
   "features": [
     {
       "feature_id": "GOV-01",
@@ -2645,8 +2650,8 @@
   ],
   "current_results": {
     "status": "not_embedded_here; consult_exact_batch_record",
-    "record": "validation/shared_read_late_20261024/README.md",
-    "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
+    "record": "validation/direct_shared_20261024/final-report.json",
+    "counting_note": "Author, independent, sanitizer and baseline checks overlap. Do not sum replay counts into planned product acceptance; preserved source/fixtures and actual execution determine the scope."
   },
   "baseline_version": "0.1.10",
   "planned_work_packages": 83,
@@ -2665,9 +2670,9 @@
   ],
   "verification_binding": {
     "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
-    "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
-    "record": "validation/shared_read_late_20261024/README.md",
-    "remote_ci": "Local baseline and this continuation are unpublished; prior main CI is historical only. Default-branch write approval is still required.",
+    "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "record": "validation/direct_shared_20261024/final-report.json",
+    "remote_ci": "Verify the exact containing commit after non-force publication. Baseline green checks do not validate new input; no future CI claim is made.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -4608,5 +4613,79 @@
     "closure": "Persisted sharing_closed prevents new admission after no-live/cancel decision; CAS binds physical attempt and original item epoch; existing members retain their original settlement/publication rules.",
     "migration": "Existing schema14 items default dispatch_timeout_ms0 and sharing_closed1; old active reads still complete and settle; only new attempts capture an admission proof.",
     "remaining": "Generic web.read/map/crawl/search sharing, broader cancellation and long-running/multinode proof remain incomplete."
+  },
+  "historical_verification_late_shared_reads_20261024": {
+    "stage": "Bounded late subscribers for durable read_many; schema15; S2 scope/status and accepted-package counts unchanged",
+    "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+    "integration_inputs": {
+      "local_baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+      "local_tree": "e15b716766e9a2a787660ffd304df2102e4b994c",
+      "local_baseline_published": false,
+      "remote_main": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+      "remote_tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
+      "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+      "review_branch_read_only": true,
+      "baseline_schema": 14,
+      "schema": 15,
+      "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+      "scope": "Durable read_many late admission, immutable payer/grants/capture/lease, durable admission closure and cross-Store atomic liveness; no direct web.read/map/crawl/search sharing.",
+      "evidence_directory": "validation/shared_read_late_20261024",
+      "historical_remote_ci": {
+        "commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+        "run_id": 40096268557,
+        "linux": "success",
+        "windows": "success",
+        "scope": "Historical baseline only, not the unpublished schema14/schema15 inputs.",
+        "url": "https://github.com/wmqfl861/bzs861/actions/runs/40096268557"
+      }
+    },
+    "current_test_report": "validation/shared_read_late_20261024/README.md",
+    "current_verification": "passed_local_validation; see validation/shared_read_late_20261024/final-report.json for exact inputs, complete logs and independent review; no new remote CI",
+    "github_ci": "not_run_for_unpublished_URI_or_late_subscription_inputs; default-branch publication remains approval-blocked",
+    "current_results": {
+      "status": "not_embedded_here; consult_exact_batch_record",
+      "record": "validation/shared_read_late_20261024/README.md",
+      "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
+    },
+    "verification_binding": {
+      "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+      "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+      "record": "validation/shared_read_late_20261024/README.md",
+      "remote_ci": "Local baseline and this continuation are unpublished; prior main CI is historical only. Default-branch write approval is still required.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    },
+    "upstream_baseline_reproduction": "The frozen real a3 library reproduces late read_many submissions staying queued; original30 batch groups and prior URI evidence remain separate. Consult the new batch report for exact source/binary bindings and retained environment failures.",
+    "independent_review": "Independent original-library migration, cancellation/admission probes, and source/report review are separate from formal regression authors. Consult validation/shared_read_late_20261024/README.md for executed inputs and outcomes.",
+    "review_record": "validation/shared_read_late_20261024/README.md",
+    "time_scope": "Captured before the later user authorization and publication; its unpublished/approval-blocked strings are historical only."
+  },
+  "published_baseline_20261024": {
+    "local_uri_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+    "published_uri_commit": "21797f07d63204f531fa12ecab9e30e470657abb",
+    "uri_tree": "e15b716766e9a2a787660ffd304df2102e4b994c",
+    "local_late_shared_commit": "fca5c1e9618f12f34ae9ff1d40fbf0edc15976a4",
+    "published_late_shared_commit": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "late_shared_tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+    "ci_run": 40157161849,
+    "receipt": "validation/direct_shared_20261024/published-baseline/publication-final-receipt.json",
+    "authorization": "User explicitly allowed pushing main after the historical approval rejection."
+  },
+  "direct_shared_reads_scope": {
+    "contract": "docs/DIRECT_SHARED_READS.md",
+    "schema": 15,
+    "features": [
+      "CACHE-01",
+      "READ-01"
+    ],
+    "acceptance_ids": [
+      "FT-032",
+      "B-24"
+    ],
+    "scope": "One WebService, ordinary direct reads only, one fetch and one commit, caller-specific result windows.",
+    "identity": "Exact normalized URL, owner, full publication fence, request timeout/conditional grant, current cached snapshot+metadata and proven Worker request profile.",
+    "bounds": "32 lifetime members and64 open-admission groups; RPC completion closes admission; overflow/reentrant/unproven reads run independently.",
+    "delivery": "A separate Store transaction checks each member auth/deletion/all actual aliases/exact metadata and current+historical publication projection; no cache TTL is imposed on a just-fetched result.",
+    "accounting": "Direct network success and wrapped execution errors carry per-process attempt details; prechecks and the outer Service principal postcheck can omit details. Payer usage is actual or null unknown; subscriber usage remains known zero plus nonadditive physical association, which may be unknown. No durable direct-read ledger.",
+    "remaining": "Explicit direct member cancellation; cross-instance/direct-durable/map/crawl/search coordination; broad cancellation/long-running/multinode acceptance; full CACHE-01/B-24 unsigned."
   }
 }

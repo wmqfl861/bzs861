@@ -1,0 +1,84 @@
+--- a/README.md
++++ b/README.md
+@@ -1,8 +1,8 @@
+ # 不周山搜索工具 · bzs861
+ 
+-**状态：持久批读迟到订阅的本地候选；版本仍为 0.1.10，数据库 schema15。** 本批从上轮已本地验证、未推送的 `a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89` 接续，允许兼容新批读任务的首项加入原未结算尝试，保留固定付款、原发布捕获、租约和 32 个累计成员上限。范围与升级合同见[共享读取](docs/SHARED_READS.md)，基线失败、作者验证、独立审核和整合执行见[本批验证记录](validation/shared_read_late_20261024/README.md)。该合同与证据入口不预先声明新测试通过；S0、S1、S2 的完整验收仍未完成。
++**状态：普通直接读取的进程内共享与同步用量回执；版本仍为 0.1.10，数据库 schema15。** 本批从已发布的 `346048b4ae329e750d15f1e35952aab4513e3912` 接续，同一 `WebService` 内兼容的直接读取共享一次获取和一次表示提交，各成员独立取得窗口并通过返回屏障。合同见[直接共享读取](docs/DIRECT_SHARED_READS.md)，实际输入、失败与验证见[本批记录](validation/direct_shared_20261024/README.md)；已发布的持久批读迟到加入继续按[持久共享读取](docs/SHARED_READS.md)执行，两条通道不混合。完整 B-24、CACHE-01 及 S0、S1、S2 验收仍未完成。
+ 
+-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。远端 main 仍为 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`，该提交的 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 是历史成绩；`a3b3f6e2` 不是远端 main。本轮维持默认分支发布的自动审批阻塞，不重试或绕过远端写入，不声明新 CI 或新 tag。升级数据库前停止旧 Core，新旧程序不能混用。
++目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。上述已发布基线的 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 只证明该基线输入。用户已明确允许推送 main；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。
+ 
+ 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
+ 
+@@ -13,7 +13,7 @@
+ | 本地导入、搜索与证据 | 显式 HTML/TXT 导入、不可变快照；`search.once` 单次返回不创建持久会话，原冻结分页、UTF-8 定位和权限复核保留 |
+ | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
+ | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
+-| 网页读取候选实现 | 缓存指令独立于 validator；直达或有完整证明的 HTTP 链按年龄/profile 复用，逐跳期限、删除和发布约束保持；no-store 无新持久快照 |
++| 网页读取候选实现 | 同一 WebService 内兼容直接读取可共享一次在途获取与提交，各自窗口和用量关联独立；缓存指令独立于 validator，完整直达/HTTP 链按年龄/profile 复用；no-store 无新持久快照 |
+ | 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务可在派发时合并，兼容新任务首项可迟到加入，最多32累计成员；逐订阅取消、固定付款和原子收据 |
+ | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
+ | 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -6,7 +6,7 @@
+ {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
+ ```
+ 
+-响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
++成功响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。失败信封保留请求身份、失败状态和 `errors`，不要求存在 `result`；`usage`、`shared_read` 仅在核心提供执行详情时输出，缺少字段不能解释为零消耗。本版存在外部网络路径，不能沿用 0.0.2 的 external_requests 恒为零假设；实际次数、未知状态和错误按执行结果报告。模型执行仍未实现。传输层早期错误可能使用精简错误信封。
+ 
+ ## HTTP 执行与背压
+ 
+@@ -62,7 +62,7 @@
+ 
+ 兼容的并发普通读取现在可在同一 `WebService` 中共享一次在途获取与一次提交。匹配包含 owner、精确规范化 URL、超时、权限/删除/发布捕获、快照与元数据/条件身份及已核实的 Worker 请求 profile；每个调用仍生成自己的窗口，参与本次网络工作的成员均为 `from_cache=false`。`cache_only` 不等待正在抓取的未来结果。每组最多累计 32 个成员，最多登记 64 个开放组；没有证明、超限或同线程重入时独立执行，RPC 返回后停止加入。完整边界见[直接共享读取](DIRECT_SHARED_READS.md)。
+ 
+-`web.read` 成功结果中的 `usage.scope=direct_read` 是本调用新增的物理用量：`payer` 报告 Worker 的实际请求数/响应体字节，`subscriber` 为零。网络结果另有 `shared_read`，包含进程内 `attempt_id`、`role`、`members`、`scope=process` 与 `physical_usage`；这是同一次工作的关联说明，不能把成员的关联用量再次相加。缺少可靠回执时 `known=false`、请求数/字节为 `null`；缓存命中是已知零用量且没有 `shared_read`。
++`web.read` 成功结果中的 `usage.scope=direct_read` 是本调用新增的物理用量：`payer` 报告 Worker 的实际请求数/响应体字节，`subscriber` 为零。网络结果另有 `shared_read`，包含进程内 `attempt_id`、`role`、`members`、`scope=process` 与 `physical_usage`；这是同一次工作的关联说明，不能把成员的关联用量再次相加。缺少可靠物理回执时，`physical_usage` 与 `payer` 的增量为 `known=false`、请求数/字节为 `null`；`subscriber` 增量仍为 `known=true`、零请求和零字节，同时保留未知物理关联。缓存命中是已知零用量且没有 `shared_read`。
+ 
+ 抓取、提交或返回窗口失败时，HTTP 失败信封仍保持原 `status=failed` 和错误码，并在存在执行回执时附同形的 `usage/shared_read`，因此错误不表示没有消耗。CoreClient 保留这些详情；MCP `read_url` 成功时原样透传，失败时保持工具错误并附核心详情 JSON。进程内关联不是持久任务账本，不能据客户端断连推断未执行，也不能在重启后重新查询这份收据。普通读取仍无公开单成员取消句柄，不与 durable 批读或 map/crawl/search 混合。
+ 
+@@ -295,7 +295,7 @@
+ 
+ 已有 `web.read` 刷新、`read_many.submit` 和 `crawl.submit` 内部可使用条件请求，公开参数与MCP工具不增加私有validator输入。完整且可重用的200表示由核心保存精确URI/profile、快照及缓存元数据身份；304只复用该已保存正文，提交时再核对当前表示、删除、租约和发布限制。结果/快照收据可带 `revalidated=true`，但不保证每次刷新都走304。
+ 
+-已知304仍计1个实际HTTP请求、0正文响应字节；未知或无法解释的执行按既有保守预留结算。未经绑定、validator冲突、跳转后的304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
++已知用量的直达304计1个实际HTTP请求、0正文响应字节；具有完整路由授权的N跳304计N+1次请求，并计入已消费的跳转响应体，详见[跳转缓存](HTTP_REDIRECT_CACHE.md)。未知执行在持久任务中按既有保守预留结算；普通直接读取没有该预留账本，物理回执保留 `known=false` 和 `null`，订阅者仍只报告零增量。未经绑定、validator冲突、缺少合法路由证明的跳转304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。
+ 
+ robots过期记录仅可作为绑定旧表示重新验证，不能直接放行正文。新304必须保留相同rules/body/清单身份并取得正有效期；较新的拒绝不会因旧记录仍被引用而在回收后消失。schema12的元数据与容量记账、完整合同及保守缓存子集见 [HTTP_REVALIDATION](HTTP_REVALIDATION.md)。
+ 
+--- a/docs/DEVELOPMENT_STATUS.md
++++ b/docs/DEVELOPMENT_STATUS.md
+@@ -10,7 +10,7 @@
+ | 准入 | 同 owner、精确规范化 URL、超时、完整权限/删除/发布捕获、快照/条件/metadata 身份和已证明请求 profile；无有效 profile 证明走原独立路径 |
+ | 容量与生命周期 | 32 累计成员、64 个开放组；同线程重入不自等待，RPC 返回关闭加入，成功或失败均回收；等待不自动重发或取消别的成员 |
+ | 返回屏障 | 每个网络结果在 Store 事务内复核权限代际、目标/全部实际别名删除、准确 metadata 和当前及历史发布限制；不把新 no-cache 响应套成缓存命中 |
+-| 用量与适配 | 成功与错误透传已知/未知物理回执；payer 一次增量、subscriber 零新增与关联用量；MCP 只映射，不计算业务规则 |
++| 用量与适配 | 有执行详情时，成功与错误透传已知/未知用量；payer 一次增量、subscriber 零新增与关联用量；MCP 只映射，不计算业务规则 |
+ | 兼容 | 保留普通 direct 的 60000 ms 上限、原截断/重定向协议；版本0.1.10 / schema15，无迁移或新来源启用 |
+ 
+ 完整合同见[直接共享读取](DIRECT_SHARED_READS.md)。本轮仍没有跨实例、direct/durable 混合、map/crawl/search 通用合并或直接取消句柄；HTTP 断连不自动变成业务取消，进程内收据不等于持久任务账本。原批读迟到共享已在基线，详见[持久共享读取](SHARED_READS.md)。
+--- a/docs/DIRECT_SHARED_READS.md
++++ b/docs/DIRECT_SHARED_READS.md
+@@ -94,7 +94,7 @@
+ 
+ 缓存命中的成功响应为已知零增量，且没有 `shared_read`。网络共享的成功成员仍为 `from_cache=false`，即使结果来自条件读取后的 304；`cache` 描述该表示的 HTTP 新鲜度，不能把订阅者误标成缓存命中。
+ 
+-已经进入这次网络尝试、由直接读取路径包装的失败通过 C++ `Error.details` 保留 `usage` 和 `shared_read`，包括有效收据对应的失败与未知执行。HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造收据。
++已经进入这次网络尝试、由直接读取路径包装的失败通过 C++ `Error.details` 保留 `usage` 和 `shared_read`，包括有效收据对应的失败与未知执行。HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造收据。尤其外层 `Service::dispatch` 在读取返回后还会终检主体有效性，该检查失败时仍可能没有 `Error.details`。因此完整 HTTP 失败面并不保证每次都能取回已发生的用量，这一剩余边界不能解释成零消耗或安全自动重发。
+ 
+ Python `CoreError` 仅从失败 body 提取 object 类型的 `usage`、`shared_read`。MCP `_call` 保持 `ToolError` 和原错误文本，有详情时才在后面追加一行紧凑、保留 Unicode 的 JSON；无详情错误文本保持原样。成功的 `read_url` 仅在 Core 返回字段存在时原样透传 `usage`、`shared_read`、`cache`，不重算未知值、角色或成员用量。
+ 
+--- a/docs/implementation_status.json
++++ b/docs/implementation_status.json
+@@ -4685,7 +4685,7 @@
+     "identity": "Exact normalized URL, owner, full publication fence, request timeout/conditional grant, current cached snapshot+metadata and proven Worker request profile.",
+     "bounds": "32 lifetime members and64 open-admission groups; RPC completion closes admission; overflow/reentrant/unproven reads run independently.",
+     "delivery": "A separate Store transaction checks each member auth/deletion/all actual aliases/exact metadata and current+historical publication projection; no cache TTL is imposed on a just-fetched result.",
+-    "accounting": "Per-process attempt receipt on success/error; payer actual or null unknown, subscriber zero incremental usage plus nonadditive physical association; no durable direct-read ledger.",
++    "accounting": "Direct network success and wrapped execution errors carry per-process attempt details; prechecks and the outer Service principal postcheck can omit details. Payer usage is actual or null unknown; subscriber usage remains known zero plus nonadditive physical association, which may be unknown. No durable direct-read ledger.",
+     "remaining": "Explicit direct member cancellation; cross-instance/direct-durable/map/crawl/search coordination; broad cancellation/long-running/multinode acceptance; full CACHE-01/B-24 unsigned."
+   }
+ }

@@ -1,0 +1,21 @@
+{
+  "recorded_at_utc": "2026-10-25T06:49:04.676706+00:00",
+  "command": [
+    "python",
+    "validation/direct_shared_20261024/docs-audit/review_final.py"
+  ],
+  "exit_code": 1,
+  "failed_assertion": "assert not changed, changed",
+  "binding": "validation/direct_shared_20261024/build/candidate-v3-inputs.json",
+  "binding_sha256": "6071a2ede00d4f3c84fbc9d7702bb6d27e196587cc59a26a07b26aa02643888d",
+  "mismatches": [
+    {
+      "path": "tests/direct_shared.cpp",
+      "expected_sha256": "705f757a17ea5624eb44805e6b0cb16a3a51d66dd5f132cd90f99887701c6d22",
+      "actual_sha256": "52c8c5201501b94584ac99602abb6f279ecb553cc61faac3043bd37badf4be44",
+      "bytes": 49161,
+      "mtime_ns": 1792910923011693600
+    }
+  ],
+  "scope": "Read-only input binding failure, not a runtime test result. Subagent did not edit tests/direct_shared.cpp."
+}

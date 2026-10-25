@@ -1,0 +1,10 @@
+{
+  "recorded_at_utc": "2026-10-25T06:59:27.092177+00:00",
+  "driver_command": "python validation/direct_shared_20261024/run_sanitizers.py v3",
+  "terminated_driver_pids": [
+    38543
+  ],
+  "reason": "Repeated LeakSanitizer fatal error: cannot open /proc/<pid>/task in the restricted execution environment. Stop launching further identical failing replays; retain all emitted records. Do not disable detect_leaks. Retry complete native gate with required process visibility.",
+  "current_child_may_finish_its_existing_record": true,
+  "product_success_claimed": false
+}

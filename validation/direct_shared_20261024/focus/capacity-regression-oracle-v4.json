@@ -1,0 +1,10 @@
+{
+  "status": "test_oracle_error",
+  "focused_run": "corrected-capacity-and-fixtures-v3-command.json",
+  "production_library_sha256": "eb4fcd85d839bd43e78382943c8d0a7c73f47c178ff528a5fcd20851cef6404f",
+  "original_test_sha256": "705f757a17ea5624eb44805e6b0cb16a3a51d66dd5f132cd90f99887701c6d22",
+  "failure": "New group 23 assumes representation_publication always contains snippet_text; a direct same-policy representation may legally leave that optional distinct policy empty. canonical_text plus publication already reproduces the >8MiB aggregate boundary.",
+  "independent_capacity_result": "../independent/capacity-candidate-v3/summary.json",
+  "action": "Correct only the newly introduced group 23 assertion and retain all original 22 groups and production inputs.",
+  "crawl_and_retention": "passed_original_groups_after_fixture_profile_compatibility"
+}

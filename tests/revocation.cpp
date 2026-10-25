@@ -38,6 +38,7 @@ Json sites() {
 struct Worker:WorkerPort {
   std::function<void()> during;std::size_t calls=0;
   Json call(const std::string& method,const Json& args,int) override {
+    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
     ++calls;if(during)during();
     if(method=="search.multi")return Json::parse(R"({"results":{"synthetic":{"status":"ok","hits":[{"url":"https://read.example/result","title":"Sensitive title","snippet":"revocationmarker secret","rank":1}]}}})");
     CHECK(method=="fetch.extract");auto out=Json::parse(R"({"status":"ok","html":"<main>revocationmarker late page</main>","text":"revocationmarker late page","title":"Late page","content_type":"text/html","extractor":"fixture/1","index_allowed":true,"redirects":[],"links":[],"usage":{"external_requests":1,"content_bytes":48}})");out.set("final_url",args.at("url"));return out;

@@ -1,0 +1,16 @@
+{
+  "reason": "Legal per-field inputs can exceed a newly imposed aggregate snapshot JSON copy bound after a successful commit. Freeze only the nine window fields separately and omit unused body/publication copies. Preserve complete metadata and existing per-member guard.",
+  "source": "../independent/capacity-candidate-v2/summary.json",
+  "changes": {
+    "include/bzs/web.hpp": "0310dca14cd4e2ccb3d49fa308fad6232c4c474cb20d1b7f820f8bbeb207f76c",
+    "src/web.cpp": "e2e851822bd7bc8f39d750ac0e99b1e1f0f3a5614a42102287ca70907ef17701",
+    "tests/direct_shared.cpp": "705f757a17ea5624eb44805e6b0cb16a3a51d66dd5f132cd90f99887701c6d22",
+    "tests/crawl.cpp": "e8116e009a4ba3697a9c9ffe34dc350f113c6bd9a73c7d3e250b326cdc8ac200",
+    "tests/retention.cpp": "49e3d74a42664fa8d48432c3981450893be51e070d9fd0d3dc5c066d5f19b5d9"
+  },
+  "regression": "tests/direct_shared.cpp group 23; prior 22 groups unchanged",
+  "fixture_compatibility": "../fake-profile-followup/",
+  "external_worker_limits_changed": false,
+  "json_api_changed": false,
+  "database_schema_changed": false
+}

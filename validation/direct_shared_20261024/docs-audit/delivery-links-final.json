@@ -1,0 +1,639 @@
+{
+  "recorded_at_utc": "2026-10-25T07:13:20.558328+00:00",
+  "status": "passed_read_only_delivery_facts_and_links_review",
+  "scope": "Read-only review of the two final delivery files against the unchanged final documentation audit and already closed execution records; no product tests, network calls, source/document edits, or prior evidence rewrites.",
+  "reviewed_files": {
+    "validation/direct_shared_20261024/README.md": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7",
+    "validation/direct_shared_20261024/final-report.json": "f6acf4897829d7fb09797285fa4e3eee89418791a7e66666e48ee74440538fa1",
+    "docs/DIRECT_SHARED_READS.md": "364b96b8d1a180c03c6d5a7e13d9d055f8d87873e38004a848bca9ea3b47b1b2",
+    "validation/direct_shared_20261024/docs-audit/audit-final-v5.json": "05975007fc7c16f88e336548d61451a040c6b7c605d27bc103f0b93348cadcdf"
+  },
+  "prior_final_input_binding": "build/candidate-v5-inputs.json",
+  "bound_input_files": 227,
+  "source_and_document_hashes_unchanged": true,
+  "all_227_current_inputs_equal_to_prior_audit_and_final_post_run": true,
+  "closed_pending_link_occurrences": [
+    {
+      "path": "README.md",
+      "line": 3,
+      "target": "validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "HANDOFF_START_HERE.md",
+      "line": 7,
+      "target": "validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "docs/DIRECT_SHARED_READS.md",
+      "line": 109,
+      "target": "../validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "docs/DIRECT_SHARED_READS.md",
+      "line": 109,
+      "target": "../validation/direct_shared_20261024/final-report.json",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/final-report.json",
+      "target_sha256": "f6acf4897829d7fb09797285fa4e3eee89418791a7e66666e48ee74440538fa1"
+    },
+    {
+      "path": "docs/GITHUB_HANDOFF.md",
+      "line": 11,
+      "target": "../validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "line": 5,
+      "target": "../validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "line": 5,
+      "target": "../validation/direct_shared_20261024/final-report.json",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/final-report.json",
+      "target_sha256": "f6acf4897829d7fb09797285fa4e3eee89418791a7e66666e48ee74440538fa1"
+    },
+    {
+      "path": "docs/handoff/NEXT_AGENT.md",
+      "line": 7,
+      "target": "../../validation/direct_shared_20261024/README.md",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/README.md",
+      "target_sha256": "23736efc1273e8aac934c59e3d08b9427a2dc27b7f69d77e61781440e0145bc7"
+    },
+    {
+      "path": "docs/handoff/NEXT_AGENT.md",
+      "line": 11,
+      "target": "../../validation/direct_shared_20261024/final-report.json",
+      "status": "closed_present",
+      "resolved_path": "validation/direct_shared_20261024/final-report.json",
+      "target_sha256": "f6acf4897829d7fb09797285fa4e3eee89418791a7e66666e48ee74440538fa1"
+    }
+  ],
+  "new_readme_local_links": [
+    {
+      "line": 3,
+      "target": "../../docs/DIRECT_SHARED_READS.md",
+      "resolved_path": "docs/DIRECT_SHARED_READS.md",
+      "status": "present"
+    },
+    {
+      "line": 3,
+      "target": "final-report.json",
+      "resolved_path": "validation/direct_shared_20261024/final-report.json",
+      "status": "present"
+    },
+    {
+      "line": 5,
+      "target": "published-baseline/manifest.json",
+      "resolved_path": "validation/direct_shared_20261024/published-baseline/manifest.json",
+      "status": "present"
+    },
+    {
+      "line": 21,
+      "target": "final/ctest-v2-command.json",
+      "resolved_path": "validation/direct_shared_20261024/final/ctest-v2-command.json",
+      "status": "present"
+    },
+    {
+      "line": 21,
+      "target": "final/ctest-v2-detail.log",
+      "resolved_path": "validation/direct_shared_20261024/final/ctest-v2-detail.log",
+      "status": "present"
+    },
+    {
+      "line": 21,
+      "target": "final/ctest-v2-junit.xml",
+      "resolved_path": "validation/direct_shared_20261024/final/ctest-v2-junit.xml",
+      "status": "present"
+    },
+    {
+      "line": 22,
+      "target": "final-report.json",
+      "resolved_path": "validation/direct_shared_20261024/final-report.json",
+      "status": "present"
+    },
+    {
+      "line": 23,
+      "target": "final/ctest-v2-detail.log",
+      "resolved_path": "validation/direct_shared_20261024/final/ctest-v2-detail.log",
+      "status": "present"
+    },
+    {
+      "line": 24,
+      "target": "../../tests/direct_shared.cpp",
+      "resolved_path": "tests/direct_shared.cpp",
+      "status": "present"
+    },
+    {
+      "line": 24,
+      "target": "../../python/tests/test_mcp_read.py",
+      "resolved_path": "python/tests/test_mcp_read.py",
+      "status": "present"
+    },
+    {
+      "line": 24,
+      "target": "../../tests/integration.py",
+      "resolved_path": "tests/integration.py",
+      "status": "present"
+    },
+    {
+      "line": 25,
+      "target": "final/sanitizer-closure.json",
+      "resolved_path": "validation/direct_shared_20261024/final/sanitizer-closure.json",
+      "status": "present"
+    },
+    {
+      "line": 26,
+      "target": "final/contracts-v2-command.json",
+      "resolved_path": "validation/direct_shared_20261024/final/contracts-v2-command.json",
+      "status": "present"
+    },
+    {
+      "line": 27,
+      "target": "final/plan-guard-v2-command.json",
+      "resolved_path": "validation/direct_shared_20261024/final/plan-guard-v2-command.json",
+      "status": "present"
+    },
+    {
+      "line": 27,
+      "target": "final/plan-v2.log",
+      "resolved_path": "validation/direct_shared_20261024/final/plan-v2.log",
+      "status": "present"
+    },
+    {
+      "line": 28,
+      "target": "final/pip-check-v2-command.json",
+      "resolved_path": "validation/direct_shared_20261024/final/pip-check-v2-command.json",
+      "status": "present"
+    },
+    {
+      "line": 30,
+      "target": "independent/closed-ctest-review-v2.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/closed-ctest-review-v2.json",
+      "status": "present"
+    },
+    {
+      "line": 32,
+      "target": "final/sanitizer-closure.json",
+      "resolved_path": "validation/direct_shared_20261024/final/sanitizer-closure.json",
+      "status": "present"
+    },
+    {
+      "line": 36,
+      "target": "final/post-run-inputs.json",
+      "resolved_path": "validation/direct_shared_20261024/final/post-run-inputs.json",
+      "status": "present"
+    },
+    {
+      "line": 36,
+      "target": "build/candidate-v5-command.json",
+      "resolved_path": "validation/direct_shared_20261024/build/candidate-v5-command.json",
+      "status": "present"
+    },
+    {
+      "line": 36,
+      "target": "build/asan-v2-command.json",
+      "resolved_path": "validation/direct_shared_20261024/build/asan-v2-command.json",
+      "status": "present"
+    },
+    {
+      "line": 44,
+      "target": "independent/independent-review.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/independent-review.json",
+      "status": "present"
+    },
+    {
+      "line": 46,
+      "target": "independent/README.md",
+      "resolved_path": "validation/direct_shared_20261024/independent/README.md",
+      "status": "present"
+    },
+    {
+      "line": 46,
+      "target": "independent/archive-manifest.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/archive-manifest.json",
+      "status": "present"
+    },
+    {
+      "line": 48,
+      "target": "independent/baseline-source-provenance.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/baseline-source-provenance.json",
+      "status": "present"
+    },
+    {
+      "line": 58,
+      "target": "focus/core-hang-analysis.json",
+      "resolved_path": "validation/direct_shared_20261024/focus/core-hang-analysis.json",
+      "status": "present"
+    },
+    {
+      "line": 61,
+      "target": "final/ctest-v1-analysis.json",
+      "resolved_path": "validation/direct_shared_20261024/final/ctest-v1-analysis.json",
+      "status": "present"
+    },
+    {
+      "line": 62,
+      "target": "independent/capacity-baseline-v1/summary.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/capacity-baseline-v1/summary.json",
+      "status": "present"
+    },
+    {
+      "line": 62,
+      "target": "independent/capacity-candidate-v2/summary.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/capacity-candidate-v2/summary.json",
+      "status": "present"
+    },
+    {
+      "line": 62,
+      "target": "independent/capacity-candidate-v3/summary.json",
+      "resolved_path": "validation/direct_shared_20261024/independent/capacity-candidate-v3/summary.json",
+      "status": "present"
+    },
+    {
+      "line": 63,
+      "target": "regression-author/direct-shared-v6-record.json",
+      "resolved_path": "validation/direct_shared_20261024/regression-author/direct-shared-v6-record.json",
+      "status": "present"
+    },
+    {
+      "line": 64,
+      "target": "mcp/manifest.json",
+      "resolved_path": "validation/direct_shared_20261024/mcp/manifest.json",
+      "status": "present"
+    },
+    {
+      "line": 65,
+      "target": "asan/restricted-environment-analysis-v3.json",
+      "resolved_path": "validation/direct_shared_20261024/asan/restricted-environment-analysis-v3.json",
+      "status": "present"
+    },
+    {
+      "line": 66,
+      "target": "final/sanitizer-closure.json",
+      "resolved_path": "validation/direct_shared_20261024/final/sanitizer-closure.json",
+      "status": "present"
+    },
+    {
+      "line": 69,
+      "target": "mcp/interrupted-broad-run.json",
+      "resolved_path": "validation/direct_shared_20261024/mcp/interrupted-broad-run.json",
+      "status": "present"
+    },
+    {
+      "line": 73,
+      "target": "preservation/audit-v3.json",
+      "resolved_path": "validation/direct_shared_20261024/preservation/audit-v3.json",
+      "status": "present"
+    },
+    {
+      "line": 75,
+      "target": "preservation/FINAL-v3.md",
+      "resolved_path": "validation/direct_shared_20261024/preservation/FINAL-v3.md",
+      "status": "present"
+    },
+    {
+      "line": 83,
+      "target": "run.py",
+      "resolved_path": "validation/direct_shared_20261024/run.py",
+      "status": "present"
+    },
+    {
+      "line": 84,
+      "target": "run_sanitizers.py",
+      "resolved_path": "validation/direct_shared_20261024/run_sanitizers.py",
+      "status": "present"
+    },
+    {
+      "line": 85,
+      "target": "summarize.py",
+      "resolved_path": "validation/direct_shared_20261024/summarize.py",
+      "status": "present"
+    },
+    {
+      "line": 86,
+      "target": "preservation/audit_preservation_v3.py",
+      "resolved_path": "validation/direct_shared_20261024/preservation/audit_preservation_v3.py",
+      "status": "present"
+    },
+    {
+      "line": 87,
+      "target": "docs-audit/audit-final-v5.json",
+      "resolved_path": "validation/direct_shared_20261024/docs-audit/audit-final-v5.json",
+      "status": "present"
+    }
+  ],
+  "final_report_and_closure_hash_references_checked": [
+    {
+      "field": "final-report.builds.debug",
+      "path": "build/candidate-v5-command.json",
+      "sha256": "11781b15aa5cca2574da99674dd088034781224d7d17bbfd1aba214f758f71d4"
+    },
+    {
+      "field": "final-report.builds.sanitizers",
+      "path": "build/asan-v2-command.json",
+      "sha256": "60e8c3253cd18f9aa395a9a9fa6c31a877b2301780770e94b08e567ad9037279"
+    },
+    {
+      "field": "final-report.final_sanitizers.closure",
+      "path": "final/sanitizer-closure.json",
+      "sha256": "c46ce8e003327418b0c9d61810b413522695bd6c1ada38bfbe351b78a22327c4"
+    },
+    {
+      "field": "final-report.independent_review",
+      "path": "independent/independent-review.json",
+      "sha256": "4b24eadd01d3d603e18dd5b93ee6b420714f63737573e6e9cb39bea0f51f335b"
+    },
+    {
+      "field": "final-report.independent_review.groups.candidate-native-v3",
+      "path": "independent/candidate-native-v3/summary.json",
+      "sha256": "2585f3de6791432fc860772cf7e949c51b1788a626ccca66bd9a9ef56d6bf739"
+    },
+    {
+      "field": "final-report.independent_review.groups.candidate-extra-v3",
+      "path": "independent/candidate-extra-v3/summary.json",
+      "sha256": "42a1fbbf13b5e703f02db9ae33c79cd40adbc2bfc39e17c8400bbdb4776b3797"
+    },
+    {
+      "field": "final-report.independent_review.groups.capacity-candidate-v3",
+      "path": "independent/capacity-candidate-v3/summary.json",
+      "sha256": "695c53d2176a363d7eb8d2a19ff5dc11ccf31260d68a812978b47f1eb8199b00"
+    },
+    {
+      "field": "final-report.independent_review.groups.candidate-wire-v3",
+      "path": "independent/candidate-wire-v3/summary.json",
+      "sha256": "56c2a0fb06adfa0b6180c18faabf134f031c55519dd822f5f819f0b73c8ee05b"
+    },
+    {
+      "field": "final-report.independent_review.baseline_provenance",
+      "path": "independent/baseline-source-provenance.json",
+      "sha256": "9b3976d0f245cfc0ca7784b6f114c0be77916a9ee22113a3a0932f38faa8ddf4"
+    },
+    {
+      "field": "final-report.independent_review.baseline_missing_capability",
+      "path": "independent/baseline-v1/summary.json",
+      "sha256": "cc36e6e9608a465848bcadeda94a3ef4695888a89c0d53d2d5d92d91e926a0af"
+    },
+    {
+      "field": "final-report.independent_review.real_capacity_before_after[0]",
+      "path": "independent/capacity-baseline-v1/summary.json",
+      "sha256": "17db38adb8c16a8cbf699aba99a4fc5e813cd3d33b6a81e446a20f04a363e4ab"
+    },
+    {
+      "field": "final-report.independent_review.real_capacity_before_after[1]",
+      "path": "independent/capacity-candidate-v2/summary.json",
+      "sha256": "1f7156032bd0cfdb888cbe5ed1e7caede920cb802e4d1ea36e8ba06dd7b7f377"
+    },
+    {
+      "field": "final-report.independent_review.real_capacity_before_after[2]",
+      "path": "independent/capacity-candidate-v3/summary.json",
+      "sha256": "695c53d2176a363d7eb8d2a19ff5dc11ccf31260d68a812978b47f1eb8199b00"
+    },
+    {
+      "field": "final-report.input_binding.post_run",
+      "path": "final/post-run-inputs.json",
+      "sha256": "bd9f7cbf65ac67590aa16eb41fb28b277725c61577d2cf5b026019cd83050eb8"
+    },
+    {
+      "field": "final-report.preservation",
+      "path": "preservation/audit-v3.json",
+      "sha256": "abb2e80e1e9b7099cd41ac8de6b0cafaea49f1b187b371db1e0d4afa97dc6d21"
+    },
+    {
+      "field": "final-report.documentation_audit",
+      "path": "docs-audit/audit-final-v5.json",
+      "sha256": "05975007fc7c16f88e336548d61451a040c6b7c605d27bc103f0b93348cadcdf"
+    },
+    {
+      "field": "final-report.remote_publication.observed_parent",
+      "path": "final/remote-before-publication.json",
+      "sha256": "a6abe309b6e2a28f0d1fa31fa4539e3cdc836459338a2f9a6962ba0e162f81f5"
+    },
+    {
+      "field": "sanitizer-closure.initial_driver",
+      "path": "asan/execution-v4.json",
+      "sha256": "bded3d2f8b0c4cf15dac75e02e28c19bda2e40daec6ea15663d62e481b0848af"
+    },
+    {
+      "field": "sanitizer-closure.binary_permissions_repaired_without_byte_changes[0]",
+      "path": "asan/revalidation-launcher-permission-v4.json",
+      "sha256": "52c531571f6cfa726f02ad8e72ae0e367cdec21bff99447b2d4482e72bd1ff71"
+    },
+    {
+      "field": "sanitizer-closure.binary_permissions_repaired_without_byte_changes[1]",
+      "path": "asan/cache-freshness-launcher-permission-v4.json",
+      "sha256": "3cd16ac71dd111d3da8e277df96f8b84ad52f25df4f458bd2cc28b8b70ace869"
+    },
+    {
+      "field": "sanitizer-closure.restricted_environment_attempt",
+      "path": "asan/restricted-environment-stop-v3.json",
+      "sha256": "a65129cda481b565b8a9b82230015046790f1e3b15d53cccd980c8dd6fc62839"
+    }
+  ],
+  "sanitizer_selection": {
+    "selected_targets": 16,
+    "v4_successful_executions": 14,
+    "v5_successful_replays": 2,
+    "original_v4_driver_all_passed": false,
+    "original_v4_driver_sha256": "bded3d2f8b0c4cf15dac75e02e28c19bda2e40daec6ea15663d62e481b0848af",
+    "closure_sha256": "c46ce8e003327418b0c9d61810b413522695bd6c1ada38bfbe351b78a22327c4",
+    "v5_targets": [
+      "bzs_cache_freshness_tests",
+      "bzs_revalidation_tests"
+    ],
+    "selected_closed_records": [
+      {
+        "target": "bzs_batch_tests",
+        "record": "asan/bzs_batch_tests-v4-command.json",
+        "record_sha256": "358d28502b20edf3040d092fb22ec1770e070bcdaef0511f309e45bb5b2674df",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_cache_freshness_tests",
+        "record": "asan/bzs_cache_freshness_tests-v5-command.json",
+        "record_sha256": "6e6094ad0a80695a6ba2ff3da997469ec8255c850f2f1017f712828af07dbfd0",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_capacity_cycles_tests",
+        "record": "asan/bzs_capacity_cycles_tests-v4-command.json",
+        "record_sha256": "498a5995f04485dcb33d2030811df90e2c49da103c07671dc6168a1a22715a07",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_contract_tests",
+        "record": "asan/bzs_contract_tests-v4-command.json",
+        "record_sha256": "4f649f7981afbea6f2d359d8bdf24021ddb19fc2b1d048be46ff4f44afe8421d",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_crawl_tests",
+        "record": "asan/bzs_crawl_tests-v4-command.json",
+        "record_sha256": "4f5ab694dca1f344ef40f75fa1ed5b718f6fd39b45774987cb75d701aa4685fd",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_direct_shared_tests",
+        "record": "asan/bzs_direct_shared_tests-v4-command.json",
+        "record_sha256": "ea3f94a6f2878cdd76f2c660c6545d020543b3f561bb49da5603db3d3d411f8c",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_fairness_tests",
+        "record": "asan/bzs_fairness_tests-v4-command.json",
+        "record_sha256": "a8f1f03e6f861191f0f7fc3e94a311b833dbb13967a028be3303f7e988f8e922",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_map_tests",
+        "record": "asan/bzs_map_tests-v4-command.json",
+        "record_sha256": "55c2de98e96d0372fa73964e594928f6a4af5fff61e8ac4553bd0ef0f64d2df5",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_retention_tests",
+        "record": "asan/bzs_retention_tests-v4-command.json",
+        "record_sha256": "5d4748dba07f645f655f03c1ebcabb7cf130ded492492d42db2dad4c1ed3f422",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_revalidation_tests",
+        "record": "asan/bzs_revalidation_tests-v5-command.json",
+        "record_sha256": "af4ea92264bb4063eb045a17572eed76c08dbe40e8cdcd67147559a0a9f1de7b",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_revocation_tests",
+        "record": "asan/bzs_revocation_tests-v4-command.json",
+        "record_sha256": "01fff63437cb93442be443e3fbf4d18903609196043dd7c8e4ef5f132f633395",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_search_mode_tests",
+        "record": "asan/bzs_search_mode_tests-v4-command.json",
+        "record_sha256": "045390b91aaa6f32780da09a982608d63a51e45aa30ca7c1201986e4c6dd3272",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_session_tests",
+        "record": "asan/bzs_session_tests-v4-command.json",
+        "record_sha256": "b3311551586ca2521fa662d25b1575807c715d379ad1e5c412642cee885edfa9",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_site_publication_tests",
+        "record": "asan/bzs_site_publication_tests-v4-command.json",
+        "record_sha256": "01566d50d7d4002b212d5914431a0856b1b527377419cc50fe98ed889e3fa1d0",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_source_publication_tests",
+        "record": "asan/bzs_source_publication_tests-v4-command.json",
+        "record_sha256": "a5992b574a8a91004fae738ca368e7e9e08081f25442af711a413d080fe6000a",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      },
+      {
+        "target": "bzs_tests",
+        "record": "asan/bzs_tests-v4-command.json",
+        "record_sha256": "d724d0f723b5070c94a159444452f62f49b5c447c3399c87aed26e3a279f3c03",
+        "exit_code": 0,
+        "source_and_binary_inputs_equal_to_post_run": true
+      }
+    ],
+    "permission_repair_records": [
+      {
+        "record": "asan/revalidation-launcher-permission-v4.json",
+        "sha256": "52c531571f6cfa726f02ad8e72ae0e367cdec21bff99447b2d4482e72bd1ff71",
+        "artifact": "build-asan/bzs_revalidation_tests",
+        "binary_sha256": "cd51c86883db2c892a862ffcdf03fafb1560fa4de2a0965645ae1898ce8cc59a",
+        "child_started": false,
+        "original_log_empty": true,
+        "original_full_stderr_not_reconstructed": true
+      },
+      {
+        "record": "asan/cache-freshness-launcher-permission-v4.json",
+        "sha256": "3cd16ac71dd111d3da8e277df96f8b84ad52f25df4f458bd2cc28b8b70ace869",
+        "artifact": "build-asan/bzs_cache_freshness_tests",
+        "binary_sha256": "33ec569c5e8faeac277da839795df3f7ea21d036f92afa58821901f8377b2aa1",
+        "child_started": false,
+        "original_log_empty": true,
+        "original_full_stderr_not_reconstructed": true
+      }
+    ],
+    "unchanged_leak_and_undefined_behavior_options": true,
+    "selected_source_and_binary_snapshots_equal_to_post_run": true,
+    "original_v4_batch_not_relabelled_as_passed": true
+  },
+  "final_ctest_record_consistent": {
+    "suites": 28,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "disabled": 0,
+    "nested_skips": 0,
+    "native_targets": 16,
+    "native_cases": 544,
+    "native_assertions": 20397,
+    "python_passed": 1294,
+    "duration_seconds": 207.694,
+    "components_not_additional_suites": true
+  },
+  "failure_history_preserved": {
+    "earlier_ctest_26_of_28_with_12_legacy_fixture_case_failures": true,
+    "restricted_sanitizer_eight_closed_fatal_and_one_incomplete": true,
+    "two_v4_failures_occurred_before_child_start": true,
+    "empty_launch_logs_and_missing_complete_tracebacks_not_reconstructed": true,
+    "interrupted_MCP_exact_argv_and_raw_output_gaps_explicit": true,
+    "prior_evidence_read_only": true
+  },
+  "contract_consistency": {
+    "same_webservice_direct_only": true,
+    "32_lifetime_members_and_64_open_admission_groups": true,
+    "actual_profile_validation_for_shared_success": true,
+    "nine_independently_encoded_window_fields_body_read_from_store": true,
+    "subscriber_known_zero_distinct_from_unknown_physical_usage": true,
+    "outer_service_postcheck_receipt_gap_remains_explicit": true,
+    "schema15_package_0_1_10_and_original_defaults_counts_unchanged": true,
+    "no_full_CACHE_01_B24_acceptance_or_future_remote_CI_claim": true
+  },
+  "unexpected_missing_links": [],
+  "material_findings": [],
+  "contextual_note": "The first limits entry in final-report is inherited independent-review scope text. The root full CTest/sanitizer results are separately recorded and bound by the final_ctest/final_sanitizers fields; this delivery review verifies those closed references. It is not a claim that the entire final report contains only focused tests.",
+  "limitations": [
+    "This audit reads existing results; it does not rerun or create product test/CI results.",
+    "Remote publication and new remote CI remain subsequent parent-owned work."
+  ],
+  "repository_writes_complete_after_this_record": true
+}

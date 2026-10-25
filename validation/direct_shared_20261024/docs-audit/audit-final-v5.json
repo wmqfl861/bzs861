@@ -1,0 +1,302 @@
+{
+  "completed_at_utc": "2026-10-25T06:51:16.969919+00:00",
+  "status": "closed_read_only_static_document_interface_audit",
+  "runtime_tests_executed_by_this_audit": false,
+  "network_calls_executed_by_this_audit": false,
+  "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "current_binding": "validation/direct_shared_20261024/build/candidate-v5-inputs.json",
+  "all_bound_input_hashes_match": true,
+  "bound_file_count": 227,
+  "input_record": "all-current-inputs-v5.json",
+  "document_hashes": {
+    "README.md": "d000dd40e1e9b26d47fe2334212ff580f603df625a170a9ba76e66aae7445b51",
+    "HANDOFF_START_HERE.md": "9f39d1f563fa55bed4add91f79d2c6b4a6a9aabc38ae501760f0f21d2f8199e6",
+    "docs/API.md": "f4e44109a31dac4d2cdb17cdb2be9834025629727198be7be0db8f9d8c7865c4",
+    "docs/DIRECT_SHARED_READS.md": "364b96b8d1a180c03c6d5a7e13d9d055f8d87873e38004a848bca9ea3b47b1b2",
+    "docs/SHARED_READS.md": "5849bd7a4b9630cbb642832c466ef865555d990fca31b1999a0ea31c61b06322",
+    "docs/GITHUB_HANDOFF.md": "729cf1f5bfd4e057cf62de49dfd2a3976ecc8459e3d694541b35e3a215749d11",
+    "docs/DEVELOPMENT_STATUS.md": "04c346ab0dab16b789afadae8a867b0cbe57a0290bafe71a6144aba63346a729",
+    "docs/handoff/NEXT_AGENT.md": "c0c66d430151b40ca35a9fea3faa6a68115bfca10ee5375b9a0ada3cf822c32e",
+    "docs/implementation_status.json": "c7c965f9536f81db52f269a4549bf134dd1948d8380cc23bff982e0a67e446ef"
+  },
+  "features": {
+    "bytes": 122468,
+    "sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "equal_to_baseline_bytes": true
+  },
+  "plan": {
+    "original_bytes_preserved": true,
+    "work_packages": 83,
+    "acceptance_items": 161,
+    "slices": 10,
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "configuration": {
+    "version": "0.1.10",
+    "schema": 15,
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "registered_sites": 0
+  },
+  "applied_parent_document_corrections": [
+    {
+      "path": "README.md",
+      "sha256": "d000dd40e1e9b26d47fe2334212ff580f603df625a170a9ba76e66aae7445b51",
+      "status": "Exactly matches the proposed documentation-only bytes."
+    },
+    {
+      "path": "docs/API.md",
+      "sha256": "f4e44109a31dac4d2cdb17cdb2be9834025629727198be7be0db8f9d8c7865c4",
+      "status": "Exactly matches the proposed documentation-only bytes."
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "sha256": "04c346ab0dab16b789afadae8a867b0cbe57a0290bafe71a6144aba63346a729",
+      "status": "Exactly matches the proposed documentation-only bytes."
+    },
+    {
+      "path": "docs/DIRECT_SHARED_READS.md",
+      "sha256": "364b96b8d1a180c03c6d5a7e13d9d055f8d87873e38004a848bca9ea3b47b1b2",
+      "status": "Parent applied the proposal plus the exact v5 narrow-field serialization paragraph."
+    },
+    {
+      "path": "docs/implementation_status.json",
+      "sha256": "c7c965f9536f81db52f269a4549bf134dd1948d8380cc23bff982e0a67e446ef",
+      "status": "Exactly matches the proposed documentation-only bytes."
+    }
+  ],
+  "findings": [
+    {
+      "id": "DOC-01",
+      "issue": "Unqualified current CACHE-01 candidate_increment/remaining text retained historical dispatch-only descriptions.",
+      "resolution": "Parent added feature_detail_text_scope outside the untouched features array, explicitly naming historical fields and current late/direct scopes.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-02",
+      "issue": "Handoff and summaries overpromised receipts on every direct failure.",
+      "resolution": "Handoff, development summary, current machine scope and direct contract now limit the promise to actual execution details and record the outer Service boundary.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-03",
+      "issue": "README still presented old local late-read candidate, ef45490 remote main and publication approval block as current.",
+      "resolution": "Parent applied the current direct-read baseline and authorization wording, without claiming a new containing commit or future CI.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-04",
+      "issue": "API unknown wording did not distinguish unknown physical/payer usage from subscriber known-zero incremental usage.",
+      "resolution": "API now explicitly distinguishes both fields and retains nonadditive association.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-05",
+      "issue": "API envelope opening implied every business failure contains result and usage.",
+      "resolution": "Success and failure shapes are now separated; optional failure details are not fabricated.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-06",
+      "issue": "The old 304 API paragraph overgeneralized one request/zero bytes, durable reservation semantics and redirect rejection.",
+      "resolution": "The paragraph now distinguishes direct versus authorized routed 304, direct unknown receipts versus durable reservations, and invalid route proofs.",
+      "status": "resolved"
+    },
+    {
+      "id": "DOC-07",
+      "issue": "Whole-snapshot serialization description was superseded by the parent's large-response compatibility fix.",
+      "resolution": "The final contract describes independently encoded window fields and Store body reads; the source uses exactly the nine fields consumed by window.",
+      "status": "resolved_as_static_contract_review_runtime_validation_owned_by_parent"
+    }
+  ],
+  "interface_checks": [
+    {
+      "topic": "Identity",
+      "result": "Same WebService, same owner, exact normalized URI, actual timeout/conditional request, complete fence, cache snapshot/metadata and current valid profile agree across API/contract/current scope.",
+      "source": [
+        "src/web.cpp: WebService::read",
+        "src/publication.cpp: Store::publication_fence"
+      ]
+    },
+    {
+      "topic": "Capacity and lifecycle",
+      "result": "32 cumulative members including payer; 64 open-admission map entries, not a total physical execution cap. Overflow/reentry/unproven requests remain independent; RPC completion closes admission.",
+      "source": [
+        "src/web.cpp: direct_reads_ admission and close_admission",
+        "include/bzs/web.hpp: DirectReadFlight"
+      ]
+    },
+    {
+      "topic": "Profile",
+      "result": "The optional network-path profile proof may fail into independent execution. Multi-member success requires valid actual http_freshness with matching request_profile; single-member legacy behavior remains.",
+      "source": [
+        "src/web.cpp: optional read profile and members > 1 validation"
+      ]
+    },
+    {
+      "topic": "Waiting and cancellation",
+      "result": "Subscriber steady_clock wait is timeout plus 5000 ms; no automatic reissue or direct fetch.cancel; there is no public direct-member cancel handle or durable recovery ledger.",
+      "source": [
+        "src/web.cpp: subscriber wait_until and receipt",
+        "docs/HTTP_EXECUTION.md"
+      ]
+    },
+    {
+      "topic": "Nine-field transfer",
+      "result": "Each window field is independently serialized. Members reconstruct their own Json values and read text through Store::range. No full canonical_text/publication aggregate is passed to the former 8 MiB parse.",
+      "fields": [
+        "snapshot_id",
+        "document_id",
+        "url",
+        "title",
+        "revision",
+        "indexed",
+        "site_publication",
+        "meta",
+        "links"
+      ],
+      "source": [
+        "src/web.cpp: snapshot_fields population and reconstruction",
+        "include/bzs/web.hpp: DirectReadFlight",
+        "src/web.cpp: WebService::window"
+      ]
+    },
+    {
+      "topic": "304 and delivery",
+      "result": "One physical ingest; each result window uses BEGIN IMMEDIATE for auth epoch, deletion/all aliases, metadata digest, current and historical publication projection. A changed same-ID metadata record fails E_REVALIDATION_STALE; new no-cache results do not require cache-hit TTL.",
+      "source": [
+        "src/store.cpp: Store::ingest_web_locked",
+        "src/store.cpp: Store::range",
+        "src/publication.cpp: publication history and alias fences"
+      ]
+    },
+    {
+      "topic": "Known and unknown usage",
+      "result": "Payer is actual or null unknown; subscriber incremental usage is known zero even when physical association is unknown. Cache hits are zero with no shared_read; network members retain from_cache=false. Associated physical usage is not additive.",
+      "source": [
+        "src/web.cpp: direct_read_usage",
+        "src/web.cpp: direct_read_increment",
+        "src/web.cpp: cached_window and receipt"
+      ]
+    },
+    {
+      "topic": "Error transport and MCP",
+      "result": "HTTP only preserves available execution details. CoreClient retains only dict usage/shared_read; MCP forwards present success fields and appends compact detail JSON to the original ToolError message without recomputation.",
+      "source": [
+        "include/bzs/error.hpp",
+        "apps/searchd/main.cpp: failure",
+        "python/bzs/core_client.py: CoreError and _unwrap",
+        "python/bzs/mcp_server.py: _call and read_url"
+      ]
+    },
+    {
+      "topic": "Restrictive observations",
+      "result": "No-store remains an error; invalid accounting/profile/cache proofs do not suppress separately validated restrictive observations. Cache invalidation is bound to the original snapshot and metadata digest.",
+      "source": [
+        "src/web.cpp: receipt_error and apply_observations",
+        "src/store.cpp: invalidate_web_cache",
+        "src/publication.cpp: observe_web_publication"
+      ]
+    },
+    {
+      "topic": "Durable separation",
+      "result": "SHARED_READS is explicitly scoped to durable read_many; late first-item admission, grants, lease capture, persistent closure and unknown settlement remain separate from direct flights.",
+      "source": [
+        "docs/SHARED_READS.md",
+        "src/batch.cpp: attach_late_read_locked and shared attempt storage",
+        "src/web.cpp: execute_read"
+      ]
+    },
+    {
+      "topic": "Plan and non-acceptance",
+      "result": "FT-032/B-24 map to CACHE-01, FT-019 maps to MODE-01. Original feature bytes and planned mapping are preserved; 83/161/10 and 37/46/0 remain, no full work-package acceptance or future CI is asserted.",
+      "source": [
+        "docs/planning/slices_v1.2.json",
+        "docs/implementation_status.json",
+        "current handoff sections"
+      ]
+    }
+  ],
+  "remaining_boundaries": [
+    {
+      "id": "RECEIPT-OUTER-SERVICE",
+      "description": "The final Service::dispatch principal check can throw after WebService completed; that outer Error may omit execution details although physical work occurred. Documentation now states this explicitly. This batch does not add a durable direct ledger or repair that receipt gap.",
+      "source": [
+        "src/service.cpp: Service::dispatch",
+        "docs/DIRECT_SHARED_READS.md: error-envelope boundary"
+      ]
+    },
+    {
+      "id": "GENERAL-SHARING",
+      "description": "Cross-instance/process and direct/durable/map/crawl/search sharing, public direct-member cancellation, restart receipt recovery and full CACHE-01/B-24 acceptance remain outside the implemented scope."
+    }
+  ],
+  "link_check": {
+    "local_link_occurrences": 204,
+    "unexpected_missing": [],
+    "parent_report_placeholders": [
+      {
+        "path": "README.md",
+        "line": 3,
+        "target": "validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "HANDOFF_START_HERE.md",
+        "line": 7,
+        "target": "validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/DIRECT_SHARED_READS.md",
+        "line": 109,
+        "target": "../validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/DIRECT_SHARED_READS.md",
+        "line": 109,
+        "target": "../validation/direct_shared_20261024/final-report.json",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/GITHUB_HANDOFF.md",
+        "line": 11,
+        "target": "../validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/DEVELOPMENT_STATUS.md",
+        "line": 5,
+        "target": "../validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/DEVELOPMENT_STATUS.md",
+        "line": 5,
+        "target": "../validation/direct_shared_20261024/final-report.json",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/handoff/NEXT_AGENT.md",
+        "line": 7,
+        "target": "../../validation/direct_shared_20261024/README.md",
+        "status": "parent_report_pending_not_a_bug"
+      },
+      {
+        "path": "docs/handoff/NEXT_AGENT.md",
+        "line": 11,
+        "target": "../../validation/direct_shared_20261024/final-report.json",
+        "status": "parent_report_pending_not_a_bug"
+      }
+    ]
+  },
+  "prospective_runtime_counts_in_current_docs": [],
+  "limitations": [
+    "This is a static consistency audit, not a new native/Python/CTest/ASan result, performance claim or acceptance sign-off.",
+    "Published-baseline GitHub claims were not independently re-queried; current runtime and CI outcomes belong to the parent's actual bound execution records.",
+    "The parent-owned final validation README/final-report may still be pending; those exact link targets are not classified as defects."
+  ]
+}

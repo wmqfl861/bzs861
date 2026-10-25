@@ -1,0 +1,69 @@
+{
+  "kind": "author_capacity_fixture_timeout_configuration",
+  "recorded_at": "2026-10-25T06:50:52.122154+00:00",
+  "source": "tests/direct_shared.cpp",
+  "sha256": "4e94e5e4ed979ff7a67bb5aba34c8540f0a081cf987caf64869b55253fdf163e",
+  "bytes": 49250,
+  "previous_sha256": "52c8c5201501b94584ac99602abb6f279ecb553cc61faac3043bd37badf4be44",
+  "test_groups": 23,
+  "changes": [
+    {
+      "before": "const Worker::Call synthetic{1,read_args().canonical(),profile,15000};",
+      "after": "const Worker::Call synthetic{1,read_args().canonical(),profile,65000};"
+    },
+    {
+      "before": "auto first=read_args();first.set(\"start_byte\",",
+      "after": "auto first=read_args();first.set(\"timeout_ms\",std::int64_t{60000});first.set(\"start_byte\","
+    },
+    {
+      "before": "auto second=read_args();second.set(\"start_byte\",",
+      "after": "auto second=read_args();second.set(\"timeout_ms\",std::int64_t{60000});second.set(\"start_byte\","
+    }
+  ],
+  "reason": "Root-run v5 succeeded with 23 groups and 3636 assertions but took approximately 20 seconds, with the new capacity fixture consuming about 17 seconds. This regression checks accepted serialized size and exact content, not default-timeout performance. Both member requests therefore use the existing supported 60000 ms upper bound; the synthetic RPC template is 65000 ms. No production timeout or CTest watchdog changes.",
+  "previous_22_groups_preserved_exactly": true,
+  "all_other_v5_bytes_preserved": true,
+  "observed_root_success": {
+    "evidence": [
+      {
+        "path": "validation/direct_shared_20261024/focus/direct-v4.log",
+        "sha256": "93779d20825592d6512a47bca49e63684dbc71b2d9ead99dde29535c542ef8ca"
+      },
+      {
+        "path": "validation/direct_shared_20261024/focus/direct-v4-command.json",
+        "sha256": "b6cd3dba8da2dcc102102480b668de71378bfcafa3762c7c75f44e2db3382fdb"
+      },
+      {
+        "path": "validation/direct_shared_20261024/focus/direct-v4-inputs.json",
+        "sha256": "3352c3601845ad4ff64534bf193dbf02fa316bc9ddf744d9418621b273a38651"
+      }
+    ],
+    "exit_code": 0,
+    "duration_seconds": 20.429,
+    "source_input_sha256": "52c8c5201501b94584ac99602abb6f279ecb553cc61faac3043bd37badf4be44",
+    "product_groups": 23,
+    "assertions": 3636,
+    "failures": 0
+  },
+  "syntax_check": {
+    "command": [
+      "g++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Iinclude",
+      "-fsyntax-only",
+      "validation/direct_shared_20261024/regression-author/direct-shared-v6-input.cpp"
+    ],
+    "cwd": "/workspace/scratch/133513441190/bzs861",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "production_code_changed": false,
+  "ctest_watchdog_changed": false,
+  "runtime_status": "V6 not executed by test author; root owns the next frozen Debug/ASan/final runs. No additional test cases or assertions were introduced."
+}

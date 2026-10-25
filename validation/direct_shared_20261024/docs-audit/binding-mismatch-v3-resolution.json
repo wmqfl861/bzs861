@@ -1,0 +1,12 @@
+{
+  "recorded_at_utc": "2026-10-25T06:49:52.340179+00:00",
+  "previous_attempt": "binding-mismatch-v3.json",
+  "classification": "Read-only audit compared a later authorized test-oracle edit with a previously closed build binding. This does not invalidate the already closed candidate-v3 build.",
+  "root_reported_reason": "Only a new group-23 assertion incorrectly requiring representation_publication.snippet_text was removed after candidate-v3/focus-v3 closed; earlier 22 groups and production were unchanged.",
+  "current_test_sha256": "52c8c5201501b94584ac99602abb6f279ecb553cc61faac3043bd37badf4be44",
+  "new_frozen_binding": "validation/direct_shared_20261024/build/candidate-v4-inputs.json",
+  "old_audit_script_sha256": "9f328596959d2411d760ea049297154eeead5d82e28f89782b16da09126cfd1e",
+  "final_audit_script": "review_final_v4.py",
+  "final_audit_script_sha256": "f1bfa828010c834e0bd353941a49206e5c79fc6181709b61afaf314d1dc5114e",
+  "native_runtime_tests_run_by_this_subagent": false
+}

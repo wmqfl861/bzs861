@@ -3,12 +3,17 @@
 #include "bzs/store.hpp"
 #include "bzs/sites.hpp"
 #include <chrono>
+#include <condition_variable>
+#include <exception>
 #include <filesystem>
+#include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 namespace bzs {
   // Search-source backoff is bounded independently of automatic-site/robots policy.
@@ -82,6 +87,23 @@ namespace bzs {
     // Last verified configuration within this core process. A temporarily
     // unavailable worker cannot change the representation selected by callers.
     std::string last_read_profile_;
+    // Direct reads retain their synchronous, ordinary Worker contract. Only
+    // compatible in-flight work in this WebService can share its one commit.
+    struct DirectReadFlight {
+      std::condition_variable ready;
+      std::thread::id leader=std::this_thread::get_id();
+      std::size_t members=1;
+      bool finished=false;
+      std::string attempt_id, physical_usage_json;
+      std::map<std::string,std::string> snapshot_fields;
+      std::exception_ptr error;
+    };
+    std::mutex direct_reads_mutex_;
+    std::map<std::string,std::shared_ptr<DirectReadFlight>> direct_reads_;
+    // Deterministic native-test barrier. Copied under the coordination lock,
+    // invoked without that lock or a Store transaction; no protocol setter.
+    friend struct WebReadTestAccess;
+    std::function<void(const std::string&)> direct_read_window_for_test_;
     std::optional<Json> cache_get(const std::string& key);
     void cache_put(const std::string& key, const Json& value, bool partial,std::int64_t source_generation);
     struct ReadArtifact {

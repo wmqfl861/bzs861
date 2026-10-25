@@ -1,5 +1,22 @@
 # 下一会话接手顺序
 
+## 当前接续：普通直接读取合并与同步用量回执
+
+更新：2026-10-24。基线为已发布 `346048b4ae329e750d15f1e35952aab4513e3912` / tree `458a6f321e94defd74616ba6ebbf2983252cb495`，其 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 已双平台成功。此前用户已明确允许推送 main；下文发布前的自动审批阻塞已解决。当前准确包含提交及其 CI 须按实际 Git / Actions 核对，不预写未来结果。
+
+1. 先读[当前入口](../../HANDOFF_START_HERE.md)、[直接共享合同](../DIRECT_SHARED_READS.md)、[机器状态](../implementation_status.json)和[本批验证记录](../../validation/direct_shared_20261024/README.md)。原 schema14/15 补丁已在基线，不重复实现。原 83 包 / 161 验收的定义不变；FT-019 属于 MODE-01，本批映射是 FT-032 / B-24。
+2. 核对共享只覆盖同一 WebService 的兼容普通 direct 读取；完整 fence、精确 URI、请求超时、缓存元数据 / 条件身份和已证明 profile 参与匹配。最多 32 累计成员、64 个开放组，同线程重入和超限独立执行。Worker RPC 返回立即关闭加入，完成结果不成为额外缓存。
+3. 保留每成员独立窗口、Store 返回事务和完整元数据绑定。no-cache 的新响应可返回；删除、撤权、页面/站点收紧不能因内存里已有正文而绕过。304 只提交一次，同 snapshot 后续 metadata 变化不得与旧物理回执混用。
+4. 核对成功和错误的 usage/shared_read 在 Core、HTTP、CoreClient、MCP 透传；payer 承担一次物理增量，subscriber 新增为零但保留关联用量，缺回执明确 unknown。直接读取没有持久预算账本，不提供重启后用量查询或网络恰好一次。
+5. 本批保留初次核心 Json 错误构造死锁、独立 malformed usage/限制观察反例、夹具 oracle 修正与后续闭合。按[最终记录](../../validation/direct_shared_20261024/final-report.json)核对源码/二进制/日志和独立复核；不得覆盖原失败或把独立探针与正式套件相加为验收数量。
+6. 下一步按蓝图设计直接读取的显式成员取消、共享物理尝试与 durable/map/crawl/search 的兼容条件及更广取消矩阵。直接接口和持久批读的 timeout、预算、截断、重定向响应体、付款身份均不同，不能直接塞入 batch attempt_id 改变合同。完整 B-24/CACHE-01、独立撤销 journal/安全恢复、真实来源、人审 qrels 与长期故障验收仍未签收。
+
+版本仍 0.1.10，schema15；默认来源/站点和六项保留决定不变。唯一发布目标 `wmqfl861/bzs861`，以准确远端父 SHA 非强推，发布后核对完整 tree 和该 SHA 的双平台 CI；审计分支保持只读。
+
+## 以下为上轮接手记录（发布前历史）
+
+下文“本轮 / 当前 / 未发布 / 审批阻塞”均限于其对应历史记录，当前状态以上文为准。
+
 ## 当前接续：schema15 持久批读迟到订阅
 
 更新：2026-10-24。本地基线 `a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89` / tree `e15b716766e9a2a787660ffd304df2102e4b994c` 是上轮已验证、未推送的 URI 修正，不是远端 main。实际远端 main 仍为 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`。本轮版本仍为 0.1.10，当前业务格式升为15；默认分支发布的自动审批阻塞维持，不重试或绕过远端写入，不声明新 CI。

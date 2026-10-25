@@ -106,7 +106,8 @@ TEST(no_store_never_persists_new_body_and_fences_old_http_reuse) {
 TEST(old_worker_metadata_requires_refresh_and_no_cache_only_network) {
   Temp t;Worker w;w.omit=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
   web.read("a",args());web.read("a",args());CHECK(w.requests==2);
-  rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==2&&w.profiles==0);
+  const auto profiles_before=w.profiles;
+  rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==2&&w.profiles==profiles_before);
 }
 TEST(restart_owner_and_changed_request_profile_do_not_share_cache) {
   Temp t;Worker w;{Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",args());}

@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "/workspace/scratch/133513441190/bzs861/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "python/tests/test_mcp_read.py",
+    "-k",
+    "core_read_failure"
+  ],
+  "cwd": "/workspace/scratch/133513441190/bzs861",
+  "exit_code": 1,
+  "elapsed_seconds": 1.37,
+  "inputs_sha256": {
+    "python/bzs/mcp_server.py": "4d07947ddd47867a76fca25dd9f5600a636755f91e2564f71ede114dbdd0d36a",
+    "python/bzs/core_client.py": "663bd765f82d40912fa3f695b71b35033e26202c90582e50b0451eae46b82fc2",
+    "python/tests/test_mcp_read.py": "1a93df38924028212138e51d6fe527f9c1d534bb6dc06435f53dd83f8cafa248"
+  },
+  "log": "/workspace/scratch/133513441190/direct-read-mcp-evidence/error-baseline.log"
+}

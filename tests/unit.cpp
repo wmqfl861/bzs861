@@ -1300,6 +1300,7 @@ namespace {
     std::function<Json(const std::string&, const Json&)> handler;
     bool fill_fetch_defaults=true;
     Json call(const std::string& m, const Json& p, int) override {
+      if(m=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
       calls.emplace_back(m, p);
       auto result=handler(m, p);
       if(fill_fetch_defaults&&m=="fetch.extract"&&result.has("status")&&

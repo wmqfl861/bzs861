@@ -1,0 +1,24 @@
+{
+  "source": "/workspace/scratch/133513441190/bzs861/tests/integration.py",
+  "source_sha256": "7a800f618d71671311502b7e4cd6922cba3b5f33cf741b47dd53ef5de68f3acc",
+  "frozen_source": "/workspace/scratch/133513441190/direct-shared-regression-evidence/integration-http-receipts-v1.py",
+  "native_source_unchanged_sha256": "8e869a62cbb1381b1b0dc6b084653f593b7ef6fce77250d08017495ad0b1c5fe",
+  "preserved_existing_classes": {
+    "RunningServer": true,
+    "Integration": true,
+    "HTTPExecution": true
+  },
+  "new_test_class": "DirectReadReceipts",
+  "new_tests": 3,
+  "syntax_check": {
+    "method": "Python compile(source, filename, exec); no imported execution or bytecode writes",
+    "result": "passed"
+  },
+  "runtime_status": "not run by test author; root will run the final HTTP gate",
+  "changes": [
+    "HeldWorker adds a valid fetch.profile response and an optional fetch response factory; its default held timeout response and original test assertions are preserved.",
+    "Success and cache-only envelopes retain accurate UTF-8 byte use, payer receipt, and zero/no-receipt cache accounting.",
+    "Window failure remains HTTP 400 / E_EVIDENCE_RANGE and preserves the paid physical receipt.",
+    "Known and unknown Worker failures remain HTTP 502 / E_FETCH_NETWORK with 1/byte-count or null/null physical accounting and no implicit retry."
+  ]
+}

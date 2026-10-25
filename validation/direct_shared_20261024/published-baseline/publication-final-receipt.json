@@ -1,0 +1,76 @@
+{
+  "authorized_user_instruction": "允许推送 main",
+  "repository": "wmqfl861/bzs861",
+  "published_at_utc": "2026-10-25T03:09:22.084Z",
+  "normal_git_push": {
+    "result": "failed_before_remote_write",
+    "exit_code": 128,
+    "reason": "No HTTPS Git credential available in executor; terminal prompts disabled"
+  },
+  "connector_publish": {
+    "force": false,
+    "expected_old_sha": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+    "main_readback": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "source_commit_mapping": [
+      {
+        "local_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+        "remote_commit": "21797f07d63204f531fa12ecab9e30e470657abb",
+        "tree": "e15b716766e9a2a787660ffd304df2102e4b994c",
+        "parent": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+        "observed_at_utc": "2026-10-25T03:07:30.870Z",
+        "main_updated": false
+      },
+      {
+        "local_commit": "fca5c1e9618f12f34ae9ff1d40fbf0edc15976a4",
+        "remote_commit": "346048b4ae329e750d15f1e35952aab4513e3912",
+        "tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+        "parent": "21797f07d63204f531fa12ecab9e30e470657abb",
+        "observed_at_utc": "2026-10-25T03:07:54.075Z",
+        "main_updated": false
+      }
+    ],
+    "all_31_intermediate_tree_hashes_match": true
+  },
+  "ci": {
+    "run_id": 40157161849,
+    "url": "https://github.com/wmqfl861/bzs861/actions/runs/40157161849",
+    "head_sha": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "event": "push",
+    "status": "completed",
+    "linux_job": 121060889871,
+    "windows_job": 121060890088,
+    "conclusion": "success",
+    "linux": {
+      "status": "success",
+      "ctest_passed": 27,
+      "ctest_total": 27,
+      "skipped": 0,
+      "sanitizer_targets_passed": 15,
+      "native_groups": 521,
+      "native_assertions": 16761,
+      "full_log_sha256": "091e559d028866ce71337c93eec1cd1d78126eaee0312cb7cdf08da1992cf44b",
+      "independent_review": "independent-linux-review.json"
+    },
+    "windows": {
+      "status": "success",
+      "ctest_passed": 17,
+      "ctest_total": 17,
+      "skipped": 0,
+      "nested_skips": 0,
+      "native_groups": 521,
+      "native_assertions": 16761,
+      "full_log_sha256": "45150378f34c1285f740d1f937123a7cf9af5368f4b398385a7b3b8f23fb2a4a",
+      "independent_review": "independent-windows-review.json"
+    }
+  },
+  "source_or_test_changes_after_validation": false,
+  "scope": "Two validated source snapshots published using GitHub connector; new remote commit identities, exact original trees, original local branch retained. No tags or review branch writes.",
+  "final_verified_at_utc": "2026-10-25T03:35:20.582Z",
+  "final_remote_main": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "final_tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+  "local_main_and_origin_main": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "worktree_clean": true,
+  "original_local_branch_preserved": "work/b24-late-subscribers-20261024",
+  "additional_remote_ref_updates": 0,
+  "remote_test_reruns": 0
+}

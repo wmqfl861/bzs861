@@ -51,7 +51,7 @@ struct Worker:WorkerPort{
         d.set("document_url",p.at("url"));d.set("document_type","html");d.set("parse_status","ok");d.set("candidates",candidates);d.set("truncated",false);d.set("diagnostics",Json::object());r.set("discovery",d);}
     }return r;
   }
-  Json call(const std::string& method,const Json& p,int)override{if(method=="fetch.cancel")return Json::object();CHECK(method=="fetch.extract"||method=="map.fetch");calls.push_back(Json::parse(p.dump()));auto r=response(p);return alter?alter(p,r):r;}
+  Json call(const std::string& method,const Json& p,int)override{if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);if(method=="fetch.cancel")return Json::object();CHECK(method=="fetch.extract"||method=="map.fetch");calls.push_back(Json::parse(p.dump()));auto r=response(p);return alter?alter(p,r):r;}
 };
 void drain(WebService& web){int n=0;while(auto lease=web.lease_map()){CHECK(++n<=40);web.execute_map(*lease);}}
 std::size_t hits(Store& store){auto session=store.search("alice",parse_query(Json::string("validationneedle")));return store.page("alice",session.at("session_id").str(),"",20).at("hits").size();}

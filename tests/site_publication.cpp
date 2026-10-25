@@ -55,6 +55,7 @@ Json read_args(const std::string& url) { auto args=Json::object();args.set("url"
 struct ReadWorker:WorkerPort {
   std::size_t requests=0;std::function<void()> during;
   Json call(const std::string& method,const Json& args,int) override {
+    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
     CHECK(method=="fetch.extract");++requests;if(during)during();
     auto result=Json::parse(R"({"status":"ok","html":"marker canonical secret","text":"marker canonical secret","content_type":"text/plain","title":"marker private title","extractor":"site-read/1","extract_status":"ok","final_url":"","http_status":200,"index_allowed":true,"links":[],"metadata":{},"warnings":[],"redirects":[],"usage":{"external_requests":1,"content_bytes":23},"publication":{"version":"bzs-publication-1","index_allowed":true,"snippet_allowed":true,"follow_allowed":true,"snippet_text":"marker canonical secret","snippet_title":"marker private title","directives":[],"diagnostics":[]}})");
     result.set("final_url",args.at("url"));return result;
@@ -283,6 +284,7 @@ struct OrderedReadWorker:ReadWorker {
   bool index=true,snippets=true,legacy=false,failed=false,partial_snippets=false;
   std::string final_url;Json redirects=Json::array();
   Json call(const std::string& method,const Json& args,int timeout)override {
+    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
     auto callback=std::exchange(during,{});auto response=ReadWorker::call(method,args,timeout);during=callback;
     response.set("final_url",final_url.empty()?args.at("url").str():final_url);response.set("redirects",redirects);
     response.at("usage").set("external_requests",static_cast<std::int64_t>(redirects.size()+1));
@@ -394,6 +396,7 @@ TEST(schema_seven_inflight_read_has_an_unknown_capture_and_cannot_republish_a_le
 struct IncompleteLegacyRead:OrderedReadWorker {
   std::string failure;
   Json call(const std::string& method,const Json& args,int timeout)override {
+    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
     auto response=OrderedReadWorker::call(method,args,timeout);
     if(failure=="truncated")response.at("warnings").push(Json::string("download_truncated"));
     else if(!failure.empty())response.set("http_status",std::int64_t{failure=="partial"?206:500});

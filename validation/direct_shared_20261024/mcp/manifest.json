@@ -1,0 +1,136 @@
+{
+  "source_directory": "/workspace/scratch/133513441190/direct-read-mcp-evidence",
+  "destination_directory": "validation/direct_shared_20261024/mcp",
+  "copy_verified_byte_for_byte": true,
+  "artifacts": [
+    {
+      "path": "baseline-mcp_server.py",
+      "bytes": 34084,
+      "sha256": "98fedcbad6f42aae2d5fa285a7f2b4b0b1f8681cb99dc983fed7214d41c02ab2"
+    },
+    {
+      "path": "baseline.json",
+      "bytes": 596,
+      "sha256": "19cbe4b829ef97106efe4f2fe909887a445b22fa080ad861b8c537a0c6e35bff"
+    },
+    {
+      "path": "baseline.log",
+      "bytes": 26193,
+      "sha256": "31ac063209680ddd1fb361255f57b44aebfb5e4c3a6c1f4a3bc77cc0adda06c0"
+    },
+    {
+      "path": "candidate-focused-v2.json",
+      "bytes": 1907,
+      "sha256": "23bf1d2464316638e36062d15c6828aca4487cc609d4f972f547835b3ca1d8ab"
+    },
+    {
+      "path": "candidate-focused-v2.log",
+      "bytes": 99,
+      "sha256": "c2468f7768390bb496a4e52fcda13fa360a20d8c867a6f4dff34734e5cc24d2c"
+    },
+    {
+      "path": "candidate-focused.json",
+      "bytes": 1904,
+      "sha256": "87ad0459591bba09219ce0635023cf59acd682148ce236e3e03eb0362881837d"
+    },
+    {
+      "path": "candidate-focused.log",
+      "bytes": 14703,
+      "sha256": "5b7d4fe96188986a09d5ff0eb49b74bc8ab087c5fa9ad039b957a22be84caced"
+    },
+    {
+      "path": "discovery-command.sh",
+      "bytes": 1682,
+      "sha256": "86ae2d359c627838862d31932c6ecfdb9e9b1dc7db3760574a2141d1a15ab6e5"
+    },
+    {
+      "path": "discovery-review.json",
+      "bytes": 1402,
+      "sha256": "2f6b9b8f37117b54a236712dfee9ac8707af93b86c9cde3166e542d5884b58f5"
+    },
+    {
+      "path": "error-baseline-core_client.py",
+      "bytes": 2981,
+      "sha256": "663bd765f82d40912fa3f695b71b35033e26202c90582e50b0451eae46b82fc2"
+    },
+    {
+      "path": "error-baseline-mcp_server.py",
+      "bytes": 34510,
+      "sha256": "4d07947ddd47867a76fca25dd9f5600a636755f91e2564f71ede114dbdd0d36a"
+    },
+    {
+      "path": "error-baseline-test_mcp_read.py",
+      "bytes": 7757,
+      "sha256": "1a93df38924028212138e51d6fe527f9c1d534bb6dc06435f53dd83f8cafa248"
+    },
+    {
+      "path": "error-baseline.json",
+      "bytes": 737,
+      "sha256": "919040384225c164b69e97f46a6eadffe42463f8a68ad9536ba62a102600ab2b"
+    },
+    {
+      "path": "error-baseline.log",
+      "bytes": 11891,
+      "sha256": "0a678ad0062e6414a4a824b5197aae2e30666602604c789ddaa9e246679f8706"
+    },
+    {
+      "path": "final-inputs.json",
+      "bytes": 1778,
+      "sha256": "43a2ae33f0565ea55bd8e9d8c4c1369549093b45cbb5a59eea90828c9db772b8"
+    },
+    {
+      "path": "fixture-review.json",
+      "bytes": 1033,
+      "sha256": "520001eea3215668ca0ac80ea01ab84bac2480a6165512fc669b8e7d32825ccb"
+    },
+    {
+      "path": "interrupted-broad-run.json",
+      "bytes": 657,
+      "sha256": "7fc013c31bb152f86e4e29702ba63c1b2b3df9ffb7e9108b550d54ef7713c048"
+    }
+  ],
+  "test_runs": [
+    {
+      "record": "baseline.json",
+      "log": "baseline.log",
+      "result": "5 failed, 1 passed; optional success fields absent before implementation"
+    },
+    {
+      "record": "error-baseline.json",
+      "log": "error-baseline.log",
+      "result": "7 failed, 6 deselected; CoreError details absent before implementation"
+    },
+    {
+      "record": "candidate-focused.json",
+      "log": "candidate-focused.log",
+      "result": "7 failed, 7 passed; newly added expectations omitted the existing SDK tool-name prefix"
+    },
+    {
+      "record": "candidate-focused-v2.json",
+      "log": "candidate-focused-v2.log",
+      "result": "14 passed; new expectations corrected to preserve the existing SDK prefix"
+    },
+    {
+      "record": "interrupted-broad-run.json",
+      "result": "interrupted; raw output and exact argv were not preserved; no pass claimed"
+    }
+  ],
+  "compatibility": {
+    "discovery_record": "discovery-review.json",
+    "discovery_command": "discovery-command.sh",
+    "discovery_command_note": "Captured executed Python source; heredoc delimiter renamed for storage.",
+    "fixture_record": "fixture-review.json",
+    "final_source_and_test_hashes": "final-inputs.json",
+    "error_extraction": "Only dictionary-valued usage and shared_read fields are retained from failed Core response bodies.",
+    "legacy_errors": "No-details errors retain their original code/message and SDK prefix; no JSON suffix is fabricated."
+  },
+  "recovered_test_versions": {
+    "error-baseline-test_mcp_read.py": "Byte reconstruction verified against the original recorded SHA-256."
+  },
+  "limitations": [
+    "These are local mocked/fixture checks, not CI or external source validation.",
+    "This subagent did not run native integrated tests.",
+    "The interrupted broad run has only a truthful outcome record, not a complete raw log.",
+    "Original JSON records retain their original absolute scratch paths; matching logs are archived alongside them."
+  ]
+}

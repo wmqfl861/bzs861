@@ -1,0 +1,33 @@
+{
+  "source": "/workspace/scratch/133513441190/bzs861/tests/direct_shared.cpp",
+  "sha256": "db286e51a0c0bbd3ad309c76971ae365bd582b0b6b6e193646a29c7aa8f51429",
+  "bytes": 44280,
+  "previous_sha256": "8e869a62cbb1381b1b0dc6b084653f593b7ef6fce77250d08017495ad0b1c5fe",
+  "previous_full_source_preserved_after_removing_only_new_group": true,
+  "new_group": "invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions",
+  "new_cases": [
+    "zero_success",
+    "missing_bytes",
+    "negative_requests",
+    "invalid_304"
+  ],
+  "test_groups": 21,
+  "syntax_check": {
+    "command": [
+      "g++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Iinclude",
+      "-fsyntax-only",
+      "tests/direct_shared.cpp"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "runtime_status": "Not run by this author. Root will rebuild and run candidate; independent reviewer owns pre-fix counterexample evidence."
+}

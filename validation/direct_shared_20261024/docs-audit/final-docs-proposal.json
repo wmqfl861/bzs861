@@ -1,0 +1,103 @@
+{
+  "created_at_utc": "2026-10-25T06:44:08.240545+00:00",
+  "applied": false,
+  "scope": "Documentation-only proposal; production, tests and all frozen documentation were left unchanged.",
+  "generator_command": [
+    "python",
+    "validation/direct_shared_20261024/docs-audit/generate_final_docs_patch.py"
+  ],
+  "patch_check_command": [
+    "git",
+    "apply",
+    "--check",
+    "--",
+    "/workspace/scratch/133513441190/bzs861/validation/direct_shared_20261024/docs-audit/final-docs.patch"
+  ],
+  "patch_check_exit_code": 0,
+  "patch_sha256": "4ac7b2da291c9a0d427bb424286284c2e7142e5ed715ecaa447e8a1c2b1be963",
+  "features_bytes_preserved": true,
+  "features_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+  "files": [
+    {
+      "path": "README.md",
+      "frozen_sha256": "4d2c3383bf2c3dd64140160b62f5fc9c2ff9d9d1bfa16102a2cdf2e270998c8c",
+      "proposed_sha256": "d000dd40e1e9b26d47fe2334212ff580f603df625a170a9ba76e66aae7445b51"
+    },
+    {
+      "path": "docs/API.md",
+      "frozen_sha256": "fb0ca74b7d932573d5d81db51b294f0256a148eaab16763c300e58a93d3c959b",
+      "proposed_sha256": "f4e44109a31dac4d2cdb17cdb2be9834025629727198be7be0db8f9d8c7865c4"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "frozen_sha256": "954b617e36dde9619e7081fd700b929fec42cc97908086811b37c702ed7a284c",
+      "proposed_sha256": "04c346ab0dab16b789afadae8a867b0cbe57a0290bafe71a6144aba63346a729"
+    },
+    {
+      "path": "docs/DIRECT_SHARED_READS.md",
+      "frozen_sha256": "741c153359badc4cc073919f6270c8849cb8b8795dd3a67085b01f25491ef0e0",
+      "proposed_sha256": "900396ea62d996406821d53fd6d348717f24017a6da1ebfcb0fda1caa5e19f8e"
+    },
+    {
+      "path": "docs/implementation_status.json",
+      "frozen_sha256": "0b78cab3f5f6bb91dc31ec6ea650390526de453abf89d3f883cfb8cbf98bd110",
+      "proposed_sha256": "c7c965f9536f81db52f269a4549bf134dd1948d8380cc23bff982e0a67e446ef"
+    }
+  ],
+  "changes": [
+    {
+      "path": "README.md",
+      "reason": "Replace an unqualified obsolete current-batch description with the actual direct-read scope and baseline.",
+      "old": "**状态：持久批读迟到订阅的本地候选；版本仍为 0.1.10，数据库 schema15。** 本批从上轮已本地验证、未推送的 `a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89` 接续，允许兼容新批读任务的首项加入原未结算尝试，保留固定付款、原发布捕获、租约和 32 个累计成员上限。范围与升级合同见[共享读取](docs/SHARED_READS.md)，基线失败、作者验证、独立审核和整合执行见[本批验证记录](validation/shared_read_late_20261024/README.md)。该合同与证据入口不预先声明新测试通过；S0、S1、S2 的完整验收仍未完成。",
+      "new": "**状态：普通直接读取的进程内共享与同步用量回执；版本仍为 0.1.10，数据库 schema15。** 本批从已发布的 `346048b4ae329e750d15f1e35952aab4513e3912` 接续，同一 `WebService` 内兼容的直接读取共享一次获取和一次表示提交，各成员独立取得窗口并通过返回屏障。合同见[直接共享读取](docs/DIRECT_SHARED_READS.md)，实际输入、失败与验证见[本批记录](validation/direct_shared_20261024/README.md)；已发布的持久批读迟到加入继续按[持久共享读取](docs/SHARED_READS.md)执行，两条通道不混合。完整 B-24、CACHE-01 及 S0、S1、S2 验收仍未完成。"
+    },
+    {
+      "path": "README.md",
+      "reason": "Remove obsolete remote-main and publication-blocker assertions without claiming a future containing commit or CI result.",
+      "old": "目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。远端 main 仍为 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`，该提交的 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 是历史成绩；`a3b3f6e2` 不是远端 main。本轮维持默认分支发布的自动审批阻塞，不重试或绕过远端写入，不声明新 CI 或新 tag。升级数据库前停止旧 Core，新旧程序不能混用。",
+      "new": "目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。上述已发布基线的 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 只证明该基线输入。用户已明确允许推送 main；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。"
+    },
+    {
+      "path": "README.md",
+      "reason": "Expose the current direct-read increment in the capability table.",
+      "old": "| 网页读取候选实现 | 缓存指令独立于 validator；直达或有完整证明的 HTTP 链按年龄/profile 复用，逐跳期限、删除和发布约束保持；no-store 无新持久快照 |",
+      "new": "| 网页读取候选实现 | 同一 WebService 内兼容直接读取可共享一次在途获取与提交，各自窗口和用量关联独立；缓存指令独立于 validator，完整直达/HTTP 链按年龄/profile 复用；no-store 无新持久快照 |"
+    },
+    {
+      "path": "docs/API.md",
+      "reason": "Do not promise result or usage fields on every business failure.",
+      "old": "响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。",
+      "new": "成功响应信封包含 `request_id`、`api_version`、`status`、`result`、`errors` 和 `usage`。失败信封保留请求身份、失败状态和 `errors`，不要求存在 `result`；`usage`、`shared_read` 仅在核心提供执行详情时输出，缺少字段不能解释为零消耗。"
+    },
+    {
+      "path": "docs/API.md",
+      "reason": "Disambiguate unknown physical/payer usage from the subscriber's known zero increment.",
+      "old": "缺少可靠回执时 `known=false`、请求数/字节为 `null`；缓存命中是已知零用量且没有 `shared_read`。",
+      "new": "缺少可靠物理回执时，`physical_usage` 与 `payer` 的增量为 `known=false`、请求数/字节为 `null`；`subscriber` 增量仍为 `known=true`、零请求和零字节，同时保留未知物理关联。缓存命中是已知零用量且没有 `shared_read`。"
+    },
+    {
+      "path": "docs/API.md",
+      "reason": "Qualify older 304 accounting/rejection text for routed validation and distinguish direct unknown receipts from durable reservations.",
+      "old": "已知304仍计1个实际HTTP请求、0正文响应字节；未知或无法解释的执行按既有保守预留结算。未经绑定、validator冲突、跳转后的304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。",
+      "new": "已知用量的直达304计1个实际HTTP请求、0正文响应字节；具有完整路由授权的N跳304计N+1次请求，并计入已消费的跳转响应体，详见[跳转缓存](HTTP_REDIRECT_CACHE.md)。未知执行在持久任务中按既有保守预留结算；普通直接读取没有该预留账本，物理回执保留 `known=false` 和 `null`，订阅者仍只报告零增量。未经绑定、validator冲突、缺少合法路由证明的跳转304或并发替换失败，不在同一次授权中额外补抓完整GET。未保存完整可重建链接的crawl页面采用原完整请求路径。"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "reason": "Limit the summary receipt claim to errors/results that actually carry execution details.",
+      "old": "| 用量与适配 | 成功与错误透传已知/未知物理回执；payer 一次增量、subscriber 零新增与关联用量；MCP 只映射，不计算业务规则 |",
+      "new": "| 用量与适配 | 有执行详情时，成功与错误透传已知/未知用量；payer 一次增量、subscriber 零新增与关联用量；MCP 只映射，不计算业务规则 |"
+    },
+    {
+      "path": "docs/DIRECT_SHARED_READS.md",
+      "reason": "Record the outer Service postcheck receipt gap as an explicit remaining boundary.",
+      "old": "HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造收据。",
+      "new": "HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造收据。尤其外层 `Service::dispatch` 在读取返回后还会终检主体有效性，该检查失败时仍可能没有 `Error.details`。因此完整 HTTP 失败面并不保证每次都能取回已发生的用量，这一剩余边界不能解释成零消耗或安全自动重发。"
+    },
+    {
+      "path": "docs/implementation_status.json",
+      "reason": "Align the current scope summary with the actual error boundary and subscriber-known semantics; preserve the features array.",
+      "old": "Per-process attempt receipt on success/error; payer actual or null unknown, subscriber zero incremental usage plus nonadditive physical association; no durable direct-read ledger.",
+      "new": "Direct network success and wrapped execution errors carry per-process attempt details; prechecks and the outer Service principal postcheck can omit details. Payer usage is actual or null unknown; subscriber usage remains known zero plus nonadditive physical association, which may be unknown. No durable direct-read ledger."
+    }
+  ]
+}

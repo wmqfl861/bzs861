@@ -1,0 +1,30 @@
+{
+  "status": "closed_failed_execution_retained",
+  "ctest_record": "ctest-v1-command.json",
+  "ctest_exit_code": 8,
+  "suites": 28,
+  "passed": 26,
+  "failed": 2,
+  "original_native_case_failures": [
+    "FAIL crawl_late_body_cannot_undo_a_newer_direct_page_restriction_or_replace_fresh_current: check failed: method==\"fetch.extract\" line 265",
+    "FAIL crawl_logical_refresh_sequence_survives_redirect_pause_and_restart: check failed: method==\"fetch.extract\" line 265",
+    "FAIL schema_seven_redirected_crawl_keeps_an_unknown_logical_capture_restricted_after_upgrade: check failed: method==\"fetch.extract\" line 265",
+    "FAIL links_only_publication_ceiling_survives_direct_and_batch_refresh: check failed: method==\"fetch.extract\" line 265",
+    "FAIL candidate_registry_without_optional_redistribution_does_not_break_explicit_read: check failed: method==\"fetch.extract\" line 265",
+    "FAIL empty_meta_only_explicit_and_batch_reads_retract_without_a_new_snapshot: check failed: method==\"fetch.extract\" line 265",
+    "FAIL explicit_redirect_rules_are_versioned_for_logical_url_without_restricting_final_target: check failed: method==\"fetch.extract\" line 265",
+    "FAIL redirect_restriction_on_failed_or_quota_limited_read_does_not_relabel_target: check failed: method==\"fetch.extract\" line 265",
+    "FAIL truncated_read_cannot_supply_an_allowing_versioned_publication: check failed: method==\"fetch.extract\" line 265",
+    "FAIL refused_redirect_tail_keeps_only_actual_public_response_policy: check failed: method==\"fetch.extract\" line 265",
+    "FAIL ordinary_read_requoting_and_escaped_paths_keep_actual_hop_restrictions: check failed: method==\"fetch.extract\" line 265",
+    "FAIL compaction_never_recreates_publication_deleted_aliases_or_owner_epochs: check failed: method==\"map.fetch\" at 61"
+  ],
+  "cause": "Two legacy Worker fixtures still asserted that the only incoming method was fetch.extract or map.fetch; optional fetch.profile reached those assertions before the intended original scenario. The fixture compatibility correction rejects profile with typed E_WORKER before any counters/callbacks/checks. Original scenario assertions stay unchanged.",
+  "independent_additional_defect": {
+    "record": "../independent/capacity-candidate-v2/summary.json",
+    "scope": "A legal response generated an aggregate stored snapshot exceeding the new 8 MiB internal copy limit. The existing 22-group suite did not cover this case. Final correction freezes only nine independently encoded window fields and adds group 23.",
+    "not_environmental": true
+  },
+  "log_sha256": "fcafc4873f2bcb86a5fde44b9af058bf42e57e51d13e3a6f97505e694a07d4a1",
+  "retained_without_overwriting": true
+}

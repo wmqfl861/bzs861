@@ -10,17 +10,19 @@ import aiohttp
 
 
 class CoreError(Exception):
-    def __init__(self, code: str, message: str, http_status: int):
+    def __init__(self, code: str, message: str, http_status: int, details: dict[str, Any] | None = None):
         super().__init__(f"{code}: {message}")
         self.code = code
         self.message = message
         self.http_status = http_status
+        self.details = {} if details is None else details
 
 
 def _unwrap(status: int, body: dict[str, Any]) -> dict[str, Any]:
     if status >= 400 or body.get("status") == "failed":
         err = (body.get("errors") or [{}])[0]
-        raise CoreError(err.get("code", "E_CORE"), err.get("message", f"HTTP {status}"), status)
+        details = {key: body[key] for key in ("usage", "shared_read") if isinstance(body.get(key), dict)}
+        raise CoreError(err.get("code", "E_CORE"), err.get("message", f"HTTP {status}"), status, details)
     return body.get("result", {})
 
 

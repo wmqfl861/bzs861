@@ -56,6 +56,7 @@ struct Fake:WorkerPort {
     return out;
   }
   Json call(const std::string& method,const Json& params,int)override {
+    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
     ++calls;
     if(method=="fetch.extract") { auto out=page(params);out.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));return out; }
     CHECK(method=="map.fetch");auto out=Json::object();out.set("status","ok");out.set("url",params.at("url"));out.set("final_url",params.at("url"));out.set("http_status",std::int64_t{200});out.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));

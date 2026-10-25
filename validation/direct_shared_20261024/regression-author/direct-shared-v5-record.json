@@ -1,0 +1,67 @@
+{
+  "kind": "author_test_oracle_correction_and_application",
+  "recorded_at": "2026-10-25T06:48:43.011781+00:00",
+  "source": "tests/direct_shared.cpp",
+  "sha256": "52c8c5201501b94584ac99602abb6f279ecb553cc61faac3043bd37badf4be44",
+  "bytes": 49161,
+  "previous_sha256": "705f757a17ea5624eb44805e6b0cb16a3a51d66dd5f132cd90f99887701c6d22",
+  "test_groups": 23,
+  "change": {
+    "only_removed_assertion": "CHECK(frozen.at(\"representation_publication\").at(\"snippet_text\").str()==large_body);",
+    "reason": "A non-redirected ordinary page can legally have an empty representation_publication when the original publication already governs the same representation. Requiring a duplicate snippet_text was an erroneous new-test oracle. Exact canonical_text and publication.snippet_text plus serialized frozen snapshot > 8 MiB remain mandatory.",
+    "production_code_changed": false,
+    "previous_22_groups_preserved_exactly_after_removing_only_new_group": true,
+    "all_other_v4_bytes_preserved": true
+  },
+  "original_failure": {
+    "executor": "root focused CTest, not this author",
+    "ctest_exit_code": 8,
+    "direct_shared_groups": 23,
+    "direct_shared_assertions": 3589,
+    "direct_shared_failures": 1,
+    "error": "Missing field: snippet_text",
+    "evidence": [
+      {
+        "original": "validation/direct_shared_20261024/focus/corrected-capacity-and-fixtures-v3.log",
+        "archived": "validation/direct_shared_20261024/regression-author/direct-shared-v4-failure-root-v3.log",
+        "sha256": "eb911b3e788ab562a5cddcd8ce380de0c4340f536181803fd3610f6b2b957b5d",
+        "bytes": 15910
+      },
+      {
+        "original": "validation/direct_shared_20261024/focus/corrected-capacity-and-fixtures-v3-command.json",
+        "archived": "validation/direct_shared_20261024/regression-author/direct-shared-v4-failure-root-v3-command.json",
+        "sha256": "b4c668cc60346ca6d4e35062c1032f154951c00326cbdb6a587a52ebae0c016f",
+        "bytes": 8767
+      },
+      {
+        "original": "validation/direct_shared_20261024/focus/corrected-capacity-and-fixtures-v3-inputs.json",
+        "archived": "validation/direct_shared_20261024/regression-author/direct-shared-v4-failure-root-v3-inputs.json",
+        "sha256": "6071a2ede00d4f3c84fbc9d7702bb6d27e196587cc59a26a07b26aa02643888d",
+        "bytes": 23492
+      }
+    ]
+  },
+  "syntax_check": {
+    "command": [
+      "g++",
+      "-std=c++20",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Iinclude",
+      "-fsyntax-only",
+      "validation/direct_shared_20261024/regression-author/direct-shared-v5-input.cpp"
+    ],
+    "cwd": "/workspace/scratch/133513441190/bzs861",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "application": {
+    "authorized_by": "root after corrected-capacity-and-fixtures-v3 completion",
+    "formal_source_matches_archived_input": true
+  },
+  "runtime_status": "Corrected v5 not executed by test author; root owns focused and final runtime gates. This is a test-oracle correction, not a product fix."
+}

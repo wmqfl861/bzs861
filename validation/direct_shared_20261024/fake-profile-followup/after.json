@@ -1,0 +1,35 @@
+{
+  "recorded_at_utc": "2026-10-25T06:45:55.597905+00:00",
+  "files": [
+    {
+      "path": "tests/crawl.cpp",
+      "before_sha256": "462455e777a16a8e9342b92e325467f39b87ef318d5837fbf641b31e3f49c7ef",
+      "after_sha256": "e8116e009a4ba3697a9c9ffe34dc350f113c6bd9a73c7d3e250b326cdc8ac200",
+      "added_bytes": 93,
+      "exact_inserted_text": "if(method==\"fetch.profile\")throw Error(\"E_WORKER\",\"Legacy fixture has no profile proof\",502);",
+      "remaining_file_bytes_unchanged": true,
+      "assertions_callbacks_counts_unchanged": true
+    },
+    {
+      "path": "tests/retention.cpp",
+      "before_sha256": "04223ad8f51deb67b6c5a67ef569e0449cdf7370d50a3b7a75a3067d8b932d4e",
+      "after_sha256": "49e3d74a42664fa8d48432c3981450893be51e070d9fd0d3dc5c066d5f19b5d9",
+      "added_bytes": 98,
+      "exact_inserted_text": "    if(method==\"fetch.profile\")throw Error(\"E_WORKER\",\"Legacy fixture has no profile proof\",502);\n",
+      "remaining_file_bytes_unchanged": true,
+      "assertions_callbacks_counts_unchanged": true
+    }
+  ],
+  "diff_check_argv": [
+    "git",
+    "diff",
+    "--check",
+    "--",
+    "tests/crawl.cpp",
+    "tests/retention.cpp"
+  ],
+  "diff_check_exit_code": 0,
+  "runtime_tests": "Not run by this subagent; root owns the new frozen integrated gates.",
+  "no_original_assertions_changed": true,
+  "no_catch_expansion": true
+}

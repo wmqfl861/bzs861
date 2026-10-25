@@ -6,6 +6,7 @@ per-client tokens arrives in S5 (ADR-0004).
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from typing import Any, Literal
@@ -128,7 +129,10 @@ async def _call(op: str, params: dict[str, Any]) -> dict[str, Any]:
     try:
         return await _client().call(op, params)
     except CoreError as exc:
-        raise ToolError(f"{exc.code}: {exc.message}") from exc
+        message = f"{exc.code}: {exc.message}"
+        if exc.details:
+            message += "\n" + json.dumps(exc.details, ensure_ascii=False, separators=(",", ":"))
+        raise ToolError(message) from exc
 
 
 def _compact_sources(sources: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -258,18 +262,25 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
         "Fetch a public web page, extract its main content as Markdown and store an immutable snapshot. "
         "Returns a window of the text: continue with read_range(snapshot_id, next_start_byte). "
         "freshness: cache_first (default, reuse a copy younger than max_age_s), refresh, cache_only. "
+        "Compatible concurrent reads for the same owner and authorization may share one fetch, with from_cache=false. "
+        "usage reports this caller's incremental use; shared_read.physical_usage describes the shared attempt and "
+        "must not be added to usage or summed across members. "
         "Private/loopback/metadata addresses are refused. Offsets are UTF-8 byte offsets. " + UNTRUSTED))
     async def read_url(url: str, max_bytes: int = 20000, start_byte: int = 0, freshness: str = "cache_first",
                        max_age_s: int = 604800) -> dict[str, Any]:
         r = await _call("web.read", {"url": to_uri(url), "max_bytes": max(1, min(max_bytes, 262144)), "start_byte": max(0, start_byte),
                                      "freshness": freshness, "max_age_s": max(0, max_age_s)})
         content = r.get("content", {})
-        return {"snapshot_id": r.get("snapshot_id"), "title": r.get("title"), "url": r.get("url"),
-                "final_url": r.get("final_url"), "fetched_at_ms": r.get("fetched_at_ms"), "from_cache": r.get("from_cache"),
-                "text": content.get("text", ""), "start_byte": content.get("start_byte"), "end_byte": content.get("end_byte"),
-                "total_bytes": content.get("total_bytes"), "next_start_byte": content.get("next_start_byte"),
-                "metadata": r.get("metadata", {}), "fetch": r.get("fetch", {}), "content_trust": "untrusted_web_content",
-                "notice": UNTRUSTED}
+        out = {"snapshot_id": r.get("snapshot_id"), "title": r.get("title"), "url": r.get("url"),
+               "final_url": r.get("final_url"), "fetched_at_ms": r.get("fetched_at_ms"), "from_cache": r.get("from_cache"),
+               "text": content.get("text", ""), "start_byte": content.get("start_byte"), "end_byte": content.get("end_byte"),
+               "total_bytes": content.get("total_bytes"), "next_start_byte": content.get("next_start_byte"),
+               "metadata": r.get("metadata", {}), "fetch": r.get("fetch", {}), "content_trust": "untrusted_web_content",
+               "notice": UNTRUSTED}
+        for key in ("usage", "shared_read", "cache"):
+            if key in r:
+                out[key] = r[key]
+        return out
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=True, idempotentHint=True), description=(
         "Submit a persistent job to fetch 1..20 explicitly supplied public URLs and store immutable snapshots. "

@@ -1,0 +1,18 @@
+{
+  "recorded_at_utc": "2026-10-25T07:05:44.460168+00:00",
+  "artifact": "build-asan/bzs_cache_freshness_tests",
+  "sha256": "33ec569c5e8faeac277da839795df3f7ea21d036f92afa58821901f8377b2aa1",
+  "matched_closed_build_record": "../build/asan-v2-command.json",
+  "observed_mode_before": "0o644",
+  "mode_after": "0o755",
+  "bytes_unchanged": true,
+  "error": "PermissionError: [Errno 13] Permission denied while subprocess.Popen attempted to execute the artifact",
+  "child_started": false,
+  "failed_attempt_inputs": "bzs_cache_freshness_tests-v4-inputs.json",
+  "failed_attempt_log": "bzs_cache_freshness_tests-v4.log",
+  "failed_attempt_log_bytes": 0,
+  "per_target_command_record_absent_due_to_launcher_exception": true,
+  "stderr_scope": "Original traceback was emitted to the tool session; this record summarizes the observed error and does not reconstruct a complete stderr capture.",
+  "cause_scope": "The executable bit was absent; no claim about which earlier actor removed it. Restore execute bits on this verified local build artifact only.",
+  "followup": "Only this target is rerun; unchanged source, artifact bytes and sanitizer options."
+}

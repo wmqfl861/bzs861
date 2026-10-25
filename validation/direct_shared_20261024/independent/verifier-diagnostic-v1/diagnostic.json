@@ -1,0 +1,15 @@
+{
+  "recorded_at_utc": "2026-10-25T06:46:14.212887+00:00",
+  "classification": "reviewer_archive_verifier_schema_error_not_product_execution",
+  "argv": [
+    "python3",
+    "validation/direct_shared_20261024/independent/verify_independent_records.py",
+    "--output",
+    "records-v2-audit.json"
+  ],
+  "exit_code": 1,
+  "exception": "KeyError: 'path'",
+  "cause": "The baseline binary-binding.json uses binary whereas newer recordings use path. The first audit stopped before writing its output; no artifacts or product results changed.",
+  "original_verifier_sha256": "7287349a14fab2da661a879831c28cd21c0653962d16d64b1abc6ecb2a4aa1d9",
+  "correction": "A new v2 verifier accepts either documented key."
+}

@@ -262,7 +262,7 @@ namespace {
       auto p=Json::parse(params.dump());p.set("kind","page");p.set("depth",std::int64_t{0});p.set("robots",Json::parse(R"({"body_sha256":"fixture"})"));
       auto page=fixture.ok(p).at("page");page.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));return page;
     }
-    Json call(const std::string& method,const Json& params,int timeout)override { CHECK(method=="fetch.extract");CHECK(timeout>0);reads.push_back(params);return response?response(params):ok(params); }
+    Json call(const std::string& method,const Json& params,int timeout)override { if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);CHECK(method=="fetch.extract");CHECK(timeout>0);reads.push_back(params);return response?response(params):ok(params); }
   };
   Json page_policy(Json page,bool index,bool snippets) {
     page.set("index_allowed",index);auto policy=page.at("publication");policy.set("index_allowed",index);policy.set("snippet_allowed",index&&snippets);

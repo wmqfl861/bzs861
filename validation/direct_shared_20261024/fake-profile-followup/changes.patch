@@ -1,0 +1,25 @@
+diff --git a/tests/crawl.cpp b/tests/crawl.cpp
+index 12604f6..58d6125 100644
+--- a/tests/crawl.cpp
++++ b/tests/crawl.cpp
+@@ -262,7 +262,7 @@ namespace {
+       auto p=Json::parse(params.dump());p.set("kind","page");p.set("depth",std::int64_t{0});p.set("robots",Json::parse(R"({"body_sha256":"fixture"})"));
+       auto page=fixture.ok(p).at("page");page.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));return page;
+     }
+-    Json call(const std::string& method,const Json& params,int timeout)override { CHECK(method=="fetch.extract");CHECK(timeout>0);reads.push_back(params);return response?response(params):ok(params); }
++    Json call(const std::string& method,const Json& params,int timeout)override { if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);CHECK(method=="fetch.extract");CHECK(timeout>0);reads.push_back(params);return response?response(params):ok(params); }
+   };
+   Json page_policy(Json page,bool index,bool snippets) {
+     page.set("index_allowed",index);auto policy=page.at("publication");policy.set("index_allowed",index);policy.set("snippet_allowed",index&&snippets);
+diff --git a/tests/retention.cpp b/tests/retention.cpp
+index 5692110..25be165 100644
+--- a/tests/retention.cpp
++++ b/tests/retention.cpp
+@@ -56,6 +56,7 @@ struct Fake:WorkerPort {
+     return out;
+   }
+   Json call(const std::string& method,const Json& params,int)override {
++    if(method=="fetch.profile")throw Error("E_WORKER","Legacy fixture has no profile proof",502);
+     ++calls;
+     if(method=="fetch.extract") { auto out=page(params);out.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));return out; }
+     CHECK(method=="map.fetch");auto out=Json::object();out.set("status","ok");out.set("url",params.at("url"));out.set("final_url",params.at("url"));out.set("http_status",std::int64_t{200});out.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":100})"));

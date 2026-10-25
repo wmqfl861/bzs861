@@ -1,0 +1,29 @@
+{
+  "recorded_at_utc": "2026-10-25T06:48:11.466981+00:00",
+  "base_commit": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "candidate_library_sha256": "eb4fcd85d839bd43e78382943c8d0a7c73f47c178ff528a5fcd20851cef6404f",
+  "provenance_manifest": "candidate-native-v3/frozen-inputs.json",
+  "provenance_manifest_sha256": "b32c1c4e3216caac40144fad142f4674e76af91e897b9a1c0a8e744a376d38de",
+  "files": {
+    "include/bzs/error.hpp": "bb0cdf3df689697d80381b0dffa0ea84b720b5bbcfc172ee92a8bf9000d4fd26",
+    "include/bzs/web.hpp": "0310dca14cd4e2ccb3d49fa308fad6232c4c474cb20d1b7f820f8bbeb207f76c",
+    "src/web.cpp": "e2e851822bd7bc8f39d750ac0e99b1e1f0f3a5614a42102287ca70907ef17701",
+    "src/store.cpp": "64fa978c67825c499cf68178a12da6057617dd51125133298e2bb88fd20b6c2e",
+    "apps/searchd/main.cpp": "611c9a21b075f58a8d0f3c4b89e61a77e9e0e031ec3fdbae11b90ae84e57fd2f",
+    "python/bzs/core_client.py": "9ada8b0da8c98b3a8207f66ef38e9d68255f258faca54cfe3ca636052f9d02aa",
+    "python/bzs/mcp_server.py": "117692f73ad5bb9abfb536c61ad5cf78d67564c8e893ae9f852add86b9a95ad1",
+    "src/service.cpp": "175f71a6f2fe037171edec611ef032e9548ae6da614f7022dfd9b89eeee31cf3"
+  },
+  "matches_original_frozen_manifest": true,
+  "changed_from_v2": {
+    "include/bzs/web.hpp": {
+      "before": "f35e7fb6796b025190e02fa021cff594732d886fbe0ca8154dd3757ee89c00aa",
+      "after": "0310dca14cd4e2ccb3d49fa308fad6232c4c474cb20d1b7f820f8bbeb207f76c"
+    },
+    "src/web.cpp": {
+      "before": "5cc29c569c0bd3e551741c8fe10e4c6dcc64ca6e93d86dee78d62a517e0b8fd4",
+      "after": "e2e851822bd7bc8f39d750ac0e99b1e1f0f3a5614a42102287ca70907ef17701"
+    }
+  },
+  "scope": "Final v3 source review capture: only web.hpp and web.cpp changed from v2. Independent field freezing omits unused body/publication aggregates while retaining complete meta and delivery guard. Outer Service late-revocation receipt boundary remains explicitly outside the wrapper."
+}

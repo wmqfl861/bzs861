@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/searchd",
+    "--auth",
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/fixtures/auth.json",
+    "--state",
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/fixtures/state",
+    "--fixtures",
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/fixtures/fixtures",
+    "--port",
+    "0",
+    "--threads",
+    "2",
+    "--request-threads",
+    "4",
+    "--worker",
+    "http://127.0.0.1:44777",
+    "--worker-token-file",
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/fixtures/worker.token",
+    "--sources",
+    "/tmp/bzs861-direct-independent-20261024/handoff-audit/candidate-wire-v2/fixtures/sources.json"
+  ],
+  "ready": {
+    "event": "ready",
+    "host": "127.0.0.1",
+    "port": 42159,
+    "version": "0.1.10",
+    "network_mode": "worker_mediated",
+    "threads": 2,
+    "request_threads": 4
+  }
+}

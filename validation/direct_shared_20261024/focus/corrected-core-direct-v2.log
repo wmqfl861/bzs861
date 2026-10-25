@@ -1,0 +1,165 @@
+Internal ctest changing into directory: /workspace/scratch/133513441190/bzs861/build
+UpdateCTestConfiguration  from :/workspace/scratch/133513441190/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/133513441190/bzs861/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/133513441190/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/133513441190/bzs861/build/DartConfiguration.tcl
+Test project /workspace/scratch/133513441190/bzs861/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start  1: core
+
+1: Test command: /workspace/scratch/133513441190/bzs861/build/bzs_tests
+1: Working Directory: /workspace/scratch/133513441190/bzs861/build
+1: Test timeout computed to be: 45
+1: PASS json_roundtrip
+1: PASS json_shared_readers_preserve_serialization_and_alias_lifetimes
+1: PASS json_duplicate_keys
+1: PASS json_malformed
+1: PASS json_strict_types
+1: PASS json_depth_limit
+1: PASS json_scalar_unicode_and_ranges
+1: PASS utf8_boundaries
+1: PASS hash_and_random
+1: PASS metadata_urls
+1: PASS query_symbols
+1: PASS query_boolean
+1: PASS query_phrases
+1: PASS query_fields
+1: PASS query_quoted_directives
+1: PASS query_ast
+1: PASS query_errors
+1: PASS query_chinese
+1: PASS query_flat_conjunction
+1: PASS html_main_code
+1: PASS html_noindex
+1: PASS html_selected_subtree
+1: PASS html_hidden_ancestors
+1: PASS html_robots_tokens
+1: PASS html_guards
+1: PASS document_limits
+1: PASS store_snapshots
+1: PASS store_owner_isolation
+1: PASS store_search
+1: PASS single_response_search_has_no_lifetime_or_active_session_cost
+1: PASS store_candidate_predicate_agreement
+1: PASS substring_index_finds_old_phrases_symbols_and_multilingual_text_before_budget
+1: PASS substring_candidates_preserve_exact_matching_across_fields_and_boolean_shapes
+1: PASS substring_overflow_keeps_exact_matches_and_bounds_derived_fields
+1: PASS known_word_index_upgrade_is_atomic_and_preserves_business_rows
+1: PASS store_updates_index
+1: PASS store_noindex
+1: PASS session_stable
+1: PASS session_cursor_isolation
+1: PASS delete_revokes_paths
+1: PASS evidence_boundaries
+1: PASS search_budget_partial
+1: PASS reopen_data
+1: PASS migrate_schema_one_preserves_records
+1: PASS migration_rejects_quarantined_and_newer_databases
+1: PASS job_idempotency
+1: PASS job_controls
+1: PASS job_lease_fencing
+1: PASS job_pause_fencing
+1: PASS job_budgets
+1: PASS job_target_tombstone
+1: PASS job_restart
+1: PASS job_concurrent_claim
+1: PASS backup_quarantine
+1: PASS fixture_source_boundary
+1: PASS service_capabilities
+1: PASS admin_backup
+1: PASS auth_validation
+1: PASS tokenizer_cjk_and_symbols
+1: PASS fts_chinese_uses_index
+1: PASS bm25_ranks_relevance
+1: PASS literal_exactness
+1: PASS compound_matching_keeps_fields_and_documents_independent
+1: PASS html_main_excludes_siblings
+1: PASS delete_keeps_unrelated_jobs_and_sessions
+1: PASS highlights_are_query_relevant_and_exact
+1: PASS revisions_pruned_and_quota_counters
+1: PASS range_windows_are_utf8_safe
+1: PASS migration_from_v1
+1: PASS dedup_and_rrf_fusion
+1: PASS public_url_policy
+1: PASS web_search_merges_and_cools_down
+1: PASS web_search_cache_spares_sources
+1: PASS iri_urls_are_encoded_for_reading
+1: PASS web_read_ingests_and_caches
+1: PASS source_admission_limits
+1: PASS source_retry_after_is_bounded_persistent_and_saturating
+1: PASS source_retry_after_does_not_shorten_prior_parse_error_or_ordinary_waits
+1: PASS legacy_source_cooldown_repair_has_a_fixed_anchor_and_keeps_accounting
+1: PASS source_cooldown_proof_preserves_legal_deadlines_across_rollback_and_restart
+1: PASS legacy_source_cooldown_repair_retains_ambiguous_and_future_event_state
+1: PASS source_cooldown_proof_never_certifies_unknown_older_max
+1: PASS source_cooldown_proof_and_repair_are_transactional
+1: PASS web_search_bounds_old_worker_retry_after_and_reports_new_worker_clamping
+1: PASS migrate_both_schema_two_layouts_preserves_records
+1: PASS schema_two_quarantine_is_checked_before_migration
+1: PASS deletion_fences_survive_reimport_restart_and_clock_ties
+1: PASS web_noindex_change_is_not_hidden_by_content_reuse
+1: PASS retention_reclaims_before_quota_and_ignores_expired_pins
+1: PASS highlight_clipping_reports_only_visible_terms
+1: PASS web_read_does_not_publish_across_target_deletion
+1: PASS late_success_does_not_cancel_source_cooldown
+1: PASS web_cache_is_scoped_to_owner_and_review_validity
+1: PASS rrf_rejects_invalid_ranks_and_preserves_nondefault_ports
+1: PASS worker_success_schema_cannot_create_a_snapshot_by_default
+1: PASS malformed_source_success_is_partial_and_not_cached
+1: PASS combined_match_score_keeps_legacy_weights_filters_and_field_semantics
+1: PASS search_matching_releases_store_lock_and_sqlite_transaction_for_every_path
+1: PASS search_matching_rechecks_deleted_and_reimported_candidate_identity
+1: PASS search_matching_preserves_immutable_revision_or_marks_pruning_partial
+1: PASS search_matching_rechecks_principal_revocation_before_any_result_or_receipt
+1: PASS search_matching_rechecks_active_session_capacity_at_commit
+1: PASS search_source_withdrawal_does_not_change_independent_local_snapshot_ownership
+1: PASS search_matching_rechecks_site_restrictions_even_after_relaxation
+1: PASS search_matching_rechecks_page_and_frozen_redirect_history_after_relaxation
+1: PASS deletion_url_key_folds_only_unreserved_uri_bytes
+1: PASS deletion_url_key_preserves_reserved_bytes_and_non_equivalent_urls
+1: {"tests":107,"passed":107,"assertions":2253}
+1/2 Test  #1: core .............................   Passed    6.35 sec
+test 12
+    Start 12: direct_shared
+
+12: Test command: /workspace/scratch/133513441190/bzs861/build/bzs_direct_shared_tests
+12: Working Directory: /workspace/scratch/133513441190/bzs861/build
+12: Test timeout computed to be: 90
+12: PASS same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage
+12: PASS shared_conditional_refresh_commits_the_bound_metadata_only_once
+12: PASS shared_members_keep_their_own_windows_and_freshness_bounds
+12: PASS an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member
+12: PASS owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence
+12: PASS timeout_and_direct_parameters_do_not_borrow_durable_read_budgets
+12: PASS changed_or_unproven_request_profiles_never_join_an_active_flight
+12: PASS shared_responses_require_a_valid_freshness_profile_matching_admission
+12: PASS permission_snapshot_metadata_and_publication_fences_split_new_admissions
+12: PASS shared_inflight_alias_deletion_and_revival_reject_both_full_and_304_results
+12: PASS shared_inflight_principal_revocation_denies_all_members_without_new_body
+12: PASS shared_old_publication_cannot_be_restored_by_a_newer_allowing_response
+12: PASS each_post_commit_window_rechecks_current_revocation_deletion_and_policy
+12: PASS shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry
+12: PASS late_shared_no_store_cannot_invalidate_a_newer_successful_representation
+12: PASS shared_storage_failure_rolls_back_body_and_index_and_releases_the_flight
+12: PASS same_thread_reentry_does_not_wait_on_itself_or_reuse_the_outer_304
+12: PASS lifetime_member_limit_keeps_the_first_32_and_runs_overflow_independently
+12: PASS registry_capacity_is_bounded_and_distinct_service_instances_do_not_share
+12: PASS direct_reads_do_not_join_durable_attempts_or_receive_their_cancellation
+12: PASS invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions
+12: PASS malformed_freshness_does_not_skip_independent_noindex_observation
+12: 22 direct shared tests, 3564 assertions, 0 failures
+2/2 Test #12: direct_shared ....................   Passed    3.12 sec
+
+The following tests passed:
+	core
+	direct_shared
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   9.48 sec

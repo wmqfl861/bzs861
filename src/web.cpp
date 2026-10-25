@@ -127,6 +127,31 @@ namespace bzs {
     std::int64_t opt_int(const Json& j, const std::string& k, std::int64_t fallback) {
       return j.has(k)&&j.at(k).is_integer()?j.at(k).num():fallback;
     }
+    Json direct_read_usage(const Json& response) {
+      auto out=Json::object();
+      const bool known=response.has("usage");
+      out.set("known",known);
+      if(!known) {
+        out.set("external_requests",Json());out.set("content_bytes",Json());return out;
+      }
+      const auto usage=response.at("usage");
+      require(usage.is_object()&&usage.has("external_requests")&&usage.at("external_requests").is_integer()&&
+              usage.has("content_bytes")&&usage.at("content_bytes").is_integer(),
+              "E_WORKER_PROTOCOL","Direct read usage must be explicit integers",502);
+      const auto requests=usage.at("external_requests").num(),bytes=usage.at("content_bytes").num();
+      require(requests>=0&&bytes>=0&&(requests!=0||bytes==0),"E_WORKER_PROTOCOL","Invalid direct read usage",502);
+      const auto status=opt_string(response,"status");
+      require(status!="ok"||(requests>0&&bytes>0),"E_WORKER_PROTOCOL","Successful direct read cannot report zero physical usage",502);
+      if(status=="not_modified"&&!response.has("redirect_revalidation"))
+        require(requests==1&&bytes==0,"E_WORKER_PROTOCOL","Direct 304 must report one request and zero body bytes",502);
+      out.set("external_requests",requests);out.set("content_bytes",bytes);return out;
+    }
+    Json direct_read_increment(const Json& physical,bool payer) {
+      auto out=Json::object();out.set("scope","direct_read");out.set("model_calls",std::int64_t{0});
+      out.set("known",!payer||physical.at("known").flag());
+      for(const auto* key:{"external_requests","content_bytes"})out.set(key,payer?physical.at(key):Json::integer(0));
+      return out;
+    }
   }
   std::string publication_url_identity(std::string_view url) { return read_identity(url); }
   std::string dedup_key(std::string_view url) {
@@ -775,7 +800,8 @@ namespace bzs {
       const auto meta=cached->at("meta");auto guard=Json::object();
       guard.set("version","bzs-http-cache-hit-1");guard.set("url",url);
       guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("max_age_s",max_age);
-      return window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num(),guard);
+      auto out=window(owner,*cached,start,max_bytes,true,cached->at("fetched_at_ms").num(),guard);
+      out.set("usage",direct_read_increment(Json::object(),false));return out;
     };
     if(freshness=="cache_only") {
       require(cached.has_value(), "E_NOT_CACHED", "No stored snapshot for this URL; use freshness=cache_first or refresh", 404);
@@ -792,6 +818,21 @@ namespace bzs {
         catch(const Error& error) { if(error.code!="E_CACHE_STALE")throw; }
       }
     }
+    // Optional proof for sharing, not a new prerequisite for the original
+    // independent read. Older/unavailable workers and malformed proofs cannot
+    // make a caller join a flight or borrow a remembered profile.
+    std::string profile;
+    try {
+      const auto proof=worker_.call("fetch.profile",Json::object(),2000);
+      proof.allowed({"version","request_profile"});
+      require(proof.size()==2&&proof.at("version").str()=="bzs-http-freshness-1",
+              "E_WORKER_PROTOCOL","Invalid optional read profile",502);
+      const auto value=proof.at("request_profile").str();
+      require(value.size()==64&&std::all_of(value.begin(),value.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),
+              "E_WORKER_PROTOCOL","Invalid optional read profile",502);
+      profile=value;
+      std::lock_guard lock(cache_mutex_);last_read_profile_=profile;
+    } catch(const Error&) { /* No proof: preserve the independent read path. */ }
     Json params=Json::object();
     params.set("url", url);
     params.set("timeout_ms", timeout);
@@ -800,40 +841,147 @@ namespace bzs {
       if(base->conditional.at("url").str()==url)params.set("conditional",base->conditional);
       else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
     }
-    auto r=worker_.call("fetch.extract", params, static_cast<int>(timeout+5000));
-    if(r.has("http_freshness")) {
-      const auto record=validate_http_freshness(r.at("http_freshness"),required_string(r,"final_url",4096));
-      std::lock_guard lock(cache_mutex_);last_read_profile_=record.at("request_profile").str();
+    auto identity=Json::object();identity.set("owner",owner);identity.set("request",params);
+    identity.set("fence",publication_fence);identity.set("profile",profile);
+    identity.set("cached_snapshot",cached?cached->at("snapshot_id"):Json());
+    identity.set("cached_metadata",cached?sha256(cached->at("meta").canonical()):"");
+    const auto key=sha256(identity.canonical());
+    std::shared_ptr<DirectReadFlight> flight;bool payer=true;
+    {
+      std::lock_guard lock(direct_reads_mutex_);
+      const auto found=direct_reads_.find(key);
+      if(!profile.empty()&&found!=direct_reads_.end()&&found->second->leader!=std::this_thread::get_id()&&found->second->members<32) {
+        flight=found->second;++flight->members;payer=false;
+      } else {
+        flight=std::make_shared<DirectReadFlight>();flight->attempt_id=random_id();
+        flight->physical_usage_json=direct_read_usage(Json::object()).dump();
+        // Never replace an existing flight: a reentrant call cannot wait for
+        // itself, and full groups/capacity keep the ordinary independent path.
+        if(!profile.empty()&&found==direct_reads_.end()&&direct_reads_.size()<64)direct_reads_.emplace(key,flight);
+      }
     }
-    if(cached&&(http_response_restricts_cache(r,store_.now(),url)||redirect_route_changed(cached->at("meta"),r)))
-      store_.invalidate_web_cache(owner,url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
-    const auto redirect_observations=decode_redirect_observations(url,r);
-    std::optional<Json> observation;
-    const auto apply_observations=[&] {
-      for(std::size_t i=0;i<redirect_observations.size();++i) {
-        const auto observed=redirect_observations.at(i);
-        store_.observe_web_publication(owner,url,observed.at("url").str(),observed.at("publication"),publication_fence);
-      }
-      if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
+    const auto close_admission=[&] {
+      std::lock_guard lock(direct_reads_mutex_);
+      const auto found=direct_reads_.find(key);
+      if(found!=direct_reads_.end()&&found->second==flight)direct_reads_.erase(found);
+      return flight->members;
     };
-    ReadArtifact artifact;
-    try { observation=decode_observation(url,r);artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r); }
-    catch(...) { apply_observations();throw; }
-    artifact.meta.set("publication_fence",publication_fence);
-    artifact.meta.set("page_publication_sequence",publication_fence.at("publication_sequence"));
-    const auto policy=artifact.parsed.publication;
-    const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
-    try {
-      auto snap=store_.ingest_web(owner, artifact.document, std::move(artifact.parsed), artifact.meta, deletion_generation);
-      auto out=window(owner,snap,start,max_bytes,false,artifact.meta.at("fetched_at_ms").num());
-      out.set("cache",http_read_freshness(artifact.meta,url,store_.now(),max_age));return out;
-    } catch(const Error& error) {
-      if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
-        apply_observations();
-        if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
-        if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
+    const auto receipt=[&](const Json& physical) {
+      auto details=Json::object();details.set("usage",direct_read_increment(physical,payer));
+      auto shared=Json::object();shared.set("attempt_id",flight->attempt_id);shared.set("role",payer?"payer":"subscriber");
+      { std::lock_guard lock(direct_reads_mutex_);shared.set("members",static_cast<std::int64_t>(flight->members)); }
+      shared.set("scope","process");shared.set("physical_usage",physical);details.set("shared_read",shared);return details;
+    };
+    if(payer) {
+      try {
+        const auto r=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
+        const auto members=close_admission();
+        // Closing at RPC completion makes this an in-flight coordinator, not
+        // a second result cache, and fixes the membership used below.
+        std::exception_ptr receipt_error;
+        try { flight->physical_usage_json=direct_read_usage(r).dump(); }
+        catch(const Error&) { receipt_error=std::current_exception(); }
+        std::string actual_profile;
+        if(r.has("http_freshness")) {
+          try {
+            const auto record=validate_http_freshness(r.at("http_freshness"),required_string(r,"final_url",4096));
+            actual_profile=record.at("request_profile").str();
+            std::lock_guard lock(cache_mutex_);last_read_profile_=actual_profile;
+          } catch(const Error&) { if(!receipt_error)receipt_error=std::current_exception(); }
+        }
+        if(cached) {
+          bool invalidate=false;
+          try { invalidate=http_response_restricts_cache(r,store_.now(),url)||redirect_route_changed(cached->at("meta"),r); }
+          catch(const Error&) {
+            // A broken cache proof cannot retain reuse eligibility or skip a
+            // separately valid restrictive publication observation below.
+            invalidate=true;if(!receipt_error)receipt_error=std::current_exception();
+          }
+          if(invalidate)store_.invalidate_web_cache(owner,url,cached->at("snapshot_id").str(),sha256(cached->at("meta").canonical()));
+        }
+        const auto redirect_observations=decode_redirect_observations(url,r);
+        std::optional<Json> observation;
+        const auto apply_observations=[&] {
+          for(std::size_t i=0;i<redirect_observations.size();++i) {
+            const auto observed=redirect_observations.at(i);
+            store_.observe_web_publication(owner,url,observed.at("url").str(),observed.at("publication"),publication_fence);
+          }
+          if(observation)store_.observe_web_publication(owner,url,normalize_iri(r.at("final_url").str()),*observation,publication_fence);
+        };
+        ReadArtifact artifact;
+        try {
+          observation=decode_observation(url,r);
+          artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r);
+          if(receipt_error)std::rethrow_exception(receipt_error);
+          // Single-member reads retain legacy-worker behavior. Once shared,
+          // every returned representation must prove the admitted profile.
+          if(members>1) {
+            require(!actual_profile.empty(),"E_WORKER_PROTOCOL","Shared read response lacks its request profile",502);
+            require(actual_profile==profile,"E_READ_PROFILE_CHANGED","Worker profile changed during a shared read",409);
+          }
+        } catch(...) {
+          apply_observations();
+          // A decoded full body with a changed profile is not publishable, but
+          // its validated restrictions still constrain older stored content.
+          if(artifact.parsed.publication.has("version")&&restrictive_publication(artifact.parsed.publication))
+            store_.observe_web_publication(owner,url,url,artifact.parsed.publication,publication_fence);
+          if(artifact.parsed.representation_publication.has("version")&&restrictive_publication(artifact.parsed.representation_publication))
+            store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),artifact.parsed.representation_publication,publication_fence);
+          // Invalid accounting/profile proof must not bypass independent,
+          // validated cache revocation or restrictive response observations.
+          if(receipt_error)std::rethrow_exception(receipt_error);
+          throw;
+        }
+        artifact.meta.set("publication_fence",publication_fence);
+        artifact.meta.set("page_publication_sequence",publication_fence.at("publication_sequence"));
+        const auto policy=artifact.parsed.publication;
+        const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
+        try {
+          const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
+          // Keep only the fields consumed by window, independently encoded.
+          // Store already bounds each field; aggregating body and publication
+          // copies would introduce new JSON byte/node limits after commit.
+          for(const auto* field:{"snapshot_id","document_id","url","title","revision","indexed","site_publication","meta","links"})
+            flight->snapshot_fields.emplace(field,snap.at(field).dump());
+        } catch(const Error& error) {
+          if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
+            apply_observations();
+            if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
+            if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
+          }
+          throw;
+        }
+      } catch(...) {
+        (void)close_admission();flight->error=std::current_exception();
       }
-      throw;
+      { std::lock_guard lock(direct_reads_mutex_);flight->finished=true; }
+      flight->ready.notify_all();
+    } else {
+      const auto until=std::chrono::steady_clock::now()+std::chrono::milliseconds(timeout+5000);
+      std::unique_lock lock(direct_reads_mutex_);
+      const bool finished=flight->ready.wait_until(lock,until,[&]{return flight->finished;});lock.unlock();
+      if(!finished)throw Error("E_WORKER_TIMEOUT","Shared read did not finish within this caller's wait bound",504,
+                               receipt(direct_read_usage(Json::object())));
+    }
+    const auto details=receipt(Json::parse(flight->physical_usage_json));
+    try {
+      if(flight->error)std::rethrow_exception(flight->error);
+      auto snap=Json::object();
+      for(const auto& [field,encoded]:flight->snapshot_fields)snap.set(field,Json::parse(encoded,encoded.size()));
+      const auto meta=snap.at("meta");
+      std::function<void(const std::string&)> before_window;
+      { std::lock_guard lock(direct_reads_mutex_);before_window=direct_read_window_for_test_; }
+      if(before_window)before_window(payer?"payer":"subscriber");
+      auto guard=Json::object();guard.set("version","bzs-http-read-result-1");guard.set("url",url);
+      guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("publication_fence",publication_fence);
+      auto out=window(owner,snap,start,max_bytes,false,meta.at("fetched_at_ms").num(),guard);
+      out.set("cache",http_read_freshness(meta,url,store_.now(),max_age));
+      for(const auto* field:{"usage","shared_read"})out.set(field,details.at(field));
+      return out;
+    } catch(const Error& error) {
+      throw Error(error.code,error.what(),error.http_status,details);
+    } catch(...) {
+      throw Error("E_INTERNAL","Direct read failed before response delivery",500,details);
     }
   }
   Json WebService::decode_publication(const Json& record,const std::string& url,const std::string& final_url,const Json& redirects) {

@@ -2,7 +2,18 @@
 
 更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
-## 当前接续（本地基线 a3b3f6e2，远端仍 ef45490）
+## 最新已发布基线与当前接续
+
+用户后续明确指令“允许推送 main”已解决旧发布阻塞。两批已验证 tree 已以非强制、预期旧 SHA 检查发布：URI 修正 `21797f07d63204f531fa12ecab9e30e470657abb` 对应原本地 `a3b3f6e2`，共享批读 `346048b4ae329e750d15f1e35952aab4513e3912` 对应原本地 `fca5c1e9`。完整 tree 分别为 `e15b716766e9a2a787660ffd304df2102e4b994c`、`458a6f321e94defd74616ba6ebbf2983252cb495`，原本地分支保留。连接器生成新 commit 身份，但全部文件 tree 逐一相同。
+
+准确基线的 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 已 completed/success：Linux 27/27 CTest 与 15 套 sanitizer，Windows 17/17 native+HTTP，均零跳过。该事实仅证明 `346048b4`。完整上一轮发布回执、独立复核与原日志现归档于[本批的已发布基线材料](../validation/direct_shared_20261024/published-baseline/)。
+
+当前从该基线推进普通直接读取共享与同步用量回执，合同及实际门禁见[直接读取](DIRECT_SHARED_READS.md)和[本批验证记录](../validation/direct_shared_20261024/README.md)。仍使用准确远端父 SHA 非强推，发布后读取实际 commit/tree 和该提交的 Actions；不预写未来CI成功，不创建新tag。原审计分支只读，公开材料不含运行库、凭据或二进制。
+
+## 上一批发布前接续（本地 a3b3f6e2 / 远端 ef45490，历史）
+
+以下未发布与自动审批状态保留为当时记录，已经由上述后续授权和真实发布更新。
+
 
 本地基线为上轮已经本地验证、未推送的 `a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89`，tree `e15b716766e9a2a787660ffd304df2102e4b994c`。实际远端 main 仍为 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`，tree `5a9977f4ec6d5aa6efa276ec1197e58b2777ff06`。远端历史 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 只证明 ef45490，不证明本地 URI 提交或本轮候选。
 

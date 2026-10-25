@@ -1,0 +1,409 @@
+FFFFF.                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[shared-payer-known] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d0371e5a0>
+freshness = 'refresh', from_cache = False
+optional = {'usage': {'scope': 'direct_read', 'external_requests': 2, 'content_bytes': 8192, 'model_calls': 0, ...}, 'shared_read...'payer', 'members': 3, 'scope': 'process', ...}, 'cache': {'fresh': True, 'age_ms': 150, 'reason': 'explicit_max_age'}}
+
+    @pytest.mark.parametrize(("freshness", "from_cache", "optional"), [
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 2, "content_bytes": 8192,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "payer", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": True, "age_ms": 150, "reason": "explicit_max_age"},
+        }, id="shared-payer-known"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "subscriber", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": False, "age_ms": 0, "reason": "no_cache"},
+        }, id="subscriber-keeps-zero-increment-and-physical-association"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": None, "content_bytes": None,
+                      "model_calls": 0, "known": False},
+            "shared_read": {"attempt_id": "b" * 48, "role": "payer", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="payer-unknown-is-not-zero"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "b" * 48, "role": "subscriber", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="subscriber-unknown-association-is-not-recomputed"),
+        pytest.param("cache_only", True, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "cache": {"fresh": True, "age_ms": 1234, "reason": "explicit_max_age"},
+        }, id="cache-hit-does-not-create-shared-attempt"),
+        pytest.param("refresh", False, {}, id="legacy-response-does-not-invent-optional-fields"),
+    ])
+    async def test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation(
+            monkeypatch, freshness, from_cache, optional):
+        calls = []
+        core_result = {
+            "snapshot_id": "snapshot_fixture", "title": "Fixture", "url": "https://example.com/page",
+            "final_url": "https://example.com/page", "fetched_at_ms": 1700000000000,
+            "from_cache": from_cache,
+            "content": {"text": "fixture", "start_byte": 0, "end_byte": 7,
+                        "total_bytes": 16, "next_start_byte": 7},
+            "metadata": {"fixture": True}, "fetch": {"http_status": 200},
+            **deepcopy(optional),
+        }
+        original = deepcopy(core_result)
+    
+        async def call(operation, params):
+            calls.append((operation, params))
+            return core_result
+    
+        monkeypatch.setattr(mcp_server, "_call", call)
+        response = await mcp_server.build_server().call_tool("read_url", {
+            "url": "https://example.com/page", "max_bytes": 7, "freshness": freshness,
+        })
+    
+        assert not response.is_error
+        assert calls == [("web.read", {"url": "https://example.com/page", "max_bytes": 7,
+                                       "start_byte": 0, "freshness": freshness, "max_age_s": 604800})]
+        result = response.structured_content
+>       assert {key: result[key] for key in ("usage", "shared_read", "cache") if key in result} == optional
+E       AssertionError: assert {} == {'usage': {'s...cit_max_age'}}
+E         
+E         Right contains 3 more items:
+E         {'cache': {'age_ms': 150, 'fresh': True, 'reason': 'explicit_max_age'},
+E          'shared_read': {'attempt_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+E                          'members': 3,
+E                          'physical_usage': {'content_bytes': 8192,
+E                                             'external_requests': 2,...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+python/tests/test_mcp_read.py:69: AssertionError
+_ test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[subscriber-keeps-zero-increment-and-physical-association] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d03afa060>
+freshness = 'refresh', from_cache = False
+optional = {'usage': {'scope': 'direct_read', 'external_requests': 0, 'content_bytes': 0, 'model_calls': 0, ...}, 'shared_read': ...e': 'subscriber', 'members': 3, 'scope': 'process', ...}, 'cache': {'fresh': False, 'age_ms': 0, 'reason': 'no_cache'}}
+
+    @pytest.mark.parametrize(("freshness", "from_cache", "optional"), [
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 2, "content_bytes": 8192,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "payer", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": True, "age_ms": 150, "reason": "explicit_max_age"},
+        }, id="shared-payer-known"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "subscriber", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": False, "age_ms": 0, "reason": "no_cache"},
+        }, id="subscriber-keeps-zero-increment-and-physical-association"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": None, "content_bytes": None,
+                      "model_calls": 0, "known": False},
+            "shared_read": {"attempt_id": "b" * 48, "role": "payer", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="payer-unknown-is-not-zero"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "b" * 48, "role": "subscriber", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="subscriber-unknown-association-is-not-recomputed"),
+        pytest.param("cache_only", True, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "cache": {"fresh": True, "age_ms": 1234, "reason": "explicit_max_age"},
+        }, id="cache-hit-does-not-create-shared-attempt"),
+        pytest.param("refresh", False, {}, id="legacy-response-does-not-invent-optional-fields"),
+    ])
+    async def test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation(
+            monkeypatch, freshness, from_cache, optional):
+        calls = []
+        core_result = {
+            "snapshot_id": "snapshot_fixture", "title": "Fixture", "url": "https://example.com/page",
+            "final_url": "https://example.com/page", "fetched_at_ms": 1700000000000,
+            "from_cache": from_cache,
+            "content": {"text": "fixture", "start_byte": 0, "end_byte": 7,
+                        "total_bytes": 16, "next_start_byte": 7},
+            "metadata": {"fixture": True}, "fetch": {"http_status": 200},
+            **deepcopy(optional),
+        }
+        original = deepcopy(core_result)
+    
+        async def call(operation, params):
+            calls.append((operation, params))
+            return core_result
+    
+        monkeypatch.setattr(mcp_server, "_call", call)
+        response = await mcp_server.build_server().call_tool("read_url", {
+            "url": "https://example.com/page", "max_bytes": 7, "freshness": freshness,
+        })
+    
+        assert not response.is_error
+        assert calls == [("web.read", {"url": "https://example.com/page", "max_bytes": 7,
+                                       "start_byte": 0, "freshness": freshness, "max_age_s": 604800})]
+        result = response.structured_content
+>       assert {key: result[key] for key in ("usage", "shared_read", "cache") if key in result} == optional
+E       AssertionError: assert {} == {'usage': {'s...: 'no_cache'}}
+E         
+E         Right contains 3 more items:
+E         {'cache': {'age_ms': 0, 'fresh': False, 'reason': 'no_cache'},
+E          'shared_read': {'attempt_id': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+E                          'members': 3,
+E                          'physical_usage': {'content_bytes': 8192,
+E                                             'external_requests': 2,...
+E         
+E         ...Full output truncated (9 lines hidden), use '-vv' to show
+
+python/tests/test_mcp_read.py:69: AssertionError
+_ test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[payer-unknown-is-not-zero] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d0371f920>
+freshness = 'refresh', from_cache = False
+optional = {'usage': {'scope': 'direct_read', 'external_requests': None, 'content_bytes': None, 'model_calls': 0, ...}, 'shared_r...tempt_id': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'role': 'payer', 'members': 2, 'scope': 'process', ...}}
+
+    @pytest.mark.parametrize(("freshness", "from_cache", "optional"), [
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 2, "content_bytes": 8192,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "payer", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": True, "age_ms": 150, "reason": "explicit_max_age"},
+        }, id="shared-payer-known"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "subscriber", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": False, "age_ms": 0, "reason": "no_cache"},
+        }, id="subscriber-keeps-zero-increment-and-physical-association"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": None, "content_bytes": None,
+                      "model_calls": 0, "known": False},
+            "shared_read": {"attempt_id": "b" * 48, "role": "payer", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="payer-unknown-is-not-zero"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "b" * 48, "role": "subscriber", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="subscriber-unknown-association-is-not-recomputed"),
+        pytest.param("cache_only", True, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "cache": {"fresh": True, "age_ms": 1234, "reason": "explicit_max_age"},
+        }, id="cache-hit-does-not-create-shared-attempt"),
+        pytest.param("refresh", False, {}, id="legacy-response-does-not-invent-optional-fields"),
+    ])
+    async def test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation(
+            monkeypatch, freshness, from_cache, optional):
+        calls = []
+        core_result = {
+            "snapshot_id": "snapshot_fixture", "title": "Fixture", "url": "https://example.com/page",
+            "final_url": "https://example.com/page", "fetched_at_ms": 1700000000000,
+            "from_cache": from_cache,
+            "content": {"text": "fixture", "start_byte": 0, "end_byte": 7,
+                        "total_bytes": 16, "next_start_byte": 7},
+            "metadata": {"fixture": True}, "fetch": {"http_status": 200},
+            **deepcopy(optional),
+        }
+        original = deepcopy(core_result)
+    
+        async def call(operation, params):
+            calls.append((operation, params))
+            return core_result
+    
+        monkeypatch.setattr(mcp_server, "_call", call)
+        response = await mcp_server.build_server().call_tool("read_url", {
+            "url": "https://example.com/page", "max_bytes": 7, "freshness": freshness,
+        })
+    
+        assert not response.is_error
+        assert calls == [("web.read", {"url": "https://example.com/page", "max_bytes": 7,
+                                       "start_byte": 0, "freshness": freshness, "max_age_s": 604800})]
+        result = response.structured_content
+>       assert {key: result[key] for key in ("usage", "shared_read", "cache") if key in result} == optional
+E       AssertionError: assert {} == {'usage': {'s...rocess', ...}}
+E         
+E         Right contains 2 more items:
+E         {'shared_read': {'attempt_id': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+E                          'members': 2,
+E                          'physical_usage': {'content_bytes': None,
+E                                             'external_requests': None,
+E                                             'known': False},...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+python/tests/test_mcp_read.py:69: AssertionError
+_ test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[subscriber-unknown-association-is-not-recomputed] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d03753d70>
+freshness = 'refresh', from_cache = False
+optional = {'usage': {'scope': 'direct_read', 'external_requests': 0, 'content_bytes': 0, 'model_calls': 0, ...}, 'shared_read': ..._id': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'role': 'subscriber', 'members': 2, 'scope': 'process', ...}}
+
+    @pytest.mark.parametrize(("freshness", "from_cache", "optional"), [
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 2, "content_bytes": 8192,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "payer", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": True, "age_ms": 150, "reason": "explicit_max_age"},
+        }, id="shared-payer-known"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "subscriber", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": False, "age_ms": 0, "reason": "no_cache"},
+        }, id="subscriber-keeps-zero-increment-and-physical-association"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": None, "content_bytes": None,
+                      "model_calls": 0, "known": False},
+            "shared_read": {"attempt_id": "b" * 48, "role": "payer", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="payer-unknown-is-not-zero"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "b" * 48, "role": "subscriber", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="subscriber-unknown-association-is-not-recomputed"),
+        pytest.param("cache_only", True, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "cache": {"fresh": True, "age_ms": 1234, "reason": "explicit_max_age"},
+        }, id="cache-hit-does-not-create-shared-attempt"),
+        pytest.param("refresh", False, {}, id="legacy-response-does-not-invent-optional-fields"),
+    ])
+    async def test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation(
+            monkeypatch, freshness, from_cache, optional):
+        calls = []
+        core_result = {
+            "snapshot_id": "snapshot_fixture", "title": "Fixture", "url": "https://example.com/page",
+            "final_url": "https://example.com/page", "fetched_at_ms": 1700000000000,
+            "from_cache": from_cache,
+            "content": {"text": "fixture", "start_byte": 0, "end_byte": 7,
+                        "total_bytes": 16, "next_start_byte": 7},
+            "metadata": {"fixture": True}, "fetch": {"http_status": 200},
+            **deepcopy(optional),
+        }
+        original = deepcopy(core_result)
+    
+        async def call(operation, params):
+            calls.append((operation, params))
+            return core_result
+    
+        monkeypatch.setattr(mcp_server, "_call", call)
+        response = await mcp_server.build_server().call_tool("read_url", {
+            "url": "https://example.com/page", "max_bytes": 7, "freshness": freshness,
+        })
+    
+        assert not response.is_error
+        assert calls == [("web.read", {"url": "https://example.com/page", "max_bytes": 7,
+                                       "start_byte": 0, "freshness": freshness, "max_age_s": 604800})]
+        result = response.structured_content
+>       assert {key: result[key] for key in ("usage", "shared_read", "cache") if key in result} == optional
+E       AssertionError: assert {} == {'usage': {'s...rocess', ...}}
+E         
+E         Right contains 2 more items:
+E         {'shared_read': {'attempt_id': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+E                          'members': 2,
+E                          'physical_usage': {'content_bytes': None,
+E                                             'external_requests': None,
+E                                             'known': False},...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+python/tests/test_mcp_read.py:69: AssertionError
+_ test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[cache-hit-does-not-create-shared-attempt] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d0323e090>
+freshness = 'cache_only', from_cache = True
+optional = {'usage': {'scope': 'direct_read', 'external_requests': 0, 'content_bytes': 0, 'model_calls': 0, ...}, 'cache': {'fresh': True, 'age_ms': 1234, 'reason': 'explicit_max_age'}}
+
+    @pytest.mark.parametrize(("freshness", "from_cache", "optional"), [
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 2, "content_bytes": 8192,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "payer", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": True, "age_ms": 150, "reason": "explicit_max_age"},
+        }, id="shared-payer-known"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "a" * 48, "role": "subscriber", "members": 3, "scope": "process",
+                            "physical_usage": {"external_requests": 2, "content_bytes": 8192, "known": True}},
+            "cache": {"fresh": False, "age_ms": 0, "reason": "no_cache"},
+        }, id="subscriber-keeps-zero-increment-and-physical-association"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": None, "content_bytes": None,
+                      "model_calls": 0, "known": False},
+            "shared_read": {"attempt_id": "b" * 48, "role": "payer", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="payer-unknown-is-not-zero"),
+        pytest.param("refresh", False, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "shared_read": {"attempt_id": "b" * 48, "role": "subscriber", "members": 2, "scope": "process",
+                            "physical_usage": {"external_requests": None, "content_bytes": None, "known": False}},
+        }, id="subscriber-unknown-association-is-not-recomputed"),
+        pytest.param("cache_only", True, {
+            "usage": {"scope": "direct_read", "external_requests": 0, "content_bytes": 0,
+                      "model_calls": 0, "known": True},
+            "cache": {"fresh": True, "age_ms": 1234, "reason": "explicit_max_age"},
+        }, id="cache-hit-does-not-create-shared-attempt"),
+        pytest.param("refresh", False, {}, id="legacy-response-does-not-invent-optional-fields"),
+    ])
+    async def test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation(
+            monkeypatch, freshness, from_cache, optional):
+        calls = []
+        core_result = {
+            "snapshot_id": "snapshot_fixture", "title": "Fixture", "url": "https://example.com/page",
+            "final_url": "https://example.com/page", "fetched_at_ms": 1700000000000,
+            "from_cache": from_cache,
+            "content": {"text": "fixture", "start_byte": 0, "end_byte": 7,
+                        "total_bytes": 16, "next_start_byte": 7},
+            "metadata": {"fixture": True}, "fetch": {"http_status": 200},
+            **deepcopy(optional),
+        }
+        original = deepcopy(core_result)
+    
+        async def call(operation, params):
+            calls.append((operation, params))
+            return core_result
+    
+        monkeypatch.setattr(mcp_server, "_call", call)
+        response = await mcp_server.build_server().call_tool("read_url", {
+            "url": "https://example.com/page", "max_bytes": 7, "freshness": freshness,
+        })
+    
+        assert not response.is_error
+        assert calls == [("web.read", {"url": "https://example.com/page", "max_bytes": 7,
+                                       "start_byte": 0, "freshness": freshness, "max_age_s": 604800})]
+        result = response.structured_content
+>       assert {key: result[key] for key in ("usage", "shared_read", "cache") if key in result} == optional
+E       AssertionError: assert {} == {'usage': {'s...cit_max_age'}}
+E         
+E         Right contains 2 more items:
+E         {'cache': {'age_ms': 1234, 'fresh': True, 'reason': 'explicit_max_age'},
+E          'usage': {'content_bytes': 0,
+E                    'external_requests': 0,
+E                    'known': True,
+E                    'model_calls': 0,
+E                    'scope': 'direct_read'}}
+E         Use -v to get more diff
+
+python/tests/test_mcp_read.py:69: AssertionError
+=========================== short test summary info ============================
+FAILED python/tests/test_mcp_read.py::test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[shared-payer-known]
+FAILED python/tests/test_mcp_read.py::test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[subscriber-keeps-zero-increment-and-physical-association]
+FAILED python/tests/test_mcp_read.py::test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[payer-unknown-is-not-zero]
+FAILED python/tests/test_mcp_read.py::test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[subscriber-unknown-association-is-not-recomputed]
+FAILED python/tests/test_mcp_read.py::test_read_url_forwards_core_usage_sharing_and_cache_without_recalculation[cache-hit-does-not-create-shared-attempt]
+5 failed, 1 passed in 0.84s

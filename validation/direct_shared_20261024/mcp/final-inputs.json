@@ -1,0 +1,48 @@
+{
+  "created_at_utc": "2026-10-25T06:30:38.479664+00:00",
+  "baseline_commit": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "files_sha256": {
+    "python/bzs/core_client.py": "9ada8b0da8c98b3a8207f66ef38e9d68255f258faca54cfe3ca636052f9d02aa",
+    "python/bzs/mcp_server.py": "117692f73ad5bb9abfb536c61ad5cf78d67564c8e893ae9f852add86b9a95ad1",
+    "python/tests/test_mcp_read.py": "a02975e276b534204f41191521745f5afcf8e19a9bad5b40877fdf208ac6e0ba",
+    "tests/revalidation.cpp": "66553f442f8bf7aebd7a3d5e95db8c956b39b090251217f421c67371756389f2",
+    "tests/revocation.cpp": "a35a05036a3655db9ab9e573398a3be7feaa32192ecf21d198055df00d2fa0a6",
+    "tests/site_publication.cpp": "125e82123590180efd380058ca247fe98b2acd8ec7c5669997c8b26ac3b83718",
+    "tests/unit.cpp": "4561e52f50d5c5a106716709855be0351fca5f1de531efe2de71e549a8973cf0"
+  },
+  "diff_checks": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "python/bzs/core_client.py",
+        "python/bzs/mcp_server.py",
+        "python/tests/test_mcp_read.py",
+        "tests/revalidation.cpp",
+        "tests/revocation.cpp",
+        "tests/site_publication.cpp",
+        "tests/unit.cpp"
+      ],
+      "exit_code": 0,
+      "diagnostics": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--no-index",
+        "--check",
+        "--",
+        "/dev/null",
+        "python/tests/test_mcp_read.py"
+      ],
+      "exit_code": 1,
+      "diagnostics": "",
+      "note": "No-index comparison detects a new file; no whitespace diagnostics. New-file trailing whitespace and EOF also checked directly."
+    }
+  ],
+  "source_and_test_files_frozen_after_focused_verification": true,
+  "native_tests": "Not executed by this subagent; parent owns integrated gates."
+}

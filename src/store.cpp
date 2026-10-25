@@ -1061,29 +1061,55 @@ namespace bzs {
   Json Store::range(const std::string& owner, const std::string& id, std::int64_t start, std::int64_t max_bytes,const Json& http_guard) {
     require(start>=0&&max_bytes>=1&&max_bytes<=262144, "E_SCHEMA", "Invalid range parameters");
     std::lock_guard lock(mutex_);
+    const bool read_result=http_guard.is_object()&&http_guard.has("version")&&http_guard.at("version").is_string()&&
+      http_guard.at("version").str()=="bzs-http-read-result-1";
+    std::unique_ptr<Tx> result_tx;
+    if(read_result) {
+      // Serialize this member's complete delivery projection with writes from
+      // other Store handles. No Worker call or wait occurs in this transaction.
+      result_tx=std::make_unique<Tx>(db_);require_principal_active_locked(owner);
+      const auto fence=http_guard.at("publication_fence");const auto url=http_guard.at("url").str();
+      require(epoch_locked(owner)==fence.at("epoch").num(),"E_POLICY_CHANGED","Permissions changed during this read",409);
+      require(deletion_generation_locked(owner,url)==fence.at("generation").num(),
+              "E_TARGET_DELETED","Document was deleted after this read started",409);
+    }
     auto snap=snapshot_locked(owner, id);
     if(!http_guard.is_null()) {
-      http_guard.allowed({"version","url","metadata_sha256","max_age_s"});
-      require(http_guard.size()==4&&http_guard.at("version").str()=="bzs-http-cache-hit-1", "E_WORKER_PROTOCOL","Invalid internal cache-hit guard",502);
+      require(http_guard.is_object()&&http_guard.has("version")&&http_guard.at("version").is_string(),
+              "E_WORKER_PROTOCOL","Invalid internal read guard",502);
+      const bool fresh_result=http_guard.at("version").str()=="bzs-http-read-result-1";
+      if(fresh_result)http_guard.allowed({"version","url","metadata_sha256","publication_fence"});
+      else http_guard.allowed({"version","url","metadata_sha256","max_age_s"});
+      require(http_guard.size()==4&&(fresh_result||http_guard.at("version").str()=="bzs-http-cache-hit-1"),
+              "E_WORKER_PROTOCOL","Invalid internal read guard",502);
       const auto url=http_guard.at("url").str();const auto meta=snap.at("meta");
-      Stmt current(db_,"SELECT 1 FROM documents WHERE owner=? AND url=? AND deleted=0 AND current_snapshot=?");
-      current.bind(1,owner);current.bind(2,url);current.bind(3,id);
-      require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
-              http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
-              "E_CACHE_STALE","Cached representation changed or expired",409);
+      require(snap.at("url").str()==url,"E_WORKER_PROTOCOL","Read guard URL differs from its snapshot",502);
+      if(fresh_result) {
+        // A 304 updates metadata in place. Do not combine that newer metadata
+        // with another physical attempt's response fields or receipt.
+        require(sha256(meta.canonical())==http_guard.at("metadata_sha256").str(),
+                "E_REVALIDATION_STALE","Read response metadata changed before delivery",409);
+      } else {
+        Stmt current(db_,"SELECT 1 FROM documents WHERE owner=? AND url=? AND deleted=0 AND current_snapshot=?");
+        current.bind(1,owner);current.bind(2,url);current.bind(3,id);
+        require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
+                http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
+                "E_CACHE_STALE","Cached representation changed or expired",409);
+      }
       const bool direct=meta.at("final_url").str()==url&&meta.at("redirects").size()==0;
       require(direct||meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
-      const auto sequence=meta.has("publication_fence")?meta.at("publication_fence").at("sequence").num():0;
+      const auto sequence=fresh_result?http_guard.at("publication_fence").at("sequence").num():
+        (meta.has("publication_fence")?meta.at("publication_fence").at("sequence").num():0);
       try {
         (void)alias_fences_locked(owner,url,meta.at("final_url").str(),sequence);
-        if(meta.has("http_redirect_chain")) {
+        if(fresh_result||meta.has("http_redirect_chain")) {
           for(std::size_t i=0;i<meta.at("redirects").size();++i) {
             const auto target=meta.at("redirects").at(i).str();
             (void)alias_fences_locked(owner,url,target,sequence);
           }
         }
       } catch(const Error& error) {
-        if(error.code!="E_TARGET_DELETED")throw;
+        if(fresh_result||error.code!="E_TARGET_DELETED")throw;
         throw Error("E_CACHE_STALE","A cached URL alias was deleted",409);
       }
     }
@@ -1104,11 +1130,18 @@ namespace bzs {
     out.set("next_start_byte", end<total?Json::integer(end):Json());
     if(!http_guard.is_null()) {
       auto current=Json::object();auto policy=current_publication_ceiling_locked(owner,snap.at("url").str(),snap.at("publication"));
+      policy=current_publication_ceiling_locked(owner,snap.at("meta").at("final_url").str(),policy);
       const auto redirects=snap.at("meta").at("redirects");
       for(std::size_t i=0;i<redirects.size();++i)policy=current_publication_ceiling_locked(owner,redirects.at(i).str(),policy);
+      if(read_result) {
+        auto urls=Json::array();urls.push(snap.at("url"));urls.push(snap.at("meta").at("final_url"));
+        for(std::size_t i=0;i<redirects.size();++i)urls.push(redirects.at(i));
+        policy=seal_publication_locked(policy,publication_history_locked(owner,urls,snap.at("meta").at("page_publication_sequence").num()));
+      }
       current.set("indexed",snap.at("indexed").flag()&&policy.at("index_allowed").flag());current.set("site_publication",snap.at("site_publication"));
       out.set("http_publication_projection",current);
     }
+    if(result_tx)result_tx->commit();
     return out;
   }
   Json Store::erase(const std::string& owner, const std::string& id) {

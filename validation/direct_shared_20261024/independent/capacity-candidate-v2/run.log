@@ -1,0 +1,49 @@
+{
+  "mode":"candidate",
+  "cases":2,
+  "checks":12,
+  "failures":2,
+  "results":[
+    {
+      "case":"legacy_single_capacity",
+      "source_body_bytes":716800,
+      "physical_fetches":1,
+      "profile_calls":1,
+      "gate_ready":true,
+      "worker_watchdog":false,
+      "callers":[
+        {
+          "code":"E_JSON_LIMIT",
+          "message":"JSON size outside supported limits"
+        }
+      ],
+      "retained_snapshot_json_bytes":8603131,
+      "retained_text_sha256":"efdf8289a42964db77711088d8a89a953840e2b1bbb6a970b4347a8a70a5f091",
+      "passed":false,
+      "assertion_failure":"check failed: results[i].code.empty() at 129"
+    },
+    {
+      "case":"profile_concurrent_capacity",
+      "source_body_bytes":716800,
+      "physical_fetches":1,
+      "profile_calls":2,
+      "gate_ready":true,
+      "worker_watchdog":false,
+      "callers":[
+        {
+          "code":"E_JSON_LIMIT",
+          "message":"JSON size outside supported limits"
+        },
+        {
+          "code":"E_JSON_LIMIT",
+          "message":"JSON size outside supported limits"
+        }
+      ],
+      "retained_snapshot_json_bytes":8603477,
+      "retained_text_sha256":"efdf8289a42964db77711088d8a89a953840e2b1bbb6a970b4347a8a70a5f091",
+      "passed":false,
+      "assertion_failure":"check failed: results[i].code.empty() at 129"
+    }
+  ],
+  "scope":"Same old public C++ interfaces; finite offline capacity probe, not a change to external input limits. Candidate expectations still require successful original body delivery."
+}

@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/workspace/scratch/133513441190/bzs861/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "python/tests/test_mcp_read.py",
+    "python/tests/test_mcp_jobs.py::test_core_errors_are_visible_to_mcp_clients"
+  ],
+  "cwd": "/workspace/scratch/133513441190/bzs861",
+  "exit_code": 0,
+  "elapsed_seconds": 1.468,
+  "inputs_sha256_before": {
+    "python/bzs/mcp_server.py": "117692f73ad5bb9abfb536c61ad5cf78d67564c8e893ae9f852add86b9a95ad1",
+    "python/bzs/core_client.py": "9ada8b0da8c98b3a8207f66ef38e9d68255f258faca54cfe3ca636052f9d02aa",
+    "python/tests/test_mcp_read.py": "a02975e276b534204f41191521745f5afcf8e19a9bad5b40877fdf208ac6e0ba",
+    "tests/unit.cpp": "4561e52f50d5c5a106716709855be0351fca5f1de531efe2de71e549a8973cf0",
+    "tests/revalidation.cpp": "66553f442f8bf7aebd7a3d5e95db8c956b39b090251217f421c67371756389f2",
+    "tests/revocation.cpp": "a35a05036a3655db9ab9e573398a3be7feaa32192ecf21d198055df00d2fa0a6",
+    "tests/site_publication.cpp": "125e82123590180efd380058ca247fe98b2acd8ec7c5669997c8b26ac3b83718"
+  },
+  "inputs_sha256_after": {
+    "python/bzs/mcp_server.py": "117692f73ad5bb9abfb536c61ad5cf78d67564c8e893ae9f852add86b9a95ad1",
+    "python/bzs/core_client.py": "9ada8b0da8c98b3a8207f66ef38e9d68255f258faca54cfe3ca636052f9d02aa",
+    "python/tests/test_mcp_read.py": "a02975e276b534204f41191521745f5afcf8e19a9bad5b40877fdf208ac6e0ba",
+    "tests/unit.cpp": "4561e52f50d5c5a106716709855be0351fca5f1de531efe2de71e549a8973cf0",
+    "tests/revalidation.cpp": "66553f442f8bf7aebd7a3d5e95db8c956b39b090251217f421c67371756389f2",
+    "tests/revocation.cpp": "a35a05036a3655db9ab9e573398a3be7feaa32192ecf21d198055df00d2fa0a6",
+    "tests/site_publication.cpp": "125e82123590180efd380058ca247fe98b2acd8ec7c5669997c8b26ac3b83718"
+  },
+  "log": "/workspace/scratch/133513441190/direct-read-mcp-evidence/candidate-focused-v2.log"
+}
