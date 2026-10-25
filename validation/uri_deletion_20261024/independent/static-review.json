@@ -1,0 +1,97 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "author_role": "none; no production or formal test edits",
+  "production_files_reviewed": [
+    "include/bzs/util.hpp",
+    "src/util.cpp",
+    "src/store.cpp",
+    "src/publication.cpp"
+  ],
+  "production_matches_independent_v2_inputs": true,
+  "changed_existing_test_lines": 16,
+  "existing_test_changes_only_current_schema_13_to14_and_future14_to15": true,
+  "original_direct_no_fence_test_unchanged": true,
+  "checks": [
+    "All original URI document/snapshot and permanent idempotency identities are retained.",
+    "The helper performs ASCII and percent transformations without locale, network, DNS or process-global state.",
+    "Only one production documents INSERT exists and writes deletion_key; URLs are not updated by production paths.",
+    "Existing version<14 migration adds/repopulates all documents including tombstones in its established transaction.",
+    "Alias lookup is owner-scoped, key-deduplicated, bounded to 1001 rows per ordered range and a total 1000 accepted fences.",
+    "Direct old metadata missing a fence gets only sequence0; malformed existing proof is not treated as absent.",
+    "Redirect caches retain their required chain proof; metadata CAS, request profile, freshness and owner checks stay in place.",
+    "Revalidation checks and final cached body projection reuse the same deletion comparison key.",
+    "Historical by-ID snapshot/evidence reads are intentionally not expanded to alias-group erasure.",
+    "Site map_url, publication identities, source selection and backing adapters are not modified."
+  ],
+  "limitations": [
+    "Old processes already holding schema13 connections must be stopped before migration; schema14 startup rejection is not an in-process watcher.",
+    "Existing map/crawl projection APIs and ordinary local search are not comprehensively rekeyed; this is the explicit deletion/cache/commit boundary.",
+    "Independent synthetic probes do not establish production source availability, relevance or a full blueprint acceptance."
+  ],
+  "existing_test_schema_changes": [
+    {
+      "old": "      CHECK(scalar(store.raw_handle(),\"PRAGMA user_version\")==13);",
+      "new": "      CHECK(scalar(store.raw_handle(),\"PRAGMA user_version\")==14);"
+    },
+    {
+      "old": "    { Store s(t.path/\"db\",[&]{return f.now;});CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==13);CHECK(scalar(s.raw_handle(),\"SELECT rowid FROM content_fts\")==913);CHECK(s.snapshot(\"alice\",snapshot.at(\"snapshot_id\").str()).at(\"canonical_text\").str()==\"marker preserved\");CHECK(s.evidence_get(\"alice\",evidence.at(\"evidence_id\").str()).at(\"quote\").str()==\"marker\");CHECK(hits(s,session).size()==1);CHECK(s.job_get(\"alice\",map_id).at(\"state\").str()==\"succeeded\");CHECK(s.job_get(\"alice\",read_id).at(\"state\").str()==\"queued\");CHECK(scalar(s.raw_handle(),\"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'\")==1); }",
+      "new": "    { Store s(t.path/\"db\",[&]{return f.now;});CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==14);CHECK(scalar(s.raw_handle(),\"SELECT rowid FROM content_fts\")==913);CHECK(s.snapshot(\"alice\",snapshot.at(\"snapshot_id\").str()).at(\"canonical_text\").str()==\"marker preserved\");CHECK(s.evidence_get(\"alice\",evidence.at(\"evidence_id\").str()).at(\"quote\").str()==\"marker\");CHECK(hits(s,session).size()==1);CHECK(s.job_get(\"alice\",map_id).at(\"state\").str()==\"succeeded\");CHECK(s.job_get(\"alice\",read_id).at(\"state\").str()==\"queued\");CHECK(scalar(s.raw_handle(),\"SELECT COUNT(*) FROM documents WHERE url_key='https://map.example/map/old'\")==1); }"
+    },
+    {
+      "old": "    Store reopened(t.path/\"db\",[&]{return f.now;});WebService crawl(reopened,f,{},SiteRegistry(manifest())),read(reopened,reader,{});CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==13);drain(crawl);CHECK(reopened.job_get(\"alice\",id).at(\"state\").str()==\"succeeded\");CHECK(hits(reopened,freeze(reopened)).size()==0);",
+      "new": "    Store reopened(t.path/\"db\",[&]{return f.now;});WebService crawl(reopened,f,{},SiteRegistry(manifest())),read(reopened,reader,{});CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==14);drain(crawl);CHECK(reopened.job_get(\"alice\",id).at(\"state\").str()==\"succeeded\");CHECK(hits(reopened,freeze(reopened)).size()==0);"
+    },
+    {
+      "old": "    { Store s(t.path/\"db\",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==13);",
+      "new": "    { Store s(t.path/\"db\",[&]{return f.now;});WebService w(s,f,{},SiteRegistry(manifest()));CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==14);"
+    },
+    {
+      "old": "    { Store s(t.path/\"db\");CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==13);CHECK(s.snapshot(\"alice\",snap.at(\"snapshot_id\").str()).canonical()==snap.canonical());CHECK(s.evidence_get(\"alice\",evidence.at(\"evidence_id\").str()).canonical()==evidence.canonical());auto current=s.job_get(\"alice\",job.at(\"job_id\").str());job.set(\"reused\",Json());CHECK(current.at(\"kind\").str()==\"web.read_many\");CHECK(current.at(\"state\").str()==\"queued\");CHECK(scalar(s.raw_handle(),\"SELECT rowid FROM content_fts\")==913);CHECK(s.lease_next_read()); }",
+      "new": "    { Store s(t.path/\"db\");CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==14);CHECK(s.snapshot(\"alice\",snap.at(\"snapshot_id\").str()).canonical()==snap.canonical());CHECK(s.evidence_get(\"alice\",evidence.at(\"evidence_id\").str()).canonical()==evidence.canonical());auto current=s.job_get(\"alice\",job.at(\"job_id\").str());job.set(\"reused\",Json());CHECK(current.at(\"kind\").str()==\"web.read_many\");CHECK(current.at(\"state\").str()==\"queued\");CHECK(scalar(s.raw_handle(),\"SELECT rowid FROM content_fts\")==913);CHECK(s.lease_next_read()); }"
+    },
+    {
+      "old": "  Store store(temp.path/\"db\",[&]{return f.now;});CHECK(count(store.raw_handle(),\"PRAGMA user_version\")==13);CHECK(store.job_get(\"alice\",id).at(\"state\").str()==\"paused\");CHECK(store.read_many_submit(\"alice\",{\"https://read.example/live\"},\"live\",{}).at(\"reused\").flag());f.now+=week+86400000;CHECK(store.compact_jobs(\"alice\").at(\"compacted_jobs\").num()==0);CHECK(store.snapshot(\"alice\",snapshot).at(\"canonical_text\").str()==\"retention import\");CHECK(store.evidence_get(\"alice\",proof).at(\"quote\").str()==\"retention\");",
+      "new": "  Store store(temp.path/\"db\",[&]{return f.now;});CHECK(count(store.raw_handle(),\"PRAGMA user_version\")==14);CHECK(store.job_get(\"alice\",id).at(\"state\").str()==\"paused\");CHECK(store.read_many_submit(\"alice\",{\"https://read.example/live\"},\"live\",{}).at(\"reused\").flag());f.now+=week+86400000;CHECK(store.compact_jobs(\"alice\").at(\"compacted_jobs\").num()==0);CHECK(store.snapshot(\"alice\",snapshot).at(\"canonical_text\").str()==\"retention import\");CHECK(store.evidence_get(\"alice\",proof).at(\"quote\").str()==\"retention\");"
+    },
+    {
+      "old": "  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,\"PRAGMA user_version\")==13);CHECK(count(raw,\"SELECT COUNT(*) FROM jobs WHERE archived_at>0\")==1);CHECK(count(raw,\"SELECT COUNT(*) FROM read_job_items\")==0);",
+      "new": "  sqlite3* raw=nullptr;CHECK(sqlite3_open(backup.string().c_str(),&raw)==SQLITE_OK);std::unique_ptr<sqlite3,decltype(&sqlite3_close)> database(raw,sqlite3_close);CHECK(count(raw,\"PRAGMA user_version\")==14);CHECK(count(raw,\"SELECT COUNT(*) FROM jobs WHERE archived_at>0\")==1);CHECK(count(raw,\"SELECT COUNT(*) FROM read_job_items\")==0);"
+    },
+    {
+      "old": "TEST(validators_survive_restart_and_are_owner_scoped){Temp t;Worker w;std::string sid;{Store s(t.path/\"db\",[&]{return w.now;});WebService web(s,w,{});sid=web.read(\"alice\",read_args()).at(\"snapshot_id\").str();}{Store s(t.path/\"db\",[&]{return w.now;});WebService web(s,w,{});CHECK(web.read(\"alice\",read_args()).at(\"snapshot_id\").str()==sid);CHECK(w.calls.back().has(\"conditional\"));web.read(\"bob\",read_args());CHECK(!w.calls.back().has(\"conditional\"));CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==13);}}",
+      "new": "TEST(validators_survive_restart_and_are_owner_scoped){Temp t;Worker w;std::string sid;{Store s(t.path/\"db\",[&]{return w.now;});WebService web(s,w,{});sid=web.read(\"alice\",read_args()).at(\"snapshot_id\").str();}{Store s(t.path/\"db\",[&]{return w.now;});WebService web(s,w,{});CHECK(web.read(\"alice\",read_args()).at(\"snapshot_id\").str()==sid);CHECK(w.calls.back().has(\"conditional\"));web.read(\"bob\",read_args());CHECK(!w.calls.back().has(\"conditional\"));CHECK(scalar(s.raw_handle(),\"PRAGMA user_version\")==14);}}"
+    },
+    {
+      "old": "  CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==13);",
+      "new": "  CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==14);"
+    },
+    {
+      "old": "  Store store(temp.path/\"db\");CHECK(scalar(store.raw_handle(),\"PRAGMA user_version\")==13);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured(\"removed\")));",
+      "new": "  Store store(temp.path/\"db\");CHECK(scalar(store.raw_handle(),\"PRAGMA user_version\")==14);CHECK(hits(store,previous).size()==1);store.activate_site_publication(SiteRegistry(configured(\"removed\")));"
+    },
+    {
+      "old": "  Store reopened(temp.path/\"db\",[&]{return now;});WebService old_web(reopened,older,{}),new_web(reopened,newer,{});CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==13);CHECK(scalar(reopened.raw_handle(),\"SELECT COUNT(*) FROM read_job_items WHERE publication_snapshot_id='@legacy'\")==1);",
+      "new": "  Store reopened(temp.path/\"db\",[&]{return now;});WebService old_web(reopened,older,{}),new_web(reopened,newer,{});CHECK(scalar(reopened.raw_handle(),\"PRAGMA user_version\")==14);CHECK(scalar(reopened.raw_handle(),\"SELECT COUNT(*) FROM read_job_items WHERE publication_snapshot_id='@legacy'\")==1);"
+    },
+    {
+      "old": "    CHECK(database_scalar(path, \"PRAGMA user_version\")==13);",
+      "new": "    CHECK(database_scalar(path, \"PRAGMA user_version\")==14);"
+    },
+    {
+      "old": "    database_exec(future, \"PRAGMA user_version=14;\");",
+      "new": "    database_exec(future, \"PRAGMA user_version=15;\");"
+    },
+    {
+      "old": "    CHECK(database_scalar(future, \"PRAGMA user_version\")==14);",
+      "new": "    CHECK(database_scalar(future, \"PRAGMA user_version\")==15);"
+    },
+    {
+      "old": "      CHECK(database_scalar(path,\"PRAGMA user_version\")==13);",
+      "new": "      CHECK(database_scalar(path,\"PRAGMA user_version\")==14);"
+    },
+    {
+      "old": "      CHECK(database_scalar(path,\"PRAGMA user_version\")==13);",
+      "new": "      CHECK(database_scalar(path,\"PRAGMA user_version\")==14);"
+    }
+  ]
+}

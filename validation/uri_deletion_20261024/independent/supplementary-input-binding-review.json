@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "scope": "Read-only supplementary pre-run snapshot verification while CTest runs; this is not the final post-run check.",
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "snapshot_path": "/workspace/scratch/133513441190/bzs-old-validation-sha256.json",
+  "snapshot_sha256": "6f804a277244c75ab1eb754c5ca236b26714d8fb6ae087ae67c9d67b625b6aa0",
+  "file_count": 2793,
+  "snapshot_path_set_equals_baseline_validation": true,
+  "snapshot_hashes_equal_git_blob_sha256": true,
+  "current_old_validation_hashes_equal_baseline_and_snapshot": true,
+  "mismatches": [],
+  "direct_CTest_dependency": {
+    "path": "validation/s2_takeover/cache_review/probe_http_policy.py",
+    "sha256": "f77cc64af1bf9cb48e0d9c96076d4cabb1c3416dfc1c01bed5b29bd2674447df",
+    "imports_covered_by_non_validation_run_manifest": [
+      "tests/e2e_revalidation.py",
+      "tests/e2e_web.py"
+    ]
+  },
+  "conclusion": "Sufficient supplementary binding when archived with final post-run equality and explicit acknowledgement that this snapshot was captured separately from run.py. No production rerun required for this bookkeeping boundary."
+}

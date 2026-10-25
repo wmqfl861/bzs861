@@ -1,0 +1,138 @@
+[
+  {
+    "owner": "independent-owner",
+    "url": "http://127.0.0.1/legacy-import",
+    "deleted": false,
+    "actual": "http://127.0.0.1/legacy-import",
+    "expected": "http://127.0.0.1/legacy-import",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "http://independent-chain.example/original",
+    "deleted": false,
+    "actual": "http://independent-chain.example/original",
+    "expected": "http://independent-chain.example/original",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://INDEPENDENT-CHAIN.EXAMPLE:443/%66inal#fragment",
+    "deleted": false,
+    "actual": "https://independent-chain.example/final",
+    "expected": "https://independent-chain.example/final",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/%64irect",
+    "deleted": true,
+    "actual": "https://independent-chain.example/direct",
+    "expected": "https://independent-chain.example/direct",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/%6Diddle",
+    "deleted": true,
+    "actual": "https://independent-chain.example/middle",
+    "expected": "https://independent-chain.example/middle",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/%E4%B8%AD",
+    "deleted": false,
+    "actual": "https://independent-chain.example/%E4%B8%AD",
+    "expected": "https://independent-chain.example/%E4%B8%AD",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/%e4%b8%ad",
+    "deleted": false,
+    "actual": "https://independent-chain.example/%E4%B8%AD",
+    "expected": "https://independent-chain.example/%E4%B8%AD",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/a%252fb",
+    "deleted": false,
+    "actual": "https://independent-chain.example/a%252fb",
+    "expected": "https://independent-chain.example/a%252fb",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/a%2fb",
+    "deleted": false,
+    "actual": "https://independent-chain.example/a%2Fb",
+    "expected": "https://independent-chain.example/a%2Fb",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/a/b",
+    "deleted": false,
+    "actual": "https://independent-chain.example/a/b",
+    "expected": "https://independent-chain.example/a/b",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/bad%XZ",
+    "deleted": false,
+    "actual": "https://independent-chain.example/bad%XZ",
+    "expected": "https://independent-chain.example/bad%XZ",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/direct",
+    "deleted": false,
+    "actual": "https://independent-chain.example/direct",
+    "expected": "https://independent-chain.example/direct",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/job",
+    "deleted": false,
+    "actual": "https://independent-chain.example/job",
+    "expected": "https://independent-chain.example/job",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/query?x=%41&y=%2f",
+    "deleted": false,
+    "actual": "https://independent-chain.example/query?x=A&y=%2F",
+    "expected": "https://independent-chain.example/query?x=A&y=%2F",
+    "match": true
+  },
+  {
+    "owner": "independent-owner",
+    "url": "https://independent-chain.example/query?y=%2f&x=%41",
+    "deleted": false,
+    "actual": "https://independent-chain.example/query?y=%2F&x=A",
+    "expected": "https://independent-chain.example/query?y=%2F&x=A",
+    "match": true
+  },
+  {
+    "owner": "other-owner",
+    "url": "https://independent-chain.example/%6Diddle",
+    "deleted": false,
+    "actual": "https://independent-chain.example/middle",
+    "expected": "https://independent-chain.example/middle",
+    "match": true
+  },
+  {
+    "owner": "revoked-owner",
+    "url": "https://independent-chain.example/revoked",
+    "deleted": false,
+    "actual": "https://independent-chain.example/revoked",
+    "expected": "https://independent-chain.example/revoked",
+    "match": true
+  }
+]

@@ -1,0 +1,58 @@
+{
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "source_hashes": {
+    "python/bzs/mcp_server.py": "98fedcbad6f42aae2d5fa285a7f2b4b0b1f8681cb99dc983fed7214d41c02ab2",
+    "python/tests/test_mcp_sessions.py": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+    "python/tests/test_search_modes_adapters.py": "dc5f00b7467d2dcd93e66f05bc49c305c8caf135e8472f19e35ef2a73789cbe3",
+    "python/tests/test_mcp_auth.py": "4b4d22e71d2513d1215a0a5b3ebab5e49c7af88e343da3028f439373536fd19c",
+    "python/tests/test_mcp_map.py": "975c2018920ca24746ff1697c4624293c541afcb38e9c7867bd05972d321d8a5",
+    "python/tests/test_mcp_jobs.py": "de348b1a59da463513d8ac2f51f745a9bf82b0c9c9d031f71cbc27bdadf3ae65",
+    "python/tests/test_mcp_crawl.py": "6f261fb673ec91a7c2c5a6db995962e1db1eae5e11a02fc4779acada6f498d72",
+    "tools/requirements-s1-lock.txt": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb",
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83"
+  },
+  "commands": [
+    {
+      "argv": [
+        "timeout",
+        "--signal=INT",
+        "90s",
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-v",
+        "python/tests/test_mcp_sessions.py",
+        "python/tests/test_search_modes_adapters.py",
+        "python/tests/test_mcp_auth.py",
+        "python/tests/test_mcp_map.py",
+        "python/tests/test_mcp_jobs.py",
+        "python/tests/test_mcp_crawl.py"
+      ],
+      "cwd": "/workspace/scratch/133513441190/bzs861",
+      "execution": "permitted_native",
+      "exit_code": 0,
+      "passed": 124,
+      "failed": 0,
+      "skipped": 0,
+      "duration_s": 5.36,
+      "log": "pytest-native.log",
+      "sha256": "25ba4be8789a27a421492a49222270eedca71c08f6e4280a7335be7f48d99104"
+    },
+    {
+      "argv": [
+        ".venv/bin/python",
+        "/workspace/scratch/133513441190/mcp-description-evidence/compare_tools.py"
+      ],
+      "cwd": "/workspace/scratch/133513441190/bzs861",
+      "exit_code": 0,
+      "log": "tool-comparison.log",
+      "result": "tool-comparison.json"
+    }
+  ],
+  "earlier_attempt": {
+    "record": "sandbox-run.json",
+    "log": "pytest.log",
+    "status": "interrupted_after_stalling_not_pass"
+  },
+  "scope": "Descriptions only: INSTRUCTIONS and web_search/start_web_search/list_sources decorators; no runtime routing, source policy/config or tool contract changes."
+}

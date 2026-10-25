@@ -1,0 +1,43 @@
+{
+  "sqlite_version": "3.53.1",
+  "rows": [
+    {
+      "sql": "SELECT * FROM documents",
+      "succeeds": true,
+      "rows": [
+        [
+          "a",
+          "o",
+          "%6Diddle",
+          0
+        ]
+      ]
+    },
+    {
+      "sql": "UPDATE documents SET deleted=1 WHERE id='a'",
+      "succeeds": true,
+      "rows": []
+    },
+    {
+      "sql": "UPDATE jobs SET state='succeeded' WHERE id=1",
+      "succeeds": true,
+      "rows": []
+    },
+    {
+      "sql": "UPDATE documents SET url='/middle' WHERE id='a'",
+      "succeeds": false,
+      "error": "unknown function: bzs_deletion_key_v1()"
+    },
+    {
+      "sql": "DELETE FROM documents WHERE id='a'",
+      "succeeds": false,
+      "error": "unknown function: bzs_deletion_key_v1()"
+    },
+    {
+      "sql": "INSERT INTO documents VALUES('b','o','/b',0)",
+      "succeeds": false,
+      "error": "unknown function: bzs_deletion_key_v1()"
+    }
+  ],
+  "conclusion": "Missing application function blocks some document writes but permits reads, deletion flags and other-table writes; not a fail-closed compatibility boundary."
+}

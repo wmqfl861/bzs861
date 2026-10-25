@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "baseline": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "old_validation_files": 2793,
+  "old_validation_differences": [],
+  "pre_run_manifest": "validation/uri_deletion_20261024/old-validation-before.json",
+  "pre_run_manifest_sha256": "6f804a277244c75ab1eb754c5ca236b26714d8fb6ae087ae67c9d67b625b6aa0",
+  "supplementary_dependency_binding": {
+    "scope": "Collected separately before the final command, verified against baseline blobs and current post-run bytes; not claimed as part of run.py's direct snapshot",
+    "ctest_historical_probe": "validation/s2_takeover/cache_review/probe_http_policy.py",
+    "sha256": "f77cc64af1bf9cb48e0d9c96076d4cabb1c3416dfc1c01bed5b29bd2674447df"
+  },
+  "protected_inputs_unchanged": [
+    "config",
+    "tests/golden",
+    "docs/planning",
+    ".github/workflows",
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "tools/requirements-s1-lock.txt",
+    "tools/requirements-test.txt",
+    "python/pyproject.toml"
+  ],
+  "feature_json_bytes_unchanged": true,
+  "feature_json_sha256": "0dcdd41ec53ae594f2eb3e88ed2e225260b404f03fd2a500668750f6951f22c6",
+  "status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "sources": {
+    "registered": 17,
+    "enabled": 0,
+    "sites": 0
+  },
+  "local_read_only_review_ref": "30f058557e3f7ebb873e9780759323b49cfe9636",
+  "script_sha256": "cb7ae544d2f2f41587c95359c4472eeff39e6f18566645eb0c5f5bef7ae214a3"
+}

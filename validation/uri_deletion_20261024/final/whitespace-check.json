@@ -1,0 +1,11 @@
+{
+  "all_authored_source_test_documentation_and_structured_evidence": "passed",
+  "raw_archived_bytes_retained": [
+    "validation/uri_deletion_20261024/final/configure-asan.log",
+    "validation/uri_deletion_20261024/independent/production-delta-reviewed.patch"
+  ],
+  "raw_git_diff_check_exit_code": 2,
+  "raw_git_diff_check_output": "validation/uri_deletion_20261024/final/configure-asan.log:15: trailing whitespace.\n+-- Found Threads: TRUE  \nvalidation/uri_deletion_20261024/final/configure-asan.log:16: trailing whitespace.\n+-- Found SQLite3: /usr/include (found suitable version \"3.45.1\", minimum required is \"3.38\") \nvalidation/uri_deletion_20261024/final/configure-asan.log:17: trailing whitespace.\n+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version \"2.9.14\") \nvalidation/uri_deletion_20261024/final/configure-asan.log:18: trailing whitespace.\n+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version \"3.0.13\") found components: Crypto \nvalidation/uri_deletion_20261024/final/configure-asan.log:19: trailing whitespace.\n+-- Found Python3: /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3 (found suitable version \"3.12.14\", minimum required is \"3.10\") found components: Interpreter \nvalidation/uri_deletion_20261024/independent/production-delta-reviewed.patch:20: trailing whitespace.\n+ \n",
+  "excluded_only_these_two_immutable_raw_records_exit_code": 0,
+  "reason": "Original compiler/configure output and independently frozen patch contain original whitespace; do not modify captured bytes merely to satisfy a formatting check."
+}

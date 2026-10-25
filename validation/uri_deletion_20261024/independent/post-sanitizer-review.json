@@ -1,0 +1,295 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "reviewed_at_utc": "2026-10-24T17:19:40.921879+00:00",
+  "verdict": "pass for complete 15-target sanitizer evidence using the distinct contracts replay; original incomplete contracts record excluded",
+  "scope": "Read-only audit; reviewer did not rerun tests, edit product files or modify prior evidence.",
+  "review_script_sha256": "1e2848152d74f217dc6ad610656d02636d5d181f6f29f2c1fd3aef9a11d98116",
+  "helper_script_sha256": "61e85737b2bdd40806dfc65f8970dad6d573e78e3d52da33dc355f98e41675d4",
+  "complete_sanitizer_targets": 15,
+  "native_test_cases": 507,
+  "native_assertions": 16106,
+  "environment_overrides": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "all_input_manifests_equal_current_224_inputs": true,
+  "all_binary_sets_equal_closed_ctest_and_current": true,
+  "unique_executed_targets_in_complete_set": 15,
+  "records": [
+    {
+      "record": "bzs_batch_tests-command.json",
+      "command_sha256": "0cfce37dcf544d80a0d3dd27b1fb224dcee9fb91878120fd8cdeba1ace92c92f",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_batch_tests.log",
+      "log_bytes": 1951,
+      "recorded_log_sha256": "7985cfe9c4841672f342015b9ca68f195c2dfa16cdee56e871ed6c83728e4c07",
+      "actual_log_sha256": "7985cfe9c4841672f342015b9ca68f195c2dfa16cdee56e871ed6c83728e4c07",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "30 batch tests, 801 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_cache_freshness_tests-command.json",
+      "command_sha256": "ab7d68e0d6e2f588c255cfa4a78f63c7036bc630ff587ec5d5e2917a4e7669be",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_cache_freshness_tests.log",
+      "log_bytes": 4352,
+      "recorded_log_sha256": "bd49a4e5c119c7f142e5845e6a26fa4a06254906c49919fcca5109043346fff2",
+      "actual_log_sha256": "bd49a4e5c119c7f142e5845e6a26fa4a06254906c49919fcca5109043346fff2",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "63 cases, 1323 assertions, 0 failed"
+      ]
+    },
+    {
+      "record": "bzs_capacity_cycles_tests-command.json",
+      "command_sha256": "f2e86696f0cd7e27f23abe74ceaa5879af6800e794ba0c5d1a50ade9fe0dff5b",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_capacity_cycles_tests.log",
+      "log_bytes": 1583,
+      "recorded_log_sha256": "2041701ea01bc0f8961ddb8e6be1ebf37566d423e5a02f95136249873d1e4762",
+      "actual_log_sha256": "2041701ea01bc0f8961ddb8e6be1ebf37566d423e5a02f95136249873d1e4762",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "4 capacity cycle tests, 4800 assertions, 0 failures, 31584 wall ms"
+      ]
+    },
+    {
+      "record": "bzs_contract_tests-command.json",
+      "command_sha256": "d7db13388f9c5c523d45b84fb265826e9222c967a485c82c49d1926228b2caea",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_contract_tests.log",
+      "log_bytes": 0,
+      "recorded_log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "actual_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_hash_matches": false,
+      "counted_in_complete_suite": false,
+      "exit_code": 0,
+      "summary_lines": []
+    },
+    {
+      "record": "bzs_contract_tests-replay-command.json",
+      "command_sha256": "39827bfe7fff618146165d1707ed08862caf4756be69f5bd9750c74b670dccd9",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_contract_tests-replay.log",
+      "log_bytes": 2422,
+      "recorded_log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "actual_log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions"
+      ]
+    },
+    {
+      "record": "bzs_crawl_tests-command.json",
+      "command_sha256": "65201565c3b5df45a0ccb883928e2e56de235874c58ed973a0eca12b8dc0d975",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_crawl_tests.log",
+      "log_bytes": 8592,
+      "recorded_log_sha256": "02b8df4620c9283fd8fe6ef6b597d4fba18fb4b423f41d3f980b55df23575a37",
+      "actual_log_sha256": "02b8df4620c9283fd8fe6ef6b597d4fba18fb4b423f41d3f980b55df23575a37",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "54 crawl tests, 2798 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_fairness_tests-command.json",
+      "command_sha256": "6b92b606863138141b8f77d65b18d81d761f9204bc790771a9b439209fec3bf4",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_fairness_tests.log",
+      "log_bytes": 1320,
+      "recorded_log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+      "actual_log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "18 fairness tests, 339 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_map_tests-command.json",
+      "command_sha256": "80bec8a6275210278967dfeb389b600603584d354519ec874b91c8903dc33f76",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_map_tests.log",
+      "log_bytes": 1526,
+      "recorded_log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+      "actual_log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "24 map tests, 462 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_retention_tests-command.json",
+      "command_sha256": "57aa874fd3e8b61f72edbd1aa4370e4a065f72cb33c98cb5f155a0067bd8d4dd",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_retention_tests.log",
+      "log_bytes": 1457,
+      "recorded_log_sha256": "f5f496eb34ca0cddf62c3586620ae48ad7bfb2a592f5fa89afe55e72896f5afc",
+      "actual_log_sha256": "f5f496eb34ca0cddf62c3586620ae48ad7bfb2a592f5fa89afe55e72896f5afc",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "19 retention tests, 480 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_revalidation_tests-command.json",
+      "command_sha256": "bcd26c7903a3942caab37457300fe5c6151f67f492df75eb40ec808da1d95786",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_revalidation_tests.log",
+      "log_bytes": 1564,
+      "recorded_log_sha256": "dba9d17ccc5e6f005fcb64c75ef64fcd7c57708cf10965c88a45b4b5fbc63162",
+      "actual_log_sha256": "dba9d17ccc5e6f005fcb64c75ef64fcd7c57708cf10965c88a45b4b5fbc63162",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "24 tests / 372 assertions / 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_revocation_tests-command.json",
+      "command_sha256": "969b18b93291501acac3e96422b9d869ac8b1fa68b78efbdee5045e2b4774643",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_revocation_tests.log",
+      "log_bytes": 741,
+      "recorded_log_sha256": "b8d99294a775ce9e3d4ff47c0be9c79108989bf725a1eda6e17cbfbc9c7cf21b",
+      "actual_log_sha256": "b8d99294a775ce9e3d4ff47c0be9c79108989bf725a1eda6e17cbfbc9c7cf21b",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "12/12 tests, 146 assertions"
+      ]
+    },
+    {
+      "record": "bzs_search_mode_tests-command.json",
+      "command_sha256": "6098530f79f0a7283bfdb4ed9a1292fc295c80c6547cf114d22bc2deab5a3719",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_search_mode_tests.log",
+      "log_bytes": 2117,
+      "recorded_log_sha256": "373761295d3ba0ae2b465c5c40dba4f9bdee257750d17625381af92d00aa9575",
+      "actual_log_sha256": "373761295d3ba0ae2b465c5c40dba4f9bdee257750d17625381af92d00aa9575",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "22 search mode tests, 382 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_session_tests-command.json",
+      "command_sha256": "cd1036b8d9dafbd1d1c557665aa683b9323fd72dcc3950b930366b9f4bb179bb",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_session_tests.log",
+      "log_bytes": 3481,
+      "recorded_log_sha256": "c9be36e4e7fe0c86fa192fc30705d0c294bd954c544ad399fe3eb4070b10f9f1",
+      "actual_log_sha256": "c9be36e4e7fe0c86fa192fc30705d0c294bd954c544ad399fe3eb4070b10f9f1",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "23 tests, 298 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_site_publication_tests-command.json",
+      "command_sha256": "c278b6e543c2794fb235cd81c7ac89585034b75c43f20c712fcac98a81e91b98",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_site_publication_tests.log",
+      "log_bytes": 2652,
+      "recorded_log_sha256": "a3fb023f4b81fc2345003e28c5d27c459a4d08f453f8a4bcd90b47a53b3b67ef",
+      "actual_log_sha256": "a3fb023f4b81fc2345003e28c5d27c459a4d08f453f8a4bcd90b47a53b3b67ef",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "32 site publication tests, 1203 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_source_publication_tests-command.json",
+      "command_sha256": "45309c7b495f7be2430efa45ead23ec0cd50177e0c98b96f1ea2013d19cf21e0",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_source_publication_tests.log",
+      "log_bytes": 1342,
+      "recorded_log_sha256": "a939dac20ea6bbeb4b48fd9fbc8e01d9ff148fb9a40abfe119a10ed4b034fe1f",
+      "actual_log_sha256": "a939dac20ea6bbeb4b48fd9fbc8e01d9ff148fb9a40abfe119a10ed4b034fe1f",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "20 source publication tests, 180 assertions, 0 failures"
+      ]
+    },
+    {
+      "record": "bzs_tests-command.json",
+      "command_sha256": "6c28ea337496a95f4d94c86b6946857f681e3bf1f58bbfe54550f65bef304402",
+      "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953",
+      "input_files": 224,
+      "log": "bzs_tests.log",
+      "log_bytes": 4371,
+      "recorded_log_sha256": "8facf6f991d8663889d566ed8d374bdf9d2aeafe2c1609d6ddfd9b7a7ca6824b",
+      "actual_log_sha256": "8facf6f991d8663889d566ed8d374bdf9d2aeafe2c1609d6ddfd9b7a7ca6824b",
+      "log_hash_matches": true,
+      "counted_in_complete_suite": true,
+      "exit_code": 0,
+      "summary_lines": [
+        "{\"tests\":107,\"passed\":107,\"assertions\":2253}"
+      ]
+    }
+  ],
+  "log_integrity_issue": {
+    "original_command": "bzs_contract_tests-command.json",
+    "original_reported_exit_code": 0,
+    "original_recorded_log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+    "original_current_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "original_current_log_bytes": 0,
+    "original_is_excluded_from_complete_evidence": true,
+    "issue_record_sha256": "557278c7dbfe3fc13ff95bc6002b0950ba58f9c4dda01f2c0cc85b6df188b03f",
+    "cause": "not established",
+    "replacement_record": "bzs_contract_tests-replay-command.json",
+    "same_binary_fixture_source_inputs_and_options": true,
+    "replacement_complete_log_verified": true,
+    "original_record_and_empty_log_retained_unchanged_by_reviewer": true
+  },
+  "preservation": {
+    "old_validation_files": 2793,
+    "post_sanitizer_hashes_equal_pre_run_snapshot": true,
+    "baseline_blob_equality_already_proven_in": "post-ctest-review.json"
+  },
+  "counting_limit": "The original contracts invocation is excluded and its replay supplies the one contracts target. These 15 targets overlap Debug and independent scenarios and are not additional blueprint acceptances.",
+  "pending_scope": "Final consolidated report and exact published commit/tree/CI still require separate review."
+}

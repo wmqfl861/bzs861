@@ -1,5 +1,20 @@
 # bzs861 · 当前开发入口
 
+**更新：2026-10-24｜当前开发：URI 别名删除屏障与 MCP 来源说明｜版本 0.1.10 / schema14。**
+
+本批接手真实 main `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`，tree `5a9977f4ec6d5aa6efa276ec1197e58b2777ff06`；其 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 已核对双平台成功。旧 P1/P2 修复及 P2-5/6/7/9 接续已在基线，不重复应用旧补丁。本批实测、原失败、真实旧库升级及独立审核见[验证记录](validation/uri_deletion_20261024/README.md)。
+
+- 新增独立删除键，按 owner 和有限 URI 等价查询历史别名与墓碑；直达、跳转缓存、验证器与提交检查保持同一规则。
+- schema13 → 14 在事务内回填旧记录；先停止旧 Core。旧程序重新打开升级库会被版本门禁拒绝。
+- 原始 URI、文档/快照 ID、历史证据、发布键和幂等身份保留；reserved 编码、不同 query 与 owner 不合并。
+- MCP 说明准确反映当前部署的已审核启用来源；默认来源配置仍为空启用列表。
+
+实现边界见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)；下一步见[交接顺序](docs/handoff/NEXT_AGENT.md)。来源选择、审核及启用、S2 范围/状态及是否冻结、validation 入库、备份隔离、永久幂等身份保留和抓取适配器六项决定保持。17 条来源 / 0 启用 / 0 站点，83 包 / 161 验收 / 10 切片与 37 partial / 46 not_started / 0 accepted 均保持。审计分支 `review/claude-2026-10-24` / `30f058557e3f7ebb873e9780759323b49cfe9636` 继续只读。
+
+## 上一批并发与来源退避接续（59081e1 → ef45490，历史）
+
+以下“本批/当前”只指 `claude_continuation_20261024` 的旧输入。
+
 **更新：2026-10-24｜当前开发：Claude 审计接续 P2-5 / P2-6 / P2-7 / P2-9｜版本仍为 0.1.10｜目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。**
 
 本批基线是已发布 main `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`；该基线的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。这个成绩只证明上一批输入。本批作者测试、独立审核、原始失败、最终整合输入及实际执行结果见[本批验证记录](validation/claude_continuation_20261024/README.md)；发布后的实际 commit/tree 与对应 Checks 必须另行核对，不预写未来 CI 成功。

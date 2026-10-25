@@ -1,0 +1,408 @@
+{
+  "status": "passed_local_validation",
+  "recorded_at_utc": "2026-10-24T17:18:58.366443+00:00",
+  "repository": "wmqfl861/bzs861",
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "baseline_tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
+  "read_only_review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+  "package_version": "0.1.10",
+  "database_schema": {
+    "before": 13,
+    "after": 14,
+    "stop_all_old_core_processes_before_upgrade": true
+  },
+  "implementation_contract": "../../docs/URI_DELETION_IDENTITY.md",
+  "final_ctest": {
+    "suites": 27,
+    "passed": 27,
+    "failed": 0,
+    "skipped": 0,
+    "disabled": 0,
+    "native_targets": 15,
+    "native_cases": 507,
+    "native_assertions": 16106,
+    "python_passed": 1281,
+    "python_seconds": 18.82,
+    "cache_cases": 63,
+    "cache_assertions": 1323,
+    "duration_seconds": 195.781,
+    "command_record": "final/ctest-command.json",
+    "full_output": "final/ctest-detail.log",
+    "full_output_sha256": "0ec5c4cc6d2abea405540c2061ba7060e62fad6aae221e5b2d9c7f3447112453",
+    "junit": "final/ctest.xml",
+    "junit_sha256": "60d49babe2ff584ace2f24b31fc902e20fc18668fc4c8b211b1b8528a3b8d4bf",
+    "counting_rule": "Native/Python results are components of 27 CTest suites. JUnit system-out is truncated by CTest; counts use the complete original LastTest.log copy.",
+    "native_summaries": [
+      {
+        "cases": 107,
+        "assertions": 2253,
+        "summary": "{\"tests\":107,\"passed\":107,\"assertions\":2253}"
+      },
+      {
+        "cases": 30,
+        "assertions": 801,
+        "summary": "30 batch tests, 801 assertions, 0 failures"
+      },
+      {
+        "cases": 24,
+        "assertions": 462,
+        "summary": "24 map tests, 462 assertions, 0 failures"
+      },
+      {
+        "cases": 54,
+        "assertions": 2798,
+        "summary": "54 crawl tests, 2798 assertions, 0 failures"
+      },
+      {
+        "cases": 32,
+        "assertions": 1203,
+        "summary": "32 site publication tests, 1203 assertions, 0 failures"
+      },
+      {
+        "cases": 19,
+        "assertions": 480,
+        "summary": "19 retention tests, 480 assertions, 0 failures"
+      },
+      {
+        "cases": 18,
+        "assertions": 339,
+        "summary": "18 fairness tests, 339 assertions, 0 failures"
+      },
+      {
+        "cases": 23,
+        "assertions": 298,
+        "summary": "23 tests, 298 assertions, 0 failures"
+      },
+      {
+        "cases": 20,
+        "assertions": 180,
+        "summary": "20 source publication tests, 180 assertions, 0 failures"
+      },
+      {
+        "cases": 22,
+        "assertions": 382,
+        "summary": "22 search mode tests, 382 assertions, 0 failures"
+      },
+      {
+        "cases": 24,
+        "assertions": 372,
+        "summary": "24 tests / 372 assertions / 0 failures"
+      },
+      {
+        "cases": 12,
+        "assertions": 146,
+        "summary": "12/12 tests, 146 assertions"
+      },
+      {
+        "cases": 4,
+        "assertions": 4800,
+        "summary": "4 capacity cycle tests, 4800 assertions, 0 failures, 9109 wall ms"
+      },
+      {
+        "cases": 63,
+        "assertions": 1323,
+        "summary": "63 cases, 1323 assertions, 0 failed"
+      },
+      {
+        "cases": 55,
+        "assertions": 269,
+        "summary": "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions"
+      }
+    ]
+  },
+  "final_sanitizers": {
+    "targets": 15,
+    "passed": 15,
+    "failed": 0,
+    "native_cases": 507,
+    "native_assertions": 16106,
+    "leak_detection_enabled": true,
+    "same_cases_as_debug": true,
+    "per_target": [
+      {
+        "target": "bzs_batch_tests",
+        "cases": 30,
+        "assertions": 801,
+        "summary": "30 batch tests, 801 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 4.893,
+        "record": "asan/bzs_batch_tests-command.json",
+        "log_sha256": "7985cfe9c4841672f342015b9ca68f195c2dfa16cdee56e871ed6c83728e4c07",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_cache_freshness_tests",
+        "cases": 63,
+        "assertions": 1323,
+        "summary": "63 cases, 1323 assertions, 0 failed",
+        "exit_code": 0,
+        "duration_seconds": 32.021,
+        "record": "asan/bzs_cache_freshness_tests-command.json",
+        "log_sha256": "bd49a4e5c119c7f142e5845e6a26fa4a06254906c49919fcca5109043346fff2",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_capacity_cycles_tests",
+        "cases": 4,
+        "assertions": 4800,
+        "summary": "4 capacity cycle tests, 4800 assertions, 0 failures, 31584 wall ms",
+        "exit_code": 0,
+        "duration_seconds": 32.524,
+        "record": "asan/bzs_capacity_cycles_tests-command.json",
+        "log_sha256": "2041701ea01bc0f8961ddb8e6be1ebf37566d423e5a02f95136249873d1e4762",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_contract_tests",
+        "cases": 55,
+        "assertions": 269,
+        "summary": "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions",
+        "exit_code": 0,
+        "duration_seconds": 1.689,
+        "record": "asan/bzs_contract_tests-replay-command.json",
+        "log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_crawl_tests",
+        "cases": 54,
+        "assertions": 2798,
+        "summary": "54 crawl tests, 2798 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 21.798,
+        "record": "asan/bzs_crawl_tests-command.json",
+        "log_sha256": "02b8df4620c9283fd8fe6ef6b597d4fba18fb4b423f41d3f980b55df23575a37",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_fairness_tests",
+        "cases": 18,
+        "assertions": 339,
+        "summary": "18 fairness tests, 339 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 5.123,
+        "record": "asan/bzs_fairness_tests-command.json",
+        "log_sha256": "facc9171aff4890511f35151850e265a64a7b37034294dba33a556ae618411ba",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_map_tests",
+        "cases": 24,
+        "assertions": 462,
+        "summary": "24 map tests, 462 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 3.837,
+        "record": "asan/bzs_map_tests-command.json",
+        "log_sha256": "929998fe9a97389c0ac4d00fd8a2c09ade7ce232966c46f7fb51ea0d495d4825",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_retention_tests",
+        "cases": 19,
+        "assertions": 480,
+        "summary": "19 retention tests, 480 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 8.102,
+        "record": "asan/bzs_retention_tests-command.json",
+        "log_sha256": "f5f496eb34ca0cddf62c3586620ae48ad7bfb2a592f5fa89afe55e72896f5afc",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_revalidation_tests",
+        "cases": 24,
+        "assertions": 372,
+        "summary": "24 tests / 372 assertions / 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 5.478,
+        "record": "asan/bzs_revalidation_tests-command.json",
+        "log_sha256": "dba9d17ccc5e6f005fcb64c75ef64fcd7c57708cf10965c88a45b4b5fbc63162",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_revocation_tests",
+        "cases": 12,
+        "assertions": 146,
+        "summary": "12/12 tests, 146 assertions",
+        "exit_code": 0,
+        "duration_seconds": 1.878,
+        "record": "asan/bzs_revocation_tests-command.json",
+        "log_sha256": "b8d99294a775ce9e3d4ff47c0be9c79108989bf725a1eda6e17cbfbc9c7cf21b",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_search_mode_tests",
+        "cases": 22,
+        "assertions": 382,
+        "summary": "22 search mode tests, 382 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 9.728,
+        "record": "asan/bzs_search_mode_tests-command.json",
+        "log_sha256": "373761295d3ba0ae2b465c5c40dba4f9bdee257750d17625381af92d00aa9575",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_session_tests",
+        "cases": 23,
+        "assertions": 298,
+        "summary": "23 tests, 298 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 64.97,
+        "record": "asan/bzs_session_tests-command.json",
+        "log_sha256": "c9be36e4e7fe0c86fa192fc30705d0c294bd954c544ad399fe3eb4070b10f9f1",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_site_publication_tests",
+        "cases": 32,
+        "assertions": 1203,
+        "summary": "32 site publication tests, 1203 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 20.237,
+        "record": "asan/bzs_site_publication_tests-command.json",
+        "log_sha256": "a3fb023f4b81fc2345003e28c5d27c459a4d08f453f8a4bcd90b47a53b3b67ef",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_source_publication_tests",
+        "cases": 20,
+        "assertions": 180,
+        "summary": "20 source publication tests, 180 assertions, 0 failures",
+        "exit_code": 0,
+        "duration_seconds": 4.405,
+        "record": "asan/bzs_source_publication_tests-command.json",
+        "log_sha256": "a939dac20ea6bbeb4b48fd9fbc8e01d9ff148fb9a40abfe119a10ed4b034fe1f",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      },
+      {
+        "target": "bzs_tests",
+        "cases": 107,
+        "assertions": 2253,
+        "summary": "{\"tests\":107,\"passed\":107,\"assertions\":2253}",
+        "exit_code": 0,
+        "duration_seconds": 22.484,
+        "record": "asan/bzs_tests-command.json",
+        "log_sha256": "8facf6f991d8663889d566ed8d374bdf9d2aeafe2c1609d6ddfd9b7a7ca6824b",
+        "inputs_sha256": "00126da1ebec8fbdc66a060d78ebd9c1a9d1ac61be75a445026fc4266118a953"
+      }
+    ],
+    "excluded_incomplete_log_record": "asan/bzs_contract_tests-command.json",
+    "integrity_issue": "asan/contract-log-integrity-issue.json",
+    "replacement_record": "asan/bzs_contract_tests-replay-command.json",
+    "counting_rule": "14 intact initial logs plus one same-binary contracts replay constitute 15 validated targets; duplicate executions are not added to cases."
+  },
+  "additional_gates": {
+    "original_contract_fixtures": {
+      "passed": 34,
+      "failed": 0,
+      "record": "final/contracts-command.json"
+    },
+    "planning_read_only": {
+      "read_only": true,
+      "structure_valid": true,
+      "packages": 83,
+      "acceptance_mappings": 161,
+      "slices": 10,
+      "planning_estimate": [
+        418,
+        720
+      ],
+      "product_acceptance_checked": false
+    },
+    "plan_guard": {
+      "suite": "plan_guard",
+      "passed": 13,
+      "failed": 0,
+      "source_inputs_unchanged": true,
+      "product_acceptance_cases_executed": 0
+    },
+    "dependency_check": {
+      "status": "passed",
+      "record": "final/pip-check-command.json"
+    }
+  },
+  "independent_review": {
+    "verdict": "pass; no blocking issue found within the reviewed URI deletion/cache/migration scope",
+    "record": "independent/review-result.json",
+    "production_sha256": {
+      "include/bzs/util.hpp": "297f3184c09830ebb8059ae7a4e77fd49360374f608da05a7ca28c46bffdbd3d",
+      "src/util.cpp": "bda18e8bc56bad1327e7538fb4fcc6a042599d18a098ce70a5d96efaedd6a32f",
+      "src/store.cpp": "97e11e2350cd6668bde3cbc1881da498b98973de5b23dabb0514fb7585ad35be",
+      "src/publication.cpp": "d518340e4e0252a0edffb6e11e8d10dfc812c42c3ecbbbde68b7306873132708"
+    },
+    "real_old_database_tables_preserved": 47,
+    "virtual_tables_covered_by_shadow_data": 2,
+    "historical_document_rows": 17,
+    "original_probe_cases": 6,
+    "original_probe_checks": 250,
+    "original_probe_failures": 0,
+    "legacy_direct_cases": 7,
+    "legacy_direct_checks": 119,
+    "legacy_direct_failures": 0,
+    "uri_vectors": 534,
+    "uri_errors": 0,
+    "asan_replays_same_scenarios": true,
+    "post_ctest_audit": "independent/post-ctest-review.json"
+  },
+  "mcp_description": {
+    "record": "mcp-description/result.json",
+    "contract_comparison": "mcp-description/tool-comparison.json",
+    "focused_python_passed": 124,
+    "normal_tools": 22,
+    "admin_tools": 23,
+    "schemas_names_annotations_unchanged": true,
+    "source_requests": 0
+  },
+  "input_binding": {
+    "post_run": "final/post-run-inputs.json",
+    "post_run_sha256": "112e3ae15f34d5cb3e2205114a347218dfeecb7d0f56f6727dc33270d979b373",
+    "ctest_input_files": 224,
+    "binaries": 36,
+    "documentation_after_ctest": "final/documentation-after-ctest.json",
+    "production_test_build_inputs_equal_to_ctest": true,
+    "all_selected_sanitizer_inputs_equal_to_post_run": true,
+    "supplementary_historical_probe": "independent/supplementary-input-binding-review.json",
+    "historical_probe_was_separately_frozen": true
+  },
+  "preservation": {
+    "old_validation_files": 2793,
+    "all_old_validation_baseline_pre_and_post_run_bytes_equal": true,
+    "original_feature_json_bytes_equal": true,
+    "protected_paths": [
+      "config",
+      "tests/golden",
+      "docs/planning",
+      ".github/workflows",
+      "CMakeLists.txt",
+      "CMakePresets.json",
+      "tools/requirements-s1-lock.txt",
+      "tools/requirements-test.txt",
+      "python/pyproject.toml"
+    ],
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "planned_packages": 83,
+    "planned_acceptance_items": 161,
+    "slices": 10,
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "sites": 0,
+    "six_prior_decisions_unchanged": true,
+    "product_acceptance_checked": false
+  },
+  "failure_history": "README.md#原失败与兼容修正",
+  "limits": [
+    "No real external sources, paid/model requests, source enablement or product acceptance performed.",
+    "Does not merge document, snapshot, evidence, publication or permanent idempotency identities.",
+    "Historical by-ID access and existing owner authorization remain independent.",
+    "Backups remain quarantined; no safe restore continuity claim.",
+    "Old already-open Core processes must be stopped before migration; old binary reopen rejection alone is insufficient.",
+    "Debug, sanitizer and independent replays overlap and are not additional product acceptance cases."
+  ],
+  "remote_ci": {
+    "scope": "Actual published SHA and remote checks are recorded separately after non-force publication; not inferred from local or baseline tests",
+    "baseline_only_run": 40096268557
+  }
+}

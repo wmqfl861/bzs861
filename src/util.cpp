@@ -128,6 +128,48 @@ namespace bzs {
     require(len>0&&len<=63&&prev!='-', "E_URL", "Invalid DNS label");
     return host;
   }
+  std::string deletion_url_key(std::string_view url) {
+    // Keep this deliberately narrower than the HTTP client's requoting rules.
+    // Reserved escapes, query ordering and dot segments retain their meaning;
+    // only RFC 3986 unreserved bytes are interchangeable with their escapes.
+    try {
+      const auto host=metadata_host(url);
+      const auto start=url.find("://")+3;
+      auto end=url.find_first_of("/?#",start);
+      if(end==std::string_view::npos)end=url.size();
+      auto authority=host;
+      const auto original_authority=url.substr(start,end-start);
+      if(const auto colon=original_authority.find(':');colon!=std::string_view::npos) {
+        const auto port=std::stoi(std::string(original_authority.substr(colon+1)));
+        if(!((url.starts_with("https://")&&port==443)||(url.starts_with("http://")&&port==80)))
+          authority+=':'+std::to_string(port);
+      }
+      auto rest=url.substr(end,url.find('#',end)-end);
+      std::string suffix;
+      if(rest.empty()||rest.front()=='?')suffix='/';
+      if(!rest.empty()&&rest.back()=='?'&&rest.find('?')==rest.size()-1)rest.remove_suffix(1);
+      static constexpr char hex[]="0123456789ABCDEF";
+      const auto digit=[](char c)->int {
+        if(c>='0'&&c<='9')return c-'0';
+        if(c>='a'&&c<='f')return c-'a'+10;
+        if(c>='A'&&c<='F')return c-'A'+10;
+        return -1;
+      };
+      for(std::size_t i=0;i<rest.size();++i) {
+        if(rest[i]!='%') { suffix+=rest[i];continue; }
+        // Metadata-only imports historically accepted malformed escapes. Do
+        // not make an old database unreadable or partially normalize that URL.
+        if(i+2>=rest.size()||digit(rest[i+1])<0||digit(rest[i+2])<0)return std::string(url);
+        const auto byte=static_cast<unsigned char>(digit(rest[i+1])*16+digit(rest[i+2]));i+=2;
+        if((byte>='a'&&byte<='z')||(byte>='A'&&byte<='Z')||(byte>='0'&&byte<='9')||
+           byte=='-'||byte=='.'||byte=='_'||byte=='~')suffix+=static_cast<char>(byte);
+        else { suffix+='%';suffix+=hex[byte>>4];suffix+=hex[byte&15]; }
+      }
+      return std::string(url.substr(0,start))+authority+suffix;
+    } catch(const Error&) {
+      return std::string(url);
+    }
+  }
   std::string utf8_prefix(std::string_view s, std::size_t max) {
     auto n=std::min(s.size(), max);
     while(!utf8_boundary(s, n))--n;

@@ -1,0 +1,70 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "verdict": "pass; no blocking issue found within the reviewed URI deletion/cache/migration scope",
+  "role": "Independent of production and formal regression authors. Reviewer authored only scratch probes and review evidence.",
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "production_hashes": {
+    "include/bzs/util.hpp": "297f3184c09830ebb8059ae7a4e77fd49360374f608da05a7ca28c46bffdbd3d",
+    "src/util.cpp": "bda18e8bc56bad1327e7538fb4fcc6a042599d18a098ce70a5d96efaedd6a32f",
+    "src/store.cpp": "97e11e2350cd6668bde3cbc1881da498b98973de5b23dabb0514fb7585ad35be",
+    "src/publication.cpp": "d518340e4e0252a0edffb6e11e8d10dfc812c42c3ecbbbde68b7306873132708"
+  },
+  "actual_final_debug_library_sha256": "30ea0955517d8a2a585f2b01c4ba42fd1530ca4a9431284f74fa04caf2d80338",
+  "actual_final_sanitizer_library_sha256": "039cef93c3f5c98430cd34a4819bef247f461d670a5d00f03539b757bae37d63",
+  "debug": {
+    "migration": "migration-review-v2/review-result.json",
+    "preserved_old_tables": 47,
+    "virtual_tables_covered_via_shadow_tables": 2,
+    "historical_document_rows": 17,
+    "original_probe_cases": 6,
+    "original_probe_checks": 250,
+    "original_probe_failures": 0,
+    "original_source_unchanged": true,
+    "direct_missing_proof_cases": 7,
+    "direct_missing_proof_checks": 119,
+    "direct_missing_proof_failures": 0,
+    "key_vectors": 534,
+    "key_errors": 0,
+    "query_plan_uses_ordered_key_index_without_temporary_sort": true
+  },
+  "asan_ubsan": {
+    "result": "asan-review-permitted/review-result.json",
+    "status": "passed",
+    "same_probe_sources_as_debug": true,
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+    "same_four_binaries_as_original_environment_failure": true,
+    "before_after_binary_hashes_equal": true,
+    "original_cases": 6,
+    "original_checks": 250,
+    "direct_cases": 7,
+    "direct_checks": 119,
+    "key_vectors": 534
+  },
+  "static_review": "static-review.json",
+  "original_failures_preserved": [
+    {
+      "path": "migration-review-v1/historical-original-six-cases.stdout",
+      "scope": "Real ef45490c library; six original cases, 209 executed checks, two original reverse-percent failures."
+    },
+    {
+      "path": "migration-review-v1/candidate/direct-missing-fence.stdout",
+      "scope": "First candidate; seven legacy-direct cases, 64 executed checks, four real compatibility failures. Same probe bytes pass the corrected candidate with 119 checks."
+    },
+    {
+      "path": "asan-review/real-old-upgrade.stderr",
+      "scope": "First sanitizer execution completed the product operation but LSan exited1 because sandbox ptrace prevented /proc task inspection. Excluded from successful sanitizer results."
+    }
+  ],
+  "design_observation": "expression-index-compatibility-observation.json",
+  "precise_limits": [
+    "This is a local synthetic API/migration/code review, not the complete project suite or remote CI.",
+    "Debug and sanitizer replays execute the same scenarios; do not add them as distinct acceptance cases.",
+    "All fixture databases were created by the real old Store API; injected migration faults were added only to copies and recorded separately.",
+    "The 47-table digest comparison covers all existing columns and FTS shadow tables, with two virtual interfaces represented by their stored shadow data.",
+    "Historical by-ID snapshots/evidence remain independently authorized; the new key does not merge or erase whole alias groups.",
+    "Old already-running Core processes must be stopped before schema14 migration; reopening old binaries was verified to fail with E_SCHEMA_VERSION.",
+    "No real sources, external HTTP calls, model calls or source approvals were exercised."
+  ],
+  "archive_rule": "Archive the manifest-listed text, source and header files only. Temporary synthetic databases, static libraries and native executables are excluded."
+}

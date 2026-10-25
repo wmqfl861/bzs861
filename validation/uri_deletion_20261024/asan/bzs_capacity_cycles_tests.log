@@ -1,0 +1,9 @@
+{"cycles":3,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":0,"real_http":false,"scenario":"frontier_512_capacity_refill","simulated_elapsed_ms":1816200003,"store_reopens":6,"submissions":1533,"wall_elapsed_ms":20348}
+PASS three_full_frontier_capacity_cycles_preserve_paused_keys_and_owner_boundaries
+{"cycles":12,"fake_worker_calls":220,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":111,"read_leases":109,"real_http":false,"scenario":"continuous_arrivals_96_opportunities_per_queue","simulated_elapsed_ms":608400001,"store_reopens":13,"submissions":198,"wall_elapsed_ms":9319}
+PASS continuous_arrivals_follow_durable_round_robin_across_twelve_reopens
+{"cycles":6,"fake_worker_calls":12,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":12,"read_leases":12,"real_http":false,"scenario":"unknown_grant_recovery_and_retention","simulated_elapsed_ms":3650400006,"store_reopens":12,"submissions":24,"wall_elapsed_ms":1095}
+PASS six_unknown_grant_cycles_keep_active_and_paused_work_then_compact_without_refunds
+{"cycles":8,"fake_worker_calls":24,"fixture_sql_writes":false,"long_running_throughput_evidence":false,"map_leases":24,"read_leases":0,"real_http":false,"scenario":"robots_receipt_and_admission_pins","simulated_elapsed_ms":4867200016,"store_reopens":8,"submissions":24,"wall_elapsed_ms":796}
+PASS eight_robots_reference_cycles_protect_receipt_and_admission_independently
+4 capacity cycle tests, 4800 assertions, 0 failures, 31584 wall ms

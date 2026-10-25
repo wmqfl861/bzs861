@@ -1,0 +1,15 @@
+RUN legacy_direct_positive
+FAIL legacy_direct_positive E_CACHE_STALE Cached representation lacks a persistent deletion fence
+RUN legacy_alias_delete_revival_cross_handle
+FAIL legacy_alias_delete_revival_cross_handle E_CACHE_STALE Cached representation lacks a persistent deletion fence
+RUN unrelated_other_owner_deletes
+FAIL unrelated_other_owner_deletes E_CACHE_STALE Cached representation lacks a persistent deletion fence
+RUN reserved_and_query_distinctions
+FAIL reserved_and_query_distinctions E_CACHE_STALE Cached representation lacks a persistent deletion fence
+RUN missing_redirect_fence_closed
+PASS missing_redirect_fence_closed
+RUN malformed_direct_fence_closed
+PASS malformed_direct_fence_closed
+RUN no_invented_post_delete_proof
+PASS no_invented_post_delete_proof
+SUMMARY cases=7 checks=64 failures=4 external_network_requests=0

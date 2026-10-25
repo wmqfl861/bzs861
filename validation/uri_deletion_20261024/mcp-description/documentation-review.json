@@ -1,0 +1,69 @@
+{
+  "scope": [
+    "docs/URI_DELETION_IDENTITY.md",
+    "docs/HTTP_REDIRECT_CACHE.md",
+    "docs/HTTP_FRESHNESS.md",
+    "docs/HTTP_REVALIDATION.md"
+  ],
+  "status": "documentation_only_review",
+  "compatibility": "Exact direct final_url==request_url and redirects empty without publication_fence uses conservative check sequence 0; any same-owner deletion history forbids reuse; no historical fence written. Redirects still require original fence.",
+  "checked_local_links": 12,
+  "links": [
+    {
+      "from": "docs/URI_DELETION_IDENTITY.md",
+      "target": "../src/util.cpp"
+    },
+    {
+      "from": "docs/URI_DELETION_IDENTITY.md",
+      "target": "../src/publication.cpp"
+    },
+    {
+      "from": "docs/URI_DELETION_IDENTITY.md",
+      "target": "HTTP_FRESHNESS.md"
+    },
+    {
+      "from": "docs/URI_DELETION_IDENTITY.md",
+      "target": "HTTP_REVALIDATION.md"
+    },
+    {
+      "from": "docs/URI_DELETION_IDENTITY.md",
+      "target": "HTTP_REDIRECT_CACHE.md"
+    },
+    {
+      "from": "docs/HTTP_REDIRECT_CACHE.md",
+      "target": "URI_DELETION_IDENTITY.md"
+    },
+    {
+      "from": "docs/HTTP_FRESHNESS.md",
+      "target": "HTTP_REVALIDATION.md"
+    },
+    {
+      "from": "docs/HTTP_FRESHNESS.md",
+      "target": "HTTP_REDIRECT_CACHE.md"
+    },
+    {
+      "from": "docs/HTTP_FRESHNESS.md",
+      "target": "URI_DELETION_IDENTITY.md"
+    },
+    {
+      "from": "docs/HTTP_REVALIDATION.md",
+      "target": "URI_DELETION_IDENTITY.md"
+    },
+    {
+      "from": "docs/HTTP_REVALIDATION.md",
+      "target": "HTTP_FRESHNESS.md"
+    },
+    {
+      "from": "docs/HTTP_REVALIDATION.md",
+      "target": "HTTP_REDIRECT_CACHE.md"
+    }
+  ],
+  "sha256": {
+    "docs/URI_DELETION_IDENTITY.md": "0ed559a4a97f7d6dd01242bdbbc7ac4892af8df69f3747b8144b7837ff54ec8d",
+    "docs/HTTP_REDIRECT_CACHE.md": "436e3029b8ab994159c38c3767a36aecfc7bd449dad4d47d0ba862504f4eb85f",
+    "docs/HTTP_FRESHNESS.md": "97a29ad68fa7cf70a31512b2b01315cae4c028fe260e486562a07ff87b904e2c",
+    "docs/HTTP_REVALIDATION.md": "6ee90e9f004b4d42fbab67ab35da31fb0aa2aa8ce01be35d9885e677304fb6d2"
+  },
+  "production_pass_or_ci_claims_added": false,
+  "historical_validation_modified": false
+}

@@ -263,7 +263,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=13,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=14,"E_SCHEMA_VERSION","Database is newer than this program",409);
     bool rebuild_substrings=version<3;
     Tx tx(db_);
     if(version>0) {
@@ -584,6 +584,19 @@ namespace bzs {
       migrate_source_publication_locked();migrate_revocations_locked();migrate_shared_reads_locked();
       exec(db_,"PRAGMA user_version=13;");
     }
+    if(version<14) {
+      // Derived comparison keys cover old aliases and retained tombstones too.
+      // Document/snapshot identity, deletion generations and payloads stay put.
+      if(!has_column(db_,"documents","deletion_key"))
+        exec(db_,"ALTER TABLE documents ADD COLUMN deletion_key TEXT NOT NULL DEFAULT '';");
+      Stmt rows(db_,"SELECT id,url FROM documents");
+      while(rows.step()) {
+        Stmt update(db_,"UPDATE documents SET deletion_key=? WHERE id=?");
+        update.bind(1,deletion_url_key(rows.text(1)));update.bind(2,rows.text(0));update.step();
+      }
+      exec(db_,"CREATE INDEX IF NOT EXISTS documents_deletion_key ON documents(owner,deletion_key,id);");
+      exec(db_,"PRAGMA user_version=14;");
+    }
     // Permanent key history must not make active-detail counts scan that history.
     exec(db_,"CREATE INDEX IF NOT EXISTS jobs_unarchived_owner ON jobs(owner) WHERE archived_at=0;");
     if(rebuild_substrings) {
@@ -803,12 +816,13 @@ namespace bzs {
     }
     if(did.empty()) {
       did=random_id();
-      Stmt d(db_, "INSERT INTO documents(id,owner,url,host,url_key,representation_key)VALUES(?,?,?,?,?,?)");
+      Stmt d(db_, "INSERT INTO documents(id,owner,url,host,url_key,representation_key,deletion_key)VALUES(?,?,?,?,?,?,?)");
       d.bind(1, did);
       d.bind(2, owner);
       d.bind(3, input.url);
       d.bind(4, host);
       d.bind(5, url_key);d.bind(6,representation_key);
+      d.bind(7,deletion_url_key(input.url));
       d.step();
     }
     auto sid=random_id();
@@ -986,16 +1000,21 @@ namespace bzs {
     Json cache;
     try {
       cache=validate_http_cache(meta.at("http_cache"),final_url);
+      // A direct response needs the same original-URL deletion fence as a
+      // redirect chain. Reimporting an alias cannot reauthorize the old body.
+      if(!direct&&!meta.has("publication_fence"))return std::nullopt;
+      // Older direct snapshots have no captured sequence. Zero grants no
+      // exemption from any retained deletion, including a revived alias.
+      const auto sequence=meta.has("publication_fence")?meta.at("publication_fence").at("sequence").num():0;
+      (void)alias_fences_locked(owner,url,final_url,sequence);
       if(!direct) {
         if(!meta.has("http_redirect_chain")||!meta.has("http_freshness")||!meta.has("publication_fence"))return std::nullopt;
         const auto chain=validate_http_redirect_chain(meta.at("http_redirect_chain"),url,final_url,meta.at("redirects"));
         if(!http_redirect_chain_cacheable(chain)||cache.at("request_profile").str()!=meta.at("http_freshness").at("request_profile").str()||
            cache.at("request_profile").str()!=chain.at("hops").at(std::size_t{0}).at("http_freshness").at("request_profile").str())return std::nullopt;
-        const auto sequence=meta.at("publication_fence").at("sequence").num();
         for(std::size_t i=0;i<meta.at("redirects").size();++i) {
           const auto target=meta.at("redirects").at(i).str();
           (void)alias_fences_locked(owner,url,target,sequence);
-          (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
         }
       }
     } catch(const Error&) { return std::nullopt; }
@@ -1041,19 +1060,20 @@ namespace bzs {
       require(current.step()&&sha256(meta.canonical())==http_guard.at("metadata_sha256").str()&&
               http_read_freshness(meta,url,clock_(),http_guard.at("max_age_s").num()).at("fresh").flag(),
               "E_CACHE_STALE","Cached representation changed or expired",409);
-      if(meta.has("http_redirect_chain")) {
-        require(meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
-        const auto sequence=meta.at("publication_fence").at("sequence").num();
-        try {
+      const bool direct=meta.at("final_url").str()==url&&meta.at("redirects").size()==0;
+      require(direct||meta.has("publication_fence"),"E_CACHE_STALE","Cached redirects lack a persistent deletion fence",409);
+      const auto sequence=meta.has("publication_fence")?meta.at("publication_fence").at("sequence").num():0;
+      try {
+        (void)alias_fences_locked(owner,url,meta.at("final_url").str(),sequence);
+        if(meta.has("http_redirect_chain")) {
           for(std::size_t i=0;i<meta.at("redirects").size();++i) {
             const auto target=meta.at("redirects").at(i).str();
             (void)alias_fences_locked(owner,url,target,sequence);
-            (void)alias_fences_locked(owner,url,publication_url_identity(target),sequence);
           }
-        } catch(const Error& error) {
-          if(error.code!="E_TARGET_DELETED")throw;
-          throw Error("E_CACHE_STALE","A cached redirect target was deleted",409);
         }
+      } catch(const Error& error) {
+        if(error.code!="E_TARGET_DELETED")throw;
+        throw Error("E_CACHE_STALE","A cached URL alias was deleted",409);
       }
     }
     auto text=snap.at("canonical_text").str();

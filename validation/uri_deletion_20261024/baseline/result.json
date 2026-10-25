@@ -1,0 +1,27 @@
+{
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "source_sha256": "336dbf9a078da3df5bf785fca43c1eb30de4b2d842eb612d142f5d25b14062d9",
+  "library_sha256": "e13c0de143813704d01c64fd796833ca9fc8034349b7fe3330d82747747d55f5",
+  "compile_command": [
+    "g++",
+    "-std=c++20",
+    "-O0",
+    "-g",
+    "-I/workspace/scratch/133513441190/bzs861-baseline/include",
+    "/workspace/scratch/133513441190/uri-baseline-evidence/cache_freshness.cpp",
+    "/workspace/scratch/133513441190/bzs861-baseline/build/libbzs_core.a",
+    "-lsqlite3",
+    "-lxml2",
+    "-ljson-c",
+    "-lssl",
+    "-lcrypto",
+    "-pthread",
+    "-o",
+    "/workspace/scratch/133513441190/uri-baseline-evidence/cache_freshness-baseline"
+  ],
+  "compile_exit_code": 0,
+  "compile_seconds": 5.200308699000743,
+  "run_exit_code": 1,
+  "run_seconds": 4.969384235002508,
+  "binary_sha256": "ed1c7db32f1c343d7e84e66612cd86f13fca8c49314c1756734d52fd8c9ab781"
+}

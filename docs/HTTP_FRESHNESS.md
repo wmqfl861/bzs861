@@ -36,4 +36,8 @@ robots 的新鲜规则沿用固定 BzsBot User-Agent、text/plain Accept，并�
 
 ## 缓存命中的当前权限投影
 
-直达缓存与具备完整证明的 HTTP 跳转缓存都在返回前，在 Store 锁内复核当前快照、元数据身份和有效期，并按当前发布权限返回 `indexed`。跳转缓存额外复核持久化删除屏障与链中 URL；直达缓存不要求跳转证明。`fetch.profile` 只确认当前 Worker 配置，不产生 origin 请求，其间发生的限制或并发刷新仍会在最终命中时被发现。此投影不修改历史正文；`document.read` 与默认 `read_range` 保持原有历史读取语义。
+直达缓存与具备完整证明的 HTTP 跳转缓存都在返回前，在 Store 锁内复核当前快照、元数据身份、有效期和相应删除屏障，并按当前发布权限返回 `indexed`。schema14 的 `(owner,deletion_key,id)` 索引同时检查原始与最终 URI 的有限等价别名；跳转缓存还检查链中每个 target。已存 `publication_fence` 时使用原删除序号。旧表示仅在 `final_url` 精确等于原始 URL、`redirects` 为空、且没有 `publication_fence` 时，允许按保守检查序号 0 兼容复用；同 owner 的等价组必须没有任何删除历史。这个检查不写入或补造历史证明，跳转表示也不能使用该兼容分支。
+
+删除屏障检查失败时，`cache_only` 返回 `E_CACHE_STALE`；`cache_first` 可在本次已授权读取中转为完整 GET。曾有删除历史的旧无证明直达表示，需要新的完整读取在当前准入条件允许时建立真实的新屏障。
+
+`fetch.profile` 只确认当前 Worker 配置，不产生 origin 请求；其间发生的别名删除、发布限制或并发刷新仍会在最终命中时被发现。删除后重新导入别名不会恢复旧缓存资格。HTTP 复用与按 ID 读取历史快照的权限仍分开处理；本次不合并文档或批量删除其他别名的历史正文，`document.read` 与默认 `read_range` 保持原有语义。等价范围、历史墓碑回填及停止旧 Core 后升级的要求见 [URI 删除身份](URI_DELETION_IDENTITY.md)。

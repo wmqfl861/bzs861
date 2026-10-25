@@ -1,6 +1,6 @@
 # searchd API（0.1.10 接手续作）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见[本批验证记录](../validation/claude_continuation_20261024/README.md)；[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见[本批验证记录](../validation/uri_deletion_20261024/README.md)；[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -240,7 +240,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 辅助索引每字段最多 65536 个不同的 1–3 codepoint gram，字段超限以显式 overflow 标记继续进入原文复核；不会静默截掉后半正文。仅折叠 ASCII 大小写，不做 Unicode casefold、去重音或规范化。索引内容是可重建派生数据，快照和证据字节不变。
 
-已知旧 bzs/2 索引会在一个事务中补建辅助表并更新既有 `fts_tokenizer_version` 兼容标记；业务 schema 仍为 13，失败则整体回滚。升级前停止旧 Core，升级后的库拒绝旧二进制重新打开；此闸门不支持新旧进程混用同一数据库。备份恢复隔离规则保持原状。
+已知旧 bzs/2 索引会在一个事务中补建辅助表并更新既有 `fts_tokenizer_version` 兼容标记；该辅助迁移最初保持业务 schema13，当前删除身份迁移另将业务格式升为14，失败则整体回滚。升级前停止旧 Core，升级后的库拒绝旧二进制重新打开；此闸门不支持新旧进程混用同一数据库。备份恢复隔离规则保持原状。
 
 MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mode=single`（替代原 `total_frozen`）。连续单次调用不占用冻结会话配额；需稳定分页的调用仍使用 `search` / `search.page`，其配额与有效期不变。两条路径复用相同的 owner、删除、站点/页面发布约束及摘要处理。
 
@@ -257,7 +257,7 @@ MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mo
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前业务 schema 为13，保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列、schema11 的联网会话/版本/事件及后续 HTTP 元数据、来源发布、主体撤权和共享读取结构。子串辅助索引通过既有 `fts_tokenizer_version` 兼容标记单独迁移；升级前须停止旧 Core，不支持新旧格式进程混用。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前业务 schema 为14，增加独立 URI 删除比较键并保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列、schema11 的联网会话/版本/事件及后续 HTTP 元数据、来源发布、主体撤权和共享读取结构。子串辅助索引通过既有 `fts_tokenizer_version` 兼容标记单独迁移；升级前须停止旧 Core，不支持新旧格式进程混用。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
 
 ## worker RPC 与错误
 
@@ -302,3 +302,11 @@ robots过期记录仅可作为绑定旧表示重新验证，不能直接放行�
 原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；no-store因本接口总返回持久快照而报`E_CACHE_POLICY`，不会先落盘再删除。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
 
 schema13在12基础上组合来源发布规则、主体撤权和共享读取结构，保留原数据与账本。来源清单显式激活持久政策，旧缓存/冻结会话与在途来源回复每次重查；后续放宽不复活旧摘要。真实旧库升级、旧HTTP字段默认不新鲜、备份继续隔离的实际证据见当前报告；版本号不等于所有历史路径或安全恢复已经验收。
+
+## schema14：URI 删除比较与兼容
+
+`document.delete` 的目标仍是指定文档 ID；其他别名文档和历史证据不合并。schema14 新增派生删除键，按 owner 统一 unreserved percent 编码、主机/默认端口等有限等价；reserved 编码与查询结构保持区分。旧墓碑也参与比较。`web.read` 的缓存、直接/跳转条件请求及在途200/304提交复核别名删除序号，重导入不恢复旧表示资格。
+
+旧精确直达表示没有持久 fence 时只可用保守序号0检查，任何等价删除历史均阻断；跳转表示仍需要真实旧 fence。`cache_only` 失效时报 `E_CACHE_STALE`，本次已授权 `cache_first` / `refresh` 可执行完整读取，不用失效的旧验证器。来源政策、外部用量结算和任务租约保持。
+
+升级前停止旧 Core；升级事务保留原业务列、快照、证据与幂等身份，旧程序不能打开schema14。完整有限规则与历史读取边界见 [URI 删除身份](URI_DELETION_IDENTITY.md)。MCP的搜索说明已与当前部署来源状态对应，工具名称和参数保持。

@@ -251,12 +251,17 @@ bool restrictive_publication(const Json& policy) {
 
 Json Store::alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence) {
   auto fences=Json::array();
-  Sql rows(db_,"SELECT id,delete_generation,deleted FROM documents WHERE owner=? AND url_key IN (?,?) ORDER BY id");
-  rows.bind(1,owner);rows.bind(2,key_for(logical));rows.bind(3,key_for(target));
-  while(rows.step()) {
-    require(rows.num(2)==0&&rows.num(1)<=created_sequence,"E_TARGET_DELETED","A URL alias was deleted after this job was created",409);
-    auto fence=Json::object();fence.set("document_id",rows.text(0));fence.set("generation",rows.num(1));fences.push(fence);
-    require(fences.size()<=1000,"E_QUOTA","Too many retained aliases for one URL",429);
+  const std::set<std::string> keys={deletion_url_key(logical),deletion_url_key(target)};
+  for(const auto& key:keys) {
+    // One indexed range at a time avoids sorting/scanning all permanent alias
+    // history before discovering the existing 1000-row admission limit.
+    Sql rows(db_,"SELECT id,delete_generation,deleted FROM documents WHERE owner=? AND deletion_key=? ORDER BY id LIMIT 1001");
+    rows.bind(1,owner);rows.bind(2,key);
+    while(rows.step()) {
+      require(rows.num(2)==0&&rows.num(1)<=created_sequence,"E_TARGET_DELETED","A URL alias was deleted after this job was created",409);
+      auto fence=Json::object();fence.set("document_id",rows.text(0));fence.set("generation",rows.num(1));fences.push(fence);
+      require(fences.size()<=1000,"E_QUOTA","Too many retained aliases for one URL",429);
+    }
   }
   return fences;
 }
@@ -355,7 +360,6 @@ void Store::prepare_web_publication_locked(const std::string& owner,const std::s
     require(deletion_generation_locked(owner,logical)==fence.at("generation").num(),"E_TARGET_DELETED","Document was deleted after this read started",409);
     for(std::size_t i=0;i<urls.size();++i) {
       (void)alias_fences_locked(owner,logical,urls.at(i).str(),fence.at("sequence").num());
-      (void)alias_fences_locked(owner,logical,publication_url_identity(urls.at(i).str()),fence.at("sequence").num());
     }
   }
   // Crawl stores the physical final page independently of its logical

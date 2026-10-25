@@ -811,7 +811,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==13);
+    CHECK(database_scalar(path, "PRAGMA user_version")==14);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -834,11 +834,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=14;");
+    database_exec(future, "PRAGMA user_version=15;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==14);
+    CHECK(database_scalar(future, "PRAGMA user_version")==15);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -1641,7 +1641,7 @@ namespace {
       CHECK(audit.at("repaired_until_ms").num()==started+20000+3*day);
       CHECK(audit.at("anchor_ms").num()==started+20000);
       CHECK(audit.at("reason").str()=="unproven_legacy_backoff_over_one_year");
-      CHECK(database_scalar(path,"PRAGMA user_version")==13);
+      CHECK(database_scalar(path,"PRAGMA user_version")==14);
     }
     now=started+61000;
     Store store(path,[&]{return now;});
@@ -1782,7 +1782,7 @@ namespace {
         CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
         if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
       }
-      CHECK(database_scalar(path,"PRAGMA user_version")==13);
+      CHECK(database_scalar(path,"PRAGMA user_version")==14);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2+codepoint-grams/1'")==1);
     }
@@ -2172,6 +2172,35 @@ namespace {
     }
   }
 
+  TEST(deletion_url_key_folds_only_unreserved_uri_bytes) {
+    const std::string safe="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+    constexpr char hex[]="0123456789ABCDEF";
+    for(const auto c:safe) {
+      std::string escaped="%";escaped+=hex[static_cast<unsigned char>(c)>>4];escaped+=hex[static_cast<unsigned char>(c)&15];
+      const auto plain="https://identity.example/pre"+std::string(1,c)+"post?q="+std::string(1,c);
+      const auto encoded="https://IDENTITY.EXAMPLE:00443/pre"+escaped+"post?q="+escaped+"#fragment";
+      CHECK(deletion_url_key(encoded)==plain);
+      CHECK(deletion_url_key(deletion_url_key(encoded))==plain);
+      CHECK(deletion_url_key("https://identity.example/pre"+ascii_lower(escaped)+"post?q="+ascii_lower(escaped))==plain);
+    }
+    CHECK(deletion_url_key("https://IDENTITY.EXAMPLE:443")=="https://identity.example/");
+    CHECK(deletion_url_key("http://IDENTITY.EXAMPLE:080/?#fragment")=="http://identity.example/");
+    CHECK(deletion_url_key("https://identity.example?%61=1")=="https://identity.example/?a=1");
+  }
+  TEST(deletion_url_key_preserves_reserved_bytes_and_non_equivalent_urls) {
+    for(const auto& pair:std::vector<std::pair<std::string,std::string>>{
+      {"/a%2Fb","/a/b"},{"/a%3Fb","/a?b"},{"/a%3Bb","/a;b"},{"/a%252Fb","/a%2Fb"},
+      {"/?x=a%26b","/?x=a&b"},{"/?x=a%3Db","/?x=a=b"},{"/?x=a%2Fb","/?x=a/b"},
+      {"/?a=1&b=2","/?b=2&a=1"},{"/Case","/case"},{"/a/../b","/b"},
+      {"/%2E%2E/b","/b"},{"/a/","/a"}}) {
+      CHECK(deletion_url_key("https://identity.example"+pair.first)!=deletion_url_key("https://identity.example"+pair.second));
+    }
+    CHECK(deletion_url_key("https://identity.example/%2f")==deletion_url_key("https://identity.example/%2F"));
+    CHECK(deletion_url_key("http://identity.example/a")!=deletion_url_key("https://identity.example/a"));
+    CHECK(deletion_url_key("https://identity.example:444/a")!=deletion_url_key("https://identity.example/a"));
+    for(const auto* legacy:{"https://IDENTITY.EXAMPLE:443/%6D%","https://identity.example/%GG","not-a-url"})
+      CHECK(deletion_url_key(legacy)==legacy);
+  }
 }
 int main() {
   std::size_t passed=0;

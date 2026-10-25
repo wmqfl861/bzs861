@@ -617,5 +617,247 @@ TEST(worker_cannot_inject_the_core_final_scope_marker) {
   }
 }
 
+// Deletion identity is intentionally narrower than publication/wire identity.
+// These fixtures preserve the exact request and redirect URI bytes so the tests
+// exercise Store fences, not a fake worker's accidental URL normalization.
+struct IdentityRedirectWorker:RedirectWorker {
+  std::string middle_uri="https://cache.example/middle",final_uri="https://cache.example/final";
+  IdentityRedirectWorker() {
+    hops=2;
+    alter=[this](const Json&,Json response) {
+      auto route=Json::array();route.push(Json::string(middle_uri));route.push(Json::string(final_uri));
+      response.set("redirects",route);response.set("final_url",final_uri);
+      response.at("http_freshness").set("url",final_uri);response.at("http_cache").set("url",final_uri);
+      auto chain=response.at("http_redirect_chain");chain.set("final_url",final_uri);
+      auto proof=chain.at("hops");proof.at(std::size_t{0}).set("target_url",middle_uri);
+      proof.at(std::size_t{1}).set("url",middle_uri);proof.at(std::size_t{1}).set("target_url",final_uri);
+      proof.at(std::size_t{1}).at("http_freshness").set("url",middle_uri);
+      auto observed=response.at("http_redirect_observations").at(std::size_t{1});
+      observed.set("url",middle_uri);observed.at("http_freshness").set("url",middle_uri);
+      if(response.has("redirect_revalidation"))response.at("redirect_revalidation").set("final_url",final_uri);
+      return response;
+    };
+  }
+};
+struct IdentityDirectWorker:Worker {
+  bool force200=false;std::vector<Json> calls;std::function<void()> during_profile;
+  Json call(const std::string& method,const Json& parameters,int timeout)override {
+    if(method=="fetch.profile") {if(during_profile)during_profile();return Worker::call(method,parameters,timeout);}
+    calls.push_back(Json::parse(parameters.dump()));auto response=Worker::call(method,parameters,timeout);
+    auto cache=Json::parse(R"({"version":"bzs-http-revalidation-1","url":"","request_profile":"","etag":"\"identity-v1\"","last_modified":"","cache_control":"max-age=60","vary":"","date":"","age":"","expires":""})");
+    cache.set("url",parameters.at("url"));cache.set("request_profile",profile);
+    if(!force200&&parameters.has("conditional")) {
+      auto renewed=Json::object();renewed.set("status","not_modified");renewed.set("http_status",std::int64_t{304});
+      renewed.set("final_url",parameters.at("url"));renewed.set("binding_id",parameters.at("conditional").at("binding_id"));
+      renewed.set("http_freshness",response.at("http_freshness"));
+      renewed.set("usage",Json::parse(R"({"external_requests":1,"content_bytes":0})"));response=renewed;
+    }
+    response.set("http_cache",cache);return response;
+  }
+};
+Json identity_args(const std::string& target,const char* freshness="cache_first") {auto request=args(freshness);request.set("url",target);return request;}
+Json identity_marker(Store& store,const std::string& owner,const std::string& target) {
+  return store.ingest(owner,{target,"independent alias marker","text/plain","alias marker"});
+}
+void retained_identity_body(Store& store,const Json& first) {
+  const auto snapshot=first.at("snapshot_id").str();
+  CHECK(store.snapshot("a",snapshot).at("canonical_text").str()=="cache fixture body");
+  CHECK(store.range("a",snapshot,0,100).at("text").str()=="cache fixture body");
+}
+struct RedirectAliasCase {std::string middle,final_uri,deleted;};
+const std::vector<RedirectAliasCase> redirect_alias_cases={
+  {"https://cache.example/middle","https://cache.example/final","https://cache.example/%6Diddle"},
+  {"https://cache.example/%6diddle","https://cache.example/final","https://cache.example/middle"},
+  {"https://cache.example/middle","https://cache.example/final","https://CACHE.EXAMPLE:443/%66inal"},
+  {"https://cache.example/middle","https://cache.example/%66inal","https://cache.example/final"},
+  {"https://cache.example/middle","https://cache.example/a~b?x=-._~AZ09","https://cache.example/a%7eb?x=%2d%2e%5f%7E%41%5a%30%39"}
+};
+TEST(http_redirect_percent_alias_deletion_survives_reimport_and_restart) {
+  for(const auto& input:redirect_alias_cases) {
+    Temp t;IdentityRedirectWorker w;w.middle_uri=input.middle;w.final_uri=input.final_uri;Json first;
+    {
+      Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+      const auto marker=identity_marker(s,"a",input.deleted);first=web.read("a",redirect_args());
+      CHECK(first.at("document_id").str()!=marker.at("document_id").str());
+      CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());
+      s.erase("a",marker.at("document_id").str());
+      rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",redirect_original));
+      retained_identity_body(s,first);identity_marker(s,"a",input.deleted);
+      rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",redirect_original));CHECK(w.requests==1);
+    }
+    Store reopened(t.path/"db",[&]{return w.now;});WebService web(reopened,w,{});
+    rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");CHECK(!reopened.revalidation_base("a",redirect_original));
+    retained_identity_body(reopened,first);CHECK(w.requests==1);
+    // A newly authorized read after explicit reimport must obtain a full body.
+    CHECK(web.read("a",redirect_args("refresh")).at("fetch").at("http_status").num()==200);
+    CHECK(!w.calls.back().has("redirect_conditional"));CHECK(w.requests==2);
+    CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());
+  }
+}
+TEST(http_redirect_percent_alias_profile_race_rechecks_the_persistent_fence) {
+  for(const auto& input:redirect_alias_cases) {
+    Temp t;IdentityRedirectWorker w;w.middle_uri=input.middle;w.final_uri=input.final_uri;
+    Store s(t.path/"db",[&]{return w.now;});Store writer(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a",input.deleted),first=web.read("a",redirect_args());bool erased=false;
+    w.during_profile=[&]{if(!erased){erased=true;writer.erase("a",marker.at("document_id").str());}};
+    rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
+    CHECK(erased);CHECK(w.requests==1);CHECK(!s.revalidation_base("a",redirect_original));retained_identity_body(s,first);
+  }
+}
+TEST(http_redirect_percent_alias_inflight_200_and_304_keep_known_usage) {
+  for(const auto& input:redirect_alias_cases)for(bool full:{false,true})for(bool reimport:{false,true}) {
+    Temp t;IdentityRedirectWorker w;w.middle_uri=input.middle;w.final_uri=input.final_uri;
+    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a",input.deleted),first=web.read("a",redirect_args());
+    const auto id=s.read_many_submit("a",{redirect_original},"percent-inflight",{}).at("job_id").str();
+    const auto lease=s.lease_next_read();CHECK(lease.has_value());w.force200=full;
+    w.during=[&]{s.erase("a",marker.at("document_id").str());if(reimport)identity_marker(s,"a",input.deleted);};
+    web.execute_read(*lease);w.during={};
+    const auto job=s.job_get("a",id),item=s.job_results("a",id).at("items").at(std::size_t{0});
+    CHECK(job.at("state").str()=="failed");CHECK(item.at("error_code").str()=="E_TARGET_DELETED");CHECK(!item.has("receipt"));
+    CHECK(item.at("external_requests").num()==3);CHECK(item.at("content_bytes").num()==(full?24:6));CHECK(!item.at("usage_unknown").flag());
+    CHECK(job.at("usage").at("reserved_requests").num()==0);CHECK(job.at("usage").at("reserved_bytes").num()==0);
+    CHECK(w.requests==2);retained_identity_body(s,first);
+  }
+}
+TEST(http_percent_alias_deletion_is_scoped_to_its_owner) {
+  Temp t;IdentityRedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  const auto foreign=identity_marker(s,"b","https://cache.example/%66inal");const auto first=web.read("a",redirect_args());
+  s.erase("b",foreign.at("document_id").str());
+  CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());CHECK(s.revalidation_base("a",redirect_original).has_value());
+  CHECK(web.read("a",redirect_args("refresh")).at("fetch").at("http_status").num()==304);CHECK(w.requests==2);retained_identity_body(s,first);
+  rejects([&]{web.read("b",redirect_args("cache_only"));},"E_NOT_CACHED");
+}
+TEST(http_percent_alias_fences_preserve_reserved_delimiter_distinctions) {
+  const std::vector<std::pair<std::string,std::string>> pairs={
+    {"/a%2Fb","/a/b"},{"/a%3Fb","/a?b"},{"/a%252Fb","/a%2Fb"},
+    {"/a%3Bb","/a;b"},{"/final?x=a%2Fb","/final?x=a/b"},
+    {"/final?x=a%26y=b","/final?x=a&y=b"}
+  };
+  for(const auto& pair:pairs)for(bool reverse:{false,true}) {
+    Temp t;IdentityRedirectWorker w;w.final_uri="https://cache.example"+(reverse?pair.second:pair.first);
+    const auto distinct="https://cache.example"+(reverse?pair.first:pair.second);
+    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a",distinct),first=web.read("a",redirect_args());s.erase("a",marker.at("document_id").str());
+    CHECK(web.read("a",redirect_args("cache_only")).at("from_cache").flag());CHECK(s.revalidation_base("a",redirect_original).has_value());
+    CHECK(web.read("a",redirect_args("refresh")).at("fetch").at("http_status").num()==304);CHECK(w.requests==2);retained_identity_body(s,first);
+  }
+}
+TEST(http_direct_percent_alias_deletion_revokes_cache_and_validator) {
+  for(bool reverse:{false,true}) {
+    const std::string requested=reverse?"https://cache.example/%70age":url,alias=reverse?url:"https://cache.example/%70age";
+    Temp t;IdentityDirectWorker w;Json first;
+    {
+      Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+      const auto marker=identity_marker(s,"a",alias);first=web.read("a",identity_args(requested));
+      CHECK(first.at("document_id").str()!=marker.at("document_id").str());CHECK(s.revalidation_base("a",requested).has_value());
+      s.erase("a",marker.at("document_id").str());
+      rejects([&]{web.read("a",identity_args(requested,"cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",requested));
+      retained_identity_body(s,first);identity_marker(s,"a",alias);
+      rejects([&]{web.read("a",identity_args(requested,"cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",requested));CHECK(w.requests==1);
+    }
+    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    rejects([&]{web.read("a",identity_args(requested,"cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",requested));
+    CHECK(web.read("a",identity_args(requested,"refresh")).at("fetch").at("http_status").num()==200);CHECK(!w.calls.back().has("conditional"));
+    CHECK(web.read("a",identity_args(requested,"refresh")).at("fetch").at("http_status").num()==304);CHECK(w.calls.back().has("conditional"));
+    CHECK(w.requests==3);retained_identity_body(s,first);
+  }
+}
+TEST(http_direct_percent_alias_profile_race_cannot_return_the_old_body) {
+  Temp t;IdentityDirectWorker w;Store s(t.path/"db",[&]{return w.now;});Store writer(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  const auto marker=identity_marker(s,"a","https://cache.example/%70age"),first=web.read("a",args());bool erased=false;
+  w.during_profile=[&]{if(!erased){erased=true;writer.erase("a",marker.at("document_id").str());}};
+  rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(erased);CHECK(w.requests==1);retained_identity_body(s,first);
+}
+TEST(http_direct_percent_alias_inflight_200_and_304_cannot_publish) {
+  for(bool full:{false,true})for(bool reimport:{false,true})for(bool batch:{false,true}) {
+    Temp t;IdentityDirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a","https://cache.example/%70age"),first=web.read("a",args());w.force200=full;
+    w.during=[&]{s.erase("a",marker.at("document_id").str());if(reimport)identity_marker(s,"a","https://cache.example/%70age");};
+    if(batch) {
+      const auto id=s.read_many_submit("a",{url},"direct-percent-inflight",{}).at("job_id").str();const auto lease=s.lease_next_read();CHECK(lease.has_value());web.execute_read(*lease);
+      const auto job=s.job_get("a",id),item=s.job_results("a",id).at("items").at(std::size_t{0});
+      CHECK(job.at("state").str()=="failed");CHECK(item.at("error_code").str()=="E_TARGET_DELETED");CHECK(!item.has("receipt"));
+      CHECK(item.at("external_requests").num()==1);CHECK(item.at("content_bytes").num()==(full?18:0));CHECK(!item.at("usage_unknown").flag());
+      CHECK(job.at("usage").at("reserved_requests").num()==0);CHECK(job.at("usage").at("reserved_bytes").num()==0);
+    } else rejects([&]{web.read("a",args("refresh"));},"E_TARGET_DELETED");
+    w.during={};CHECK(w.requests==2);retained_identity_body(s,first);
+  }
+}
+
+Json legacy_direct_identity_snapshot(Store& store,IdentityDirectWorker& worker,const std::string& target) {
+  SourceDocument document{target,"cache fixture body","text/plain","cache fixture"};ParsedDocument parsed;
+  parsed.title=document.title;parsed.text=document.raw;parsed.content_type=document.content_type;parsed.parser_version="fixture/1";parsed.index_allowed=true;
+  auto freshness=policy();freshness.set("url",target);freshness.set("received_at_ms",worker.now);
+  auto cache=Json::parse(R"({"version":"bzs-http-revalidation-1","url":"","request_profile":"","etag":"\"identity-v1\"","last_modified":"","cache_control":"max-age=60","vary":"","date":"","age":"","expires":""})");
+  cache.set("url",target);cache.set("request_profile",worker.profile);
+  auto meta=Json::object();meta.set("final_url",target);meta.set("redirects",Json::array());meta.set("http_freshness",freshness);
+  meta.set("http_cache",cache);meta.set("fetched_at_ms",worker.now);
+  meta.set("site_publication_generation",store.site_publication_generation());
+  const auto stored=store.ingest_web("a",document,parsed,meta,store.deletion_generation("a",target));
+  CHECK(!stored.at("meta").has("publication_fence"));return stored;
+}
+TEST(legacy_direct_cache_without_fence_keeps_undeleted_alias_compatibility) {
+  for(bool reverse:{false,true}) {
+    const std::string requested=reverse?"https://cache.example/%70age":url,alias=reverse?url:"https://cache.example/%70age";
+    Temp t;IdentityDirectWorker w;Json stored;
+    {
+      Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});identity_marker(s,"a",alias);
+      stored=legacy_direct_identity_snapshot(s,w,requested);
+      const auto hit=web.read("a",identity_args(requested,"cache_only"));CHECK(hit.at("from_cache").flag());
+      CHECK(hit.at("snapshot_id").str()==stored.at("snapshot_id").str());CHECK(s.revalidation_base("a",requested).has_value());CHECK(w.requests==0);
+    }
+    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    CHECK(web.read("a",identity_args(requested,"cache_only")).at("from_cache").flag());
+    CHECK(s.revalidation_base("a",requested).has_value());CHECK(w.requests==0);retained_identity_body(s,stored);
+  }
+}
+TEST(legacy_direct_cache_without_fence_cannot_assume_it_postdates_an_alias_deletion) {
+  for(bool revived:{false,true}) {
+    Temp t;IdentityDirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a","https://cache.example/%70age");s.erase("a",marker.at("document_id").str());
+    if(revived)identity_marker(s,"a","https://cache.example/%70age");
+    // The compatibility artifact is deliberately missing the sequence proof:
+    // its later creation timestamp must not imply authorization after deletion.
+    ++w.now;const auto stored=legacy_direct_identity_snapshot(s,w,url);
+    rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",url));
+    CHECK(w.requests==0);retained_identity_body(s,stored);
+  }
+}
+TEST(legacy_direct_cache_without_fence_is_sealed_by_later_alias_deletion_and_revival) {
+  Temp t;IdentityDirectWorker w;Json stored;
+  {
+    Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,"a","https://cache.example/%70age");stored=legacy_direct_identity_snapshot(s,w,url);
+    CHECK(web.read("a",args("cache_only")).at("from_cache").flag());CHECK(s.revalidation_base("a",url).has_value());
+    s.erase("a",marker.at("document_id").str());
+    rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",url));
+    identity_marker(s,"a","https://cache.example/%70age");
+    rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",url));
+  }
+  Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(!s.revalidation_base("a",url));
+  CHECK(w.requests==0);retained_identity_body(s,stored);
+}
+TEST(legacy_direct_cache_without_fence_ignores_distinct_or_foreign_tombstones) {
+  struct Distinct {std::string requested,deleted,owner;};
+  const std::vector<Distinct> inputs={
+    {url,"https://cache.example/%70age","b"},{url,"https://cache.example/other","a"},
+    {"https://cache.example/a%2Fb","https://cache.example/a/b","a"},
+    {"https://cache.example/a/b","https://cache.example/a%2Fb","a"},
+    {"https://cache.example/a%3Bb","https://cache.example/a;b","a"},
+    {"https://cache.example/final?x=a%2Fb","https://cache.example/final?x=a/b","a"}
+  };
+  for(const auto& input:inputs)for(bool prior:{false,true}) {
+    Temp t;IdentityDirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+    const auto marker=identity_marker(s,input.owner,input.deleted);
+    if(prior)s.erase(input.owner,marker.at("document_id").str());
+    const auto stored=legacy_direct_identity_snapshot(s,w,input.requested);
+    if(!prior)s.erase(input.owner,marker.at("document_id").str());
+    CHECK(web.read("a",identity_args(input.requested,"cache_only")).at("from_cache").flag());
+    CHECK(s.revalidation_base("a",input.requested).has_value());CHECK(w.requests==0);retained_identity_body(s,stored);
+  }
+}
+
 }
 int main(){int failed=0;for(const auto& [name,test]:cases){try{test();std::cout<<"PASS "<<name<<'\n';}catch(const std::exception& e){++failed;std::cout<<"FAIL "<<name<<": "<<e.what()<<'\n';}}std::cout<<cases.size()<<" cases, "<<assertions<<" assertions, "<<failed<<" failed\n";return failed?1:0;}

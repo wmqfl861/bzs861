@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/workspace/scratch/133513441190/uri-independent-evidence/asan-review/migration-probe",
+    "verify",
+    "/workspace/scratch/133513441190/uri-independent-evidence/asan-review-permitted/real-schema13-copy.sqlite",
+    "/workspace/scratch/133513441190/uri-independent-evidence/migration-review-v2/fixture-receipt.json"
+  ],
+  "returncode": 0,
+  "elapsed_seconds": 0.16460380299395183,
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "stdout_sha256": "d8ead4248ab5d6afe9d01892936d3e204c6fd048f61909fb44b554fec49132c7",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

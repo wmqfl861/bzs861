@@ -1,0 +1,14 @@
+{
+  "observed_at_utc": "2026-10-24T17:18:10.754465+00:00",
+  "original_command": "bzs_contract_tests-command.json",
+  "original_exit_code": 0,
+  "recorded_log_sha256": "3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff",
+  "actual_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "actual_log_bytes": 0,
+  "log_mtime_ns": 1792862026103779859,
+  "log_ctime_ns": 1792862029155838927,
+  "status": "original execution reported success, but complete log evidence is not available at final integrity check; excluded from complete validated sanitizer set",
+  "cause": "not established",
+  "original_record_unchanged": true,
+  "resolution": "Replay only the same contracts binary with the same fixture and ASAN/UBSAN settings into a distinct append-only record; no case counts are added for the duplicate run."
+}

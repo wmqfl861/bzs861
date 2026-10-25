@@ -12,6 +12,9 @@ namespace bzs {
   std::int64_t now_ms();
   std::string read_file(const std::filesystem::path& p, std::size_t max=1024*1024);
   std::string metadata_host(std::string_view url);
+  // A deletion comparison key, not a fetch URL, publication key or admission rule.
+  // Invalid legacy metadata URLs retain their exact identity.
+  std::string deletion_url_key(std::string_view url);
   std::string utf8_prefix(std::string_view text, std::size_t max_bytes);
   void require_identifier(std::string_view value);
 }

@@ -1,0 +1,161 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "reviewed_at_utc": "2026-10-24T17:16:13.719293+00:00",
+  "verdict": "pass for closed CTest, four documentation corrections, exact source/binary inputs and retained history",
+  "scope": "Read-only independent evidence audit; no product tests rerun. Full sanitizer suite and final consolidated report were not part of this check.",
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "review_script_sha256": "61e85737b2bdd40806dfc65f8970dad6d573e78e3d52da33dc355f98e41675d4",
+  "evidence_inputs_sha256": {
+    "ctest-command.json": "95c905518ac6147213730b3ae91c5cc745739026c11aeaacf2f8d1b5106722ab",
+    "ctest-inputs.json": "0adf1095c0f70b31a5ffe090283793862df120092f5abbc7861fe575306cb615",
+    "ctest.log": "b4d1129fbc2bb35010102c074db418ae7cd272b20befa7b77a794ca3d9b0bc5c",
+    "ctest-detail.log": "0ec5c4cc6d2abea405540c2061ba7060e62fad6aae221e5b2d9c7f3447112453",
+    "ctest.xml": "60d49babe2ff584ace2f24b31fc902e20fc18668fc4c8b211b1b8528a3b8d4bf",
+    "documentation-after-ctest.json": "03a67fc860cbd680ce9ecb3cd91fa5c21adc3241753c89f088de44c415c70c83",
+    "preservation.json": "90beba90bc12a402a66a78d27f5bd2da5c6115dc593199c8deb4d4224ffc8260"
+  },
+  "ctest": {
+    "tests": 27,
+    "passed": 27,
+    "failed": 0,
+    "skipped": 0,
+    "disabled": 0,
+    "test_names": [
+      "core",
+      "batch",
+      "map",
+      "crawl",
+      "site_publication",
+      "retention",
+      "fairness",
+      "sessions",
+      "source_publication",
+      "search_modes",
+      "revalidation",
+      "revocation",
+      "capacity_cycles",
+      "cache_freshness",
+      "contracts",
+      "http_cli",
+      "http_revocation",
+      "e2e_web",
+      "e2e_map",
+      "e2e_crawl",
+      "e2e_crawl_recovery",
+      "e2e_session_recovery",
+      "e2e_revalidation",
+      "e2e_cache_freshness",
+      "e2e_cache_policy_review",
+      "e2e_revocation",
+      "python_worker"
+    ],
+    "full_detail_matches_original_LastTest_log": true,
+    "all_27_sections_have_complete_output_and_pass_markers": true,
+    "native_suites": 15,
+    "native_test_cases": 507,
+    "native_assertions": 16106,
+    "native_summary_lines": [
+      "{\"tests\":107,\"passed\":107,\"assertions\":2253}",
+      "30 batch tests, 801 assertions, 0 failures",
+      "24 map tests, 462 assertions, 0 failures",
+      "54 crawl tests, 2798 assertions, 0 failures",
+      "32 site publication tests, 1203 assertions, 0 failures",
+      "19 retention tests, 480 assertions, 0 failures",
+      "18 fairness tests, 339 assertions, 0 failures",
+      "23 tests, 298 assertions, 0 failures",
+      "20 source publication tests, 180 assertions, 0 failures",
+      "22 search mode tests, 382 assertions, 0 failures",
+      "24 tests / 372 assertions / 0 failures",
+      "12/12 tests, 146 assertions",
+      "4 capacity cycle tests, 4800 assertions, 0 failures, 9109 wall ms",
+      "63 cases, 1323 assertions, 0 failed",
+      "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions"
+    ],
+    "python_worker_passed": 1281,
+    "cache_cases": 63,
+    "cache_assertions": 1323,
+    "counts_note": "Native and Python counts are components of the 27 CTest entries; independent and sanitizer replays overlap these scenarios, and none is a count of blueprint acceptance items.",
+    "timezone_note": "CTest raw detail/XML displays CST (UTC+08:00); runner timestamp is UTC. Both identify the same 2026-10-24 17:08 UTC execution."
+  },
+  "input_binding": {
+    "input_files": 224,
+    "input_path_sets_equal": true,
+    "changes_since_ctest_exactly_documented_four_markdown_files": {
+      "README.md": {
+        "before_sha256": "ca9f643eac4f750023a0e1aede0aa5f21a59bd46aeee5b29f118b4c26f0f16a8",
+        "after_sha256": "3d10a7844ebfafd7a9082e509661e3ab7cde402f8c3db9fff872a3c178894128"
+      },
+      "docs/API.md": {
+        "before_sha256": "20e1f5ca1e6323d32cd566db381f20c08cd94704050995c163136af990b16853",
+        "after_sha256": "a2905a0883ee535d086bbcc1c25d8d23904e08e93e4d547a29b245f78f8f583a"
+      },
+      "docs/GITHUB_HANDOFF.md": {
+        "before_sha256": "225181fd487f06264f4c8e616b543ac25474ea8ff851918eff8dcc8b7563abf0",
+        "after_sha256": "82aee18c0bf3bd6601bc538ce1f634240485059bd213d13c5161111e90715690"
+      },
+      "docs/SOURCE_BACKOFF.md": {
+        "before_sha256": "4ba16ac841613b6c851f874a76063782473388ce75bc7aaf5f42d5cf9847fafb",
+        "after_sha256": "72fbff0448d4897d6a83ad1ac16ead743721c1fad176b2305b5b8087b93380f2"
+      }
+    },
+    "all_other_inputs_unchanged": true,
+    "recorded_binary_files": 36,
+    "binaries_before_after_current_equal": true,
+    "production_equal_independent_v2": {
+      "include/bzs/util.hpp": "297f3184c09830ebb8059ae7a4e77fd49360374f608da05a7ca28c46bffdbd3d",
+      "src/util.cpp": "bda18e8bc56bad1327e7538fb4fcc6a042599d18a098ce70a5d96efaedd6a32f",
+      "src/store.cpp": "97e11e2350cd6668bde3cbc1881da498b98973de5b23dabb0514fb7585ad35be",
+      "src/publication.cpp": "d518340e4e0252a0edffb6e11e8d10dfc812c42c3ecbbbde68b7306873132708"
+    },
+    "debug_library_sha256": "30ea0955517d8a2a585f2b01c4ba42fd1530ca4a9431284f74fa04caf2d80338",
+    "asan_library_sha256": "039cef93c3f5c98430cd34a4819bef247f461d670a5d00f03539b757bae37d63"
+  },
+  "documentation_review": {
+    "previous_five_stale_current_schema_or_batch_references_resolved": true,
+    "source_backoff_schema13_scoped_as_history": true,
+    "current_schema14_and_historical_auxiliary_migration_distinguished": true,
+    "test_delta_since_previous_static_review": [
+      "++  meta.set(\"site_publication_generation\",store.site_publication_generation());"
+    ],
+    "current_test_patch_sha256": "11f03f283bda19852e71bf9cb4e96889bcd8d81cbc348cd1cacf0fbf3b43b0e8",
+    "original_direct_no_fence_test_byte_preserved": true,
+    "no_existing_test_assertion_weakened": true
+  },
+  "preservation": {
+    "old_validation_count": 2793,
+    "all_baseline_blobs_snapshot_and_current_bytes_equal": true,
+    "snapshot_sha256": "6f804a277244c75ab1eb754c5ca236b26714d8fb6ae087ae67c9d67b625b6aa0",
+    "protected_paths_unchanged": [
+      "config",
+      "tests/golden",
+      "docs/planning",
+      ".github/workflows",
+      "CMakeLists.txt",
+      "CMakePresets.json",
+      "tools/requirements-s1-lock.txt",
+      "tools/requirements-test.txt",
+      "python/pyproject.toml"
+    ],
+    "no_new_untracked_files_in_protected_paths": true,
+    "feature_json_bytes_unchanged": true,
+    "feature_json_sha256": "0dcdd41ec53ae594f2eb3e88ed2e225260b404f03fd2a500668750f6951f22c6",
+    "feature_count": 83,
+    "acceptance_items": 161,
+    "status_counts": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "historical_reports_prefix_preserved": true,
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "sites": 0,
+    "local_read_only_audit_ref": "30f058557e3f7ebb873e9780759323b49cfe9636",
+    "original_independent_archive_files_intact": 275,
+    "supplementary_dependency_binding": "Separately frozen before execution and checked again after CTest against actual baseline Git blobs; not part of run.py direct snapshot."
+  },
+  "pending_scope": [
+    "Closed full sanitizer command records and final consolidated report require a separate review.",
+    "Remote published commit/tree and exact-commit Linux/Windows results are not asserted here."
+  ]
+}

@@ -1,5 +1,22 @@
 # 开发进度：Claude 审计接续（版本仍为 0.1.10）
 
+## 当前接手：URI 删除身份与 MCP 来源说明
+
+更新：2026-10-24。当前基线 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340` / tree `5a9977f4ec6d5aa6efa276ec1197e58b2777ff06`，其 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 为已核对的历史通过。本批结果按[独立记录](../validation/uri_deletion_20261024/README.md)核查，不预填新发布提交或 CI 成功。
+
+| 本批范围 | 实现与边界 |
+| --- | --- |
+| URI 删除比较 | 新 `deletion_key` 统一有限 unreserved 编码等价，按 owner 有界索引查询；不合并文档、发布键或请求身份 |
+| HTTP 删除屏障 | 直达/跳转缓存、验证器与在途提交复核同一删除历史；重导入不恢复旧缓存；旧精确直达无fence用序号0保守检查 |
+| schema14 | 事务回填全部旧文档及墓碑；停止旧Core后升级，旧程序重新打开拒绝；备份隔离保持 |
+| MCP 描述 | 搜索工具准确说明只使用已审核启用来源，默认无来源启用；名称、schema、路由与来源政策保持 |
+
+详细合同见 [URI 删除身份](URI_DELETION_IDENTITY.md)。来源选择、审核及启用、S2 范围/状态及是否冻结、validation 入库、备份隔离、永久幂等身份保留和抓取适配器六项决定保持。17 条来源 / 0 启用 / 0 站点，83 包 / 161 验收 / 10 切片与 37 partial / 46 not_started / 0 accepted 均保持。通用共享请求、独立撤销 journal/恢复、真实来源和人审质量门槛仍按原蓝图推进。
+
+## 上一批并发与来源退避（历史）
+
+下文“本批/当前”指 `claude_continuation_20261024`。
+
 更新：2026-10-24。本批从 main `59081e14fdda765844031e13f874e588334f1a36`、tree `5d555fabc43180aa905e0581a301a3bafbeca1d5` 接续。上一批该提交的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功；本批准确输入、作者测试、独立审核、整合门禁和发布信息另见[本批验证记录](../validation/claude_continuation_20261024/README.md)。远端结果应查询实际包含提交的 Checks，不把历史成绩填入新输入。
 
 ## 本批实现与边界

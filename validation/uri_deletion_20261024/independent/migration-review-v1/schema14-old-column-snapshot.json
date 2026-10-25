@@ -1,0 +1,660 @@
+{
+  "user_version": 14,
+  "tables": {
+    "content_fts_config": {
+      "columns": [
+        "k",
+        "v"
+      ],
+      "rows": 1,
+      "sha256": "7d6af8d5f3a5b7959afb40dd2dcc5bb8a3f5737f06e0e5f0b9b4fda81e65f1f5"
+    },
+    "content_fts_content": {
+      "columns": [
+        "id",
+        "c0",
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "rows": 15,
+      "sha256": "c0c66e27ace9abc76b6fdb114d38a3af794a50e6393695db9bf194202c7a8722"
+    },
+    "content_fts_data": {
+      "columns": [
+        "id",
+        "block"
+      ],
+      "rows": 12,
+      "sha256": "ba2a6ce2b646bb745d19702cf151e2894b66e405362b74ff39ea495254f8342d"
+    },
+    "content_fts_docsize": {
+      "columns": [
+        "id",
+        "sz"
+      ],
+      "rows": 15,
+      "sha256": "840bf0b3398ea2d23ed31a4038202c56fc65e9abc4977f79367f789f3331894e"
+    },
+    "content_fts_idx": {
+      "columns": [
+        "segid",
+        "term",
+        "pgno"
+      ],
+      "rows": 10,
+      "sha256": "e66583235d46c096401799e2123277fe26131681b02ca89e4e8721004de1884c"
+    },
+    "crawl_edges": {
+      "columns": [
+        "job_id",
+        "position",
+        "parent",
+        "url",
+        "source",
+        "depth",
+        "followed",
+        "reason",
+        "parent_generation",
+        "target_generation"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "crawl_trap_edges": {
+      "columns": [
+        "job_id",
+        "position",
+        "decision_json"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "crawl_trap_policy": {
+      "columns": [
+        "job_id",
+        "version",
+        "config_json"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "crawl_trap_urls": {
+      "columns": [
+        "job_id",
+        "url",
+        "explicit_seed",
+        "parent",
+        "date_family",
+        "date_value",
+        "date_run",
+        "query_family",
+        "query_signature",
+        "ordering_signature",
+        "page_family",
+        "body_hash",
+        "body_bytes"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cursors": {
+      "columns": [
+        "token",
+        "session_id",
+        "position"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "document_publication": {
+      "columns": [
+        "owner",
+        "url_key",
+        "snapshot_id",
+        "record_json",
+        "index_allowed",
+        "snippet_allowed",
+        "restricted",
+        "restriction_generation",
+        "observed_at",
+        "index_generation",
+        "snippet_generation"
+      ],
+      "rows": 3,
+      "sha256": "87479b3ba4da0e8d5d6f7b8e68f0e1c15891b2707e9107a95ed6c06d0d863698"
+    },
+    "documents": {
+      "columns": [
+        "id",
+        "owner",
+        "url",
+        "host",
+        "current_snapshot",
+        "revision",
+        "deleted",
+        "deleted_at",
+        "delete_generation",
+        "url_key",
+        "representation_key"
+      ],
+      "rows": 17,
+      "sha256": "5847ed08d332c815a9ca34be9adb405aecf890e880dca177501935395dc7517f"
+    },
+    "evidence": {
+      "columns": [
+        "id",
+        "snapshot_id",
+        "start_byte",
+        "end_byte"
+      ],
+      "rows": 1,
+      "sha256": "8bc77c2a8d1bfa2ed215fb5c23994e760a0f466b417d416c2632f92ef30bb912"
+    },
+    "jobs": {
+      "columns": [
+        "id",
+        "owner",
+        "fixture_id",
+        "idempotency_key",
+        "fingerprint",
+        "state",
+        "epoch",
+        "auth_epoch",
+        "attempts",
+        "max_attempts",
+        "lease_until",
+        "deadline",
+        "created_at",
+        "used_pages",
+        "result_json",
+        "error_code",
+        "created_delete_sequence",
+        "kind",
+        "archive_json",
+        "archived_at"
+      ],
+      "rows": 3,
+      "sha256": "347b36b05206e65ead40ab3a2f1d87449478fdd7b1ec85a481e3813cce5a64ce"
+    },
+    "map_candidates": {
+      "columns": [
+        "job_id",
+        "position",
+        "url",
+        "parent",
+        "source",
+        "depth",
+        "path_depth",
+        "deletion_generation",
+        "history_document_id",
+        "history_generation"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "map_hops": {
+      "columns": [
+        "job_id",
+        "position",
+        "resource_position",
+        "url",
+        "kind",
+        "attempt_id",
+        "lease_epoch",
+        "state",
+        "byte_grant",
+        "request_grant",
+        "external_requests",
+        "content_bytes",
+        "usage_unknown",
+        "admission_json",
+        "response_json",
+        "error_code"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "map_jobs": {
+      "columns": [
+        "job_id",
+        "site_id",
+        "manifest_sha256",
+        "origin",
+        "scope_path",
+        "max_urls",
+        "max_depth",
+        "max_requests",
+        "max_bytes",
+        "per_request_timeout_ms",
+        "charged_requests",
+        "charged_bytes",
+        "external_requests",
+        "content_bytes",
+        "unknown_requests",
+        "unknown_bytes",
+        "partial",
+        "stop_reason",
+        "filtered_urls",
+        "max_pages",
+        "used_pages",
+        "last_dispatch_sequence"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "map_resources": {
+      "columns": [
+        "job_id",
+        "position",
+        "url",
+        "fetch_url",
+        "kind",
+        "depth",
+        "redirect_hop",
+        "deletion_generation",
+        "state",
+        "error_code",
+        "parent",
+        "source",
+        "page_charged",
+        "snapshot_id",
+        "publication_ceiling_json",
+        "receipt_json",
+        "publication_snapshot_id",
+        "publication_sequence"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "principal_revocations": {
+      "columns": [
+        "owner",
+        "revocation_id",
+        "revoked_at",
+        "revoked_by",
+        "auth_epoch"
+      ],
+      "rows": 1,
+      "sha256": "7de6ffcee854cdbfc3127092564d6a13106aa147a548236b7bafd9080f6096b0"
+    },
+    "read_job_budgets": {
+      "columns": [
+        "job_id",
+        "max_requests",
+        "max_bytes",
+        "per_page_timeout_ms",
+        "charged_requests",
+        "charged_bytes",
+        "last_dispatch_sequence"
+      ],
+      "rows": 1,
+      "sha256": "7780436d48c799cea1c5551aa31986948473f75ec451ddc132af5144a1bdfb28"
+    },
+    "read_job_items": {
+      "columns": [
+        "job_id",
+        "position",
+        "url",
+        "state",
+        "deletion_generation",
+        "attempts",
+        "lease_epoch",
+        "attempt_id",
+        "request_grant",
+        "byte_grant",
+        "external_requests",
+        "content_bytes",
+        "unknown_requests",
+        "unknown_bytes",
+        "usage_unknown",
+        "snapshot_id",
+        "receipt_json",
+        "error_code",
+        "publication_sequence",
+        "publication_snapshot_id"
+      ],
+      "rows": 2,
+      "sha256": "77abf80d8779767ba189a8c7a75e30f86eb9cf466f931e1cf256f5400490cc62"
+    },
+    "read_shared_attempts": {
+      "columns": [
+        "attempt_id",
+        "owner",
+        "payer_job_id",
+        "payer_position",
+        "payer_epoch",
+        "lease_until",
+        "request_grant",
+        "byte_grant",
+        "member_count",
+        "settled",
+        "external_requests",
+        "content_bytes",
+        "error_code"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "read_shared_members": {
+      "columns": [
+        "attempt_id",
+        "job_id",
+        "position",
+        "lease_epoch"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "robots_cache": {
+      "columns": [
+        "id",
+        "owner",
+        "origin",
+        "manifest_sha256",
+        "record_json",
+        "fetched_at",
+        "expires_at",
+        "http_cache_json"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "search_event_log": {
+      "columns": [
+        "session_id",
+        "event_id",
+        "kind",
+        "version_id",
+        "created_at"
+      ],
+      "rows": 1,
+      "sha256": "838c3b74f43cda9fe89b6b3222de891dd4436fe7af53479e716849cff8afe643"
+    },
+    "search_page_cursors": {
+      "columns": [
+        "token",
+        "session_id",
+        "version_id",
+        "position"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "search_result_rows": {
+      "columns": [
+        "version_id",
+        "position",
+        "url",
+        "url_key",
+        "hit_json",
+        "publication_sequence",
+        "site_generation",
+        "site_bindings"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "search_stream_receipts": {
+      "columns": [
+        "id",
+        "owner",
+        "idempotency_key",
+        "fingerprint",
+        "state",
+        "used_requests",
+        "unknown_requests",
+        "created_at"
+      ],
+      "rows": 1,
+      "sha256": "d99e3351bbe1d8d5f075b9b99a2afd7b66f6c494756d23cb9cbfb13541950b77"
+    },
+    "search_stream_sources": {
+      "columns": [
+        "session_id",
+        "position",
+        "source_id",
+        "state",
+        "payload_json"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "search_streams": {
+      "columns": [
+        "id",
+        "owner",
+        "auth_epoch",
+        "kind",
+        "state",
+        "epoch",
+        "created_at",
+        "expires_at",
+        "deadline",
+        "request_json",
+        "manifest_sha256",
+        "contracts_json",
+        "next_source",
+        "lease_until",
+        "used_requests",
+        "unknown_requests",
+        "last_dispatch",
+        "latest_version",
+        "created_delete_sequence",
+        "publication_sequence",
+        "site_generation",
+        "next_event",
+        "error_code",
+        "source_generation"
+      ],
+      "rows": 1,
+      "sha256": "9ae45b12acd15133355abd9a75d5a1d698dcc485709237da6031893b28b992f8"
+    },
+    "search_versions": {
+      "columns": [
+        "id",
+        "session_id",
+        "created_at",
+        "partial"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "session_rows": {
+      "columns": [
+        "session_id",
+        "position",
+        "document_id",
+        "snapshot_id",
+        "score",
+        "representation_key",
+        "publication_generation",
+        "site_binding_version",
+        "snippet_suppressed"
+      ],
+      "rows": 2,
+      "sha256": "492c13b0801d812205038d32d36d35f9dc3e311e3641b0385ea2aa439f0f2a2e"
+    },
+    "sessions": {
+      "columns": [
+        "id",
+        "owner",
+        "auth_epoch",
+        "query_json",
+        "created_at",
+        "expires_at",
+        "scanned",
+        "partial",
+        "retrieval"
+      ],
+      "rows": 1,
+      "sha256": "8b37d894c3468377ca53d111d9a9947174ea5f609ddd2f3242ef168472562c7e"
+    },
+    "settings": {
+      "columns": [
+        "key",
+        "value"
+      ],
+      "rows": 7,
+      "sha256": "6fde909982c7d75a316df656bfeef4b8b893ec9fcf05c343bdbd79c5a8c2ca9a"
+    },
+    "site_publication_rules": {
+      "columns": [
+        "origin",
+        "path_prefix",
+        "mode",
+        "snippet_generation",
+        "index_generation"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "site_publication_state": {
+      "columns": [
+        "singleton",
+        "version",
+        "manifest_sha256",
+        "manifest_json",
+        "manifest_generation",
+        "generation",
+        "legacy_frozen_withdrawn",
+        "legacy_crawl_unverified",
+        "sweep_after",
+        "sweep_complete"
+      ],
+      "rows": 1,
+      "sha256": "4de0f10571b885ed16c816c01cfed4a719a2bb25299b826d306b043024235982"
+    },
+    "site_request_state": {
+      "columns": [
+        "origin",
+        "window_started",
+        "requests",
+        "next_start",
+        "cooldown_until",
+        "active_attempt",
+        "active_until"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "snapshots": {
+      "columns": [
+        "id",
+        "extraction_id",
+        "document_id",
+        "revision",
+        "title",
+        "canonical_text",
+        "raw_content",
+        "raw_hash",
+        "content_type",
+        "parser_version",
+        "created_at",
+        "index_allowed",
+        "links_json",
+        "meta_json",
+        "source_kind",
+        "publication_json",
+        "representation_publication_json",
+        "site_bindings_json",
+        "site_publication_generation",
+        "http_cache_bytes"
+      ],
+      "rows": 15,
+      "sha256": "5db1912d1debc8c8007f00a43b97333131e513959064268d9a0ae3c8d505d32f"
+    },
+    "source_publication_rules": {
+      "columns": [
+        "source_id",
+        "mode",
+        "snippet_generation",
+        "withdraw_generation",
+        "contract_json"
+      ],
+      "rows": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "source_publication_state": {
+      "columns": [
+        "singleton",
+        "generation",
+        "manifest_generation",
+        "manifest_sha256"
+      ],
+      "rows": 1,
+      "sha256": "db6af6d79716e24dd7f437e739aeaaaec5a739f28239014b230b1d84fb08f74b"
+    },
+    "source_state": {
+      "columns": [
+        "source_id",
+        "cooldown_until",
+        "failures",
+        "last_status",
+        "last_error",
+        "last_ok_at",
+        "last_request_at",
+        "day",
+        "requests_today"
+      ],
+      "rows": 1,
+      "sha256": "80d62f968bcfea824da0d704135f27d102f177bb6bb1ef24cebe338eb193652f"
+    },
+    "subjects": {
+      "columns": [
+        "owner",
+        "epoch"
+      ],
+      "rows": 3,
+      "sha256": "9361b57ea73f00b86782c0b6c550915f099f2ccb4206eb3952ac8730ecbf99b7"
+    },
+    "substring_fts_config": {
+      "columns": [
+        "k",
+        "v"
+      ],
+      "rows": 1,
+      "sha256": "7d6af8d5f3a5b7959afb40dd2dcc5bb8a3f5737f06e0e5f0b9b4fda81e65f1f5"
+    },
+    "substring_fts_content": {
+      "columns": [
+        "id",
+        "c0",
+        "c1",
+        "c2"
+      ],
+      "rows": 15,
+      "sha256": "164241a664d6a3da7031d4e510d043d7a624ebaaacd316f54c8f30e5f7494faf"
+    },
+    "substring_fts_data": {
+      "columns": [
+        "id",
+        "block"
+      ],
+      "rows": 13,
+      "sha256": "a441b70d2d950a54cfa8ce612cb6f2f0e7cd41cecd43424cbf602bc4630be838"
+    },
+    "substring_fts_idx": {
+      "columns": [
+        "segid",
+        "term",
+        "pgno"
+      ],
+      "rows": 11,
+      "sha256": "950736a7856a024bb9419b7b6c68f7922f02804c54fd19891e2de73af53b0344"
+    },
+    "usage": {
+      "columns": [
+        "owner",
+        "bytes",
+        "snapshots"
+      ],
+      "rows": 3,
+      "sha256": "ff05552ad3fdd4ea92262319e41fcfd7efcdc55719f6c85191818247262e257d"
+    }
+  },
+  "virtual_tables_covered_by_shadow_tables": [
+    "content_fts",
+    "substring_fts"
+  ]
+}

@@ -12,7 +12,7 @@
 
 缓存结果的 `current_age_ms` 仍以最终响应的年龄为锚；`freshness_lifetime_ms` 收紧到整条链的有效期交集，`redirect_hops` 说明参与约束的跳数。逻辑文档仍使用用户给出的原始 URL；本协议不建立全局 final-URL → snapshot 查找，也不让另一个 owner 或 URL 自动取得该正文。
 
-URI 删除身份沿用既有精确 URL 与 `map_url` 规范化范围，包括主机大小写和默认端口。反向 percent 编码的不同存储身份尚未统一：例如单独删除 `/%6Diddle` 不等同于删除实际 `/middle`。本轮保留并记录该既存限制，没有迁移或合并历史 URL 身份。
+URI 删除屏障在 schema14 使用独立的 `(owner,deletion_key,id)` 索引，双向对应 unreserved percent 编码与普通字符，并保留主机大小写、默认端口等有限等价规则。例如单独删除 `/%6Diddle` 会撤销指向 `/middle` 的旧 HTTP 表示复用资格；reserved 编码、查询顺序及点段仍按各自语义区分。该派生键回填历史文档和墓碑，不合并文档、快照、幂等或发布身份。跳转缓存及验证器继续要求原表示的持久删除证明；缺少证明的旧精确直达表示仅在等价组没有任何删除历史时可按检查序号 0 兼容复用。完整合同和升级步骤见 [URI 删除身份](URI_DELETION_IDENTITY.md)。旧反例日志继续保留为对应旧输入的历史证据。
 
 ## Worker → Core 证明
 
@@ -31,7 +31,7 @@ URI 删除身份沿用既有精确 URL 与 `map_url` 规范化范围，包括主
 
 Worker 另行返回有界的 `http_redirect_observations`（最多 20 条，规范 JSON 最多 512 KiB），每条恰好包含实际 `url`、3xx `http_status`、`http_freshness`。即使后续准入、预算、网络或提取失败，这些已经收到的限制仍保留。Core 验证它们属于本次实际响应前缀且不超过已知请求用量。完整证明必须与这些观察逐条一致。
 
-私有协议的编码大小按 Core `Json::canonical` 的 UTF-8 字节计数，包括字符串键和值中的斜杠转义；Worker 的大小预检采用同一口径，不改变实际 JSON 传输或全局序列化器。证明超过 8 KiB 或无法覆盖整个请求时，Worker 省略可选证明，仍返回本次完整读取结果与限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账，无新增表或 schema 迁移。
+私有协议的编码大小按 Core `Json::canonical` 的 UTF-8 字节计数，包括字符串键和值中的斜杠转义；Worker 的大小预检采用同一口径，不改变实际 JSON 传输或全局序列化器。证明超过 8 KiB 或无法覆盖整个请求时，Worker 省略可选证明，仍返回本次完整读取结果与限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账。跳转证明本身不新增表或 schema 迁移；独立的删除身份索引使用前述 schema14 升级。
 
 任何实际中间响应的 no-store、非法 Cache-Control 或 Worker 标记 invalid 的原始字段，都会阻止本次原始 URL 读取产生新的持久正文，返回 `E_CACHE_POLICY`。这是本项目当前没有瞬时正文通道时的保守规则；并不声称 HTTP 标准禁止对另一个独立授权资源单独缓存。此前合法取得的正文仍可作为历史证据读取，其 HTTP 复用资格则按旧 snapshot ID + metadata hash 失效。失败的迟到回执不能删除后来成功刷新建立的新缓存身份。
 

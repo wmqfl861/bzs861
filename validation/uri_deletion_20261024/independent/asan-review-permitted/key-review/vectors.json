@@ -1,0 +1,2672 @@
+[
+  {
+    "name": "byte_0_%02x",
+    "url": "https://keys.example/pre%00post?q=%00",
+    "expected": "https://keys.example/pre%00post?q=%00"
+  },
+  {
+    "name": "byte_0_%02X",
+    "url": "https://keys.example/pre%00post?q=%00",
+    "expected": "https://keys.example/pre%00post?q=%00"
+  },
+  {
+    "name": "byte_1_%02x",
+    "url": "https://keys.example/pre%01post?q=%01",
+    "expected": "https://keys.example/pre%01post?q=%01"
+  },
+  {
+    "name": "byte_1_%02X",
+    "url": "https://keys.example/pre%01post?q=%01",
+    "expected": "https://keys.example/pre%01post?q=%01"
+  },
+  {
+    "name": "byte_2_%02x",
+    "url": "https://keys.example/pre%02post?q=%02",
+    "expected": "https://keys.example/pre%02post?q=%02"
+  },
+  {
+    "name": "byte_2_%02X",
+    "url": "https://keys.example/pre%02post?q=%02",
+    "expected": "https://keys.example/pre%02post?q=%02"
+  },
+  {
+    "name": "byte_3_%02x",
+    "url": "https://keys.example/pre%03post?q=%03",
+    "expected": "https://keys.example/pre%03post?q=%03"
+  },
+  {
+    "name": "byte_3_%02X",
+    "url": "https://keys.example/pre%03post?q=%03",
+    "expected": "https://keys.example/pre%03post?q=%03"
+  },
+  {
+    "name": "byte_4_%02x",
+    "url": "https://keys.example/pre%04post?q=%04",
+    "expected": "https://keys.example/pre%04post?q=%04"
+  },
+  {
+    "name": "byte_4_%02X",
+    "url": "https://keys.example/pre%04post?q=%04",
+    "expected": "https://keys.example/pre%04post?q=%04"
+  },
+  {
+    "name": "byte_5_%02x",
+    "url": "https://keys.example/pre%05post?q=%05",
+    "expected": "https://keys.example/pre%05post?q=%05"
+  },
+  {
+    "name": "byte_5_%02X",
+    "url": "https://keys.example/pre%05post?q=%05",
+    "expected": "https://keys.example/pre%05post?q=%05"
+  },
+  {
+    "name": "byte_6_%02x",
+    "url": "https://keys.example/pre%06post?q=%06",
+    "expected": "https://keys.example/pre%06post?q=%06"
+  },
+  {
+    "name": "byte_6_%02X",
+    "url": "https://keys.example/pre%06post?q=%06",
+    "expected": "https://keys.example/pre%06post?q=%06"
+  },
+  {
+    "name": "byte_7_%02x",
+    "url": "https://keys.example/pre%07post?q=%07",
+    "expected": "https://keys.example/pre%07post?q=%07"
+  },
+  {
+    "name": "byte_7_%02X",
+    "url": "https://keys.example/pre%07post?q=%07",
+    "expected": "https://keys.example/pre%07post?q=%07"
+  },
+  {
+    "name": "byte_8_%02x",
+    "url": "https://keys.example/pre%08post?q=%08",
+    "expected": "https://keys.example/pre%08post?q=%08"
+  },
+  {
+    "name": "byte_8_%02X",
+    "url": "https://keys.example/pre%08post?q=%08",
+    "expected": "https://keys.example/pre%08post?q=%08"
+  },
+  {
+    "name": "byte_9_%02x",
+    "url": "https://keys.example/pre%09post?q=%09",
+    "expected": "https://keys.example/pre%09post?q=%09"
+  },
+  {
+    "name": "byte_9_%02X",
+    "url": "https://keys.example/pre%09post?q=%09",
+    "expected": "https://keys.example/pre%09post?q=%09"
+  },
+  {
+    "name": "byte_10_%02x",
+    "url": "https://keys.example/pre%0apost?q=%0a",
+    "expected": "https://keys.example/pre%0Apost?q=%0A"
+  },
+  {
+    "name": "byte_10_%02X",
+    "url": "https://keys.example/pre%0Apost?q=%0A",
+    "expected": "https://keys.example/pre%0Apost?q=%0A"
+  },
+  {
+    "name": "byte_11_%02x",
+    "url": "https://keys.example/pre%0bpost?q=%0b",
+    "expected": "https://keys.example/pre%0Bpost?q=%0B"
+  },
+  {
+    "name": "byte_11_%02X",
+    "url": "https://keys.example/pre%0Bpost?q=%0B",
+    "expected": "https://keys.example/pre%0Bpost?q=%0B"
+  },
+  {
+    "name": "byte_12_%02x",
+    "url": "https://keys.example/pre%0cpost?q=%0c",
+    "expected": "https://keys.example/pre%0Cpost?q=%0C"
+  },
+  {
+    "name": "byte_12_%02X",
+    "url": "https://keys.example/pre%0Cpost?q=%0C",
+    "expected": "https://keys.example/pre%0Cpost?q=%0C"
+  },
+  {
+    "name": "byte_13_%02x",
+    "url": "https://keys.example/pre%0dpost?q=%0d",
+    "expected": "https://keys.example/pre%0Dpost?q=%0D"
+  },
+  {
+    "name": "byte_13_%02X",
+    "url": "https://keys.example/pre%0Dpost?q=%0D",
+    "expected": "https://keys.example/pre%0Dpost?q=%0D"
+  },
+  {
+    "name": "byte_14_%02x",
+    "url": "https://keys.example/pre%0epost?q=%0e",
+    "expected": "https://keys.example/pre%0Epost?q=%0E"
+  },
+  {
+    "name": "byte_14_%02X",
+    "url": "https://keys.example/pre%0Epost?q=%0E",
+    "expected": "https://keys.example/pre%0Epost?q=%0E"
+  },
+  {
+    "name": "byte_15_%02x",
+    "url": "https://keys.example/pre%0fpost?q=%0f",
+    "expected": "https://keys.example/pre%0Fpost?q=%0F"
+  },
+  {
+    "name": "byte_15_%02X",
+    "url": "https://keys.example/pre%0Fpost?q=%0F",
+    "expected": "https://keys.example/pre%0Fpost?q=%0F"
+  },
+  {
+    "name": "byte_16_%02x",
+    "url": "https://keys.example/pre%10post?q=%10",
+    "expected": "https://keys.example/pre%10post?q=%10"
+  },
+  {
+    "name": "byte_16_%02X",
+    "url": "https://keys.example/pre%10post?q=%10",
+    "expected": "https://keys.example/pre%10post?q=%10"
+  },
+  {
+    "name": "byte_17_%02x",
+    "url": "https://keys.example/pre%11post?q=%11",
+    "expected": "https://keys.example/pre%11post?q=%11"
+  },
+  {
+    "name": "byte_17_%02X",
+    "url": "https://keys.example/pre%11post?q=%11",
+    "expected": "https://keys.example/pre%11post?q=%11"
+  },
+  {
+    "name": "byte_18_%02x",
+    "url": "https://keys.example/pre%12post?q=%12",
+    "expected": "https://keys.example/pre%12post?q=%12"
+  },
+  {
+    "name": "byte_18_%02X",
+    "url": "https://keys.example/pre%12post?q=%12",
+    "expected": "https://keys.example/pre%12post?q=%12"
+  },
+  {
+    "name": "byte_19_%02x",
+    "url": "https://keys.example/pre%13post?q=%13",
+    "expected": "https://keys.example/pre%13post?q=%13"
+  },
+  {
+    "name": "byte_19_%02X",
+    "url": "https://keys.example/pre%13post?q=%13",
+    "expected": "https://keys.example/pre%13post?q=%13"
+  },
+  {
+    "name": "byte_20_%02x",
+    "url": "https://keys.example/pre%14post?q=%14",
+    "expected": "https://keys.example/pre%14post?q=%14"
+  },
+  {
+    "name": "byte_20_%02X",
+    "url": "https://keys.example/pre%14post?q=%14",
+    "expected": "https://keys.example/pre%14post?q=%14"
+  },
+  {
+    "name": "byte_21_%02x",
+    "url": "https://keys.example/pre%15post?q=%15",
+    "expected": "https://keys.example/pre%15post?q=%15"
+  },
+  {
+    "name": "byte_21_%02X",
+    "url": "https://keys.example/pre%15post?q=%15",
+    "expected": "https://keys.example/pre%15post?q=%15"
+  },
+  {
+    "name": "byte_22_%02x",
+    "url": "https://keys.example/pre%16post?q=%16",
+    "expected": "https://keys.example/pre%16post?q=%16"
+  },
+  {
+    "name": "byte_22_%02X",
+    "url": "https://keys.example/pre%16post?q=%16",
+    "expected": "https://keys.example/pre%16post?q=%16"
+  },
+  {
+    "name": "byte_23_%02x",
+    "url": "https://keys.example/pre%17post?q=%17",
+    "expected": "https://keys.example/pre%17post?q=%17"
+  },
+  {
+    "name": "byte_23_%02X",
+    "url": "https://keys.example/pre%17post?q=%17",
+    "expected": "https://keys.example/pre%17post?q=%17"
+  },
+  {
+    "name": "byte_24_%02x",
+    "url": "https://keys.example/pre%18post?q=%18",
+    "expected": "https://keys.example/pre%18post?q=%18"
+  },
+  {
+    "name": "byte_24_%02X",
+    "url": "https://keys.example/pre%18post?q=%18",
+    "expected": "https://keys.example/pre%18post?q=%18"
+  },
+  {
+    "name": "byte_25_%02x",
+    "url": "https://keys.example/pre%19post?q=%19",
+    "expected": "https://keys.example/pre%19post?q=%19"
+  },
+  {
+    "name": "byte_25_%02X",
+    "url": "https://keys.example/pre%19post?q=%19",
+    "expected": "https://keys.example/pre%19post?q=%19"
+  },
+  {
+    "name": "byte_26_%02x",
+    "url": "https://keys.example/pre%1apost?q=%1a",
+    "expected": "https://keys.example/pre%1Apost?q=%1A"
+  },
+  {
+    "name": "byte_26_%02X",
+    "url": "https://keys.example/pre%1Apost?q=%1A",
+    "expected": "https://keys.example/pre%1Apost?q=%1A"
+  },
+  {
+    "name": "byte_27_%02x",
+    "url": "https://keys.example/pre%1bpost?q=%1b",
+    "expected": "https://keys.example/pre%1Bpost?q=%1B"
+  },
+  {
+    "name": "byte_27_%02X",
+    "url": "https://keys.example/pre%1Bpost?q=%1B",
+    "expected": "https://keys.example/pre%1Bpost?q=%1B"
+  },
+  {
+    "name": "byte_28_%02x",
+    "url": "https://keys.example/pre%1cpost?q=%1c",
+    "expected": "https://keys.example/pre%1Cpost?q=%1C"
+  },
+  {
+    "name": "byte_28_%02X",
+    "url": "https://keys.example/pre%1Cpost?q=%1C",
+    "expected": "https://keys.example/pre%1Cpost?q=%1C"
+  },
+  {
+    "name": "byte_29_%02x",
+    "url": "https://keys.example/pre%1dpost?q=%1d",
+    "expected": "https://keys.example/pre%1Dpost?q=%1D"
+  },
+  {
+    "name": "byte_29_%02X",
+    "url": "https://keys.example/pre%1Dpost?q=%1D",
+    "expected": "https://keys.example/pre%1Dpost?q=%1D"
+  },
+  {
+    "name": "byte_30_%02x",
+    "url": "https://keys.example/pre%1epost?q=%1e",
+    "expected": "https://keys.example/pre%1Epost?q=%1E"
+  },
+  {
+    "name": "byte_30_%02X",
+    "url": "https://keys.example/pre%1Epost?q=%1E",
+    "expected": "https://keys.example/pre%1Epost?q=%1E"
+  },
+  {
+    "name": "byte_31_%02x",
+    "url": "https://keys.example/pre%1fpost?q=%1f",
+    "expected": "https://keys.example/pre%1Fpost?q=%1F"
+  },
+  {
+    "name": "byte_31_%02X",
+    "url": "https://keys.example/pre%1Fpost?q=%1F",
+    "expected": "https://keys.example/pre%1Fpost?q=%1F"
+  },
+  {
+    "name": "byte_32_%02x",
+    "url": "https://keys.example/pre%20post?q=%20",
+    "expected": "https://keys.example/pre%20post?q=%20"
+  },
+  {
+    "name": "byte_32_%02X",
+    "url": "https://keys.example/pre%20post?q=%20",
+    "expected": "https://keys.example/pre%20post?q=%20"
+  },
+  {
+    "name": "byte_33_%02x",
+    "url": "https://keys.example/pre%21post?q=%21",
+    "expected": "https://keys.example/pre%21post?q=%21"
+  },
+  {
+    "name": "byte_33_%02X",
+    "url": "https://keys.example/pre%21post?q=%21",
+    "expected": "https://keys.example/pre%21post?q=%21"
+  },
+  {
+    "name": "byte_34_%02x",
+    "url": "https://keys.example/pre%22post?q=%22",
+    "expected": "https://keys.example/pre%22post?q=%22"
+  },
+  {
+    "name": "byte_34_%02X",
+    "url": "https://keys.example/pre%22post?q=%22",
+    "expected": "https://keys.example/pre%22post?q=%22"
+  },
+  {
+    "name": "byte_35_%02x",
+    "url": "https://keys.example/pre%23post?q=%23",
+    "expected": "https://keys.example/pre%23post?q=%23"
+  },
+  {
+    "name": "byte_35_%02X",
+    "url": "https://keys.example/pre%23post?q=%23",
+    "expected": "https://keys.example/pre%23post?q=%23"
+  },
+  {
+    "name": "byte_36_%02x",
+    "url": "https://keys.example/pre%24post?q=%24",
+    "expected": "https://keys.example/pre%24post?q=%24"
+  },
+  {
+    "name": "byte_36_%02X",
+    "url": "https://keys.example/pre%24post?q=%24",
+    "expected": "https://keys.example/pre%24post?q=%24"
+  },
+  {
+    "name": "byte_37_%02x",
+    "url": "https://keys.example/pre%25post?q=%25",
+    "expected": "https://keys.example/pre%25post?q=%25"
+  },
+  {
+    "name": "byte_37_%02X",
+    "url": "https://keys.example/pre%25post?q=%25",
+    "expected": "https://keys.example/pre%25post?q=%25"
+  },
+  {
+    "name": "byte_38_%02x",
+    "url": "https://keys.example/pre%26post?q=%26",
+    "expected": "https://keys.example/pre%26post?q=%26"
+  },
+  {
+    "name": "byte_38_%02X",
+    "url": "https://keys.example/pre%26post?q=%26",
+    "expected": "https://keys.example/pre%26post?q=%26"
+  },
+  {
+    "name": "byte_39_%02x",
+    "url": "https://keys.example/pre%27post?q=%27",
+    "expected": "https://keys.example/pre%27post?q=%27"
+  },
+  {
+    "name": "byte_39_%02X",
+    "url": "https://keys.example/pre%27post?q=%27",
+    "expected": "https://keys.example/pre%27post?q=%27"
+  },
+  {
+    "name": "byte_40_%02x",
+    "url": "https://keys.example/pre%28post?q=%28",
+    "expected": "https://keys.example/pre%28post?q=%28"
+  },
+  {
+    "name": "byte_40_%02X",
+    "url": "https://keys.example/pre%28post?q=%28",
+    "expected": "https://keys.example/pre%28post?q=%28"
+  },
+  {
+    "name": "byte_41_%02x",
+    "url": "https://keys.example/pre%29post?q=%29",
+    "expected": "https://keys.example/pre%29post?q=%29"
+  },
+  {
+    "name": "byte_41_%02X",
+    "url": "https://keys.example/pre%29post?q=%29",
+    "expected": "https://keys.example/pre%29post?q=%29"
+  },
+  {
+    "name": "byte_42_%02x",
+    "url": "https://keys.example/pre%2apost?q=%2a",
+    "expected": "https://keys.example/pre%2Apost?q=%2A"
+  },
+  {
+    "name": "byte_42_%02X",
+    "url": "https://keys.example/pre%2Apost?q=%2A",
+    "expected": "https://keys.example/pre%2Apost?q=%2A"
+  },
+  {
+    "name": "byte_43_%02x",
+    "url": "https://keys.example/pre%2bpost?q=%2b",
+    "expected": "https://keys.example/pre%2Bpost?q=%2B"
+  },
+  {
+    "name": "byte_43_%02X",
+    "url": "https://keys.example/pre%2Bpost?q=%2B",
+    "expected": "https://keys.example/pre%2Bpost?q=%2B"
+  },
+  {
+    "name": "byte_44_%02x",
+    "url": "https://keys.example/pre%2cpost?q=%2c",
+    "expected": "https://keys.example/pre%2Cpost?q=%2C"
+  },
+  {
+    "name": "byte_44_%02X",
+    "url": "https://keys.example/pre%2Cpost?q=%2C",
+    "expected": "https://keys.example/pre%2Cpost?q=%2C"
+  },
+  {
+    "name": "byte_45_%02x",
+    "url": "https://keys.example/pre%2dpost?q=%2d",
+    "expected": "https://keys.example/pre-post?q=-"
+  },
+  {
+    "name": "byte_45_%02X",
+    "url": "https://keys.example/pre%2Dpost?q=%2D",
+    "expected": "https://keys.example/pre-post?q=-"
+  },
+  {
+    "name": "byte_46_%02x",
+    "url": "https://keys.example/pre%2epost?q=%2e",
+    "expected": "https://keys.example/pre.post?q=."
+  },
+  {
+    "name": "byte_46_%02X",
+    "url": "https://keys.example/pre%2Epost?q=%2E",
+    "expected": "https://keys.example/pre.post?q=."
+  },
+  {
+    "name": "byte_47_%02x",
+    "url": "https://keys.example/pre%2fpost?q=%2f",
+    "expected": "https://keys.example/pre%2Fpost?q=%2F"
+  },
+  {
+    "name": "byte_47_%02X",
+    "url": "https://keys.example/pre%2Fpost?q=%2F",
+    "expected": "https://keys.example/pre%2Fpost?q=%2F"
+  },
+  {
+    "name": "byte_48_%02x",
+    "url": "https://keys.example/pre%30post?q=%30",
+    "expected": "https://keys.example/pre0post?q=0"
+  },
+  {
+    "name": "byte_48_%02X",
+    "url": "https://keys.example/pre%30post?q=%30",
+    "expected": "https://keys.example/pre0post?q=0"
+  },
+  {
+    "name": "byte_49_%02x",
+    "url": "https://keys.example/pre%31post?q=%31",
+    "expected": "https://keys.example/pre1post?q=1"
+  },
+  {
+    "name": "byte_49_%02X",
+    "url": "https://keys.example/pre%31post?q=%31",
+    "expected": "https://keys.example/pre1post?q=1"
+  },
+  {
+    "name": "byte_50_%02x",
+    "url": "https://keys.example/pre%32post?q=%32",
+    "expected": "https://keys.example/pre2post?q=2"
+  },
+  {
+    "name": "byte_50_%02X",
+    "url": "https://keys.example/pre%32post?q=%32",
+    "expected": "https://keys.example/pre2post?q=2"
+  },
+  {
+    "name": "byte_51_%02x",
+    "url": "https://keys.example/pre%33post?q=%33",
+    "expected": "https://keys.example/pre3post?q=3"
+  },
+  {
+    "name": "byte_51_%02X",
+    "url": "https://keys.example/pre%33post?q=%33",
+    "expected": "https://keys.example/pre3post?q=3"
+  },
+  {
+    "name": "byte_52_%02x",
+    "url": "https://keys.example/pre%34post?q=%34",
+    "expected": "https://keys.example/pre4post?q=4"
+  },
+  {
+    "name": "byte_52_%02X",
+    "url": "https://keys.example/pre%34post?q=%34",
+    "expected": "https://keys.example/pre4post?q=4"
+  },
+  {
+    "name": "byte_53_%02x",
+    "url": "https://keys.example/pre%35post?q=%35",
+    "expected": "https://keys.example/pre5post?q=5"
+  },
+  {
+    "name": "byte_53_%02X",
+    "url": "https://keys.example/pre%35post?q=%35",
+    "expected": "https://keys.example/pre5post?q=5"
+  },
+  {
+    "name": "byte_54_%02x",
+    "url": "https://keys.example/pre%36post?q=%36",
+    "expected": "https://keys.example/pre6post?q=6"
+  },
+  {
+    "name": "byte_54_%02X",
+    "url": "https://keys.example/pre%36post?q=%36",
+    "expected": "https://keys.example/pre6post?q=6"
+  },
+  {
+    "name": "byte_55_%02x",
+    "url": "https://keys.example/pre%37post?q=%37",
+    "expected": "https://keys.example/pre7post?q=7"
+  },
+  {
+    "name": "byte_55_%02X",
+    "url": "https://keys.example/pre%37post?q=%37",
+    "expected": "https://keys.example/pre7post?q=7"
+  },
+  {
+    "name": "byte_56_%02x",
+    "url": "https://keys.example/pre%38post?q=%38",
+    "expected": "https://keys.example/pre8post?q=8"
+  },
+  {
+    "name": "byte_56_%02X",
+    "url": "https://keys.example/pre%38post?q=%38",
+    "expected": "https://keys.example/pre8post?q=8"
+  },
+  {
+    "name": "byte_57_%02x",
+    "url": "https://keys.example/pre%39post?q=%39",
+    "expected": "https://keys.example/pre9post?q=9"
+  },
+  {
+    "name": "byte_57_%02X",
+    "url": "https://keys.example/pre%39post?q=%39",
+    "expected": "https://keys.example/pre9post?q=9"
+  },
+  {
+    "name": "byte_58_%02x",
+    "url": "https://keys.example/pre%3apost?q=%3a",
+    "expected": "https://keys.example/pre%3Apost?q=%3A"
+  },
+  {
+    "name": "byte_58_%02X",
+    "url": "https://keys.example/pre%3Apost?q=%3A",
+    "expected": "https://keys.example/pre%3Apost?q=%3A"
+  },
+  {
+    "name": "byte_59_%02x",
+    "url": "https://keys.example/pre%3bpost?q=%3b",
+    "expected": "https://keys.example/pre%3Bpost?q=%3B"
+  },
+  {
+    "name": "byte_59_%02X",
+    "url": "https://keys.example/pre%3Bpost?q=%3B",
+    "expected": "https://keys.example/pre%3Bpost?q=%3B"
+  },
+  {
+    "name": "byte_60_%02x",
+    "url": "https://keys.example/pre%3cpost?q=%3c",
+    "expected": "https://keys.example/pre%3Cpost?q=%3C"
+  },
+  {
+    "name": "byte_60_%02X",
+    "url": "https://keys.example/pre%3Cpost?q=%3C",
+    "expected": "https://keys.example/pre%3Cpost?q=%3C"
+  },
+  {
+    "name": "byte_61_%02x",
+    "url": "https://keys.example/pre%3dpost?q=%3d",
+    "expected": "https://keys.example/pre%3Dpost?q=%3D"
+  },
+  {
+    "name": "byte_61_%02X",
+    "url": "https://keys.example/pre%3Dpost?q=%3D",
+    "expected": "https://keys.example/pre%3Dpost?q=%3D"
+  },
+  {
+    "name": "byte_62_%02x",
+    "url": "https://keys.example/pre%3epost?q=%3e",
+    "expected": "https://keys.example/pre%3Epost?q=%3E"
+  },
+  {
+    "name": "byte_62_%02X",
+    "url": "https://keys.example/pre%3Epost?q=%3E",
+    "expected": "https://keys.example/pre%3Epost?q=%3E"
+  },
+  {
+    "name": "byte_63_%02x",
+    "url": "https://keys.example/pre%3fpost?q=%3f",
+    "expected": "https://keys.example/pre%3Fpost?q=%3F"
+  },
+  {
+    "name": "byte_63_%02X",
+    "url": "https://keys.example/pre%3Fpost?q=%3F",
+    "expected": "https://keys.example/pre%3Fpost?q=%3F"
+  },
+  {
+    "name": "byte_64_%02x",
+    "url": "https://keys.example/pre%40post?q=%40",
+    "expected": "https://keys.example/pre%40post?q=%40"
+  },
+  {
+    "name": "byte_64_%02X",
+    "url": "https://keys.example/pre%40post?q=%40",
+    "expected": "https://keys.example/pre%40post?q=%40"
+  },
+  {
+    "name": "byte_65_%02x",
+    "url": "https://keys.example/pre%41post?q=%41",
+    "expected": "https://keys.example/preApost?q=A"
+  },
+  {
+    "name": "byte_65_%02X",
+    "url": "https://keys.example/pre%41post?q=%41",
+    "expected": "https://keys.example/preApost?q=A"
+  },
+  {
+    "name": "byte_66_%02x",
+    "url": "https://keys.example/pre%42post?q=%42",
+    "expected": "https://keys.example/preBpost?q=B"
+  },
+  {
+    "name": "byte_66_%02X",
+    "url": "https://keys.example/pre%42post?q=%42",
+    "expected": "https://keys.example/preBpost?q=B"
+  },
+  {
+    "name": "byte_67_%02x",
+    "url": "https://keys.example/pre%43post?q=%43",
+    "expected": "https://keys.example/preCpost?q=C"
+  },
+  {
+    "name": "byte_67_%02X",
+    "url": "https://keys.example/pre%43post?q=%43",
+    "expected": "https://keys.example/preCpost?q=C"
+  },
+  {
+    "name": "byte_68_%02x",
+    "url": "https://keys.example/pre%44post?q=%44",
+    "expected": "https://keys.example/preDpost?q=D"
+  },
+  {
+    "name": "byte_68_%02X",
+    "url": "https://keys.example/pre%44post?q=%44",
+    "expected": "https://keys.example/preDpost?q=D"
+  },
+  {
+    "name": "byte_69_%02x",
+    "url": "https://keys.example/pre%45post?q=%45",
+    "expected": "https://keys.example/preEpost?q=E"
+  },
+  {
+    "name": "byte_69_%02X",
+    "url": "https://keys.example/pre%45post?q=%45",
+    "expected": "https://keys.example/preEpost?q=E"
+  },
+  {
+    "name": "byte_70_%02x",
+    "url": "https://keys.example/pre%46post?q=%46",
+    "expected": "https://keys.example/preFpost?q=F"
+  },
+  {
+    "name": "byte_70_%02X",
+    "url": "https://keys.example/pre%46post?q=%46",
+    "expected": "https://keys.example/preFpost?q=F"
+  },
+  {
+    "name": "byte_71_%02x",
+    "url": "https://keys.example/pre%47post?q=%47",
+    "expected": "https://keys.example/preGpost?q=G"
+  },
+  {
+    "name": "byte_71_%02X",
+    "url": "https://keys.example/pre%47post?q=%47",
+    "expected": "https://keys.example/preGpost?q=G"
+  },
+  {
+    "name": "byte_72_%02x",
+    "url": "https://keys.example/pre%48post?q=%48",
+    "expected": "https://keys.example/preHpost?q=H"
+  },
+  {
+    "name": "byte_72_%02X",
+    "url": "https://keys.example/pre%48post?q=%48",
+    "expected": "https://keys.example/preHpost?q=H"
+  },
+  {
+    "name": "byte_73_%02x",
+    "url": "https://keys.example/pre%49post?q=%49",
+    "expected": "https://keys.example/preIpost?q=I"
+  },
+  {
+    "name": "byte_73_%02X",
+    "url": "https://keys.example/pre%49post?q=%49",
+    "expected": "https://keys.example/preIpost?q=I"
+  },
+  {
+    "name": "byte_74_%02x",
+    "url": "https://keys.example/pre%4apost?q=%4a",
+    "expected": "https://keys.example/preJpost?q=J"
+  },
+  {
+    "name": "byte_74_%02X",
+    "url": "https://keys.example/pre%4Apost?q=%4A",
+    "expected": "https://keys.example/preJpost?q=J"
+  },
+  {
+    "name": "byte_75_%02x",
+    "url": "https://keys.example/pre%4bpost?q=%4b",
+    "expected": "https://keys.example/preKpost?q=K"
+  },
+  {
+    "name": "byte_75_%02X",
+    "url": "https://keys.example/pre%4Bpost?q=%4B",
+    "expected": "https://keys.example/preKpost?q=K"
+  },
+  {
+    "name": "byte_76_%02x",
+    "url": "https://keys.example/pre%4cpost?q=%4c",
+    "expected": "https://keys.example/preLpost?q=L"
+  },
+  {
+    "name": "byte_76_%02X",
+    "url": "https://keys.example/pre%4Cpost?q=%4C",
+    "expected": "https://keys.example/preLpost?q=L"
+  },
+  {
+    "name": "byte_77_%02x",
+    "url": "https://keys.example/pre%4dpost?q=%4d",
+    "expected": "https://keys.example/preMpost?q=M"
+  },
+  {
+    "name": "byte_77_%02X",
+    "url": "https://keys.example/pre%4Dpost?q=%4D",
+    "expected": "https://keys.example/preMpost?q=M"
+  },
+  {
+    "name": "byte_78_%02x",
+    "url": "https://keys.example/pre%4epost?q=%4e",
+    "expected": "https://keys.example/preNpost?q=N"
+  },
+  {
+    "name": "byte_78_%02X",
+    "url": "https://keys.example/pre%4Epost?q=%4E",
+    "expected": "https://keys.example/preNpost?q=N"
+  },
+  {
+    "name": "byte_79_%02x",
+    "url": "https://keys.example/pre%4fpost?q=%4f",
+    "expected": "https://keys.example/preOpost?q=O"
+  },
+  {
+    "name": "byte_79_%02X",
+    "url": "https://keys.example/pre%4Fpost?q=%4F",
+    "expected": "https://keys.example/preOpost?q=O"
+  },
+  {
+    "name": "byte_80_%02x",
+    "url": "https://keys.example/pre%50post?q=%50",
+    "expected": "https://keys.example/prePpost?q=P"
+  },
+  {
+    "name": "byte_80_%02X",
+    "url": "https://keys.example/pre%50post?q=%50",
+    "expected": "https://keys.example/prePpost?q=P"
+  },
+  {
+    "name": "byte_81_%02x",
+    "url": "https://keys.example/pre%51post?q=%51",
+    "expected": "https://keys.example/preQpost?q=Q"
+  },
+  {
+    "name": "byte_81_%02X",
+    "url": "https://keys.example/pre%51post?q=%51",
+    "expected": "https://keys.example/preQpost?q=Q"
+  },
+  {
+    "name": "byte_82_%02x",
+    "url": "https://keys.example/pre%52post?q=%52",
+    "expected": "https://keys.example/preRpost?q=R"
+  },
+  {
+    "name": "byte_82_%02X",
+    "url": "https://keys.example/pre%52post?q=%52",
+    "expected": "https://keys.example/preRpost?q=R"
+  },
+  {
+    "name": "byte_83_%02x",
+    "url": "https://keys.example/pre%53post?q=%53",
+    "expected": "https://keys.example/preSpost?q=S"
+  },
+  {
+    "name": "byte_83_%02X",
+    "url": "https://keys.example/pre%53post?q=%53",
+    "expected": "https://keys.example/preSpost?q=S"
+  },
+  {
+    "name": "byte_84_%02x",
+    "url": "https://keys.example/pre%54post?q=%54",
+    "expected": "https://keys.example/preTpost?q=T"
+  },
+  {
+    "name": "byte_84_%02X",
+    "url": "https://keys.example/pre%54post?q=%54",
+    "expected": "https://keys.example/preTpost?q=T"
+  },
+  {
+    "name": "byte_85_%02x",
+    "url": "https://keys.example/pre%55post?q=%55",
+    "expected": "https://keys.example/preUpost?q=U"
+  },
+  {
+    "name": "byte_85_%02X",
+    "url": "https://keys.example/pre%55post?q=%55",
+    "expected": "https://keys.example/preUpost?q=U"
+  },
+  {
+    "name": "byte_86_%02x",
+    "url": "https://keys.example/pre%56post?q=%56",
+    "expected": "https://keys.example/preVpost?q=V"
+  },
+  {
+    "name": "byte_86_%02X",
+    "url": "https://keys.example/pre%56post?q=%56",
+    "expected": "https://keys.example/preVpost?q=V"
+  },
+  {
+    "name": "byte_87_%02x",
+    "url": "https://keys.example/pre%57post?q=%57",
+    "expected": "https://keys.example/preWpost?q=W"
+  },
+  {
+    "name": "byte_87_%02X",
+    "url": "https://keys.example/pre%57post?q=%57",
+    "expected": "https://keys.example/preWpost?q=W"
+  },
+  {
+    "name": "byte_88_%02x",
+    "url": "https://keys.example/pre%58post?q=%58",
+    "expected": "https://keys.example/preXpost?q=X"
+  },
+  {
+    "name": "byte_88_%02X",
+    "url": "https://keys.example/pre%58post?q=%58",
+    "expected": "https://keys.example/preXpost?q=X"
+  },
+  {
+    "name": "byte_89_%02x",
+    "url": "https://keys.example/pre%59post?q=%59",
+    "expected": "https://keys.example/preYpost?q=Y"
+  },
+  {
+    "name": "byte_89_%02X",
+    "url": "https://keys.example/pre%59post?q=%59",
+    "expected": "https://keys.example/preYpost?q=Y"
+  },
+  {
+    "name": "byte_90_%02x",
+    "url": "https://keys.example/pre%5apost?q=%5a",
+    "expected": "https://keys.example/preZpost?q=Z"
+  },
+  {
+    "name": "byte_90_%02X",
+    "url": "https://keys.example/pre%5Apost?q=%5A",
+    "expected": "https://keys.example/preZpost?q=Z"
+  },
+  {
+    "name": "byte_91_%02x",
+    "url": "https://keys.example/pre%5bpost?q=%5b",
+    "expected": "https://keys.example/pre%5Bpost?q=%5B"
+  },
+  {
+    "name": "byte_91_%02X",
+    "url": "https://keys.example/pre%5Bpost?q=%5B",
+    "expected": "https://keys.example/pre%5Bpost?q=%5B"
+  },
+  {
+    "name": "byte_92_%02x",
+    "url": "https://keys.example/pre%5cpost?q=%5c",
+    "expected": "https://keys.example/pre%5Cpost?q=%5C"
+  },
+  {
+    "name": "byte_92_%02X",
+    "url": "https://keys.example/pre%5Cpost?q=%5C",
+    "expected": "https://keys.example/pre%5Cpost?q=%5C"
+  },
+  {
+    "name": "byte_93_%02x",
+    "url": "https://keys.example/pre%5dpost?q=%5d",
+    "expected": "https://keys.example/pre%5Dpost?q=%5D"
+  },
+  {
+    "name": "byte_93_%02X",
+    "url": "https://keys.example/pre%5Dpost?q=%5D",
+    "expected": "https://keys.example/pre%5Dpost?q=%5D"
+  },
+  {
+    "name": "byte_94_%02x",
+    "url": "https://keys.example/pre%5epost?q=%5e",
+    "expected": "https://keys.example/pre%5Epost?q=%5E"
+  },
+  {
+    "name": "byte_94_%02X",
+    "url": "https://keys.example/pre%5Epost?q=%5E",
+    "expected": "https://keys.example/pre%5Epost?q=%5E"
+  },
+  {
+    "name": "byte_95_%02x",
+    "url": "https://keys.example/pre%5fpost?q=%5f",
+    "expected": "https://keys.example/pre_post?q=_"
+  },
+  {
+    "name": "byte_95_%02X",
+    "url": "https://keys.example/pre%5Fpost?q=%5F",
+    "expected": "https://keys.example/pre_post?q=_"
+  },
+  {
+    "name": "byte_96_%02x",
+    "url": "https://keys.example/pre%60post?q=%60",
+    "expected": "https://keys.example/pre%60post?q=%60"
+  },
+  {
+    "name": "byte_96_%02X",
+    "url": "https://keys.example/pre%60post?q=%60",
+    "expected": "https://keys.example/pre%60post?q=%60"
+  },
+  {
+    "name": "byte_97_%02x",
+    "url": "https://keys.example/pre%61post?q=%61",
+    "expected": "https://keys.example/preapost?q=a"
+  },
+  {
+    "name": "byte_97_%02X",
+    "url": "https://keys.example/pre%61post?q=%61",
+    "expected": "https://keys.example/preapost?q=a"
+  },
+  {
+    "name": "byte_98_%02x",
+    "url": "https://keys.example/pre%62post?q=%62",
+    "expected": "https://keys.example/prebpost?q=b"
+  },
+  {
+    "name": "byte_98_%02X",
+    "url": "https://keys.example/pre%62post?q=%62",
+    "expected": "https://keys.example/prebpost?q=b"
+  },
+  {
+    "name": "byte_99_%02x",
+    "url": "https://keys.example/pre%63post?q=%63",
+    "expected": "https://keys.example/precpost?q=c"
+  },
+  {
+    "name": "byte_99_%02X",
+    "url": "https://keys.example/pre%63post?q=%63",
+    "expected": "https://keys.example/precpost?q=c"
+  },
+  {
+    "name": "byte_100_%02x",
+    "url": "https://keys.example/pre%64post?q=%64",
+    "expected": "https://keys.example/predpost?q=d"
+  },
+  {
+    "name": "byte_100_%02X",
+    "url": "https://keys.example/pre%64post?q=%64",
+    "expected": "https://keys.example/predpost?q=d"
+  },
+  {
+    "name": "byte_101_%02x",
+    "url": "https://keys.example/pre%65post?q=%65",
+    "expected": "https://keys.example/preepost?q=e"
+  },
+  {
+    "name": "byte_101_%02X",
+    "url": "https://keys.example/pre%65post?q=%65",
+    "expected": "https://keys.example/preepost?q=e"
+  },
+  {
+    "name": "byte_102_%02x",
+    "url": "https://keys.example/pre%66post?q=%66",
+    "expected": "https://keys.example/prefpost?q=f"
+  },
+  {
+    "name": "byte_102_%02X",
+    "url": "https://keys.example/pre%66post?q=%66",
+    "expected": "https://keys.example/prefpost?q=f"
+  },
+  {
+    "name": "byte_103_%02x",
+    "url": "https://keys.example/pre%67post?q=%67",
+    "expected": "https://keys.example/pregpost?q=g"
+  },
+  {
+    "name": "byte_103_%02X",
+    "url": "https://keys.example/pre%67post?q=%67",
+    "expected": "https://keys.example/pregpost?q=g"
+  },
+  {
+    "name": "byte_104_%02x",
+    "url": "https://keys.example/pre%68post?q=%68",
+    "expected": "https://keys.example/prehpost?q=h"
+  },
+  {
+    "name": "byte_104_%02X",
+    "url": "https://keys.example/pre%68post?q=%68",
+    "expected": "https://keys.example/prehpost?q=h"
+  },
+  {
+    "name": "byte_105_%02x",
+    "url": "https://keys.example/pre%69post?q=%69",
+    "expected": "https://keys.example/preipost?q=i"
+  },
+  {
+    "name": "byte_105_%02X",
+    "url": "https://keys.example/pre%69post?q=%69",
+    "expected": "https://keys.example/preipost?q=i"
+  },
+  {
+    "name": "byte_106_%02x",
+    "url": "https://keys.example/pre%6apost?q=%6a",
+    "expected": "https://keys.example/prejpost?q=j"
+  },
+  {
+    "name": "byte_106_%02X",
+    "url": "https://keys.example/pre%6Apost?q=%6A",
+    "expected": "https://keys.example/prejpost?q=j"
+  },
+  {
+    "name": "byte_107_%02x",
+    "url": "https://keys.example/pre%6bpost?q=%6b",
+    "expected": "https://keys.example/prekpost?q=k"
+  },
+  {
+    "name": "byte_107_%02X",
+    "url": "https://keys.example/pre%6Bpost?q=%6B",
+    "expected": "https://keys.example/prekpost?q=k"
+  },
+  {
+    "name": "byte_108_%02x",
+    "url": "https://keys.example/pre%6cpost?q=%6c",
+    "expected": "https://keys.example/prelpost?q=l"
+  },
+  {
+    "name": "byte_108_%02X",
+    "url": "https://keys.example/pre%6Cpost?q=%6C",
+    "expected": "https://keys.example/prelpost?q=l"
+  },
+  {
+    "name": "byte_109_%02x",
+    "url": "https://keys.example/pre%6dpost?q=%6d",
+    "expected": "https://keys.example/prempost?q=m"
+  },
+  {
+    "name": "byte_109_%02X",
+    "url": "https://keys.example/pre%6Dpost?q=%6D",
+    "expected": "https://keys.example/prempost?q=m"
+  },
+  {
+    "name": "byte_110_%02x",
+    "url": "https://keys.example/pre%6epost?q=%6e",
+    "expected": "https://keys.example/prenpost?q=n"
+  },
+  {
+    "name": "byte_110_%02X",
+    "url": "https://keys.example/pre%6Epost?q=%6E",
+    "expected": "https://keys.example/prenpost?q=n"
+  },
+  {
+    "name": "byte_111_%02x",
+    "url": "https://keys.example/pre%6fpost?q=%6f",
+    "expected": "https://keys.example/preopost?q=o"
+  },
+  {
+    "name": "byte_111_%02X",
+    "url": "https://keys.example/pre%6Fpost?q=%6F",
+    "expected": "https://keys.example/preopost?q=o"
+  },
+  {
+    "name": "byte_112_%02x",
+    "url": "https://keys.example/pre%70post?q=%70",
+    "expected": "https://keys.example/preppost?q=p"
+  },
+  {
+    "name": "byte_112_%02X",
+    "url": "https://keys.example/pre%70post?q=%70",
+    "expected": "https://keys.example/preppost?q=p"
+  },
+  {
+    "name": "byte_113_%02x",
+    "url": "https://keys.example/pre%71post?q=%71",
+    "expected": "https://keys.example/preqpost?q=q"
+  },
+  {
+    "name": "byte_113_%02X",
+    "url": "https://keys.example/pre%71post?q=%71",
+    "expected": "https://keys.example/preqpost?q=q"
+  },
+  {
+    "name": "byte_114_%02x",
+    "url": "https://keys.example/pre%72post?q=%72",
+    "expected": "https://keys.example/prerpost?q=r"
+  },
+  {
+    "name": "byte_114_%02X",
+    "url": "https://keys.example/pre%72post?q=%72",
+    "expected": "https://keys.example/prerpost?q=r"
+  },
+  {
+    "name": "byte_115_%02x",
+    "url": "https://keys.example/pre%73post?q=%73",
+    "expected": "https://keys.example/prespost?q=s"
+  },
+  {
+    "name": "byte_115_%02X",
+    "url": "https://keys.example/pre%73post?q=%73",
+    "expected": "https://keys.example/prespost?q=s"
+  },
+  {
+    "name": "byte_116_%02x",
+    "url": "https://keys.example/pre%74post?q=%74",
+    "expected": "https://keys.example/pretpost?q=t"
+  },
+  {
+    "name": "byte_116_%02X",
+    "url": "https://keys.example/pre%74post?q=%74",
+    "expected": "https://keys.example/pretpost?q=t"
+  },
+  {
+    "name": "byte_117_%02x",
+    "url": "https://keys.example/pre%75post?q=%75",
+    "expected": "https://keys.example/preupost?q=u"
+  },
+  {
+    "name": "byte_117_%02X",
+    "url": "https://keys.example/pre%75post?q=%75",
+    "expected": "https://keys.example/preupost?q=u"
+  },
+  {
+    "name": "byte_118_%02x",
+    "url": "https://keys.example/pre%76post?q=%76",
+    "expected": "https://keys.example/prevpost?q=v"
+  },
+  {
+    "name": "byte_118_%02X",
+    "url": "https://keys.example/pre%76post?q=%76",
+    "expected": "https://keys.example/prevpost?q=v"
+  },
+  {
+    "name": "byte_119_%02x",
+    "url": "https://keys.example/pre%77post?q=%77",
+    "expected": "https://keys.example/prewpost?q=w"
+  },
+  {
+    "name": "byte_119_%02X",
+    "url": "https://keys.example/pre%77post?q=%77",
+    "expected": "https://keys.example/prewpost?q=w"
+  },
+  {
+    "name": "byte_120_%02x",
+    "url": "https://keys.example/pre%78post?q=%78",
+    "expected": "https://keys.example/prexpost?q=x"
+  },
+  {
+    "name": "byte_120_%02X",
+    "url": "https://keys.example/pre%78post?q=%78",
+    "expected": "https://keys.example/prexpost?q=x"
+  },
+  {
+    "name": "byte_121_%02x",
+    "url": "https://keys.example/pre%79post?q=%79",
+    "expected": "https://keys.example/preypost?q=y"
+  },
+  {
+    "name": "byte_121_%02X",
+    "url": "https://keys.example/pre%79post?q=%79",
+    "expected": "https://keys.example/preypost?q=y"
+  },
+  {
+    "name": "byte_122_%02x",
+    "url": "https://keys.example/pre%7apost?q=%7a",
+    "expected": "https://keys.example/prezpost?q=z"
+  },
+  {
+    "name": "byte_122_%02X",
+    "url": "https://keys.example/pre%7Apost?q=%7A",
+    "expected": "https://keys.example/prezpost?q=z"
+  },
+  {
+    "name": "byte_123_%02x",
+    "url": "https://keys.example/pre%7bpost?q=%7b",
+    "expected": "https://keys.example/pre%7Bpost?q=%7B"
+  },
+  {
+    "name": "byte_123_%02X",
+    "url": "https://keys.example/pre%7Bpost?q=%7B",
+    "expected": "https://keys.example/pre%7Bpost?q=%7B"
+  },
+  {
+    "name": "byte_124_%02x",
+    "url": "https://keys.example/pre%7cpost?q=%7c",
+    "expected": "https://keys.example/pre%7Cpost?q=%7C"
+  },
+  {
+    "name": "byte_124_%02X",
+    "url": "https://keys.example/pre%7Cpost?q=%7C",
+    "expected": "https://keys.example/pre%7Cpost?q=%7C"
+  },
+  {
+    "name": "byte_125_%02x",
+    "url": "https://keys.example/pre%7dpost?q=%7d",
+    "expected": "https://keys.example/pre%7Dpost?q=%7D"
+  },
+  {
+    "name": "byte_125_%02X",
+    "url": "https://keys.example/pre%7Dpost?q=%7D",
+    "expected": "https://keys.example/pre%7Dpost?q=%7D"
+  },
+  {
+    "name": "byte_126_%02x",
+    "url": "https://keys.example/pre%7epost?q=%7e",
+    "expected": "https://keys.example/pre~post?q=~"
+  },
+  {
+    "name": "byte_126_%02X",
+    "url": "https://keys.example/pre%7Epost?q=%7E",
+    "expected": "https://keys.example/pre~post?q=~"
+  },
+  {
+    "name": "byte_127_%02x",
+    "url": "https://keys.example/pre%7fpost?q=%7f",
+    "expected": "https://keys.example/pre%7Fpost?q=%7F"
+  },
+  {
+    "name": "byte_127_%02X",
+    "url": "https://keys.example/pre%7Fpost?q=%7F",
+    "expected": "https://keys.example/pre%7Fpost?q=%7F"
+  },
+  {
+    "name": "byte_128_%02x",
+    "url": "https://keys.example/pre%80post?q=%80",
+    "expected": "https://keys.example/pre%80post?q=%80"
+  },
+  {
+    "name": "byte_128_%02X",
+    "url": "https://keys.example/pre%80post?q=%80",
+    "expected": "https://keys.example/pre%80post?q=%80"
+  },
+  {
+    "name": "byte_129_%02x",
+    "url": "https://keys.example/pre%81post?q=%81",
+    "expected": "https://keys.example/pre%81post?q=%81"
+  },
+  {
+    "name": "byte_129_%02X",
+    "url": "https://keys.example/pre%81post?q=%81",
+    "expected": "https://keys.example/pre%81post?q=%81"
+  },
+  {
+    "name": "byte_130_%02x",
+    "url": "https://keys.example/pre%82post?q=%82",
+    "expected": "https://keys.example/pre%82post?q=%82"
+  },
+  {
+    "name": "byte_130_%02X",
+    "url": "https://keys.example/pre%82post?q=%82",
+    "expected": "https://keys.example/pre%82post?q=%82"
+  },
+  {
+    "name": "byte_131_%02x",
+    "url": "https://keys.example/pre%83post?q=%83",
+    "expected": "https://keys.example/pre%83post?q=%83"
+  },
+  {
+    "name": "byte_131_%02X",
+    "url": "https://keys.example/pre%83post?q=%83",
+    "expected": "https://keys.example/pre%83post?q=%83"
+  },
+  {
+    "name": "byte_132_%02x",
+    "url": "https://keys.example/pre%84post?q=%84",
+    "expected": "https://keys.example/pre%84post?q=%84"
+  },
+  {
+    "name": "byte_132_%02X",
+    "url": "https://keys.example/pre%84post?q=%84",
+    "expected": "https://keys.example/pre%84post?q=%84"
+  },
+  {
+    "name": "byte_133_%02x",
+    "url": "https://keys.example/pre%85post?q=%85",
+    "expected": "https://keys.example/pre%85post?q=%85"
+  },
+  {
+    "name": "byte_133_%02X",
+    "url": "https://keys.example/pre%85post?q=%85",
+    "expected": "https://keys.example/pre%85post?q=%85"
+  },
+  {
+    "name": "byte_134_%02x",
+    "url": "https://keys.example/pre%86post?q=%86",
+    "expected": "https://keys.example/pre%86post?q=%86"
+  },
+  {
+    "name": "byte_134_%02X",
+    "url": "https://keys.example/pre%86post?q=%86",
+    "expected": "https://keys.example/pre%86post?q=%86"
+  },
+  {
+    "name": "byte_135_%02x",
+    "url": "https://keys.example/pre%87post?q=%87",
+    "expected": "https://keys.example/pre%87post?q=%87"
+  },
+  {
+    "name": "byte_135_%02X",
+    "url": "https://keys.example/pre%87post?q=%87",
+    "expected": "https://keys.example/pre%87post?q=%87"
+  },
+  {
+    "name": "byte_136_%02x",
+    "url": "https://keys.example/pre%88post?q=%88",
+    "expected": "https://keys.example/pre%88post?q=%88"
+  },
+  {
+    "name": "byte_136_%02X",
+    "url": "https://keys.example/pre%88post?q=%88",
+    "expected": "https://keys.example/pre%88post?q=%88"
+  },
+  {
+    "name": "byte_137_%02x",
+    "url": "https://keys.example/pre%89post?q=%89",
+    "expected": "https://keys.example/pre%89post?q=%89"
+  },
+  {
+    "name": "byte_137_%02X",
+    "url": "https://keys.example/pre%89post?q=%89",
+    "expected": "https://keys.example/pre%89post?q=%89"
+  },
+  {
+    "name": "byte_138_%02x",
+    "url": "https://keys.example/pre%8apost?q=%8a",
+    "expected": "https://keys.example/pre%8Apost?q=%8A"
+  },
+  {
+    "name": "byte_138_%02X",
+    "url": "https://keys.example/pre%8Apost?q=%8A",
+    "expected": "https://keys.example/pre%8Apost?q=%8A"
+  },
+  {
+    "name": "byte_139_%02x",
+    "url": "https://keys.example/pre%8bpost?q=%8b",
+    "expected": "https://keys.example/pre%8Bpost?q=%8B"
+  },
+  {
+    "name": "byte_139_%02X",
+    "url": "https://keys.example/pre%8Bpost?q=%8B",
+    "expected": "https://keys.example/pre%8Bpost?q=%8B"
+  },
+  {
+    "name": "byte_140_%02x",
+    "url": "https://keys.example/pre%8cpost?q=%8c",
+    "expected": "https://keys.example/pre%8Cpost?q=%8C"
+  },
+  {
+    "name": "byte_140_%02X",
+    "url": "https://keys.example/pre%8Cpost?q=%8C",
+    "expected": "https://keys.example/pre%8Cpost?q=%8C"
+  },
+  {
+    "name": "byte_141_%02x",
+    "url": "https://keys.example/pre%8dpost?q=%8d",
+    "expected": "https://keys.example/pre%8Dpost?q=%8D"
+  },
+  {
+    "name": "byte_141_%02X",
+    "url": "https://keys.example/pre%8Dpost?q=%8D",
+    "expected": "https://keys.example/pre%8Dpost?q=%8D"
+  },
+  {
+    "name": "byte_142_%02x",
+    "url": "https://keys.example/pre%8epost?q=%8e",
+    "expected": "https://keys.example/pre%8Epost?q=%8E"
+  },
+  {
+    "name": "byte_142_%02X",
+    "url": "https://keys.example/pre%8Epost?q=%8E",
+    "expected": "https://keys.example/pre%8Epost?q=%8E"
+  },
+  {
+    "name": "byte_143_%02x",
+    "url": "https://keys.example/pre%8fpost?q=%8f",
+    "expected": "https://keys.example/pre%8Fpost?q=%8F"
+  },
+  {
+    "name": "byte_143_%02X",
+    "url": "https://keys.example/pre%8Fpost?q=%8F",
+    "expected": "https://keys.example/pre%8Fpost?q=%8F"
+  },
+  {
+    "name": "byte_144_%02x",
+    "url": "https://keys.example/pre%90post?q=%90",
+    "expected": "https://keys.example/pre%90post?q=%90"
+  },
+  {
+    "name": "byte_144_%02X",
+    "url": "https://keys.example/pre%90post?q=%90",
+    "expected": "https://keys.example/pre%90post?q=%90"
+  },
+  {
+    "name": "byte_145_%02x",
+    "url": "https://keys.example/pre%91post?q=%91",
+    "expected": "https://keys.example/pre%91post?q=%91"
+  },
+  {
+    "name": "byte_145_%02X",
+    "url": "https://keys.example/pre%91post?q=%91",
+    "expected": "https://keys.example/pre%91post?q=%91"
+  },
+  {
+    "name": "byte_146_%02x",
+    "url": "https://keys.example/pre%92post?q=%92",
+    "expected": "https://keys.example/pre%92post?q=%92"
+  },
+  {
+    "name": "byte_146_%02X",
+    "url": "https://keys.example/pre%92post?q=%92",
+    "expected": "https://keys.example/pre%92post?q=%92"
+  },
+  {
+    "name": "byte_147_%02x",
+    "url": "https://keys.example/pre%93post?q=%93",
+    "expected": "https://keys.example/pre%93post?q=%93"
+  },
+  {
+    "name": "byte_147_%02X",
+    "url": "https://keys.example/pre%93post?q=%93",
+    "expected": "https://keys.example/pre%93post?q=%93"
+  },
+  {
+    "name": "byte_148_%02x",
+    "url": "https://keys.example/pre%94post?q=%94",
+    "expected": "https://keys.example/pre%94post?q=%94"
+  },
+  {
+    "name": "byte_148_%02X",
+    "url": "https://keys.example/pre%94post?q=%94",
+    "expected": "https://keys.example/pre%94post?q=%94"
+  },
+  {
+    "name": "byte_149_%02x",
+    "url": "https://keys.example/pre%95post?q=%95",
+    "expected": "https://keys.example/pre%95post?q=%95"
+  },
+  {
+    "name": "byte_149_%02X",
+    "url": "https://keys.example/pre%95post?q=%95",
+    "expected": "https://keys.example/pre%95post?q=%95"
+  },
+  {
+    "name": "byte_150_%02x",
+    "url": "https://keys.example/pre%96post?q=%96",
+    "expected": "https://keys.example/pre%96post?q=%96"
+  },
+  {
+    "name": "byte_150_%02X",
+    "url": "https://keys.example/pre%96post?q=%96",
+    "expected": "https://keys.example/pre%96post?q=%96"
+  },
+  {
+    "name": "byte_151_%02x",
+    "url": "https://keys.example/pre%97post?q=%97",
+    "expected": "https://keys.example/pre%97post?q=%97"
+  },
+  {
+    "name": "byte_151_%02X",
+    "url": "https://keys.example/pre%97post?q=%97",
+    "expected": "https://keys.example/pre%97post?q=%97"
+  },
+  {
+    "name": "byte_152_%02x",
+    "url": "https://keys.example/pre%98post?q=%98",
+    "expected": "https://keys.example/pre%98post?q=%98"
+  },
+  {
+    "name": "byte_152_%02X",
+    "url": "https://keys.example/pre%98post?q=%98",
+    "expected": "https://keys.example/pre%98post?q=%98"
+  },
+  {
+    "name": "byte_153_%02x",
+    "url": "https://keys.example/pre%99post?q=%99",
+    "expected": "https://keys.example/pre%99post?q=%99"
+  },
+  {
+    "name": "byte_153_%02X",
+    "url": "https://keys.example/pre%99post?q=%99",
+    "expected": "https://keys.example/pre%99post?q=%99"
+  },
+  {
+    "name": "byte_154_%02x",
+    "url": "https://keys.example/pre%9apost?q=%9a",
+    "expected": "https://keys.example/pre%9Apost?q=%9A"
+  },
+  {
+    "name": "byte_154_%02X",
+    "url": "https://keys.example/pre%9Apost?q=%9A",
+    "expected": "https://keys.example/pre%9Apost?q=%9A"
+  },
+  {
+    "name": "byte_155_%02x",
+    "url": "https://keys.example/pre%9bpost?q=%9b",
+    "expected": "https://keys.example/pre%9Bpost?q=%9B"
+  },
+  {
+    "name": "byte_155_%02X",
+    "url": "https://keys.example/pre%9Bpost?q=%9B",
+    "expected": "https://keys.example/pre%9Bpost?q=%9B"
+  },
+  {
+    "name": "byte_156_%02x",
+    "url": "https://keys.example/pre%9cpost?q=%9c",
+    "expected": "https://keys.example/pre%9Cpost?q=%9C"
+  },
+  {
+    "name": "byte_156_%02X",
+    "url": "https://keys.example/pre%9Cpost?q=%9C",
+    "expected": "https://keys.example/pre%9Cpost?q=%9C"
+  },
+  {
+    "name": "byte_157_%02x",
+    "url": "https://keys.example/pre%9dpost?q=%9d",
+    "expected": "https://keys.example/pre%9Dpost?q=%9D"
+  },
+  {
+    "name": "byte_157_%02X",
+    "url": "https://keys.example/pre%9Dpost?q=%9D",
+    "expected": "https://keys.example/pre%9Dpost?q=%9D"
+  },
+  {
+    "name": "byte_158_%02x",
+    "url": "https://keys.example/pre%9epost?q=%9e",
+    "expected": "https://keys.example/pre%9Epost?q=%9E"
+  },
+  {
+    "name": "byte_158_%02X",
+    "url": "https://keys.example/pre%9Epost?q=%9E",
+    "expected": "https://keys.example/pre%9Epost?q=%9E"
+  },
+  {
+    "name": "byte_159_%02x",
+    "url": "https://keys.example/pre%9fpost?q=%9f",
+    "expected": "https://keys.example/pre%9Fpost?q=%9F"
+  },
+  {
+    "name": "byte_159_%02X",
+    "url": "https://keys.example/pre%9Fpost?q=%9F",
+    "expected": "https://keys.example/pre%9Fpost?q=%9F"
+  },
+  {
+    "name": "byte_160_%02x",
+    "url": "https://keys.example/pre%a0post?q=%a0",
+    "expected": "https://keys.example/pre%A0post?q=%A0"
+  },
+  {
+    "name": "byte_160_%02X",
+    "url": "https://keys.example/pre%A0post?q=%A0",
+    "expected": "https://keys.example/pre%A0post?q=%A0"
+  },
+  {
+    "name": "byte_161_%02x",
+    "url": "https://keys.example/pre%a1post?q=%a1",
+    "expected": "https://keys.example/pre%A1post?q=%A1"
+  },
+  {
+    "name": "byte_161_%02X",
+    "url": "https://keys.example/pre%A1post?q=%A1",
+    "expected": "https://keys.example/pre%A1post?q=%A1"
+  },
+  {
+    "name": "byte_162_%02x",
+    "url": "https://keys.example/pre%a2post?q=%a2",
+    "expected": "https://keys.example/pre%A2post?q=%A2"
+  },
+  {
+    "name": "byte_162_%02X",
+    "url": "https://keys.example/pre%A2post?q=%A2",
+    "expected": "https://keys.example/pre%A2post?q=%A2"
+  },
+  {
+    "name": "byte_163_%02x",
+    "url": "https://keys.example/pre%a3post?q=%a3",
+    "expected": "https://keys.example/pre%A3post?q=%A3"
+  },
+  {
+    "name": "byte_163_%02X",
+    "url": "https://keys.example/pre%A3post?q=%A3",
+    "expected": "https://keys.example/pre%A3post?q=%A3"
+  },
+  {
+    "name": "byte_164_%02x",
+    "url": "https://keys.example/pre%a4post?q=%a4",
+    "expected": "https://keys.example/pre%A4post?q=%A4"
+  },
+  {
+    "name": "byte_164_%02X",
+    "url": "https://keys.example/pre%A4post?q=%A4",
+    "expected": "https://keys.example/pre%A4post?q=%A4"
+  },
+  {
+    "name": "byte_165_%02x",
+    "url": "https://keys.example/pre%a5post?q=%a5",
+    "expected": "https://keys.example/pre%A5post?q=%A5"
+  },
+  {
+    "name": "byte_165_%02X",
+    "url": "https://keys.example/pre%A5post?q=%A5",
+    "expected": "https://keys.example/pre%A5post?q=%A5"
+  },
+  {
+    "name": "byte_166_%02x",
+    "url": "https://keys.example/pre%a6post?q=%a6",
+    "expected": "https://keys.example/pre%A6post?q=%A6"
+  },
+  {
+    "name": "byte_166_%02X",
+    "url": "https://keys.example/pre%A6post?q=%A6",
+    "expected": "https://keys.example/pre%A6post?q=%A6"
+  },
+  {
+    "name": "byte_167_%02x",
+    "url": "https://keys.example/pre%a7post?q=%a7",
+    "expected": "https://keys.example/pre%A7post?q=%A7"
+  },
+  {
+    "name": "byte_167_%02X",
+    "url": "https://keys.example/pre%A7post?q=%A7",
+    "expected": "https://keys.example/pre%A7post?q=%A7"
+  },
+  {
+    "name": "byte_168_%02x",
+    "url": "https://keys.example/pre%a8post?q=%a8",
+    "expected": "https://keys.example/pre%A8post?q=%A8"
+  },
+  {
+    "name": "byte_168_%02X",
+    "url": "https://keys.example/pre%A8post?q=%A8",
+    "expected": "https://keys.example/pre%A8post?q=%A8"
+  },
+  {
+    "name": "byte_169_%02x",
+    "url": "https://keys.example/pre%a9post?q=%a9",
+    "expected": "https://keys.example/pre%A9post?q=%A9"
+  },
+  {
+    "name": "byte_169_%02X",
+    "url": "https://keys.example/pre%A9post?q=%A9",
+    "expected": "https://keys.example/pre%A9post?q=%A9"
+  },
+  {
+    "name": "byte_170_%02x",
+    "url": "https://keys.example/pre%aapost?q=%aa",
+    "expected": "https://keys.example/pre%AApost?q=%AA"
+  },
+  {
+    "name": "byte_170_%02X",
+    "url": "https://keys.example/pre%AApost?q=%AA",
+    "expected": "https://keys.example/pre%AApost?q=%AA"
+  },
+  {
+    "name": "byte_171_%02x",
+    "url": "https://keys.example/pre%abpost?q=%ab",
+    "expected": "https://keys.example/pre%ABpost?q=%AB"
+  },
+  {
+    "name": "byte_171_%02X",
+    "url": "https://keys.example/pre%ABpost?q=%AB",
+    "expected": "https://keys.example/pre%ABpost?q=%AB"
+  },
+  {
+    "name": "byte_172_%02x",
+    "url": "https://keys.example/pre%acpost?q=%ac",
+    "expected": "https://keys.example/pre%ACpost?q=%AC"
+  },
+  {
+    "name": "byte_172_%02X",
+    "url": "https://keys.example/pre%ACpost?q=%AC",
+    "expected": "https://keys.example/pre%ACpost?q=%AC"
+  },
+  {
+    "name": "byte_173_%02x",
+    "url": "https://keys.example/pre%adpost?q=%ad",
+    "expected": "https://keys.example/pre%ADpost?q=%AD"
+  },
+  {
+    "name": "byte_173_%02X",
+    "url": "https://keys.example/pre%ADpost?q=%AD",
+    "expected": "https://keys.example/pre%ADpost?q=%AD"
+  },
+  {
+    "name": "byte_174_%02x",
+    "url": "https://keys.example/pre%aepost?q=%ae",
+    "expected": "https://keys.example/pre%AEpost?q=%AE"
+  },
+  {
+    "name": "byte_174_%02X",
+    "url": "https://keys.example/pre%AEpost?q=%AE",
+    "expected": "https://keys.example/pre%AEpost?q=%AE"
+  },
+  {
+    "name": "byte_175_%02x",
+    "url": "https://keys.example/pre%afpost?q=%af",
+    "expected": "https://keys.example/pre%AFpost?q=%AF"
+  },
+  {
+    "name": "byte_175_%02X",
+    "url": "https://keys.example/pre%AFpost?q=%AF",
+    "expected": "https://keys.example/pre%AFpost?q=%AF"
+  },
+  {
+    "name": "byte_176_%02x",
+    "url": "https://keys.example/pre%b0post?q=%b0",
+    "expected": "https://keys.example/pre%B0post?q=%B0"
+  },
+  {
+    "name": "byte_176_%02X",
+    "url": "https://keys.example/pre%B0post?q=%B0",
+    "expected": "https://keys.example/pre%B0post?q=%B0"
+  },
+  {
+    "name": "byte_177_%02x",
+    "url": "https://keys.example/pre%b1post?q=%b1",
+    "expected": "https://keys.example/pre%B1post?q=%B1"
+  },
+  {
+    "name": "byte_177_%02X",
+    "url": "https://keys.example/pre%B1post?q=%B1",
+    "expected": "https://keys.example/pre%B1post?q=%B1"
+  },
+  {
+    "name": "byte_178_%02x",
+    "url": "https://keys.example/pre%b2post?q=%b2",
+    "expected": "https://keys.example/pre%B2post?q=%B2"
+  },
+  {
+    "name": "byte_178_%02X",
+    "url": "https://keys.example/pre%B2post?q=%B2",
+    "expected": "https://keys.example/pre%B2post?q=%B2"
+  },
+  {
+    "name": "byte_179_%02x",
+    "url": "https://keys.example/pre%b3post?q=%b3",
+    "expected": "https://keys.example/pre%B3post?q=%B3"
+  },
+  {
+    "name": "byte_179_%02X",
+    "url": "https://keys.example/pre%B3post?q=%B3",
+    "expected": "https://keys.example/pre%B3post?q=%B3"
+  },
+  {
+    "name": "byte_180_%02x",
+    "url": "https://keys.example/pre%b4post?q=%b4",
+    "expected": "https://keys.example/pre%B4post?q=%B4"
+  },
+  {
+    "name": "byte_180_%02X",
+    "url": "https://keys.example/pre%B4post?q=%B4",
+    "expected": "https://keys.example/pre%B4post?q=%B4"
+  },
+  {
+    "name": "byte_181_%02x",
+    "url": "https://keys.example/pre%b5post?q=%b5",
+    "expected": "https://keys.example/pre%B5post?q=%B5"
+  },
+  {
+    "name": "byte_181_%02X",
+    "url": "https://keys.example/pre%B5post?q=%B5",
+    "expected": "https://keys.example/pre%B5post?q=%B5"
+  },
+  {
+    "name": "byte_182_%02x",
+    "url": "https://keys.example/pre%b6post?q=%b6",
+    "expected": "https://keys.example/pre%B6post?q=%B6"
+  },
+  {
+    "name": "byte_182_%02X",
+    "url": "https://keys.example/pre%B6post?q=%B6",
+    "expected": "https://keys.example/pre%B6post?q=%B6"
+  },
+  {
+    "name": "byte_183_%02x",
+    "url": "https://keys.example/pre%b7post?q=%b7",
+    "expected": "https://keys.example/pre%B7post?q=%B7"
+  },
+  {
+    "name": "byte_183_%02X",
+    "url": "https://keys.example/pre%B7post?q=%B7",
+    "expected": "https://keys.example/pre%B7post?q=%B7"
+  },
+  {
+    "name": "byte_184_%02x",
+    "url": "https://keys.example/pre%b8post?q=%b8",
+    "expected": "https://keys.example/pre%B8post?q=%B8"
+  },
+  {
+    "name": "byte_184_%02X",
+    "url": "https://keys.example/pre%B8post?q=%B8",
+    "expected": "https://keys.example/pre%B8post?q=%B8"
+  },
+  {
+    "name": "byte_185_%02x",
+    "url": "https://keys.example/pre%b9post?q=%b9",
+    "expected": "https://keys.example/pre%B9post?q=%B9"
+  },
+  {
+    "name": "byte_185_%02X",
+    "url": "https://keys.example/pre%B9post?q=%B9",
+    "expected": "https://keys.example/pre%B9post?q=%B9"
+  },
+  {
+    "name": "byte_186_%02x",
+    "url": "https://keys.example/pre%bapost?q=%ba",
+    "expected": "https://keys.example/pre%BApost?q=%BA"
+  },
+  {
+    "name": "byte_186_%02X",
+    "url": "https://keys.example/pre%BApost?q=%BA",
+    "expected": "https://keys.example/pre%BApost?q=%BA"
+  },
+  {
+    "name": "byte_187_%02x",
+    "url": "https://keys.example/pre%bbpost?q=%bb",
+    "expected": "https://keys.example/pre%BBpost?q=%BB"
+  },
+  {
+    "name": "byte_187_%02X",
+    "url": "https://keys.example/pre%BBpost?q=%BB",
+    "expected": "https://keys.example/pre%BBpost?q=%BB"
+  },
+  {
+    "name": "byte_188_%02x",
+    "url": "https://keys.example/pre%bcpost?q=%bc",
+    "expected": "https://keys.example/pre%BCpost?q=%BC"
+  },
+  {
+    "name": "byte_188_%02X",
+    "url": "https://keys.example/pre%BCpost?q=%BC",
+    "expected": "https://keys.example/pre%BCpost?q=%BC"
+  },
+  {
+    "name": "byte_189_%02x",
+    "url": "https://keys.example/pre%bdpost?q=%bd",
+    "expected": "https://keys.example/pre%BDpost?q=%BD"
+  },
+  {
+    "name": "byte_189_%02X",
+    "url": "https://keys.example/pre%BDpost?q=%BD",
+    "expected": "https://keys.example/pre%BDpost?q=%BD"
+  },
+  {
+    "name": "byte_190_%02x",
+    "url": "https://keys.example/pre%bepost?q=%be",
+    "expected": "https://keys.example/pre%BEpost?q=%BE"
+  },
+  {
+    "name": "byte_190_%02X",
+    "url": "https://keys.example/pre%BEpost?q=%BE",
+    "expected": "https://keys.example/pre%BEpost?q=%BE"
+  },
+  {
+    "name": "byte_191_%02x",
+    "url": "https://keys.example/pre%bfpost?q=%bf",
+    "expected": "https://keys.example/pre%BFpost?q=%BF"
+  },
+  {
+    "name": "byte_191_%02X",
+    "url": "https://keys.example/pre%BFpost?q=%BF",
+    "expected": "https://keys.example/pre%BFpost?q=%BF"
+  },
+  {
+    "name": "byte_192_%02x",
+    "url": "https://keys.example/pre%c0post?q=%c0",
+    "expected": "https://keys.example/pre%C0post?q=%C0"
+  },
+  {
+    "name": "byte_192_%02X",
+    "url": "https://keys.example/pre%C0post?q=%C0",
+    "expected": "https://keys.example/pre%C0post?q=%C0"
+  },
+  {
+    "name": "byte_193_%02x",
+    "url": "https://keys.example/pre%c1post?q=%c1",
+    "expected": "https://keys.example/pre%C1post?q=%C1"
+  },
+  {
+    "name": "byte_193_%02X",
+    "url": "https://keys.example/pre%C1post?q=%C1",
+    "expected": "https://keys.example/pre%C1post?q=%C1"
+  },
+  {
+    "name": "byte_194_%02x",
+    "url": "https://keys.example/pre%c2post?q=%c2",
+    "expected": "https://keys.example/pre%C2post?q=%C2"
+  },
+  {
+    "name": "byte_194_%02X",
+    "url": "https://keys.example/pre%C2post?q=%C2",
+    "expected": "https://keys.example/pre%C2post?q=%C2"
+  },
+  {
+    "name": "byte_195_%02x",
+    "url": "https://keys.example/pre%c3post?q=%c3",
+    "expected": "https://keys.example/pre%C3post?q=%C3"
+  },
+  {
+    "name": "byte_195_%02X",
+    "url": "https://keys.example/pre%C3post?q=%C3",
+    "expected": "https://keys.example/pre%C3post?q=%C3"
+  },
+  {
+    "name": "byte_196_%02x",
+    "url": "https://keys.example/pre%c4post?q=%c4",
+    "expected": "https://keys.example/pre%C4post?q=%C4"
+  },
+  {
+    "name": "byte_196_%02X",
+    "url": "https://keys.example/pre%C4post?q=%C4",
+    "expected": "https://keys.example/pre%C4post?q=%C4"
+  },
+  {
+    "name": "byte_197_%02x",
+    "url": "https://keys.example/pre%c5post?q=%c5",
+    "expected": "https://keys.example/pre%C5post?q=%C5"
+  },
+  {
+    "name": "byte_197_%02X",
+    "url": "https://keys.example/pre%C5post?q=%C5",
+    "expected": "https://keys.example/pre%C5post?q=%C5"
+  },
+  {
+    "name": "byte_198_%02x",
+    "url": "https://keys.example/pre%c6post?q=%c6",
+    "expected": "https://keys.example/pre%C6post?q=%C6"
+  },
+  {
+    "name": "byte_198_%02X",
+    "url": "https://keys.example/pre%C6post?q=%C6",
+    "expected": "https://keys.example/pre%C6post?q=%C6"
+  },
+  {
+    "name": "byte_199_%02x",
+    "url": "https://keys.example/pre%c7post?q=%c7",
+    "expected": "https://keys.example/pre%C7post?q=%C7"
+  },
+  {
+    "name": "byte_199_%02X",
+    "url": "https://keys.example/pre%C7post?q=%C7",
+    "expected": "https://keys.example/pre%C7post?q=%C7"
+  },
+  {
+    "name": "byte_200_%02x",
+    "url": "https://keys.example/pre%c8post?q=%c8",
+    "expected": "https://keys.example/pre%C8post?q=%C8"
+  },
+  {
+    "name": "byte_200_%02X",
+    "url": "https://keys.example/pre%C8post?q=%C8",
+    "expected": "https://keys.example/pre%C8post?q=%C8"
+  },
+  {
+    "name": "byte_201_%02x",
+    "url": "https://keys.example/pre%c9post?q=%c9",
+    "expected": "https://keys.example/pre%C9post?q=%C9"
+  },
+  {
+    "name": "byte_201_%02X",
+    "url": "https://keys.example/pre%C9post?q=%C9",
+    "expected": "https://keys.example/pre%C9post?q=%C9"
+  },
+  {
+    "name": "byte_202_%02x",
+    "url": "https://keys.example/pre%capost?q=%ca",
+    "expected": "https://keys.example/pre%CApost?q=%CA"
+  },
+  {
+    "name": "byte_202_%02X",
+    "url": "https://keys.example/pre%CApost?q=%CA",
+    "expected": "https://keys.example/pre%CApost?q=%CA"
+  },
+  {
+    "name": "byte_203_%02x",
+    "url": "https://keys.example/pre%cbpost?q=%cb",
+    "expected": "https://keys.example/pre%CBpost?q=%CB"
+  },
+  {
+    "name": "byte_203_%02X",
+    "url": "https://keys.example/pre%CBpost?q=%CB",
+    "expected": "https://keys.example/pre%CBpost?q=%CB"
+  },
+  {
+    "name": "byte_204_%02x",
+    "url": "https://keys.example/pre%ccpost?q=%cc",
+    "expected": "https://keys.example/pre%CCpost?q=%CC"
+  },
+  {
+    "name": "byte_204_%02X",
+    "url": "https://keys.example/pre%CCpost?q=%CC",
+    "expected": "https://keys.example/pre%CCpost?q=%CC"
+  },
+  {
+    "name": "byte_205_%02x",
+    "url": "https://keys.example/pre%cdpost?q=%cd",
+    "expected": "https://keys.example/pre%CDpost?q=%CD"
+  },
+  {
+    "name": "byte_205_%02X",
+    "url": "https://keys.example/pre%CDpost?q=%CD",
+    "expected": "https://keys.example/pre%CDpost?q=%CD"
+  },
+  {
+    "name": "byte_206_%02x",
+    "url": "https://keys.example/pre%cepost?q=%ce",
+    "expected": "https://keys.example/pre%CEpost?q=%CE"
+  },
+  {
+    "name": "byte_206_%02X",
+    "url": "https://keys.example/pre%CEpost?q=%CE",
+    "expected": "https://keys.example/pre%CEpost?q=%CE"
+  },
+  {
+    "name": "byte_207_%02x",
+    "url": "https://keys.example/pre%cfpost?q=%cf",
+    "expected": "https://keys.example/pre%CFpost?q=%CF"
+  },
+  {
+    "name": "byte_207_%02X",
+    "url": "https://keys.example/pre%CFpost?q=%CF",
+    "expected": "https://keys.example/pre%CFpost?q=%CF"
+  },
+  {
+    "name": "byte_208_%02x",
+    "url": "https://keys.example/pre%d0post?q=%d0",
+    "expected": "https://keys.example/pre%D0post?q=%D0"
+  },
+  {
+    "name": "byte_208_%02X",
+    "url": "https://keys.example/pre%D0post?q=%D0",
+    "expected": "https://keys.example/pre%D0post?q=%D0"
+  },
+  {
+    "name": "byte_209_%02x",
+    "url": "https://keys.example/pre%d1post?q=%d1",
+    "expected": "https://keys.example/pre%D1post?q=%D1"
+  },
+  {
+    "name": "byte_209_%02X",
+    "url": "https://keys.example/pre%D1post?q=%D1",
+    "expected": "https://keys.example/pre%D1post?q=%D1"
+  },
+  {
+    "name": "byte_210_%02x",
+    "url": "https://keys.example/pre%d2post?q=%d2",
+    "expected": "https://keys.example/pre%D2post?q=%D2"
+  },
+  {
+    "name": "byte_210_%02X",
+    "url": "https://keys.example/pre%D2post?q=%D2",
+    "expected": "https://keys.example/pre%D2post?q=%D2"
+  },
+  {
+    "name": "byte_211_%02x",
+    "url": "https://keys.example/pre%d3post?q=%d3",
+    "expected": "https://keys.example/pre%D3post?q=%D3"
+  },
+  {
+    "name": "byte_211_%02X",
+    "url": "https://keys.example/pre%D3post?q=%D3",
+    "expected": "https://keys.example/pre%D3post?q=%D3"
+  },
+  {
+    "name": "byte_212_%02x",
+    "url": "https://keys.example/pre%d4post?q=%d4",
+    "expected": "https://keys.example/pre%D4post?q=%D4"
+  },
+  {
+    "name": "byte_212_%02X",
+    "url": "https://keys.example/pre%D4post?q=%D4",
+    "expected": "https://keys.example/pre%D4post?q=%D4"
+  },
+  {
+    "name": "byte_213_%02x",
+    "url": "https://keys.example/pre%d5post?q=%d5",
+    "expected": "https://keys.example/pre%D5post?q=%D5"
+  },
+  {
+    "name": "byte_213_%02X",
+    "url": "https://keys.example/pre%D5post?q=%D5",
+    "expected": "https://keys.example/pre%D5post?q=%D5"
+  },
+  {
+    "name": "byte_214_%02x",
+    "url": "https://keys.example/pre%d6post?q=%d6",
+    "expected": "https://keys.example/pre%D6post?q=%D6"
+  },
+  {
+    "name": "byte_214_%02X",
+    "url": "https://keys.example/pre%D6post?q=%D6",
+    "expected": "https://keys.example/pre%D6post?q=%D6"
+  },
+  {
+    "name": "byte_215_%02x",
+    "url": "https://keys.example/pre%d7post?q=%d7",
+    "expected": "https://keys.example/pre%D7post?q=%D7"
+  },
+  {
+    "name": "byte_215_%02X",
+    "url": "https://keys.example/pre%D7post?q=%D7",
+    "expected": "https://keys.example/pre%D7post?q=%D7"
+  },
+  {
+    "name": "byte_216_%02x",
+    "url": "https://keys.example/pre%d8post?q=%d8",
+    "expected": "https://keys.example/pre%D8post?q=%D8"
+  },
+  {
+    "name": "byte_216_%02X",
+    "url": "https://keys.example/pre%D8post?q=%D8",
+    "expected": "https://keys.example/pre%D8post?q=%D8"
+  },
+  {
+    "name": "byte_217_%02x",
+    "url": "https://keys.example/pre%d9post?q=%d9",
+    "expected": "https://keys.example/pre%D9post?q=%D9"
+  },
+  {
+    "name": "byte_217_%02X",
+    "url": "https://keys.example/pre%D9post?q=%D9",
+    "expected": "https://keys.example/pre%D9post?q=%D9"
+  },
+  {
+    "name": "byte_218_%02x",
+    "url": "https://keys.example/pre%dapost?q=%da",
+    "expected": "https://keys.example/pre%DApost?q=%DA"
+  },
+  {
+    "name": "byte_218_%02X",
+    "url": "https://keys.example/pre%DApost?q=%DA",
+    "expected": "https://keys.example/pre%DApost?q=%DA"
+  },
+  {
+    "name": "byte_219_%02x",
+    "url": "https://keys.example/pre%dbpost?q=%db",
+    "expected": "https://keys.example/pre%DBpost?q=%DB"
+  },
+  {
+    "name": "byte_219_%02X",
+    "url": "https://keys.example/pre%DBpost?q=%DB",
+    "expected": "https://keys.example/pre%DBpost?q=%DB"
+  },
+  {
+    "name": "byte_220_%02x",
+    "url": "https://keys.example/pre%dcpost?q=%dc",
+    "expected": "https://keys.example/pre%DCpost?q=%DC"
+  },
+  {
+    "name": "byte_220_%02X",
+    "url": "https://keys.example/pre%DCpost?q=%DC",
+    "expected": "https://keys.example/pre%DCpost?q=%DC"
+  },
+  {
+    "name": "byte_221_%02x",
+    "url": "https://keys.example/pre%ddpost?q=%dd",
+    "expected": "https://keys.example/pre%DDpost?q=%DD"
+  },
+  {
+    "name": "byte_221_%02X",
+    "url": "https://keys.example/pre%DDpost?q=%DD",
+    "expected": "https://keys.example/pre%DDpost?q=%DD"
+  },
+  {
+    "name": "byte_222_%02x",
+    "url": "https://keys.example/pre%depost?q=%de",
+    "expected": "https://keys.example/pre%DEpost?q=%DE"
+  },
+  {
+    "name": "byte_222_%02X",
+    "url": "https://keys.example/pre%DEpost?q=%DE",
+    "expected": "https://keys.example/pre%DEpost?q=%DE"
+  },
+  {
+    "name": "byte_223_%02x",
+    "url": "https://keys.example/pre%dfpost?q=%df",
+    "expected": "https://keys.example/pre%DFpost?q=%DF"
+  },
+  {
+    "name": "byte_223_%02X",
+    "url": "https://keys.example/pre%DFpost?q=%DF",
+    "expected": "https://keys.example/pre%DFpost?q=%DF"
+  },
+  {
+    "name": "byte_224_%02x",
+    "url": "https://keys.example/pre%e0post?q=%e0",
+    "expected": "https://keys.example/pre%E0post?q=%E0"
+  },
+  {
+    "name": "byte_224_%02X",
+    "url": "https://keys.example/pre%E0post?q=%E0",
+    "expected": "https://keys.example/pre%E0post?q=%E0"
+  },
+  {
+    "name": "byte_225_%02x",
+    "url": "https://keys.example/pre%e1post?q=%e1",
+    "expected": "https://keys.example/pre%E1post?q=%E1"
+  },
+  {
+    "name": "byte_225_%02X",
+    "url": "https://keys.example/pre%E1post?q=%E1",
+    "expected": "https://keys.example/pre%E1post?q=%E1"
+  },
+  {
+    "name": "byte_226_%02x",
+    "url": "https://keys.example/pre%e2post?q=%e2",
+    "expected": "https://keys.example/pre%E2post?q=%E2"
+  },
+  {
+    "name": "byte_226_%02X",
+    "url": "https://keys.example/pre%E2post?q=%E2",
+    "expected": "https://keys.example/pre%E2post?q=%E2"
+  },
+  {
+    "name": "byte_227_%02x",
+    "url": "https://keys.example/pre%e3post?q=%e3",
+    "expected": "https://keys.example/pre%E3post?q=%E3"
+  },
+  {
+    "name": "byte_227_%02X",
+    "url": "https://keys.example/pre%E3post?q=%E3",
+    "expected": "https://keys.example/pre%E3post?q=%E3"
+  },
+  {
+    "name": "byte_228_%02x",
+    "url": "https://keys.example/pre%e4post?q=%e4",
+    "expected": "https://keys.example/pre%E4post?q=%E4"
+  },
+  {
+    "name": "byte_228_%02X",
+    "url": "https://keys.example/pre%E4post?q=%E4",
+    "expected": "https://keys.example/pre%E4post?q=%E4"
+  },
+  {
+    "name": "byte_229_%02x",
+    "url": "https://keys.example/pre%e5post?q=%e5",
+    "expected": "https://keys.example/pre%E5post?q=%E5"
+  },
+  {
+    "name": "byte_229_%02X",
+    "url": "https://keys.example/pre%E5post?q=%E5",
+    "expected": "https://keys.example/pre%E5post?q=%E5"
+  },
+  {
+    "name": "byte_230_%02x",
+    "url": "https://keys.example/pre%e6post?q=%e6",
+    "expected": "https://keys.example/pre%E6post?q=%E6"
+  },
+  {
+    "name": "byte_230_%02X",
+    "url": "https://keys.example/pre%E6post?q=%E6",
+    "expected": "https://keys.example/pre%E6post?q=%E6"
+  },
+  {
+    "name": "byte_231_%02x",
+    "url": "https://keys.example/pre%e7post?q=%e7",
+    "expected": "https://keys.example/pre%E7post?q=%E7"
+  },
+  {
+    "name": "byte_231_%02X",
+    "url": "https://keys.example/pre%E7post?q=%E7",
+    "expected": "https://keys.example/pre%E7post?q=%E7"
+  },
+  {
+    "name": "byte_232_%02x",
+    "url": "https://keys.example/pre%e8post?q=%e8",
+    "expected": "https://keys.example/pre%E8post?q=%E8"
+  },
+  {
+    "name": "byte_232_%02X",
+    "url": "https://keys.example/pre%E8post?q=%E8",
+    "expected": "https://keys.example/pre%E8post?q=%E8"
+  },
+  {
+    "name": "byte_233_%02x",
+    "url": "https://keys.example/pre%e9post?q=%e9",
+    "expected": "https://keys.example/pre%E9post?q=%E9"
+  },
+  {
+    "name": "byte_233_%02X",
+    "url": "https://keys.example/pre%E9post?q=%E9",
+    "expected": "https://keys.example/pre%E9post?q=%E9"
+  },
+  {
+    "name": "byte_234_%02x",
+    "url": "https://keys.example/pre%eapost?q=%ea",
+    "expected": "https://keys.example/pre%EApost?q=%EA"
+  },
+  {
+    "name": "byte_234_%02X",
+    "url": "https://keys.example/pre%EApost?q=%EA",
+    "expected": "https://keys.example/pre%EApost?q=%EA"
+  },
+  {
+    "name": "byte_235_%02x",
+    "url": "https://keys.example/pre%ebpost?q=%eb",
+    "expected": "https://keys.example/pre%EBpost?q=%EB"
+  },
+  {
+    "name": "byte_235_%02X",
+    "url": "https://keys.example/pre%EBpost?q=%EB",
+    "expected": "https://keys.example/pre%EBpost?q=%EB"
+  },
+  {
+    "name": "byte_236_%02x",
+    "url": "https://keys.example/pre%ecpost?q=%ec",
+    "expected": "https://keys.example/pre%ECpost?q=%EC"
+  },
+  {
+    "name": "byte_236_%02X",
+    "url": "https://keys.example/pre%ECpost?q=%EC",
+    "expected": "https://keys.example/pre%ECpost?q=%EC"
+  },
+  {
+    "name": "byte_237_%02x",
+    "url": "https://keys.example/pre%edpost?q=%ed",
+    "expected": "https://keys.example/pre%EDpost?q=%ED"
+  },
+  {
+    "name": "byte_237_%02X",
+    "url": "https://keys.example/pre%EDpost?q=%ED",
+    "expected": "https://keys.example/pre%EDpost?q=%ED"
+  },
+  {
+    "name": "byte_238_%02x",
+    "url": "https://keys.example/pre%eepost?q=%ee",
+    "expected": "https://keys.example/pre%EEpost?q=%EE"
+  },
+  {
+    "name": "byte_238_%02X",
+    "url": "https://keys.example/pre%EEpost?q=%EE",
+    "expected": "https://keys.example/pre%EEpost?q=%EE"
+  },
+  {
+    "name": "byte_239_%02x",
+    "url": "https://keys.example/pre%efpost?q=%ef",
+    "expected": "https://keys.example/pre%EFpost?q=%EF"
+  },
+  {
+    "name": "byte_239_%02X",
+    "url": "https://keys.example/pre%EFpost?q=%EF",
+    "expected": "https://keys.example/pre%EFpost?q=%EF"
+  },
+  {
+    "name": "byte_240_%02x",
+    "url": "https://keys.example/pre%f0post?q=%f0",
+    "expected": "https://keys.example/pre%F0post?q=%F0"
+  },
+  {
+    "name": "byte_240_%02X",
+    "url": "https://keys.example/pre%F0post?q=%F0",
+    "expected": "https://keys.example/pre%F0post?q=%F0"
+  },
+  {
+    "name": "byte_241_%02x",
+    "url": "https://keys.example/pre%f1post?q=%f1",
+    "expected": "https://keys.example/pre%F1post?q=%F1"
+  },
+  {
+    "name": "byte_241_%02X",
+    "url": "https://keys.example/pre%F1post?q=%F1",
+    "expected": "https://keys.example/pre%F1post?q=%F1"
+  },
+  {
+    "name": "byte_242_%02x",
+    "url": "https://keys.example/pre%f2post?q=%f2",
+    "expected": "https://keys.example/pre%F2post?q=%F2"
+  },
+  {
+    "name": "byte_242_%02X",
+    "url": "https://keys.example/pre%F2post?q=%F2",
+    "expected": "https://keys.example/pre%F2post?q=%F2"
+  },
+  {
+    "name": "byte_243_%02x",
+    "url": "https://keys.example/pre%f3post?q=%f3",
+    "expected": "https://keys.example/pre%F3post?q=%F3"
+  },
+  {
+    "name": "byte_243_%02X",
+    "url": "https://keys.example/pre%F3post?q=%F3",
+    "expected": "https://keys.example/pre%F3post?q=%F3"
+  },
+  {
+    "name": "byte_244_%02x",
+    "url": "https://keys.example/pre%f4post?q=%f4",
+    "expected": "https://keys.example/pre%F4post?q=%F4"
+  },
+  {
+    "name": "byte_244_%02X",
+    "url": "https://keys.example/pre%F4post?q=%F4",
+    "expected": "https://keys.example/pre%F4post?q=%F4"
+  },
+  {
+    "name": "byte_245_%02x",
+    "url": "https://keys.example/pre%f5post?q=%f5",
+    "expected": "https://keys.example/pre%F5post?q=%F5"
+  },
+  {
+    "name": "byte_245_%02X",
+    "url": "https://keys.example/pre%F5post?q=%F5",
+    "expected": "https://keys.example/pre%F5post?q=%F5"
+  },
+  {
+    "name": "byte_246_%02x",
+    "url": "https://keys.example/pre%f6post?q=%f6",
+    "expected": "https://keys.example/pre%F6post?q=%F6"
+  },
+  {
+    "name": "byte_246_%02X",
+    "url": "https://keys.example/pre%F6post?q=%F6",
+    "expected": "https://keys.example/pre%F6post?q=%F6"
+  },
+  {
+    "name": "byte_247_%02x",
+    "url": "https://keys.example/pre%f7post?q=%f7",
+    "expected": "https://keys.example/pre%F7post?q=%F7"
+  },
+  {
+    "name": "byte_247_%02X",
+    "url": "https://keys.example/pre%F7post?q=%F7",
+    "expected": "https://keys.example/pre%F7post?q=%F7"
+  },
+  {
+    "name": "byte_248_%02x",
+    "url": "https://keys.example/pre%f8post?q=%f8",
+    "expected": "https://keys.example/pre%F8post?q=%F8"
+  },
+  {
+    "name": "byte_248_%02X",
+    "url": "https://keys.example/pre%F8post?q=%F8",
+    "expected": "https://keys.example/pre%F8post?q=%F8"
+  },
+  {
+    "name": "byte_249_%02x",
+    "url": "https://keys.example/pre%f9post?q=%f9",
+    "expected": "https://keys.example/pre%F9post?q=%F9"
+  },
+  {
+    "name": "byte_249_%02X",
+    "url": "https://keys.example/pre%F9post?q=%F9",
+    "expected": "https://keys.example/pre%F9post?q=%F9"
+  },
+  {
+    "name": "byte_250_%02x",
+    "url": "https://keys.example/pre%fapost?q=%fa",
+    "expected": "https://keys.example/pre%FApost?q=%FA"
+  },
+  {
+    "name": "byte_250_%02X",
+    "url": "https://keys.example/pre%FApost?q=%FA",
+    "expected": "https://keys.example/pre%FApost?q=%FA"
+  },
+  {
+    "name": "byte_251_%02x",
+    "url": "https://keys.example/pre%fbpost?q=%fb",
+    "expected": "https://keys.example/pre%FBpost?q=%FB"
+  },
+  {
+    "name": "byte_251_%02X",
+    "url": "https://keys.example/pre%FBpost?q=%FB",
+    "expected": "https://keys.example/pre%FBpost?q=%FB"
+  },
+  {
+    "name": "byte_252_%02x",
+    "url": "https://keys.example/pre%fcpost?q=%fc",
+    "expected": "https://keys.example/pre%FCpost?q=%FC"
+  },
+  {
+    "name": "byte_252_%02X",
+    "url": "https://keys.example/pre%FCpost?q=%FC",
+    "expected": "https://keys.example/pre%FCpost?q=%FC"
+  },
+  {
+    "name": "byte_253_%02x",
+    "url": "https://keys.example/pre%fdpost?q=%fd",
+    "expected": "https://keys.example/pre%FDpost?q=%FD"
+  },
+  {
+    "name": "byte_253_%02X",
+    "url": "https://keys.example/pre%FDpost?q=%FD",
+    "expected": "https://keys.example/pre%FDpost?q=%FD"
+  },
+  {
+    "name": "byte_254_%02x",
+    "url": "https://keys.example/pre%fepost?q=%fe",
+    "expected": "https://keys.example/pre%FEpost?q=%FE"
+  },
+  {
+    "name": "byte_254_%02X",
+    "url": "https://keys.example/pre%FEpost?q=%FE",
+    "expected": "https://keys.example/pre%FEpost?q=%FE"
+  },
+  {
+    "name": "byte_255_%02x",
+    "url": "https://keys.example/pre%ffpost?q=%ff",
+    "expected": "https://keys.example/pre%FFpost?q=%FF"
+  },
+  {
+    "name": "byte_255_%02X",
+    "url": "https://keys.example/pre%FFpost?q=%FF",
+    "expected": "https://keys.example/pre%FFpost?q=%FF"
+  },
+  {
+    "name": "host_default_fragment",
+    "url": "https://KEYS.EXAMPLE:00443/%61#frag",
+    "expected": "https://keys.example/a"
+  },
+  {
+    "name": "http_default",
+    "url": "http://KEYS.EXAMPLE:00080/%41",
+    "expected": "http://keys.example/A"
+  },
+  {
+    "name": "https_nondefault",
+    "url": "https://KEYS.EXAMPLE:00080/%41",
+    "expected": "https://keys.example:80/A"
+  },
+  {
+    "name": "empty_path",
+    "url": "https://keys.example",
+    "expected": "https://keys.example/"
+  },
+  {
+    "name": "empty_query",
+    "url": "https://keys.example?",
+    "expected": "https://keys.example/"
+  },
+  {
+    "name": "root_empty_query",
+    "url": "https://keys.example/?",
+    "expected": "https://keys.example/"
+  },
+  {
+    "name": "root_fragment",
+    "url": "https://keys.example#frag",
+    "expected": "https://keys.example/"
+  },
+  {
+    "name": "query_only",
+    "url": "https://keys.example?x=%7e",
+    "expected": "https://keys.example/?x=~"
+  },
+  {
+    "name": "dot_literal",
+    "url": "https://keys.example/a/../b",
+    "expected": "https://keys.example/a/../b"
+  },
+  {
+    "name": "dot_encoded",
+    "url": "https://keys.example/a/%2e%2E/b",
+    "expected": "https://keys.example/a/../b"
+  },
+  {
+    "name": "encoded_unicode",
+    "url": "https://keys.example/%e4%b8%ad",
+    "expected": "https://keys.example/%E4%B8%AD"
+  },
+  {
+    "name": "query_order",
+    "url": "https://keys.example/a?z=%41&a=2",
+    "expected": "https://keys.example/a?z=A&a=2"
+  },
+  {
+    "name": "query_duplicates",
+    "url": "https://keys.example/a?x=1&x=2",
+    "expected": "https://keys.example/a?x=1&x=2"
+  },
+  {
+    "name": "malformed_escape",
+    "url": "https://keys.example/a%G0",
+    "expected": "https://keys.example/a%G0"
+  },
+  {
+    "name": "malformed_short",
+    "url": "https://keys.example/a%1",
+    "expected": "https://keys.example/a%1"
+  },
+  {
+    "name": "malformed_no_partial",
+    "url": "https://KEYS.EXAMPLE:00443/%61%XZ",
+    "expected": "https://KEYS.EXAMPLE:00443/%61%XZ"
+  },
+  {
+    "name": "invalid_authority",
+    "url": "https://bad..example/%61",
+    "expected": "https://bad..example/%61"
+  },
+  {
+    "name": "relative",
+    "url": "not/a/url",
+    "expected": "not/a/url"
+  },
+  {
+    "name": "different_scheme",
+    "url": "ftp://keys.example/a",
+    "expected": "ftp://keys.example/a"
+  },
+  {
+    "name": "uppercase_scheme_legacy",
+    "url": "HTTPS://KEYS.EXAMPLE/%61",
+    "expected": "HTTPS://KEYS.EXAMPLE/%61"
+  },
+  {
+    "name": "invalid_port",
+    "url": "https://keys.example:0/%61",
+    "expected": "https://keys.example:0/%61"
+  },
+  {
+    "name": "private_metadata",
+    "url": "http://127.0.0.1:80/%61",
+    "expected": "http://127.0.0.1/a"
+  }
+]

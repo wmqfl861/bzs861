@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：Claude 审计接续 P2-5 / P2-6 / P2-7 / P2-9；版本仍为 0.1.10。** 本批从 `59081e14fdda765844031e13f874e588334f1a36` 接续，改进本地搜索持锁范围、后台类别并发、HTTP 请求执行和来源退避。接口与限制见 [API](docs/API.md)，源码与二进制输入、作者/独立审核、真实失败和整合结果见[本批验证记录](validation/claude_continuation_20261024/README.md)。S0、S1、S2 的完整验收仍未完成。
+**状态：URI 别名删除屏障接续修正；版本仍为 0.1.10，数据库 schema14。** 本批从 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340` 接手，补齐 unreserved percent 编码别名的双向删除检查、直达和跳转缓存/验证器/在途提交屏障，并修正 MCP 来源说明。有限等价与升级步骤见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)，实际源码输入、原失败、作者验证和独立审核见[本批验证记录](validation/uri_deletion_20261024/README.md)。S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。基线 `59081e1` 的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对双平台成功；该成绩不代表本批输入通过。当前发布 SHA、tree 与 Linux / Windows 结果须核对该提交自己的 [Checks](https://github.com/wmqfl861/bzs861/actions)。本批不创建新版本 tag。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。基线 `ef45490` 的 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 已核对 Linux/Windows 成功；该历史成绩不代表新输入。发布后查询实际提交的 [Checks](https://github.com/wmqfl861/bzs861/actions)。本批不创建新 tag；升级数据库前停止旧 Core，新旧程序不能混用。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -148,7 +148,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮完整门禁包含 CTest、pytest 和开启泄漏检测的原生 ASan/UBSan。作者聚焦回归、独立反例和最终整合执行分别绑定各自源码与二进制；实际命令、计数、环境、原始失败与最终结果见[本批记录](validation/claude_continuation_20261024/README.md)，不从套件存在或历史通过推导本批已通过。P2-9 首版在时钟回拨下误缩合法退避的反例必须与修正后结果一起保留。测试相互覆盖，不能按总数替代 161 项产品验收。
+本轮完整门禁包含 CTest、pytest 和开启泄漏检测的原生 ASan/UBSan。作者聚焦回归、独立反例和最终整合执行分别绑定各自源码与二进制；实际命令、计数、环境、原始失败与最终结果见[本批记录](validation/uri_deletion_20261024/README.md)，不从套件存在或历史通过推导本批已通过。上一批 P2-9 的回拨反例和修正仍保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
@@ -168,7 +168,7 @@ ctest --preset dev
 
 ## 已有数据与后续范围
 
-当前业务 schema 仍为13，本批沿用 `bzs-ascii-cjk/2+codepoint-grams/1` 兼容标记。若从 44253a7 等旧格式升级，仍须先停止旧 Core；新版完成升级后旧二进制不能重新打开该库，不支持新旧进程混用。真实 442 旧库升级证据见[上一批迁移记录](validation/claude_followup_20261024/independent/p1-3/)。
+当前业务 schema 为14，子串索引仍用 `bzs-ascii-cjk/2+codepoint-grams/1`。升级前停止旧 Core；schema14事务回填全部文档及墓碑的删除比较键，旧二进制不能重新打开升级库，不支持新旧进程混用。有限规则见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)，真实 ef45490 schema13旧库的升级证据见[本批记录](validation/uri_deletion_20261024/README.md)；更早的442旧库辅助索引升级仍保存在[历史迁移记录](validation/claude_followup_20261024/independent/p1-3/)。
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 

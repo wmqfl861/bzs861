@@ -65,7 +65,7 @@ TEST(every_token_for_subject_and_restart_remain_revoked) {
   Store reopened(t.path/"db");Service api(reopened,fixtures,t.path/"backup");auto again=api.dispatch({"admin",true},request("principal.revoke",target()));
   CHECK(again.at("already_revoked").flag());CHECK(again.at("revocation_id").str()==id);CHECK(again.at("auth_epoch").num()==1);
   for(const auto& token:{token1,token2})rejects([&]{api.dispatch(auth.authenticate("Bearer "+token),request("stats"));},"E_PRINCIPAL_REVOKED");
-  CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==13);
+  CHECK(scalar(reopened.raw_handle(),"PRAGMA user_version")==14);
 }
 TEST(snapshots_evidence_sessions_and_new_work_denied_without_erasure) {
   Temp t;Store s(t.path/"db"),other(t.path/"db");auto snap=s.ingest("alice",document());auto own=s.ingest("bob",document());

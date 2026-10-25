@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/handoff_audit",
+  "reviewed_at_utc": "2026-10-24T17:21:45.335063+00:00",
+  "verdict": "pass; no blocking discrepancy in final local report, selected evidence, exact inputs, retained history or stated scope",
+  "role": "Reviewer authored independent scratch probes and read-only audits; no production or formal test edits. The contracts evidence replay was performed by the author and audited independently here.",
+  "baseline_commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "review_script_sha256": "621fdb2fb83d60996b6d5b0910e323608f28f8900c765f7356174ec18322563c",
+  "helper_script_sha256": "61e85737b2bdd40806dfc65f8970dad6d573e78e3d52da33dc355f98e41675d4",
+  "reviewed_final_report_sha256": "6a43027f595e79338650cfa571810906f75532786207447ff71157a50155de48",
+  "reviewed_batch_readme_sha256": "43f5e2cb7e4ac92fb4210fcddc8b0878fd5f8f1538502e81d77f1c9fc0e1ff78",
+  "post_run_input_snapshot_sha256": "112e3ae15f34d5cb3e2205114a347218dfeecb7d0f56f6727dc33270d979b373",
+  "post_ctest_review_sha256": "5364619eeb6b1ec0e723b1ed0129954587ab81a9e7ef433d2449f48c7ff63d51",
+  "post_sanitizer_review_sha256": "cc46e85d62ad2bfbbc4b2f4c7ffcfab4479d4194cbacc25de089a89404c91cc6",
+  "batch_evidence_snapshot_sha256": "b58c3ef9becba16d5280179891e1d52b810a0b005bfbac2c7e2a78226c20bb0a",
+  "batch_evidence_files_at_review": 393,
+  "findings": {
+    "ctest": "27/27, zero failed/skipped/disabled; raw full output and XML agree.",
+    "native_composition": "15 targets, 507 cases, 16106 assertions; cache is 63 cases/1323 assertions.",
+    "python_composition": "1281 passed, within the 27 CTest entries.",
+    "sanitizer_selection": "Exactly 14 intact original records plus one complete same-binary contracts replay; 15 unique targets, no duplicate counting.",
+    "contracts_log_integrity": "Original zero-byte log and contradictory original recorded SHA are preserved, explicitly excluded. Cause remains unestablished. The distinct replay has 2422 bytes and matches SHA 3148f3169a713e7ca028875761ccfcbf987034dba84be44a3a35f578230ad0ff.",
+    "inputs": "All 224 current inputs match post-run and selected sanitizer snapshots; CTest differs only by the declared four Markdown corrections.",
+    "binaries": "All 36 current binary/config outputs match CTest and selected sanitizer pre/post sets. Production hashes remain the independently reviewed v2.",
+    "additional_gates": "Original contract fixtures 34/34, plan structure 83/161/10, plan guard 13/13 and dependency check agree with closed logs.",
+    "mcp": "124 focused Python passes and 22/23 unchanged tool contracts are supported by same-source records; no discovery source or Core requests.",
+    "history": "2793 old validation files, protected config/plan/golden/workflow/build/lock paths and existing feature state remain unchanged. Prior failures and original manifests preserved.",
+    "documentation": "Current schema14, finite deletion scope, history access boundary, stop-old-Core upgrade rule and source/acceptance limits are consistent.",
+    "remote_scope": "Report declares completed local validation only. No new remote commit/tree or Linux/Windows CI success is asserted.",
+    "artifact_scope": "Batch snapshot contains text/source evidence; no SQLite databases, native executables or static archives found."
+  },
+  "counts_are_not_product_acceptances": true,
+  "production_tests_reexecuted_by_this_audit": 0,
+  "additional_gate_record_hashes": {
+    "final/contracts-command.json": "3c61aaac25b968a82831ef9763342001471db93bd4e10300f4c098b1c3badc38",
+    "final/plan-command.json": "51da1c15656a5c8b92da652be9906c002c575a81f997d59dc572a8e1870a45c5",
+    "final/plan-guard-command.json": "76cf46c779a28d87b7b105d457932b8ed809d0913a7720354ac8beb86e684c88",
+    "final/pip-check-command.json": "de2bcc79b3b1364b7128c044f7e96dcd5a41079c5f402a95c85446964274015c"
+  },
+  "release_boundary": "This concludes local review at the hashes above. Publication must bind the actual resulting tree and check that exact commit on Linux and Windows separately; no test rerun is requested by this review."
+}

@@ -1,0 +1,15 @@
+RUN legacy_direct_positive
+PASS legacy_direct_positive
+RUN legacy_alias_delete_revival_cross_handle
+PASS legacy_alias_delete_revival_cross_handle
+RUN unrelated_other_owner_deletes
+PASS unrelated_other_owner_deletes
+RUN reserved_and_query_distinctions
+PASS reserved_and_query_distinctions
+RUN missing_redirect_fence_closed
+PASS missing_redirect_fence_closed
+RUN malformed_direct_fence_closed
+PASS malformed_direct_fence_closed
+RUN no_invented_post_delete_proof
+PASS no_invented_post_delete_proof
+SUMMARY cases=7 checks=119 failures=0 external_network_requests=0

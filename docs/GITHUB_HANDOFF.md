@@ -2,7 +2,15 @@
 
 更新：2026-10-24。用户授权修复、继续开发并适时推送的唯一目标为 [wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。旧文档中的其他所有者路径是历史，不能作为本轮推送目标。
 
-## 当前审计接续（基线 59081e1）
+## 当前接手（基线 ef45490）
+
+本批以 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340` / tree `5a9977f4ec6d5aa6efa276ec1197e58b2777ff06` 为真实父基线，历史 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 的 Linux/Windows 已通过。范围为 schema14 URI 删除键、HTTP 缓存/验证器/提交屏障与 MCP 来源说明，详见[本批记录](../validation/uri_deletion_20261024/README.md)。
+
+来源审批与其余六项决定保持，不新增版本 tag。公开交付只提交源码、测试、合同和验证材料，不含运行数据库、凭据或二进制。发布前确认远端未前进，以准确父 SHA 非强推；发布后取回实际 tree 并核对该提交自己的 CI。旧审计分支始终只读。
+
+## 上一批审计接续（基线 59081e1，历史）
+
+以下两段的“本批”限于 `claude_continuation_20261024`。
 
 本批基线 main 为 `59081e14fdda765844031e13f874e588334f1a36`，tree `5d555fabc43180aa905e0581a301a3bafbeca1d5`，版本仍为 0.1.10。该提交的 [CI 40067206826](https://github.com/wmqfl861/bzs861/actions/runs/40067206826) 已核对 Linux / Windows 成功。当前范围为 P2-5 搜索锁、P2-6 固定后台通道、P2-7 有界 HTTP 业务执行和 P2-9 来源退避；作者、独立审核与最终整合证据见[本批记录](../validation/claude_continuation_20261024/README.md)。P2-9 首版时钟回拨反例及修正分别保存，不能仅保留后来的通过。
 
@@ -62,6 +70,6 @@
 
 ## 证据分期
 
-`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；上一批审计后续为 `validation/claude_followup_20261024/`；当前 P2-5/6/7/9 接续为 `validation/claude_continuation_20261024/`。旧证据不覆盖、不改名冒充新运行。
+`validation/test_report.json` 描述 0.0.1；`validation/takeover/` 绑定 0.0.2；`validation/s1_test_report.json` 为 Claude 0.1.0 随包声明；`validation/s1_review/` 绑定 0.1.1；`validation/s0_s2_progress/` 绑定 0.1.2；`validation/s2_discovery/` 绑定 0.1.3；`validation/s2_crawl/` 绑定 0.1.4；0.1.5 为 `validation/s2_hardening/`；0.1.8五阶段为 `validation/s2_five_stages/`；0.1.9接续及JSON修复为 `validation/s2_next_five/`；上一轮0.1.10为 `validation/s2_takeover/`；上一批审计后续为 `validation/claude_followup_20261024/`；上一批 P2-5/6/7/9 接续为 `validation/claude_continuation_20261024/`；当前 URI 删除身份与 MCP 来源说明为 `validation/uri_deletion_20261024/`。旧证据不覆盖、不改名冒充新运行。
 
 固定依赖、工作流存在、本地通过、GitHub 实际成功分别核对。公开仓库不包含私人聊天、令牌、运行数据库、用户探测的未审原始内容或外层 bundle。
