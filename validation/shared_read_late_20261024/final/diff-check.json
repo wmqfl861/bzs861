@@ -1,0 +1,33 @@
+{
+  "checked_at_utc": "2026-10-25T02:33:59.273304+00:00",
+  "status": "passed_except_verbatim_terminal_log_whitespace",
+  "raw_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit_code": 2,
+    "log": "diff-check-raw.log",
+    "sha256": "0d53bed56ee3c562230d3e95ef58be52125a8cabc4872e2fb9ebab03d2b41a54"
+  },
+  "exception": {
+    "path": "validation/shared_read_late_20261024/environment/apt-install.log",
+    "sha256": "42b8b9d86cc07226789aa7c08e3ec0207a78b85178100c05be528d2df0bf0e5e",
+    "reason": "Verbatim apt terminal output contains CR line endings/progress updates. Preserve original execution bytes rather than rewrite evidence. No production or authored-document whitespace exception."
+  },
+  "remaining_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      ".",
+      ":(exclude)validation/shared_read_late_20261024/environment/apt-install.log"
+    ],
+    "exit_code": 0,
+    "output": ""
+  }
+}

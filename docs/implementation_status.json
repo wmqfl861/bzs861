@@ -1,24 +1,27 @@
 {
   "version": "0.1.10",
-  "stage": "URI deletion identity repair and accurate MCP source descriptions; schema14; S2 scope/status and accepted-package counts unchanged",
+  "stage": "Bounded late subscribers for durable read_many; schema15; S2 scope/status and accepted-package counts unchanged",
   "recorded_at": "2026-10-24",
-  "baseline": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+  "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
   "integration_inputs": {
-    "main": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
-    "tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
+    "local_baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+    "local_tree": "e15b716766e9a2a787660ffd304df2102e4b994c",
+    "local_baseline_published": false,
+    "remote_main": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+    "remote_tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
     "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
     "review_branch_read_only": true,
-    "baseline_schema": 13,
-    "schema": 14,
+    "baseline_schema": 14,
+    "schema": 15,
     "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
-    "scope": "Finite owner-scoped URI deletion identity, direct/redirect cache and commit fences, real schema13-to-14 migration, MCP descriptions only; all six decisions unchanged.",
-    "evidence_directory": "validation/uri_deletion_20261024",
-    "baseline_ci": {
+    "scope": "Durable read_many late admission, immutable payer/grants/capture/lease, durable admission closure and cross-Store atomic liveness; no direct web.read/map/crawl/search sharing.",
+    "evidence_directory": "validation/shared_read_late_20261024",
+    "historical_remote_ci": {
       "commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
       "run_id": 40096268557,
       "linux": "success",
       "windows": "success",
-      "scope": "Historical baseline only, not the new schema14 input.",
+      "scope": "Historical baseline only, not the unpublished schema14/schema15 inputs.",
       "url": "https://github.com/wmqfl861/bzs861/actions/runs/40096268557"
     }
   },
@@ -55,13 +58,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/uri_deletion_20261024/README.md",
-  "current_verification": "consult_batch_record_for_actual_local_and_remote_results",
-  "upstream_baseline_reproduction": "The real ef45490 library reproduces the reverse-percent failures. Prior Claude followup/continuation evidence remains unchanged; new baseline failures, the initial direct-legacy compatibility regression and corrected inputs are recorded separately in validation/uri_deletion_20261024/README.md",
-  "github_ci": "consult_batch_record_for_exact_published_commit_and_actual_ci_results",
-  "independent_review": "Author implementation/regressions and independent legacy probes, migration, URI matrix and source review remain distinct. Consult validation/uri_deletion_20261024/README.md for exact executed inputs and outcomes.",
+  "current_test_report": "validation/shared_read_late_20261024/README.md",
+  "current_verification": "passed_local_validation; see validation/shared_read_late_20261024/final-report.json for exact inputs, complete logs and independent review; no new remote CI",
+  "upstream_baseline_reproduction": "The frozen real a3 library reproduces late read_many submissions staying queued; original30 batch groups and prior URI evidence remain separate. Consult the new batch report for exact source/binary bindings and retained environment failures.",
+  "github_ci": "not_run_for_unpublished_URI_or_late_subscription_inputs; default-branch publication remains approval-blocked",
+  "independent_review": "Independent original-library migration, cancellation/admission probes, and source/report review are separate from formal regression authors. Consult validation/shared_read_late_20261024/README.md for executed inputs and outcomes.",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/uri_deletion_20261024/README.md",
+  "review_record": "validation/shared_read_late_20261024/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -80,7 +83,8 @@
     "validation/s2_takeover/deadline-followup-report.json",
     "validation/s2_takeover/windows-watchdog-report.json",
     "validation/claude_followup_20261024/README.md",
-    "validation/claude_continuation_20261024/README.md"
+    "validation/claude_continuation_20261024/README.md",
+    "validation/uri_deletion_20261024/README.md"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "features": [
@@ -2641,7 +2645,7 @@
   ],
   "current_results": {
     "status": "not_embedded_here; consult_exact_batch_record",
-    "record": "validation/uri_deletion_20261024/README.md",
+    "record": "validation/shared_read_late_20261024/README.md",
     "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
   },
   "baseline_version": "0.1.10",
@@ -2661,9 +2665,9 @@
   ],
   "verification_binding": {
     "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
-    "baseline": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
-    "record": "validation/uri_deletion_20261024/README.md",
-    "remote_ci": "After publication, query Checks for the exact containing commit and its actual Linux/Windows results. No future commit or CI outcome is embedded here.",
+    "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+    "record": "validation/shared_read_late_20261024/README.md",
+    "remote_ci": "Local baseline and this continuation are unpublished; prior main CI is historical only. Default-branch write approval is still required.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -4555,5 +4559,54 @@
     "storage": "documents.deletion_key derived for all old rows including tombstones; indexed by owner, key and id; no document/snapshot/idempotency/publication identity merge.",
     "legacy_direct": "Missing fence is checked at sequence zero only for exact direct final URL with no redirects; any retained equivalent deletion prevents HTTP reuse.",
     "mcp": "Description changes only; no source enablement or network discovery."
+  },
+  "historical_verification_uri_deletion_20261024": {
+    "stage": "URI deletion identity repair and accurate MCP source descriptions; schema14; S2 scope/status and accepted-package counts unchanged",
+    "baseline": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+    "integration_inputs": {
+      "main": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+      "tree": "5a9977f4ec6d5aa6efa276ec1197e58b2777ff06",
+      "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+      "review_branch_read_only": true,
+      "baseline_schema": 13,
+      "schema": 14,
+      "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+      "scope": "Finite owner-scoped URI deletion identity, direct/redirect cache and commit fences, real schema13-to-14 migration, MCP descriptions only; all six decisions unchanged.",
+      "evidence_directory": "validation/uri_deletion_20261024",
+      "baseline_ci": {
+        "commit": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+        "run_id": 40096268557,
+        "linux": "success",
+        "windows": "success",
+        "scope": "Historical baseline only, not the new schema14 input.",
+        "url": "https://github.com/wmqfl861/bzs861/actions/runs/40096268557"
+      }
+    },
+    "current_results": {
+      "status": "not_embedded_here; consult_exact_batch_record",
+      "record": "validation/uri_deletion_20261024/README.md",
+      "counting_note": "Per-issue, author, independent and sanitizer executions overlap; consult the batch record for actual final input/results. Neither their sum nor baseline/old-input results count as planned product acceptance. Original failures are retained."
+    },
+    "verification_binding": {
+      "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+      "baseline": "ef45490c6a0c384d8ad89452e2ba7e4df2cf2340",
+      "record": "validation/uri_deletion_20261024/README.md",
+      "remote_ci": "After publication, query Checks for the exact containing commit and its actual Linux/Windows results. No future commit or CI outcome is embedded here.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    },
+    "upstream_baseline_reproduction": "The real ef45490 library reproduces the reverse-percent failures. Prior Claude followup/continuation evidence remains unchanged; new baseline failures, the initial direct-legacy compatibility regression and corrected inputs are recorded separately in validation/uri_deletion_20261024/README.md",
+    "independent_review": "Author implementation/regressions and independent legacy probes, migration, URI matrix and source review remain distinct. Consult validation/uri_deletion_20261024/README.md for exact executed inputs and outcomes.",
+    "local_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+    "publication_status": "Not pushed; main remains ef45490; new remote CI not run."
+  },
+  "late_shared_reads_scope": {
+    "contract": "docs/SHARED_READS.md",
+    "schema": 15,
+    "admission": "New durable batch first item only; same owner/auth/deletion history/exact URI and compatible original dispatch timeout, remaining grant budgets and lease coverage; unchanged current snapshot and page publication sequence.",
+    "bounds": "32 lifetime members; evaluate at most32 returned matching open physical payer candidates, not a promise to scan only32 SQL index rows.",
+    "accounting": "Original payer and physical limits remain fixed; associated usage is not additive; no automatic retry.",
+    "closure": "Persisted sharing_closed prevents new admission after no-live/cancel decision; CAS binds physical attempt and original item epoch; existing members retain their original settlement/publication rules.",
+    "migration": "Existing schema14 items default dispatch_timeout_ms0 and sharing_closed1; old active reads still complete and settle; only new attempts capture an admission proof.",
+    "remaining": "Generic web.read/map/crawl/search sharing, broader cancellation and long-running/multinode proof remain incomplete."
   }
 }

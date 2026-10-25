@@ -1,0 +1,18 @@
+{
+  "command": [
+    "cmake",
+    "--build",
+    "--preset",
+    "dev",
+    "--target",
+    "bzs_core",
+    "-j",
+    "2"
+  ],
+  "execution": "restricted",
+  "process_started": false,
+  "failure": "FileNotFoundError: cmake executable not present on restricted execution surface",
+  "log": "candidate-core-build.log",
+  "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "scope": "Environment failure before compiler or product tests started; not a test result"
+}

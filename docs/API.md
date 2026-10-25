@@ -1,6 +1,6 @@
 # searchd API（0.1.10 接手续作）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；候选路径的真实验证结果见[本批验证记录](../validation/uri_deletion_20261024/README.md)；[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；当前版本仍为 0.1.10，业务 schema15，候选路径的真实验证结果见[本批验证记录](../validation/shared_read_late_20261024/README.md)；[URI 删除记录](../validation/uri_deletion_20261024/README.md)与[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -151,7 +151,9 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。
 
-暂停或取消会改变租约代数，旧执行不能发布快照；核心还会向 worker 协作取消当前尝试。已发出的 HTTP 请求无法撤回。恢复只继续尚未开始的条目；暂停时被打断的条目可能成为失败/未知项，不会被自动重发。`retry_failed` 需要任务仍在期限内、失败项还有授权尝试次数和剩余预算；不会清零用量或重新执行已成功条目。默认 `max_attempts=1` 时，没有第二次授权尝试。
+兼容任务可在派发事务中共享一次物理读取；新 `read_many.submit` 任务的首项也可在创建事务内加入尚开放、未结算的原尝试。迟到加入要求同 owner、权限代际、任务创建删除序号、精确 URL 和目标删除代际相同，预算覆盖原预留、期限覆盖原租约、有效超时兼容，且当前快照与当前全局页面发布序号（`publication_sequence`）严格等于原捕获。每次物理尝试最多累计 32 个成员，取消不释放槽位；幂等重提、其他既存 pending 项、暂停项和显式重试不通过提交入口迟到加入。不能加入的新任务按原调度继续排队，普通 `web.read`、map/crawl 和来源搜索不参与。完整合同见[共享读取](SHARED_READS.md)。
+
+暂停或取消会改变被操作任务的租约代数，使其旧执行失去发布资格。共享组仍有有效成员时不取消物理请求；最后有效成员离开时，核心在跨 Store 写事务中先持久关闭新加入，再向 worker 协作取消当前尝试。关闭只限制新加入，不提前结算原预留，也不剥夺其他仍有效成员的收据资格。已发出的 HTTP 请求无法撤回。恢复只继续尚未开始的条目；暂停时被打断的条目可能成为失败/未知项，不会被自动重发。`retry_failed` 需要任务仍在期限内、失败项还有授权尝试次数和剩余预算；不会清零用量或重新执行已成功条目。默认 `max_attempts=1` 时，没有第二次授权尝试。
 
 每项快照、索引、收据、状态和预算确认在同一事务内提交，并复核 owner、权限代数、租约、期限和删除代数。schema 4 在既有 schema 3 上增加批量任务账本；历史 schema 1 / 两种 schema 2 的迁移仍保留。任务恢复保证旧执行不重复发布；外部 HTTP 行为不承诺 exactly-once。
 
@@ -240,7 +242,7 @@ MCP 对应 `crawl_site` 与 `crawl_edges`；新工具在 SDK 类型转换之前�
 
 辅助索引每字段最多 65536 个不同的 1–3 codepoint gram，字段超限以显式 overflow 标记继续进入原文复核；不会静默截掉后半正文。仅折叠 ASCII 大小写，不做 Unicode casefold、去重音或规范化。索引内容是可重建派生数据，快照和证据字节不变。
 
-已知旧 bzs/2 索引会在一个事务中补建辅助表并更新既有 `fts_tokenizer_version` 兼容标记；该辅助迁移最初保持业务 schema13，当前删除身份迁移另将业务格式升为14，失败则整体回滚。升级前停止旧 Core，升级后的库拒绝旧二进制重新打开；此闸门不支持新旧进程混用同一数据库。备份恢复隔离规则保持原状。
+已知旧 bzs/2 索引会在一个事务中补建辅助表并更新既有 `fts_tokenizer_version` 兼容标记；该辅助迁移最初保持业务 schema13，后续 schema14 增加删除身份，当前 schema15 再增加共享读取的派发超时与加入关闭状态，失败则整体回滚。升级前停止旧 Core，升级后的库拒绝旧二进制重新打开；此闸门不支持新旧进程混用同一数据库。备份恢复隔离规则保持原状。
 
 MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mode=single`（替代原 `total_frozen`）。连续单次调用不占用冻结会话配额；需稳定分页的调用仍使用 `search` / `search.page`，其配额与有效期不变。两条路径复用相同的 owner、删除、站点/页面发布约束及摘要处理。
 
@@ -257,7 +259,7 @@ MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mo
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 
-删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前业务 schema 为14，增加独立 URI 删除比较键并保留 schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列、schema11 的联网会话/版本/事件及后续 HTTP 元数据、来源发布、主体撤权和共享读取结构。子串辅助索引通过既有 `fts_tokenizer_version` 兼容标记单独迁移；升级前须停止旧 Core，不支持新旧格式进程混用。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
+删除对象的正文、片段、证据和检索计数不可继续发布；无关文档可以保留可用会话。真实权限变化仍需失效或重新鉴权，在途任务不得复活删除对象。当前业务 schema 为15，增加共享读取的派发超时与加入关闭状态，并保留 schema14 的独立 URI 删除比较键、schema7 的站点发布/URL绑定/trap、schema8 的页面响应和派发身份、schema9 的任务摘要/robots引用、schema10 的持久队列、schema11 的联网会话/版本/事件及后续 HTTP 元数据、来源发布、主体撤权和共享读取结构。子串辅助索引通过既有 `fts_tokenizer_version` 兼容标记单独迁移；升级前须停止旧 Core，不支持新旧格式进程混用。原 schema1、两种历史schema2及后续增量迁移继续保留，实际执行覆盖须查本轮验证记录，不能据版本号推导全部升级路径已经验收。
 
 ## worker RPC 与错误
 
@@ -297,7 +299,7 @@ robots过期记录仅可作为绑定旧表示重新验证，不能直接放行�
 
 管理员操作`principal.revoke`只接受`subject`，持久阻断该主体的全部令牌、新旧数据访问和在途发布；重复撤权幂等，自我撤权拒绝，现阶段没有重新启用接口。CLI为`revoke-principal SUBJECT`；MCP默认不暴露，只有stdio显式`--admin-tools`可启用。HTTP MCP共享Core凭据的入口拒绝此开关。权限与计费细节见[主体撤权](PRINCIPAL_REVOCATION.md)。
 
-同owner兼容`read_many`在派发事务中可共享一次实际请求。各订阅者保持独立任务身份/回执与取消，原付款者承担实际或未知用量，订阅者`associated_*`仅表示关联，不是可相加的消耗。压缩后归属仍保留。范围限于最多32个派发时已有的成员，详见[共享读取](SHARED_READS.md)。
+同 owner 兼容 `read_many` 在派发事务中可共享一次实际请求，schema15 进一步允许兼容新任务首项迟到加入。各订阅者保持独立任务身份/回执与取消，原付款者承担实际或未知用量，付款者取消但仍有其他有效成员时归属不变、原尝试仍可接纳兼容成员。订阅者 `associated_*` 仅表示关联，不是可相加的消耗；压缩后归属仍保留。每次物理尝试最多累计 32 个成员，详见[共享读取](SHARED_READS.md)。
 
 原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；no-store因本接口总返回持久快照而报`E_CACHE_POLICY`，不会先落盘再删除。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
 
@@ -309,4 +311,12 @@ schema13在12基础上组合来源发布规则、主体撤权和共享读取结�
 
 旧精确直达表示没有持久 fence 时只可用保守序号0检查，任何等价删除历史均阻断；跳转表示仍需要真实旧 fence。`cache_only` 失效时报 `E_CACHE_STALE`，本次已授权 `cache_first` / `refresh` 可执行完整读取，不用失效的旧验证器。来源政策、外部用量结算和任务租约保持。
 
-升级前停止旧 Core；升级事务保留原业务列、快照、证据与幂等身份，旧程序不能打开schema14。完整有限规则与历史读取边界见 [URI 删除身份](URI_DELETION_IDENTITY.md)。MCP的搜索说明已与当前部署来源状态对应，工具名称和参数保持。
+升级前停止旧 Core；升级事务保留原业务列、快照、证据与幂等身份，只支持 schema13 及以前格式的旧程序不能打开 schema14。完整有限规则与历史读取边界见 [URI 删除身份](URI_DELETION_IDENTITY.md)。MCP的搜索说明已与当前部署来源状态对应，工具名称和参数保持。
+
+## schema15：持久批读迟到订阅
+
+`read_job_items` 增加 `dispatch_timeout_ms INTEGER NOT NULL DEFAULT 0` 和 `sharing_closed INTEGER NOT NULL DEFAULT 1`。新物理 lease 派发时捕获超时上限并开放加入；`execute_read` 实际开跑还可按剩余 deadline 收紧超时。旧 schema14 运行项保留 0 / 1，不接纳迟到订阅，原租约、成员、预留与完成/结算路径保持。
+
+迟到成员继承原发布捕获和租约，不新增物理请求或改变付款人。部分索引只包含 running/open/正请求预留的付款项；每次最多评估 32 个返回候选，不承诺 SQL 只扫描 32 行。加入与关闭在 `BEGIN IMMEDIATE` 事务中协调，关闭对同一尝试不可逆，时钟回拨不会重新开放。持久租约不证明原执行进程存活；执行丢失仍按原租约到期记录未知，不自动重发。
+
+升级前停止旧 Core，旧二进制打开 schema15 返回 `E_SCHEMA_VERSION`，不支持新旧进程混用；备份隔离和永久幂等身份保持。完整规则见[共享读取](SHARED_READS.md)，实际升级与回归范围见[本批验证记录](../validation/shared_read_late_20261024/README.md)，不由版本号推导验证成功。

@@ -1,0 +1,100 @@
+{
+  "reviewed_at": "2026-10-25T02:29:10.367759+00:00",
+  "baseline": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+  "production": {
+    "include/bzs/store.hpp": "ecc93f4edb412c48f04686126fcdabfbc4b4b17752a56c0bddc72f589bd03772",
+    "src/store.cpp": "2c85dc7708183b950331866dbd40e11f9de70ac34799ae65d32fbec0fbec3b89",
+    "src/batch.cpp": "ab8e4fd0b9b16645dc37bd7df319177cab81d026be7bcca104b25d0bbdcd9fd1"
+  },
+  "formal_tests": {
+    "tests/batch.cpp": {
+      "baseline_sha256": "1a4a266665f7e16f4012a86b5ea6c10ead89c9364f4b0806a3591aad6a3fd751",
+      "candidate_sha256": "517b2669a0c0f53292ed4ef39158165d6e0fc03e4a145fd0e8e67b73053f80f0",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 14,
+      "baseline_case_groups": 30
+    },
+    "tests/crawl.cpp": {
+      "baseline_sha256": "a847abfd2ea6b1f1f706c6de038f8de76b0542c1f3ce02ad6d7bb7841bf53ccf",
+      "candidate_sha256": "462455e777a16a8e9342b92e325467f39b87ef318d5837fbf641b31e3f49c7ef",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 54
+    },
+    "tests/map.cpp": {
+      "baseline_sha256": "c7a6124ddc36c89fdc3b6928c6a1b4b97b4fa2688f414f3456c219ab2b904fd6",
+      "candidate_sha256": "2f1fe077b0b054715bc08054a0cfe1aebc6cf7da8255e12331af8735b110507d",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 24
+    },
+    "tests/retention.cpp": {
+      "baseline_sha256": "262a6c5cf58d7ad97cc91344737009e6c0a291250c28f660b8896a44e9212f5b",
+      "candidate_sha256": "04223ad8f51deb67b6c5a67ef569e0449cdf7370d50a3b7a75a3067d8b932d4e",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 19
+    },
+    "tests/revalidation.cpp": {
+      "baseline_sha256": "a322901f8e9c2027a0e3f72f6d107438a1d8189f8fe7bdefb984653f8a14555e",
+      "candidate_sha256": "9ceef26e916daa04bdee8d71fb6fd4c69db431a50f66b79fd461a970e001ae79",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 6
+    },
+    "tests/revocation.cpp": {
+      "baseline_sha256": "eccb2926a0c9fd995d3f8a75eeb0d04585001b3957b1c0f6f94c883ce5190674",
+      "candidate_sha256": "87549126a52e7c620746a48eed6c585c69672f4a24e53cf6025ee3e38564cf94",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 0
+    },
+    "tests/site_publication.cpp": {
+      "baseline_sha256": "86ea6405411a133f7d7d154502d30c0979084edf8b1e92a96f47f5dadf64d280",
+      "candidate_sha256": "26b1a22645e80bce58679d5e16b442e15f6b308b7679e6a6c463383b0ab2525e",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 0
+    },
+    "tests/unit.cpp": {
+      "baseline_sha256": "76310a75be19ba831a75d2d9bec2afd0ce26b16adb816ff6d93369facb0c374b",
+      "candidate_sha256": "10f036fe756adadf85aa6660ef1f5d171cfbbadb91ffe41e530425f69e3ce9c8",
+      "original_content_preserved_except_schema_assertions": true,
+      "added_case_groups": 0,
+      "baseline_case_groups": 107
+    }
+  },
+  "old_validation_files": 3193,
+  "old_validation_matches_baseline_blobs_and_before_snapshot": true,
+  "old_validation_snapshot_sha256": "8e682c1d4528436debee02c46eb4c9affcb6b9f313b0b372ee517ef32707268e",
+  "planning_files_unchanged": 24,
+  "real_baseline_library_matches_historical_uri_ctest_binary": true,
+  "historical_ctest_command_sha256": "95c905518ac6147213730b3ae91c5cc745739026c11aeaacf2f8d1b5106722ab",
+  "historical_library_sha256": "30ea0955517d8a2a585f2b01c4ba42fd1530ca4a9431284f74fa04caf2d80338",
+  "configuration_sha256": {
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe"
+  },
+  "sources": 17,
+  "enabled_sources": 0,
+  "sites": 0,
+  "work_packages": 83,
+  "planned_acceptance_items": 161,
+  "status_counts": {
+    "partial": 37,
+    "not_started": 46,
+    "accepted": 0
+  },
+  "documentation_sha256": {
+    "HANDOFF_START_HERE.md": "c6f4f1b08147d2994fd3f1c97d8c1b4ac00346c35a14edebde3f264cbcb52ab5",
+    "README.md": "4d2c3383bf2c3dd64140160b62f5fc9c2ff9d9d1bfa16102a2cdf2e270998c8c",
+    "docs/API.md": "2c1ef564dec0c37bebba0a81ad55cdc17a3d2a38100ec559663b163699604ff6",
+    "docs/DEVELOPMENT_STATUS.md": "9c0d1372a4f31750d00c4a9fd12c8c1ed4d9c347f1d8e51c7d06e8f63b26bd26",
+    "docs/GITHUB_HANDOFF.md": "bc2ce734aacefb9e27819bbddd1d715c78e450350d29aeea92129a0bc4f134b1",
+    "docs/SHARED_READS.md": "a0ee9dc31a2b4a3e58d18f4c7fa743627d39f859f37405069c5c630d3f56111b",
+    "docs/URI_DELETION_IDENTITY.md": "166a93ad3c8dd123fe98e6581f1ecd410cc6c72de4826e38c9c69a1b0c7564af",
+    "docs/handoff/NEXT_AGENT.md": "60b8e40b98f06dc1d3f7fb6271e49b20524edf0b3d89b9477c227ea74e997631",
+    "docs/implementation_status.json": "dadc38e1d19f22e19bf6a21672870c4b3b21cb69e6516651f92504174d18a51f"
+  },
+  "documentation_scope": "Current implementation contract reviewed before final integration report; final result counts remain subject to the parent integration audit."
+}

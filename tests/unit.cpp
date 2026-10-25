@@ -811,7 +811,7 @@ namespace {
       CHECK(s.job_get("alice", job.at("job_id").str()).canonical()==job.canonical());
       CHECK(s.stats("alice").canonical()==stats.canonical());
     }
-    CHECK(database_scalar(path, "PRAGMA user_version")==14);
+    CHECK(database_scalar(path, "PRAGMA user_version")==15);
     CHECK(database_scalar(path, "SELECT COUNT(*) FROM content_fts")==2);
   }
   TEST(migration_rejects_quarantined_and_newer_databases) {
@@ -834,11 +834,11 @@ namespace {
       Store s(future);
       s.ingest("alice", text("https://x.example/a", "future-canary", "neutral"));
     }
-    database_exec(future, "PRAGMA user_version=15;");
+    database_exec(future, "PRAGMA user_version=16;");
     rejects([&] {
       Store blocked(future);
     }, "E_SCHEMA_VERSION");
-    CHECK(database_scalar(future, "PRAGMA user_version")==15);
+    CHECK(database_scalar(future, "PRAGMA user_version")==16);
     CHECK(database_scalar(future, "SELECT COUNT(*) FROM snapshots")==1);
   }
   TEST(job_idempotency) {
@@ -1641,7 +1641,7 @@ namespace {
       CHECK(audit.at("repaired_until_ms").num()==started+20000+3*day);
       CHECK(audit.at("anchor_ms").num()==started+20000);
       CHECK(audit.at("reason").str()=="unproven_legacy_backoff_over_one_year");
-      CHECK(database_scalar(path,"PRAGMA user_version")==14);
+      CHECK(database_scalar(path,"PRAGMA user_version")==15);
     }
     now=started+61000;
     Store store(path,[&]{return now;});
@@ -1782,7 +1782,7 @@ namespace {
         CHECK(store.search("bob",q("test")).at("frozen_count").num()==1);
         if(claude_s1)CHECK(store.source_states().at("preserved-source").at("requests_today").num()==1);
       }
-      CHECK(database_scalar(path,"PRAGMA user_version")==14);
+      CHECK(database_scalar(path,"PRAGMA user_version")==15);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2+codepoint-grams/1'")==1);
     }

@@ -1,0 +1,108 @@
+{
+  "baseline_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+  "scope": "Documentation and exact schema assertion review only; no runtime test or CI result asserted",
+  "documents": [
+    {
+      "path": "docs/SHARED_READS.md",
+      "sha256": "a0ee9dc31a2b4a3e58d18f4c7fa743627d39f859f37405069c5c630d3f56111b"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4d2c3383bf2c3dd64140160b62f5fc9c2ff9d9d1bfa16102a2cdf2e270998c8c"
+    },
+    {
+      "path": "docs/API.md",
+      "sha256": "2c1ef564dec0c37bebba0a81ad55cdc17a3d2a38100ec559663b163699604ff6"
+    },
+    {
+      "path": "docs/DEVELOPMENT_STATUS.md",
+      "sha256": "9c0d1372a4f31750d00c4a9fd12c8c1ed4d9c347f1d8e51c7d06e8f63b26bd26"
+    },
+    {
+      "path": "HANDOFF_START_HERE.md",
+      "sha256": "c6f4f1b08147d2994fd3f1c97d8c1b4ac00346c35a14edebde3f264cbcb52ab5"
+    },
+    {
+      "path": "docs/GITHUB_HANDOFF.md",
+      "sha256": "bc2ce734aacefb9e27819bbddd1d715c78e450350d29aeea92129a0bc4f134b1"
+    },
+    {
+      "path": "docs/handoff/NEXT_AGENT.md",
+      "sha256": "60b8e40b98f06dc1d3f7fb6271e49b20524edf0b3d89b9477c227ea74e997631"
+    }
+  ],
+  "relative_file_links_checked": 169,
+  "missing_relative_file_links": [],
+  "history_preservation": {
+    "HANDOFF_START_HERE.md": {
+      "old_body_preserved": true,
+      "old_body_sha256": "cba6d3f5bde681757e4607ecff6c76950e8973811a0b1cbcbe803ad5b2c12544"
+    },
+    "docs/handoff/NEXT_AGENT.md": {
+      "old_body_preserved": true,
+      "old_body_sha256": "01853f2162ac667c9dc2000a173736f8db91621335489da1d5ee7293d9e585b1"
+    },
+    "docs/DEVELOPMENT_STATUS.md": {
+      "old_body_preserved": true,
+      "old_body_sha256": "483820a297eafcd0b87bc00064705f12f4fd9f51bd58c377668358c5a0d737d9"
+    },
+    "docs/GITHUB_HANDOFF.md": {
+      "old_body_preserved": true,
+      "old_body_sha256": "ffe4fca3aacd95a1b4da1180d39d28ab446e7bb359c82412862afa4276ec4dda"
+    },
+    "README.md": {
+      "old_history_section_preserved": true,
+      "old_history_sha256": "83c60ee16a4111829960be7e04cd201bafa280f7a08e782931b3934d300e6ede"
+    }
+  },
+  "schema_assertion_changes": [
+    {
+      "path": "tests/unit.cpp",
+      "current_14_to_15": 3,
+      "future_15_to_16": 2,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/crawl.cpp",
+      "current_14_to_15": 3,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/map.cpp",
+      "current_14_to_15": 1,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/retention.cpp",
+      "current_14_to_15": 2,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/revalidation.cpp",
+      "current_14_to_15": 1,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/revocation.cpp",
+      "current_14_to_15": 1,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    },
+    {
+      "path": "tests/site_publication.cpp",
+      "current_14_to_15": 2,
+      "future_15_to_16": 0,
+      "no_other_changes": true
+    }
+  ],
+  "git_diff_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "result": "passed"
+}

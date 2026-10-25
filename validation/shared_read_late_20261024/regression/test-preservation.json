@@ -1,0 +1,33 @@
+{
+  "baseline_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+  "baseline_test_source_sha256": "1a4a266665f7e16f4012a86b5ea6c10ead89c9364f4b0806a3591aad6a3fd751",
+  "new_test_source_sha256": "c451f51c1ba1224f066d2261cc71ce36c1860882a3371f52164dd32d9eee92cb",
+  "old_test_count": 30,
+  "current_test_count": 44,
+  "new_tests": [
+    "late_shared_single_payer_accepts_a_subscriber_inside_the_worker_call",
+    "late_shared_existing_group_accepts_members_without_another_physical_grant",
+    "late_shared_cancel_or_pause_does_not_stop_another_subscriber",
+    "late_shared_last_exit_closes_admission_before_the_cancel_rpc_window",
+    "late_shared_membership_never_reopens_after_a_liveness_failure_and_clock_rollback",
+    "late_shared_budget_owner_uri_and_first_pending_item_must_match",
+    "late_shared_auth_deletion_snapshot_and_publication_changes_prevent_joining",
+    "late_shared_matches_the_effective_dispatch_timeout_without_extending_it",
+    "late_shared_lifetime_membership_limit_and_idempotency_survive_cancellation",
+    "late_shared_admission_is_durable_across_store_connections",
+    "late_shared_recovery_retains_one_unknown_charge_and_requires_explicit_retry",
+    "late_shared_known_failure_is_charged_once_without_an_automatic_retry",
+    "late_shared_receipt_failure_rolls_back_all_members_and_preserves_one_charge",
+    "late_shared_settled_attempts_do_not_accept_new_subscribers"
+  ],
+  "old_prefix_byte_equal": true,
+  "old_suffix_byte_equal": true,
+  "preserved_schema_expectation": 14,
+  "fixture_sha256": {
+    "tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba"
+  }
+}

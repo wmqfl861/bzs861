@@ -1,0 +1,229 @@
+{
+  "command_records": [
+    {
+      "path": "admission-rollback-review-v1/compile-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "admission-rollback-review-v1/run-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v1/compile-baseline.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v1/compile-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v1/run-baseline.command.json",
+      "returncode": 4,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v1/run-candidate.command.json",
+      "returncode": 1,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v2/compile-baseline.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v2/compile-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v2/run-baseline.command.json",
+      "returncode": 4,
+      "logs_match": true
+    },
+    {
+      "path": "behavior-review-v2/run-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/backup-still-quarantined.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/compile-baseline.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/compile-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/create-real-schema14.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/old-core-refuses15.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/open-new-core.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/verify-legacy-before-settlement.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v1/verify-second-open.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/backup-still-quarantined.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/baseline-core-integrity.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/candidate-core-integrity.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/compile-baseline.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/compile-candidate.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/create-real-schema14.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/injected-migration-error.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/legacy-completes-new-attempt-opens.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/old-core-refuses15.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/open-new-core.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/retry-after-fixture-fault-removal.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/verify-legacy-before-settlement.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "migration-review-v2/verify-second-open.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/compile-admission-rollback.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/compile-behavior.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/compile-migration.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/legacy-closed-and-preserved.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/legacy-completion-and-new-open-attempt.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/migrate-real-schema14.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/registered-core-integrity.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/six-behavior-groups.command.json",
+      "returncode": 0,
+      "logs_match": true
+    },
+    {
+      "path": "sanitizer-review-v1/two-admission-rollback-branches.command.json",
+      "returncode": 0,
+      "logs_match": true
+    }
+  ],
+  "all_command_log_digests_match": true,
+  "original_probe_and_runner_sources": [
+    {
+      "run": "migration-review-v1",
+      "sources_unchanged": true
+    },
+    {
+      "run": "migration-review-v2",
+      "sources_unchanged": true
+    },
+    {
+      "run": "behavior-review-v1",
+      "sources_unchanged": true
+    },
+    {
+      "run": "behavior-review-v2",
+      "sources_unchanged": true
+    },
+    {
+      "run": "admission-rollback-review-v1",
+      "sources_unchanged": true
+    }
+  ],
+  "sanitizer_frozen_inputs_match_before_after_and_current": true,
+  "current_production_matches_reviewed_candidate": true
+}

@@ -263,7 +263,7 @@ namespace bzs {
   }
   void Store::migrate() {
     auto version=scalar(db_,"PRAGMA user_version");
-    require(version>=0&&version<=14,"E_SCHEMA_VERSION","Database is newer than this program",409);
+    require(version>=0&&version<=15,"E_SCHEMA_VERSION","Database is newer than this program",409);
     bool rebuild_substrings=version<3;
     Tx tx(db_);
     if(version>0) {
@@ -596,6 +596,17 @@ namespace bzs {
       }
       exec(db_,"CREATE INDEX IF NOT EXISTS documents_deletion_key ON documents(owner,deletion_key,id);");
       exec(db_,"PRAGMA user_version=14;");
+    }
+    if(version<15) {
+      // Existing attempts have no proven dispatch timeout/admission state.
+      // They still settle normally, but cannot acquire new subscribers.
+      if(!has_column(db_,"read_job_items","dispatch_timeout_ms"))
+        exec(db_,"ALTER TABLE read_job_items ADD COLUMN dispatch_timeout_ms INTEGER NOT NULL DEFAULT 0;");
+      if(!has_column(db_,"read_job_items","sharing_closed"))
+        exec(db_,"ALTER TABLE read_job_items ADD COLUMN sharing_closed INTEGER NOT NULL DEFAULT 1;");
+      exec(db_,"UPDATE read_job_items SET dispatch_timeout_ms=0,sharing_closed=1;");
+      exec(db_,"CREATE INDEX IF NOT EXISTS read_shared_open_uri ON read_job_items(url,job_id,position) WHERE state='running' AND sharing_closed=0 AND request_grant>0;");
+      exec(db_,"PRAGMA user_version=15;");
     }
     // Permanent key history must not make active-detail counts scan that history.
     exec(db_,"CREATE INDEX IF NOT EXISTS jobs_unarchived_owner ON jobs(owner) WHERE archived_at=0;");

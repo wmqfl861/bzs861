@@ -1,0 +1,179 @@
+{
+  "reviewed_at": "2026-10-25T02:30:44.433110+00:00",
+  "status": "passed",
+  "scope": "Read-only review of five closed parent records; no rerun.",
+  "records": {
+    "ctest": {
+      "command_sha256": "ad81867ceebcd93c3ccc3cf25553d85f05549fb0b78de0ae9e01ca162148ad4f",
+      "log_sha256": "6e38ce81b686f89c6455673c7c1e4a89756c2b9ee30bab0b4fb9b14e0e6c22d8",
+      "inputs_sha256": "96d97835e8681a789c9f52f1b69a4bd90140bf0fdbadef9b115f38afce45d865",
+      "exit_code": 0,
+      "elapsed_seconds": 187.422,
+      "recorded_inputs_stable": true,
+      "recorded_binaries_stable": true
+    },
+    "plan": {
+      "command_sha256": "f4bd335ec6eadec9d28ec4d2c0642fd71d4808d4b6a5dab57e7d44b1e3227644",
+      "log_sha256": "fb782e9e5b4f6ad897c2659532bacfca6a90ba7ec3c2de289f495cda77d5fd10",
+      "inputs_sha256": "96d97835e8681a789c9f52f1b69a4bd90140bf0fdbadef9b115f38afce45d865",
+      "exit_code": 0,
+      "elapsed_seconds": 0.804,
+      "recorded_inputs_stable": true,
+      "recorded_binaries_stable": true
+    },
+    "contracts": {
+      "command_sha256": "81ed2be630bfe75e4c2a889c79352d5baf389c0ec608a987d5df534c991642e1",
+      "log_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "inputs_sha256": "96d97835e8681a789c9f52f1b69a4bd90140bf0fdbadef9b115f38afce45d865",
+      "exit_code": 0,
+      "elapsed_seconds": 1.201,
+      "recorded_inputs_stable": true,
+      "recorded_binaries_stable": true
+    },
+    "plan-guard": {
+      "command_sha256": "63c65a1147664e7cc78a29b17d9b173637ad8f23f79eddb3d6359ace073df1ed",
+      "log_sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+      "inputs_sha256": "96d97835e8681a789c9f52f1b69a4bd90140bf0fdbadef9b115f38afce45d865",
+      "exit_code": 0,
+      "elapsed_seconds": 1.528,
+      "recorded_inputs_stable": true,
+      "recorded_binaries_stable": true
+    },
+    "pip-check": {
+      "command_sha256": "9ed428406a36583514e609f576b4bcb269f681be3a0d377129569173400d17e4",
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "inputs_sha256": "96d97835e8681a789c9f52f1b69a4bd90140bf0fdbadef9b115f38afce45d865",
+      "exit_code": 0,
+      "elapsed_seconds": 1.08,
+      "recorded_inputs_stable": true,
+      "recorded_binaries_stable": true
+    }
+  },
+  "nonvalidation_input_count": 224,
+  "binary_count": 36,
+  "recorded_inputs_equal_across_all_five_commands": true,
+  "binaries_match_current": true,
+  "current_postrun_documentation_delta": [],
+  "production_tests_and_runtime_inputs_match_current": true,
+  "ctest": {
+    "passed": 27,
+    "total": 27,
+    "skipped": 0,
+    "disabled": 0,
+    "native_targets": 15,
+    "native_groups": 521,
+    "native_assertions": 16761,
+    "native_details": [
+      {
+        "suite": "core",
+        "passed": 107,
+        "assertions": 2253,
+        "summary_line": "{\"tests\":107,\"passed\":107,\"assertions\":2253}"
+      },
+      {
+        "suite": "batch",
+        "passed": 44,
+        "assertions": 1456,
+        "summary_line": "44 batch tests, 1456 assertions, 0 failures"
+      },
+      {
+        "suite": "map",
+        "passed": 24,
+        "assertions": 462,
+        "summary_line": "24 map tests, 462 assertions, 0 failures"
+      },
+      {
+        "suite": "crawl",
+        "passed": 54,
+        "assertions": 2798,
+        "summary_line": "54 crawl tests, 2798 assertions, 0 failures"
+      },
+      {
+        "suite": "site_publication",
+        "passed": 32,
+        "assertions": 1203,
+        "summary_line": "32 site publication tests, 1203 assertions, 0 failures"
+      },
+      {
+        "suite": "retention",
+        "passed": 19,
+        "assertions": 480,
+        "summary_line": "19 retention tests, 480 assertions, 0 failures"
+      },
+      {
+        "suite": "fairness",
+        "passed": 18,
+        "assertions": 339,
+        "summary_line": "18 fairness tests, 339 assertions, 0 failures"
+      },
+      {
+        "suite": "sessions",
+        "passed": 23,
+        "assertions": 298,
+        "summary_line": "23 tests, 298 assertions, 0 failures"
+      },
+      {
+        "suite": "source_publication",
+        "passed": 20,
+        "assertions": 180,
+        "summary_line": "20 source publication tests, 180 assertions, 0 failures"
+      },
+      {
+        "suite": "search_modes",
+        "passed": 22,
+        "assertions": 382,
+        "summary_line": "22 search mode tests, 382 assertions, 0 failures"
+      },
+      {
+        "suite": "revalidation",
+        "passed": 24,
+        "assertions": 372,
+        "summary_line": "24 tests / 372 assertions / 0 failures"
+      },
+      {
+        "suite": "revocation",
+        "passed": 12,
+        "assertions": 146,
+        "summary_line": "12/12 tests, 146 assertions"
+      },
+      {
+        "suite": "capacity_cycles",
+        "passed": 4,
+        "assertions": 4800,
+        "summary_line": "4 capacity cycle tests, 4800 assertions, 0 failures, 8501 wall ms"
+      },
+      {
+        "suite": "cache_freshness",
+        "passed": 63,
+        "assertions": 1323,
+        "summary_line": "63 cases, 1323 assertions, 0 failed"
+      },
+      {
+        "suite": "contracts",
+        "passed": 55,
+        "assertions": 269,
+        "summary_line": "Contract tests: 55 passed, 0 failed; 34 original design fixtures, 21 additional tests, 269 assertions"
+      }
+    ],
+    "python_worker_passed": 1281,
+    "original_full_output_sha256": "dc0a6341e393f020a8ac0f1ae048932fecf7b5a0938ccc0e1dcc6bbd725f894a",
+    "archived_detail_matches_original_LastTest_log": true,
+    "junit_sha256": "d2a5c88a235a68cfbb8913f1d0c5ee24bcb6902de2fc54e2754414ac3a2236b2",
+    "junit_output_is_truncated": "JUnit validates target statuses only; assertion and Python counts use full LastTest.log."
+  },
+  "auxiliary": {
+    "plan_packages": 83,
+    "plan_acceptance_mappings": 161,
+    "plan_slices": 10,
+    "contract_fixtures_passed": 34,
+    "plan_guard_passed": 13,
+    "pip_check": "no broken requirements"
+  },
+  "old_validation_dependency": {
+    "path": "validation/s2_takeover/cache_review/probe_http_policy.py",
+    "sha256": "f77cc64af1bf9cb48e0d9c96076d4cabb1c3416dfc1c01bed5b29bd2674447df",
+    "all3193_original_files_match_pre_run_snapshot": true,
+    "scope": "Supplemental original-file retention binding, not a claim that run.py included validation inputs in its own manifest."
+  },
+  "limits": "This review does not add overlapping test counts to product acceptance and does not claim the still-separate final sanitizer report or remote CI."
+}

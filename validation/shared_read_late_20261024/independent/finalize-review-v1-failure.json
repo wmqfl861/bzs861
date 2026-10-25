@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "classification": "summary script counting error",
+  "source": "finalize_independent_review.py",
+  "source_sha256": "eeec8a4a0b1b55dfa6c824d5890352fad14944aacec3ec204a454cf7b391b79a",
+  "returncode": 1,
+  "observed_stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/133513441190/b24-independent-evidence/finalize_independent_review.py\", line 58, in <module>\n    assert tests['tests/batch.cpp']['baseline_case_groups']==30\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "cause": "Regex counted the #define TEST macro along with the 30 test invocations. No probe or production behavior failed.",
+  "correction": "A separate v2 script counts only actual indented TEST invocation lines and reuses byte-identical previously produced production delta."
+}

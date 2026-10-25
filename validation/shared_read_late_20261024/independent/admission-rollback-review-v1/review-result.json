@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "scope": "Two branches of late admission rollback, before member INSERT; distinct from completion rollback.",
+  "cases": 2,
+  "failures": 0,
+  "sources_unchanged": true,
+  "binary_sha256": "3330eba31bed1e89bed1b90cdba6029694bb8339e3560b686897b228f6b29315",
+  "exact_rows_preserved": [
+    "jobs",
+    "read_job_budgets",
+    "read_job_items",
+    "read_shared_attempts",
+    "read_shared_members",
+    "settings"
+  ],
+  "failure": "E_STORAGE",
+  "same_idempotency_key_retry_succeeds": true,
+  "original_request_charged_once": true
+}

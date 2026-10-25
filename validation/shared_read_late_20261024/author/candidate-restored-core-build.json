@@ -1,0 +1,27 @@
+{
+  "command": [
+    "cmake",
+    "--build",
+    "--preset",
+    "dev",
+    "--target",
+    "bzs_core",
+    "-j",
+    "2"
+  ],
+  "exit_code": 0,
+  "duration_seconds": 10.941320681999969,
+  "production_before": {
+    "include/bzs/store.hpp": "ecc93f4edb412c48f04686126fcdabfbc4b4b17752a56c0bddc72f589bd03772",
+    "src/store.cpp": "2c85dc7708183b950331866dbd40e11f9de70ac34799ae65d32fbec0fbec3b89",
+    "src/batch.cpp": "ab8e4fd0b9b16645dc37bd7df319177cab81d026be7bcca104b25d0bbdcd9fd1"
+  },
+  "production_after": {
+    "include/bzs/store.hpp": "ecc93f4edb412c48f04686126fcdabfbc4b4b17752a56c0bddc72f589bd03772",
+    "src/store.cpp": "2c85dc7708183b950331866dbd40e11f9de70ac34799ae65d32fbec0fbec3b89",
+    "src/batch.cpp": "ab8e4fd0b9b16645dc37bd7df319177cab81d026be7bcca104b25d0bbdcd9fd1"
+  },
+  "unchanged": true,
+  "log_sha256": "090778d4dac8ad8529ae5cd9d3e6ac602163a17c5b8b609dca38cbd1306b78e8",
+  "library_sha256": "35e9e32d2e4b87091ac3aa2688f278a45bee79226bd39cf551ac01edb67d58d0"
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "Two status/handoff documents updated only after all runtime gates closed; no production, test, build or configuration change.",
+  "changes": [
+    {
+      "path": "docs/handoff/NEXT_AGENT.md",
+      "tested_sha256": "60b8e40b98f06dc1d3f7fb6271e49b20524edf0b3d89b9477c227ea74e997631",
+      "final_sha256": "38f0fd178e3301b9eb74376c23ef9bac2d5a0e1a65aeedee4bb150710aad2801"
+    },
+    {
+      "path": "docs/implementation_status.json",
+      "tested_sha256": "dadc38e1d19f22e19bf6a21672870c4b3b21cb69e6516651f92504174d18a51f",
+      "final_sha256": "630c5f8006cb7cc546ad189ccbcee65b4c042415ad5bfd642f083b3eaf35f966"
+    }
+  ],
+  "reason": "Clarify that historical remote CI covers neither unpublished schema14 nor schema15; replace pending result pointers with completed local validation and its exact final report.",
+  "runtime_inputs_equal": true
+}

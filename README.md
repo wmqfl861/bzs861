@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：URI 别名删除屏障接续修正；版本仍为 0.1.10，数据库 schema14。** 本批从 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340` 接手，补齐 unreserved percent 编码别名的双向删除检查、直达和跳转缓存/验证器/在途提交屏障，并修正 MCP 来源说明。有限等价与升级步骤见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)，实际源码输入、原失败、作者验证和独立审核见[本批验证记录](validation/uri_deletion_20261024/README.md)。S0、S1、S2 的完整验收仍未完成。
+**状态：持久批读迟到订阅的本地候选；版本仍为 0.1.10，数据库 schema15。** 本批从上轮已本地验证、未推送的 `a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89` 接续，允许兼容新批读任务的首项加入原未结算尝试，保留固定付款、原发布捕获、租约和 32 个累计成员上限。范围与升级合同见[共享读取](docs/SHARED_READS.md)，基线失败、作者验证、独立审核和整合执行见[本批验证记录](validation/shared_read_late_20261024/README.md)。该合同与证据入口不预先声明新测试通过；S0、S1、S2 的完整验收仍未完成。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。基线 `ef45490` 的 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 已核对 Linux/Windows 成功；该历史成绩不代表新输入。发布后查询实际提交的 [Checks](https://github.com/wmqfl861/bzs861/actions)。本批不创建新 tag；升级数据库前停止旧 Core，新旧程序不能混用。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。远端 main 仍为 `ef45490c6a0c384d8ad89452e2ba7e4df2cf2340`，该提交的 [CI 40096268557](https://github.com/wmqfl861/bzs861/actions/runs/40096268557) 是历史成绩；`a3b3f6e2` 不是远端 main。本轮维持默认分支发布的自动审批阻塞，不重试或绕过远端写入，不声明新 CI 或新 tag。升级数据库前停止旧 Core，新旧程序不能混用。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -14,7 +14,7 @@
 | 原生配置合同 | C++ 校验 `model-config`、`source-manifest`、`search-request`；HTTP/CLI 共用逻辑，返回 `applied=false`，不自动注册配置或调用模型 |
 | 联网搜索候选实现 | 多源并发、每源状态、URL 去重、索引族融合、冷却和缓存；默认没有已审核真实来源，未核验适配器不能进入正常搜索 |
 | 网页读取候选实现 | 缓存指令独立于 validator；直达或有完整证明的 HTTP 链按年龄/profile 复用，逐跳期限、删除和发布约束保持；no-store 无新持久快照 |
-| 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务在派发时共享一次读取，逐订阅取消和一次计费，收据原子提交 |
+| 批量网页读取 | 1–20个显式URL、逐项结果和持久预算；同owner兼容任务可在派发时合并，兼容新任务首项可迟到加入，最多32累计成员；逐订阅取消、固定付款和原子收据 |
 | 站点发现 | 独立审核登记、版本化 robots 缓存、逐跳准入和预算；Sitemap / RSS / Atom / HTML / owner 历史产生持久候选，未自动读取或索引候选正文 |
 | 有界正文爬取 | 持久正文前沿、页预算、链接边与同源轮转；版本化日期、参数排列/组合、重复分页防护，明确记录停止原因 |
 | 页面发布规则 | 页面声明与站点发布上限共同生效；显式站点配置在离线重启后也约束已存结果，旧会话不因后来放宽而恢复 |
@@ -86,6 +86,8 @@ bzs call job.results '{"job_id":"替换为返回的任务ID","offset":0,"limit":
 
 任务只读取列出的 URL。完成项提供不可变快照收据；单项失败不会自动重试。默认每个 URL 只有一次授权尝试，崩溃后的未知执行保留预算消耗。`job.control` 提供 `pause / resume / cancel / retry_failed`；恢复不重发完成项，也不重置期限和预算。详细参数、用量与取消边界见 [API](docs/API.md#持久批量网页读取)。
 
+共享只复用同 owner、精确 URL、权限和删除历史兼容的尝试。迟到加入还要求预算覆盖原预留、期限覆盖原租约、有效超时兼容，当前快照和当前全局页面发布序号（`publication_sequence`）未变化；只在新任务提交时尝试首项。所有成员保留原捕获与固定付款归属，取消成员不释放累计 32 人的槽位。协作取消前先持久关闭加入；持久租约不证明执行进程仍存活，丢失执行到期记为未知而不自动重发。完整边界见[共享读取](docs/SHARED_READS.md)。
+
 ### 有界站点发现
 
 先用 `bzs call map.sites '{}'` 或 MCP `list_sites` 查看部署中已审核的站点。默认 `sites.json` 为空，搜索来源审核不批准任意结果网站。`map.submit` 只接受已审核范围内的显式发现入口，使用 `job.get/results/control` 跟踪；Sitemap index 可继续发现文档，HTML/Feed 链接只保存为候选。
@@ -148,7 +150,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮完整门禁包含 CTest、pytest 和开启泄漏检测的原生 ASan/UBSan。作者聚焦回归、独立反例和最终整合执行分别绑定各自源码与二进制；实际命令、计数、环境、原始失败与最终结果见[本批记录](validation/uri_deletion_20261024/README.md)，不从套件存在或历史通过推导本批已通过。上一批 P2-9 的回拨反例和修正仍保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
+本轮验证记录分别绑定基线反例、作者聚焦回归、独立迁移与反例、最终整合执行的源码和二进制。实际命令、计数、环境、原始失败与已完成结果见[本批记录](validation/shared_read_late_20261024/README.md)；CTest、pytest、开启泄漏检测的原生 ASan/UBSan 只有实际执行完成才可记为通过，不从套件存在或历史通过推导本批结果。上轮本地 URI 修正保存在[URI 删除验证](validation/uri_deletion_20261024/README.md)，更早 P2-9 的回拨反例和修正保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
@@ -168,11 +170,13 @@ ctest --preset dev
 
 ## 已有数据与后续范围
 
-当前业务 schema 为14，子串索引仍用 `bzs-ascii-cjk/2+codepoint-grams/1`。升级前停止旧 Core；schema14事务回填全部文档及墓碑的删除比较键，旧二进制不能重新打开升级库，不支持新旧进程混用。有限规则见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)，真实 ef45490 schema13旧库的升级证据见[本批记录](validation/uri_deletion_20261024/README.md)；更早的442旧库辅助索引升级仍保存在[历史迁移记录](validation/claude_followup_20261024/independent/p1-3/)。
+当前业务 schema 为15，子串索引仍用 `bzs-ascii-cjk/2+codepoint-grams/1`。升级前停止旧 Core；schema15 增加派发超时上限与持久加入关闭字段，旧运行项默认 0 / 1，只保留原完成和结算，不接纳迟到订阅。旧二进制打开升级库返回 `E_SCHEMA_VERSION`，不支持新旧进程混用。升级范围见[共享读取](docs/SHARED_READS.md)，本轮实际迁移证据见[本批记录](validation/shared_read_late_20261024/README.md)。
+
+schema14 已在上轮回填全部文档及墓碑的删除比较键，有限规则见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)；真实 ef45490 schema13 旧库的升级证据保留在[上轮 URI 记录](validation/uri_deletion_20261024/README.md)，更早的 442 旧库辅助索引升级仍保存在[历史迁移记录](validation/claude_followup_20261024/independent/p1-3/)。这些历史结果不证明本轮 schema15 的全部升级路径。
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-下一步继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
+下一步按本批记录完成尚未关闭的验证，再推进 B-24 的普通直接读取及 crawl/search 协调和更广取消矩阵。继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
 
 ## 文档与许可
 

@@ -133,6 +133,8 @@ namespace bzs {
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
     void migrate_shared_reads_locked();
     void attach_shared_reads_locked(const ReadLease& lease);
+    void attach_late_read_locked(const std::string& owner,const std::string& id);
+    void close_read_sharing_locked(const ReadLease& payer);
     std::vector<ReadLease> shared_read_members_locked(const ReadLease& payer);
     bool shared_read_live_locked(const ReadLease& payer);
     void settle_shared_read_locked(const ReadLease& payer,const std::string& error,

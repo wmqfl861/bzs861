@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "scope": "Same probes as Debug; sanitizer execution is replay, not additional unique coverage.",
+  "sanitizer_environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "library_sha256": "68b726db8e5e75e1a534a577c56f6b8a9565b88fcad02a5667ea58c1dd9db774",
+  "old_tables_preserved": 47,
+  "behavior_groups": 6,
+  "admission_rollback_branches": 2,
+  "sanitizers_clean": true,
+  "leak_detection_enabled": true,
+  "production_unchanged": true,
+  "frozen_inputs_stable": true
+}

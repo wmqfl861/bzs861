@@ -1,0 +1,4 @@
+FAIL singleton_late_join_and_idempotency: check failed: late.at("state").str()=="running" line 17
+FAIL captured_clipped_timeout_positive: check failed: late.at("state").str()=="running" line 34
+FAIL cancelled_payer_with_live_member_admits_late: check failed: late.at("state").str()=="running" line 47
+FAIL stale_lease_cas_cannot_close_new_attempt: check failed: late.at("state").str()=="running" line 81

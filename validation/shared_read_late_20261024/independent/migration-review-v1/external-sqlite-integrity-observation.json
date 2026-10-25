@@ -1,0 +1,16 @@
+{
+  "python_sqlite_version": "3.53.1",
+  "observations": [
+    {
+      "database": "real-schema14.sqlite",
+      "error": "SQL logic error",
+      "sqlite_errorcode": 1
+    },
+    {
+      "database": "upgraded-schema15.sqlite",
+      "error": "SQL logic error",
+      "sqlite_errorcode": 1
+    }
+  ],
+  "scope": "External Python SQLite connection does not register the Core tokenizer; same failure occurs on real untouched baseline and upgraded database. Rerun diagnostic through registered Core connection; original runner failure retained."
+}

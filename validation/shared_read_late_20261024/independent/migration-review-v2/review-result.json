@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "baseline_commit": "a3b3f6e2eec12d3e4d18aa34dbd48c396125cd89",
+  "scope": "Independent real old API fixture; no production/formal-test edits or external requests.",
+  "schema_before": 14,
+  "schema_after": 15,
+  "old_tables_preserved": 47,
+  "virtual_tables": [
+    "content_fts",
+    "substring_fts"
+  ],
+  "old_row_contents_preserved": true,
+  "legacy_defaults_closed": true,
+  "legacy_single_and_shared_and_cancelled_payer_settle": true,
+  "new_attempt_open_and_late_join": true,
+  "old_binary_rejected": true,
+  "backup_quarantine_preserved": true,
+  "migration_rollback_atomic": true,
+  "probe_sources_unchanged": true
+}

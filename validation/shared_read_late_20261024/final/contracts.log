@@ -1,0 +1,245 @@
+{
+  "scope": "design_contract_fixtures_only",
+  "count": 34,
+  "passed": 34,
+  "results": [
+    {
+      "case": "正常_model-config",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "正常_search-request",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "正常_source-manifest",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "无模型基础部署",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "角色继承默认profile",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "显式null禁用角色",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "默认角色并发覆盖生效",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "坏profile引用",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "role profile missing"
+    },
+    {
+      "case": "错误嵌入能力",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "role capability mismatch"
+    },
+    {
+      "case": "并发不能为零",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "{'profile': 'primary_text', 'overrides': {'max_concurrency': 0}} is not valid under any of the given schemas"
+    },
+    {
+      "case": "隐藏付费工具被拒",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "False was expected"
+    },
+    {
+      "case": "坏备用模型",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "invalid text fallback"
+    },
+    {
+      "case": "显式思考参数缺失",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "explicit reasoning parameters missing"
+    },
+    {
+      "case": "file模型端点拒绝",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "invalid model endpoint"
+    },
+    {
+      "case": "负预算",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "-1 is less than the minimum of 0"
+    },
+    {
+      "case": "host不能配after",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "'host' is not one of ['published_at', 'updated_at']"
+    },
+    {
+      "case": "eq不能配数组",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "['x'] is not of type 'string'"
+    },
+    {
+      "case": "in必须配数组",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "'x' is not of type 'array'"
+    },
+    {
+      "case": "非法日期",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "invalid timestamp"
+    },
+    {
+      "case": "倒置时间范围",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "empty date range"
+    },
+    {
+      "case": "离线本地检索",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "离线不允许外部范围",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "offline requires local corpus"
+    },
+    {
+      "case": "AST过深",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "AST complexity exceeded"
+    },
+    {
+      "case": "字符串查询仍有效",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "查询体过大",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "request too large"
+    },
+    {
+      "case": "候选源不能启用",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "None is not of type 'string'"
+    },
+    {
+      "case": "源配置合同正例不构成真实授权",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "审核时间格式非法",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "invalid timestamp"
+    },
+    {
+      "case": "审核过期",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "review time invalid or expired"
+    },
+    {
+      "case": "审核时间来自未来",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "review time invalid or expired"
+    },
+    {
+      "case": "启用源缺逻辑服务身份",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "'logical_service_id' is a required property"
+    },
+    {
+      "case": "限額缺窗口",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "quota window missing"
+    },
+    {
+      "case": "配额窗口完整",
+      "expected_valid": true,
+      "actual_valid": true,
+      "passed": true,
+      "error": null
+    },
+    {
+      "case": "file来源拒绝",
+      "expected_valid": false,
+      "actual_valid": false,
+      "passed": true,
+      "error": "unsupported source scheme"
+    }
+  ]
+}

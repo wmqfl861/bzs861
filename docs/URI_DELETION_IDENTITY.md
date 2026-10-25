@@ -1,5 +1,7 @@
 # URI 删除身份与 HTTP 复用屏障
 
+本合同的删除键自 schema14 引入。当前 schema15 另外保存批读迟到订阅的派发超时与加入关闭状态，见[共享读取](SHARED_READS.md)；不改变本文的删除等价范围或原有身份。
+
 schema14 为每个文档保存独立的 `documents.deletion_key`，用来检查同一 owner 下的 URL 别名是否已经删除。它补齐普通字符与 unreserved percent 编码的双向查询：例如删除 `https://example.com/%6Diddle` 后，指向 `https://example.com/middle` 的旧 HTTP 表示也必须重新检查删除屏障。
 
 这个键只参与删除比较。请求仍使用原精确 URI，文档和快照仍保留原身份；不会根据该键从其他 URL 或其他 owner 查找正文。新鲜度、请求 profile、来源与站点准入、发布限制、预算和任务租约继续分别检查。

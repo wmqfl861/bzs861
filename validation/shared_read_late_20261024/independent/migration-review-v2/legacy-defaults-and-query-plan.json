@@ -1,0 +1,38 @@
+{
+  "legacy_rows": [
+    [
+      "cancelled",
+      0,
+      1,
+      2
+    ],
+    [
+      "pending",
+      0,
+      1,
+      2
+    ],
+    [
+      "running",
+      0,
+      1,
+      6
+    ],
+    [
+      "succeeded",
+      0,
+      1,
+      2
+    ]
+  ],
+  "query_plan": [
+    [
+      5,
+      0,
+      61,
+      "SEARCH read_job_items USING INDEX read_shared_open_uri (url=?)"
+    ]
+  ],
+  "integrity_check": "ok through registered Core connection",
+  "bound_note": "At most32 matching returned candidates; residual owner/permission filters may inspect more same-URI open rows."
+}
