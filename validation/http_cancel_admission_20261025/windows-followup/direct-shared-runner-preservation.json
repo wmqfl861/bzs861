@@ -1,0 +1,263 @@
+{
+  "status": "passed_static_preservation",
+  "recorded_at_utc": "2026-10-25T09:55:19.812469+00:00",
+  "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "path": "tests/direct_shared.cpp",
+  "source_before_sha256": "822db636d3b4207961170a24698380cdbdd7b97939bfbd4e0a88ef30a38be4ad",
+  "source_after_sha256": "559739316f9ae5fa3adf3e252c2568f44b89cd308e55cb92f13a118827035400",
+  "source_before_matches_baseline": true,
+  "all_bytes_before_main_unchanged": true,
+  "before_main_bytes": 65225,
+  "before_main_sha256": "5992e8179c54c942dd51bf20d764680a168fb03fa38aa95acc9fb9b70bbe3c2e",
+  "test_functions": 34,
+  "identical_test_functions": 34,
+  "registration_order_unchanged": true,
+  "runner_change": "Print and flush RUN before each case and PASS/FAIL with steady_clock elapsed milliseconds; flush the unchanged suite summary.",
+  "preserved": "All 34 test bodies, assertions, fixture/helper code, business timeouts, registration order, std::exception failure handling, suite summary content and failure exit status.",
+  "changes_not_made": [
+    "CMake watchdog",
+    "production code",
+    "existing validation evidence"
+  ],
+  "validation_scope": "Static byte comparison only; no build or runtime test performed by this task.",
+  "case_comparisons": [
+    {
+      "test": "same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage",
+      "bytes": 1669,
+      "before_sha256": "e84beccf58c98496018182b4abc862645ecd6afb19223efbc87c474778c84e29",
+      "after_sha256": "e84beccf58c98496018182b4abc862645ecd6afb19223efbc87c474778c84e29",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_conditional_refresh_commits_the_bound_metadata_only_once",
+      "bytes": 1511,
+      "before_sha256": "724f98c87b3f26cf705a675e643392b5f5b9a0b2c43244de0c7c9ffa11381018",
+      "after_sha256": "724f98c87b3f26cf705a675e643392b5f5b9a0b2c43244de0c7c9ffa11381018",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_members_keep_their_own_windows_and_freshness_bounds",
+      "bytes": 1136,
+      "before_sha256": "392fb7e726d381d30a8f0b94cebd0c5431154b59f85f12f6621d054ac733e0bd",
+      "after_sha256": "392fb7e726d381d30a8f0b94cebd0c5431154b59f85f12f6621d054ac733e0bd",
+      "byte_identical": true
+    },
+    {
+      "test": "an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member",
+      "bytes": 1115,
+      "before_sha256": "aa34d629ac4a46e620b516ed26e388deef0fba7fda2fa6a7c448f5e5924b1896",
+      "after_sha256": "aa34d629ac4a46e620b516ed26e388deef0fba7fda2fa6a7c448f5e5924b1896",
+      "byte_identical": true
+    },
+    {
+      "test": "owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence",
+      "bytes": 1334,
+      "before_sha256": "8c8504763c2ccdf848d39eb71e6ab8b065aab8d7bdf614e5dbd5e0f07c8249ee",
+      "after_sha256": "8c8504763c2ccdf848d39eb71e6ab8b065aab8d7bdf614e5dbd5e0f07c8249ee",
+      "byte_identical": true
+    },
+    {
+      "test": "timeout_and_direct_parameters_do_not_borrow_durable_read_budgets",
+      "bytes": 1508,
+      "before_sha256": "57ac4feb58f73d95c195b9d82d6d423f14c1ce6c4e1f672dd714c98d92bd25a3",
+      "after_sha256": "57ac4feb58f73d95c195b9d82d6d423f14c1ce6c4e1f672dd714c98d92bd25a3",
+      "byte_identical": true
+    },
+    {
+      "test": "changed_or_unproven_request_profiles_never_join_an_active_flight",
+      "bytes": 974,
+      "before_sha256": "2977168de64b75f2b08e9b0837352f6dc2654aee1dd952e669dc3a739f58e698",
+      "after_sha256": "2977168de64b75f2b08e9b0837352f6dc2654aee1dd952e669dc3a739f58e698",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_responses_require_a_valid_freshness_profile_matching_admission",
+      "bytes": 1066,
+      "before_sha256": "6f35c633dfaedcce6bd9120dd08f5dece28f910be620900365192b9392df7c31",
+      "after_sha256": "6f35c633dfaedcce6bd9120dd08f5dece28f910be620900365192b9392df7c31",
+      "byte_identical": true
+    },
+    {
+      "test": "permission_snapshot_metadata_and_publication_fences_split_new_admissions",
+      "bytes": 1842,
+      "before_sha256": "49c7cb55b9748d8c52b3b81880be7029171d1847ad3f377e438810f692f9fd69",
+      "after_sha256": "49c7cb55b9748d8c52b3b81880be7029171d1847ad3f377e438810f692f9fd69",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_inflight_alias_deletion_and_revival_reject_both_full_and_304_results",
+      "bytes": 2485,
+      "before_sha256": "ed73e10b36276ee013da83a6219271739400448b4674ea7a932b028517f6ac90",
+      "after_sha256": "ed73e10b36276ee013da83a6219271739400448b4674ea7a932b028517f6ac90",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_inflight_principal_revocation_denies_all_members_without_new_body",
+      "bytes": 672,
+      "before_sha256": "b9cce7ba648ab86a463a4910a74d5ec6412baf7c68d246402b38987b82c6b0e7",
+      "after_sha256": "b9cce7ba648ab86a463a4910a74d5ec6412baf7c68d246402b38987b82c6b0e7",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_old_publication_cannot_be_restored_by_a_newer_allowing_response",
+      "bytes": 1611,
+      "before_sha256": "2119529e221f496ebf4bdfe8fe7eb20b087f7741b05c31c05821a2005704ae7f",
+      "after_sha256": "2119529e221f496ebf4bdfe8fe7eb20b087f7741b05c31c05821a2005704ae7f",
+      "byte_identical": true
+    },
+    {
+      "test": "each_post_commit_window_rechecks_current_revocation_deletion_and_policy",
+      "bytes": 2008,
+      "before_sha256": "0d2cfdfc3bb55df5c0456f4a5fb428463f8796a2b79db2a698ff5c53a7b6d8ee",
+      "after_sha256": "0d2cfdfc3bb55df5c0456f4a5fb428463f8796a2b79db2a698ff5c53a7b6d8ee",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry",
+      "bytes": 1878,
+      "before_sha256": "352e31792dfdb81af75d54edc4a3be64130e3982d712a8228b01df5ba00552cf",
+      "after_sha256": "352e31792dfdb81af75d54edc4a3be64130e3982d712a8228b01df5ba00552cf",
+      "byte_identical": true
+    },
+    {
+      "test": "late_shared_no_store_cannot_invalidate_a_newer_successful_representation",
+      "bytes": 1174,
+      "before_sha256": "f8dc7fe3d7f810cb31107efe1293a326ddd511793004cfa5c9715f32bbcab7b7",
+      "after_sha256": "f8dc7fe3d7f810cb31107efe1293a326ddd511793004cfa5c9715f32bbcab7b7",
+      "byte_identical": true
+    },
+    {
+      "test": "shared_storage_failure_rolls_back_body_and_index_and_releases_the_flight",
+      "bytes": 976,
+      "before_sha256": "6112bef58a2ddb8c900ff6b496166631023d32de73b5df072cd4a19514f125fa",
+      "after_sha256": "6112bef58a2ddb8c900ff6b496166631023d32de73b5df072cd4a19514f125fa",
+      "byte_identical": true
+    },
+    {
+      "test": "same_thread_reentry_does_not_wait_on_itself_or_reuse_the_outer_304",
+      "bytes": 787,
+      "before_sha256": "4c5738bde2fc2c032d50f7650666252dc7dc45fcc5b99de430342600879f84c1",
+      "after_sha256": "4c5738bde2fc2c032d50f7650666252dc7dc45fcc5b99de430342600879f84c1",
+      "byte_identical": true
+    },
+    {
+      "test": "lifetime_member_limit_keeps_the_first_32_and_runs_overflow_independently",
+      "bytes": 902,
+      "before_sha256": "57d232ae7a7eace90a9a52db77ab3a9193000c14cf35d3c69c92a7a524655426",
+      "after_sha256": "57d232ae7a7eace90a9a52db77ab3a9193000c14cf35d3c69c92a7a524655426",
+      "byte_identical": true
+    },
+    {
+      "test": "registry_capacity_is_bounded_and_distinct_service_instances_do_not_share",
+      "bytes": 1379,
+      "before_sha256": "36e46e4bca275e1e2742495fd5f2f35b5bff066a58a46de634020a6d35b2ea11",
+      "after_sha256": "36e46e4bca275e1e2742495fd5f2f35b5bff066a58a46de634020a6d35b2ea11",
+      "byte_identical": true
+    },
+    {
+      "test": "direct_reads_do_not_join_durable_attempts_or_receive_their_cancellation",
+      "bytes": 1463,
+      "before_sha256": "2f339f77df30e0fbfd9aa98f2eff22886e8f1040e0249d6d497ceb411f590f7a",
+      "after_sha256": "2f339f77df30e0fbfd9aa98f2eff22886e8f1040e0249d6d497ceb411f590f7a",
+      "byte_identical": true
+    },
+    {
+      "test": "invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions",
+      "bytes": 2853,
+      "before_sha256": "da4c0e53878161acbfff72571f8164b05051a3ed0c9e28047577d144d4af2041",
+      "after_sha256": "da4c0e53878161acbfff72571f8164b05051a3ed0c9e28047577d144d4af2041",
+      "byte_identical": true
+    },
+    {
+      "test": "malformed_freshness_does_not_skip_independent_noindex_observation",
+      "bytes": 2304,
+      "before_sha256": "af47b3911ffa277e07c2c7473f717b62ccaca109085a0a8e5431664c8eff8771",
+      "after_sha256": "af47b3911ffa277e07c2c7473f717b62ccaca109085a0a8e5431664c8eff8771",
+      "byte_identical": true
+    },
+    {
+      "test": "large_valid_snapshots_preserve_legacy_and_shared_read_windows",
+      "bytes": 2661,
+      "before_sha256": "e6d9c4b4d935b4f8023aff712dfec0a3da7de4491563bcf6a6c2dbc29008aecd",
+      "after_sha256": "e6d9c4b4d935b4f8023aff712dfec0a3da7de4491563bcf6a6c2dbc29008aecd",
+      "byte_identical": true
+    },
+    {
+      "test": "prepared_cancel_handles_are_owner_bound_single_use_and_not_worker_attempts",
+      "bytes": 1218,
+      "before_sha256": "e3782b6f287e69ff1f1fedf75d38c43bfe94b0a852a9ea598c4d74e1d78a358c",
+      "after_sha256": "e3782b6f287e69ff1f1fedf75d38c43bfe94b0a852a9ea598c4d74e1d78a358c",
+      "byte_identical": true
+    },
+    {
+      "test": "a_claimed_handle_cannot_start_twice_and_bad_arguments_consume_it",
+      "bytes": 701,
+      "before_sha256": "e996db67032a49d58bf1ac70ed801fd6abbd0063eefd689392c7bddad36c4aea",
+      "after_sha256": "e996db67032a49d58bf1ac70ed801fd6abbd0063eefd689392c7bddad36c4aea",
+      "byte_identical": true
+    },
+    {
+      "test": "cancelled_subscriber_returns_without_interrupting_payer_or_late_member",
+      "bytes": 1306,
+      "before_sha256": "82018baaef9d5b119cd05d8f4f2b22e8ffb8d1485a6aeb161b134129dd372046",
+      "after_sha256": "82018baaef9d5b119cd05d8f4f2b22e8ffb8d1485a6aeb161b134129dd372046",
+      "byte_identical": true
+    },
+    {
+      "test": "cancelled_payer_keeps_physical_ownership_while_subscribers_finish",
+      "bytes": 1208,
+      "before_sha256": "b1c268f884dce561c05cf3cf9c37756a573b866dcb5ec0b2f962538e3ee96b49",
+      "after_sha256": "b1c268f884dce561c05cf3cf9c37756a573b866dcb5ec0b2f962538e3ee96b49",
+      "byte_identical": true
+    },
+    {
+      "test": "last_member_cancel_closes_admission_and_sends_one_separate_control_rpc",
+      "bytes": 1636,
+      "before_sha256": "ba8f6f204b2ec198d89bebf5fa9862a23ef4f3c14645114c33d6df0cad39535e",
+      "after_sha256": "ba8f6f204b2ec198d89bebf5fa9862a23ef4f3c14645114c33d6df0cad39535e",
+      "byte_identical": true
+    },
+    {
+      "test": "cancel_before_profile_finishes_stops_network_and_cached_delivery",
+      "bytes": 884,
+      "before_sha256": "8293d9540c63d5e81a084adf4cd720185361b789a5dfab6f642f47c689317900",
+      "after_sha256": "8293d9540c63d5e81a084adf4cd720185361b789a5dfab6f642f47c689317900",
+      "byte_identical": true
+    },
+    {
+      "test": "cancellation_winning_after_physical_completion_still_blocks_member_delivery",
+      "bytes": 1173,
+      "before_sha256": "025ba01f1f81d3d79b51479bef16ddc3f2caf28494482fe6ae504f54eb993ee6",
+      "after_sha256": "025ba01f1f81d3d79b51479bef16ddc3f2caf28494482fe6ae504f54eb993ee6",
+      "byte_identical": true
+    },
+    {
+      "test": "named_reads_keep_sixty_second_parameters_and_do_not_merge_legacy_members",
+      "bytes": 1389,
+      "before_sha256": "70c992b6f49aefca93b0670253832fef0b07dad363ff6bfcda99a61c90fe330d",
+      "after_sha256": "70c992b6f49aefca93b0670253832fef0b07dad363ff6bfcda99a61c90fe330d",
+      "byte_identical": true
+    },
+    {
+      "test": "named_conditional_shared_read_cancel_preserves_one_304_commit_and_receipt",
+      "bytes": 1190,
+      "before_sha256": "1ede6b107e301aa69869bad155ba7dc6f0fdbc6a4f9d48b021fe800bcf4aa5a3",
+      "after_sha256": "1ede6b107e301aa69869bad155ba7dc6f0fdbc6a4f9d48b021fe800bcf4aa5a3",
+      "byte_identical": true
+    },
+    {
+      "test": "cancel_handle_capacity_and_expiry_never_evict_running_or_reuse_retired_identity",
+      "bytes": 1683,
+      "before_sha256": "ece1d6757c4da0d777bcbfeffab78c6fac55a89b94b5f46cf858952ebdc707c8",
+      "after_sha256": "ece1d6757c4da0d777bcbfeffab78c6fac55a89b94b5f46cf858952ebdc707c8",
+      "byte_identical": true
+    },
+    {
+      "test": "cancelled_members_do_not_reclaim_the_shared_flights_lifetime_slots",
+      "bytes": 1242,
+      "before_sha256": "ad10904f45fc35ec701a5b807a257ab68bb2bbcaf4c626e479b96b67a6a5af2c",
+      "after_sha256": "ad10904f45fc35ec701a5b807a257ab68bb2bbcaf4c626e479b96b67a6a5af2c",
+      "byte_identical": true
+    }
+  ]
+}

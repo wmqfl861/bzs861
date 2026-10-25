@@ -23,6 +23,25 @@ namespace http=beast::http;
 using tcp=net::ip::tcp;
 using namespace bzs;
 namespace {
+  constexpr unsigned control_threads=1;
+  constexpr std::size_t control_body_limit_bytes=4096;
+  // Admission classification only. Reuse the strict request parser (including
+  // duplicate-key rejection) and fall back to ordinary admission on any mismatch.
+  // Service still parses the original body and checks owner/revocation normally.
+  bool direct_cancel_control(std::string_view body) noexcept {
+    if(body.size()>control_body_limit_bytes)return false;
+    try {
+      const auto request=Json::parse(body,control_body_limit_bytes);
+      request.allowed({"operation","params"});
+      if(required_string(request,"operation",64)!="web.read.cancel")return false;
+      const auto params=request.at("params");
+      params.allowed({"read_id"});
+      const auto id=required_string(params,"read_id",48);
+      return id.size()==48&&std::all_of(id.begin(),id.end(),[](char c) {
+        return (c>='0'&&c<='9')||(c>='a'&&c<='f');
+      });
+    } catch(...) {return false;}
+  }
   Json envelope(const std::string& id, const Json& result) {
     Json j=Json::object();
     j.set("request_id", id);
@@ -177,6 +196,7 @@ namespace {
     http::response<http::string_body> response_;
     Service& service_;
     RequestExecutor& requests_;
+    RequestExecutor& controls_;
     const Auth&auth_;
     unsigned short port_;
     std::shared_ptr<std::atomic<unsigned>> active_;
@@ -252,7 +272,8 @@ namespace {
         require(ct=="application/json"||ct=="application/json; charset=utf-8", "E_CONTENT_TYPE", "Expected application/json", 415);
         auto self=shared_from_this();
         auto executor=stream_.get_executor();
-        require(requests_.submit([self,principal=std::move(principal),body=std::move(req.body()),rid,started,executor]() mutable {
+        auto& execution=direct_cancel_control(req.body())?controls_:requests_;
+        require(execution.submit([self,principal=std::move(principal),body=std::move(req.body()),rid,started,executor]() mutable {
           self->dispatch(std::move(principal),std::move(body),std::move(rid),started,executor);
         }),"E_REQUEST_BACKPRESSURE","Request execution capacity is full; try again later",503);
         return;
@@ -265,7 +286,7 @@ namespace {
       }
       log_request(rid,status,started);
     }
-    public: Session(tcp::socket socket, Service&s, RequestExecutor& requests,const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), requests_(requests), auth_(a), port_(port), active_(std::move(active)) {
+    public: Session(tcp::socket socket, Service&s, RequestExecutor& requests,RequestExecutor& controls,const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), requests_(requests), controls_(controls), auth_(a), port_(port), active_(std::move(active)) {
       ++*active_;
       parser_.body_limit(2*1024*1024);
       parser_.header_limit(8192);
@@ -286,9 +307,10 @@ namespace {
     tcp::acceptor acceptor_;
     Service& service_;
     RequestExecutor& requests_;
+    RequestExecutor& controls_;
     const Auth&auth_;
     std::shared_ptr<std::atomic<unsigned>> active_=std::make_shared<std::atomic<unsigned>>(0);
-    public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),auth_(a) {
+    public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,RequestExecutor& controls,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),controls_(controls),auth_(a) {
       tcp::endpoint ep(net::ip::make_address("127.0.0.1"), port);
       acceptor_.open(ep.protocol());
       acceptor_.set_option(net::socket_base::reuse_address(true));
@@ -301,7 +323,7 @@ namespace {
     void run() {
       acceptor_.async_accept(net::make_strand(io_), [this](beast::error_code ec, tcp::socket socket) {
         if(!ec) {
-          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, requests_,auth_, port(), active_)->run();
+          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, requests_,controls_,auth_, port(), active_)->run();
           else {
             beast::error_code ignored;
             socket.close(ignored);
@@ -328,6 +350,8 @@ int main(int argc, char**argv) {
                    "        [--sites FILE] [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
                    "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n"
                    "--threads controls IO; request threads default to min(threads,32). Excess business requests receive 503.\n"
+                   "Fixed web.read.cancel reserve: control_threads="<<control_threads
+                   <<", control_body_limit_bytes="<<control_body_limit_bytes<<". Other operations cannot use this slot.\n"
                    "Explicit --sites also governs retained web publication while offline; omission keeps the stored policy.\n";
         return 0;
       }
@@ -399,16 +423,18 @@ int main(int argc, char**argv) {
     Service service(store, catalog, state/"backups", web.get());
     if(request_threads==0)request_threads=std::min(threads,32u);
     net::io_context io;
-    // Declared after IO so request workers are joined before their response
-    // executor is destroyed, including exceptional startup/unwind paths.
+    // Both pools are declared after IO so their workers are joined before the
+    // response executor or Service is destroyed, even during startup unwind.
     RequestExecutor requests(request_threads);
-    Listener listener(io, port, service, requests,auth);
+    RequestExecutor controls(control_threads);
+    Listener listener(io, port, service, requests,controls,auth);
     BackgroundWorker worker_thread;
     if(worker)worker_thread=start_worker(store, catalog, web.get());
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
       worker_thread.request_stop();
       requests.stop();
+      controls.stop();
       io.stop();
     });
     listener.run();
@@ -420,6 +446,8 @@ int main(int argc, char**argv) {
     ready.set("network_mode", web?"worker_mediated":"offline");
     ready.set("threads", static_cast<std::int64_t>(threads));
     ready.set("request_threads",static_cast<std::int64_t>(request_threads));
+    ready.set("control_threads",static_cast<std::int64_t>(control_threads));
+    ready.set("control_body_limit_bytes",static_cast<std::int64_t>(control_body_limit_bytes));
     std::cout<<ready.dump()<<std::endl;
     std::vector<std::thread> pool;
     for(unsigned t=1; t<threads; ++t)pool.emplace_back([&io] {
@@ -428,7 +456,8 @@ int main(int argc, char**argv) {
     io.run();
     for(auto& t:pool)t.join();
     worker_thread.request_stop();
-    requests.stop();requests.join();
+    requests.stop();controls.stop();
+    controls.join();requests.join();
     return 0;
   }catch(const Error&e) {
     std::cerr<<e.code<<": "<<e.what()<<'\n';

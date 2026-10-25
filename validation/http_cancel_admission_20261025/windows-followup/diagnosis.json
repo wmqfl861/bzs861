@@ -1,0 +1,237 @@
+{
+  "status": "cause_unresolved; bounded diagnostic follow-up recommended",
+  "recorded_at_utc": "2026-10-25T09:57:34.869258+00:00",
+  "review_role": "Independent read-only source and existing-evidence review; no product/test execution and no production/formal-test/Git changes by reviewer.",
+  "repository": "wmqfl861/bzs861",
+  "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "observed_failure": {
+    "run_id": 40180737461,
+    "windows_job_id": 121131070653,
+    "windows_job_record": "windows-job-121131070653.json",
+    "windows_job_record_sha256": "f02a594dbbf348206c3a089fd436265fbdd81f4af3c56944ffa81f2dc51986a0",
+    "raw_content_sha256": "71accd96eefb8fed2b95780d078d7f53932b74606aed29cb569f8ccf8a992963",
+    "raw_content_crlf_count": 2518,
+    "result": "17 of 18 CTest suites passed; direct_shared timed out at 90.03 seconds with process TIMEOUT=90.",
+    "direct_shared_observed_log_lines_1_based": [
+      2227,
+      2232
+    ],
+    "per_case_progress_lines_present": false,
+    "last_started_or_completed_case": "unknown",
+    "interpretation": "The old runner emitted PASS only after case completion and did not flush stdout. No captured case output proves neither zero progress nor a particular deadlock or slow case."
+  },
+  "reviewed_inputs": {
+    "baseline_tests_direct_shared_sha256": "822db636d3b4207961170a24698380cdbdd7b97939bfbd4e0a88ef30a38be4ad",
+    "current_runner_sha256": "559739316f9ae5fa3adf3e252c2568f44b89cd308e55cb92f13a118827035400",
+    "all_bytes_before_main_identical": true,
+    "before_main_bytes": 65224,
+    "before_main_sha256": "12955f8ae57caa303c058549d97082c7eeb3a4ae9e2a627dfef1ba8092d4d1ea",
+    "production_sources_equal_baseline": {
+      "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+      "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+      "src/store.cpp": "64fa978c67825c499cf68178a12da6057617dd51125133298e2bb88fd20b6c2e",
+      "src/revocation.cpp": "fa19355dfebd323ed9395023e89886eeedc661de974fb36c4c8140f111e792e3",
+      "src/util.cpp": "bda18e8bc56bad1327e7538fb4fcc6a042599d18a098ce70a5d96efaedd6a32f"
+    },
+    "current_cmake_sha256": "5245aefc3400b5cf663dcf158dbf374fe16da9e6893d5ac7da292dcf34ea8b5b",
+    "runner_preservation_record": "direct-shared-runner-preservation.json",
+    "runner_preservation_sha256": "21f9d1fa66d2f6598a349e71a8de6c3a4953d682376f735db16084d74eeb1c8b",
+    "linux_existing_junit": "../local/final-ctest-v1.xml",
+    "linux_junit_sha256": "d5acfc55a422614520ac8411ca52d1efa3d702c1a237d9b10f7670a78b52e1e0"
+  },
+  "synchronization_review": {
+    "specific_windows_only_deadlock_found": false,
+    "does_not_prove_absence_of_deadlock": true,
+    "observations": [
+      "Gate::wait and mock Worker fetch waits use condition_variable predicates and release their mutex during waits; release flags/sets are synchronized. The mock copies its responder/profile hook and invokes them after releasing the Worker mutex.",
+      "Running::~Running releases all Worker fetch gates, runs registered profile/window cleanup releases, then joins. New gate objects are declared before Running, so cleanup and joins precede gate/Fixture destruction.",
+      "Core cancellation marks the member under direct_reads_mutex_, unlocks, notifies subscribers and calls fetch.cancel_direct outside the coordination lock. Fixed payer waits for explicit physical mock release; tests release it before joining.",
+      "No assertion or shared mutable Json response is executed on a business thread; Outcome fields are read after join or guarded by atomic completion. This is a static review statement, not a Windows race-detector result."
+    ],
+    "remaining_diagnostic_risk": "Gate/Worker blocking waits and std::thread::join are unbounded. Five-second observer checks can throw, but failure unwinding can still block in Running destruction if there is an actual deadlock. Therefore those checks do not guarantee a failed test emits FAIL within five seconds. A flushed RUN line is needed to locate an unfinished case."
+  },
+  "cost_and_capacity_review": {
+    "fixture_count_basis": "Static enumeration of all normal success-path loop iterations, not measured runtime events.",
+    "fresh_fixture_constructions_if_all_cases_complete": 86,
+    "fixtures_by_case": [
+      {
+        "test": "same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "shared_conditional_refresh_commits_the_bound_metadata_only_once",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "shared_members_keep_their_own_windows_and_freshness_bounds",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member",
+        "fresh_fixture_constructions": 6
+      },
+      {
+        "test": "owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence",
+        "fresh_fixture_constructions": 6
+      },
+      {
+        "test": "timeout_and_direct_parameters_do_not_borrow_durable_read_budgets",
+        "fresh_fixture_constructions": 3
+      },
+      {
+        "test": "changed_or_unproven_request_profiles_never_join_an_active_flight",
+        "fresh_fixture_constructions": 4
+      },
+      {
+        "test": "shared_responses_require_a_valid_freshness_profile_matching_admission",
+        "fresh_fixture_constructions": 3
+      },
+      {
+        "test": "permission_snapshot_metadata_and_publication_fences_split_new_admissions",
+        "fresh_fixture_constructions": 6
+      },
+      {
+        "test": "shared_inflight_alias_deletion_and_revival_reject_both_full_and_304_results",
+        "fresh_fixture_constructions": 12
+      },
+      {
+        "test": "shared_inflight_principal_revocation_denies_all_members_without_new_body",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "shared_old_publication_cannot_be_restored_by_a_newer_allowing_response",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "each_post_commit_window_rechecks_current_revocation_deletion_and_policy",
+        "fresh_fixture_constructions": 5
+      },
+      {
+        "test": "shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry",
+        "fresh_fixture_constructions": 6
+      },
+      {
+        "test": "late_shared_no_store_cannot_invalidate_a_newer_successful_representation",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "shared_storage_failure_rolls_back_body_and_index_and_releases_the_flight",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "same_thread_reentry_does_not_wait_on_itself_or_reuse_the_outer_304",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "lifetime_member_limit_keeps_the_first_32_and_runs_overflow_independently",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "registry_capacity_is_bounded_and_distinct_service_instances_do_not_share",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "direct_reads_do_not_join_durable_attempts_or_receive_their_cancellation",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions",
+        "fresh_fixture_constructions": 4
+      },
+      {
+        "test": "malformed_freshness_does_not_skip_independent_noindex_observation",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "large_valid_snapshots_preserve_legacy_and_shared_read_windows",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "prepared_cancel_handles_are_owner_bound_single_use_and_not_worker_attempts",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "a_claimed_handle_cannot_start_twice_and_bad_arguments_consume_it",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "cancelled_subscriber_returns_without_interrupting_payer_or_late_member",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "cancelled_payer_keeps_physical_ownership_while_subscribers_finish",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "last_member_cancel_closes_admission_and_sends_one_separate_control_rpc",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "cancel_before_profile_finishes_stops_network_and_cached_delivery",
+        "fresh_fixture_constructions": 2
+      },
+      {
+        "test": "cancellation_winning_after_physical_completion_still_blocks_member_delivery",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "named_reads_keep_sixty_second_parameters_and_do_not_merge_legacy_members",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "named_conditional_shared_read_cancel_preserves_one_304_commit_and_receipt",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "cancel_handle_capacity_and_expiry_never_evict_running_or_reuse_retired_identity",
+        "fresh_fixture_constructions": 1
+      },
+      {
+        "test": "cancelled_members_do_not_reclaim_the_shared_flights_lifetime_slots",
+        "fresh_fixture_constructions": 1
+      }
+    ],
+    "disk_and_json_work": "Fixture constructs a new on-disk Store. Store opens SQLite FULLMUTEX, sets WAL and synchronous=FULL, migrates through schema15 and commits publication setup. Tests also ingest snapshots and some open additional writers. The registry case starts 65 concurrent reads; the large-body case serializes/parses a 700 KiB control-character body and verifies a frozen snapshot over 8 MiB in each of two branches.",
+    "handle_capacity_case": "1024 sequential prepare calls do a principal SELECT, RAND_bytes and bounded in-memory registry pruning/insertion; they do not each commit a persistent handle. The first 1024 prepares scan at most 0+1+...+1023 existing entries (523776 visits before later operations). Expiry is forced by the private test seam; there is no real 120-second sleep. Existing 120-second semantics remain unchanged.",
+    "sixty_second_arguments": "60-second read /65-second RPC values are asserted parameters sent to a mock; they are not requested fixture sleeps. The subscriber production wait still uses its existing actual bound."
+  },
+  "cross_environment_timing": {
+    "windows_seconds": {
+      "sessions": 107.06,
+      "capacity_cycles": 67.69,
+      "cache_freshness": 51.35
+    },
+    "linux_seconds": {
+      "sessions": 20.3471,
+      "capacity_cycles": 8.43096,
+      "cache_freshness": 8.67359,
+      "direct_shared": 19.7041
+    },
+    "ratios_windows_over_linux": {
+      "sessions": 5.262,
+      "capacity_cycles": 8.029,
+      "cache_freshness": 5.92
+    },
+    "qualification": "Different OS/build/dependency/runner environments. These independent suites are roughly 5.26x to 8.03x slower and support cumulative Debug/database overhead as a plausible hypothesis. They do not measure direct_shared per-case time, establish causality, justify a performance guarantee, or prove it must finish by any chosen watchdog."
+  },
+  "recommended_followup": {
+    "change_classification": "Test diagnostics plus finite Windows process watchdog only; not a demonstrated product bug fix.",
+    "runner": "RUN before each case; PASS/FAIL with steady_clock elapsed milliseconds; explicit flushing. Reviewed diff preserves all case/helper bytes, registration order, assertions, exception handling and failure exit status.",
+    "process_watchdog_seconds": {
+      "Windows": 240,
+      "non_Windows": 90
+    },
+    "watchdog_choice": "180 seconds would also be a bounded diagnostic run; 240 gives more observation headroom when exact Windows case costs are unknown. Neither limit guarantees completion or excludes a deadlock. Retain the original 90.03-second failure and do not repeatedly inflate the limit if one case stalls.",
+    "unchanged_requirements": [
+      "All 34 test bodies and assertions",
+      "Five-second synchronization observers",
+      "60-second direct /65-second RPC parameter contract and production subscriber waits",
+      "120-second handle retention and capacity/lifetime limits",
+      "Production Core/Store/Worker code",
+      "Linux process watchdog"
+    ],
+    "acceptance_for_actual_new_ci": "Check the exact published SHA. Require every one of the 34 RUN cases to have PASS and the original 10259-assertion/zero-failure summary, CTest success and actual Linux/Windows completion. If one RUN remains unfinished or a check fails, inspect that case/phase and thread stacks as available instead of declaring a timeout-only cause. A passing bounded suite supports that input/environment only; no full B-24/C-15 or product latency acceptance.",
+    "future_ci_result_claimed": false
+  },
+  "closed_http_review_unchanged": "The original independent HTTP review/manifest remain sealed. This record concerns the newly observed baseline Windows native-suite timeout and its separate runner/watchdog follow-up."
+}

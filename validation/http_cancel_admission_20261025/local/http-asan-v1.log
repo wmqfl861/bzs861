@@ -1,0 +1,39 @@
+test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt (__main__.DirectReadCancellation.test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt) ... ok
+test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot (__main__.DirectReadCancellation.test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot) ... ok
+test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc (__main__.DirectReadCancellation.test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc) ... ok
+test_posix_shutdown_waits_for_active_control_before_destroying_service (__main__.DirectReadCancellation.test_posix_shutdown_waits_for_active_control_before_destroying_service) ... ok
+test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http (__main__.DirectReadCancellation.test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http) ... ok
+test_reserved_admission_requires_exact_bounded_cancel_envelope (__main__.DirectReadCancellation.test_reserved_admission_requires_exact_bounded_cancel_envelope) ... ok
+test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot (__main__.DirectReadCancellation.test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot) ... ok
+test_reserved_control_keeps_transport_and_owner_checks_under_saturation (__main__.DirectReadCancellation.test_reserved_control_keeps_transport_and_owner_checks_under_saturation) ... ok
+test_success_and_cache_hit_preserve_direct_usage_and_receipt (__main__.DirectReadReceipts.test_success_and_cache_hit_preserve_direct_usage_and_receipt) ... ok
+test_window_error_remains_a_failure_with_its_paid_execution_receipt (__main__.DirectReadReceipts.test_window_error_remains_a_failure_with_its_paid_execution_receipt) ... ok
+test_worker_failures_preserve_known_and_unknown_physical_usage (__main__.DirectReadReceipts.test_worker_failures_preserve_known_and_unknown_physical_usage) ... ok
+test_explicit_business_limit_runs_concurrently_on_one_io_thread (__main__.HTTPExecution.test_explicit_business_limit_runs_concurrently_on_one_io_thread) ... ok
+test_request_thread_limit_is_validated_before_listening (__main__.HTTPExecution.test_request_thread_limit_is_validated_before_listening) ... ok
+test_saturated_requests_leave_health_and_transport_checks_live (__main__.HTTPExecution.test_saturated_requests_leave_health_and_transport_checks_live) ... ok
+test_01_health_cli (__main__.Integration.test_01_health_cli) ... ok
+test_02_auth_rejected (__main__.Integration.test_02_auth_rejected) ... ok
+test_03_explicit_capabilities (__main__.Integration.test_03_explicit_capabilities) ... ok
+test_04_strict_input (__main__.Integration.test_04_strict_input) ... ok
+test_05_origin_and_host (__main__.Integration.test_05_origin_and_host) ... ok
+test_06_real_chinese_roundtrip (__main__.Integration.test_06_real_chinese_roundtrip) ... ok
+test_07_owner_isolation (__main__.Integration.test_07_owner_isolation) ... ok
+test_08_update_and_delete (__main__.Integration.test_08_update_and_delete) ... ok
+test_09_fixture_search_and_ingest_cli (__main__.Integration.test_09_fixture_search_and_ingest_cli) ... ok
+test_10_job_execution_and_idempotency (__main__.Integration.test_10_job_execution_and_idempotency) ... ok
+test_11_pagination_freeze (__main__.Integration.test_11_pagination_freeze) ... ok
+test_12_oversized_content (__main__.Integration.test_12_oversized_content) ... ok
+test_13_slow_header_deadline (__main__.Integration.test_13_slow_header_deadline) ... ok
+test_14_backup_admin_and_quarantine (__main__.Integration.test_14_backup_admin_and_quarantine) ... ok
+test_15_cli_ingest_and_query (__main__.Integration.test_15_cli_ingest_and_query) ... ok
+test_16_restart_persistence_and_controls (__main__.Integration.test_16_restart_persistence_and_controls) ... ok
+test_17_invalid_search_options_preserve_session_quota (__main__.Integration.test_17_invalid_search_options_preserve_session_quota) ... ok
+test_18_contract_validation_and_trusted_parameters (__main__.Integration.test_18_contract_validation_and_trusted_parameters) ... ok
+test_19_validation_does_not_enable_execution (__main__.Integration.test_19_validation_does_not_enable_execution) ... ok
+test_20_cli_contract_validation_and_file_limit (__main__.Integration.test_20_cli_contract_validation_and_file_limit) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 10.167s
+
+OK

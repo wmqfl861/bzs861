@@ -1,0 +1,30 @@
+RUN strict_classifier_and_transport_precedence
+PASS strict_classifier_and_transport_precedence
+RUN ordinary_saturation_last_member_cancel
+PASS ordinary_saturation_last_member_cancel
+RUN bounded_exclusive_control_slot
+PASS bounded_exclusive_control_slot
+RUN shutdown_with_both_lanes_active
+PASS shutdown_with_both_lanes_active
+{
+  "cases": [
+    {
+      "name": "strict_classifier_and_transport_precedence",
+      "passed": true
+    },
+    {
+      "name": "ordinary_saturation_last_member_cancel",
+      "passed": true
+    },
+    {
+      "name": "bounded_exclusive_control_slot",
+      "passed": true
+    },
+    {
+      "name": "shutdown_with_both_lanes_active",
+      "passed": true
+    }
+  ],
+  "checks": 66,
+  "failed": 0
+}

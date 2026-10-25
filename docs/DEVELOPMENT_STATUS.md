@@ -1,4 +1,12 @@
-# 开发进度：直接读取的在途合并（版本仍为 0.1.10）
+# 开发进度：HTTP 取消保留接纳（版本仍为 0.1.10）
+
+## 2026-10-25：HTTP 取消操作的独立执行槽
+
+从已发布bedb45c接续，新增固定1个控制执行槽，在既有传输认证后仅接纳正文不超过4096字节的严格 `web.read.cancel`。普通池和控制池各自背压、不能互借；控制池满时仍为503，分类不访问Store/Worker，Service继续执行权限和句柄检查。双池由主程序拥有并在业务与IO销毁前停止/join。详见[HTTP合同](HTTP_EXECUTION.md)及[本批验证](../validation/http_cancel_admission_20261025/README.md)。
+
+映射限于CACHE-01 / FT-032 / B-24的取消可接纳子范围，以及API-00 / FT-078 / C-01和CONTRACT-01 / FT-003的相关边界。连接上限、长期故障、跨渠道共享与完整C-15仍未由本批验收。0.1.10/schema15、17来源/0启用/0站点和37 partial/46 not_started/0 accepted保持。以下各“当前/本批”均保留对应历史批次的输入与结果。
+
+基线bedb45c的CI随后返回Linux成功、Windows17/18；direct_shared仅观察到90.03秒整套超时，旧日志没有逐例输出。本次另补runner即时进度与仅Windows240秒watchdog，不改34个测试主体或业务期限。[后续报告](../validation/http_cancel_admission_20261025/windows-followup/final-report.json)绑定追加输入、复测和保留范围，不把原HTTP阶段的32个未变原生二进制描述套到重建后的两个runner。
 
 ## 2026-10-25：直接读取显式成员取消
 

@@ -1,0 +1,47 @@
+{
+  "stage": "candidate-asan-v1",
+  "inputs_before": {
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/http_probe.py": "ad3950fa38f06d8aaa433bd693afb6039a7ba3b5f04c1dcc8e37d714c653ae4a",
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/asan_runner.py": "1ae3d9a0bcd46318029d3fe449f5488a185961f9f055070300a8713c48912120",
+    "/workspace/scratch/ed564c9de2af/bzs861/build-asan/searchd": "30553ac97e6028c187894764ddd76a7dc9c9146d596e23d3be43580198851d93",
+    "/workspace/scratch/ed564c9de2af/bzs861/apps/searchd/main.cpp": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "/workspace/scratch/ed564c9de2af/bzs861/build-asan/libbzs_core.a": "d65e319171042407c465da079ccbb8a8896140d61aeaa5b35c3ab76dad538c34"
+  },
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/asan_runner.py",
+    "--server",
+    "/workspace/scratch/ed564c9de2af/bzs861/build-asan/searchd",
+    "--fixtures",
+    "/workspace/scratch/ed564c9de2af/bzs861/tests/fixtures",
+    "--output",
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent"
+  ],
+  "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+  "environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1:log_path=/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/asan-diagnostics/asan",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1:log_path=/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/asan-diagnostics/ubsan"
+  },
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "start_unix": 1792921520.8242571,
+  "exit_code": 0,
+  "duration_seconds": 0.7311961650848389,
+  "inputs_after": {
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/http_probe.py": "ad3950fa38f06d8aaa433bd693afb6039a7ba3b5f04c1dcc8e37d714c653ae4a",
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/asan_runner.py": "1ae3d9a0bcd46318029d3fe449f5488a185961f9f055070300a8713c48912120",
+    "/workspace/scratch/ed564c9de2af/bzs861/build-asan/searchd": "30553ac97e6028c187894764ddd76a7dc9c9146d596e23d3be43580198851d93",
+    "/workspace/scratch/ed564c9de2af/bzs861/apps/searchd/main.cpp": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "/workspace/scratch/ed564c9de2af/bzs861/build-asan/libbzs_core.a": "d65e319171042407c465da079ccbb8a8896140d61aeaa5b35c3ab76dad538c34"
+  },
+  "log": "candidate-asan-v1.log",
+  "log_sha256": "9a55fc5d1d7f796745caef7bd620124834820a54eff50faee5ba5e8ee15912c5",
+  "diagnostic_files": [],
+  "inputs_unchanged": true
+}

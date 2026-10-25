@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：普通直接读取已增加可选的一次性成员取消；版本仍为0.1.10，数据库schema15。** 本批接手本地f4878be，保留普通共享读取并补齐prepare/read/cancel、独立Worker控制、固定付款用量和逐成员交付边界。合同见[直接成员取消](docs/DIRECT_READ_CANCELLATION.md)，实际执行、原失败和独立审核见[本批记录](validation/direct_cancel_20261025/README.md)。S0、S1、S2及完整B-24仍未签收。
+**状态：直接读取取消已增加固定的 HTTP 保留执行槽；版本仍为0.1.10，数据库schema15。** 普通业务池占满时，符合严格结构且正文不超过4096字节的 `web.read.cancel` 可使用独立的1个控制槽；两池各自背压，不能互借。既有prepare/read/cancel、独立Worker控制、固定付款和逐成员交付合同保持。详情见[HTTP执行](docs/HTTP_EXECUTION.md)、[直接成员取消](docs/DIRECT_READ_CANCELLATION.md)和[本批验证](validation/http_cancel_admission_20261025/README.md)。S0、S1、S2及完整B-24仍未签收。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。上述已发布基线的 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 只证明该基线输入。用户已明确允许推送 main；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。本批基线为已发布的 `bedb45c89d293ab25a8a481df6c8300558225b0c`，其[CI 40180737461](https://github.com/wmqfl861/bzs861/actions/runs/40180737461)只证明上一批输入。用户允许推送 main 的授权保持；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -26,7 +26,7 @@
 | Agent 接口 | MCP 映射同一核心，优先 stdio；本机带令牌 HTTP 是远程接口准备，不代表可公网部署 |
 | 任务历史回收 | 至少七天后压缩稳定终态明细，永久 key/指纹/计费摘要不占未压缩明细容量；活动、暂停与未结算任务仍受保护 |
 | 持久调度与会话 | fixture、批读、map/crawl、持久搜索四条固定通道；类别内轮转、冻结版本、游标、取消和计费栅栏保留，map/crawl 仍共用一条通道 |
-| HTTP 请求执行 | 业务执行与 IO 分离，默认业务并发为 min(IO 线程数,32)，满额返回 503；保留 64 连接上限和 socket 期限，健康检查不等待业务槽 |
+| HTTP 请求执行 | 普通业务并发为 min(IO线程数,32)，另有1个严格分类的取消控制槽；两池分别满额返回503，不能互借；保留64连接和socket期限，健康检查不占业务槽 |
 | 固定候选评测 | 未标注人工模板、输入/方法/阈值/环境冻结、来源贡献与外部消融配对；固定全池IDCG，缺失/失败不当空结果，完整质量门禁仍阻塞 |
 | 隔离备份 | 安全恢复未完成；独立撤销连续性未证明前，备份不能直接启动服务 |
 
@@ -150,7 +150,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮验证记录分别绑定作者聚焦回归、独立并发与真实Worker探针、最终整合执行的源码和二进制。实际命令、计数、环境、原始失败与已完成结果见[本批记录](validation/direct_cancel_20261025/README.md)；CTest、pytest、开启泄漏检测的原生 ASan/UBSan 只有实际执行完成才可记为通过，不从套件存在或历史通过推导本批结果。上轮本地 URI 修正保存在[URI 删除验证](validation/uri_deletion_20261024/README.md)，更早 P2-9 的回拨反例和修正保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
+本轮验证分别绑定正式HTTP回归、独立新旧版本对照、实际HTTP程序的ASan/UBSan检查及完整CTest输入。命令、计数、环境、原始失败与已完成结果见[本批记录](validation/http_cancel_admission_20261025/README.md)。上一批[成员取消](validation/direct_cancel_20261025/README.md)、[URI删除](validation/uri_deletion_20261024/README.md)及[P2-9回拨修正](validation/claude_continuation_20261024/README.md)保留原证据；历史成绩不代替本批执行。测试相互覆盖，不能按总数替代161项产品验收。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
@@ -176,7 +176,7 @@ schema14 已在上轮回填全部文档及墓碑的删除比较键，有限规�
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-下一步推进 B-24 的跨 direct/durable/map/crawl/search 共享兼容、HTTP控制保留接纳和更广取消矩阵。继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
+下一步推进 B-24 的跨 direct/durable/map/crawl/search 共享兼容和更广取消矩阵。当前保留槽只覆盖 `web.read.cancel`，不代表其他控制操作或连接容量已有保留。继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
 
 ## 文档与许可
 

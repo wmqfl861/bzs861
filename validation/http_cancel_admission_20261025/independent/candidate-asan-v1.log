@@ -1,0 +1,31 @@
+RUN strict_classifier_and_transport_precedence
+PASS strict_classifier_and_transport_precedence
+RUN ordinary_saturation_last_member_cancel
+PASS ordinary_saturation_last_member_cancel
+RUN bounded_exclusive_control_slot
+PASS bounded_exclusive_control_slot
+RUN shutdown_with_both_lanes_active
+PASS shutdown_with_both_lanes_active
+{
+  "cases": [
+    {
+      "name": "strict_classifier_and_transport_precedence",
+      "passed": true
+    },
+    {
+      "name": "ordinary_saturation_last_member_cancel",
+      "passed": true
+    },
+    {
+      "name": "bounded_exclusive_control_slot",
+      "passed": true
+    },
+    {
+      "name": "shutdown_with_both_lanes_active",
+      "passed": true
+    }
+  ],
+  "checks": 66,
+  "failed": 0
+}
+{"note": "Additional observation around Core.close; original probe cases and assertions are unchanged.", "shutdowns": [{"pid": 57840, "exit_code": 0, "stderr": "asan-server-1.log", "stderr_sha256": "339349318e82ad6dfe87894def24399a4c71d72e712273d24ecbe0b71ce111da"}, {"pid": 57849, "exit_code": 0, "stderr": "asan-server-2.log", "stderr_sha256": "6d22acdd3fc7dafe3ef39a12d0ab261117c66a8ccec60ecf6d4e26aa9fd050cc"}, {"pid": 57859, "exit_code": 0, "stderr": "asan-server-3.log", "stderr_sha256": "db210d2dfc7af0dba6a2d62f4a23c4e1323262d5a9f45a5bb901cf810b13fc82"}, {"pid": 57870, "exit_code": 0, "stderr": "asan-server-4.log", "stderr_sha256": "eaf63aee1cae1eb3abd74ceaf45cd6f2da51921be759d6d11e6c027249527cea"}], "all_exit_zero": true}

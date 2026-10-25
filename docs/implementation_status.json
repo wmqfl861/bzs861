@@ -1,28 +1,19 @@
 {
   "version": "0.1.10",
-  "stage": "Opt-in single-use direct-read member cancellation, fixed payer receipts and independent Worker controls; schema15 unchanged; full packages remain unsigned",
+  "stage": "Fixed bounded HTTP admission for strict web.read.cancel, independent ordinary/control capacity and owned shutdown; schema15 unchanged; full packages remain unsigned",
   "recorded_at": "2026-10-25",
-  "baseline": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+  "baseline": "bedb45c89d293ab25a8a481df6c8300558225b0c",
   "integration_inputs": {
-    "time_scope": "Previous direct-shared batch; current local handoff baseline and increment are recorded in direct_read_cancellation_scope.",
-    "main": "346048b4ae329e750d15f1e35952aab4513e3912",
-    "tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+    "main": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+    "tree": "24b2df08c69dd2937fd6ed54bacd77bd655f7b19",
     "baseline_published": true,
     "baseline_schema": 15,
     "schema": 15,
     "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
     "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
     "review_branch_read_only": true,
-    "scope": "Same-WebService direct-to-direct sharing only; stable original Worker ordinary-fetch contract; per-member delivery fences and payer/subscriber/unknown receipts; all six retained decisions unchanged.",
-    "evidence_directory": "validation/direct_shared_20261024",
-    "baseline_ci": {
-      "head_sha": "346048b4ae329e750d15f1e35952aab4513e3912",
-      "run_id": 40157161849,
-      "linux": "success",
-      "windows": "success",
-      "scope": "Previous published input only, not validation of this increment.",
-      "url": "https://github.com/wmqfl861/bzs861/actions/runs/40157161849"
-    }
+    "scope": "One reserved HTTP control executor for exact bounded cancellation envelopes. Ordinary and control capacity cannot borrow; core/Worker contracts and all six retained decisions unchanged.",
+    "evidence_directory": "validation/http_cancel_admission_20261025"
   },
   "status_counts": {
     "partial": 37,
@@ -57,13 +48,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/direct_cancel_20261025/final-report.json",
-  "current_verification": "Consult the exact current final-report.json and complete command/log bindings; initial defects and later fixes remain separate. No future remote CI is embedded here.",
-  "upstream_baseline_reproduction": "Frozen published346 headers and final-library35e9 reproduce two simultaneous fetches and lost direct usage. See independent/baseline-v1; missing new capability is distinct from candidate regressions.",
-  "github_ci": "Published baseline 346048b4: run40157161849 Linux/Windows success. The direct-read containing commit requires its own actual Checks; prior default-branch publication authorization is present.",
-  "independent_review": "Independent baseline and candidate boundary probes are separate from formal regression authors; original failed oracle and actual receipt restriction defect are retained with corrections. See current batch evidence.",
+  "current_test_report": "validation/http_cancel_admission_20261025/windows-followup/final-report.json",
+  "current_verification": "Current containing input adds only a Windows direct_shared process watchdog and per-case test progress after baseline CI timeout; see windows-followup report. HTTP phase full-suite and sanitizer records remain immutable and are not relabeled as executions of the later runner.",
+  "upstream_baseline_reproduction": "Published bedb45c binary reproduced cancellation503 without business effects when the ordinary pool was full: independent/baseline-v1-record.json and its 1-scenario/6-check log.",
+  "github_ci": "Baseline bedb45c run40180737461 completed: Linux success; Windows17/18 with direct_shared whole-process timeout90.03s and no per-case stdout. Current240-second Windows guard is a bounded diagnostic adjustment; verify the new containing SHA, not this failed baseline.",
+  "independent_review": "validation/http_cancel_admission_20261025/independent/final-review.json",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/direct_cancel_20261025/README.md",
+  "review_record": "validation/http_cancel_admission_20261025/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -85,14 +76,19 @@
     "validation/claude_continuation_20261024/README.md",
     "validation/uri_deletion_20261024/README.md",
     "validation/shared_read_late_20261024/README.md",
-    "validation/direct_shared_20261024/final-report.json"
+    "validation/direct_shared_20261024/final-report.json",
+    "validation/direct_cancel_20261025/final-report.json",
+    "validation/http_cancel_admission_20261025/final-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "feature_detail_text_scope": {
     "retained_from": "346048b4ae329e750d15f1e35952aab4513e3912",
-    "frozen_fields": ["features[].candidate_increment", "features[].remaining"],
+    "frozen_fields": [
+      "features[].candidate_increment",
+      "features[].remaining"
+    ],
     "meaning": "features 数组保留基线原始字节，其中 candidate_increment 与 remaining 是历史候选说明，不是本轮当前能力清单；整包状态和验收数量保持，当前范围由下面各增量 scope、合同和 current_test_report 补充。",
-    "CACHE-01_current_scope": "已发布的 read_many 迟到加入见 late_shared_reads_scope / docs/SHARED_READS.md；本轮普通直接读取共享见 direct_shared_reads_scope / docs/DIRECT_SHARED_READS.md。历史 remaining 中仅派发时共享或普通读取未覆盖的表述不代表当前实现；完整 CACHE-01 / B-24 仍未签收。"
+    "CACHE-01_current_scope": "Current direct sharing, member cancellation and bounded HTTP cancellation admission are described by direct_shared_reads_scope, direct_read_cancellation_scope, http_cancel_admission_scope and their contracts. The frozen features[].remaining text is historical; full CACHE-01/B-24 remains unsigned."
   },
   "features": [
     {
@@ -2652,8 +2648,8 @@
   ],
   "current_results": {
     "status": "not_embedded_here; consult_exact_batch_record",
-    "record": "validation/direct_shared_20261024/final-report.json",
-    "counting_note": "Author, independent, sanitizer and baseline checks overlap. Do not sum replay counts into planned product acceptance; preserved source/fixtures and actual execution determine the scope."
+    "record": "validation/http_cancel_admission_20261025/windows-followup/final-report.json",
+    "counting_note": "HTTP body phase full28 CTest/1332 Python/34 HTTP plus actual HTTP sanitizer are preserved. A later Windows-only watchdog and native runner logger change has separate34-group Debug/ASan execution and binary binding; final published SHA requires its own CI."
   },
   "baseline_version": "0.1.10",
   "planned_work_packages": 83,
@@ -2672,9 +2668,9 @@
   ],
   "verification_binding": {
     "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
-    "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
-    "record": "validation/direct_shared_20261024/final-report.json",
-    "remote_ci": "Verify the exact containing commit after non-force publication. Baseline green checks do not validate new input; no future CI claim is made.",
+    "baseline": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+    "record": "validation/http_cancel_admission_20261025/windows-followup/final-report.json",
+    "remote_ci": "Use exact containing commit after non-force publication and tree comparison; earlier baseline success does not validate new input.",
     "actions_url": "https://github.com/wmqfl861/bzs861/actions"
   },
   "source_availability": {
@@ -4691,25 +4687,113 @@
     "remaining": "Opt-in cancellation is covered by direct_read_cancellation_scope. Cross-instance/direct-durable/map/crawl/search coordination; broad cancellation/long-running/multinode acceptance; full CACHE-01/B-24 unsigned."
   },
   "direct_read_cancellation_scope": {
-      "contract": "docs/DIRECT_READ_CANCELLATION.md",
-      "local_baseline_commit": "f4878be865a92dd640a14d471f0fb9725e7b0796",
-      "local_baseline_tree": "edce78afc1c122b269f6468345fe13114f5c6070",
-      "observed_remote_parent": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "contract": "docs/DIRECT_READ_CANCELLATION.md",
+    "local_baseline_commit": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+    "local_baseline_tree": "edce78afc1c122b269f6468345fe13114f5c6070",
+    "observed_remote_parent": "346048b4ae329e750d15f1e35952aab4513e3912",
+    "schema": 15,
+    "features": [
+      "CACHE-01",
+      "READ-01"
+    ],
+    "acceptance_ids": [
+      "FT-032",
+      "B-24"
+    ],
+    "scope": "One-use same-owner process handles; opt-in controlled direct groups only; no mixing with legacy or durable paths.",
+    "bounds": "1024 core handles; 2048 independent Worker controls;120-second monotonic retention; running entries never expire; repeated cancel does not extend retired deadlines.",
+    "cancellation": "Fixed payer; subscriber may leave early with unknown associated physical receipt; last active exit closes admission before one cooperative cancel.",
+    "publication": "No body commit when all members cancelled before commit admission; a later cancel can race storage but independently blocks member delivery. Valid restrictive observations remain.",
+    "transport": "Control calls share the ordinary bounded HTTP business pool and may receive503 before acceptance.",
+    "verification": "validation/direct_cancel_20261025/final-report.json",
+    "remaining": "Cross-instance/mixed-channel sharing, dedicated HTTP control admission, durable direct recovery, independent revocation journal, source/qrels and long-running full acceptance remain unsigned.",
+    "time_scope": "Historical implementation batch before HTTP reserved admission; transport and remaining describe that batch only. Current transport contract is http_cancel_admission_scope."
+  },
+  "historical_verification_direct_cancel_20261025": {
+    "baseline": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+    "integration_inputs": {
+      "time_scope": "Previous direct-shared batch; current local handoff baseline and increment are recorded in direct_read_cancellation_scope.",
+      "main": "346048b4ae329e750d15f1e35952aab4513e3912",
+      "tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
+      "baseline_published": true,
+      "baseline_schema": 15,
       "schema": 15,
-      "features": [
-          "CACHE-01",
-          "READ-01"
-      ],
-      "acceptance_ids": [
-          "FT-032",
-          "B-24"
-      ],
-      "scope": "One-use same-owner process handles; opt-in controlled direct groups only; no mixing with legacy or durable paths.",
-      "bounds": "1024 core handles; 2048 independent Worker controls;120-second monotonic retention; running entries never expire; repeated cancel does not extend retired deadlines.",
-      "cancellation": "Fixed payer; subscriber may leave early with unknown associated physical receipt; last active exit closes admission before one cooperative cancel.",
-      "publication": "No body commit when all members cancelled before commit admission; a later cancel can race storage but independently blocks member delivery. Valid restrictive observations remain.",
-      "transport": "Control calls share the ordinary bounded HTTP business pool and may receive503 before acceptance.",
-      "verification": "validation/direct_cancel_20261025/final-report.json",
-      "remaining": "Cross-instance/mixed-channel sharing, dedicated HTTP control admission, durable direct recovery, independent revocation journal, source/qrels and long-running full acceptance remain unsigned."
+      "index_format": "bzs-ascii-cjk/2+codepoint-grams/1",
+      "review_commit": "30f058557e3f7ebb873e9780759323b49cfe9636",
+      "review_branch_read_only": true,
+      "scope": "Same-WebService direct-to-direct sharing only; stable original Worker ordinary-fetch contract; per-member delivery fences and payer/subscriber/unknown receipts; all six retained decisions unchanged.",
+      "evidence_directory": "validation/direct_shared_20261024",
+      "baseline_ci": {
+        "head_sha": "346048b4ae329e750d15f1e35952aab4513e3912",
+        "run_id": 40157161849,
+        "linux": "success",
+        "windows": "success",
+        "scope": "Previous published input only, not validation of this increment.",
+        "url": "https://github.com/wmqfl861/bzs861/actions/runs/40157161849"
+      }
+    },
+    "current_test_report": "validation/direct_cancel_20261025/final-report.json",
+    "current_verification": "Consult the exact current final-report.json and complete command/log bindings; initial defects and later fixes remain separate. No future remote CI is embedded here.",
+    "upstream_baseline_reproduction": "Frozen published346 headers and final-library35e9 reproduce two simultaneous fetches and lost direct usage. See independent/baseline-v1; missing new capability is distinct from candidate regressions.",
+    "github_ci": "Published baseline 346048b4: run40157161849 Linux/Windows success. The direct-read containing commit requires its own actual Checks; prior default-branch publication authorization is present.",
+    "independent_review": "Independent baseline and candidate boundary probes are separate from formal regression authors; original failed oracle and actual receipt restriction defect are retained with corrections. See current batch evidence.",
+    "review_record": "validation/direct_cancel_20261025/README.md",
+    "current_results": {
+      "status": "not_embedded_here; consult_exact_batch_record",
+      "record": "validation/direct_shared_20261024/final-report.json",
+      "counting_note": "Author, independent, sanitizer and baseline checks overlap. Do not sum replay counts into planned product acceptance; preserved source/fixtures and actual execution determine the scope."
+    },
+    "verification_binding": {
+      "status": "consult_batch_record_for_exact_final_inputs_and_actual_execution",
+      "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
+      "record": "validation/direct_shared_20261024/final-report.json",
+      "remote_ci": "Verify the exact containing commit after non-force publication. Baseline green checks do not validate new input; no future CI claim is made.",
+      "actions_url": "https://github.com/wmqfl861/bzs861/actions"
+    },
+    "time_scope": "Prior direct-cancellation batch only; its immutable validation files retain their original input and execution records."
+  },
+  "http_cancel_admission_scope": {
+    "contract": "docs/HTTP_EXECUTION.md",
+    "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+    "baseline_tree": "24b2df08c69dd2937fd6ed54bacd77bd655f7b19",
+    "schema": 15,
+    "features": [
+      "CACHE-01",
+      "API-00",
+      "CONTRACT-01"
+    ],
+    "acceptance_ids": [
+      "FT-032",
+      "B-24",
+      "FT-078",
+      "C-01",
+      "FT-003"
+    ],
+    "scope": "Transport/auth checks precede strict size-bounded cancellation classification; Service reparses and checks owner, revocation and handle state.",
+    "bounds": {
+      "control_threads": 1,
+      "control_body_limit_bytes": 4096,
+      "ordinary_request_threads_min": 1,
+      "ordinary_request_threads_max": 32,
+      "active_connections": 64
+    },
+    "admission": "Pools never borrow capacity; full selected pool returns503/E_REQUEST_BACKPRESSURE before Service, with no overflow queue. Invalid or oversized control candidates use ordinary admission.",
+    "lifecycle": "Both executors owned, stopped and joined before Service/Store/Worker/IO destruction; no detached control threads.",
+    "verification": "validation/http_cancel_admission_20261025/windows-followup/final-report.json",
+    "remaining": "No reserved connection capacity, cancellation SLA or other control operations. Cross-channel sharing, full C-15/CACHE-01/B-24, durable direct recovery, independent revocation continuity, sources/qrels and long-run failure acceptance remain unsigned."
+  },
+  "http_cancel_windows_followup_scope": {
+    "baseline_ci_run": 40180737461,
+    "baseline_head": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+    "baseline_outcome": "Linuxsuccess; Windows17/18, onlydirect_shared TIMEOUT90.03s; exact failing case and root cause unobserved.",
+    "diagnosis": "validation/http_cancel_admission_20261025/windows-followup/diagnosis.json",
+    "changed_files": [
+      "CMakeLists.txt",
+      "tests/direct_shared.cpp"
+    ],
+    "change": "Only Windows direct_shared whole-process watchdog240s; Linux90s. Main runner adds flushed RUN/PASS/FAIL plus elapsed time. All34 test bodies, assertions, synchronization and business deadlines unchanged.",
+    "initial_http_phase_report": "validation/http_cancel_admission_20261025/final-report.json",
+    "current_report": "validation/http_cancel_admission_20261025/windows-followup/final-report.json",
+    "acceptance": "No new package acceptance, no inferred Windows pass or product performance guarantee."
   }
 }

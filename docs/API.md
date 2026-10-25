@@ -1,6 +1,6 @@
 # searchd API（0.1.10 接手续作）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；当前版本仍为 0.1.10，业务 schema15，当前直接读取取消的实际验证见[本批记录](../validation/direct_cancel_20261025/README.md)。旧共享读取、URI 删除及阶段报告保留各自历史输入和结果。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；当前版本仍为 0.1.10，业务 schema15，当前HTTP取消保留接纳的实际验证见[本批记录](../validation/http_cancel_admission_20261025/README.md)。[上一批成员取消](../validation/direct_cancel_20261025/README.md)、共享读取、URI删除及阶段报告保留各自历史输入和结果。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -10,7 +10,9 @@
 
 ## HTTP 执行与背压
 
-`searchd --threads 1..64` 控制 IO 线程，默认 8；`--request-threads 1..32` 控制业务执行线程，省略时取 `min(threads,32)`。业务调用不在 IO 回调中等待 Worker RPC。每个业务线程最多接纳一个正在执行或待开始的请求，没有额外的业务等待额度；满额在进入 Service、预留业务预算或派发 Worker 前返回 HTTP 503 / `E_REQUEST_BACKPRESSURE`。
+`searchd --threads 1..64` 控制IO线程，默认8；`--request-threads 1..32` 控制普通业务执行线程，省略时取 `min(threads,32)`。另设固定1个取消控制线程，启动ready报告 `control_threads=1`、`control_body_limit_bytes=4096`。业务调用不在IO回调中等待Worker RPC；两池各自限制正在执行与已接纳待开始的总数，没有额外等待额度，不能互借容量。选中的池满时，在进入Service、预留业务预算或派发Worker前返回HTTP 503 / `E_REQUEST_BACKPRESSURE`。
+
+传输与认证检查通过后，正文不超过4096字节、严格JSON仅含 `operation="web.read.cancel"` 和 `params.read_id`（48位小写hex）的请求才选择控制池。未知字段、重复键、错类型、缺字段、无效ID或更大正文都按普通池接纳；Service仍重新解析原正文并检查owner、主体撤权与句柄。4096字节只限制保留槽分类，添加大量合法空白的取消仍可经普通池执行。`web.read.prepare`、`job.control`、`session.cancel`及其他操作不使用控制槽。
 
 `GET /healthz` 在 IO 路径响应，不占业务槽，仍受 Host/Origin 检查和 64 个活动连接上限约束。它报告传输入口可响应，不证明来源可用、业务槽有余量或健康检查的时延 SLA。请求正文仍限 2 MiB、header 限 8 KiB；socket 读取与响应写入各有 5 秒期限，业务执行期限由对应操作决定，不能把 5 秒当作所有业务的整体期限。
 

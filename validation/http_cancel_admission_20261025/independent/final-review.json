@@ -1,0 +1,66 @@
+{
+  "review_role": "independent black-box and static reviewer; no production, formal tests, Git, or old validation modified",
+  "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "reviewed_at_utc": "2026-10-25T09:46:15.424288+00:00",
+  "conclusion": "no_open_blocking_findings_with_documented_scope_limits",
+  "open_findings": [],
+  "executions": {
+    "baseline": {
+      "record": "baseline-v1-record.json",
+      "scenarios": 1,
+      "checks": 6,
+      "exit_code": 0,
+      "observation": "A held ordinary request occupies its sole slot; web.read.cancel is rejected with 503 and produces no cancellation, so the original read succeeds after release. Missing next-increment capability, not a baseline regression."
+    },
+    "candidate_debug": {
+      "record": "candidate-v1-record.json",
+      "scenarios": 4,
+      "checks": 66,
+      "exit_code": 0
+    },
+    "candidate_asan_ubsan": {
+      "record": "candidate-asan-v1-record.json",
+      "same_probe_scenarios_and_assertions_as_debug": true,
+      "scenarios": 4,
+      "checks": 66,
+      "exit_code": 0,
+      "detect_leaks": true,
+      "halt_on_error": true,
+      "persistent_diagnostic_files": [],
+      "additional_shutdown_observation": "asan-shutdowns.json: all four searchd processes exit 0; stderr retained in asan-server-1.log through asan-server-4.log."
+    }
+  },
+  "coverage": [
+    "Strict complete-JSON classification: 4096 bytes admitted, 4097 bytes ordinary; valid escaped keys accepted; decoded duplicate keys, extra fields, wrong types, operation-name strings/nesting, missing params and trailing data cannot borrow the reserve.",
+    "Existing Host, Origin, Bearer and Content-Type failures precede admission; a reserved cross-owner cancellation still receives the normal Service E_NOT_FOUND.",
+    "Ordinary saturation does not block valid cancellation; normal operations cannot borrow control capacity; fixed payer usage survives cancellation.",
+    "A held control RPC fills the single control slot. The next eligible cancellation is rejected even while the ordinary executor is demonstrably free, has no deferred state mutation, and creates no duplicate Worker request.",
+    "Health remains available during controlled saturation. SIGTERM with both lanes active completes without new work, abort or hang after fixture release; sanitizer execution covers the actual HTTP process, including new main.cpp lifetime paths."
+  ],
+  "static_review": {
+    "main_cpp_sha256": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "classifier": "Auth and original transport gates precede <=4096-byte classification; Json::parse/ShapeGuard rejects decoded duplicate keys; allowed keys and lowercase 48-hex read_id are exact. Classification neither calls Store nor Worker, and original body is reparsed by Service.",
+    "capacity": "Fixed controls(1) is separate from the unchanged ordinary executor; each bounds admitted running-plus-pending work; no overflow queue or cross-pool fallback.",
+    "lifetime": "Both executors are declared after io and after Service/Store/Worker dependencies. Signal and normal completion stop both before joins; controls join then requests. Executor destructor and constructor-failure handling retain stop/join ownership. Startup resource-exhaustion fault injection is not claimed.",
+    "documentation_sha256": {
+      "docs/HTTP_EXECUTION.md": "315f2ad20e67c736583090594f5a441e9c41b262f94b1dab4fb06c41da5e6ebf",
+      "docs/DIRECT_READ_CANCELLATION.md": "294dfeb76b29d338ba07cdb091dd148e868ae98badff95851dcfeef82d3f730a"
+    },
+    "documentation": "Reviewed current changed contracts; capacity, classification, permission preservation, lifecycle and limitations agree with the implementation."
+  },
+  "scope_limits": [
+    "The reserve only addresses ordinary business-pool saturation; the existing 64-connection limit, IO scheduling, Store contention and control-slot saturation still constrain admission or completion. No cancellation SLA is established.",
+    "4096 bytes is the reserve eligibility bound, not a replacement for the existing 2 MiB API body limit. Larger valid cancellation requests remain on the ordinary path.",
+    "Only web.read.cancel is eligible. prepare, job.control, session.cancel and other operations have no new reserved capacity.",
+    "No shared-attempt budget, timeout, payer, Worker, database schema, source authorization or restart-recovery semantics changed. Full B-24/CACHE-01 and C-15 storage/backpressure acceptance remain unsigned.",
+    "The sanitizer pass repeats the same four scenarios; counts are not added to Debug or formal CTest suite counts. This report makes no claim about unfinished full-suite, CI or publication results."
+  ],
+  "evidence_sha256": {
+    "http_probe.py": "ad3950fa38f06d8aaa433bd693afb6039a7ba3b5f04c1dcc8e37d714c653ae4a",
+    "asan_runner.py": "1ae3d9a0bcd46318029d3fe449f5488a185961f9f055070300a8713c48912120",
+    "baseline-v1-record.json": "4f180ef68046db98b6ddf487e73ceee46536981bbac7a8aef58c431d36c8bb30",
+    "candidate-v1-record.json": "adc5f49fc2b502c4442e7db97a118840951a2487e1fda1d730bf43102a423435",
+    "candidate-asan-v1-record.json": "66e33633547d20d1cfc89b400e8c30e52fd4504e7d4bacf167d5a47f52a55380",
+    "asan-shutdowns.json": "0ecfc5b0b02408b83f593bd87a9b314d2ce2cd018225578a3deacab99f2ac3bc"
+  }
+}

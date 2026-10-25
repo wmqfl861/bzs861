@@ -253,6 +253,10 @@ if(BZS_BUILD_TESTS)
     # limits; retain every assertion and a bounded guard against a hung suite.
     set_tests_properties(core PROPERTIES TIMEOUT 90)
     set_tests_properties(crawl site_publication PROPERTIES TIMEOUT 120)
+    # Retain the >8 MiB escaped snapshot and bounded-capacity cases while
+    # collecting per-case progress after a Windows-only 90 s suite timeout.
+    # This process watchdog does not change any request deadline or assertion.
+    set_tests_properties(direct_shared PROPERTIES TIMEOUT 240)
   endif()
   # 77 = dependencies missing -> reported as skipped, not passed.
   set_tests_properties(e2e_web PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)

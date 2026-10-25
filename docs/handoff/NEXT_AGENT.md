@@ -1,5 +1,19 @@
 # 下一会话接手顺序
 
+## 当前接续：HTTP 取消控制操作的保留接纳
+
+更新：2026-10-25。本批基线为已发布 `bedb45c89d293ab25a8a481df6c8300558225b0c`，tree `24b2df08c69dd2937fd6ed54bacd77bd655f7b19`。此前共享读取和成员取消均已发布；以实际包含本批的commit/tree及其自身CI为准，不重复处理旧发布阻塞。
+
+1. 先读[当前入口](../../HANDOFF_START_HERE.md)、[HTTP合同](../HTTP_EXECUTION.md)、[取消合同](../DIRECT_READ_CANCELLATION.md)和[本批验证](../../validation/http_cancel_admission_20261025/README.md)。固定控制槽仅为 `web.read.cancel`，普通request线程1–32及64连接上限保持。
+2. 分类只在Host/Origin/路由/认证/Content-Type检查后，对不超过4096字节正文使用原严格JSON解析；精确字段和48位小写hex均需满足。错误正文回普通池；两池不能互借，不额外排队，拒绝不进入Service。
+3. 保留Service主体撤权/owner/句柄复核、固定付款和逐成员交付；容量保留不等于取消完成或Worker立即停止。超过4096字节的合法正文仍按普通业务处理，2MiB总限制不变。
+4. 核对原30条HTTP方法中29条原字节保留、唯一旧取消背压用例的明确合同更新和新增4条。正式POSIX关闭测试与Windows平台skip如实区分；HTTP本体完整门禁与[Windows后续报告](../../validation/http_cancel_admission_20261025/windows-followup/final-report.json)分开。基线Windows17/18且direct_shared90.03秒超时；新runner仅增逐例flush/耗时，原34主体保持，仅Windows进程watchdog为240秒。新SHA必须观察34例完整结果，若仍停在某RUN应定位该例，不能无依据继续扩大上限。
+5. 下一步按B-24设计跨direct/durable/map/crawl/search的兼容边界，保留预算、超时、截断、重定向正文与付款身份差异。其他控制操作及连接容量不具保留槽；长期故障、独立撤销journal/隔离恢复、真实来源审核和人审qrels继续按原要求取证。
+
+版本0.1.10/schema15，六项保留决定、来源/站点和规划数量不变；唯一发布目标 `wmqfl861/bzs861`，准确父SHA非强推，审计分支只读。
+
+## 以下为上一批显式成员取消的交接历史
+
 ## 当前接续：普通直接读取的显式成员取消
 
 更新：2026-10-25。本批从本地 `f4878be865a92dd640a14d471f0fb9725e7b0796` 接手；开始时远端仍为 `346048b4ae329e750d15f1e35952aab4513e3912`。本次发布需包含两批代码与原验证材料，以实际远端 tree、完整 SHA 和该输入的 CI 为准。用户允许推送 main 的授权保持。

@@ -1,0 +1,270 @@
+{
+  "status": "passed",
+  "recorded_at_utc": "2026-10-25T09:48:36.986072+00:00",
+  "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "baseline_tree": "24b2df08c69dd2937fd6ed54bacd77bd655f7b19",
+  "checks": {
+    "historical_validation_bytes_unchanged": true,
+    "planning_bytes_unchanged": true,
+    "source_and_site_configuration_bytes_unchanged": true,
+    "other_existing_tests_bytes_unchanged": true,
+    "version_and_schema_sources_bytes_unchanged": true,
+    "features_values_unchanged": true,
+    "features_original_text_bytes_unchanged": true,
+    "http_original_29_methods_byte_identical": true,
+    "http_only_declared_contract_rewrite": true,
+    "http_method_counts": true,
+    "plan_and_status_counts_preserved": true,
+    "default_sources_and_sites_preserved": true,
+    "version_and_schema_preserved": true
+  },
+  "groups": {
+    "historical_validation": {
+      "files": 4429,
+      "baseline_bytes": 47147174,
+      "identical_files": 4429,
+      "differences": [],
+      "baseline_manifest_sha256": "81d87e340b39586ed6b7e25fa7114f610aa6c820812fd5a107fafd7bdfbca653",
+      "working_manifest_sha256": "81d87e340b39586ed6b7e25fa7114f610aa6c820812fd5a107fafd7bdfbca653",
+      "comparison": "Each local byte sequence compared directly to the baseline Git blob."
+    },
+    "planning": {
+      "files": 24,
+      "baseline_bytes": 821171,
+      "identical_files": 24,
+      "differences": [],
+      "baseline_manifest_sha256": "52f9cf3ff57943f9ec958e119839e9a3d44d388a53e81d9c564611c5499d31dd",
+      "working_manifest_sha256": "52f9cf3ff57943f9ec958e119839e9a3d44d388a53e81d9c564611c5499d31dd",
+      "comparison": "Each local byte sequence compared directly to the baseline Git blob."
+    },
+    "source_and_site_configuration": {
+      "files": 2,
+      "baseline_bytes": 25282,
+      "identical_files": 2,
+      "differences": [],
+      "baseline_manifest_sha256": "a530d58f92a6c8be72d9e9c80266e86a3decae07e127a26a012255cbbfabf812",
+      "working_manifest_sha256": "a530d58f92a6c8be72d9e9c80266e86a3decae07e127a26a012255cbbfabf812",
+      "comparison": "Each local byte sequence compared directly to the baseline Git blob."
+    },
+    "other_existing_tests": {
+      "files": 67,
+      "baseline_bytes": 1338197,
+      "identical_files": 67,
+      "differences": [],
+      "baseline_manifest_sha256": "e056fcb497b264686eade37ad57cccbcd1a50ecf6e25066a4df7383a2f31637d",
+      "working_manifest_sha256": "e056fcb497b264686eade37ad57cccbcd1a50ecf6e25066a4df7383a2f31637d",
+      "comparison": "Each local byte sequence compared directly to the baseline Git blob."
+    },
+    "version_and_schema_sources": {
+      "files": 3,
+      "baseline_bytes": 131305,
+      "identical_files": 3,
+      "differences": [],
+      "baseline_manifest_sha256": "fccc3551cfb2abfd7b4e1157e7b4d0f7ffb49d908ab158d1ff177733749d4c08",
+      "working_manifest_sha256": "fccc3551cfb2abfd7b4e1157e7b4d0f7ffb49d908ab158d1ff177733749d4c08",
+      "comparison": "Each local byte sequence compared directly to the baseline Git blob."
+    }
+  },
+  "features": {
+    "path": "docs/implementation_status.json",
+    "items": 83,
+    "baseline_array_utf8_bytes": 122468,
+    "working_array_utf8_bytes": 122468,
+    "baseline_array_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "working_array_sha256": "f709f11425939fbfb63d526a31757013ad38e12e00122d83db672b32526f889d",
+    "array_value_equal": true,
+    "original_array_text_bytes_equal": true,
+    "raw_slice": "UTF-8 bytes of the top-level features array, opening [ through closing ], including internal whitespace.",
+    "working_state_file_sha256": "99b594841d4fc64637048bfeb42168691e5cb54159ab34ae34e6d3f41eddbf51"
+  },
+  "http_methods": {
+    "path": "tests/integration.py",
+    "baseline_file_sha256": "7645efd0be2ef78f662b404ba33868ce2625cea20f12cd3eff5052588f887149",
+    "working_file_sha256": "996464a4203226d0b46d2d1e343c954c324c4fac9abac9f60ce16e62e2cdab7b",
+    "baseline_methods": 30,
+    "working_methods": 34,
+    "unchanged_original_methods": 29,
+    "unexpected_changes": [],
+    "unchanged_method_hashes": [
+      {
+        "method": "DirectReadCancellation.test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt",
+        "sha256": "6fbf57ae944a6527980ed61fd7f7b2bf44efc326ddf7a1952ef503ce2e0a5a96"
+      },
+      {
+        "method": "DirectReadCancellation.test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc",
+        "sha256": "7e4e580bccc8d5a92cff73076794545a02583335102e14d5fa574fb2b181f830"
+      },
+      {
+        "method": "DirectReadCancellation.test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http",
+        "sha256": "6cc62a4858eb337579ff070ee4104afb740b19792db986877884f4c2ad338e8f"
+      },
+      {
+        "method": "DirectReadReceipts.test_success_and_cache_hit_preserve_direct_usage_and_receipt",
+        "sha256": "70d64dcfc0b4327faa719b7969178f91e89e33770681ab0c2019b0a22d1f2bea"
+      },
+      {
+        "method": "DirectReadReceipts.test_window_error_remains_a_failure_with_its_paid_execution_receipt",
+        "sha256": "0605399e4a95784b09516bba3ac553fd23329d4fc4cee9bf587319ff18d68dad"
+      },
+      {
+        "method": "DirectReadReceipts.test_worker_failures_preserve_known_and_unknown_physical_usage",
+        "sha256": "0e993069ef56a1616f2557eae506d914d848da5e6f968ff60f86a5a0c0b8ab63"
+      },
+      {
+        "method": "HTTPExecution.test_explicit_business_limit_runs_concurrently_on_one_io_thread",
+        "sha256": "b2565c89a39eba3e530c1082f27d1ead11db1d4493bfcdbd76ee7e161096c900"
+      },
+      {
+        "method": "HTTPExecution.test_request_thread_limit_is_validated_before_listening",
+        "sha256": "3e2476dc3143d826e3d50181787b6e45a9f24a24db14f390017e60aabd9ac4eb"
+      },
+      {
+        "method": "HTTPExecution.test_saturated_requests_leave_health_and_transport_checks_live",
+        "sha256": "806e05d1cc01a886fb0d954edcb6c1febfb42e899eb57087ffa7b686b7cf02a4"
+      },
+      {
+        "method": "Integration.test_01_health_cli",
+        "sha256": "4da6e1d91db36c7ac61781eedea86ae5afb43127c2238bdc533aa65bca151bd2"
+      },
+      {
+        "method": "Integration.test_02_auth_rejected",
+        "sha256": "b2e58b80d6a9a902b52c2b374fe14e833eb5c52ddfb39f48df2f987fec3cdadc"
+      },
+      {
+        "method": "Integration.test_03_explicit_capabilities",
+        "sha256": "0c970db4391fc07ac9e93d886594fdc24f44b9261609209c65245825e9d0612c"
+      },
+      {
+        "method": "Integration.test_04_strict_input",
+        "sha256": "10c238d40fb4a1ecce39fb83b277c9d30c9ba11bfb16c9ec2de3c7dcb135a36f"
+      },
+      {
+        "method": "Integration.test_05_origin_and_host",
+        "sha256": "2ab549a3395844ff305696694c21e9178cc0a03366047578f94041f1b2ab0aae"
+      },
+      {
+        "method": "Integration.test_06_real_chinese_roundtrip",
+        "sha256": "b5eafe16a57ba5bac40228c48372eb03640931c96b23df579b884161bd472b31"
+      },
+      {
+        "method": "Integration.test_07_owner_isolation",
+        "sha256": "cc24bc01ec4bdfd49a1bd45953374ca2045dd5cee782a26b3d9b897493158fc6"
+      },
+      {
+        "method": "Integration.test_08_update_and_delete",
+        "sha256": "2e73fe4b4aa1b916c6b3d48883c0baec7e716aa4929a473b3d165331533fd230"
+      },
+      {
+        "method": "Integration.test_09_fixture_search_and_ingest_cli",
+        "sha256": "62302d91d72a69d02a971475191fc09735a457fd9595029e43888b0f958e518f"
+      },
+      {
+        "method": "Integration.test_10_job_execution_and_idempotency",
+        "sha256": "2ff25e57d2e9dd0a0da5e9d40c7f21f3ccb0ef44b78e387f418766d96ad8707e"
+      },
+      {
+        "method": "Integration.test_11_pagination_freeze",
+        "sha256": "6f672aa66136778c170c6c84466adc38067adaf9de977731269eecd9546aee50"
+      },
+      {
+        "method": "Integration.test_12_oversized_content",
+        "sha256": "ef0c77813cfcaffbbed8e56f9b953e8fc742ad5f944c0479cad692e87e5cf083"
+      },
+      {
+        "method": "Integration.test_13_slow_header_deadline",
+        "sha256": "8eff6ab2e560b7558ec49434b64e81a64abdc1d9237a51b2067a61bc1e00dbb9"
+      },
+      {
+        "method": "Integration.test_14_backup_admin_and_quarantine",
+        "sha256": "2b63c6b1009412e70238fc7973e9120ddf549fd924e1e21a782b5daf3813a5c4"
+      },
+      {
+        "method": "Integration.test_15_cli_ingest_and_query",
+        "sha256": "ce79bc94ff319ec821a24a52325e4559b5534496503752a91df92945a42c9165"
+      },
+      {
+        "method": "Integration.test_16_restart_persistence_and_controls",
+        "sha256": "69e775ea78e42b9aaa893351448580a946d14c604e4f06ef180bb84e9b41a9fe"
+      },
+      {
+        "method": "Integration.test_17_invalid_search_options_preserve_session_quota",
+        "sha256": "8dfbfef837900ddad667c0b9b3b5f7768f414d7899281a6b34f3341cbffc08ac"
+      },
+      {
+        "method": "Integration.test_18_contract_validation_and_trusted_parameters",
+        "sha256": "8ee8d150f5ffbe7796510aa78374ce43caf2e43e31a22cea30bf0de645d82435"
+      },
+      {
+        "method": "Integration.test_19_validation_does_not_enable_execution",
+        "sha256": "b28722ec7af5b7a79456b882b0d0173a7615417a451829357b277794ed243e38"
+      },
+      {
+        "method": "Integration.test_20_cli_contract_validation_and_file_limit",
+        "sha256": "6694f7ea956bd1bfff97191ae178fe088aae1985414f2a26e327696be2ed1b8b"
+      }
+    ],
+    "declared_rewrite": {
+      "baseline_method": "DirectReadCancellation.test_cancel_is_subject_to_existing_http_business_backpressure",
+      "working_method": "DirectReadCancellation.test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot",
+      "baseline_method_sha256": "30e8217907686545ccd10dc392d5558b9d6e5e1197a438420c7f42bc2ec5e2d0",
+      "working_method_sha256": "6a06103eebad391bcd4cc7415d2ebee9f502d6d1b6a29886095bb63262d1ba55",
+      "reason": "Reserved cancellation admission now bypasses a saturated ordinary pool. Ordinary-pool and control-pool saturation remain separately asserted as 503."
+    },
+    "added_methods": [
+      {
+        "method": "DirectReadCancellation.test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot",
+        "sha256": "d4c0781bcdbe20f043ba67dfb51842fe554601c6e2a8d33d9bacff7c833f5a03"
+      },
+      {
+        "method": "DirectReadCancellation.test_posix_shutdown_waits_for_active_control_before_destroying_service",
+        "sha256": "6ccaa0bdbbee378086ddc2d12d7ddc7a0e58d2ebba28bf9014dc9d0c01ad7b1c"
+      },
+      {
+        "method": "DirectReadCancellation.test_reserved_admission_requires_exact_bounded_cancel_envelope",
+        "sha256": "1e991d725c617b692c6eb196e1df5a1b40e7e16cc073749b60344ccb5650ae9c"
+      },
+      {
+        "method": "DirectReadCancellation.test_reserved_control_keeps_transport_and_owner_checks_under_saturation",
+        "sha256": "891fb0e518d8e76bbf267350272e27436facbb88dc6ad3bfc3c50ce6c8e889af"
+      }
+    ],
+    "comparison": "Exact UTF-8 method source from def through function end, extracted by AST; helper changes and the one declared rewrite are intentional.",
+    "execution_claim": "Static preservation inspection only. No test executions were performed by this script."
+  },
+  "counts": {
+    "planned_packages": 83,
+    "planned_acceptance_items": 161,
+    "slices": 10,
+    "mapped_packages": 83,
+    "mapped_acceptance_items": 161,
+    "status_from_features": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "status_declared": {
+      "partial": 37,
+      "not_started": 46,
+      "accepted": 0
+    },
+    "registered_sources": 17,
+    "enabled_sources": 0,
+    "registered_sites": 0
+  },
+  "version_and_schema": {
+    "cmake_project_version": "0.1.10",
+    "python_package_version": "0.1.10",
+    "state_version": "0.1.10",
+    "state_schema": 15,
+    "source_schema_upper_guard": 15,
+    "source_highest_user_version_assignment": 15,
+    "scope": "Static version fields plus exact baseline-byte equality of CMakeLists.txt, pyproject.toml and store.cpp; no database was opened or migrated."
+  },
+  "limitations": [
+    "This is byte/static preservation evidence, not a test run, migration run, source-approval decision or full product acceptance.",
+    "Historical validation means every file tracked below validation/ in the named baseline; new evidence files are not compared to themselves.",
+    "Parent-edited prose outside docs/planning is outside this preservation comparison."
+  ],
+  "script_path": "validation/http_cancel_admission_20261025/check_preservation.py",
+  "script_sha256": "c0368ac5377f205403210e51376aaf15a871d9c4f861570ddf64a48ba243db56"
+}

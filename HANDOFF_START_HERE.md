@@ -1,5 +1,19 @@
 # bzs861 · 当前开发入口
 
+**更新：2026-10-25｜当前增量：HTTP 取消操作的保留接纳｜0.1.10 / schema15。**
+
+本批从已发布 `bedb45c89d293ab25a8a481df6c8300558225b0c` / tree `24b2df08c69dd2937fd6ed54bacd77bd655f7b19` 接续。上一会话的直接共享读取已以 `fffd2148334fa1931b6ef7257a4b893ad1d54446` 发布，其tree与原本地f4878be相同；成员取消已以bedb45c发布，其tree与原本地930b3b1相同。本批保留全部上一批证据，用户允许推送main的授权继续有效。
+
+新增固定1个HTTP控制执行槽，只在传输验证通过后接纳不超过4096字节、严格合法的 `web.read.cancel`。普通业务池与控制池各自有界且不能互借；Service继续复核主体、owner和句柄，双池在销毁业务与IO对象前停止并join。合同见[HTTP执行](docs/HTTP_EXECUTION.md)和[直接成员取消](docs/DIRECT_READ_CANCELLATION.md)，实际基线反例、回归、独立审核及最终输入见[本批记录](validation/http_cancel_admission_20261025/README.md)。
+
+原64连接上限、socket期限、固定付款与取消交付边界保持。本批没有独立连接额度、取消时延SLA或跨direct/durable/map/crawl/search共享；版本/schema、17来源/0启用/0站点、83包/161验收/10切片与37 partial/46 not_started/0 accepted不变。先读[接手顺序](docs/handoff/NEXT_AGENT.md)，按实际发布SHA核对其自身双平台CI。
+
+发布前基线CI40180737461已结束：Linux成功，Windows17/18，唯一direct_shared在90.03秒整套超时且没有逐例日志。本批另加逐例即时计时日志和仅Windows240秒进程watchdog，全部34个测试主体与业务期限保持；根因不从旧无输出日志推断。当前最终输入、保留证明和后续复测见[Windows后续报告](validation/http_cancel_admission_20261025/windows-followup/final-report.json)，原HTTP本体阶段完整门禁原样保留。
+
+## 以下为上一批显式成员取消的交接历史
+
+下文的本地未发布状态、HTTP无保留槽及“当前”仅描述上一批开始时的输入；发布事实和本批接纳合同以上文为准。
+
 **更新：2026-10-25｜当前增量：普通直接读取的显式成员取消｜0.1.10 / schema15。**
 
 本批接手另一会话的本地提交 `f4878be865a92dd640a14d471f0fb9725e7b0796`，tree `edce78afc1c122b269f6468345fe13114f5c6070`。接手时真实远端 main 为 `346048b4ae329e750d15f1e35952aab4513e3912`，因此本次交付包含上一会话尚未发布的直接共享读取，以及本次成员取消。用户先前明确允许推送 main 的授权延续；旧审批阻塞是历史。

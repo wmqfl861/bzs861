@@ -1,0 +1,222 @@
+test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt (__main__.DirectReadCancellation.test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt) ... ERROR
+test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot (__main__.DirectReadCancellation.test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot) ... ERROR
+test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc (__main__.DirectReadCancellation.test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc) ... ERROR
+test_posix_shutdown_waits_for_active_control_before_destroying_service (__main__.DirectReadCancellation.test_posix_shutdown_waits_for_active_control_before_destroying_service) ... ERROR
+test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http (__main__.DirectReadCancellation.test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http) ... ERROR
+test_reserved_admission_requires_exact_bounded_cancel_envelope (__main__.DirectReadCancellation.test_reserved_admission_requires_exact_bounded_cancel_envelope) ... ERROR
+test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot (__main__.DirectReadCancellation.test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot) ... ERROR
+test_reserved_control_keeps_transport_and_owner_checks_under_saturation (__main__.DirectReadCancellation.test_reserved_control_keeps_transport_and_owner_checks_under_saturation) ... ERROR
+test_success_and_cache_hit_preserve_direct_usage_and_receipt (__main__.DirectReadReceipts.test_success_and_cache_hit_preserve_direct_usage_and_receipt) ... ERROR
+test_window_error_remains_a_failure_with_its_paid_execution_receipt (__main__.DirectReadReceipts.test_window_error_remains_a_failure_with_its_paid_execution_receipt) ... ERROR
+test_worker_failures_preserve_known_and_unknown_physical_usage (__main__.DirectReadReceipts.test_worker_failures_preserve_known_and_unknown_physical_usage) ... ERROR
+test_explicit_business_limit_runs_concurrently_on_one_io_thread (__main__.HTTPExecution.test_explicit_business_limit_runs_concurrently_on_one_io_thread) ... ERROR
+test_request_thread_limit_is_validated_before_listening (__main__.HTTPExecution.test_request_thread_limit_is_validated_before_listening) ... ok
+test_saturated_requests_leave_health_and_transport_checks_live (__main__.HTTPExecution.test_saturated_requests_leave_health_and_transport_checks_live) ... ERROR
+setUpClass (__main__.Integration) ... ERROR
+
+======================================================================
+ERROR: test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt (__main__.DirectReadCancellation.test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot (__main__.DirectReadCancellation.test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc (__main__.DirectReadCancellation.test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_posix_shutdown_waits_for_active_control_before_destroying_service (__main__.DirectReadCancellation.test_posix_shutdown_waits_for_active_control_before_destroying_service)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http (__main__.DirectReadCancellation.test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_reserved_admission_requires_exact_bounded_cancel_envelope (__main__.DirectReadCancellation.test_reserved_admission_requires_exact_bounded_cancel_envelope)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot (__main__.DirectReadCancellation.test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_reserved_control_keeps_transport_and_owner_checks_under_saturation (__main__.DirectReadCancellation.test_reserved_control_keeps_transport_and_owner_checks_under_saturation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 739, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_success_and_cache_hit_preserve_direct_usage_and_receipt (__main__.DirectReadReceipts.test_success_and_cache_hit_preserve_direct_usage_and_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 605, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_window_error_remains_a_failure_with_its_paid_execution_receipt (__main__.DirectReadReceipts.test_window_error_remains_a_failure_with_its_paid_execution_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 605, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_worker_failures_preserve_known_and_unknown_physical_usage (__main__.DirectReadReceipts.test_worker_failures_preserve_known_and_unknown_physical_usage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 605, in setUp
+    self.server = RunningServer(root, no_worker=True, extra_args=[
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_explicit_business_limit_runs_concurrently_on_one_io_thread (__main__.HTTPExecution.test_explicit_business_limit_runs_concurrently_on_one_io_thread)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 560, in test_explicit_business_limit_runs_concurrently_on_one_io_thread
+    server, worker = self.start_held(request_threads=2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 519, in start_held
+    server = RunningServer(root, no_worker=True, extra_args=args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: test_saturated_requests_leave_health_and_transport_checks_live (__main__.HTTPExecution.test_saturated_requests_leave_health_and_transport_checks_live)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 533, in test_saturated_requests_leave_health_and_transport_checks_live
+    server, worker = self.start_held()
+                     ^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 519, in start_held
+    server = RunningServer(root, no_worker=True, extra_args=args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+======================================================================
+ERROR: setUpClass (__main__.Integration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 98, in setUpClass
+    cls.server = RunningServer(Path(cls.tmp.name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 40, in __init__
+    self.start()
+  File "/workspace/scratch/ed564c9de2af/bzs861/tests/integration.py", line 55, in start
+    raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
+RuntimeError: Server exited before readiness: E_STARTUP: filesystem error: cannot make canonical path: No such file or directory [/workspace/scratch/ed564c9de2af/bzs861/fixtures]
+
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.297s
+
+FAILED (errors=14)

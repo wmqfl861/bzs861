@@ -1,0 +1,35 @@
+{
+  "run_id": 40180737461,
+  "head_sha": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "status": "completed",
+  "conclusion": "failure",
+  "url": "https://github.com/wmqfl861/bzs861/actions/runs/40180737461",
+  "jobs": [
+    {
+      "id": 121131070541,
+      "name": "linux",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-25T09:27:50Z",
+      "completed_at": "2026-10-25T09:40:12Z",
+      "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/40180737461/job/121131070541"
+    },
+    {
+      "id": 121131070653,
+      "name": "windows",
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-25T09:27:50Z",
+      "completed_at": "2026-10-25T09:53:30Z",
+      "html_url": "https://github.com/wmqfl861/bzs861/actions/runs/40180737461/job/121131070653"
+    }
+  ],
+  "windows": {
+    "passed_suites": 17,
+    "total_suites": 18,
+    "failed_suite": "direct_shared",
+    "failure": "whole-process timeout after90.03s, no per-case stdout in old runner",
+    "original_timeout_seconds": 90
+  },
+  "scope": "Observed baseline only; current candidate requires its own exact-head CI."
+}

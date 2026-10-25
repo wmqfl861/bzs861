@@ -1,5 +1,15 @@
 # GitHub 交付与开发历史
 
+## 2026-10-25 已发布基线与 HTTP 取消接纳接续
+
+直接共享读取已经发布为 `fffd2148334fa1931b6ef7257a4b893ad1d54446`，其tree `edce78afc1c122b269f6468345fe13114f5c6070` 与原本地f4878be完全相同。其后成员取消发布为 `bedb45c89d293ab25a8a481df6c8300558225b0c`，tree `24b2df08c69dd2937fd6ed54bacd77bd655f7b19` 与原本地930b3b1完全相同，远端main已取回并对齐。该基线的实际[CI 40180737461](https://github.com/wmqfl861/bzs861/actions/runs/40180737461)与本批自己的CI分开核对。
+
+本批在bedb45c上新增固定的HTTP取消控制槽，准确源码/二进制、原失败及完成的验证见[本批记录](../validation/http_cancel_admission_20261025/README.md)。继续以准确远端父SHA、`expected_sha`和`force=false`发布，取回同一tree；不预写本批未来提交或未来CI。终端无写入凭据时仍使用已授权GitHub连接，用户推送main授权保持，无需重复申请。审计分支只读，版本/schema及来源启用不变。
+
+CI40180737461实际结论为Linux成功、Windows失败（17/18套完成通过，direct_shared整套90.03秒超时，无逐例输出）。本次发布还包含runner逐例flush和仅Windows240秒watchdog；其范围、原始失败及当前验证见[后续报告](../validation/http_cancel_admission_20261025/windows-followup/final-report.json)。调整不等于已证明根因或新CI成功，必须查询新准确SHA的结果。
+
+以下成员取消的“接手/待发布”段落为其发布前历史，不是当前阻塞。
+
 ## 2026-10-25 接手与发布
 
 接手时本地f4878be包含直接共享读取，远端main仍为346048b4；本次成员取消建立在该本地提交上。本次应把两批共同发布，不声称f4878be已经是远端提交。准确本地/远端commit、tree与CI结果见[本批记录](../validation/direct_cancel_20261025/README.md)及当前Git/Actions。

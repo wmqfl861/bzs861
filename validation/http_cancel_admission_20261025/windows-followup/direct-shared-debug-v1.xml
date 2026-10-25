@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Linux-c++"
+	tests="1"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname="75d3f43ee37e"
+	time="20"
+	timestamp="2026-10-25T02:57:13"
+	>
+	<testcase name="direct_shared" classname="direct_shared" time="20.6715" status="run">
+		<properties/>
+		<system-out>RUN same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage
+PASS same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage (82 ms)
+RUN shared_conditional_refresh_commits_the_bound_metadata_only_once
+PASS shared_conditional_refresh_commits_the_bound_metadata_only_once (47 ms)
+RUN shared_members_keep_their_own_windows_and_freshness_bounds
+PASS shared_members_keep_their_own_windows_and_freshness_bounds (28 ms)
+RUN an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member
+PASS an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member (178 ms)
+RUN owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence
+PASS owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence (212 ms)
+RUN timeout_and_direct_parameters_do_not_borrow_durable_read_budgets
+PASS timeout_and_direct_parameters_do_not_borrow_durable_read_budgets (89 ms)
+RUN changed_or_unproven_request_profiles_never_join_an_active_flight
+PASS changed_or_unproven_request_prof...
+[This part of the test output was removed since it exceeds the threshold of 1024 bytes.]
+</system-out>
+	</testcase>
+</testsuite>

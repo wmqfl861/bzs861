@@ -1,0 +1,27 @@
+{
+  "recorded_at_utc": "2026-10-25T10:01:28.139504+00:00",
+  "frozen_execution_inputs_match": true,
+  "inputs_checked": 151,
+  "utf8_evidence_files_scanned": 69,
+  "runtime_or_credential_pattern_findings": [],
+  "format_check": {
+    "raw_result": 2,
+    "raw_output": "validation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:188: trailing whitespace.\n+2026-10-25T09:28:03.1502582Z (Reading database ... \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:244: trailing whitespace.\n+2026-10-25T09:28:08.5317028Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:246: trailing whitespace.\n+2026-10-25T09:28:08.5317865Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:248: trailing whitespace.\n+2026-10-25T09:28:08.5318201Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:250: trailing whitespace.\n+2026-10-25T09:28:08.5318570Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:252: trailing whitespace.\n+2026-10-25T09:28:08.5319220Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:510: trailing whitespace.\n+2026-10-25T09:28:27.7242959Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:513: trailing whitespace.\n+2026-10-25T09:28:27.7243803Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:647: trailing whitespace.\n+2026-10-25T09:33:17.6344660Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:649: trailing whitespace.\n+2026-10-25T09:33:17.6345066Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:676: trailing whitespace.\n+2026-10-25T09:33:17.7142566Z \nvalidation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log:680: trailing whitespace.\n+2026-10-25T09:33:17.7144548Z \nvalidation/http_cancel_admission_20261025/windows-followup/direct-shared-runner.diff:6: trailing whitespace.\n+ \n",
+    "verbatim_evidence_whitespace_exceptions": [
+      "validation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log",
+      "validation/http_cancel_admission_20261025/windows-followup/direct-shared-runner.diff"
+    ],
+    "all_other_paths_command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      ".",
+      ":(exclude)validation/http_cancel_admission_20261025/baseline-ci/linux-job-121131070541.log",
+      ":(exclude)validation/http_cancel_admission_20261025/windows-followup/direct-shared-runner.diff"
+    ],
+    "all_other_paths_exit_code": 0
+  },
+  "scope": "Verbatim CI output and a verbatim patch retain their original whitespace; production/test/document formatting remains checked. Pattern scan is targeted, not a general secrecy guarantee."
+}

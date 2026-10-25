@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import queue
 import secrets
+import signal
 import socket
 import subprocess
 import tempfile
@@ -53,6 +54,7 @@ class RunningServer:
             if not line:
                 raise RuntimeError('Server exited before readiness: ' + (self.root / 'server.log').read_text())
             message = json.loads(line)
+            self.ready = message
             self.port = message['port']
         except Exception:
             self.stop()
@@ -404,6 +406,8 @@ class HeldWorker:
 
     def __init__(self, response=None):
         self.release = threading.Event()
+        self.cancel_release = threading.Event()
+        self.cancel_release.set()
         self.condition = threading.Condition()
         self.calls = 0
         self.active = 0
@@ -443,7 +447,13 @@ class HeldWorker:
                     with fixture.condition:
                         fixture.direct_cancellations.append(request['params']['control_id'])
                         fixture.condition.notify_all()
-                    self.reply({'cancel_requested': True})
+                    try:
+                        if not fixture.cancel_release.wait(15):
+                            self.send_error(504)
+                            return
+                        self.reply({'cancel_requested': True})
+                    except (BrokenPipeError, ConnectionError):
+                        pass
                     return
                 if request['method'] not in ('fetch.extract', 'fetch.extract_direct'):
                     self.send_error(400)
@@ -478,8 +488,13 @@ class HeldWorker:
         with self.condition:
             return self.condition.wait_for(lambda: self.calls >= count, timeout=5)
 
+    def wait_cancellations(self, count):
+        with self.condition:
+            return self.condition.wait_for(lambda: len(self.direct_cancellations) >= count, timeout=5)
+
     def close(self):
         self.release.set()
+        self.cancel_release.set()
         self.server.shutdown()
         self.server.server_close()
         self.thread.join(timeout=5)
@@ -727,6 +742,7 @@ class DirectReadCancellation(unittest.TestCase):
             '--worker-token-file', str(token), '--sources', str(sources)])
         self.addCleanup(self.server.stop)
         self.addCleanup(self.worker.release.set)
+        self.addCleanup(self.worker.cancel_release.set)
 
     def prepare(self):
         status, body = self.server.call('web.read.prepare')
@@ -747,6 +763,25 @@ class DirectReadCancellation(unittest.TestCase):
         self.assertIs(response['cancel_requested'], accepted)
         self.assertIs(response['physical_cancel_requested'], physical)
         return response
+
+    def business_threads(self, count):
+        self.server.stop()
+        index = self.server.extra_args.index('--request-threads')
+        self.server.extra_args[index + 1] = str(count)
+        self.server.start()
+        self.assertEqual(self.server.ready['request_threads'], count)
+        self.assertEqual(self.server.ready['control_threads'], 1)
+        self.assertEqual(self.server.ready['control_body_limit_bytes'], 4096)
+
+    def assert_backpressure(self, operation, params=None, **kwargs):
+        status, denied = self.server.call(operation, params, timeout=3, **kwargs)
+        self.assertEqual(status, 503, denied)
+        self.assertEqual(denied['errors'][0]['code'], 'E_REQUEST_BACKPRESSURE')
+
+    def assert_health(self):
+        with self.server.opener.open(f'http://127.0.0.1:{self.server.port}/healthz', timeout=3) as response:
+            self.assertEqual(response.status, 200)
+            self.assertTrue(json.load(response)['result']['ready'])
 
     def test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http(self):
         status, caps = self.server.call('capabilities')
@@ -832,11 +867,10 @@ class DirectReadCancellation(unittest.TestCase):
         self.assertEqual(self.worker.calls, 2)
         self.assertEqual(self.worker.direct_cancellations, [])
 
-    def test_cancel_is_subject_to_existing_http_business_backpressure(self):
-        self.server.stop()
-        index = self.server.extra_args.index('--request-threads')
-        self.server.extra_args[index + 1] = '1'
-        self.server.start()
+    def test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot(self):
+        # This replaces the previous contract in which cancellation used the
+        # ordinary pool too. Both pools still reject their own excess work.
+        self.business_threads(1)
         read_id = self.prepare()
         with ThreadPoolExecutor(max_workers=1) as clients:
             pending = clients.submit(self.server.call, 'web.read', {
@@ -844,19 +878,201 @@ class DirectReadCancellation(unittest.TestCase):
                 'timeout_ms': 10000, 'read_id': read_id})
             try:
                 self.assertTrue(self.worker.wait_calls(1))
-                status, denied = self.server.call('web.read.cancel', {'read_id': read_id}, timeout=3)
-                self.assertEqual(status, 503, denied)
-                self.assertEqual(denied['errors'][0]['code'], 'E_REQUEST_BACKPRESSURE')
+                self.assert_backpressure('stats')
+                self.assert_backpressure('web.read.prepare')
+                self.assert_backpressure('web.read', {'url': 'https://cancel.example/not-admitted'})
                 self.assertEqual(self.worker.direct_cancellations, [])
-                with self.server.opener.open(f'http://127.0.0.1:{self.server.port}/healthz', timeout=3) as response:
-                    self.assertEqual(response.status, 200)
+                self.assert_health()
+                self.cancel(read_id, physical=True)
+                self.assertTrue(self.worker.wait_cancellations(1))
+                self.assertFalse(pending.done(), 'logical cancellation must not transfer physical ownership')
+                self.assert_backpressure('web.read.prepare')
+                self.assertEqual(self.worker.calls, 1, 'rejected ordinary requests must not dispatch')
             finally:
                 self.worker.release.set()
-            status, completed = pending.result(timeout=5)
-        self.assertEqual(status, 200, completed)
-        self.assertEqual(completed['result']['content']['text'], self.body_text)
-        self.cancel(read_id, physical=False, accepted=False)
+            status, cancelled = pending.result(timeout=5)
+        self.assertEqual(status, 409, cancelled)
+        self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+        self.assertNotIn('result', cancelled)
+        self.assert_payer_receipt(cancelled, 1, len(self.body_text.encode('utf-8')))
+        self.cancel(read_id, physical=False)
         self.assertEqual(self.worker.calls, 1)
+
+    def test_full_control_slot_rejects_without_queue_or_borrowing_free_business_slot(self):
+        self.business_threads(2)
+        first, second, third = self.prepare(), self.prepare(), self.prepare()
+        self.worker.cancel_release.clear()
+        with ThreadPoolExecutor(max_workers=3) as clients:
+            payer = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/control-held', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': first})
+            control = None
+            other = None
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                control = clients.submit(self.server.call, 'web.read.cancel', {'read_id': first})
+                self.assertTrue(self.worker.wait_cancellations(1), 'first control RPC must reach its held endpoint')
+                self.assertFalse(control.done())
+                self.assert_backpressure('web.read.cancel', {'read_id': second})
+                self.assertFalse(control.done(), 'the preceding 503 must be observed while control is occupied')
+                status, stats = self.server.call('stats', timeout=3)
+                self.assertEqual(status, 200, f'an unused ordinary slot exists but cannot take a control request: {stats}')
+                self.assert_health()
+                self.assertEqual(len(self.worker.direct_cancellations), 1)
+                # A rejected cancellation must not run later from a queue. The
+                # same prepared handle can still start real ordinary work.
+                other = clients.submit(self.server.call, 'web.read', {
+                    'url': 'https://cancel.example/not-cancelled', 'freshness': 'refresh',
+                    'timeout_ms': 10000, 'read_id': second})
+                self.assertTrue(self.worker.wait_calls(2))
+                self.worker.cancel_release.set()
+                status, response = control.result(timeout=5)
+                self.assertEqual(status, 200, response)
+                self.assertTrue(response['result']['physical_cancel_requested'])
+                self.cancel(third, physical=False)
+                self.assertEqual(len(self.worker.direct_cancellations), 1)
+            finally:
+                self.worker.cancel_release.set()
+                self.worker.release.set()
+            status, cancelled = payer.result(timeout=5)
+            self.assertEqual(status, 409, cancelled)
+            self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+            if other is not None:
+                status, completed = other.result(timeout=5)
+                self.assertEqual(status, 200, completed)
+                self.assertEqual(completed['result']['content']['text'], self.body_text)
+        self.assertEqual(self.worker.calls, 2)
+        self.assertEqual(len(self.worker.direct_cancellations), 1)
+
+    def test_reserved_admission_requires_exact_bounded_cancel_envelope(self):
+        self.business_threads(1)
+        active, untouched, boundary = self.prepare(), self.prepare(), self.prepare()
+        valid = {'operation': 'web.read.cancel', 'params': {'read_id': untouched}}
+        encode = lambda value: json.dumps(value, separators=(',', ':')).encode('utf-8')
+        wire = encode(valid)
+        malformed = [
+            ('extra root key', {**valid, 'extra': True}),
+            ('extra params key', {'operation': 'web.read.cancel', 'params': {'read_id': untouched, 'extra': True}}),
+            ('missing params', {'operation': 'web.read.cancel'}),
+            ('array params', {'operation': 'web.read.cancel', 'params': [{'read_id': untouched}]}),
+            ('nested identity', {'operation': 'web.read.cancel', 'params': {'read_id': {'read_id': untouched}}}),
+            ('string params', {'operation': 'web.read.cancel', 'params': json.dumps({'read_id': untouched})}),
+            ('uppercase identity', {'operation': 'web.read.cancel', 'params': {'read_id': 'A' * 48}}),
+            ('short identity', {'operation': 'web.read.cancel', 'params': {'read_id': untouched[:-1]}}),
+            ('long identity', {'operation': 'web.read.cancel', 'params': {'read_id': untouched + '0'}}),
+            ('nonhex identity', {'operation': 'web.read.cancel', 'params': {'read_id': 'z' * 48}}),
+            ('nonstring identity', {'operation': 'web.read.cancel', 'params': {'read_id': 1}}),
+            ('operation suffix', {'operation': 'web.read.cancel.extra', 'params': {'read_id': untouched}}),
+            ('quoted fake envelope', json.dumps(valid)),
+            ('nested fake envelope', {'operation': 'stats', 'params': {'payload': valid}}),
+        ]
+        raw_cases = [(name, encode(value)) for name, value in malformed]
+        raw_cases.extend([
+            ('duplicate operation', ('{"operation":"stats","operation":"web.read.cancel","params":{"read_id":"' + untouched + '"}}').encode()),
+            ('duplicate identity', ('{"operation":"web.read.cancel","params":{"read_id":"' + untouched + '","read_id":"' + untouched + '"}}').encode()),
+            ('trailing garbage', wire + b' trailing'),
+            ('over body bound', b' ' * (4097 - len(wire)) + wire),
+        ])
+        with ThreadPoolExecutor(max_workers=1) as clients:
+            pending = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/classifier-held', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': active})
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                for name, raw in raw_cases:
+                    with self.subTest(case=name):
+                        self.assert_backpressure('', raw=raw)
+                self.assertEqual(self.worker.direct_cancellations, [])
+                bounded = encode({'operation': 'web.read.cancel', 'params': {'read_id': boundary}})
+                bounded += b' ' * (4096 - len(bounded))
+                self.assertEqual(len(bounded), 4096)
+                status, accepted = self.server.call('', raw=bounded, timeout=3)
+                self.assertEqual(status, 200, accepted)
+                self.assertTrue(accepted['result']['cancel_requested'])
+                self.assertFalse(accepted['result']['physical_cancel_requested'])
+                self.assert_health()
+                self.assertEqual(self.worker.calls, 1)
+            finally:
+                self.worker.release.set()
+            self.assertEqual(pending.result(timeout=5)[0], 200)
+        status, result = self.server.call('web.read', {
+            'url': 'https://cancel.example/classifier-untouched', 'freshness': 'refresh', 'read_id': untouched})
+        self.assertEqual(status, 200, f'ineligible envelopes must not silently cancel a prepared member: {result}')
+        self.assertEqual(self.worker.calls, 2)
+        self.assertEqual(self.worker.direct_cancellations, [])
+
+    def test_reserved_control_keeps_transport_and_owner_checks_under_saturation(self):
+        self.business_threads(1)
+        read_id = self.prepare()
+        with ThreadPoolExecutor(max_workers=1) as clients:
+            pending = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/auth-held', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': read_id})
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                cases = [
+                    ({'token': 'invalid'}, 401, 'E_AUTH'),
+                    ({'token': ''}, 401, 'E_AUTH'),
+                    ({'extra_headers': {'Host': 'untrusted.example'}}, 403, 'E_HOST'),
+                    ({'extra_headers': {'Origin': 'https://untrusted.example'}}, 403, 'E_ORIGIN'),
+                    ({'extra_headers': {'Content-Type': 'text/plain'}}, 415, 'E_CONTENT_TYPE'),
+                    ({'token': self.server.bob}, 404, 'E_NOT_FOUND'),
+                ]
+                for kwargs, expected, code in cases:
+                    with self.subTest(code=code, status=expected):
+                        status, denied = self.server.call('web.read.cancel', {'read_id': read_id}, timeout=3, **kwargs)
+                        self.assertEqual(status, expected, denied)
+                        self.assertEqual(denied['errors'][0]['code'], code)
+                self.assertEqual(self.worker.direct_cancellations, [])
+                self.assertFalse(pending.done())
+                self.assert_health()
+                self.cancel(read_id, physical=True)
+            finally:
+                self.worker.release.set()
+            status, cancelled = pending.result(timeout=5)
+            self.assertEqual(status, 409, cancelled)
+            self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+        self.assertEqual(self.worker.calls, 1)
+        self.assertEqual(len(self.worker.direct_cancellations), 1)
+
+    @unittest.skipUnless(os.name == 'posix', 'SIGTERM graceful control-worker join is a POSIX lifecycle test')
+    def test_posix_shutdown_waits_for_active_control_before_destroying_service(self):
+        self.business_threads(1)
+        read_id = self.prepare()
+        self.worker.cancel_release.clear()
+        with ThreadPoolExecutor(max_workers=2) as clients:
+            pending = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/shutdown-held', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': read_id})
+            control = None
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                control = clients.submit(self.server.call, 'web.read.cancel', {'read_id': read_id})
+                self.assertTrue(self.worker.wait_cancellations(1))
+                # Finish the ordinary request first: only the held control RPC
+                # can require a request-executor join after the signal.
+                self.worker.release.set()
+                status, cancelled = pending.result(timeout=5)
+                self.assertEqual(status, 409, cancelled)
+                self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+                self.assertFalse(control.done())
+                self.server.process.send_signal(signal.SIGTERM)
+                with self.assertRaises(subprocess.TimeoutExpired):
+                    self.server.process.wait(timeout=0.15)
+                self.worker.cancel_release.set()
+                self.assertEqual(self.server.process.wait(timeout=5), 0)
+            finally:
+                self.worker.cancel_release.set()
+                self.worker.release.set()
+            if control is not None:
+                # IO stops accepting/writing responses at SIGTERM. Graceful
+                # executor completion is not an HTTP delivery guarantee.
+                try:
+                    control.result(timeout=5)
+                except (ConnectionError, urllib.error.URLError, TimeoutError):
+                    pass
+        self.assertEqual(self.worker.calls, 1)
+        self.assertEqual(len(self.worker.direct_cancellations), 1)
 
 
 if __name__ == '__main__':

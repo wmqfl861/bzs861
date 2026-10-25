@@ -1,0 +1,505 @@
+{
+  "status": "final_local_gates_passed_with_independent_review; remote_containing_commit_must_be_checked_separately",
+  "recorded_at_utc": "2026-10-25T09:49:53.876490+00:00",
+  "repository": "wmqfl861/bzs861",
+  "baseline_commit": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+  "baseline_tree": "24b2df08c69dd2937fd6ed54bacd77bd655f7b19",
+  "scope": "Fixed one-slot HTTP admission for exact <=4096-byte web.read.cancel envelopes; existing transport/auth checks, independent pool bounds, Service permission checks, and owned thread shutdown.",
+  "production_files": [
+    "apps/searchd/main.cpp"
+  ],
+  "formal_test_files": [
+    "tests/integration.py"
+  ],
+  "contract": "docs/HTTP_EXECUTION.md",
+  "version": "0.1.10",
+  "schema_before": 15,
+  "schema_after": 15,
+  "migration_added": false,
+  "acceptance_mapping": {
+    "CACHE-01": [
+      "FT-032",
+      "B-24"
+    ],
+    "API-00": [
+      "FT-078",
+      "C-01"
+    ],
+    "CONTRACT-01": [
+      "FT-003"
+    ],
+    "meaning": "Related partial scope only; no full work package or acceptance ID is signed off."
+  },
+  "final_ctest": {
+    "passed": 28,
+    "failed": 0,
+    "disabled": 0,
+    "skipped": 0,
+    "seconds": 209.836,
+    "xml": "local/final-ctest-v1.xml",
+    "log": "local/final-ctest-v1.log",
+    "complete_detail_log": "local/final-ctest-v1-detail.log",
+    "python_worker_passed": 1332,
+    "http_cases_passed": 34,
+    "native_direct_shared": {
+      "groups": 34,
+      "assertions": 10259,
+      "failed": 0
+    }
+  },
+  "focused_http": {
+    "debug": {
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "record": "local/http-debug-v2.json"
+    },
+    "asan_ubsan": {
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "record": "local/http-asan-v1.json",
+      "detect_leaks": true,
+      "persistent_diagnostics": [],
+      "scope": "Actual sanitized searchd and searchctl, including changed HTTP admission and shutdown paths; sanitizer environment is in recorded command."
+    },
+    "windows_scope": "New graceful SIGTERM test is explicitly POSIX-only and skipped on Windows. Other 33 methods remain platform-neutral. This is not a claim of an already completed current Windows run."
+  },
+  "additional_gates": {
+    "design_contracts": {
+      "passed": 34,
+      "record": "local/plan-contracts-v1.json"
+    },
+    "planning_guard": {
+      "passed": 13,
+      "record": "local/plan-guard-v1.json"
+    },
+    "pip_check": {
+      "exit_code": 0,
+      "record": "local/dependency-check-v1.json"
+    }
+  },
+  "independent_review": {
+    "record": "independent/final-review.json",
+    "record_sha256": "4ad5dbf50d0d14c2ebcab67fd5b337cf2b2b4ac60dcf9c505ce15a3ad2ffa679",
+    "conclusion": "no_open_blocking_findings_with_documented_scope_limits",
+    "executions": {
+      "baseline": {
+        "record": "baseline-v1-record.json",
+        "scenarios": 1,
+        "checks": 6,
+        "exit_code": 0,
+        "observation": "A held ordinary request occupies its sole slot; web.read.cancel is rejected with 503 and produces no cancellation, so the original read succeeds after release. Missing next-increment capability, not a baseline regression."
+      },
+      "candidate_debug": {
+        "record": "candidate-v1-record.json",
+        "scenarios": 4,
+        "checks": 66,
+        "exit_code": 0
+      },
+      "candidate_asan_ubsan": {
+        "record": "candidate-asan-v1-record.json",
+        "same_probe_scenarios_and_assertions_as_debug": true,
+        "scenarios": 4,
+        "checks": 66,
+        "exit_code": 0,
+        "detect_leaks": true,
+        "halt_on_error": true,
+        "persistent_diagnostic_files": [],
+        "additional_shutdown_observation": "asan-shutdowns.json: all four searchd processes exit 0; stderr retained in asan-server-1.log through asan-server-4.log."
+      }
+    },
+    "scope": "Same four black-box scenarios under Debug and ASan/UBSan. Baseline capability counterexample is separate. Counts overlap formal HTTP and are not summed."
+  },
+  "preservation": {
+    "record": "preservation.json",
+    "record_sha256": "615bfb0629dccc5fa7116a59781bd8454dbd415947097a29364f73bd7bbec501",
+    "summary": "4429 prior validation files, 24 planning files, original feature-array bytes and values, original test bodies except the declared contract rewrite, configs and version/schema sources preserved. See exact counts and hashes in report."
+  },
+  "formal_http_change": {
+    "baseline_methods": 30,
+    "unchanged_original_method_bodies": 29,
+    "rewritten_contract_method": {
+      "before": "DirectReadCancellation.test_cancel_is_subject_to_existing_http_business_backpressure",
+      "after": "DirectReadCancellation.test_reserved_cancel_bypasses_full_business_pool_without_lending_its_slot"
+    },
+    "new_methods": 4,
+    "current_methods": 34
+  },
+  "commands": {
+    "build-debug-v1": {
+      "command": [
+        "cmake",
+        "--build",
+        "--preset",
+        "dev",
+        "-j",
+        "3"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:40:59.922410+00:00",
+      "seconds": 14.568,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "build-debug-v1.log",
+      "output_sha256": "e1f5d1a015c18c9b6cdaea80ed2d3081ae68adfc8def8585abba007b63482a42",
+      "record": "local/build-debug-v1.json"
+    },
+    "build-http-asan-v1": {
+      "command": [
+        "cmake",
+        "--build",
+        "build-asan",
+        "--target",
+        "searchd",
+        "searchctl",
+        "-j",
+        "3"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:43:41.592533+00:00",
+      "seconds": 27.256,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "build-http-asan-v1.log",
+      "output_sha256": "7640a981db82504932a6a255711a99c7c786d59bf111ee5460e24c3c1b9380f2",
+      "record": "local/build-http-asan-v1.json"
+    },
+    "http-debug-v2": {
+      "command": [
+        ".venv/bin/python",
+        "tests/integration.py",
+        "--server",
+        "/workspace/scratch/ed564c9de2af/bzs861/build/searchd",
+        "--cli",
+        "/workspace/scratch/ed564c9de2af/bzs861/build/searchctl",
+        "--fixtures",
+        "/workspace/scratch/ed564c9de2af/bzs861/tests/fixtures"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:43:44.094571+00:00",
+      "seconds": 6.794,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "http-debug-v2.log",
+      "output_sha256": "a5a2f1806415bc9d318f3115576d81e7bf0ef558654fc47af6850b5dfdb61fd9",
+      "record": "local/http-debug-v2.json"
+    },
+    "http-asan-v1": {
+      "command": [
+        "env",
+        "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1:abort_on_error=1:log_path=/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/local/asan-diagnostics/asan",
+        "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1:log_path=/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/local/asan-diagnostics/ubsan",
+        ".venv/bin/python",
+        "tests/integration.py",
+        "--server",
+        "/workspace/scratch/ed564c9de2af/bzs861/build-asan/searchd",
+        "--cli",
+        "/workspace/scratch/ed564c9de2af/bzs861/build-asan/searchctl",
+        "--fixtures",
+        "/workspace/scratch/ed564c9de2af/bzs861/tests/fixtures"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:45:07.972697+00:00",
+      "seconds": 10.263,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "http-asan-v1.log",
+      "output_sha256": "5bb4f600e3e759e01606780ea23c209b8d920678cdc02fc4ce83e9b0722de720",
+      "record": "local/http-asan-v1.json"
+    },
+    "final-ctest-v1": {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "build",
+        "--output-on-failure",
+        "--output-junit",
+        "../validation/http_cancel_admission_20261025/local/final-ctest-v1.xml"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:44:31.367718+00:00",
+      "seconds": 209.836,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "final-ctest-v1.log",
+      "output_sha256": "14752b26fa1fb37ed5e57d7eb87961078b6963f399fea063463369603fb36240",
+      "record": "local/final-ctest-v1.json"
+    },
+    "plan-guard-v1": {
+      "command": [
+        ".venv/bin/python",
+        "tools/test_plan_guard.py"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:47:55.564753+00:00",
+      "seconds": 0.729,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "plan-guard-v1.log",
+      "output_sha256": "e329d128e9b9eea66f23f615e2ef2efd515d0c096520945f0a4cb49c42d3480f",
+      "record": "local/plan-guard-v1.json"
+    },
+    "plan-contracts-v1": {
+      "command": [
+        ".venv/bin/python",
+        "docs/planning/tools/validate_contracts.py"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:47:55.574953+00:00",
+      "seconds": 0.476,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "plan-contracts-v1.log",
+      "output_sha256": "a460aa22e77afc4bae6f55fe55b96793a7e7c6a499eaa0ccf4bd9fb09b3a4c08",
+      "record": "local/plan-contracts-v1.json"
+    },
+    "dependency-check-v1": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "started_utc": "2026-10-25T09:47:55.582326+00:00",
+      "seconds": 0.276,
+      "exit_code": 0,
+      "inputs_unchanged": true,
+      "output": "dependency-check-v1.log",
+      "output_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09",
+      "record": "local/dependency-check-v1.json"
+    }
+  },
+  "execution_inputs_sha256": {
+    "src/batch.cpp": "ab8e4fd0b9b16645dc37bd7df319177cab81d026be7bcca104b25d0bbdcd9fd1",
+    "src/contracts.cpp": "51d7e1f356c6443665eb634cf35201ce01f64da193841d1cc2b1ff03292bb1e0",
+    "src/crawl.cpp": "21a878d0268933e572dbd63bd9d8b5a73649daaba4b45de4ce01c2f454a35271",
+    "src/crawl_trap.cpp": "8e86a80fb0d3f72fad552b3e41fc57ac3fb311d7fe5b2049c0133a19652fd8d1",
+    "src/highlight.cpp": "95c588d69ee6d1540519dfc9bc81c62d07e46c0961ed73293ae49a5ed82dce66",
+    "src/html.cpp": "4078688efe4b67d21a01691678319638756bb8784f2892de677a093fa3be2c67",
+    "src/http_cache.cpp": "3816958a960d34945b56ee70ae8186e835c0fe65b963cbf9e06d914f1ce6f22b",
+    "src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "src/map.cpp": "52f3d69d78d4b2c62c1d7bbf3f02b27309d9fbe5cb240a03690d42719f19ea00",
+    "src/map_service.cpp": "0fdacda671a76ffee89cb15dc4bca5fc46889eb14488a509c777ce77df9de60e",
+    "src/publication.cpp": "d518340e4e0252a0edffb6e11e8d10dfc812c42c3ecbbbde68b7306873132708",
+    "src/query.cpp": "3191e9f4406e7127d1a38ba35670ef22508a718651bd1206dbe10bed10c6bee8",
+    "src/retention.cpp": "a37065ee4f3d6088f90c5b2bbcd77e7b90b2f4567c70d4520897494c23773313",
+    "src/revocation.cpp": "fa19355dfebd323ed9395023e89886eeedc661de974fb36c4c8140f111e792e3",
+    "src/search_modes.cpp": "9754751f7e0ea091e1cf22cb7959bf5399784998b1ebfe36f2e6150828c242fc",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "src/sessions.cpp": "f15c1baba6781b8c711bd7cebbe028591cf44f6afc683f78ae34c86095bd7702",
+    "src/sites.cpp": "b8e8f34baca47e732e4aa14a8369c8b171d00879426175819ea901bc828b0d49",
+    "src/source_publication.cpp": "fd5e87388959ca59e5a7f46795b21ced95f72f65a642ff39ccf12ce3f9ddadb6",
+    "src/store.cpp": "64fa978c67825c499cf68178a12da6057617dd51125133298e2bb88fd20b6c2e",
+    "src/tokenizer.cpp": "4003fe648f414476c76881c74b5cfc9149055284cf65bfa8a5e84cf2d6fda4c0",
+    "src/util.cpp": "bda18e8bc56bad1327e7538fb4fcc6a042599d18a098ce70a5d96efaedd6a32f",
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "include/bzs/contracts.hpp": "ad7138671dd6385398a4f77597ef17f041e11473051ded78381ee4423375b749",
+    "include/bzs/crawl_trap.hpp": "4a479db56815ace01b65db996393082efccfb80386ea2fe98d8fb82b310e86fa",
+    "include/bzs/error.hpp": "bb0cdf3df689697d80381b0dffa0ea84b720b5bbcfc172ee92a8bf9000d4fd26",
+    "include/bzs/highlight.hpp": "3b4108d8ea4e3a317eb40f581eb26af11fc7963e61cd64ef2efd2d3396848fca",
+    "include/bzs/html.hpp": "f4cb77e5956c054c028d3de8d21a8d669ff8aea25d937654decce287e64ef88f",
+    "include/bzs/http_cache.hpp": "2de757ad4aa755a4f1c0c695405510329b845bc5445acb4dd28ffb6fb757d21b",
+    "include/bzs/json.hpp": "a1ebe4390fc0d047fe82a4fc99312a20cbce4fbab5f00edbdca55592a1b49e08",
+    "include/bzs/publication.hpp": "7979ccf453184bac511e26c96b708c403bf445fce78e7bf5525e52d5d4408892",
+    "include/bzs/query.hpp": "528e11ca3c4064602da1b0737e59fccee7c0b1e5969d170b830bd492a1b6dcd8",
+    "include/bzs/search_modes.hpp": "087cded07b246651ea0835ef10e0a628c963bc9779033429196e6f5bb226114d",
+    "include/bzs/service.hpp": "c4bc22aaaad30cc1276767dc7a5b8f08953ea7d3384b56fb9bf4fe20a57733f1",
+    "include/bzs/sites.hpp": "d52407ce45a1d689c2b272c36785bfa669ca63a58d87c7d06c8e5c2d3905adf7",
+    "include/bzs/store.hpp": "ecc93f4edb412c48f04686126fcdabfbc4b4b17752a56c0bddc72f589bd03772",
+    "include/bzs/tokenizer.hpp": "810b4f4b300ccf23d66152d7284369656c1e3b0091cba26ebe21fa64ccf165ec",
+    "include/bzs/util.hpp": "297f3184c09830ebb8059ae7a4e77fd49360374f608da05a7ca28c46bffdbd3d",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "apps/searchctl/main.cpp": "d7a0a75c227389a74897dcdc04ef3dc4ff7b797592bea6fa433980738af820c8",
+    "apps/searchd/main.cpp": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "tests/batch.cpp": "517b2669a0c0f53292ed4ef39158165d6e0fc03e4a145fd0e8e67b73053f80f0",
+    "tests/cache_freshness.cpp": "927c14e8df471ac798603af9f33790dcc3785488a9456cb3ab89f8da274979ec",
+    "tests/capacity_cycles.cpp": "e575618d6537c812c380549fe7df7c95ad4b7cfb9069f2f3488c40c565e8a539",
+    "tests/contracts.cpp": "53773849e5e31be2a57a20d908e8bf66c0a09d6d9f72b6d200b1bbc00aa390a4",
+    "tests/crawl.cpp": "e8116e009a4ba3697a9c9ffe34dc350f113c6bd9a73c7d3e250b326cdc8ac200",
+    "tests/direct_shared.cpp": "822db636d3b4207961170a24698380cdbdd7b97939bfbd4e0a88ef30a38be4ad",
+    "tests/e2e_cache_freshness.py": "cf6cf956767d25c3956834f5312a774ceef8cf5323f1ff99217a1a06bbd0365c",
+    "tests/e2e_crawl.py": "be95a24b70129e94904576ae22d97e86280fd1a9e8025c3f45118eafd08c804c",
+    "tests/e2e_crawl_recovery.py": "d96a1c6f34a5202752d4a4f87875c9c4fbb4b02ecc79ec756bd2d814fb424130",
+    "tests/e2e_map.py": "eb589ec0263473b8bf767636e2959a03cef57b6d6dd383a5a776392caf7a2a73",
+    "tests/e2e_revalidation.py": "e0eb40504897482e22c414dba31b8950672d070fa364019091a4729211cbe1bc",
+    "tests/e2e_revocation.py": "9856c505c1da1c99e84ba9617825514b2c452c14468b97cfd1a87fd7ed9c60d7",
+    "tests/e2e_session_recovery.py": "cbd5a068e50596431658a3107ef7404e6c5b7fc5331ccabef300142c4b9059d5",
+    "tests/e2e_web.py": "70defd96a1823954c3395fd6e233446c8deeab5fb684afadffb88f15b11fdf8b",
+    "tests/fairness.cpp": "525543d1613054c1e04bf4fdc3fc31b2ef4026f5bed16818d42da0a408869996",
+    "tests/fixtures/developer.html": "5f769fc5f39668577a3fcd4553bcd146bfbac8fd3f70b666d1ac592a9dd1a3dc",
+    "tests/fixtures/manifest.json": "1ffe2b6470270bf227e777a68d02971671b43d965aabd3548a596c985a1a15c4",
+    "tests/fixtures/noindex.html": "1c1b0c7e0c7e997d2b669429ef62f86bc73f24069423a593669a799d393bcaa4",
+    "tests/fixtures/other.html": "14e75ef743b094bea84d8bfdff9928b59ee140e77ef4dd70669f58890e8fee6d",
+    "tests/fixtures/plain.txt": "06a4002fa2139267144de5502b07884b42c52672e614d4d7d79f6fe115bf2aba",
+    "tests/golden/manifest.json": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "tests/golden/queries.json": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798",
+    "tests/http_revocation.py": "c253cb9acb1dedaa017b635608f1c65fa388c581a4e7d88afbf346c50b2c85b9",
+    "tests/integration.py": "996464a4203226d0b46d2d1e343c954c324c4fac9abac9f60ce16e62e2cdab7b",
+    "tests/map.cpp": "2f1fe077b0b054715bc08054a0cfe1aebc6cf7da8255e12331af8735b110507d",
+    "tests/retention.cpp": "49e3d74a42664fa8d48432c3981450893be51e070d9fd0d3dc5c066d5f19b5d9",
+    "tests/revalidation.cpp": "66553f442f8bf7aebd7a3d5e95db8c956b39b090251217f421c67371756389f2",
+    "tests/revocation.cpp": "a35a05036a3655db9ab9e573398a3be7feaa32192ecf21d198055df00d2fa0a6",
+    "tests/search_modes.cpp": "0f50b7c9ee75d790732f0c1695e695cedfeedf17142d82e41a1fb192bd8edca1",
+    "tests/sessions.cpp": "9a5f424b430371f3c690ad79cd7c1bad5916d7b417dfbfe1bf6d0f5abdf13d20",
+    "tests/site_publication.cpp": "125e82123590180efd380058ca247fe98b2acd8ec7c5669997c8b26ac3b83718",
+    "tests/source_publication.cpp": "5cb8c22ca37b8e5db0966db03c13accaad1ec56974e76daf61336c2b1eda32f6",
+    "tests/unit.cpp": "4561e52f50d5c5a106716709855be0351fca5f1de531efe2de71e549a8973cf0",
+    "python/bzs/__init__.py": "5976cd3f3dfdd994256418ccbac4bcd2cff4aaa23f349a71c529357de67e6634",
+    "python/bzs/cli.py": "9811608c61447b4fa071c77fe44d853bbf4154d5c957f3e7595d560c9913b6a2",
+    "python/bzs/config.py": "cee85154b2f1532725638b8b2371c9d3d5a2dcc8c400bf38de40d8937b6ee009",
+    "python/bzs/core_client.py": "9ada8b0da8c98b3a8207f66ef38e9d68255f258faca54cfe3ca636052f9d02aa",
+    "python/bzs/evaluation.py": "ee47aba8238c0c8aea2af5ec79b923a5158ba84ab15849846c46412fcc62c9f6",
+    "python/bzs/evaluation_ablation.py": "184bcce075947a337ebf35ee0f34d74824021c8aff753931e6a9a74761d5ebc6",
+    "python/bzs/evaluation_format.py": "84acc963d48297cad3327d6bf27f8505dc4cf21b55496d8738160c1d77f50af7",
+    "python/bzs/golden.py": "93ceb831eb3b10de9729d5f1047029dd2c6e5e05c65a559669d3768125bd99ad",
+    "python/bzs/mcp_auth.py": "6cc7f4e7905da0f4119a1c51e4fc71086ac432b413844f38bcc8def62f64b634",
+    "python/bzs/mcp_server.py": "585c0ac579d3197ca98f10600f3504f0bffed5fe58e6b2e32529b57dfe205753",
+    "python/bzs/probe.py": "c9428ec621d26f4495a7426c3a1e83110a1b00cab9c7393f6d6786479777848d",
+    "python/bzs/probe_format.py": "96fede0a2f755c5ab61eadfdc88f70fd89688bde05d25363b6f0391c477abe85",
+    "python/bzs/probe_state.py": "daca8d069117210e012c15757cbd098445b2192099f48c17e841b7ea18cb176a",
+    "python/bzs/replay.py": "bb74844f7276983654e7e313614e949e74b7845e858226abc3bf2bb19e653c7d",
+    "python/bzs/urls.py": "c5d603044bfdd2718f0cc27723d6f15a9adb63562c67a7bc64ff4f2653f17a52",
+    "python/bzs/worker/__init__.py": "7a5bb9cb7c00f6243565bf13172863ebe8c10e5f983cb3f25b1a38824400eb7e",
+    "python/bzs/worker/discovery.py": "1f92ace8e4f9529ea4f489f8b266488e7bc017e20ba1f6d16b5a9a48c56ac605",
+    "python/bzs/worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+    "python/bzs/worker/fetch.py": "9a0fc0cb25752f739a461d70f34ef7fa99a48f1b519b97fec54ef3ea78984601",
+    "python/bzs/worker/freshness.py": "54d9a9fdf3c75c6f01f92218374836ad15f8888cf646121b699c28db7d0d1c66",
+    "python/bzs/worker/netguard.py": "c1c2c9c8de2c30a93143e32621734fff4570c60370f858a7aba538d983cb8738",
+    "python/bzs/worker/publication.py": "59bbf263ed2b918d26a15601d794cbd570b91fccd7d8be15a81e15a07a2caa7c",
+    "python/bzs/worker/redirect_cache.py": "58ad05eaed28a9e3ab600ea87b9161504738596f5f8f19aeb714cd8c581bbe4a",
+    "python/bzs/worker/revalidation.py": "caf6f050e19932c74e551618f82e64b5ac07d8187581d1251175277647965092",
+    "python/bzs/worker/robots.py": "77cc0c627e80ce504175ac59899870f8167e9c7cb8414daf550ac857f9a81694",
+    "python/bzs/worker/server.py": "d0f3a01c418100b75f45634807ec36b26d14a121b06cbfdfa54b81ce0791f8cc",
+    "python/bzs/worker/sites.py": "e48495c0c9ea66bf1e92f0be3e9734c7e9fc6d04a19dbc9be71ff67a5f10a0aa",
+    "python/bzs/worker/sources/__init__.py": "cad2a941a86126b7919e56940abfe125f234aa40c25eb83898e1665dfa69f816",
+    "python/bzs/worker/sources/apis.py": "5341bdcaad7660b460974e49f8a7cdc8b42c02a1e5945de2078af6ed77cbf47a",
+    "python/bzs/worker/sources/base.py": "1d92a8ee66c0e084fdaa51e25f3236a2b441bd1e1352f1126bae9448b2917621",
+    "python/bzs/worker/sources/engines.py": "9dd91248e7c5a3561d0a13236a56209f2980170476bbd951c7ac2db6bafbcb12",
+    "python/bzs/worker/sources/review.py": "83611553d36a148c29b54e557c63ebccf618abd7250a0b430ddfcc43853042eb",
+    "python/tests/fakecrawl.py": "ba979d5f443deea35d32e06330862e3097a631d81811e2eaf1f1fe3e99b3b39b",
+    "python/tests/fakemap.py": "317d9893a002be2ef984481f99ae4c59dbd3af788c129e5d08fc8850fcb06e0c",
+    "python/tests/fakeweb.py": "e6634ebb86c557c6b5d24f422a977ca0fad56ea48d86c7e8f10d012150c44000",
+    "python/tests/test_config_sites.py": "dbd0dd28f4dbf5ea7b10abc5143a186a4479875f0e7508869ee351f7e153589b",
+    "python/tests/test_crawl_worker.py": "9fb8e20f9c600fb8ec8a57a2e1d1157f128c806fe40350e0d07097ea175b83f7",
+    "python/tests/test_direct_read_control.py": "e7b0745b2d8f95537f92d122e388f45cc1aaeabfea657b05650738196f88e450",
+    "python/tests/test_discovery.py": "75a9ef70c1afdb810fd9f48da9697def9aa4686346a871e99f3cfa2cbac46724",
+    "python/tests/test_evaluation.py": "c35882497aebedfe15d6c531fed828c004d81dd518be97f032b628e5e09ef2de",
+    "python/tests/test_evaluation_ablation.py": "61105b605d5dd80398d7794ab53147cb5d002d342f8846f70fb60f22b9bb6816",
+    "python/tests/test_extract.py": "cd9d5f77c95d034098fb9ac5890d140455c0f8387519dad9a828b0dfd6a1c038",
+    "python/tests/test_fetch.py": "3e1905e58bca1dcf27cc9bb3312553f23f09af60627459320346e82c36ffd1d7",
+    "python/tests/test_fetch_budget.py": "a44b2b9c8537e2d7bc6cd7f4693d280e64b98eb2b21fb59ceb4b4c6d3a5e2875",
+    "python/tests/test_golden.py": "5520fd494dabae6974f540e7c794bf95ba81bc8cffd93594b751c81337c89361",
+    "python/tests/test_http_freshness.py": "10fbaffdfb251e6d4fc572d3a1f1ce6e96363bd8f243394421a17e917ce0caa3",
+    "python/tests/test_http_freshness_review.py": "9170c7832d87c923bd7e42f03166b3389aa34ddbe2a69d41a85b5f2980d7670d",
+    "python/tests/test_http_redirect_cache.py": "b246c652d6a7b96fedf09335d1759eccf86b1ef899405870d9a63fd2e3848876",
+    "python/tests/test_http_revalidation.py": "143461b02e4e7650d6d5716e2c54e0d5475ad64d9abac8f92fd2c257f87b621e",
+    "python/tests/test_job_compaction_adapters.py": "ec75bdbb06fd4b3a0fb419902bef3ac254bfb3fd1d9419163aab60d009ae6ec7",
+    "python/tests/test_map_worker.py": "26b43fd55a115a4a3f757e75016c72dc088428e68bbe3b6b35e869e2bd7020de",
+    "python/tests/test_mcp_auth.py": "4b4d22e71d2513d1215a0a5b3ebab5e49c7af88e343da3028f439373536fd19c",
+    "python/tests/test_mcp_crawl.py": "6f261fb673ec91a7c2c5a6db995962e1db1eae5e11a02fc4779acada6f498d72",
+    "python/tests/test_mcp_direct_cancel.py": "04cd6b10a7e838ca5871ab180c4a9a4ec7164ba671413cd802283fc74e3d57c3",
+    "python/tests/test_mcp_jobs.py": "de348b1a59da463513d8ac2f51f745a9bf82b0c9c9d031f71cbc27bdadf3ae65",
+    "python/tests/test_mcp_map.py": "975c2018920ca24746ff1697c4624293c541afcb38e9c7867bd05972d321d8a5",
+    "python/tests/test_mcp_read.py": "a02975e276b534204f41191521745f5afcf8e19a9bad5b40877fdf208ac6e0ba",
+    "python/tests/test_mcp_sessions.py": "1cffe5552d4d53731f47d90c1f5d968942a7987741b3979959290bf5384a9677",
+    "python/tests/test_netguard.py": "c8ad956b37ae94fe7d919fc390eb36b56a272b2dd3c5488fb846a57d0d69a9d3",
+    "python/tests/test_principal_revocation_adapters.py": "79e32098c867ae9d33ebeb1b166ef36748514ab8ee303e85da563ea39e670677",
+    "python/tests/test_probe.py": "20b840bbd5a15579ae14dca50df0c973519ee05544848fe9583d2d217b544f6c",
+    "python/tests/test_publication.py": "d86a1c73da2f5e3f67e2a5a9e50bb138141c8ae90c0529b9996aebb3be39be2b",
+    "python/tests/test_replay.py": "29d170512588015991efdc1c21d215e9da279b1d082e887874dc4a03693e5a46",
+    "python/tests/test_robots.py": "a7733150e7b9bb3aed09643efdd7cc25d81f552abaf35423dcd264380751c4b4",
+    "python/tests/test_search_modes_adapters.py": "dc5f00b7467d2dcd93e66f05bc49c305c8caf135e8472f19e35ef2a73789cbe3",
+    "python/tests/test_sources.py": "0414ea763197beae7c4df13bf6b44290dcd7048362c8f082755a13a99fdc51c3",
+    "python/tests/test_urls.py": "28dca6d5f50f9e5f8c8cdde77eeb1aff55341dfe65f4d1207e07f9e95352cf58",
+    "config/sites.json": "0b37ab2621b6460d64320e207d58f245a77ae56d57b6fbcc3bd83f01e571e1fe",
+    "config/sources.json": "e403c544f8656c18ab96b6527ecaf21b35a54f4f6edadb461beb76fd25d98b83",
+    "tools/create_auth.py": "34e0ac2e3b281e238ff2dd18a3f973143fead32a9c6014b1ef016e23221e6033",
+    "tools/requirements-s1-lock.txt": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb",
+    "tools/requirements-test.txt": "546538625977c689facc21eb60f13adc0916ceb18eea6f917f84aba74ed74077",
+    "tools/test_plan_guard.py": "4ab82c7135ca2f9739b8c42faaf4f21defad2df03843305fd0fcc013bb6bea13",
+    "CMakeLists.txt": "7fc285d63459f08dc5f49331dc545737ab026b6eb21e80063916054f74ca8513",
+    "CMakePresets.json": "7ad819f1be7e6c6eb73ae2a42d5d380a29989a186aed31ba2f976801936a9ba9",
+    "python/pyproject.toml": "86aa647ec4c83fe95d7fbc71e35c094f07824c50d240c4ba708b6cf0bd3a6fa6",
+    ".github/workflows/ci.yml": "f32a40aadd255aefa34987ae72bc2cfc34a19bf15e4b04a13505da834d8b1907"
+  },
+  "binary_sha256_observed_after_executions": {
+    "build/bzs_batch_tests": "610b0efcfafe81ccb2f06e5124b1ddf55c6e54c7b7a1197fc39cfa55fb9ff781",
+    "build/bzs_cache_freshness_tests": "e9a739e4d69d08d5d87368f0752935c51505ee435e7409d34d6dd92e54550a2a",
+    "build/bzs_capacity_cycles_tests": "4019383ecc41c5937e8d7655639e54abacab73abf0af61fbb46d37d341e195b3",
+    "build/bzs_contract_tests": "176d8c4d1dcff8e0726642a97a073f29e163999ae727475dca5b227491b2a445",
+    "build/bzs_crawl_tests": "77e5c196e96c018af7becf89d29b2e1417158b7b2934af2860e31594f394a8ce",
+    "build/bzs_direct_shared_tests": "cca81674c1f9caebdb3a36a68894dc38b9139fb729430e30b225748aa6051ce5",
+    "build/bzs_fairness_tests": "2486a53ae4f50b4f6ab57d95f513f548a325f571609a74f3f61bd04b33d71c4c",
+    "build/bzs_map_tests": "1166b04454c7d067e6007165ee19c4fea1851a76efa04b0a974fecbd81278651",
+    "build/bzs_retention_tests": "c2269a91f1fd31d724a1316dec9413d05192a41dc4408112e5a83511a9f9f443",
+    "build/bzs_revalidation_tests": "f480bcef1117cefa930f7472bac6645f8cf4bd7c5e96ba666745fe0603acfbaa",
+    "build/bzs_revocation_tests": "5cf9987bde98f2c0714b64a11929ad4e59d0fe06412b975e265bb7ad50a5dc7c",
+    "build/bzs_search_mode_tests": "3336f319bb553fb10af4b638df4579cfa94d07cd0f7d8bbf811329cfb0b61876",
+    "build/bzs_session_tests": "52e0cc9234788c72214237ea31e36e88c5175e65c0e8adf62dec2ddeb407e55f",
+    "build/bzs_site_publication_tests": "3653ca228ee3ca16cde9d50e29ab9001938f6c02b4576f9d90fd912a3fcfe016",
+    "build/bzs_source_publication_tests": "7140e09033309f5d699e99e9c9b9ace1db2e7002b49b955f21d74998f611008b",
+    "build/bzs_tests": "f7767c3662621d193ace9374c291e5effec9ed2a8d2888292158fefd1094b378",
+    "build/libbzs_core.a": "abfd0f89c76db2c2ac154c5f3b644f3f4d86adc151d058cb3a9ff329cba66619",
+    "build/searchctl": "b30181207e46bf62fb35438b0680076a479f26241dbfb15864b7670cdc67f10c",
+    "build/searchd": "b26c1bebd6d6c75118ffc8ef2111db6e8bf58350617a75f6cf5b395268e8f87a",
+    "build-asan/bzs_batch_tests": "510f0c2957ff45b95f323247688515a548920b39cc708a69a3a4fc992eecbc59",
+    "build-asan/bzs_cache_freshness_tests": "e41632098b75f009e106dc2cd5e2a667dfa79cf736233f4d962b32afea0ceeb3",
+    "build-asan/bzs_capacity_cycles_tests": "60ef59d88911d2e7c8e30f2fdc278e51268d888747790ed4b2fcbf13700a6333",
+    "build-asan/bzs_contract_tests": "d348ee8fb48ef65edecce1b41d68d6c740402050eddc993b1ef0a5e4ec0bfa0e",
+    "build-asan/bzs_crawl_tests": "b1ab276b8b5435cb1434dd9cbe22f6ae38b50b4c918629159182e8f3f6447dca",
+    "build-asan/bzs_direct_shared_tests": "c2ec4e146f442deb6e212938cdbc92604bebe1e0426f686d66998cac845744bf",
+    "build-asan/bzs_fairness_tests": "c0e3e6d681f00bef8a71305121cc07dde9272ccb51e6dcd540457340f1de7058",
+    "build-asan/bzs_map_tests": "1fd08cc98f2f855b03e4671be176429abc90bd1cd63f5d3705ad684ec9941592",
+    "build-asan/bzs_retention_tests": "ae5c81abc35ccba618a66f96bf605a3ed77b14876a5da5121e13db9087f041bf",
+    "build-asan/bzs_revalidation_tests": "49230d9fb4d1e389357ecdb7ac3d33ab331618cbea917ec0cde23429b3163d64",
+    "build-asan/bzs_revocation_tests": "0bc4f70cb79598d1c9b7d193c17a3f3a8b600e058a8123f8091920e2b4f3fc62",
+    "build-asan/bzs_search_mode_tests": "bc8642d66060281897aab7b57e48483675fc5837780fa681bbc2f2e26755fb3c",
+    "build-asan/bzs_session_tests": "b6cdebd36338f6c5fa563902768e56d1b89d984a0330a53f3adf452c8c36bc85",
+    "build-asan/bzs_site_publication_tests": "9c8b575f33c96fc1ca9129562d022bf0fc2cea9e80d4dcb84d8bf64bbf8f49df",
+    "build-asan/bzs_source_publication_tests": "7d084d6aee805b607e8aa3cd868c1743cc1daeee158d7861ec9f77987e6bedb7",
+    "build-asan/bzs_tests": "4489e144b24e7e6252582bcfb5e3d8a5ceb733f778fdd86c14307323a57aa469",
+    "build-asan/libbzs_core.a": "d65e319171042407c465da079ccbb8a8896140d61aeaa5b35c3ab76dad538c34",
+    "build-asan/searchctl": "ad349712da37f80ac8bddb8f5bf3b7dffaa9ceed5478e1c64c9fb2d8af0829f1",
+    "build-asan/searchd": "30553ac97e6028c187894764ddd76a7dc9c9146d596e23d3be43580198851d93"
+  },
+  "native_sanitizer_scope": {
+    "current_repeat_of_all_16_native_sanitizers": false,
+    "reason": "Only main.cpp changed; native libraries/tests are unchanged and their 32 Debug/ASan executable byte hashes match the prior validated batch. Current sanitizer execution deliberately exercises the changed HTTP processes. Current full Debug CTest does rerun all 16 native suites.",
+    "unchanged_native_executable_count": 32,
+    "prior_report": "validation/direct_cancel_20261025/final-report.json"
+  },
+  "failure_history": [
+    {
+      "record": "local/http-debug-v1.json",
+      "classification": "Invocation error before useful test execution",
+      "facts": "Initial command passed nonexistent repo/fixtures; 14 test/setup errors. Correct command uses tests/fixtures. Original failure retained; no product or test logic changed for this correction."
+    },
+    {
+      "record": "local/asan-cli-executable-mode.json",
+      "classification": "Build artifact execute-bit repair, no binary byte changes",
+      "facts": "ASan searchctl was mode0644 after build. Restored0755 before invoking; before/after SHA256 identical."
+    }
+  ],
+  "remote_publication": {
+    "status_at_report": "not_yet_published_for_this_increment",
+    "expected_parent": "bedb45c89d293ab25a8a481df6c8300558225b0c",
+    "policy": "Compare complete verified tree, update main with expected_sha and force=false, fetch exact remote commit, and inspect its own Linux/Windows Checks. Do not use baseline CI as new-input validation.",
+    "baseline_ci_run": 40180737461,
+    "baseline_ci_url": "https://github.com/wmqfl861/bzs861/actions/runs/40180737461"
+  },
+  "limits": [
+    "Reserve is only for web.read.cancel, not prepare/job.control/session.cancel or arbitrary operations.",
+    "Existing64-connection limit, IO scheduling, Store contention and occupied control slot can still delay or reject work. No cancellation SLA.",
+    "4096 bytes bounds reserve eligibility; ordinary API body limit remains2MiB. Valid oversized cancellation remains ordinary work.",
+    "Shared receipt, payer, timeout, cancellation delivery, core/Worker controls and schema contracts unchanged.",
+    "No cross-direct/durable/map/crawl/search sharing, durable direct recovery, source approval, independent revocation continuity, fullB-24/C-15 acceptance or production performance claim.",
+    "Original37partial/46not_started/0accepted,83packages/161acceptance/10slices and17sources/0enabled/0sites remain."
+  ],
+  "environment": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "python": "3.12.14",
+    "workspace": "/workspace/scratch/ed564c9de2af/bzs861"
+  }
+}

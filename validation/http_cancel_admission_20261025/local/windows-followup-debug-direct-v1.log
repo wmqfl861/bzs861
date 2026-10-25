@@ -1,0 +1,95 @@
+Internal ctest changing into directory: /workspace/scratch/ed564c9de2af/bzs861/build
+UpdateCTestConfiguration  from :/workspace/scratch/ed564c9de2af/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/ed564c9de2af/bzs861/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/workspace/scratch/ed564c9de2af/bzs861/build/DartConfiguration.tcl
+Parse Config file:/workspace/scratch/ed564c9de2af/bzs861/build/DartConfiguration.tcl
+Test project /workspace/scratch/ed564c9de2af/bzs861/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 12
+    Start 12: direct_shared
+
+12: Test command: /workspace/scratch/ed564c9de2af/bzs861/build/bzs_direct_shared_tests
+12: Working Directory: /workspace/scratch/ed564c9de2af/bzs861/build
+12: Test timeout computed to be: 90
+12: RUN same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage
+12: PASS same_owner_network_miss_shares_once_and_attributes_known_or_unknown_usage (82 ms)
+12: RUN shared_conditional_refresh_commits_the_bound_metadata_only_once
+12: PASS shared_conditional_refresh_commits_the_bound_metadata_only_once (47 ms)
+12: RUN shared_members_keep_their_own_windows_and_freshness_bounds
+12: PASS shared_members_keep_their_own_windows_and_freshness_bounds (28 ms)
+12: RUN an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member
+12: PASS an_invalid_leader_or_subscriber_window_does_not_poison_the_other_member (178 ms)
+12: RUN owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence
+12: PASS owner_and_exact_uri_boundaries_do_not_use_search_or_deletion_equivalence (212 ms)
+12: RUN timeout_and_direct_parameters_do_not_borrow_durable_read_budgets
+12: PASS timeout_and_direct_parameters_do_not_borrow_durable_read_budgets (89 ms)
+12: RUN changed_or_unproven_request_profiles_never_join_an_active_flight
+12: PASS changed_or_unproven_request_profiles_never_join_an_active_flight (146 ms)
+12: RUN shared_responses_require_a_valid_freshness_profile_matching_admission
+12: PASS shared_responses_require_a_valid_freshness_profile_matching_admission (89 ms)
+12: RUN permission_snapshot_metadata_and_publication_fences_split_new_admissions
+12: PASS permission_snapshot_metadata_and_publication_fences_split_new_admissions (287 ms)
+12: RUN shared_inflight_alias_deletion_and_revival_reject_both_full_and_304_results
+12: PASS shared_inflight_alias_deletion_and_revival_reject_both_full_and_304_results (475 ms)
+12: RUN shared_inflight_principal_revocation_denies_all_members_without_new_body
+12: PASS shared_inflight_principal_revocation_denies_all_members_without_new_body (23 ms)
+12: RUN shared_old_publication_cannot_be_restored_by_a_newer_allowing_response
+12: PASS shared_old_publication_cannot_be_restored_by_a_newer_allowing_response (107 ms)
+12: RUN each_post_commit_window_rechecks_current_revocation_deletion_and_policy
+12: PASS each_post_commit_window_rechecks_current_revocation_deletion_and_policy (163 ms)
+12: RUN shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry
+12: PASS shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry (169 ms)
+12: RUN late_shared_no_store_cannot_invalidate_a_newer_successful_representation
+12: PASS late_shared_no_store_cannot_invalidate_a_newer_successful_representation (46 ms)
+12: RUN shared_storage_failure_rolls_back_body_and_index_and_releases_the_flight
+12: PASS shared_storage_failure_rolls_back_body_and_index_and_releases_the_flight (31 ms)
+12: RUN same_thread_reentry_does_not_wait_on_itself_or_reuse_the_outer_304
+12: PASS same_thread_reentry_does_not_wait_on_itself_or_reuse_the_outer_304 (43 ms)
+12: RUN lifetime_member_limit_keeps_the_first_32_and_runs_overflow_independently
+12: PASS lifetime_member_limit_keeps_the_first_32_and_runs_overflow_independently (109 ms)
+12: RUN registry_capacity_is_bounded_and_distinct_service_instances_do_not_share
+12: PASS registry_capacity_is_bounded_and_distinct_service_instances_do_not_share (558 ms)
+12: RUN direct_reads_do_not_join_durable_attempts_or_receive_their_cancellation
+12: PASS direct_reads_do_not_join_durable_attempts_or_receive_their_cancellation (34 ms)
+12: RUN invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions
+12: PASS invalid_usage_receipts_still_apply_valid_cache_and_publication_restrictions (176 ms)
+12: RUN malformed_freshness_does_not_skip_independent_noindex_observation
+12: PASS malformed_freshness_does_not_skip_independent_noindex_observation (87 ms)
+12: RUN large_valid_snapshots_preserve_legacy_and_shared_read_windows
+12: PASS large_valid_snapshots_preserve_legacy_and_shared_read_windows (17013 ms)
+12: RUN prepared_cancel_handles_are_owner_bound_single_use_and_not_worker_attempts
+12: PASS prepared_cancel_handles_are_owner_bound_single_use_and_not_worker_attempts (29 ms)
+12: RUN a_claimed_handle_cannot_start_twice_and_bad_arguments_consume_it
+12: PASS a_claimed_handle_cannot_start_twice_and_bad_arguments_consume_it (28 ms)
+12: RUN cancelled_subscriber_returns_without_interrupting_payer_or_late_member
+12: PASS cancelled_subscriber_returns_without_interrupting_payer_or_late_member (32 ms)
+12: RUN cancelled_payer_keeps_physical_ownership_while_subscribers_finish
+12: PASS cancelled_payer_keeps_physical_ownership_while_subscribers_finish (64 ms)
+12: RUN last_member_cancel_closes_admission_and_sends_one_separate_control_rpc
+12: PASS last_member_cancel_closes_admission_and_sends_one_separate_control_rpc (29 ms)
+12: RUN cancel_before_profile_finishes_stops_network_and_cached_delivery
+12: PASS cancel_before_profile_finishes_stops_network_and_cached_delivery (51 ms)
+12: RUN cancellation_winning_after_physical_completion_still_blocks_member_delivery
+12: PASS cancellation_winning_after_physical_completion_still_blocks_member_delivery (29 ms)
+12: RUN named_reads_keep_sixty_second_parameters_and_do_not_merge_legacy_members
+12: PASS named_reads_keep_sixty_second_parameters_and_do_not_merge_legacy_members (27 ms)
+12: RUN named_conditional_shared_read_cancel_preserves_one_304_commit_and_receipt
+12: PASS named_conditional_shared_read_cancel_preserves_one_304_commit_and_receipt (43 ms)
+12: RUN cancel_handle_capacity_and_expiry_never_evict_running_or_reuse_retired_identity
+12: PASS cancel_handle_capacity_and_expiry_never_evict_running_or_reuse_retired_identity (66 ms)
+12: RUN cancelled_members_do_not_reclaim_the_shared_flights_lifetime_slots
+12: PASS cancelled_members_do_not_reclaim_the_shared_flights_lifetime_slots (50 ms)
+12: 34 direct shared tests, 10259 assertions, 0 failures
+1/1 Test #12: direct_shared ....................   Passed   20.67 sec
+
+The following tests passed:
+	direct_shared
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  20.67 sec

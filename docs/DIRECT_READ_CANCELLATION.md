@@ -74,8 +74,12 @@ Worker 的活动和保留控制合计最多 **2048**。活动项不按时间清�
 
 ## 接纳与恢复边界
 
-所有业务操作仍使用[现有 HTTP 业务线程池](HTTP_EXECUTION.md)。没有额外控制保留通道；满额时取消请求也可能返回 503，此时取消**尚未被接纳**。客户端必须检查控制响应，不能把发送过取消请求当成取消已成功。
+本批 HTTP 入口新增固定 **1 个取消控制执行槽**。在 Host、Origin、路由、Bearer 认证及 Content-Type 检查通过后，只有不超过 **4096 字节**、通过严格 JSON 检查且仅含 `operation="web.read.cancel"` 与 `params.read_id` 的合法结构才进入该槽；`read_id` 必须为 48 位小写十六进制。重复键、伪操作名字符串、未知字段、错误类型或大小超限的正文按普通请求接纳。分类不访问 Store 或 Worker，进入 Service 后仍完整执行 owner、主体撤权及句柄检查。
+
+普通业务池和控制池各自限额且不能互借容量，没有额外等待队列；`web.read.prepare`、`job.control`、`session.cancel` 继续使用普通业务池。普通池满而控制槽空闲时，符合分类的取消可被接纳；控制槽满时仍返回原 503，即使普通池有空槽。此时取消**尚未被接纳**。客户端必须检查控制响应，不能把发送过取消请求当成取消已成功。
+
+固定槽不提供独立连接额度，既有 **64 个活动连接**上限、请求读取和响应写入各 5 秒的 socket 期限、Worker 原期限保持。连接已满、控制池已满、IO 无法调度或 Service 等待 Store 锁时，仍不保证即时接纳或完成；这不是取消 SLA。两个请求池均在 Service、Store 和 IO 对象销毁前停止并 join。严格分类、启动报告及生命周期详见[HTTP 请求执行与背压](HTTP_EXECUTION.md)。
 
 该协议只在当前进程内有效，没有持久直接读取账本、跨进程取消、跨实例共享或重启后的执行回执。120 秒保留也不提供任意长进程挂起、延迟网络重放或 Worker 重启后的恰好一次保证。客户端断连不是取消，未知执行不能自动重发。
 
-当前验证见[本批记录](../validation/direct_cancel_20261025/README.md)。原来源/站点、人工 qrels、备份隔离、撤销连续性和历史证据要求保持。跨 direct/durable/map/crawl/search 的兼容共享、控制保留容量、长期故障及完整 `CACHE-01 / B-24` 仍待推进；原 **37 partial / 46 not_started / 0 accepted** 不因本增量改变。
+本批控制槽的实际源码、执行输入和结果见[取消接纳验证记录](../validation/http_cancel_admission_20261025/README.md)，不预填尚未结束的测试或 CI 成绩。[上一批成员取消记录](../validation/direct_cancel_20261025/README.md)属于该业务合同的历史证据，不能代替本批 HTTP 接纳验证。原来源/站点、人工 qrels、备份隔离、撤销连续性和历史证据要求保持。跨 direct/durable/map/crawl/search 的兼容共享、长期故障及完整 `CACHE-01 / B-24` 仍待推进；原 **37 partial / 46 not_started / 0 accepted** 不因本增量改变。

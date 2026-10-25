@@ -1,0 +1,41 @@
+{
+  "stage": "baseline-v1",
+  "inputs_before": {
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/http_probe.py": "ad3950fa38f06d8aaa433bd693afb6039a7ba3b5f04c1dcc8e37d714c653ae4a",
+    "/workspace/scratch/ed564c9de2af/http-cancel-baseline-searchd": "02fe18eec9b091a4c58d39b72f7e892cc682dc52ed3ad2b0f5a7d5cd12919a1c",
+    "/workspace/scratch/ed564c9de2af/bzs861/build/searchd": "b26c1bebd6d6c75118ffc8ef2111db6e8bf58350617a75f6cf5b395268e8f87a",
+    "/workspace/scratch/ed564c9de2af/bzs861/apps/searchd/main.cpp": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "/workspace/scratch/ed564c9de2af/bzs861/build/libbzs_core.a": "abfd0f89c76db2c2ac154c5f3b644f3f4d86adc151d058cb3a9ff329cba66619"
+  },
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/http_probe.py",
+    "--server",
+    "/workspace/scratch/ed564c9de2af/http-cancel-baseline-searchd",
+    "--fixtures",
+    "/workspace/scratch/ed564c9de2af/bzs861/tests/fixtures",
+    "--baseline"
+  ],
+  "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "start_unix": 1792921418.2615948,
+  "exit_code": 0,
+  "duration_seconds": 0.12286162376403809,
+  "inputs_after": {
+    "/workspace/scratch/ed564c9de2af/bzs861/validation/http_cancel_admission_20261025/independent/http_probe.py": "ad3950fa38f06d8aaa433bd693afb6039a7ba3b5f04c1dcc8e37d714c653ae4a",
+    "/workspace/scratch/ed564c9de2af/http-cancel-baseline-searchd": "02fe18eec9b091a4c58d39b72f7e892cc682dc52ed3ad2b0f5a7d5cd12919a1c",
+    "/workspace/scratch/ed564c9de2af/bzs861/build/searchd": "b26c1bebd6d6c75118ffc8ef2111db6e8bf58350617a75f6cf5b395268e8f87a",
+    "/workspace/scratch/ed564c9de2af/bzs861/apps/searchd/main.cpp": "c9a662a094f44e1fcb0c0a9489bea9ce4f2569feaa251b258cbde22be4dc5635",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "/workspace/scratch/ed564c9de2af/bzs861/src/json.cpp": "dc9cbaa7de880db9142d6392fdf4bea2e724d69797392e7bfe04fd60d8dab5a5",
+    "/workspace/scratch/ed564c9de2af/bzs861/build/libbzs_core.a": "abfd0f89c76db2c2ac154c5f3b644f3f4d86adc151d058cb3a9ff329cba66619"
+  },
+  "log": "baseline-v1.log",
+  "log_sha256": "0ad1755fb5937bdffe5f48ba2e8748470bbe9772d051f6e66c2a7c1d9097e04c",
+  "inputs_unchanged": true
+}
