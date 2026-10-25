@@ -1,0 +1,10 @@
+..F..                                   [100%]
+=================================== FAILURES ===================================
+___ test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy ____
+tests/test_mcp_direct_cancel.py:55: in test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy
+    assert post.call_args.kwargs["json"]["params"]["read_id"] == ""
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'json'
+=========================== short test summary info ============================
+FAILED tests/test_mcp_direct_cancel.py::test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy
+1 failed, 37 passed in 1.25s

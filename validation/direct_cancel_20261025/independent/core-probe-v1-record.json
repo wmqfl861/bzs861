@@ -1,0 +1,54 @@
+{
+  "stage": "independent_core_probe_v1",
+  "inputs_before": {
+    "build/libbzs_core.a": "abfd0f89c76db2c2ac154c5f3b644f3f4d86adc151d058cb3a9ff329cba66619",
+    "validation/direct_cancel_20261025/independent/core_probe.cpp": "2d24e16f0d40785949fbb410beeacc95518cf6d86bf32f058ef7af17933c8ec3",
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec"
+  },
+  "commands": [
+    {
+      "argv": [
+        "g++",
+        "-std=c++20",
+        "-g",
+        "-O0",
+        "-Iinclude",
+        "/workspace/scratch/ed564c9de2af/bzs861/validation/direct_cancel_20261025/independent/core_probe.cpp",
+        "build/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/ed564c9de2af/independent-probe-build/core_probe_v1"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "exit_code": 0,
+      "duration_seconds": 2.4530832767486572,
+      "log": "validation/direct_cancel_20261025/independent/core-probe-v1-0.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ed564c9de2af/independent-probe-build/core_probe_v1"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "exit_code": 0,
+      "duration_seconds": 0.43944358825683594,
+      "log": "validation/direct_cancel_20261025/independent/core-probe-v1-1.log",
+      "log_sha256": "4db903bb13bef5958201ff962dd80871d1b87c7f4f11c60a1b96b27573604f93"
+    }
+  ],
+  "inputs_after": {
+    "build/libbzs_core.a": "abfd0f89c76db2c2ac154c5f3b644f3f4d86adc151d058cb3a9ff329cba66619",
+    "validation/direct_cancel_20261025/independent/core_probe.cpp": "2d24e16f0d40785949fbb410beeacc95518cf6d86bf32f058ef7af17933c8ec3",
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec"
+  },
+  "inputs_unchanged": true,
+  "binary_sha256": "50bc0f197d79fccb0af88ee9e89fbe5adb0fc00a1a9ad78dae527700b23a35dd"
+}

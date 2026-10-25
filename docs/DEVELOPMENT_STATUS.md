@@ -1,5 +1,9 @@
 # 开发进度：直接读取的在途合并（版本仍为 0.1.10）
 
+## 2026-10-25：直接读取显式成员取消
+
+从本地f4878be接手，补齐一次性准备/取消句柄、独立Worker取消协议、固定付款与每成员交付控制，并保留最后主体复查时的直接读取用量。具体行为与限制见[取消合同](DIRECT_READ_CANCELLATION.md)，准确执行结果、历史失败和独立验证见[本批记录](../validation/direct_cancel_20261025/README.md)。当前仍为0.1.10/schema15、37 partial /46 not_started /0 accepted，完整B-24/CACHE-01及生产来源、恢复与长期验收未签收。以下保留各历史批次当时的输入和结果。
+
 ## 当前增量：CACHE-01 / FT-032 / B-24
 
 更新：2026-10-24。本批基线是已发布 `346048b4` / tree `458a6f32`，其 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 已双平台成功；用户已允许推送 main，下文旧审批阻塞仅为历史。当前增量的实际验证以[本批记录](../validation/direct_shared_20261024/README.md)与[最终报告](../validation/direct_shared_20261024/final-report.json)为准。

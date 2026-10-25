@@ -1,0 +1,105 @@
+{
+  "reviewer_role": "independent reviewer, not production or formal-test author",
+  "conclusion": "no_open_blocking_findings_with_documented_scope_limits",
+  "reviewed_at_utc": "2026-10-25T09:19:31.889008+00:00",
+  "baseline_commit": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+  "reviewer_modified_production_or_formal_tests": false,
+  "independent_execution": {
+    "core_debug": {
+      "record": "core-probe-v1-record.json",
+      "cases": 12,
+      "checks": 110,
+      "failed": 0,
+      "inputs_unchanged": true
+    },
+    "core_asan_ubsan": {
+      "record": "core-probe-asan-v1-record.json",
+      "cases": 12,
+      "checks": 110,
+      "failed": 0,
+      "inputs_unchanged": true,
+      "same_scenarios_as_debug": true,
+      "detect_leaks": true,
+      "halt_on_error": true
+    },
+    "authenticated_worker_rpc": {
+      "record": "worker-probe-v2-record.json",
+      "cases": 4,
+      "checks": 21,
+      "failed": 0,
+      "inputs_unchanged": true,
+      "scope": "Before the final one-expression Worker retention fix; includes final MCP implementation bytes. No claim that this earlier execution ran the final retention expression."
+    }
+  },
+  "final_worker_delta": {
+    "source": "python/bzs/worker/server.py",
+    "before_sha256": "ab13730b08b53fec46ede6ca31cda6719564c5cf6c9232e66cced68bc1ffbd96",
+    "after_sha256": "d0f3a01c418100b75f45634807ec36b26d14a121b06cbfdfa54b81ce0791f8cc",
+    "only_difference_from_independently_executed_worker": "Retain previous retirement expiry on repeated cancellation instead of resetting it to now + 120 seconds.",
+    "reverse_substitution_restores_tested_bytes": true,
+    "targeted_author_evidence": "ttl-author-reviewed/addendum.json",
+    "targeted_author_before": "Two new expiry regressions failed on the old expression.",
+    "targeted_author_after": "Both expiry regressions passed in a 37-passed/1-failed adjacent run. The sole remaining failure was a new MCP test oracle reading json= instead of the actual data= argument; it was not a Worker failure.",
+    "scope_note": "Author evidence is reviewed evidence, not an additional independent execution or full-suite success. Parent owns subsequent final formal gates."
+  },
+  "resolved_findings": [
+    {
+      "id": "R1",
+      "discovery": "static implementation review",
+      "problem": "All controlled members cancelled before RPC completion could still unconditionally ingest a new body.",
+      "resolution": "Check active members at commit admission; preserve valid restrictive observations and refuse new body when none remain.",
+      "verification": "Independent all_cancel_no_orphan_commit and delivery_cancel_after_commit passed in Debug and ASan/UBSan."
+    },
+    {
+      "id": "R2",
+      "discovery": "static implementation review",
+      "problem": "Closing admission after an RPC exception incorrectly marked the physical RPC complete and suppressed last-member cooperation.",
+      "resolution": "Separate admission closure from reliable response receipt; unknown completion can still trigger one best-effort cancellation.",
+      "verification": "Independent uncertain_rpc_cooperation passed in Debug and ASan/UBSan with unknown usage and one cancel."
+    },
+    {
+      "id": "R3",
+      "discovery": "static scope review",
+      "problem": "Late principal-revocation receipt preservation initially applied to every operation with a usage field.",
+      "resolution": "Restrict the new receipt behavior to web.read; preserve other operations original errors.",
+      "verification": "Final static source review; no separate independent deterministic Service end-check probe claimed."
+    },
+    {
+      "id": "R4",
+      "discovery": "static adapter review",
+      "problem": "An explicitly empty read_id silently became an uncontrolled MCP read.",
+      "resolution": "Only None omits the optional handle; explicit empty input reaches Core validation without a legacy retry.",
+      "verification": "Final static source review and final MCP implementation hash in worker-probe-v2-record.json; parent formal adapter tests are separate evidence."
+    },
+    {
+      "id": "R5",
+      "discovery": "contract-to-implementation review",
+      "problem": "Worker repeated cancellation reset the retired-control expiry despite the documented non-extension rule.",
+      "resolution": "Keep previous[0] for existing retired controls while preserving cancelled state and usage.",
+      "verification": "Exact single-expression delta checked; two author before/after expiry regressions reviewed and archived separately."
+    }
+  ],
+  "retained_unsuccessful_execution": {
+    "record": "worker-probe-v1-record.json",
+    "classification": "sandbox startup restriction",
+    "detail": "PermissionError occurred at socket creation before any independent RPC scenario executed; not counted as product test failure or pass."
+  },
+  "scope_limits": [
+    "Cancellation and successful member delivery are linearized; commit admission and Store commit intentionally do not share one held coordination lock, so cancellation does not promise rollback of a commit already admitted.",
+    "Payer cancellation acknowledgement does not imply the original synchronous payer call returns before its bounded physical attempt settles.",
+    "Core process handles and Worker retention are not a persistent execution or accounting journal; no restart recovery, automatic retry or exactly-once network guarantee is inferred.",
+    "Existing HTTP backpressure can reject cancellation before admission; there is no reserved control lane.",
+    "Cross-instance, cross-process and cross-channel sharing remain excluded. Complete B-24/CACHE-01, real-source approval, long-running failure and restoration acceptance remain unsigned.",
+    "Independent Debug and sanitizer repeats are the same 12 scenarios, not 24 new product acceptance cases. Worker and author regression counts must not be added to formal CTest suite counts."
+  ],
+  "final_reviewed_sha256": {
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "python/bzs/worker/fetch.py": "9a0fc0cb25752f739a461d70f34ef7fa99a48f1b519b97fec54ef3ea78984601",
+    "python/bzs/worker/server.py": "d0f3a01c418100b75f45634807ec36b26d14a121b06cbfdfa54b81ce0791f8cc",
+    "python/bzs/mcp_server.py": "585c0ac579d3197ca98f10600f3504f0bffed5fe58e6b2e32529b57dfe205753",
+    "docs/DIRECT_READ_CANCELLATION.md": "c2cc3d000ff7bba763cc5c7f21109091059200b797840633bc6aa09f637ee091"
+  },
+  "provenance_notes": "All reviewer writes are confined to this independent/ evidence directory. No repository branch, commit, production source, formal test, main build directory or existing validation record was changed by the reviewer."
+}

@@ -408,6 +408,8 @@ class HeldWorker:
         self.calls = 0
         self.active = 0
         self.peak = 0
+        self.direct_cancellations = []
+        self.request_records = []
         self.response = response
         self.profile = hashlib.sha256(b'http-direct-read-receipt-fixture').hexdigest()
         fixture = self
@@ -437,11 +439,18 @@ class HeldWorker:
                 if request['method'] == 'fetch.profile':
                     self.reply({'version': 'bzs-http-freshness-1', 'request_profile': fixture.profile})
                     return
-                if request['method'] != 'fetch.extract':
+                if request['method'] == 'fetch.cancel_direct':
+                    with fixture.condition:
+                        fixture.direct_cancellations.append(request['params']['control_id'])
+                        fixture.condition.notify_all()
+                    self.reply({'cancel_requested': True})
+                    return
+                if request['method'] not in ('fetch.extract', 'fetch.extract_direct'):
                     self.send_error(400)
                     return
                 with fixture.condition:
                     fixture.calls += 1
+                    fixture.request_records.append(request)
                     fixture.active += 1
                     fixture.peak = max(fixture.peak, fixture.active)
                     fixture.condition.notify_all()
@@ -690,6 +699,164 @@ class DirectReadReceipts(unittest.TestCase):
         status, stats = self.server.call('stats')
         self.assertEqual(status, 200, stats)
         self.assertEqual(stats['result']['snapshots'], 0)
+
+
+class DirectReadCancellation(unittest.TestCase):
+    """A separate HTTP call controls a held synchronous ordinary read."""
+
+    body_text = DirectReadReceipts.body_text
+    failed_body = DirectReadReceipts.failed_body
+    worker_response = DirectReadReceipts.worker_response
+    expected_usage = staticmethod(DirectReadReceipts.expected_usage)
+    assert_payer_receipt = DirectReadReceipts.assert_payer_receipt
+
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory(prefix='bzs-http-direct-cancel-')
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        self.worker = HeldWorker(response=self.worker_response)
+        self.addCleanup(self.worker.close)
+        token = root / 'worker.token'
+        token.write_text(secrets.token_hex(32), encoding='utf-8')
+        token.chmod(0o600)
+        sources = root / 'sources.json'
+        sources.write_text(json.dumps({'version': 1, 'sources': []}), encoding='utf-8')
+        self.server = RunningServer(root, no_worker=True, extra_args=[
+            '--threads', '1', '--request-threads', '3',
+            '--worker', f'http://127.0.0.1:{self.worker.port}',
+            '--worker-token-file', str(token), '--sources', str(sources)])
+        self.addCleanup(self.server.stop)
+        self.addCleanup(self.worker.release.set)
+
+    def prepare(self):
+        status, body = self.server.call('web.read.prepare')
+        self.assertEqual(status, 200, body)
+        prepared = body['result']
+        self.assertEqual(prepared['state'], 'prepared')
+        self.assertEqual(prepared['scope'], 'process')
+        self.assertEqual(prepared['expires_in_ms'], 120000)
+        self.assertRegex(prepared['read_id'], r'\A[0-9a-f]{48}\Z')
+        return prepared['read_id']
+
+    def cancel(self, read_id, *, physical, accepted=True):
+        status, body = self.server.call('web.read.cancel', {'read_id': read_id})
+        self.assertEqual(status, 200, body)
+        response = body['result']
+        self.assertEqual(response['read_id'], read_id)
+        self.assertEqual(response['state'], 'cancelled' if accepted else 'completed')
+        self.assertIs(response['cancel_requested'], accepted)
+        self.assertIs(response['physical_cancel_requested'], physical)
+        return response
+
+    def test_prepare_cancel_owner_isolation_and_one_time_claim_survive_http(self):
+        status, caps = self.server.call('capabilities')
+        self.assertEqual(status, 200, caps)
+        self.assertIn('web.read.prepare', caps['result']['operations'])
+        self.assertIn('web.read.cancel', caps['result']['operations'])
+        read_id = self.prepare()
+        for operation, params in (
+            ('web.read.cancel', {'read_id': read_id}),
+            ('web.read', {'url': 'https://cancel.example/prepared', 'read_id': read_id}),
+        ):
+            with self.subTest(operation=operation):
+                status, denied = self.server.call(operation, params, token=self.server.bob)
+                self.assertEqual(status, 404, denied)
+                self.assertEqual(denied['errors'][0]['code'], 'E_NOT_FOUND')
+        self.cancel(read_id, physical=False)
+        self.cancel(read_id, physical=False)
+        params = {'url': 'https://cancel.example/prepared', 'freshness': 'refresh', 'read_id': read_id}
+        status, cancelled = self.server.call('web.read', params)
+        self.assertEqual(status, 409, cancelled)
+        self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+        self.assertNotIn('result', cancelled)
+        self.assertNotIn('shared_read', cancelled)
+        self.assertEqual(cancelled['usage'], self.expected_usage(0, 0))
+        status, replay = self.server.call('web.read', params)
+        self.assertEqual(status, 409, replay)
+        self.assertEqual(replay['errors'][0]['code'], 'E_READ_STATE')
+        self.assertEqual(self.worker.calls, 0)
+        self.assertEqual(self.worker.direct_cancellations, [])
+
+    def test_live_cancel_keeps_original_paid_receipt_and_uses_direct_control_rpc(self):
+        read_id = self.prepare()
+        with ThreadPoolExecutor(max_workers=1) as clients:
+            pending = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/held', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': read_id})
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                status, denied = self.server.call('web.read.cancel', {'read_id': read_id}, token=self.server.bob)
+                self.assertEqual(status, 404, denied)
+                self.assertEqual(self.worker.direct_cancellations, [])
+                self.cancel(read_id, physical=True)
+                self.cancel(read_id, physical=False)
+                self.assertFalse(pending.done(), 'payer still owns the held physical execution')
+                self.assertEqual(len(self.worker.direct_cancellations), 1)
+                request = self.worker.request_records[0]
+                self.assertEqual(request['method'], 'fetch.extract_direct')
+                control_id = request['params']['control_id']
+                self.assertRegex(control_id, r'\A[0-9a-f]{48}\Z')
+                self.assertEqual(self.worker.direct_cancellations, [control_id])
+                for key in ('attempt_id', 'max_requests', 'max_content_bytes'):
+                    self.assertNotIn(key, request['params'])
+            finally:
+                self.worker.release.set()
+            status, cancelled = pending.result(timeout=5)
+        self.assertEqual(status, 409, cancelled)
+        self.assertEqual(cancelled['errors'][0]['code'], 'E_CANCELLED')
+        self.assertNotIn('result', cancelled)
+        self.assert_payer_receipt(cancelled, 1, len(self.body_text.encode('utf-8')))
+        self.assertEqual(cancelled['shared_read']['attempt_id'], control_id)
+        self.assertEqual(self.worker.calls, 1)
+        self.cancel(read_id, physical=False)
+
+    def test_completed_read_handle_cannot_cancel_or_replay_a_later_attempt(self):
+        self.worker.release.set()
+        first = self.prepare()
+        params = {'url': 'https://cancel.example/completed', 'freshness': 'refresh', 'read_id': first}
+        status, completed = self.server.call('web.read', params)
+        self.assertEqual(status, 200, completed)
+        self.assert_payer_receipt(completed['result'], 1, len(self.body_text.encode('utf-8')))
+        self.cancel(first, physical=False, accepted=False)
+        status, replay = self.server.call('web.read', params)
+        self.assertEqual(status, 409, replay)
+        self.assertEqual(replay['errors'][0]['code'], 'E_READ_STATE')
+        second = self.prepare()
+        self.assertNotEqual(first, second)
+        params['read_id'] = second
+        status, next_result = self.server.call('web.read', params)
+        self.assertEqual(status, 200, next_result)
+        self.assertNotEqual(completed['result']['shared_read']['attempt_id'],
+                            next_result['result']['shared_read']['attempt_id'])
+        self.cancel(first, physical=False, accepted=False)
+        self.assertEqual(self.worker.calls, 2)
+        self.assertEqual(self.worker.direct_cancellations, [])
+
+    def test_cancel_is_subject_to_existing_http_business_backpressure(self):
+        self.server.stop()
+        index = self.server.extra_args.index('--request-threads')
+        self.server.extra_args[index + 1] = '1'
+        self.server.start()
+        read_id = self.prepare()
+        with ThreadPoolExecutor(max_workers=1) as clients:
+            pending = clients.submit(self.server.call, 'web.read', {
+                'url': 'https://cancel.example/saturated', 'freshness': 'refresh',
+                'timeout_ms': 10000, 'read_id': read_id})
+            try:
+                self.assertTrue(self.worker.wait_calls(1))
+                status, denied = self.server.call('web.read.cancel', {'read_id': read_id}, timeout=3)
+                self.assertEqual(status, 503, denied)
+                self.assertEqual(denied['errors'][0]['code'], 'E_REQUEST_BACKPRESSURE')
+                self.assertEqual(self.worker.direct_cancellations, [])
+                with self.server.opener.open(f'http://127.0.0.1:{self.server.port}/healthz', timeout=3) as response:
+                    self.assertEqual(response.status, 200)
+            finally:
+                self.worker.release.set()
+            status, completed = pending.result(timeout=5)
+        self.assertEqual(status, 200, completed)
+        self.assertEqual(completed['result']['content']['text'], self.body_text)
+        self.cancel(read_id, physical=False, accepted=False)
+        self.assertEqual(self.worker.calls, 1)
 
 
 if __name__ == '__main__':

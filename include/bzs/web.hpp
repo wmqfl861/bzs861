@@ -89,17 +89,33 @@ namespace bzs {
     std::string last_read_profile_;
     // Direct reads retain their synchronous, ordinary Worker contract. Only
     // compatible in-flight work in this WebService can share its one commit.
+    struct DirectReadFlight;
+    struct DirectReadMember {
+      std::string owner;
+      std::chrono::steady_clock::time_point expires;
+      bool used=false, running=false, completed=false, cancelled=false, active=false;
+      std::shared_ptr<DirectReadFlight> flight;
+    };
     struct DirectReadFlight {
       std::condition_variable ready;
       std::thread::id leader=std::this_thread::get_id();
       std::size_t members=1;
-      bool finished=false;
-      std::string attempt_id, physical_usage_json;
+      std::size_t active_members=0;
+      bool finished=false, rpc_finished=false, controlled=false, cancel_requested=false;
+      std::string key, attempt_id, physical_usage_json;
       std::map<std::string,std::string> snapshot_fields;
       std::exception_ptr error;
     };
     std::mutex direct_reads_mutex_;
     std::map<std::string,std::shared_ptr<DirectReadFlight>> direct_reads_;
+    // A bounded, process-local one-use handle table. Running calls never expire;
+    // prepared and terminal entries retain their identity for two minutes.
+    std::map<std::string,std::shared_ptr<DirectReadMember>> direct_read_members_;
+    void prune_direct_members_locked();
+    std::string release_direct_member_locked(const std::shared_ptr<DirectReadMember>& member);
+    bool finish_direct_member(const std::shared_ptr<DirectReadMember>& member);
+    void cancel_direct_attempt(const std::string& control_id) noexcept;
+    Json read_impl(const std::string& owner,const Json& args,const std::shared_ptr<DirectReadMember>& member);
     // Deterministic native-test barrier. Copied under the coordination lock,
     // invoked without that lock or a Store transaction; no protocol setter.
     friend struct WebReadTestAccess;
@@ -124,6 +140,8 @@ namespace bzs {
     std::optional<SearchLease> lease_search();
     void execute_search(const SearchLease& lease);
     Json read(const std::string& owner, const Json& args);
+    Json prepare_read(const std::string& owner,const Json& args);
+    Json cancel_read(const std::string& owner,const Json& args);
     Json submit_reads(const std::string& owner, const Json& args);
     // The worker only returns an artifact. Store validates the durable lease and
     // publishes the artifact, receipt and reconciled usage in one transaction.

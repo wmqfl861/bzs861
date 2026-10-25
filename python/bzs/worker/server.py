@@ -1,6 +1,7 @@
 """bzs-worker: loopback JSON RPC used by searchd (POST /rpc, Bearer token).
 
-Methods: health, search.multi, fetch.extract, fetch.cancel, map.fetch. The worker never writes the database and
+Methods include health, search.multi, fetch.extract, fetch.cancel, the ordinary
+fetch.extract_direct / fetch.cancel_direct pair, and map.fetch. The worker never writes the database and
 never decides which sources to query; it executes what searchd asks within its own
 network policy (SSRF guard), which it enforces independently.
 """
@@ -21,7 +22,8 @@ from aiohttp import web
 from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
 from .freshness import VERSION as FRESHNESS_VERSION, response_freshness
-from .fetch import DEFAULT_UA, FetchAdmissionDenied, FetchBudget, FetchStopped, Fetcher, decode_body, host_of
+from .fetch import (DEFAULT_UA, DirectReadControl, FetchAdmissionDenied, FetchBudget,
+                    FetchStopped, Fetcher, decode_body, host_of)
 from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
                           extraction_restriction_observation, incomplete_publication,
@@ -62,6 +64,10 @@ class Worker:
         # expiry, cancelled, cumulative dispatched requests, cumulative body bytes.
         # A replay's usage describes the whole attempt, never just its latest RPC.
         self._retired_attempts: dict[str, tuple[float, bool, int, int]] = {}
+        # An independent namespace: ordinary reads retain their own timeout,
+        # redirect-body and prefix/truncation contracts, without durable grants.
+        self._direct_controls: dict[str, DirectReadControl] = {}
+        self._retired_direct_controls: dict[str, tuple[float, bool, int, int]] = {}
 
     async def start(self) -> None:
         await self.fetcher.start()
@@ -102,7 +108,7 @@ class Worker:
             raise ValueError("query and sources are required")
         return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
 
-    async def fetch_extract(self, params: dict) -> dict:
+    async def fetch_extract(self, params: dict, *, _direct_control: DirectReadControl | None = None) -> dict:
         if not isinstance(params, dict):
             raise ValueError("fetch.extract parameters must be an object")
         conditional = None
@@ -149,7 +155,8 @@ class Worker:
             budget = FetchBudget(requests, byte_limit)
             self._read_attempts[attempt_id] = budget
         try:
-            out = await self._fetch_extract(params, budget, conditional, redirect_conditional)
+            out = await self._fetch_extract(params, budget, conditional, redirect_conditional,
+                                            **({"control": _direct_control} if _direct_control is not None else {}))
             if out.get("http_status") == 304:
                 # A bodyless result cannot provide new snippet text. Current
                 # known-site ceilings can still restrict the old snapshot.
@@ -196,6 +203,84 @@ class Worker:
                 self._read_attempts.pop(attempt_id, None)
                 self._retired_attempts[attempt_id] = (asyncio.get_running_loop().time() + 120, budget.cancelled,
                                                     budget.external_requests, budget.content_bytes)
+
+    @staticmethod
+    def _direct_control_id(params: dict) -> str:
+        if not isinstance(params, dict):
+            raise ValueError("direct read parameters must be an object")
+        value = params.get("control_id")
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{48}", value):
+            raise ValueError("invalid direct read control id")
+        return value
+
+    def _prune_direct_controls(self) -> None:
+        now = asyncio.get_running_loop().time()
+        # Running controls are never aged out while their network task exists.
+        self._retired_direct_controls = {
+            key: value for key, value in self._retired_direct_controls.items() if value[0] > now}
+
+    async def fetch_extract_direct(self, params: dict) -> dict:
+        control_id = self._direct_control_id(params)
+        if set(params) - {"control_id", "url", "timeout_ms", "conditional", "redirect_conditional"}:
+            raise ValueError("unknown ordinary controlled read parameters")
+        timeout = params.get("timeout_ms", 20000)
+        if (not isinstance(params.get("url"), str) or not 1 <= len(params["url"]) <= 4096 or
+                type(timeout) is not int or not 1000 <= timeout <= 60000):
+            raise ValueError("invalid ordinary controlled read URL or timeout")
+        self._prune_direct_controls()
+        if control_id in self._direct_controls:
+            raise ValueError("direct read control is already running")
+        if control_id in self._retired_direct_controls:
+            _, cancelled, requests, byte_count = self._retired_direct_controls[control_id]
+            return {"status": "cancelled" if cancelled else "attempt_replayed",
+                    "error_code": "E_CANCELLED" if cancelled else "E_ATTEMPT_REPLAY",
+                    "error": "direct read control is no longer dispatchable",
+                    "usage": {"external_requests": requests, "content_bytes": byte_count}}
+        if len(self._direct_controls) + len(self._retired_direct_controls) >= 2048:
+            raise ValueError("direct read retention capacity reached")
+        control = DirectReadControl()
+        self._direct_controls[control_id] = control
+        try:
+            ordinary = {key: value for key, value in params.items() if key != "control_id"}
+            out = await self.fetch_extract(ordinary, _direct_control=control)
+            if control.cancelled:
+                # A cancel during CPU extraction must not publish a successful
+                # body, but already observed cache/publication restrictions are
+                # still useful to the core's independent publication fences.
+                if "publication" in out:
+                    observation = extraction_restriction_observation(
+                        out["publication"], "cancelled_direct_read")
+                    if observation is not None:
+                        out["publication_observation"] = observation
+                out = {key: value for key, value in out.items() if key in {
+                    "http_status", "final_url", "redirects", "http_freshness",
+                    "http_redirect_observations", "redirect_publication_observations", "publication_observation"}}
+                out.update(status="cancelled", error_code="E_CANCELLED", error="direct read was cancelled")
+            out["usage"] = {"external_requests": control.external_requests, "content_bytes": control.content_bytes}
+            return out
+        finally:
+            self._direct_controls.pop(control_id, None)
+            self._retired_direct_controls[control_id] = (
+                asyncio.get_running_loop().time() + 120, control.cancelled,
+                control.external_requests, control.content_bytes)
+
+    async def fetch_cancel_direct(self, params: dict) -> dict:
+        control_id = self._direct_control_id(params)
+        if set(params) != {"control_id"}:
+            raise ValueError("unknown direct read cancellation parameters")
+        self._prune_direct_controls()
+        control = self._direct_controls.get(control_id)
+        if control is not None:
+            control.cancel()
+        else:
+            if (control_id not in self._retired_direct_controls and
+                    len(self._direct_controls) + len(self._retired_direct_controls) >= 2048):
+                raise ValueError("direct read retention capacity reached")
+            previous = self._retired_direct_controls.get(control_id)
+            self._retired_direct_controls[control_id] = (
+                previous[0] if previous else asyncio.get_running_loop().time() + 120, True,
+                previous[2] if previous else 0, previous[3] if previous else 0)
+        return {"cancel_requested": True}
 
     @staticmethod
     def _attempt_id(params: dict) -> str:
@@ -603,7 +688,8 @@ class Worker:
         return {"page": page, "discovery": parsed}
 
     async def _fetch_extract(self, params: dict, budget: FetchBudget | None, conditional: dict | None = None,
-                             redirect_conditional: dict | None = None) -> dict:
+                             redirect_conditional: dict | None = None,
+                             control: DirectReadControl | None = None) -> dict:
         url = str(params.get("url", ""))
         timeout_s = max(0.001 if budget else 1.0, min(float(params.get("timeout_ms", 20000)) / 1000.0, 60.0))
         loop = asyncio.get_running_loop()
@@ -639,9 +725,17 @@ class Worker:
                 # Configuration changes turn this same authorized attempt into a
                 # full GET; they never trigger a second request or reuse a body.
                 redirect_conditional = None
-        res = await self.fetcher.fetch(url, timeout_s=timeout_s, headers=headers,
-                                       collect_redirect_cache=True, redirect_conditional=redirect_conditional,
-                                       **({"budget": budget} if budget else {}))
+        async def fetch(target, **kwargs):
+            if control is not None:
+                # Fetcher catches explicit cancellation beside its live usage
+                # counters. Keep that interruptible task separate from this RPC
+                # and from CPU extraction dispatched through to_thread.
+                return await asyncio.create_task(self.fetcher.fetch(target, control=control, **kwargs))
+            return await self.fetcher.fetch(target, **kwargs)
+
+        res = await fetch(url, timeout_s=timeout_s, headers=headers,
+                          collect_redirect_cache=True, redirect_conditional=redirect_conditional,
+                          **({"budget": budget} if budget else {}))
         used_requests, used_bytes = res.external_requests, res.content_bytes
         follows = 0
         while True:
@@ -732,8 +826,8 @@ class Worker:
                     if remaining <= 0:
                         return {**base, "status": "timeout", "error": "request timed out",
                                 "redirect_publication_observations": observed}
-                    nxt = await self.fetcher.fetch(target, timeout_s=remaining, collect_redirect_cache=True,
-                                                   **({"budget": budget} if budget else {}))
+                    nxt = await fetch(target, timeout_s=remaining, collect_redirect_cache=True,
+                                      **({"budget": budget} if budget else {}))
                     conditional = None
                     redirect_conditional = None
                     used_requests += nxt.external_requests
@@ -785,7 +879,8 @@ class Worker:
 
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
-               "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch, "fetch.profile": worker.fetch_profile}
+               "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch, "fetch.profile": worker.fetch_profile,
+               "fetch.extract_direct": worker.fetch_extract_direct, "fetch.cancel_direct": worker.fetch_cancel_direct}
 
     async def rpc(request: web.Request) -> web.Response:
         auth = request.headers.get("Authorization", "")

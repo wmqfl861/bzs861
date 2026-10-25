@@ -1,0 +1,70 @@
+{
+  "status": "passed_focused_worker_and_adapter_review",
+  "files": {
+    "python/bzs/worker/fetch.py": "9a0fc0cb25752f739a461d70f34ef7fa99a48f1b519b97fec54ef3ea78984601",
+    "python/bzs/worker/server.py": "ab13730b08b53fec46ede6ca31cda6719564c5cf6c9232e66cced68bc1ffbd96",
+    "python/bzs/mcp_server.py": "b118675b5ab43ec12241c2367e5d9b8f73926ec2a69eea58585a3005ad1337e4",
+    "python/tests/test_direct_read_control.py": "bbefc0dfc7f14ce613b98a9f9c4727f8a131277ac0d7681045bba0c6021cf0a5",
+    "python/tests/test_mcp_direct_cancel.py": "9561e1b96cbb8fa5f640237a98d5d660108d41cd7f8cc936cf825a448d4ba331"
+  },
+  "final_command": [
+    "../.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--tb=short",
+    "tests/test_direct_read_control.py",
+    "tests/test_mcp_direct_cancel.py",
+    "tests/test_mcp_read.py",
+    "tests/test_fetch_budget.py",
+    "tests/test_http_revalidation.py",
+    "tests/test_http_redirect_cache.py",
+    "tests/test_fetch.py"
+  ],
+  "cwd": "/workspace/scratch/ed564c9de2af/bzs861/python",
+  "exit_code": 0,
+  "passed": 295,
+  "failed": 0,
+  "seconds": 6.93,
+  "summary_from_tool_stdout": "295 passed in 6.93s",
+  "new_tests": {
+    "direct_control": 28,
+    "mcp_control": 7
+  },
+  "prior_runs": [
+    {
+      "status": "collection_failed",
+      "cause": "Invocation used repository root, unlike project python working directory; tests package could not import."
+    },
+    {
+      "status": "blocked_and_test_failure",
+      "counts": {
+        "failed": 1,
+        "passed": 19,
+        "errors": 48
+      },
+      "cause": "Default sandbox denied loopback socket fixtures; new MCP annotation test used camelCase rather than installed SDK snake_case attributes. Test corrected; loopback-only execution escalation approved."
+    },
+    {
+      "status": "passed",
+      "passed": 68,
+      "seconds": 2.12,
+      "note": "Before final redirect-conditional and RPC routing tests were added."
+    }
+  ],
+  "validation_limits": "Focused offline HTTP, Worker and MCP tests; not full CTest, sanitizer, Windows or complete B-24 acceptance.",
+  "protocol": {
+    "read_rpc": "fetch.extract_direct",
+    "cancel_rpc": "fetch.cancel_direct",
+    "control_field": "control_id",
+    "control_format": "48 lowercase hexadecimal characters",
+    "capacity": 2048,
+    "retirement_seconds": 120,
+    "active_controls_expire": false,
+    "durable_namespace_shared": false,
+    "normal_rpc_unchanged": "fetch.extract"
+  },
+  "external_requests_during_tests": "Only local loopback fixtures; authenticated cancel-before-start RPC used example.com URL but dispatched zero requests."
+}

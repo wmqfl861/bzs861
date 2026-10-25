@@ -1,0 +1,37 @@
+{
+  "review_type": "independent_read_only_design_review",
+  "baseline_commit": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+  "reviewed_protocol": {
+    "prepare": "web.read.prepare({}) allocates a same-owner one-shot read_id with process scope and 120000 ms retention",
+    "read": "web.read optionally accepts read_id; named and legacy reads use distinct shared-flight identities",
+    "cancel": "web.read.cancel({read_id}) cancels one member; the last active member closes admission before Worker cooperation",
+    "worker": "fetch.extract_direct with independent control_id; fetch.cancel_direct never enters the durable grant namespace"
+  },
+  "conclusion": "conditionally_sound_pending_implementation_and_executable_evidence",
+  "execution": {"tests_run": false, "production_files_modified": false},
+  "required_properties": [
+    "Claim a prepared read_id atomically before any profile or network work; one handle cannot authorize two reads.",
+    "A prepared cancellation prevents later dispatch; same-owner lookup is required and foreign/absent handles must not leak ownership.",
+    "Use steady-clock retention; do not expire running members; repeated control does not refresh terminal retention; capacity rejects rather than evicts live state or unexpired tombstones.",
+    "No automatic fallback or re-dispatch if the direct-specific Worker method is unsupported or its reply is lost; legacy calls keep their existing Worker parameters.",
+    "Cumulative membership remains bounded at 32; cancelled and timed-out members do not free cumulative admission slots.",
+    "Count active members separately; last-member removal and admission closure share one coordination-lock linearization point.",
+    "Do not hold the coordination lock during Store calls or Worker RPC, and never introduce detached physical-execution threads.",
+    "The fixed payer remains the accounting owner after cancellation; subscribers never inherit the physical charge.",
+    "A subscriber cancelling before physical settlement returns known-zero incremental usage and unknown associated physical usage, not a fabricated zero physical attempt.",
+    "All completion, error, timeout and cancellation exits retire their claimed member exactly once and cannot leave a permanently running handle.",
+    "After the Store window is ready, success delivery must race cancellation through a final coordinated transition; cancellation winning that transition prevents the member receiving body content.",
+    "Core final principal-revocation checks should preserve already-known execution usage without releasing the body.",
+    "Direct control preserves 60000 ms public timeouts, ordinary redirect-body accounting, truncation and output-window semantics; it does not instantiate FetchBudget.",
+    "Worker cancellation is checked before outbound dispatch, after host-slot waits, before subsequent redirects, during streaming, and after extraction yields; cancelled outputs retain reliable usage and valid restrictive observations.",
+    "Worker direct active/retired control identities are separate from durable attempts, bounded, and preserve cancel-before-start and replay protection within their documented retention window."
+  ],
+  "explicit_scope_limits_required": [
+    "Payer control can acknowledge immediately while the original synchronous read waits for bounded physical settlement; do not promise immediate termination of that read call.",
+    "Without holding a coordination lock across Store ingestion or a persistent cancellation fence, cancellation cannot retroactively roll back a commit that has already begun. Document the exact submission versus delivery boundary.",
+    "The existing HTTP business pool may return E_REQUEST_BACKPRESSURE to cancellation when full; no arbitrary-load immediate-cancel guarantee follows from the API.",
+    "Process-scoped handles and Worker tombstones are not a persistent execution or budget journal and do not establish restart recovery, no-charge execution or safe automatic retries.",
+    "Cross-WebService, cross-process and cross-channel sharing remain out of scope; complete B-24 and CACHE-01 acceptance remains unsigned."
+  ],
+  "next_review": "Inspect implementation and independently exercise member races, preserved direct contracts, Worker cancellation accounting, HTTP/MCP transport, and final execution-input binding."
+}

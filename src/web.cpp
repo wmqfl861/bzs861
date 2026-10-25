@@ -758,9 +758,133 @@ namespace bzs {
     out.set("content_trust", "untrusted_web_content");
     return out;
   }
-  Json WebService::read(const std::string& owner, const Json& args) {
+  void WebService::prune_direct_members_locked() {
+    const auto now=std::chrono::steady_clock::now();
+    for(auto it=direct_read_members_.begin();it!=direct_read_members_.end();) {
+      if(!it->second->running&&it->second->expires<=now)it=direct_read_members_.erase(it);
+      else ++it;
+    }
+  }
+  // Requires direct_reads_mutex_. The close and active-reference transition
+  // share one linearization point with admission. RPC always happens later.
+  std::string WebService::release_direct_member_locked(const std::shared_ptr<DirectReadMember>& member) {
+    if(!member->active||!member->flight)return {};
+    member->active=false;
+    const auto& flight=member->flight;
+    --flight->active_members;
+    if(flight->active_members!=0||flight->rpc_finished||flight->cancel_requested)return {};
+    flight->cancel_requested=true;
+    const auto found=direct_reads_.find(flight->key);
+    if(found!=direct_reads_.end()&&found->second==flight)direct_reads_.erase(found);
+    return flight->attempt_id;
+  }
+  void WebService::cancel_direct_attempt(const std::string& control_id) noexcept {
+    if(control_id.empty())return;
+    try {
+      auto params=Json::object();params.set("control_id",control_id);
+      (void)worker_.call("fetch.cancel_direct",params,2000);
+    } catch(...) { /* Logical cancellation survives a missing cooperation ACK. */ }
+  }
+  bool WebService::finish_direct_member(const std::shared_ptr<DirectReadMember>& member) {
+    std::string control_id;bool cancelled=false;
+    {
+      std::lock_guard lock(direct_reads_mutex_);
+      cancelled=member->cancelled;
+      if(member->completed)return cancelled;
+      control_id=release_direct_member_locked(member);
+      member->completed=true;member->running=false;
+      member->expires=std::chrono::steady_clock::now()+std::chrono::seconds(120);
+      member->flight.reset();
+    }
+    cancel_direct_attempt(control_id);
+    return cancelled;
+  }
+  Json WebService::prepare_read(const std::string& owner,const Json& args) {
+    args.allowed({});store_.require_principal_active(owner);
+    const auto id=random_id();
+    auto member=std::make_shared<DirectReadMember>();member->owner=owner;
+    member->expires=std::chrono::steady_clock::now()+std::chrono::seconds(120);
+    {
+      std::lock_guard lock(direct_reads_mutex_);prune_direct_members_locked();
+      require(direct_read_members_.size()<1024,"E_READ_CAPACITY","Direct read handle capacity reached",429);
+      require(direct_read_members_.emplace(id,std::move(member)).second,"E_INTERNAL","Direct read handle collision",500);
+    }
+    auto out=Json::object();out.set("read_id",id);out.set("scope","process");
+    out.set("state","prepared");out.set("expires_in_ms",std::int64_t{120000});return out;
+  }
+  Json WebService::cancel_read(const std::string& owner,const Json& args) {
+    args.allowed({"read_id"});const auto id=required_string(args,"read_id",48);
+    require(id.size()==48&&std::all_of(id.begin(),id.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),
+            "E_SCHEMA","read_id must be a 48-character lowercase hexadecimal handle");
+    store_.require_principal_active(owner);
+    std::shared_ptr<DirectReadFlight> flight;std::string control_id;bool requested=false;
+    {
+      std::lock_guard lock(direct_reads_mutex_);prune_direct_members_locked();
+      const auto found=direct_read_members_.find(id);
+      require(found!=direct_read_members_.end()&&found->second->owner==owner,"E_NOT_FOUND","Direct read handle not found",404);
+      const auto& member=found->second;
+      if(!member->completed) {
+        member->cancelled=true;control_id=release_direct_member_locked(member);flight=member->flight;
+      }
+      requested=member->cancelled;
+    }
+    if(flight)flight->ready.notify_all();
+    cancel_direct_attempt(control_id);
+    auto out=Json::object();out.set("read_id",id);out.set("scope","process");
+    out.set("state",requested?"cancelled":"completed");out.set("cancel_requested",requested);
+    out.set("physical_cancel_requested",!control_id.empty());return out;
+  }
+  Json WebService::read(const std::string& owner,const Json& args) {
+    if(!args.has("read_id"))return read_impl(owner,args,{});
+    const auto id=required_string(args,"read_id",48);
+    require(id.size()==48&&std::all_of(id.begin(),id.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),
+            "E_SCHEMA","read_id must be a 48-character lowercase hexadecimal handle");
+    store_.require_principal_active(owner);
+    std::shared_ptr<DirectReadMember> member;
+    {
+      std::lock_guard lock(direct_reads_mutex_);prune_direct_members_locked();
+      const auto found=direct_read_members_.find(id);
+      require(found!=direct_read_members_.end()&&found->second->owner==owner,"E_NOT_FOUND","Direct read handle not found",404);
+      member=found->second;
+      require(!member->used,"E_READ_STATE","Direct read handle has already been used",409);
+      member->used=true;member->running=true;
+    }
+    const auto execution_details=[&](const Json& value) {
+      auto details=Json::object();
+      for(const auto* field:{"usage","shared_read"})if(value.has(field))details.set(field,value.at(field));
+      // Before joining a physical flight only local profile/cache work is
+      // possible. Do not infer a zero receipt for a network failure.
+      if(!details.has("usage")) {
+        bool network=false;
+        { std::lock_guard lock(direct_reads_mutex_);network=static_cast<bool>(member->flight); }
+        details.set("usage",direct_read_increment(direct_read_usage(Json::object()),network));
+      }
+      return details;
+    };
+    Json result;
+    try { result=read_impl(owner,args,member); }
+    catch(const Error& error) {
+      const auto details=execution_details(error.details);
+      const bool cancelled=finish_direct_member(member);
+      if(cancelled)throw Error("E_CANCELLED","Direct read member was cancelled",409,details);
+      throw Error(error.code,error.what(),error.http_status,details);
+    } catch(...) {
+      const auto details=execution_details(Json());const bool cancelled=finish_direct_member(member);
+      throw Error(cancelled?"E_CANCELLED":"E_INTERNAL",cancelled?"Direct read member was cancelled":"Direct read failed before response delivery",cancelled?409:500,details);
+    }
+    const auto details=execution_details(result);
+    // This is the member's final delivery claim, after the Store's permission,
+    // deletion and publication checks. A winning cancel cannot release a body.
+    if(finish_direct_member(member))throw Error("E_CANCELLED","Direct read member was cancelled",409,details);
+    return result;
+  }
+  Json WebService::read_impl(const std::string& owner, const Json& args,const std::shared_ptr<DirectReadMember>& member) {
+    if(member) {
+      std::lock_guard lock(direct_reads_mutex_);
+      require(!member->cancelled,"E_CANCELLED","Direct read member was cancelled",409);
+    }
     args.allowed( {
-      "url", "freshness", "max_age_s", "max_bytes", "start_byte", "timeout_ms"
+      "url", "freshness", "max_age_s", "max_bytes", "start_byte", "timeout_ms", "read_id"
     });
     auto url=normalize_iri(required_string(args, "url", 4096));
     check_public_url(url);
@@ -842,6 +966,9 @@ namespace bzs {
       else params.set("redirect_conditional",http_redirect_conditional(base->meta.at("http_redirect_chain"),base->conditional));
     }
     auto identity=Json::object();identity.set("owner",owner);identity.set("request",params);
+    // Opt-in control uses a distinct Worker RPC and must not borrow an old
+    // uncontrolled flight (or make a legacy caller depend on the new RPC).
+    identity.set("controlled",static_cast<bool>(member));
     identity.set("fence",publication_fence);identity.set("profile",profile);
     identity.set("cached_snapshot",cached?cached->at("snapshot_id"):Json());
     identity.set("cached_metadata",cached?sha256(cached->at("meta").canonical()):"");
@@ -849,21 +976,25 @@ namespace bzs {
     std::shared_ptr<DirectReadFlight> flight;bool payer=true;
     {
       std::lock_guard lock(direct_reads_mutex_);
+      if(member)require(!member->cancelled,"E_CANCELLED","Direct read member was cancelled",409);
       const auto found=direct_reads_.find(key);
       if(!profile.empty()&&found!=direct_reads_.end()&&found->second->leader!=std::this_thread::get_id()&&found->second->members<32) {
         flight=found->second;++flight->members;payer=false;
       } else {
-        flight=std::make_shared<DirectReadFlight>();flight->attempt_id=random_id();
+        flight=std::make_shared<DirectReadFlight>();flight->attempt_id=random_id();flight->key=key;
+        flight->controlled=static_cast<bool>(member);
         flight->physical_usage_json=direct_read_usage(Json::object()).dump();
         // Never replace an existing flight: a reentrant call cannot wait for
         // itself, and full groups/capacity keep the ordinary independent path.
         if(!profile.empty()&&found==direct_reads_.end()&&direct_reads_.size()<64)direct_reads_.emplace(key,flight);
       }
+      if(member) { member->flight=flight;member->active=true;++flight->active_members; }
     }
-    const auto close_admission=[&] {
+    const auto close_admission=[&](bool response_received) {
       std::lock_guard lock(direct_reads_mutex_);
       const auto found=direct_reads_.find(key);
       if(found!=direct_reads_.end()&&found->second==flight)direct_reads_.erase(found);
+      flight->rpc_finished=flight->rpc_finished||response_received;
       return flight->members;
     };
     const auto receipt=[&](const Json& physical) {
@@ -874,8 +1005,9 @@ namespace bzs {
     };
     if(payer) {
       try {
-        const auto r=worker_.call("fetch.extract",params,static_cast<int>(timeout+5000));
-        const auto members=close_admission();
+        if(member)params.set("control_id",flight->attempt_id);
+        const auto r=worker_.call(member?"fetch.extract_direct":"fetch.extract",params,static_cast<int>(timeout+5000));
+        const auto members=close_admission(true);
         // Closing at RPC completion makes this an in-flight coordinator, not
         // a second result cache, and fixes the membership used below.
         std::exception_ptr receipt_error;
@@ -937,6 +1069,21 @@ namespace bzs {
         const auto policy=artifact.parsed.publication;
         const auto representation_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:policy;
         try {
+          bool publish=true;
+          {
+            std::lock_guard lock(direct_reads_mutex_);
+            publish=!flight->controlled||flight->active_members!=0;
+          }
+          // No interested member at the commit admission point: retain valid
+          // restrictive observations, not a new body. A cancel after this
+          // point can still race the Store transaction; final delivery remains
+          // independently fenced and cancellation never promises a rollback.
+          if(!publish) {
+            apply_observations();
+            if(restrictive_publication(policy))store_.observe_web_publication(owner,url,url,policy,publication_fence);
+            if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
+            throw Error("E_CANCELLED","No active direct read members remain",409);
+          }
           const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
           // Keep only the fields consumed by window, independently encoded.
           // Store already bounds each field; aggregating body and publication
@@ -952,14 +1099,21 @@ namespace bzs {
           throw;
         }
       } catch(...) {
-        (void)close_admission();flight->error=std::current_exception();
+        (void)close_admission(false);flight->error=std::current_exception();
       }
       { std::lock_guard lock(direct_reads_mutex_);flight->finished=true; }
       flight->ready.notify_all();
     } else {
       const auto until=std::chrono::steady_clock::now()+std::chrono::milliseconds(timeout+5000);
       std::unique_lock lock(direct_reads_mutex_);
-      const bool finished=flight->ready.wait_until(lock,until,[&]{return flight->finished;});lock.unlock();
+      const bool finished=flight->ready.wait_until(lock,until,[&]{return flight->finished||(member&&member->cancelled);});
+      const bool cancelled=member&&member->cancelled;
+      const bool settled=flight->finished;lock.unlock();
+      // Physical fields are written by the payer until finished is published.
+      // An early departing subscriber therefore associates unknown physical
+      // usage even though its own incremental use is known to be zero.
+      if(cancelled)throw Error("E_CANCELLED","Direct read member was cancelled",409,
+                                receipt(settled?Json::parse(flight->physical_usage_json):direct_read_usage(Json::object())));
       if(!finished)throw Error("E_WORKER_TIMEOUT","Shared read did not finish within this caller's wait bound",504,
                                receipt(direct_read_usage(Json::object())));
     }

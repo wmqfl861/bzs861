@@ -258,6 +258,20 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
     async def cancel_search_session(session_id: str) -> dict[str, Any]:
         return await _call("session.cancel", {"session_id": session_id})
 
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=False, idempotentHint=False), description=(
+        "Reserve a short-lived, single-use read_id for one cancellable read_url call. Pass the returned read_id "
+        "to read_url, and use cancel_read_url from another call to cancel only that member. This reservation "
+        "does not fetch a URL and belongs to the current core process and owner."))
+    async def prepare_read_url() -> dict[str, Any]:
+        return await _call("web.read.prepare", {})
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=False, idempotentHint=True), description=(
+        "Cancel one reserved/running read_url member using its read_id. Other active members of the shared "
+        "read can continue. Only the last member requests cooperative network cancellation; already incurred "
+        "use is retained. A cancelled payer may wait for the shared attempt to settle before read_url returns."))
+    async def cancel_read_url(read_id: str) -> dict[str, Any]:
+        return await _call("web.read.cancel", {"read_id": read_id})
+
     @server.tool(annotations=open_world, description=(
         "Fetch a public web page, extract its main content as Markdown and store an immutable snapshot. "
         "Returns a window of the text: continue with read_range(snapshot_id, next_start_byte). "
@@ -265,11 +279,15 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
         "Compatible concurrent reads for the same owner and authorization may share one fetch, with from_cache=false. "
         "usage reports this caller's incremental use; shared_read.physical_usage describes the shared attempt and "
         "must not be added to usage or summed across members. "
+        "Optionally pass a single-use read_id from prepare_read_url to enable explicit member cancellation. "
         "Private/loopback/metadata addresses are refused. Offsets are UTF-8 byte offsets. " + UNTRUSTED))
     async def read_url(url: str, max_bytes: int = 20000, start_byte: int = 0, freshness: str = "cache_first",
-                       max_age_s: int = 604800) -> dict[str, Any]:
-        r = await _call("web.read", {"url": to_uri(url), "max_bytes": max(1, min(max_bytes, 262144)), "start_byte": max(0, start_byte),
-                                     "freshness": freshness, "max_age_s": max(0, max_age_s)})
+                       max_age_s: int = 604800, read_id: str | None = None) -> dict[str, Any]:
+        params = {"url": to_uri(url), "max_bytes": max(1, min(max_bytes, 262144)), "start_byte": max(0, start_byte),
+                  "freshness": freshness, "max_age_s": max(0, max_age_s)}
+        if read_id is not None:
+            params["read_id"] = read_id
+        r = await _call("web.read", params)
         content = r.get("content", {})
         out = {"snapshot_id": r.get("snapshot_id"), "title": r.get("title"), "url": r.get("url"),
                "final_url": r.get("final_url"), "fetched_at_ms": r.get("fetched_at_ms"), "from_cache": r.get("from_cache"),

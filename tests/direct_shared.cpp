@@ -34,6 +34,13 @@ struct WebReadTestAccess {
     std::lock_guard lock(web.direct_reads_mutex_);
     web.direct_read_window_for_test_=std::move(hook);
   }
+  static void expire_handle(WebService& web,const std::string& id) {
+    std::lock_guard lock(web.direct_reads_mutex_);
+    web.direct_read_members_.at(id)->expires=std::chrono::steady_clock::now()-std::chrono::seconds(1);
+  }
+  static auto handle_expiry(WebService& web,const std::string& id) {
+    std::lock_guard lock(web.direct_reads_mutex_);return web.direct_read_members_.at(id)->expires;
+  }
 };
 }
 
@@ -110,13 +117,13 @@ struct Gate {
 // Every mutable Worker field is synchronized. No test assertion or shared
 // Json mutation runs on a business thread. Each response owns its Json tree.
 struct Worker final:WorkerPort {
-  struct Call { std::size_t number=0;std::string parameters,profile;int rpc_timeout=0; };
+  struct Call { std::size_t number=0;std::string parameters,profile;int rpc_timeout=0;std::string method="fetch.extract"; };
   using Response=std::function<Json(const Call&)>;
   std::mutex mutex;std::condition_variable changed;
-  std::vector<Call> requests;std::vector<std::string> cancelled;
+  std::vector<Call> requests;std::vector<std::string> cancelled,direct_cancelled;
   std::size_t profiles=0;std::set<std::size_t> released;bool open=false;
   std::string current_profile=profile,profile_mode="valid";
-  Response response;std::function<std::int64_t()> now;
+  Response response;std::function<std::int64_t()> now;std::function<void()> before_profile;
 
   explicit Worker(std::function<std::int64_t()> clock):now(std::move(clock)) {}
 
@@ -151,9 +158,9 @@ struct Worker final:WorkerPort {
 
   Json call(const std::string& method,const Json& params,int timeout) override {
     if(method=="fetch.profile") {
-      std::string selected,mode;
-      {std::lock_guard lock(mutex);++profiles;selected=current_profile;mode=profile_mode;}
-      changed.notify_all();
+      std::string selected,mode;std::function<void()> hook;
+      {std::lock_guard lock(mutex);++profiles;selected=current_profile;mode=profile_mode;hook=before_profile;}
+      changed.notify_all();if(hook)hook();
       if(mode=="unavailable")throw Error("E_WORKER_UNAVAILABLE","offline profile fixture",503);
       if(mode=="missing")return Json::object();
       auto out=Json::object();out.set("version",mode=="bad"?"bad-profile-version":"bzs-http-freshness-1");
@@ -163,10 +170,14 @@ struct Worker final:WorkerPort {
       {std::lock_guard lock(mutex);cancelled.push_back(params.at("attempt_id").str());}
       changed.notify_all();return Json::object();
     }
-    if(method!="fetch.extract")throw std::runtime_error("unexpected Worker method "+method);
+    if(method=="fetch.cancel_direct") {
+      {std::lock_guard lock(mutex);direct_cancelled.push_back(params.at("control_id").str());}
+      changed.notify_all();return Json::object();
+    }
+    if(method!="fetch.extract"&&method!="fetch.extract_direct")throw std::runtime_error("unexpected Worker method "+method);
     Call captured;Response make;
     {
-      std::unique_lock lock(mutex);captured={requests.size()+1,params.canonical(),current_profile,timeout};
+      std::unique_lock lock(mutex);captured={requests.size()+1,params.canonical(),current_profile,timeout,method};
       requests.push_back(captured);make=response;changed.notify_all();
       changed.wait(lock,[&]{return open||released.contains(captured.number);});
     }
@@ -174,6 +185,7 @@ struct Worker final:WorkerPort {
   }
 
   void responder(Response make) { std::lock_guard lock(mutex);response=std::move(make); }
+  void profile_hook(std::function<void()> hook) {std::lock_guard lock(mutex);before_profile=std::move(hook);}
   void select_profile(const std::string& selected,const std::string& mode="valid") {
     std::lock_guard lock(mutex);current_profile=selected;profile_mode=mode;
   }
@@ -185,6 +197,7 @@ struct Worker final:WorkerPort {
   }
   std::vector<Call> calls() { std::lock_guard lock(mutex);return requests; }
   std::vector<std::string> cancellations() { std::lock_guard lock(mutex);return cancelled; }
+  std::vector<std::string> direct_cancellations() {std::lock_guard lock(mutex);return direct_cancelled;}
 };
 
 struct Fixture {
@@ -209,6 +222,11 @@ struct Running {
   }
   std::size_t read(WebService& web,const std::string& owner,const Json& args=read_args()) {
     const auto encoded=args.canonical();return start([&web,owner,encoded]{return web.read(owner,Json::parse(encoded));});
+  }
+  bool wait_done(std::size_t slot) {
+    const auto until=std::chrono::steady_clock::now()+std::chrono::seconds(5);
+    do {if(outcomes.at(slot)->done.load())return true;std::this_thread::yield();}
+    while(std::chrono::steady_clock::now()<until);return false;
   }
   void join(std::size_t slot) { if(threads.at(slot).joinable())threads.at(slot).join(); }
   void join_all() { for(auto& thread:threads)if(thread.joinable())thread.join(); }
@@ -706,6 +724,215 @@ TEST(large_valid_snapshots_preserve_legacy_and_shared_read_windows) {
     CHECK(frozen.at("publication").at("snippet_text").str()==large_body);
     CHECK(f.store.stats("alice").at("snapshots").num()==1);CHECK(f.worker.calls().size()==1);CHECK(wait_state(f.web,0,0));
   }
+}
+
+Json control_args(const std::string& id) {
+  auto out=Json::object();out.set("read_id",id);return out;
+}
+
+std::string prepare(WebService& web,const std::string& owner="alice") {
+  const auto out=web.prepare_read(owner,Json::object());
+  CHECK(out.at("scope").str()=="process");CHECK(out.at("state").str()=="prepared");
+  CHECK(out.at("expires_in_ms").num()==120000);
+  const auto id=out.at("read_id").str();CHECK(id.size()==48);
+  CHECK(std::all_of(id.begin(),id.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}));return id;
+}
+
+Json named_args(const std::string& id,const std::string& url=target,const char* freshness="refresh") {
+  auto out=read_args(url,freshness);out.set("read_id",id);return out;
+}
+
+void cancellation(const Json& response,const std::string& id,bool physical,bool accepted=true) {
+  CHECK(response.at("read_id").str()==id);
+  CHECK(response.at("state").str()==(accepted?"cancelled":"completed"));
+  CHECK(response.at("cancel_requested").flag()==accepted);
+  CHECK(response.at("physical_cancel_requested").flag()==physical);
+}
+
+void zero_before_dispatch(const Json& details) {
+  CHECK(!details.has("shared_read"));CHECK(details.has("usage"));
+  const auto own=details.at("usage");CHECK(own.at("scope").str()=="direct_read");
+  CHECK(own.at("known").flag());CHECK(own.at("external_requests").num()==0);
+  CHECK(own.at("content_bytes").num()==0);CHECK(own.at("model_calls").num()==0);
+}
+
+TEST(prepared_cancel_handles_are_owner_bound_single_use_and_not_worker_attempts) {
+  Fixture f;const auto id=prepare(f.web);CHECK(f.worker.calls().empty());
+  rejects([&]{f.web.cancel_read("bob",control_args(id));},"E_NOT_FOUND");
+  rejects([&]{f.web.read("bob",named_args(id));},"E_NOT_FOUND");
+  rejects([&]{f.web.cancel_read("alice",control_args(random_id()));},"E_NOT_FOUND");
+  cancellation(f.web.cancel_read("alice",control_args(id)),id,false);
+  cancellation(f.web.cancel_read("alice",control_args(id)),id,false);
+  Running run(f.worker);const auto slot=run.read(f.web,"alice",named_args(id));
+  CHECK(run.wait_done(slot));zero_before_dispatch(run.failure(slot,"E_CANCELLED"));
+  rejects([&]{f.web.read("alice",named_args(id));},"E_READ_STATE");
+  CHECK(f.worker.calls().empty());CHECK(f.worker.direct_cancellations().empty());
+  CHECK(f.worker.cancellations().empty());
+  const auto next=prepare(f.web);CHECK(next!=id);f.worker.release_all();
+  const auto result=f.web.read("alice",named_args(next));usage(result,"payer",1);
+  cancellation(f.web.cancel_read("alice",control_args(next)),next,false,false);
+  rejects([&]{f.web.read("alice",named_args(next));},"E_READ_STATE");CHECK(f.worker.calls().size()==1);
+}
+
+TEST(a_claimed_handle_cannot_start_twice_and_bad_arguments_consume_it) {
+  Fixture f;const auto id=prepare(f.web);Running run(f.worker);
+  const auto payer=run.read(f.web,"alice",named_args(id));CHECK(f.worker.wait_requests(1));
+  rejects([&]{f.web.read("alice",named_args(id));},"E_READ_STATE");CHECK(f.worker.calls().size()==1);
+  f.worker.release_all();usage(run.success(payer),"payer",1);
+  const auto bad=prepare(f.web);auto args=named_args(bad);args.set("timeout_ms",std::int64_t{999});
+  rejects([&]{f.web.read("alice",args);},"E_SCHEMA");
+  rejects([&]{f.web.read("alice",named_args(bad));},"E_READ_STATE");
+  CHECK(f.worker.calls().size()==1);CHECK(f.worker.direct_cancellations().empty());
+}
+
+TEST(cancelled_subscriber_returns_without_interrupting_payer_or_late_member) {
+  Fixture f;const auto first=prepare(f.web),second=prepare(f.web),third=prepare(f.web);Running run(f.worker);
+  const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(1));
+  const auto member=run.read(f.web,"alice",named_args(second));CHECK(wait_state(f.web,1,2));
+  cancellation(f.web.cancel_read("alice",control_args(second)),second,false);
+  CHECK(run.wait_done(member));const auto cancelled=run.failure(member,"E_CANCELLED");
+  usage(cancelled,"subscriber",2,0,0,false);CHECK(!run.outcomes.at(payer)->done.load());
+  CHECK(f.worker.direct_cancellations().empty());
+  const auto late=run.read(f.web,"alice",named_args(third));CHECK(wait_state(f.web,1,3));
+  cancellation(f.web.cancel_read("alice",control_args(second)),second,false);
+  f.worker.release_all();const auto paid=run.success(payer),joined=run.success(late);
+  same_attempt(paid,joined);usage(paid,"payer",3);usage(joined,"subscriber",3);
+  CHECK(cancelled.at("shared_read").at("attempt_id").str()==paid.at("shared_read").at("attempt_id").str());
+  CHECK(f.worker.calls().size()==1);CHECK(f.store.stats("alice").at("snapshots").num()==1);
+  CHECK(f.worker.direct_cancellations().empty());CHECK(f.worker.cancellations().empty());
+}
+
+TEST(cancelled_payer_keeps_physical_ownership_while_subscribers_finish) {
+  for(bool known:{true,false}) {
+    Fixture f;if(!known)f.worker.responder([&](const Worker::Call& call){return without(f.worker.page(call),"usage");});
+    const auto first=prepare(f.web),second=prepare(f.web),third=prepare(f.web);Running run(f.worker);
+    const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(1));
+    const auto member=run.read(f.web,"alice",named_args(second));CHECK(wait_state(f.web,1,2));
+    cancellation(f.web.cancel_read("alice",control_args(first)),first,false);
+    CHECK(!run.outcomes.at(payer)->done.load());CHECK(f.worker.direct_cancellations().empty());
+    const auto late=run.read(f.web,"alice",named_args(third));CHECK(wait_state(f.web,1,3));
+    f.worker.release_all();const auto paid=run.failure(payer,"E_CANCELLED"),a=run.success(member),b=run.success(late);
+    usage(paid,"payer",3,1,100,known);usage(a,"subscriber",3,1,100,known);usage(b,"subscriber",3,1,100,known);
+    same_physical_receipt(paid,a);same_attempt(a,b);CHECK(a.at("content").at("text").str()==body);
+    CHECK(f.worker.calls().size()==1);CHECK(f.worker.direct_cancellations().empty());
+  }
+}
+
+TEST(last_member_cancel_closes_admission_and_sends_one_separate_control_rpc) {
+  Fixture f;const auto first=prepare(f.web),second=prepare(f.web),third=prepare(f.web);Running run(f.worker);
+  const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(1));
+  const auto member=run.read(f.web,"alice",named_args(second));CHECK(wait_state(f.web,1,2));
+  cancellation(f.web.cancel_read("alice",control_args(second)),second,false);CHECK(run.wait_done(member));
+  const auto cancelled=run.failure(member,"E_CANCELLED");usage(cancelled,"subscriber",2,0,0,false);
+  cancellation(f.web.cancel_read("alice",control_args(first)),first,true);CHECK(wait_state(f.web,0,0));
+  cancellation(f.web.cancel_read("alice",control_args(first)),first,false);
+  const auto calls=f.worker.calls();CHECK(calls.size()==1);CHECK(calls.front().method=="fetch.extract_direct");
+  const auto control=Json::parse(calls.front().parameters).at("control_id").str();
+  CHECK(f.worker.direct_cancellations()==std::vector<std::string>{control});CHECK(f.worker.cancellations().empty());
+  const auto next=run.read(f.web,"alice",named_args(third));CHECK(f.worker.wait_requests(2));CHECK(wait_state(f.web,1,1));
+  f.worker.release(1);const auto paid=run.failure(payer,"E_CANCELLED");usage(paid,"payer",2);
+  f.worker.release(2);const auto new_result=run.success(next);usage(new_result,"payer",1);
+  CHECK(new_result.at("shared_read").at("attempt_id").str()!=control);
+  CHECK(paid.at("shared_read").at("attempt_id").str()==control);
+  CHECK(f.worker.calls().size()==2);CHECK(f.worker.direct_cancellations().size()==1);CHECK(wait_state(f.web,0,0));
+}
+
+TEST(cancel_before_profile_finishes_stops_network_and_cached_delivery) {
+  for(bool cached:{false,true}) {
+    Fixture f;if(cached) {f.worker.release_all();f.web.read("alice",read_args());f.worker.hold();}
+    const auto id=prepare(f.web);Gate profile_gate;f.worker.profile_hook([&]{profile_gate.wait();});Running run(f.worker);
+    run.cleanup.push_back([&]{profile_gate.release();f.worker.profile_hook({});});
+    const auto slot=run.read(f.web,"alice",named_args(id,target,cached?"cache_only":"refresh"));CHECK(profile_gate.reached());
+    cancellation(f.web.cancel_read("alice",control_args(id)),id,false);profile_gate.release();
+    CHECK(run.wait_done(slot));zero_before_dispatch(run.failure(slot,"E_CANCELLED"));
+    CHECK(f.worker.calls().size()==(cached?1U:0U));CHECK(f.worker.direct_cancellations().empty());
+    f.worker.profile_hook({});CHECK(wait_state(f.web,0,0));
+  }
+}
+
+TEST(cancellation_winning_after_physical_completion_still_blocks_member_delivery) {
+  Fixture f;const auto first=prepare(f.web),second=prepare(f.web);Gate window;
+  WebReadTestAccess::window_hook(f.web,[&](const std::string& role){if(role=="subscriber")window.wait();});Running run(f.worker);
+  run.cleanup.push_back([&]{window.release();WebReadTestAccess::window_hook(f.web,{});});
+  const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(1));
+  const auto member=run.read(f.web,"alice",named_args(second));CHECK(wait_state(f.web,1,2));
+  f.worker.release_all();CHECK(window.reached());const auto paid=run.success(payer);usage(paid,"payer",2);
+  cancellation(f.web.cancel_read("alice",control_args(second)),second,false);window.release();
+  const auto denied=run.failure(member,"E_CANCELLED");usage(denied,"subscriber",2);same_physical_receipt(paid,denied);
+  cancellation(f.web.cancel_read("alice",control_args(first)),first,false,false);
+  CHECK(f.worker.direct_cancellations().empty());CHECK(f.store.stats("alice").at("snapshots").num()==1);
+  CHECK(paid.at("content").at("text").str()==body);WebReadTestAccess::window_hook(f.web,{});
+}
+
+TEST(named_reads_keep_sixty_second_parameters_and_do_not_merge_legacy_members) {
+  Fixture f;const auto id=prepare(f.web);auto args=named_args(id);args.set("timeout_ms",std::int64_t{60000});
+  auto legacy=read_args();legacy.set("timeout_ms",std::int64_t{60000});Running run(f.worker);
+  const auto named=run.read(f.web,"alice",args);CHECK(f.worker.wait_requests(1));
+  const auto old=run.read(f.web,"alice",legacy);CHECK(f.worker.wait_requests(2));CHECK(wait_state(f.web,2,2));
+  const auto calls=f.worker.calls();CHECK(calls.front().method=="fetch.extract_direct");CHECK(calls.back().method=="fetch.extract");
+  for(const auto& call:calls) {
+    const auto params=Json::parse(call.parameters);CHECK(params.at("timeout_ms").num()==60000);CHECK(call.rpc_timeout==65000);
+    CHECK(!params.has("attempt_id"));CHECK(!params.has("max_requests"));CHECK(!params.has("max_content_bytes"));
+    CHECK(params.has("control_id")== (call.method=="fetch.extract_direct"));
+  }
+  cancellation(f.web.cancel_read("alice",control_args(id)),id,true);
+  f.worker.release(1);const auto denied=run.failure(named,"E_CANCELLED");usage(denied,"payer",1);
+  f.worker.release(2);const auto allowed=run.success(old);usage(allowed,"payer",1);CHECK(allowed.at("content").at("text").str()==body);
+  CHECK(f.worker.direct_cancellations().size()==1);CHECK(f.worker.cancellations().empty());CHECK(wait_state(f.web,0,0));
+}
+
+TEST(named_conditional_shared_read_cancel_preserves_one_304_commit_and_receipt) {
+  Fixture f;f.worker.responder([&](const Worker::Call& call){return f.worker.conditional(call);});f.worker.release_all();
+  const auto initial=f.web.read("alice",read_args());f.now.fetch_add(61000);f.worker.hold();
+  const auto first=prepare(f.web),second=prepare(f.web);Running run(f.worker);
+  const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(2));
+  const auto member=run.read(f.web,"alice",named_args(second));CHECK(wait_state(f.web,1,2));
+  cancellation(f.web.cancel_read("alice",control_args(first)),first,false);f.worker.release_all();
+  const auto paid=run.failure(payer,"E_CANCELLED"),allowed=run.success(member);
+  usage(paid,"payer",2,1,0);usage(allowed,"subscriber",2,1,0);same_physical_receipt(paid,allowed);
+  CHECK(allowed.at("snapshot_id").str()==initial.at("snapshot_id").str());CHECK(allowed.at("fetch").at("http_status").num()==304);
+  CHECK(f.store.stats("alice").at("snapshots").num()==1);CHECK(f.worker.calls().size()==2);
+  CHECK(Json::parse(f.worker.calls().back().parameters).has("conditional"));CHECK(f.worker.direct_cancellations().empty());
+}
+
+TEST(cancel_handle_capacity_and_expiry_never_evict_running_or_reuse_retired_identity) {
+  Fixture f;std::vector<std::string> handles;
+  for(std::size_t i=0;i<1024;++i)handles.push_back(prepare(f.web));
+  CHECK(std::set<std::string>(handles.begin(),handles.end()).size()==1024);
+  rejects([&]{f.web.prepare_read("alice",Json::object());},"E_READ_CAPACITY");
+  const auto before=WebReadTestAccess::handle_expiry(f.web,handles.front());
+  cancellation(f.web.cancel_read("alice",control_args(handles.front())),handles.front(),false);
+  cancellation(f.web.cancel_read("alice",control_args(handles.front())),handles.front(),false);
+  CHECK(WebReadTestAccess::handle_expiry(f.web,handles.front())==before);
+  rejects([&]{f.web.prepare_read("alice",Json::object());},"E_READ_CAPACITY");
+  WebReadTestAccess::expire_handle(f.web,handles.front());
+  rejects([&]{f.web.read("alice",named_args(handles.front()));},"E_NOT_FOUND");
+  const auto replacement=prepare(f.web);CHECK(std::find(handles.begin(),handles.end(),replacement)==handles.end());
+  Running run(f.worker);const auto active=run.read(f.web,"alice",named_args(handles.at(1)));CHECK(f.worker.wait_requests(1));
+  WebReadTestAccess::expire_handle(f.web,handles.at(1));
+  rejects([&]{f.web.prepare_read("alice",Json::object());},"E_READ_CAPACITY");
+  cancellation(f.web.cancel_read("alice",control_args(handles.at(1))),handles.at(1),true);
+  f.worker.release_all();usage(run.failure(active,"E_CANCELLED"),"payer",1);
+  WebReadTestAccess::expire_handle(f.web,handles.at(1));
+  rejects([&]{f.web.cancel_read("alice",control_args(handles.at(1)));},"E_NOT_FOUND");
+  CHECK(prepare(f.web)!=handles.at(1));CHECK(f.worker.calls().size()==1);
+}
+
+TEST(cancelled_members_do_not_reclaim_the_shared_flights_lifetime_slots) {
+  Fixture f;Running run(f.worker);const auto first=prepare(f.web);
+  const auto payer=run.read(f.web,"alice",named_args(first));CHECK(f.worker.wait_requests(1));
+  for(std::size_t count=2;count<=32;++count) {
+    const auto id=prepare(f.web);const auto slot=run.read(f.web,"alice",named_args(id));
+    CHECK(wait_state(f.web,1,count));cancellation(f.web.cancel_read("alice",control_args(id)),id,false);
+    CHECK(run.wait_done(slot));usage(run.failure(slot,"E_CANCELLED"),"subscriber",static_cast<std::int64_t>(count),0,0,false);
+  }
+  CHECK(f.worker.direct_cancellations().empty());CHECK(f.worker.calls().size()==1);
+  const auto overflow_id=prepare(f.web);const auto overflow=run.read(f.web,"alice",named_args(overflow_id));
+  CHECK(f.worker.wait_requests(2));CHECK(wait_state(f.web,1,32));
+  f.worker.release(1);const auto shared=run.success(payer);usage(shared,"payer",32);
+  f.worker.release(2);const auto independent=run.success(overflow);usage(independent,"payer",1);
+  CHECK(shared.at("shared_read").at("attempt_id").str()!=independent.at("shared_read").at("attempt_id").str());
+  CHECK(f.worker.direct_cancellations().empty());CHECK(wait_state(f.web,0,0));
 }
 
 }

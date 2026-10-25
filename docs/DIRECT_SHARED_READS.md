@@ -4,6 +4,8 @@
 
 本增量推进 `CACHE-01 / B-24 / FT-032`，数据库仍为 schema15，版本仍为 `0.1.10`，没有新增迁移或直接读取任务表。它与[持久批读共享请求](SHARED_READS.md)各自协调，不把普通直接读取转成 `read_many` 任务。
 
+2026-10-25 接续增加了可选 `read_id` 及[成员取消合同](DIRECT_READ_CANCELLATION.md)。带句柄与原无句柄调用分组，完整身份、付款和每成员屏障保持；下文原 Worker 参数合同指无句柄路径，显式控制路径使用独立 RPC。
+
 ## 加入身份与容量
 
 只有已经进入网络读取路径、取得有效当前请求配置证明的调用，才能登记或加入共享组。内存登记表属于一个 `WebService` 对象；同一进程中的另一个 `WebService`、另一个 Store 所属的服务实例或另一个 Core 进程都不会加入它。
@@ -46,7 +48,7 @@ Worker 回调可能在同一线程内重入 `web.read`。若找到的组由当�
 
 订阅成员等待超时返回 `E_WORKER_TIMEOUT`，不自动重发，不发送 `fetch.cancel`，也不终止其他成员的执行。它仍占原累计槽位，物理尝试继续按原 Worker 超时和提交屏障结束。超时错误中的 `members` 是生成该错误时已加入的累计人数；正常完成时则使用关闭加入后固定的人数。
 
-直接读取没有新增公开取消 ID 或 `job.control` 合同。客户端断连、某个成员返回错误或等待超时，都不能被解释为物理请求未发生。直接读取的单成员取消和最后成员协作取消仍属于后续工作。
+无句柄调用不提供单成员取消；可通过新的 `web.read.prepare` 准备一次性句柄，并用 `web.read.cancel` 控制带句柄读取，详见[取消合同](DIRECT_READ_CANCELLATION.md)。没有改用 `job.control`。客户端断连、成员错误或等待超时不能解释为物理请求未发生。
 
 ## 保留普通直接读取的 Worker 合同
 
@@ -94,7 +96,7 @@ Worker 回调可能在同一线程内重入 `web.read`。若找到的组由当�
 
 缓存命中的成功响应为已知零增量，且没有 `shared_read`。网络共享的成功成员仍为 `from_cache=false`，即使结果来自条件读取后的 304；`cache` 描述该表示的 HTTP 新鲜度，不能把订阅者误标成缓存命中。
 
-已经进入这次网络尝试、由直接读取路径包装的失败通过 C++ `Error.details` 保留 `usage` 和 `shared_read`，包括有效收据对应的失败与未知执行。HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造收据。尤其外层 `Service::dispatch` 在读取返回后还会终检主体有效性，该检查失败时仍可能没有 `Error.details`。因此完整 HTTP 失败面并不保证每次都能取回已发生的用量，这一剩余边界不能解释成零消耗或安全自动重发。
+已经进入这次网络尝试、由直接读取路径包装的失败通过 C++ `Error.details` 保留 `usage` 和 `shared_read`，包括有效收据对应的失败与未知执行。HTTP 失败信封继续保留原错误码、消息和 HTTP 状态，并在详情存在时输出这两个字段；前置校验或其他没有执行详情的旧错误不制造共享收据。2026-10-25 接续补齐了外层 `Service::dispatch` 最后主体复查：`web.read` 已有用量详情在撤权失败时仍保留。传输断开、进程退出或无回包仍不能保证客户端取回收据，缺少回执不能解释为零消耗或安全自动重发。
 
 Python `CoreError` 仅从失败 body 提取 object 类型的 `usage`、`shared_read`。MCP `_call` 保持 `ToolError` 和原错误文本，有详情时才在后面追加一行紧凑、保留 Unicode 的 JSON；无详情错误文本保持原样。成功的 `read_url` 仅在 Core 返回字段存在时原样透传 `usage`、`shared_read`、`cache`，不重算未知值、角色或成员用量。
 
@@ -108,6 +110,6 @@ Python `CoreError` 仅从失败 body 提取 object 类型的 `usage`、`shared_r
 
 实现位于 [`WebService::read`](../src/web.cpp)、[`Store::range`](../src/store.cpp)和[发布屏障](../src/publication.cpp)；正式并发回归位于 [`tests/direct_shared.cpp`](../tests/direct_shared.cpp)，MCP 透传回归位于 [`python/tests/test_mcp_read.py`](../python/tests/test_mcp_read.py)。本批基线、修正过程、独立核对和最终门禁以[验证记录](../validation/direct_shared_20261024/README.md)及[机器报告](../validation/direct_shared_20261024/final-report.json)中的实际输入、命令和结果为准。本文不预填未来 CI、运行成功数量或发布 SHA。
 
-本能力不覆盖跨 `WebService` / 跨进程协调、direct 与持久 `read_many` 混合共享、map/crawl/search 共享、直接读取单成员取消或重启后的执行账本。进程内 `attempt_id` 和关联收据不构成可恢复租约；重启或响应丢失后，不能凭它断言执行未发生、恢复用量或安全自动重发。更广取消矩阵、持久执行未知恢复、独立撤销 journal 和长期故障演练仍按原蓝图推进。
+本能力不覆盖跨 `WebService` / 跨进程协调、direct 与持久 `read_many` 混合共享、map/crawl/search 共享或重启后的执行账本。可选句柄的单成员取消已由[后续增量](DIRECT_READ_CANCELLATION.md)实现；完整跨通道取消矩阵尚未签收。进程内 `attempt_id` 和关联收据不构成可恢复租约；重启或响应丢失后不能凭它断言执行未发生、恢复用量或安全自动重发。持久执行未知恢复、独立撤销 journal 和长期故障演练仍按原蓝图推进。
 
 来源选择、审核与启用、原 S2 范围和冻结决定、validation 入库、备份恢复隔离、永久幂等身份保留及抓取适配器决定保持。默认仍为 **17 条登记来源 / 0 启用 / 0 站点**。原 **83 个工作包 / 161 个验收项 / 10 个切片**及 **37 partial / 46 not_started / 0 accepted** 保持；完整 `B-24` 与 `CACHE-01` 未签收。受控 Worker、内存协调和 SQLite 并发回归只证明各自场景，不替代真实来源批准、生产负载、任意故障或完整产品验收。

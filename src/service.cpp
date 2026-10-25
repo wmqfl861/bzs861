@@ -145,7 +145,7 @@ namespace bzs {
       "capabilities", "search.modes", "contract.validate", "fixtures.list", "fixtures.search", "fixture.ingest", "query.compile", "document.ingest", "document.read", "document.range", "document.delete", "search", "search.once", "search.page", "session.get", "session.events", "session.cancel", "find", "evidence.create", "evidence.read", "stats", "job.create", "job.get", "job.control", "job.results", "jobs.compact", "backup.create", "principal.revoke"
     })a.push(Json::string(op));
     if(web_)for(const auto*op: {
-      "web.search", "web.search.start", "web.read", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
+      "web.search", "web.search.start", "web.read", "web.read.prepare", "web.read.cancel", "web.sources", "read_many.submit", "map.submit", "map.sites", "crawl.submit", "crawl.edges"
     })a.push(Json::string(op));
     j.set("operations", a);
     Json missing=Json::array();
@@ -163,7 +163,15 @@ namespace bzs {
     auto result=dispatch_active(p,request);
     // A request may wait for a worker after authentication. Never release its
     // result if a revocation committed while that request was in progress.
-    store_.require_principal_active(p.subject);
+    try { store_.require_principal_active(p.subject); }
+    catch(const Error& error) {
+      // A late revocation still blocks the body, while preserving a direct
+      // read receipt already computed by the execution path.
+      if(request.at("operation").str()!="web.read")throw;
+      auto details=Json::object();
+      for(const auto* field:{"usage","shared_read"})if(result.has(field))details.set(field,result.at(field));
+      throw Error(error.code,error.what(),error.http_status,details);
+    }
     return result;
   }
   Json Service::dispatch_active(const Principal& p, const Json& request) {
@@ -251,6 +259,8 @@ namespace bzs {
       return store_.session_events(p.subject,required_string(args,"session_id",64),int_option(args,"after_event_id",0,0,(1LL<<62)-1),int_option(args,"limit",20,1,32));
     }
     if(web_&&op=="web.read")return web_->read(p.subject, args);
+    if(web_&&op=="web.read.prepare")return web_->prepare_read(p.subject,args);
+    if(web_&&op=="web.read.cancel")return web_->cancel_read(p.subject,args);
     if(web_&&op=="read_many.submit")return web_->submit_reads(p.subject,args);
     if(web_&&op=="map.submit")return web_->submit_map(p.subject,args);
     if(web_&&op=="crawl.submit")return web_->submit_crawl(p.subject,args);

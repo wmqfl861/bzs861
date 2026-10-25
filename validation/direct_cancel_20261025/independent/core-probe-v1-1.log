@@ -1,0 +1,25 @@
+RUN pre_cancel_and_ownership
+PASS pre_cancel_and_ownership
+RUN concurrent_one_use
+PASS concurrent_one_use
+RUN payer_cancel_late_join
+PASS payer_cancel_late_join
+RUN subscriber_early_cancel
+PASS subscriber_early_cancel
+RUN all_cancel_no_orphan_commit
+PASS all_cancel_no_orphan_commit
+RUN cancelled_running_does_not_expire
+PASS cancelled_running_does_not_expire
+RUN expiry_reuse_and_terminal_errors
+PASS expiry_reuse_and_terminal_errors
+RUN cache_profile_cancel
+PASS cache_profile_cancel
+RUN delivery_cancel_after_commit
+PASS delivery_cancel_after_commit
+RUN uncertain_rpc_cooperation
+PASS uncertain_rpc_cooperation
+RUN namespace_and_legacy_contract
+PASS namespace_and_legacy_contract
+RUN bounded_handles
+PASS bounded_handles
+SUMMARY cases=12 failed=0 checks=110

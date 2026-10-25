@@ -1,0 +1,14 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_repeated_cancel_preserves_original_retirement_deadline_and_usage[False] _
+tests/test_direct_read_control.py:180: in test_repeated_cancel_preserves_original_retirement_deadline_and_usage
+    assert retired[0] == original[0]
+E   assert 28005.739400063 == 28005.739392963
+_ test_repeated_cancel_preserves_original_retirement_deadline_and_usage[True] __
+tests/test_direct_read_control.py:180: in test_repeated_cancel_preserves_original_retirement_deadline_and_usage
+    assert retired[0] == original[0]
+E   assert 28005.76487509 == 28005.764867058
+=========================== short test summary info ============================
+FAILED tests/test_direct_read_control.py::test_repeated_cancel_preserves_original_retirement_deadline_and_usage[False]
+FAILED tests/test_direct_read_control.py::test_repeated_cancel_preserves_original_retirement_deadline_and_usage[True]
+2 failed, 28 deselected in 0.27s

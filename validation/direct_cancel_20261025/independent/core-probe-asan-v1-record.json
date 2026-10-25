@@ -1,0 +1,60 @@
+{
+  "stage": "independent_core_probe_asan_v1",
+  "inputs_before": {
+    "build-asan/libbzs_core.a": "d65e319171042407c465da079ccbb8a8896140d61aeaa5b35c3ab76dad538c34",
+    "validation/direct_cancel_20261025/independent/core_probe.cpp": "2d24e16f0d40785949fbb410beeacc95518cf6d86bf32f058ef7af17933c8ec3",
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec"
+  },
+  "commands": [
+    {
+      "argv": [
+        "g++",
+        "-std=c++20",
+        "-g",
+        "-O0",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-Iinclude",
+        "/workspace/scratch/ed564c9de2af/bzs861/validation/direct_cancel_20261025/independent/core_probe.cpp",
+        "build-asan/libbzs_core.a",
+        "-lsqlite3",
+        "-lcrypto",
+        "-lxml2",
+        "-ljson-c",
+        "-pthread",
+        "-o",
+        "/workspace/scratch/ed564c9de2af/independent-probe-build/core_probe_asan_v1"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "exit_code": 0,
+      "duration_seconds": 4.029797792434692,
+      "log": "validation/direct_cancel_20261025/independent/core-probe-asan-v1-0.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ed564c9de2af/independent-probe-build/core_probe_asan_v1"
+      ],
+      "cwd": "/workspace/scratch/ed564c9de2af/bzs861",
+      "exit_code": 0,
+      "duration_seconds": 1.3467552661895752,
+      "log": "validation/direct_cancel_20261025/independent/core-probe-asan-v1-1.log",
+      "log_sha256": "4db903bb13bef5958201ff962dd80871d1b87c7f4f11c60a1b96b27573604f93"
+    }
+  ],
+  "environment": {
+    "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+    "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+  },
+  "inputs_after": {
+    "build-asan/libbzs_core.a": "d65e319171042407c465da079ccbb8a8896140d61aeaa5b35c3ab76dad538c34",
+    "validation/direct_cancel_20261025/independent/core_probe.cpp": "2d24e16f0d40785949fbb410beeacc95518cf6d86bf32f058ef7af17933c8ec3",
+    "src/web.cpp": "358ffcfb5a8fc851532d55de31a23e9797b5b31b23c2c7830a8eeb1619b1fe09",
+    "include/bzs/web.hpp": "34b71a6f6598413e92994a14a05cdc29965aa83bc978bdbad26d5859959a058e",
+    "src/service.cpp": "b3ab85bc477dc43956f9d30e887f8dad0378143a4f706f4e785bf4c868de72ec"
+  },
+  "inputs_unchanged": true,
+  "binary_sha256": "0a8ed58a469650496d384b017bcae96fe3c559f760144727f74daaff14c0b907"
+}

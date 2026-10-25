@@ -1,0 +1,55 @@
+{
+  "status": "ttl_fix_verified_with_adjacent_mcp_test_failure_reported",
+  "scope": "Repeated cancellation preserves the original direct-control retirement expiry and cumulative usage. No durable attempt behavior changed.",
+  "source_sha256": {
+    "python/bzs/worker/server.py": "d0f3a01c418100b75f45634807ec36b26d14a121b06cbfdfa54b81ce0791f8cc",
+    "python/tests/test_direct_read_control.py": "e7b0745b2d8f95537f92d122e388f45cc1aaeabfea657b05650738196f88e450"
+  },
+  "baseline_server_sha256": "ab13730b08b53fec46ede6ca31cda6719564c5cf6c9232e66cced68bc1ffbd96",
+  "cwd": "/workspace/scratch/ed564c9de2af/bzs861/python",
+  "baseline": {
+    "command": [
+      "../.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "--tb=short",
+      "tests/test_direct_read_control.py",
+      "-k",
+      "repeated_cancel_preserves_original_retirement"
+    ],
+    "exit_code": 1,
+    "failed": 2,
+    "deselected": 28,
+    "seconds": 0.27,
+    "log": "baseline-two-failures.log"
+  },
+  "candidate": {
+    "command": [
+      "../.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "-p",
+      "no:cacheprovider",
+      "--tb=short",
+      "tests/test_direct_read_control.py",
+      "tests/test_mcp_direct_cancel.py"
+    ],
+    "exit_code": 1,
+    "passed": 37,
+    "failed": 1,
+    "seconds": 1.25,
+    "log": "candidate-completion.log",
+    "log_capture": "Tool completion output; initial progress dots omitted.",
+    "remaining_failure": "Root-added MCP empty-handle error regression incorrectly expected post(json=...), while CoreClient uses post(data=<UTF-8 JSON>). Both new expiry regressions passed."
+  },
+  "followup": "Root corrected that test to json.loads(kwargs[data]) and is executing its own 298-case focused gate. No success for that future gate is claimed here.",
+  "original_295_report": "../direct-cancel-python-report.json (unchanged; its sources and test count precede TTL and root MCP changes)",
+  "new_ttl_tests": [
+    "cancel-before-start retired control keeps its first expiry across repeated cancels",
+    "successful retired control keeps completion expiry and original usage across late/repeated cancels"
+  ]
+}

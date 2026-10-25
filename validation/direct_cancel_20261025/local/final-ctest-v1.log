@@ -1,0 +1,109 @@
+Internal ctest changing into directory: /workspace/scratch/ed564c9de2af/bzs861/build
+Test project /workspace/scratch/ed564c9de2af/bzs861/build
+      Start  1: core
+ 1/28 Test  #1: core .............................   Passed    7.09 sec
+      Start  2: batch
+ 2/28 Test  #2: batch ............................   Passed    2.71 sec
+      Start  3: map
+ 3/28 Test  #3: map ..............................   Passed    0.98 sec
+      Start  4: crawl
+ 4/28 Test  #4: crawl ............................   Passed    6.28 sec
+      Start  5: site_publication
+ 5/28 Test  #5: site_publication .................   Passed    6.15 sec
+      Start  6: retention
+ 6/28 Test  #6: retention ........................   Passed    2.70 sec
+      Start  7: fairness
+ 7/28 Test  #7: fairness .........................   Passed    1.55 sec
+      Start  8: sessions
+ 8/28 Test  #8: sessions .........................   Passed   20.12 sec
+      Start  9: source_publication
+ 9/28 Test  #9: source_publication ...............   Passed    0.91 sec
+      Start 10: search_modes
+10/28 Test #10: search_modes .....................   Passed    3.41 sec
+      Start 11: revalidation
+Process not started
+ /workspace/scratch/ed564c9de2af/bzs861/build/bzs_revalidation_tests
+[permission denied]
+11/28 Test #11: revalidation .....................***Not Run   0.00 sec
+      Start 12: direct_shared
+12/28 Test #12: direct_shared ....................   Passed   21.54 sec
+      Start 13: revocation
+13/28 Test #13: revocation .......................   Passed    0.41 sec
+      Start 14: capacity_cycles
+14/28 Test #14: capacity_cycles ..................   Passed   10.22 sec
+      Start 15: cache_freshness
+15/28 Test #15: cache_freshness ..................   Passed    9.59 sec
+      Start 16: contracts
+16/28 Test #16: contracts ........................   Passed    0.17 sec
+      Start 17: http_cli
+17/28 Test #17: http_cli .........................   Passed    6.34 sec
+      Start 18: http_revocation
+18/28 Test #18: http_revocation ..................   Passed    0.31 sec
+      Start 19: e2e_web
+19/28 Test #19: e2e_web ..........................   Passed    8.29 sec
+      Start 20: e2e_map
+20/28 Test #20: e2e_map ..........................   Passed    4.40 sec
+      Start 21: e2e_crawl
+21/28 Test #21: e2e_crawl ........................   Passed   10.34 sec
+      Start 22: e2e_crawl_recovery
+22/28 Test #22: e2e_crawl_recovery ...............   Passed   23.41 sec
+      Start 23: e2e_session_recovery
+23/28 Test #23: e2e_session_recovery .............   Passed   27.37 sec
+      Start 24: e2e_revalidation
+24/28 Test #24: e2e_revalidation .................   Passed    8.72 sec
+      Start 25: e2e_cache_freshness
+25/28 Test #25: e2e_cache_freshness ..............   Passed    7.89 sec
+      Start 26: e2e_cache_policy_review
+26/28 Test #26: e2e_cache_policy_review ..........   Passed    8.19 sec
+      Start 27: e2e_revocation
+27/28 Test #27: e2e_revocation ...................   Passed    1.60 sec
+      Start 28: python_worker
+28/28 Test #28: python_worker ....................***Failed   18.89 sec
+........................................................................ [  5%]
+........................................................................ [ 10%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 27%]
+........................................................................ [ 32%]
+........................................................................ [ 37%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 54%]
+........................................................................ [ 59%]
+..............................................................F......... [ 64%]
+........................................................................ [ 70%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 92%]
+........................................................................ [ 97%]
+..................................                                       [100%]
+=================================== FAILURES ===================================
+___ test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy ____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f6092db41a0>
+
+    async def test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy(monkeypatch):
+        body = {"status": "failed", "errors": [{"code": "E_SCHEMA", "message": "invalid read_id"}]}
+        _, post = client_with_failure_body(monkeypatch, body)
+        with pytest.raises(ToolError, match="E_SCHEMA"):
+            await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page", "read_id": ""})
+        assert post.call_count == 1
+>       assert post.call_args.kwargs["json"]["params"]["read_id"] == ""
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'json'
+
+tests/test_mcp_direct_cancel.py:55: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_mcp_direct_cancel.py::test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy
+1 failed, 1329 passed in 18.18s
+
+
+93% tests passed, 2 tests failed out of 28
+
+Total Test time (real) = 219.61 sec
+
+The following tests FAILED:
+	 11 - revalidation (BAD_COMMAND)
+	 28 - python_worker (Failed)
+Errors while running CTest

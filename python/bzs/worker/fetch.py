@@ -71,6 +71,30 @@ class FetchBudget:
 
 
 @dataclass
+class DirectReadControl:
+    """Cancellation and receipts for an ordinary read, without durable grants.
+
+    Only the network child task is interrupted. Fetcher catches that interruption
+    beside its counters and returns the usual artifact/usage envelope; the RPC
+    and extraction task are never cancelled by this control.
+    """
+    cancelled: bool = False
+    external_requests: int = 0
+    content_bytes: int = 0
+    _task: asyncio.Task | None = field(default=None, repr=False)
+
+    def check(self) -> None:
+        if self.cancelled:
+            raise FetchStopped("E_CANCELLED", "direct read was cancelled")
+
+    def cancel(self) -> None:
+        if not self.cancelled:
+            self.cancelled = True
+            if self._task is not None:
+                self._task.cancel()
+
+
+@dataclass
 class FetchResult:
     status: str                      # ok | http_error | blocked_by_policy | timeout | network_error | too_large | invalid_url
     url: str
@@ -186,8 +210,11 @@ class Fetcher:
                     budget: FetchBudget | None = None, follow_redirects: bool = True,
                     before_dispatch: Callable[[URL], None] | None = None,
                     collect_redirect_cache: bool = False,
-                    redirect_conditional: dict | None = None) -> FetchResult:
+                    redirect_conditional: dict | None = None,
+                    control: DirectReadControl | None = None) -> FetchResult:
         assert self._session is not None, "Fetcher.start() not called"
+        if budget is not None and control is not None:
+            raise ValueError("ordinary cancellation cannot carry a durable grant")
         started = time.monotonic()
         deadline = started + timeout_s
         limit = min(max_bytes or self.max_bytes, self.max_bytes)
@@ -203,9 +230,17 @@ class Fetcher:
         cache_hops: list[dict] = []
         cache_chain_eligible = method == "GET" and params is None and data is None
         try:
+            if control is not None:
+                # Registration is inside the try block, before the first await.
+                # A cancellation before this child starts is caught by check();
+                # one during I/O is caught below with the counters intact.
+                control._task = asyncio.current_task()
+                control.check()
             for hop in range((self.max_redirects if follow_redirects else 0) + 1):
                 if budget:
                     budget.check()
+                if control is not None:
+                    control.check()
                 checked = self.policy.prepare_url(str(current))
                 # The map scheduler supplies an encoded URL only after checking
                 # raw path scope. Validate its entire URI again, pin the same
@@ -233,6 +268,8 @@ class Fetcher:
                     timeout = aiohttp.ClientTimeout(total=remaining, sock_connect=min(10.0, remaining))
                     if budget:
                         budget.check()
+                    if control is not None:
+                        control.check()
                     # This callback is deliberately synchronous: an admission
                     # refresh must happen outside the host slot, and must use its
                     # own durable single-hop grant. Recheck after waiting so an
@@ -242,6 +279,8 @@ class Fetcher:
                     if budget:
                         budget.dispatch()
                     result.external_requests += 1
+                    if control is not None:
+                        control.external_requests += 1
                     result.request_profile = request_profile(req_headers)
                     result.conditioned_binding_id = ""
                     actual_route.append(str(target))
@@ -342,6 +381,8 @@ class Fetcher:
                             async for chunk in resp.content.iter_chunked(65536):
                                 result.content_bytes += len(chunk)
                                 result.response_content_bytes += len(chunk)
+                                if control is not None:
+                                    control.content_bytes += len(chunk)
                                 size += len(chunk)
                                 if size > limit:
                                     chunks.append(chunk[: max(0, limit - (size - len(chunk)))])
@@ -392,6 +433,14 @@ class Fetcher:
         except FetchStopped as exc:
             result.status = "cancelled" if exc.code == "E_CANCELLED" else "budget_exhausted"
             result.error_code, result.error = exc.code, str(exc)
+        except asyncio.CancelledError:
+            if control is None or not control.cancelled:
+                raise
+            # Only a cancellation explicitly requested through this control is
+            # converted into an accounted result. Shutdown/client cancellation
+            # without that request still propagates normally.
+            result.status, result.error_code = "cancelled", "E_CANCELLED"
+            result.error = "direct read was cancelled"
         except asyncio.TimeoutError:
             result.status, result.error = "timeout", "request timed out"
         except aiohttp.InvalidURL as exc:
@@ -399,6 +448,8 @@ class Fetcher:
         except (aiohttp.ClientError, OSError) as exc:
             result.status, result.error = "network_error", f"{type(exc).__name__}: {exc}"[:300]
         finally:
+            if control is not None and control._task is asyncio.current_task():
+                control._task = None
             result.elapsed_ms = int((time.monotonic() - started) * 1000)
         return result
 

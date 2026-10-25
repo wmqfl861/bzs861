@@ -1,6 +1,6 @@
 # searchd API（0.1.10 接手续作）
 
-所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；当前版本仍为 0.1.10，业务 schema15，候选路径的真实验证结果见[本批验证记录](../validation/shared_read_late_20261024/README.md)；[URI 删除记录](../validation/uri_deletion_20261024/README.md)与[0.1.8 五阶段记录](../validation/s2_five_stages/README.md) 保留为历史。
+所有业务请求为 `POST /api/v0/call`，通过回环 HTTP 与 Bearer token 调用。Host/Origin、请求大小和超时检查继续保留。MCP、Python 启动器与 C++ CLI 复用同一核心；当前版本仍为 0.1.10，业务 schema15，当前直接读取取消的实际验证见[本批记录](../validation/direct_cancel_20261025/README.md)。旧共享读取、URI 删除及阶段报告保留各自历史输入和结果。
 
 ```json
 {"operation":"web.search","params":{"query":"断点续爬 实现","limit":10}}
@@ -33,8 +33,12 @@
 | 操作 | params | 边界 |
 |---|---|---|
 | `web.search` | `query`；可选 `sources`（来源 ID 数组）、`category`、`limit`、`per_source`、`language`、`timeout_ms`、`deadline_ms`、`mode`、`max_sources` | 多源并发、状态、去重与索引族融合；只执行已审核且启用的来源 |
-| `web.read` | `url`；可选 `freshness`、`max_age_s`、`max_bytes`、`start_byte`、`timeout_ms` | 公网读取和快照；不因来源结果或 MCP 调用自动放宽出站规则 |
+| `web.read` | `url`；可选 `freshness`、`max_age_s`、`max_bytes`、`start_byte`、`timeout_ms`、`read_id` | 公网读取和快照；带一次性句柄时支持成员取消；不放宽出站规则 |
+| `web.read.prepare` | `{}` | 准备同 owner、当前进程的一次性取消句柄；不出站 |
+| `web.read.cancel` | `read_id` | 取消该成员；仅最后活动成员退出才请求物理停止；控制接纳仍受业务池503背压 |
 | `web.sources` | `{}` | 运行来源清单、审核/启用、冷却和请求状态；列出不等于可执行 |
+
+直接读取的句柄期限、固定付款、提前取消的未知物理用量、提交与交付竞态、Worker兼容和重启边界见[直接成员取消合同](DIRECT_READ_CANCELLATION.md)。MCP提供 `prepare_read_url`、`cancel_read_url` 及 `read_url` 的可选 `read_id`。显式无效句柄原样交核心拒绝，不静默降级为普通读取。
 
 随包 17 条来源登记包含 13 个适配器及 4 个后续候选，默认全部禁用。正常运行的每个启用来源需要 `contract` 对象，遵循原 `source-manifest` 合同，包含 `approved` 审核状态、`no_payment`、自动访问批准和当前有效审核日期。
 
@@ -64,7 +68,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 `web.read` 成功结果中的 `usage.scope=direct_read` 是本调用新增的物理用量：`payer` 报告 Worker 的实际请求数/响应体字节，`subscriber` 为零。网络结果另有 `shared_read`，包含进程内 `attempt_id`、`role`、`members`、`scope=process` 与 `physical_usage`；这是同一次工作的关联说明，不能把成员的关联用量再次相加。缺少可靠物理回执时，`physical_usage` 与 `payer` 的增量为 `known=false`、请求数/字节为 `null`；`subscriber` 增量仍为 `known=true`、零请求和零字节，同时保留未知物理关联。缓存命中是已知零用量且没有 `shared_read`。
 
-抓取、提交或返回窗口失败时，HTTP 失败信封仍保持原 `status=failed` 和错误码，并在存在执行回执时附同形的 `usage/shared_read`，因此错误不表示没有消耗。CoreClient 保留这些详情；MCP `read_url` 成功时原样透传，失败时保持工具错误并附核心详情 JSON。进程内关联不是持久任务账本，不能据客户端断连推断未执行，也不能在重启后重新查询这份收据。普通读取仍无公开单成员取消句柄，不与 durable 批读或 map/crawl/search 混合。
+抓取、提交或返回窗口失败时，HTTP 失败信封仍保持原 `status=failed` 和错误码，并在存在执行回执时附同形的 `usage/shared_read`，因此错误不表示没有消耗。CoreClient 保留这些详情；MCP `read_url` 成功时原样透传，失败时保持工具错误并附核心详情 JSON。进程内关联不是持久任务账本，不能据客户端断连推断未执行，也不能在重启后重新查询这份收据。可选成员取消使用 `web.read.prepare` / `web.read.cancel`；无句柄调用保持原路径，两类调用均不与 durable 批读或 map/crawl/search 混合。
 
 ## 持久联网搜索会话
 

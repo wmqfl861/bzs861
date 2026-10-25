@@ -1,6 +1,6 @@
 # 不周山搜索工具 · bzs861
 
-**状态：普通直接读取的进程内共享与同步用量回执；版本仍为 0.1.10，数据库 schema15。** 本批从已发布的 `346048b4ae329e750d15f1e35952aab4513e3912` 接续，同一 `WebService` 内兼容的直接读取共享一次获取和一次表示提交，各成员独立取得窗口并通过返回屏障。合同见[直接共享读取](docs/DIRECT_SHARED_READS.md)，实际输入、失败与验证见[本批记录](validation/direct_shared_20261024/README.md)；已发布的持久批读迟到加入继续按[持久共享读取](docs/SHARED_READS.md)执行，两条通道不混合。完整 B-24、CACHE-01 及 S0、S1、S2 验收仍未完成。
+**状态：普通直接读取已增加可选的一次性成员取消；版本仍为0.1.10，数据库schema15。** 本批接手本地f4878be，保留普通共享读取并补齐prepare/read/cancel、独立Worker控制、固定付款用量和逐成员交付边界。合同见[直接成员取消](docs/DIRECT_READ_CANCELLATION.md)，实际执行、原失败和独立审核见[本批记录](validation/direct_cancel_20261025/README.md)。S0、S1、S2及完整B-24仍未签收。
 
 目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。上述已发布基线的 [CI 40157161849](https://github.com/wmqfl861/bzs861/actions/runs/40157161849) 只证明该基线输入。用户已明确允许推送 main；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。
 
@@ -150,7 +150,7 @@ cmake --build --preset dev -j 2
 ctest --preset dev
 ```
 
-本轮验证记录分别绑定基线反例、作者聚焦回归、独立迁移与反例、最终整合执行的源码和二进制。实际命令、计数、环境、原始失败与已完成结果见[本批记录](validation/shared_read_late_20261024/README.md)；CTest、pytest、开启泄漏检测的原生 ASan/UBSan 只有实际执行完成才可记为通过，不从套件存在或历史通过推导本批结果。上轮本地 URI 修正保存在[URI 删除验证](validation/uri_deletion_20261024/README.md)，更早 P2-9 的回拨反例和修正保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
+本轮验证记录分别绑定作者聚焦回归、独立并发与真实Worker探针、最终整合执行的源码和二进制。实际命令、计数、环境、原始失败与已完成结果见[本批记录](validation/direct_cancel_20261025/README.md)；CTest、pytest、开启泄漏检测的原生 ASan/UBSan 只有实际执行完成才可记为通过，不从套件存在或历史通过推导本批结果。上轮本地 URI 修正保存在[URI 删除验证](validation/uri_deletion_20261024/README.md)，更早 P2-9 的回拨反例和修正保存在[历史接续记录](validation/claude_continuation_20261024/README.md)。测试相互覆盖，不能按总数替代 161 项产品验收。
 
 `validation/test_report.json` 与对应旧日志为 0.0.1 历史；`validation/takeover/` 为 0.0.2 证据；`validation/s1_test_report.json` 是 Claude 随包的 0.1.0 声明；`validation/s1_review/` 是 0.1.1 整合证据；`validation/s0_s2_progress/` 是 0.1.2 证据；`validation/s2_discovery/` 是 0.1.3 证据。历史记录保留原输入与结果，不能代替当前提交的验证。
 
@@ -170,13 +170,13 @@ ctest --preset dev
 
 ## 已有数据与后续范围
 
-当前业务 schema 为15，子串索引仍用 `bzs-ascii-cjk/2+codepoint-grams/1`。升级前停止旧 Core；schema15 增加派发超时上限与持久加入关闭字段，旧运行项默认 0 / 1，只保留原完成和结算，不接纳迟到订阅。旧二进制打开升级库返回 `E_SCHEMA_VERSION`，不支持新旧进程混用。升级范围见[共享读取](docs/SHARED_READS.md)，本轮实际迁移证据见[本批记录](validation/shared_read_late_20261024/README.md)。
+当前业务 schema 为15，子串索引仍用 `bzs-ascii-cjk/2+codepoint-grams/1`。升级前停止旧 Core；schema15 增加派发超时上限与持久加入关闭字段，旧运行项默认 0 / 1，只保留原完成和结算，不接纳迟到订阅。旧二进制打开升级库返回 `E_SCHEMA_VERSION`，不支持新旧进程混用。升级范围见[共享读取](docs/SHARED_READS.md)，schema15的历史迁移证据见[原迁移记录](validation/shared_read_late_20261024/README.md)；本次直接读取取消未增加迁移。
 
 schema14 已在上轮回填全部文档及墓碑的删除比较键，有限规则见 [URI 删除身份](docs/URI_DELETION_IDENTITY.md)；真实 ef45490 schema13 旧库的升级证据保留在[上轮 URI 记录](validation/uri_deletion_20261024/README.md)，更早的 442 旧库辅助索引升级仍保存在[历史迁移记录](validation/claude_followup_20261024/independent/p1-3/)。这些历史结果不证明本轮 schema15 的全部升级路径。
 
 两条开发分支曾各自使用 `user_version=2` 表示不同结构，不能仅凭版本号判断兼容。迁移必须识别来源、保留快照/证据/删除与隔离状态，并用旧数据库回归。旧 HTML 不会因更新解析器自动清洗；备份依旧保持隔离。最终迁移版本与实测见 [开发进度](docs/DEVELOPMENT_STATUS.md)。
 
-下一步按本批记录完成尚未关闭的验证，再推进 B-24 的普通直接读取及 crawl/search 协调和更广取消矩阵。继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
+下一步推进 B-24 的跨 direct/durable/map/crawl/search 共享兼容、HTTP控制保留接纳和更广取消矩阵。继续补用户环境的来源审核与 S0 证据、冻结质量基准的人工标签和阈值，完善爬虫工作包的陷阱与长期恢复验收，推进独立撤销日志、隔离恢复及会话真实长期运行与故障验收。单用户先行继续保留撤权、恢复和多客户端阶段的等效验收。
 
 ## 文档与许可
 

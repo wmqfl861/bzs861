@@ -1,9 +1,10 @@
 {
   "version": "0.1.10",
-  "stage": "Process-local direct web.read coalescing, independent delivery fences and accurate synchronous usage receipts; schema15 unchanged; full packages remain unsigned",
-  "recorded_at": "2026-10-24",
-  "baseline": "346048b4ae329e750d15f1e35952aab4513e3912",
+  "stage": "Opt-in single-use direct-read member cancellation, fixed payer receipts and independent Worker controls; schema15 unchanged; full packages remain unsigned",
+  "recorded_at": "2026-10-25",
+  "baseline": "f4878be865a92dd640a14d471f0fb9725e7b0796",
   "integration_inputs": {
+    "time_scope": "Previous direct-shared batch; current local handoff baseline and increment are recorded in direct_read_cancellation_scope.",
     "main": "346048b4ae329e750d15f1e35952aab4513e3912",
     "tree": "458a6f321e94defd74616ba6ebbf2983252cb495",
     "baseline_published": true,
@@ -56,13 +57,13 @@
   "planned_acceptance_suite_executed": false,
   "s0_live_sources": "not_completed",
   "s1_acceptance": "not_completed",
-  "current_test_report": "validation/direct_shared_20261024/final-report.json",
+  "current_test_report": "validation/direct_cancel_20261025/final-report.json",
   "current_verification": "Consult the exact current final-report.json and complete command/log bindings; initial defects and later fixes remain separate. No future remote CI is embedded here.",
   "upstream_baseline_reproduction": "Frozen published346 headers and final-library35e9 reproduce two simultaneous fetches and lost direct usage. See independent/baseline-v1; missing new capability is distinct from candidate regressions.",
   "github_ci": "Published baseline 346048b4: run40157161849 Linux/Windows success. The direct-read containing commit requires its own actual Checks; prior default-branch publication authorization is present.",
   "independent_review": "Independent baseline and candidate boundary probes are separate from formal regression authors; original failed oracle and actual receipt restriction defect are retained with corrections. See current batch evidence.",
   "full_product_independent_review": "not_performed",
-  "review_record": "validation/direct_shared_20261024/README.md",
+  "review_record": "validation/direct_cancel_20261025/README.md",
   "historical_reports": [
     "validation/test_report.json",
     "validation/takeover/test_report.json",
@@ -83,7 +84,8 @@
     "validation/claude_followup_20261024/README.md",
     "validation/claude_continuation_20261024/README.md",
     "validation/uri_deletion_20261024/README.md",
-    "validation/shared_read_late_20261024/README.md"
+    "validation/shared_read_late_20261024/README.md",
+    "validation/direct_shared_20261024/final-report.json"
   ],
   "acceptance_mapping": "docs/planning/slices_v1.2.json#acceptance_mapping",
   "feature_detail_text_scope": {
@@ -4685,7 +4687,29 @@
     "identity": "Exact normalized URL, owner, full publication fence, request timeout/conditional grant, current cached snapshot+metadata and proven Worker request profile.",
     "bounds": "32 lifetime members and64 open-admission groups; RPC completion closes admission; overflow/reentrant/unproven reads run independently.",
     "delivery": "A separate Store transaction checks each member auth/deletion/all actual aliases/exact metadata and current+historical publication projection; no cache TTL is imposed on a just-fetched result.",
-    "accounting": "Direct network success and wrapped execution errors carry per-process attempt details; prechecks and the outer Service principal postcheck can omit details. Payer usage is actual or null unknown; subscriber usage remains known zero plus nonadditive physical association, which may be unknown. No durable direct-read ledger.",
-    "remaining": "Explicit direct member cancellation; cross-instance/direct-durable/map/crawl/search coordination; broad cancellation/long-running/multinode acceptance; full CACHE-01/B-24 unsigned."
+    "accounting": "Direct network success and wrapped execution errors carry per-process attempt details; prechecks and lost transport can omit details. The later explicit-cancellation increment preserves existing direct receipts at the Service principal postcheck. Payer usage is actual or null unknown; subscriber usage remains known zero plus nonadditive physical association, which may be unknown. No durable direct-read ledger.",
+    "remaining": "Opt-in cancellation is covered by direct_read_cancellation_scope. Cross-instance/direct-durable/map/crawl/search coordination; broad cancellation/long-running/multinode acceptance; full CACHE-01/B-24 unsigned."
+  },
+  "direct_read_cancellation_scope": {
+      "contract": "docs/DIRECT_READ_CANCELLATION.md",
+      "local_baseline_commit": "f4878be865a92dd640a14d471f0fb9725e7b0796",
+      "local_baseline_tree": "edce78afc1c122b269f6468345fe13114f5c6070",
+      "observed_remote_parent": "346048b4ae329e750d15f1e35952aab4513e3912",
+      "schema": 15,
+      "features": [
+          "CACHE-01",
+          "READ-01"
+      ],
+      "acceptance_ids": [
+          "FT-032",
+          "B-24"
+      ],
+      "scope": "One-use same-owner process handles; opt-in controlled direct groups only; no mixing with legacy or durable paths.",
+      "bounds": "1024 core handles; 2048 independent Worker controls;120-second monotonic retention; running entries never expire; repeated cancel does not extend retired deadlines.",
+      "cancellation": "Fixed payer; subscriber may leave early with unknown associated physical receipt; last active exit closes admission before one cooperative cancel.",
+      "publication": "No body commit when all members cancelled before commit admission; a later cancel can race storage but independently blocks member delivery. Valid restrictive observations remain.",
+      "transport": "Control calls share the ordinary bounded HTTP business pool and may receive503 before acceptance.",
+      "verification": "validation/direct_cancel_20261025/final-report.json",
+      "remaining": "Cross-instance/mixed-channel sharing, dedicated HTTP control admission, durable direct recovery, independent revocation journal, source/qrels and long-running full acceptance remain unsigned."
   }
 }
