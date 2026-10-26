@@ -1,0 +1,35 @@
+name: stage1-object-transfer
+on:
+  push:
+    branches: [work/stage1-transfer-20261026]
+    paths: [.delivery/**, .github/workflows/stage1-transfer.yml]
+permissions:
+  contents: write
+jobs:
+  transfer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Import the already tested commit without changing main or review branches
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+          data = b''.join(Path(f'.delivery/p1b/part{i}').read_bytes() for i in range(1,6))
+          if len(data) != 14769 or hashlib.sha256(data).hexdigest() != 'dadc4bd385ee93509999f1cc42a37e96552f7b77f512af1493ecfb5061006889':
+              raise SystemExit('bundle bytes differ from the tested input')
+          Path(os.environ['RUNNER_TEMP'], 'phase1.bundle').write_bytes(data)
+          PY
+          git bundle verify "$RUNNER_TEMP/phase1.bundle"
+          git fetch "$RUNNER_TEMP/phase1.bundle" HEAD
+          test "$(git rev-parse FETCH_HEAD)" = 17783391143478209105a300d8eb174feab7df85
+          test "$(git rev-parse 'FETCH_HEAD^{tree}')" = 55025a502fb02f048a40503de9d969982b9e6161
+          test "$(git rev-parse FETCH_HEAD^)" = d62473d4d5265e43f350909e27e32ddb1c01f95a
+          git push origin 17783391143478209105a300d8eb174feab7df85:refs/heads/work/stage1-object-store-20261026
+          # Deliberately no force, no main/review update, no downloaded-code execution.
+          # Connector publication of the verified delivery ref triggers its own checks.
