@@ -1,0 +1,34 @@
+--- a/python/bzs/worker/server.py
++++ b/python/bzs/worker/server.py
+@@ -284,6 +284,8 @@
+ 
+     @staticmethod
+     def _attempt_id(params: dict) -> str:
++        if not isinstance(params, dict):
++            raise ValueError("read attempt parameters must be an object")
+         value = params.get("attempt_id")
+         if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{48}", value):
+             raise ValueError("invalid read attempt id")
+@@ -295,6 +297,8 @@
+ 
+     async def fetch_cancel(self, params: dict) -> dict:
+         attempt_id = self._attempt_id(params)
++        if set(params) != {"attempt_id"}:
++            raise ValueError("unknown read attempt cancellation parameters")
+         self._prune_attempts()
+         budget = self._read_attempts.get(attempt_id)
+         if budget:
+@@ -305,8 +309,11 @@
+             if attempt_id not in self._retired_attempts and len(self._read_attempts) + len(self._retired_attempts) >= 2048:
+                 raise ValueError("read attempt retention capacity reached")
+             previous = self._retired_attempts.get(attempt_id)
+-            self._retired_attempts[attempt_id] = (asyncio.get_running_loop().time() + 120, True,
+-                                                previous[2] if previous else 0, previous[3] if previous else 0)
++            # Cancellation is idempotent within this finite retention window.
++            # A duplicate must not pin a slot or extend an old usage receipt.
++            self._retired_attempts[attempt_id] = (
++                previous[0] if previous else asyncio.get_running_loop().time() + 120, True,
++                previous[2] if previous else 0, previous[3] if previous else 0)
+         return {"cancel_requested": True}
+ 
+     async def map_fetch(self, params: dict) -> dict:
