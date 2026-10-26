@@ -1,0 +1,38 @@
+name: audit-source
+on:
+  push:
+    branches:
+      - 'work/project-audit-*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Package exact public source and reachable history for offline review
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bzs-audit-source"
+          git bundle create "$RUNNER_TEMP/bzs-audit-source/source.bundle" HEAD
+          git bundle verify "$RUNNER_TEMP/bzs-audit-source/source.bundle"
+          git rev-parse HEAD > "$RUNNER_TEMP/bzs-audit-source/COMMIT"
+          git rev-parse HEAD^{tree} > "$RUNNER_TEMP/bzs-audit-source/TREE"
+          git ls-tree -r HEAD > "$RUNNER_TEMP/bzs-audit-source/tracked-tree.txt"
+          (cd "$RUNNER_TEMP/bzs-audit-source" && sha256sum source.bundle COMMIT TREE tracked-tree.txt > SHA256SUMS)
+          # git bundle contains tracked Git objects only, not the checkout's
+          # .git/config, credentials, runtime data, environment or build outputs.
+      - name: Retain exact audit input
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bzs-audit-source-${{ github.sha }}
+          path: ${{ runner.temp }}/bzs-audit-source/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
