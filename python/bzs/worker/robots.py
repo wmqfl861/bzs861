@@ -98,9 +98,14 @@ def _matches(pattern: str, target: str) -> bool:
 def _unrelated_invalid_agent(value: str, wanted: str) -> bool:
     # This is only an exclusion check, never a repaired matching token. Keep
     # damaged wildcard/self identifiers conservative, including split names.
-    # Unknown non-ASCII or identifier-free values cannot be safely classified.
+    # Only an exact '*' is a global token. A leading damaged wildcard or a
+    # recognizable damaged self-name must not turn into an allow. Numeric and
+    # non-ASCII foreign names (008, etc.) do not match our ASCII product token.
+    # Never repair an ignored token into a matching member of this group.
     identifier = re.sub(r"[^A-Za-z_-]", "", value).lower()
-    return value.isascii() and bool(identifier) and "*" not in value and wanted not in identifier
+    prefix = re.match(r"[A-Za-z_-]+", value)
+    return bool(value) and not value.startswith("*") and wanted not in identifier and (
+        prefix is None or prefix.group().lower() != wanted)
 
 
 def parse_robots(body: bytes, product_token: str = PRODUCT_TOKEN) -> dict[str, Any]:

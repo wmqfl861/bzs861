@@ -1,0 +1,47 @@
+{
+  "scope": "P2-C unrelated robots product tokens",
+  "input_commit": "f8c5bdcf8eb1dd4340a0c578a2d4efc611b1fed4",
+  "baseline_new_cases": {
+    "command": "pytest tests/test_robots.py -k 'nonmatching_product_spellings or ignored_product_keeps'",
+    "failed": 36,
+    "passed": 0,
+    "deselected": 116
+  },
+  "candidate": {
+    "robots_pytest": {
+      "passed": 152,
+      "failed": 0
+    },
+    "full_python": {
+      "passed": 1441,
+      "failed": 0
+    },
+    "ctest": {
+      "tests": [
+        "e2e_map",
+        "e2e_crawl"
+      ],
+      "passed": 2,
+      "failed": 0
+    }
+  },
+  "new_tests": [
+    "test_nonmatching_product_spellings_do_not_poison_applicable_groups",
+    "test_ignored_product_keeps_shared_group_and_empty_rule_boundary",
+    "test_damaged_self_or_wildcard_still_dominates_unrelated_groups"
+  ],
+  "intentional_expectation_change": "360 and 爬虫 move from unclassifiable rejection to ignored unrelated group tests, as required by P2-C. Empty/self/wildcard invalid input still fails closed.",
+  "audit": [
+    "No invalid token becomes a matching product token.",
+    "An ignored token preserves group boundaries and valid members of its group.",
+    "Damaged self/wildcard, invalid encoding and applicable rule failures remain deny_all."
+  ],
+  "source_sha256": {
+    "python/bzs/worker/robots.py": "eefba0c53df90f1ace9476016bfc750fce07b7de70f35638170c24a6b0a87a10",
+    "python/tests/test_robots.py": "890ebaf354ed79210eb3438a22899f104d7fd4fec479746f50b1af3f904bdb0f"
+  },
+  "ci": "Exact published SHA and linux/windows artifacts pending; no future result claimed.",
+  "schema": 15,
+  "external_requests": 0,
+  "decisions": "D1-D7 pending; no activation or broadened crawling permission"
+}
