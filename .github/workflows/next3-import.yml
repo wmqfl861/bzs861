@@ -1,0 +1,39 @@
+name: next3-original-commit-import
+on:
+  push:
+    branches: [work/next3-transport-20261026]
+    paths: [.delivery/next3/**, .github/workflows/next3-import.yml]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Verify and import only the three reviewed original commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          names = ['part01','part02','part031','part032','part033','part04','part05','part06']
+          data = b''.join((Path('.delivery/next3') / name).read_bytes() for name in names)
+          if len(data) != 31999 or hashlib.sha256(data).hexdigest() != '8a6161b27007936ed6efd55fefcd890d42e5d072bfe641b390693456477f545f':
+              raise SystemExit('bundle differs from reviewed bytes')
+          Path(os.environ['RUNNER_TEMP'], 'next3.bundle').write_bytes(data)
+          PY
+          git bundle verify "$RUNNER_TEMP/next3.bundle"
+          git fetch "$RUNNER_TEMP/next3.bundle" refs/heads/work/three-nodes
+          test "$(git rev-parse FETCH_HEAD)" = fbffc79fdda86267bc5deec4343347e5f4b9e2c0
+          test "$(git rev-parse 'FETCH_HEAD^{tree}')" = 5a423c16742a7dbfe4ef4e86c168311d157a096d
+          test "$(git rev-parse FETCH_HEAD^)" = 27d8643f5ade025fc62112c24f2bfa833ffb0615
+          test "$(git rev-parse FETCH_HEAD^^)" = f8c5bdcf8eb1dd4340a0c578a2d4efc611b1fed4
+          test "$(git rev-parse FETCH_HEAD~3)" = 88c770c5129f2bdc04d705434cb40e6f2b827fa6
+          git fsck --strict --no-dangling
+          git push origin fbffc79fdda86267bc5deec4343347e5f4b9e2c0:refs/heads/work/next3-imported-20261026
+          # No main/review ref update, no force, no executed bundle code.
+          # Delivery ref publication through the connector triggers full checks.
