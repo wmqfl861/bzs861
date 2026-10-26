@@ -315,6 +315,32 @@ namespace bzs {
       auto prefix=n.field=="title"?"title : ":(n.field=="body"?"body : ":"");
       return std::string(prefix)+fts_quote(value);
     }
+    // This is a PRIORITY hint, not a necessary filter. Token-aligned matches
+    // are usually more selective than grams in long documents. Raw substrings
+    // inside words (and unsupported OR branches) must still use the fallback.
+    std::optional<std::string> priority_fts(const QueryNode& n, bool& specialized) {
+      if(n.op=="not")return std::nullopt;
+      if(n.op=="and"||n.op=="or") {
+        std::string out;
+        for(const auto& child:n.children) {
+          auto part=priority_fts(child,specialized);
+          if(!part)continue;
+          const auto separator=out.empty()?"":n.op=="and"?" AND ":" OR ";
+          if(out.size()+part->size()+std::string_view(separator).size()+2>32768)continue;
+          out+=separator;out+='(';out+=*part;out+=')';
+        }
+        return out.empty()?std::nullopt:std::optional<std::string>(out);
+      }
+      if(n.field=="url")return std::nullopt; // content_fts has no URL column
+      if(auto necessary=fts(n))return necessary;
+      const auto value=ascii_lower(n.value);
+      // ASCII fragments are enough for cafe-with-accent, identifiers and
+      // punctuated phrases; quoting delegates token positions to bzs/2.
+      if(!std::any_of(value.begin(),value.end(),[](unsigned char c) {return word_char(c);}))return std::nullopt;
+      specialized=true;
+      const auto prefix=n.field=="title"?"title : ":n.field=="body"?"body : ":"";
+      return std::string(prefix)+fts_quote(value);
+    }
     constexpr std::size_t substring_expression_limit=32768;
     std::optional<std::string> substring_fts(const QueryNode& n) {
       // Negating a superset can exclude a true match. Keep NOT unconstrained.
@@ -440,6 +466,11 @@ namespace bzs {
   }
   std::optional<std::string> fts_candidates(const Query& q) {
     return fts(q.root);
+  }
+  std::optional<std::string> priority_fts_candidates(const Query& q) {
+    bool specialized=false;
+    auto hint=priority_fts(q.root,specialized);
+    return specialized?hint:std::nullopt;
   }
   std::optional<std::string> substring_candidates(const Query& q) {
     return substring_fts(q.root);

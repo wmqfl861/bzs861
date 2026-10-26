@@ -13,6 +13,7 @@
 #include <memory>
 #include <limits>
 #include <tuple>
+#include <unordered_set>
 namespace bzs {
   namespace {
     void checked(int rc, sqlite3*db) {
@@ -1192,8 +1193,9 @@ namespace bzs {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
     auto fts=fts_candidates(q);
     const auto substrings=substring_candidates(q);
-    std::string sql;
-    if(fts) {
+    const auto priority=priority_fts_candidates(q);
+    std::string sql,word_sql;
+    if(fts||priority) {
       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
       sql=R"SQL(SELECT d.id,s.id,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
@@ -1202,13 +1204,15 @@ namespace bzs {
  ORDER BY r LIMIT ?)SQL";
       if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
         " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
-    } else if(substrings) {
+      word_sql=sql;
+    }
+    if(!fts&&substrings) {
       sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM substring_fts JOIN documents d ON d.rowid=substring_fts.rowid JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
-    } else {
+    } else if(!fts) {
       sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
@@ -1244,16 +1248,27 @@ namespace bzs {
       unlocked=search_unlocked_for_test_;
       // Freeze only small immutable identities/ranks. Copying every candidate's
       // body at once could allocate 2000 MiB for a single allowed query.
-      Stmt rows(db_,sql);int bind=1;
-      if(fts||substrings) { rows.bind(bind++,fts?*fts:*substrings);rows.bind(bind++,owner); }
-      rows.bind(bind++,owner);
-      if(fts&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
-      rows.bind(bind,max_candidates+1);
-      while(rows.step()) {
-        if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
-        candidates.push_back({rows.text(0),rows.text(1),fts?static_cast<std::int64_t>(-rows.real(2)*1000.0):0,
-                              rows.num(3),rows.text(4),rows.num(5),false});
-      }
+      std::unordered_set<std::string> seen;
+      const auto gather=[&](const std::string& statement,const std::optional<std::string>& words) {
+        Stmt rows(db_,statement);int bind=1;
+        if(words||substrings) { rows.bind(bind++,words?*words:*substrings);rows.bind(bind++,owner); }
+        rows.bind(bind++,owner);
+        if(words&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
+        // Even with zero remaining slots, inspect one additional unique row
+        // so partial is truthful. At most max_candidates duplicates can exist.
+        rows.bind(bind,max_candidates+1);
+        while(rows.step()) {
+          const auto id=rows.text(0);
+          if(!seen.insert(id).second)continue;
+          if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
+          candidates.push_back({id,rows.text(1),words?static_cast<std::int64_t>(-rows.real(2)*1000.0):0,
+                                rows.num(3),rows.text(4),rows.num(5),false});
+        }
+      };
+      if(priority)gather(word_sql,priority);
+      // Never intersect the fallback with the priority expression: doing that
+      // would change the published raw-substring/OR/field semantics.
+      gather(sql,fts);
       tx.commit();
     }
     for(auto candidate:candidates) {
@@ -1270,7 +1285,7 @@ namespace bzs {
       // The statement and transaction are closed before releasing the lock.
       // Exact matching/scoring sees owned strings, never SQLite-backed views.
       if(unlocked)unlocked();
-      if(fts) {
+      if(fts&&!priority) {
         if(!matches(q,title,body,url,host,type))continue;
       } else {
         const auto score=match_score(q,title,body,url,host,type);
@@ -1279,9 +1294,9 @@ namespace bzs {
       }
       hits.push_back(std::move(candidate));
     }
-    if(!fts)std::stable_sort(hits.begin(),hits.end(),[](const Hit& a,const Hit& b) {return a.score>b.score;});
+    if(!fts||priority)std::stable_sort(hits.begin(),hits.end(),[](const Hit& a,const Hit& b) {return a.score>b.score;});
     const auto scanned=static_cast<std::int64_t>(candidates.size());
-    auto retrieval=fts?"fts5_bm25_verified":substrings?"fts5_substring_verified":"bounded_scan_recent";
+    auto retrieval=priority?"fts5_substring_verified":fts?"fts5_bm25_verified":substrings?"fts5_substring_verified":"bounded_scan_recent";
     std::lock_guard lock(mutex_);Tx tx(db_);
     require_principal_active_locked(owner);
     require(current_epoch()==epoch,"E_SESSION_INVALIDATED","Permissions changed; repeat the query",409);
