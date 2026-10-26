@@ -512,7 +512,7 @@ class HTTPExecution(unittest.TestCase):
         token.chmod(0o600)
         sources = root / 'sources.json'
         sources.write_text(json.dumps({'version': 1, 'sources': []}), encoding='utf-8')
-        args = ['--threads', '1', '--worker', f'http://127.0.0.1:{worker.port}',
+        args = ['--threads', '1', '--request-queue', '0', '--worker', f'http://127.0.0.1:{worker.port}',
                 '--worker-token-file', str(token), '--sources', str(sources)]
         if request_threads is not None:
             args.extend(['--request-threads', str(request_threads)])
@@ -737,7 +737,7 @@ class DirectReadCancellation(unittest.TestCase):
         sources = root / 'sources.json'
         sources.write_text(json.dumps({'version': 1, 'sources': []}), encoding='utf-8')
         self.server = RunningServer(root, no_worker=True, extra_args=[
-            '--threads', '1', '--request-threads', '3',
+            '--threads', '1', '--request-threads', '3', '--request-queue', '0',
             '--worker', f'http://127.0.0.1:{self.worker.port}',
             '--worker-token-file', str(token), '--sources', str(sources)])
         self.addCleanup(self.server.stop)
@@ -878,7 +878,7 @@ class DirectReadCancellation(unittest.TestCase):
                 'timeout_ms': 10000, 'read_id': read_id})
             try:
                 self.assertTrue(self.worker.wait_calls(1))
-                self.assert_backpressure('stats')
+                self.assertEqual(self.server.call('stats', timeout=3)[0], 200, 'local reserve stays available')
                 self.assert_backpressure('web.read.prepare')
                 self.assert_backpressure('web.read', {'url': 'https://cancel.example/not-admitted'})
                 self.assertEqual(self.worker.direct_cancellations, [])

@@ -1,4 +1,5 @@
 #include "bzs/service.hpp"
+#include "bzs/request_executor.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <utility>
@@ -58,56 +59,38 @@ namespace {
   Json failure(const std::string& id, const Error& error) {
     auto out=Json::object(), errors=Json::array(), item=Json::object();
     out.set("request_id",id);out.set("status","failed");out.set("api_version","0.0.1");
-    item.set("code",error.code);item.set("message",error.what());errors.push(item);out.set("errors",errors);
+    item.set("code",error.code);item.set("message",error.what());
+    if(error.code=="E_REQUEST_BACKPRESSURE"&&error.details.has("retry_after_ms"))
+      item.set("retry_after_ms",error.details.at("retry_after_ms"));
+    errors.push(item);out.set("errors",errors);
     if(error.details.is_object())for(const auto* key:{"usage","shared_read"})
       if(error.details.has(key))out.set(key,error.details.at(key));
     return out;
   }
-  // At most one admitted request per business thread. There is no additional
-  // waiting queue: a saturated executor rejects before Service can reserve any
-  // work. Socket handlers, health checks and transport validation stay on IO.
-  class RequestExecutor {
-    std::mutex mutex_;
-    std::condition_variable wake_;
-    std::deque<std::function<void()>> pending_;
-    std::vector<std::jthread> workers_;
-    const unsigned capacity_;
-    unsigned admitted_=0;
-    bool stopped_=false;
-    void run() {
-      for(;;) {
-        std::function<void()> task;
-        {
-          std::unique_lock lock(mutex_);
-          wake_.wait(lock,[&] {return stopped_||!pending_.empty();});
-          if(stopped_)return;
-          task=std::move(pending_.front());pending_.pop_front();
-        }
-        // The request handler produces its own error envelope. An allocation
-        // or executor failure must still release admission, never retry work.
-        try {task();} catch(...) {std::clog<<"{\"event\":\"request_executor_failure\"}\n";}
-        {std::lock_guard lock(mutex_);--admitted_;}
+  // Only small, strictly parsed local calls may use the local reserve. Unknown,
+  // malformed or larger envelopes remain ordinary. Classification grants no
+  // permission; Service re-parses and checks the original request normally.
+  bool local_request(std::string_view body) noexcept {
+    if(body.size()>control_body_limit_bytes)return false;
+    try {
+      const auto request=Json::parse(body,control_body_limit_bytes);
+      request.allowed({"operation","params"});
+      if(request.has("params")&&!request.at("params").is_object())return false;
+      const auto op=required_string(request,"operation",64);
+      if(op=="stats") {
+        if(request.has("params"))request.at("params").allowed({});
+        return true;
       }
-    }
-    public:
-    explicit RequestExecutor(unsigned count):capacity_(count) {
-      try {for(unsigned i=0;i<count;++i)workers_.emplace_back([this] {run();});}
-      catch(...) {stop();join();throw;}
-    }
-    ~RequestExecutor() {stop();join();}
-    bool submit(std::function<void()> task) {
-      std::lock_guard lock(mutex_);
-      if(stopped_||admitted_>=capacity_)return false;
-      pending_.push_back(std::move(task));++admitted_;wake_.notify_one();return true;
-    }
-    void stop() {
-      std::lock_guard lock(mutex_);
-      stopped_=true;
-      admitted_-=static_cast<unsigned>(pending_.size());
-      pending_.clear();wake_.notify_all();
-    }
-    void join() {for(auto& worker:workers_)if(worker.joinable())worker.join();}
-  };
+      return op=="search.once"||op=="search"||op=="search.page"||op=="find"||
+             op=="document.range"||op=="document.read"||op=="job.get"||op=="job.results"||
+             op=="session.get"||op=="session.events"||op=="session.cancel"||
+             op=="capabilities"||op=="search.modes";
+    }catch(...) {return false;}
+  }
+  Error backpressure(const char* message) {
+    auto details=Json::object();details.set("retry_after_ms",std::int64_t{1000});
+    return Error("E_REQUEST_BACKPRESSURE",message,503,details);
+  }
   // Worker RPC over loopback HTTP. Each call owns a short-lived io_context so a slow
   // worker only blocks the request thread that is waiting for it.
   class HttpWorker final:public WorkerPort {
@@ -196,6 +179,7 @@ namespace {
     http::response<http::string_body> response_;
     Service& service_;
     RequestExecutor& requests_;
+    RequestExecutor& locals_;
     RequestExecutor& controls_;
     const Auth&auth_;
     unsigned short port_;
@@ -272,10 +256,15 @@ namespace {
         require(ct=="application/json"||ct=="application/json; charset=utf-8", "E_CONTENT_TYPE", "Expected application/json", 415);
         auto self=shared_from_this();
         auto executor=stream_.get_executor();
-        auto& execution=direct_cancel_control(req.body())?controls_:requests_;
-        require(execution.submit([self,principal=std::move(principal),body=std::move(req.body()),rid,started,executor]() mutable {
+        auto& execution=direct_cancel_control(req.body())?controls_:(local_request(req.body())?locals_:requests_);
+        auto expired=[self,rid,started,executor] {
+          auto output=failure(rid,backpressure("Request queue wait expired before execution")).dump();
+          log_request(rid,503,started);
+          net::post(executor,[self,output=std::move(output)] {self->respond(http::status::service_unavailable,output);});
+        };
+        if(!execution.submit([self,principal=std::move(principal),body=std::move(req.body()),rid,started,executor]() mutable {
           self->dispatch(std::move(principal),std::move(body),std::move(rid),started,executor);
-        }),"E_REQUEST_BACKPRESSURE","Request execution capacity is full; try again later",503);
+        },std::move(expired)))throw backpressure("Request execution and waiting capacity is full");
         return;
       }catch(const Error&e) {
         status=e.http_status;
@@ -286,7 +275,7 @@ namespace {
       }
       log_request(rid,status,started);
     }
-    public: Session(tcp::socket socket, Service&s, RequestExecutor& requests,RequestExecutor& controls,const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), requests_(requests), controls_(controls), auth_(a), port_(port), active_(std::move(active)) {
+    public: Session(tcp::socket socket, Service&s, RequestExecutor& requests,RequestExecutor& locals,RequestExecutor& controls,const Auth&a, unsigned short port, std::shared_ptr<std::atomic<unsigned>> active) :stream_(std::move(socket)), service_(s), requests_(requests), locals_(locals), controls_(controls), auth_(a), port_(port), active_(std::move(active)) {
       ++*active_;
       parser_.body_limit(2*1024*1024);
       parser_.header_limit(8192);
@@ -307,10 +296,11 @@ namespace {
     tcp::acceptor acceptor_;
     Service& service_;
     RequestExecutor& requests_;
+    RequestExecutor& locals_;
     RequestExecutor& controls_;
     const Auth&auth_;
     std::shared_ptr<std::atomic<unsigned>> active_=std::make_shared<std::atomic<unsigned>>(0);
-    public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,RequestExecutor& controls,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),controls_(controls),auth_(a) {
+    public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,RequestExecutor& locals,RequestExecutor& controls,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),locals_(locals),controls_(controls),auth_(a) {
       tcp::endpoint ep(net::ip::make_address("127.0.0.1"), port);
       acceptor_.open(ep.protocol());
       acceptor_.set_option(net::socket_base::reuse_address(true));
@@ -323,7 +313,7 @@ namespace {
     void run() {
       acceptor_.async_accept(net::make_strand(io_), [this](beast::error_code ec, tcp::socket socket) {
         if(!ec) {
-          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, requests_,controls_,auth_, port(), active_)->run();
+          if(active_->load()<64)std::make_shared<Session>(std::move(socket), service_, requests_,locals_,controls_,auth_, port(), active_)->run();
           else {
             beast::error_code ignored;
             socket.close(ignored);
@@ -341,15 +331,18 @@ int main(int argc, char**argv) {
     unsigned short port=8610;
     unsigned threads=8;
     unsigned request_threads=0;
+    unsigned request_queue=0,request_queue_timeout_ms=30000,local_threads=2;
+    bool request_queue_explicit=false;
     bool worker=true;
     for(int i=1; i<argc; ++i) {
       std::string a=argv[i];
       if(a=="--help") {
         std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
-                   "        [--request-threads 1..32]\n"
+                   "        [--request-threads 1..32] [--request-queue 0..256] [--request-queue-timeout-ms 1..30000]\n"
+                   "        [--local-threads 1..32]\n"
                    "        [--sites FILE] [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
                    "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n"
-                   "--threads controls IO; request threads default to min(threads,32). Excess business requests receive 503.\n"
+                   "--threads controls IO; request threads default to min(threads,32). Local threads default to 2; each pool queues 4*request_threads by default.\n"
                    "Fixed web.read.cancel reserve: control_threads="<<control_threads
                    <<", control_body_limit_bytes="<<control_body_limit_bytes<<". Other operations cannot use this slot.\n"
                    "Explicit --sites also governs retained web publication while offline; omission keeps the stored policy.\n";
@@ -377,6 +370,16 @@ int main(int argc, char**argv) {
         auto[p,e]=std::from_chars(v.data(),v.data()+v.size(),n);
         require(e==std::errc{}&&p==v.data()+v.size()&&n>=1&&n<=32,"E_ARGUMENT","Invalid request thread count");
         request_threads=n;
+      }
+      else if(a=="--request-queue"||a=="--request-queue-timeout-ms"||a=="--local-threads") {
+        unsigned n=0;
+        auto[p,e]=std::from_chars(v.data(),v.data()+v.size(),n);
+        const unsigned low=a=="--request-queue"?0:1;
+        const unsigned high=a=="--request-queue"?256:(a=="--local-threads"?32:30000);
+        require(e==std::errc{}&&p==v.data()+v.size()&&n>=low&&n<=high,"E_ARGUMENT","Invalid request queue/local limit");
+        if(a=="--request-queue") {request_queue=n;request_queue_explicit=true;}
+        else if(a=="--local-threads")local_threads=n;
+        else request_queue_timeout_ms=n;
       }
       else if(a=="--threads") {
         unsigned n=0;
@@ -425,15 +428,18 @@ int main(int argc, char**argv) {
     net::io_context io;
     // Both pools are declared after IO so their workers are joined before the
     // response executor or Service is destroyed, even during startup unwind.
-    RequestExecutor requests(request_threads);
+    if(!request_queue_explicit)request_queue=4*request_threads;
+    RequestExecutor requests(request_threads,request_queue,std::chrono::milliseconds(request_queue_timeout_ms));
+    const auto local_queue=request_queue_explicit?request_queue:std::max(request_queue,16u);
+    RequestExecutor locals(local_threads,local_queue,std::chrono::milliseconds(request_queue_timeout_ms));
     RequestExecutor controls(control_threads);
-    Listener listener(io, port, service, requests,controls,auth);
+    Listener listener(io, port, service, requests,locals,controls,auth);
     BackgroundWorker worker_thread;
     if(worker)worker_thread=start_worker(store, catalog, web.get());
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
       worker_thread.request_stop();
-      requests.stop();
+      requests.stop();locals.stop();
       controls.stop();
       io.stop();
     });
@@ -446,6 +452,10 @@ int main(int argc, char**argv) {
     ready.set("network_mode", web?"worker_mediated":"offline");
     ready.set("threads", static_cast<std::int64_t>(threads));
     ready.set("request_threads",static_cast<std::int64_t>(request_threads));
+    ready.set("request_queue",static_cast<std::int64_t>(request_queue));
+    ready.set("request_queue_timeout_ms",static_cast<std::int64_t>(request_queue_timeout_ms));
+    ready.set("local_queue",static_cast<std::int64_t>(local_queue));
+    ready.set("local_threads",static_cast<std::int64_t>(local_threads));
     ready.set("control_threads",static_cast<std::int64_t>(control_threads));
     ready.set("control_body_limit_bytes",static_cast<std::int64_t>(control_body_limit_bytes));
     std::cout<<ready.dump()<<std::endl;
@@ -456,8 +466,8 @@ int main(int argc, char**argv) {
     io.run();
     for(auto& t:pool)t.join();
     worker_thread.request_stop();
-    requests.stop();controls.stop();
-    controls.join();requests.join();
+    requests.stop();locals.stop();controls.stop();
+    controls.join();locals.join();requests.join();
     return 0;
   }catch(const Error&e) {
     std::cerr<<e.code<<": "<<e.what()<<'\n';
