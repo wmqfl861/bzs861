@@ -1785,7 +1785,7 @@ namespace {
       }
       CHECK(database_scalar(path,"PRAGMA user_version")==15);
       CHECK(database_scalar(path,"SELECT COUNT(*) FROM content_fts")==2);
-      CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2+codepoint-grams/1'")==1);
+      CHECK(database_scalar(path,"SELECT COUNT(*) FROM settings WHERE key='fts_tokenizer_version' AND value='bzs-ascii-cjk/2+codepoint-grams/2'")==1);
     }
   }
   TEST(schema_two_quarantine_is_checked_before_migration) {

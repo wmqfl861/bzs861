@@ -36,6 +36,8 @@ namespace bzs {
     std::int64_t max_bytes_per_owner=8LL*1024*1024*1024;
     // Older revisions beyond this count are pruned unless evidence or a live session pins them.
     std::int64_t max_revisions_per_document=5;
+    // Independent logical-token budget; does not relabel snapshot bytes as disk.
+    std::int64_t max_substring_bytes_per_owner=8LL*1024*1024*1024;
   };
   struct ReadManyOptions {
     std::int64_t timeout_ms=600000, per_page_timeout_ms=20000;
@@ -77,8 +79,9 @@ namespace bzs {
     bool site_publication_legacy_withdrawn_=false;
     Json search_impl(const std::string& owner,const Query& query,std::int64_t max_candidates,std::int64_t limit,bool freeze);
     void remove_document_index_locked(const std::string& id);
-    void index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url);
-    void index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url);
+    void index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url,bool enforce_quota=true);
+    void remove_substrings_locked(const std::string& id);
+    void index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url,bool enforce_quota=true);
     void migrate();
     void migrate_revocations_locked();
     void require_principal_active_locked(const std::string& owner);

@@ -223,7 +223,7 @@ namespace bzs {
     }
   }
   Store::Store(const std::filesystem::path& path, std::function<std::int64_t()> clock, StoreOptions options):path_(path), clock_(clock?std::move(clock):now_ms), options_(options) {
-    require(options_.max_snapshots_per_owner>=1&&options_.max_bytes_per_owner>=1&&options_.max_revisions_per_document>=1,
+    require(options_.max_snapshots_per_owner>=1&&options_.max_bytes_per_owner>=1&&options_.max_revisions_per_document>=1&&options_.max_substring_bytes_per_owner>=1,
             "E_SCHEMA","Invalid store quotas");
     if(path!=":memory:"&&!path.parent_path().empty())std::filesystem::create_directories(path.parent_path());
     auto filename=path.string();
@@ -343,15 +343,18 @@ namespace bzs {
       tokenizer.step();
     } else {
       Stmt tokenizer(db_,"SELECT value FROM settings WHERE key='fts_tokenizer_version'");
-      require(tokenizer.step()&&(tokenizer.text(0)==fts_tokenizer_version||tokenizer.text(0)==fts_index_format_version),"E_SCHEMA_VERSION",
+      require(tokenizer.step()&&(tokenizer.text(0)==fts_tokenizer_version||tokenizer.text(0)==fts_legacy_gram_index_format_version||tokenizer.text(0)==fts_index_format_version),"E_SCHEMA_VERSION",
               "Index tokenizer version requires an explicit migration",409);
-      rebuild_substrings=tokenizer.text(0)==fts_tokenizer_version;
+      rebuild_substrings=tokenizer.text(0)!=fts_index_format_version;
     }
     if(rebuild_substrings) {
-      exec(db_,"DROP TABLE IF EXISTS substring_fts;");exec(db_,substring_schema);
+      exec(db_,"DROP TABLE IF EXISTS substring_fts; DROP TABLE IF EXISTS substring_usage;");exec(db_,substring_schema);
+      exec(db_,"CREATE TABLE substring_usage(owner TEXT PRIMARY KEY,bytes INTEGER NOT NULL CHECK(bytes>=0));");
     } else {
       Stmt index(db_,"SELECT 1 FROM sqlite_master WHERE type='table' AND name='substring_fts'");
       require(index.step(),"E_SCHEMA_VERSION","Substring index is missing; restore a complete database",409);
+      Stmt accounting(db_,"SELECT 1 FROM sqlite_master WHERE type='table' AND name='substring_usage'");
+      require(accounting.step(),"E_SCHEMA_VERSION","Substring accounting is missing; rebuild the derived index",409);
     }
     if(version<4) {
       if(!has_column(db_,"jobs","kind"))exec(db_,"ALTER TABLE jobs ADD COLUMN kind TEXT NOT NULL DEFAULT 'fixture.ingest';");
@@ -616,7 +619,7 @@ namespace bzs {
       // Policy SQL functions are registered after migration; reads still check
       // current publication and the startup sweep can retract either index.
       Stmt rows(db_,"SELECT d.id,d.owner,s.title,s.canonical_text,d.url FROM content_fts f JOIN documents d ON d.id=f.document_id AND d.owner=f.owner JOIN snapshots s ON s.id=d.current_snapshot WHERE d.deleted=0 AND s.index_allowed=1");
-      while(rows.step())index_substrings_locked(rows.text(1),rows.text(0),rows.text(2),rows.text(3),rows.text(4));
+      while(rows.step())index_substrings_locked(rows.text(1),rows.text(0),rows.text(2),rows.text(3),rows.text(4),false);
       Stmt marker(db_,"UPDATE settings SET value=? WHERE key='fts_tokenizer_version'");
       marker.bind(1,std::string(fts_index_format_version));marker.step();
     }
@@ -712,20 +715,41 @@ namespace bzs {
   }
   void Store::remove_document_index_locked(const std::string& id) {
     Stmt word(db_,"DELETE FROM content_fts WHERE document_id=?");word.bind(1,id);word.step();
+    remove_substrings_locked(id);
+  }
+  void Store::remove_substrings_locked(const std::string& id) {
+    {
+      Stmt prior(db_,"SELECT owner,length(CAST(grams AS BLOB)) FROM substring_fts WHERE rowid=(SELECT rowid FROM documents WHERE id=?)");
+      prior.bind(1,id);
+      if(prior.step()) {
+        Stmt account(db_,"UPDATE substring_usage SET bytes=bytes-? WHERE owner=?");
+        account.bind(1,prior.num(1));account.bind(2,prior.text(0));account.step();
+        require(sqlite3_changes(db_)==1,"E_STORAGE","Missing substring usage account",500);
+      }
+    }
     Stmt substring(db_,"DELETE FROM substring_fts WHERE rowid=(SELECT rowid FROM documents WHERE id=?)");
     substring.bind(1,id);substring.step();
   }
-  void Store::index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url) {
+  void Store::index_substrings_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url,bool enforce_quota) {
     // Align the derived rowid with the document for bounded replacements and
     // candidate intersections; field prefixes distinguish title/body/URL.
     const auto grams=indexed_grams(title,'t')+" "+indexed_grams(body,'b')+" "+indexed_grams(url,'r');
+    const auto bytes=static_cast<std::int64_t>(grams.size());
+    const auto limit=enforce_quota?options_.max_substring_bytes_per_owner:std::numeric_limits<std::int64_t>::max();
+    require(bytes<=limit,"E_QUOTA","Owner substring index quota exceeded",507);
+    // Reserve the logical bytes atomically in the caller's transaction. The
+    // conditional upsert avoids a separate SELECT on every indexed document.
+    Stmt account(db_,"INSERT INTO substring_usage(owner,bytes) VALUES(?,?) ON CONFLICT(owner) DO UPDATE SET bytes=bytes+excluded.bytes WHERE bytes<=?-excluded.bytes");
+    account.bind(1,owner);account.bind(2,bytes);account.bind(3,limit);account.step();
+    require(sqlite3_changes(db_)==1,"E_QUOTA","Owner substring index quota exceeded",507);
     Stmt index(db_,"INSERT INTO substring_fts(rowid,document_id,owner,grams) SELECT rowid,id,owner,? FROM documents WHERE id=? AND owner=?");
     index.bind(1,grams);index.bind(2,id);index.bind(3,owner);index.step();
+    require(sqlite3_changes(db_)==1,"E_STORAGE","Missing document for substring index",500);
   }
-  void Store::index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url) {
+  void Store::index_document_locked(const std::string& owner,const std::string& id,const std::string& title,const std::string& body,const std::string& url,bool enforce_quota) {
     Stmt word(db_,"INSERT INTO content_fts(document_id,owner,title,body)VALUES(?,?,?,?)");
     word.bind(1,id);word.bind(2,owner);word.bind(3,title);word.bind(4,body);word.step();
-    index_substrings_locked(owner,id,title,body,url);
+    index_substrings_locked(owner,id,title,body,url,enforce_quota);
   }
   Json Store::ingest_locked(const std::string& owner, const SourceDocument& input, const ParsedDocument& parsed, const std::string& meta_json, const std::string& source_kind) {
     require_principal_active_locked(owner);
@@ -826,7 +850,8 @@ namespace bzs {
       }
       require(b+bytes<=options_.max_bytes_per_owner&&n+1<=options_.max_snapshots_per_owner, "E_QUOTA", "Owner snapshot quota exceeded", 507);
     }
-    if(did.empty()) {
+    const bool new_document=did.empty();
+    if(new_document) {
       did=random_id();
       Stmt d(db_, "INSERT INTO documents(id,owner,url,host,url_key,representation_key,deletion_key)VALUES(?,?,?,?,?,?,?)");
       d.bind(1, did);
@@ -866,7 +891,10 @@ namespace bzs {
     }
     usage_add_locked(owner, bytes, 1);
     if(!preserve_current) {
-    remove_document_index_locked(did);
+    // A freshly inserted document cannot own an old derived row. Avoid a full
+    // content_fts UNINDEXED-column scan on every first import. Replacements,
+    // restores and publication retractions still use the metered removal path.
+    if(!new_document)remove_document_index_locked(did);
     Stmt active_policy(db_,"SELECT 1 FROM document_publication WHERE owner=? AND url_key IN (?,?) AND index_allowed=0");
     active_policy.bind(1,owner);active_policy.bind(2,url_key);active_policy.bind(3,representation_key);
     if(parsed.index_allowed&&!active_policy.step()&&site_publication_mode_locked(source_kind,site_bindings,site_generation,input.url,meta_json)<2) {
@@ -1549,6 +1577,15 @@ namespace bzs {
     out.set("content_bytes", bytes);
     out.set("quota_snapshots", options_.max_snapshots_per_owner);
     out.set("quota_bytes", options_.max_bytes_per_owner);
+    Stmt grams(db_,"SELECT bytes FROM substring_usage WHERE owner=?");grams.bind(1,owner);
+    const auto index_bytes=grams.step()?grams.num(0):0;
+    out.set("substring_index_bytes",index_bytes);
+    out.set("quota_substring_bytes",options_.max_substring_bytes_per_owner);
+    require(bytes>=0&&index_bytes>=0&&bytes<=std::numeric_limits<std::int64_t>::max()-index_bytes,
+            "E_STORAGE","Invalid storage byte accounting",500);
+    out.set("accounted_storage_bytes",bytes+index_bytes);
+    out.set("substring_index_over_quota",index_bytes>options_.max_substring_bytes_per_owner);
+    out.set("storage_accounting_scope","snapshot_payloads_and_serialized_substring_tokens_not_physical_sqlite_size");
     out.set("sqlite_version", sqlite3_libversion());
     return out;
   }

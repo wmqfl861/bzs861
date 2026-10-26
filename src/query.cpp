@@ -311,9 +311,16 @@ namespace bzs {
       // character and gives every CJK character a position. These are the
       // only leaf shapes whose exact matches are guaranteed FTS candidates.
       // General Unicode substrings, phrases and symbol literals use the supplementary index.
-      if(!(n.op=="term"&&all_word(value))&&!is_cjk_text(value))return std::nullopt;
-      auto prefix=n.field=="title"?"title : ":(n.field=="body"?"body : ":"");
-      return std::string(prefix)+fts_quote(value);
+      const auto prefix=n.field=="title"?"title : ":(n.field=="body"?"body : ":"");
+      if((n.op=="term"&&all_word(value))||is_cjk_text(value))return std::string(prefix)+fts_quote(value);
+      // Mixed leaves cannot require an ASCII word boundary (CPython教程 also
+      // contains Python教程). Contiguous CJK runs do have exact FTS positions.
+      // Requiring a bounded subset is a safe superset; grams handle the rest.
+      const auto runs=query_cjk_runs(value);
+      if(runs.empty())return std::nullopt;
+      std::string expression;
+      for(const auto& run:runs) {if(!expression.empty())expression+=" AND ";expression+=fts_quote(run);}
+      return std::string(prefix)+"("+expression+")";
     }
     // This is a PRIORITY hint, not a necessary filter. Token-aligned matches
     // are usually more selective than grams in long documents. Raw substrings
@@ -332,11 +339,11 @@ namespace bzs {
         return out.empty()?std::nullopt:std::optional<std::string>(out);
       }
       if(n.field=="url")return std::nullopt; // content_fts has no URL column
-      if(auto necessary=fts(n))return necessary;
       const auto value=ascii_lower(n.value);
+      if((n.op=="term"&&all_word(value))||is_cjk_text(value))return fts(n);
       // ASCII fragments are enough for cafe-with-accent, identifiers and
       // punctuated phrases; quoting delegates token positions to bzs/2.
-      if(!std::any_of(value.begin(),value.end(),[](unsigned char c) {return word_char(c);}))return std::nullopt;
+      if(!std::any_of(value.begin(),value.end(),[](unsigned char c) {return word_char(c);}))return fts(n);
       specialized=true;
       const auto prefix=n.field=="title"?"title : ":n.field=="body"?"body : ":"";
       return std::string(prefix)+fts_quote(value);
