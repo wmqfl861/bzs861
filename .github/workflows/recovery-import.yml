@@ -1,0 +1,47 @@
+name: recovery-original-commit-import
+on:
+  push:
+    branches: [work/recovery-transfer-20261027]
+    paths: [.delivery/recovery/**, .github/workflows/recovery-import.yml]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: Verify and import only the reviewed original commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          data = b''.join((Path('.delivery/recovery') / f'b{i:02d}').read_bytes() for i in range(1, 23))
+          if len(data) != 31818 or hashlib.sha256(data).hexdigest() != '21f43a1d63c33569813d57e50650f5e7e4ca9e01c75c525818e8dce9029ecb7a':
+              raise SystemExit('bundle differs from reviewed bytes')
+          Path(os.environ['RUNNER_TEMP'], 'recovery.bundle').write_bytes(data)
+          PY
+          git bundle verify "$RUNNER_TEMP/recovery.bundle"
+          git fetch "$RUNNER_TEMP/recovery.bundle" refs/heads/work/rebuild-five-20261027
+          test "$(git rev-parse FETCH_HEAD)" = d29223551041f5d0f39fa4ca4c6ce936af5a89d9
+          test "$(git rev-parse 'FETCH_HEAD^{tree}')" = d97ff8f5bdd10fa10b085573e508f3d1c2919f24
+          test "$(git rev-parse FETCH_HEAD~1)" = f85d5c16a4246bfe4b0bd63b6c39adac2b8679c7
+          test "$(git rev-parse FETCH_HEAD~2)" = 6d4ba1ff8bcb48d359179624a931424041d3cf4d
+          test "$(git rev-parse FETCH_HEAD~3)" = a4c568eb4ee305e3e8346d480ced550e641dac80
+          test "$(git rev-parse FETCH_HEAD~4)" = 2e620d3c47acf0c4ffdf8072708dba0f7687381c
+          test "$(git rev-parse FETCH_HEAD~5)" = 08f317ce9a5c56822fa065d36cd8634082b3c9a6
+          test "$(git rev-parse FETCH_HEAD~6)" = 1d8e80e5f1bd1b5f9ad8d1e5fc211c8cd403ca31
+          git fsck --strict --no-dangling
+          target=refs/heads/work/recovery-imported-20261027
+          existing=$(git ls-remote --heads origin "$target" | cut -f1)
+          if [ -n "$existing" ] && [ "$existing" != d29223551041f5d0f39fa4ca4c6ce936af5a89d9 ]; then
+            echo 'import target has other work; refusing update' >&2
+            exit 1
+          fi
+          git push origin d29223551041f5d0f39fa4ca4c6ce936af5a89d9:"$target"
+          # No main/review ref update, no force, no imported code execution.
+          # Connector publication of the delivery branch triggers full CI.
