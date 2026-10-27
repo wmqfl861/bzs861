@@ -329,6 +329,7 @@ int main(int argc, char**argv) {
     std::filesystem::path state=".local/state", fixtures="tests/fixtures", authfile, sources_file, sites_file, worker_token_file;
     std::string worker_url;
     unsigned short port=8610;
+    BackgroundOptions background;
     unsigned threads=8;
     unsigned request_threads=0;
     unsigned request_queue=0,request_queue_timeout_ms=30000,local_threads=2;
@@ -339,7 +340,7 @@ int main(int argc, char**argv) {
       if(a=="--help") {
         std::cout<<"searchd --auth FILE [--state DIR] [--fixtures DIR] [--port 0..65535] [--threads 1..64] [--no-worker]\n"
                    "        [--request-threads 1..32] [--request-queue 0..256] [--request-queue-timeout-ms 1..30000]\n"
-                   "        [--local-threads 1..32]\n"
+                   "        [--local-threads 1..32] [--background-reads 1..8] [--background-maps 1..8] [--background-searches 1..8]\n"
                    "        [--sites FILE] [--worker http://127.0.0.1:PORT --worker-token-file FILE --sources FILE]\n"
                    "Listens on 127.0.0.1 only. Without --worker all external capabilities are disabled.\n"
                    "--threads controls IO; request threads default to min(threads,32). Local threads default to 2; each pool queues 4*request_threads by default.\n"
@@ -380,6 +381,11 @@ int main(int argc, char**argv) {
         if(a=="--request-queue") {request_queue=n;request_queue_explicit=true;}
         else if(a=="--local-threads")local_threads=n;
         else request_queue_timeout_ms=n;
+      }
+      else if(a=="--background-reads"||a=="--background-maps"||a=="--background-searches") {
+        unsigned n=0;const auto result=std::from_chars(v.data(),v.data()+v.size(),n);
+        require(result.ec==std::errc{}&&result.ptr==v.data()+v.size()&&n>=1&&n<=8,"E_ARGUMENT","Background pool sizes must be 1..8");
+        if(a=="--background-reads")background.reads=n;else if(a=="--background-maps")background.maps=n;else background.searches=n;
       }
       else if(a=="--threads") {
         unsigned n=0;
@@ -435,7 +441,7 @@ int main(int argc, char**argv) {
     RequestExecutor controls(control_threads);
     Listener listener(io, port, service, requests,locals,controls,auth);
     BackgroundWorker worker_thread;
-    if(worker)worker_thread=start_worker(store, catalog, web.get());
+    if(worker)worker_thread=start_worker(store, catalog, web.get(),background);
     net::signal_set signals(io, SIGINT, SIGTERM);
     signals.async_wait([&](beast::error_code, int) {
       worker_thread.request_stop();
@@ -450,6 +456,9 @@ int main(int argc, char**argv) {
     ready.set("port", static_cast<std::int64_t>(listener.port()));
     ready.set("version", BZS_VERSION);
     ready.set("network_mode", web?"worker_mediated":"offline");
+    ready.set("background_reads",static_cast<std::int64_t>(background.reads));
+    ready.set("background_maps",static_cast<std::int64_t>(background.maps));
+    ready.set("background_searches",static_cast<std::int64_t>(background.searches));
     ready.set("threads", static_cast<std::int64_t>(threads));
     ready.set("request_threads",static_cast<std::int64_t>(request_threads));
     ready.set("request_queue",static_cast<std::int64_t>(request_queue));
