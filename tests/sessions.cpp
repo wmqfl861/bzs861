@@ -173,7 +173,7 @@ TEST(expired_local_sessions_release_capacity_for_web_without_local_search) {
   CHECK(web.submit_search("alice",input()).at("state").str()=="queued");CHECK(worker.requests.empty());
   sqlite3_stmt* row=nullptr;CHECK(sqlite3_prepare_v2(store.raw_handle(),"SELECT COUNT(*) FROM sessions",-1,&row,nullptr)==SQLITE_OK);CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==0);sqlite3_finalize(row);
 }
-TEST(permanent_search_receipts_do_not_exhaust_future_admission) {
+TEST(unkeyed_local_receipts_expire_without_changing_keyed_replay_identity) {
   std::int64_t now=1800000000000;Store store(":memory:",[&]{return now;});
   Worker worker;WebService web(store,worker,SourceRegistry(manifest(1)));
   const auto original=web.submit_search("alice",input("permanent-web"));execute_one(web);
@@ -183,11 +183,11 @@ TEST(permanent_search_receipts_do_not_exhaust_future_admission) {
     if(i==0)first=session.at("session_id").str();
   }
   sqlite3_stmt* row=nullptr;CHECK(sqlite3_prepare_v2(store.raw_handle(),"SELECT COUNT(*) FROM search_stream_receipts",-1,&row,nullptr)==SQLITE_OK);
-  CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==10002);sqlite3_finalize(row);
-  CHECK(sqlite3_exec(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<90000) INSERT INTO search_stream_receipts(id,owner,state,created_at) SELECT 'retained-'||x,'other','expired',0 FROM n",nullptr,nullptr,nullptr)==SQLITE_OK);
+  CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==2);sqlite3_finalize(row);
+  CHECK(sqlite3_exec(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<90000) INSERT INTO search_stream_receipts(id,owner,idempotency_key,state,created_at) SELECT 'retained-'||x,'other','key-'||x,'expired',0 FROM n",nullptr,nullptr,nullptr)==SQLITE_OK);
   now+=3600001;CHECK(store.search("alice",query).at("frozen_count").num()==0);
   CHECK(web.submit_search("alice",input("after-identity-boundary")).at("state").str()=="queued");
-  rejects([&]{store.session_get("alice",first);},"E_SESSION_EXPIRED");
+  rejects([&]{store.session_get("alice",first);},"E_NOT_FOUND");
   rejects([&]{web.submit_search("alice",input("permanent-web"));},"E_SESSION_EXPIRED");
   auto changed=input("permanent-web");changed.set("query","different");
   rejects([&]{web.submit_search("alice",changed);},"E_IDEMPOTENCY_CONFLICT");
