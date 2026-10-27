@@ -137,7 +137,7 @@ namespace bzs {
     Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false,
                 std::optional<std::chrono::steady_clock::time_point> internal_deadline=std::nullopt);
     Json submit_search(const std::string& owner,const Json& args);
-    std::optional<SearchLease> lease_search();
+    std::optional<SearchLease> lease_search(std::stop_token stop={});
     void execute_search(const SearchLease& lease);
     Json read(const std::string& owner, const Json& args);
     Json prepare_read(const std::string& owner,const Json& args);
@@ -150,7 +150,7 @@ namespace bzs {
     Json submit_map(const std::string& owner,const Json& args);
     Json submit_crawl(const std::string& owner,const Json& args);
     Json sites();
-    std::optional<MapLease> lease_map();
+    std::optional<MapLease> lease_map(std::stop_token stop={});
     void execute_map(const MapLease& lease);
     Json sources();
     std::size_t enabled_sources() const;

@@ -1,0 +1,13 @@
+{
+  "verification_scope": "Integrated Release recovery candidate, targeted CTest 10/10 passed; no remote CI result claimed",
+  "business_schema": 15,
+  "prior_five_node_candidate_recovered": false,
+  "change": "Snapshot payloads and retained archive JSON share max_bytes_per_owner. Separate gram quota unchanged. No duplicate business counters.",
+  "tests": [
+    "archive_quota",
+    "retention",
+    "revalidation",
+    "cache_freshness_1/2/3"
+  ],
+  "retention_policy": "Blocked compactions preserve details and keys; return archive_quota_blocked_jobs. Reads/replay and reductions remain available for legacy over-quota owners."
+}

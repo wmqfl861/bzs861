@@ -1,0 +1,21 @@
+{
+  "scope": "P2-D bounded per-class background pools",
+  "base": "1d8e80e5f1bd1b5f9ad8d1e5fc211c8cd403ca31",
+  "tests": {
+    "command": "ctest --test-dir build-release -R \"^(background_pool|fairness|e2e_map|e2e_crawl_recovery|e2e_session_recovery)$\" --verbose",
+    "exit_code": 0,
+    "ctest_passed": 5,
+    "skipped": 0
+  },
+  "covers": [
+    "4 delayed distinct-origin reads, each exactly once",
+    "durable same-origin pacing under controlled clock",
+    "pool option bounds and ownership-safe stop/join",
+    "unchanged real crawl and search crash/restart suites"
+  ],
+  "limits": [
+    "Core admission clock is not real Worker connection pacing; unchanged python/e2e tests exercise the latter.",
+    "Not a target-device deployment or full acceptance."
+  ],
+  "no_schema_or_source_changes": true
+}

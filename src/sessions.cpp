@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS search_stream_receipts(id TEXT PRIMARY KEY,owner TEXT
   fingerprint TEXT NOT NULL DEFAULT '',state TEXT NOT NULL,used_requests INTEGER NOT NULL DEFAULT 0,unknown_requests INTEGER NOT NULL DEFAULT 0,created_at INTEGER NOT NULL,
   UNIQUE(owner,idempotency_key));
 CREATE INDEX IF NOT EXISTS search_receipt_owner ON search_stream_receipts(owner);
+CREATE INDEX IF NOT EXISTS search_unkeyed_receipts ON search_stream_receipts(id) WHERE idempotency_key IS NULL;
 CREATE TABLE IF NOT EXISTS search_streams(id TEXT PRIMARY KEY REFERENCES search_stream_receipts(id),owner TEXT NOT NULL,auth_epoch INTEGER NOT NULL,
   kind TEXT NOT NULL,state TEXT NOT NULL,epoch INTEGER NOT NULL DEFAULT 0,created_at INTEGER NOT NULL,expires_at INTEGER NOT NULL,deadline INTEGER NOT NULL,
   request_json TEXT NOT NULL DEFAULT '{}',manifest_sha256 TEXT NOT NULL DEFAULT '',contracts_json TEXT NOT NULL DEFAULT '[]',
@@ -134,8 +135,8 @@ void Store::stream_event_locked(const std::string& id,const std::string& kind,co
 void Store::local_stream_locked(const std::string& owner,const std::string& id) {
   Statement exists(db_,"SELECT 1 FROM search_streams WHERE id=? AND owner=?");exists.bind(1,id);exists.bind(2,owner);if(exists.step())return;
   Statement local(db_,"SELECT auth_epoch,created_at,expires_at FROM sessions WHERE id=? AND owner=?");local.bind(1,id);local.bind(2,owner);if(!local.step())return;
-  // The local session already occupies one active slot. Permanent receipts
-  // retain replay identity but do not consume a new lifetime admission quota.
+  // The local session already occupies one active slot. Its unkeyed receipt
+  // exists only for the stream FK and is collectible after payload expiry.
   Statement count(db_,"SELECT (SELECT COUNT(*) FROM search_streams)+(SELECT COUNT(*) FROM sessions WHERE id NOT IN (SELECT id FROM search_streams)),(SELECT COUNT(*) FROM search_streams WHERE owner=?)+(SELECT COUNT(*) FROM sessions WHERE owner=? AND id NOT IN (SELECT id FROM search_streams))");count.bind(1,owner);count.bind(2,owner);count.step();
   require(count.num(0)<=256&&count.num(1)<=64,"E_SESSION_BACKPRESSURE","Active search session capacity reached; wait for expiry",429);
   Statement receipt(db_,"INSERT INTO search_stream_receipts(id,owner,state,created_at)VALUES(?,?,'completed',?)");receipt.bind(1,id);receipt.bind(2,owner);receipt.bind(3,local.num(1));receipt.step();
@@ -180,9 +181,18 @@ void Store::settle_searches_locked() {
     Statement update(db_,"UPDATE search_streams SET state=?,epoch=epoch+1,lease_until=0,unknown_requests=unknown_requests+?,error_code=? WHERE id=?");
     update.bind(1,state);update.bind(2,change.unknown?1:0);update.bind(3,change.error);update.bind(4,change.id);update.step();stream_event_locked(change.id,change.terminal?"failed":"source_unknown");stream_receipt_locked(change.id);
   }
-  // Payloads may expire; compact identity and charged/unknown counters remain.
+  // Keyed identities and charged/unknown counters remain permanently. Only
+  // zero-usage, unkeyed local receipts with no remaining payload are reclaimed.
   Statement expire(db_,"DELETE FROM search_streams WHERE expires_at<=? AND state NOT IN ('queued','running')");expire.bind(1,now);expire.step();
   Statement local(db_,"DELETE FROM sessions WHERE expires_at<=?");local.bind(1,now);local.step();
+  // Bounded lazy cleanup also reclaims pre-upgrade local receipts. Never infer
+  // a finite lifetime for keyed requests, or discard unknown charged work.
+  Statement receipts(db_,R"SQL(DELETE FROM search_stream_receipts WHERE id IN (
+ SELECT r.id FROM search_stream_receipts r WHERE r.idempotency_key IS NULL
+ AND r.fingerprint='' AND r.state='completed' AND r.used_requests=0 AND r.unknown_requests=0
+ AND NOT EXISTS(SELECT 1 FROM search_streams s WHERE s.id=r.id)
+ AND NOT EXISTS(SELECT 1 FROM sessions s WHERE s.id=r.id)
+ ORDER BY r.id LIMIT 512))SQL");receipts.step();
 }
 Json Store::search_submit(const std::string& owner,const Json& input,const SourceRegistry& registry) {
   (void)source_publication_capture(registry,Json::array());
@@ -233,9 +243,14 @@ Json Store::session_cancel(const std::string& owner,const std::string& id) {
   }
   out.set("completed_results_preserved",true);tx.commit();return out;
 }
-std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& registry) {
-  std::lock_guard lock(mutex_);refresh_source_publication_locked();Transaction tx(db_);settle_searches_locked();
+std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& registry,std::stop_token stopping) {
+  std::lock_guard lock(mutex_);
+  if(stopping.stop_requested())return std::nullopt;
+  refresh_source_publication_locked();Transaction tx(db_);
+  if(stopping.stop_requested())return std::nullopt;
+  settle_searches_locked();
   for(std::size_t attempts=0;attempts<256;++attempts) {
+    if(stopping.stop_requested())return std::nullopt;
     Statement s(db_,"SELECT id,owner,epoch,manifest_sha256,request_json,deadline,source_generation FROM search_streams WHERE kind='web' AND state='queued' ORDER BY last_dispatch,created_at,id LIMIT 1");if(!s.step()) { tx.commit();return std::nullopt; }
     const auto id=s.text(0);bool approved=s.text(3)==search_registry_identity(registry);auto request=Json::parse(s.text(4),16384);
     if(approved)try { const auto ids=request.at("sources");(void)source_capture_locked(registry,ids);for(std::size_t i=0;i<ids.size();++i) { const auto* source=registry.find(ids.at(i).str());require(source,"E_SOURCE_REVIEW","Source removed",409);source->require_review(clock_());require(source_publication_mode_locked(source->id,s.num(6))<2,"E_SOURCE_REVIEW","Source permission was withdrawn",409); } }catch(const Error&) { approved=false; }
@@ -243,6 +258,7 @@ std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& regist
     Statement source(db_,"SELECT position,source_id FROM search_stream_sources WHERE session_id=? AND state='pending' ORDER BY position LIMIT 1");source.bind(1,id);
     if(!source.step()) { Statement done(db_,"UPDATE search_streams SET state='completed' WHERE id=?");done.bind(1,id);done.step();stream_event_locked(id,"completed");stream_receipt_locked(id);continue; }
     const auto sequence=scalar(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='search_dispatch_sequence'");require(sequence<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Dispatch sequence exhausted",500);
+    if(stopping.stop_requested())return std::nullopt;
     sql(db_,"UPDATE settings SET value=CAST(value AS INTEGER)+1 WHERE key='search_dispatch_sequence'");
     SearchLease lease{id,s.text(1),source.text(1),s.text(3),s.num(2)+1,source.num(0),s.num(5),request};
     const auto lease_until=std::min(lease.deadline_ms,clock_()+request.at("timeout_ms").num()+10000);
@@ -395,7 +411,7 @@ Json Store::session_page(const std::string& owner,const std::string& id,const st
   tx.commit();return out;
 }
 Json WebService::submit_search(const std::string& owner,const Json& args) { return store_.search_submit(owner,args,registry_); }
-std::optional<SearchLease> WebService::lease_search() { return store_.lease_next_search(registry_); }
+std::optional<SearchLease> WebService::lease_search(std::stop_token stop) { return store_.lease_next_search(registry_,stop); }
 void WebService::execute_search(const SearchLease& lease) {
   if(!store_.search_lease_live(lease))return;
   try {

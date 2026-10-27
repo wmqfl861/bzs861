@@ -1,0 +1,82 @@
+{
+  "scope": "Fresh reconstruction from published main; not recovery or verification of the missing earlier five-node candidate",
+  "base_commit": "1d8e80e5f1bd1b5f9ad8d1e5fc211c8cd403ca31",
+  "reviewer": "Implementing assistant source/counterexample review, not separate external auditor",
+  "local_results": {
+    "release_ctest": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0,
+      "ctest_seconds": 240.53
+    },
+    "debug_ctest": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0,
+      "ctest_seconds": 327.15
+    },
+    "python": {
+      "passed": 1441,
+      "failed": 0,
+      "skipped": 0,
+      "included_in_ctest": true
+    },
+    "asan_ubsan": {
+      "native_programs": 22,
+      "exit_code": 0,
+      "method": "existing CI direct-binary form, 240s outer watchdog per program",
+      "options": "detect_leaks=1:halt_on_error=1; halt_on_error=1:print_stacktrace=1"
+    },
+    "design_contracts": 34,
+    "native_contract_cases": 55,
+    "plan_guard": 13,
+    "original_cache_cases": 63,
+    "mandatory_shards": [
+      21,
+      21,
+      21
+    ],
+    "pool_measurement": {
+      "fixture_delay_ms": 2000,
+      "physical_calls": 4,
+      "serial_seconds": 8.03003,
+      "parallel_seconds": 2.01951,
+      "scope": "offline Core-to-fake-Worker; not a performance SLA"
+    },
+    "incremental_fixture": {
+      "pages_before": 406,
+      "pages_after": 145,
+      "per_call_page_budget": 128,
+      "scope": "synthetic new incremental store, not conversion of user data"
+    }
+  },
+  "preservation": {
+    "protected_paths": 4517,
+    "protected_bytes": 48938465,
+    "old_validation_paths": 4511,
+    "mismatches": []
+  },
+  "code_input_manifest_sha256": "5e13a2ff96bed53fb5f15c5c3a27f134fcccc0c9e423c04f93eeaea37833e64d",
+  "original_failures_retained": [
+    "receipt test initially assumed search() had one settlement; corrected probe to session_get() without changing the 512-row bound",
+    "ASan exposed fault injection bound to nondeterministic gate wake-up; corrected to first admission with original accounting assertions",
+    "ASan exposed post-stop idle claimer reservation; production lease methods now recheck stop under lock/transaction; two deterministic new regressions",
+    "baseline Windows run40463828529 cache_freshness timed out at60.06s; original artifact retained; new Windows result not inferred"
+  ],
+  "limits": [
+    "Legacy NONE/FULL stores are NOT converted; explicit safe offline conversion remains unimplemented. Whole P2-A is not accepted.",
+    "No target-device deployment, live source approval, human qrels or trusted-restore acceptance.",
+    "Fresh remote Linux/Windows CI and actual artifacts must be inspected; no future success is claimed.",
+    "Release retains a -Wnonnull warning at unchanged src/batch.cpp line275; not a zero-warning build."
+  ],
+  "policy": {
+    "version": "0.1.10",
+    "business_schema": 15,
+    "enabled_sources_changed": false,
+    "pending_decisions": "D1-D7 unchanged",
+    "full_product_accepted": false,
+    "b24_expanded": false,
+    "original_history_rewritten": false
+  },
+  "evidence": "Full local logs, command metadata, checksums and recoverable source bundle supplied separately; no raw log copied into Git validation."
+}

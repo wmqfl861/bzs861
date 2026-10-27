@@ -51,6 +51,20 @@ constexpr const char* eligible=R"SQL(
  )SQL";
 }
 
+// Compute from retained rows, including old databases; no business schema or
+// duplicated counter is introduced. The owner/key index bounds the owner scan.
+std::int64_t Store::archive_bytes_locked(const std::string& owner) {
+  Sql bytes(db_,"SELECT COALESCE(SUM(length(CAST(archive_json AS BLOB))),0) FROM jobs WHERE owner=? AND archived_at<>0");
+  bytes.bind(1,owner);bytes.step();require(bytes.num(0)>=0,"E_STORAGE","Invalid archive accounting",500);return bytes.num(0);
+}
+bool Store::payload_quota_fits_locked(const std::string& owner,std::int64_t extra) {
+  if(extra<=0)return true; // Deletion or restrictive metadata may reduce usage.
+  Sql bytes(db_,"SELECT bytes FROM usage WHERE owner=?");bytes.bind(1,owner);
+  const auto content=bytes.step()?bytes.num(0):0,archive=archive_bytes_locked(owner),limit=options_.max_bytes_per_owner;
+  require(content>=0,"E_STORAGE","Invalid snapshot accounting",500);
+  return extra<=limit&&archive<=limit-extra&&content<=limit-extra-archive;
+}
+
 std::optional<Json> Store::compacted_job_locked(const std::string& owner,const std::string& id) {
   Sql row(db_,"SELECT archive_json FROM jobs WHERE id=? AND owner=? AND archived_at<>0");row.bind(1,id);row.bind(2,owner);
   if(!row.step())return std::nullopt;
@@ -118,7 +132,7 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool
   }
   const bool more=ids.size()>static_cast<std::size_t>(limit);
   if(more)ids.resize(static_cast<std::size_t>(limit));
-  std::int64_t details=0;
+  std::int64_t details=0,compacted=0,blocked=0;
   for(const auto& [id,job_owner]:ids) {
     auto summary=job_details_locked(job_owner,id);
     if(summary.at("kind").str()=="fixture.ingest") {
@@ -135,6 +149,10 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool
     auto retention=Json::object();retention.set("version",version);retention.set("details_available",false);
     retention.set("compacted_at_ms",now);retention.set("minimum_retention_ms",retention_ms);summary.set("retention",retention);
     const auto encoded=summary.canonical();require(encoded.size()<=static_cast<std::size_t>(max_summary_bytes),"E_QUOTA","Retained job summary exceeds its bound",429);
+    // Do not erase details unless their immutable summary fits. This also
+    // allows old over-quota owners to read/cancel/delete without losing keys.
+    if(!payload_quota_fits_locked(job_owner,static_cast<std::int64_t>(encoded.size()))) { ++blocked;continue; }
+    ++compacted;
     Sql archive(db_,"UPDATE jobs SET archive_json=?,archived_at=?,result_json=CASE WHEN kind='fixture.ingest' THEN '' ELSE result_json END WHERE id=? AND owner=? AND archived_at=0");
     archive.bind(1,encoded);archive.bind(2,now);archive.bind(3,id);archive.bind(4,job_owner);archive.step();
     // Preserve the job/key row, snapshots, evidence, deletion and publication
@@ -156,8 +174,8 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool
   const auto robots=all_owners?0:compact_robots_locked(owner,std::min<std::int64_t>(64,limit*4));
   Sql count(db_,"SELECT COUNT(*),COALESCE(SUM(archived_at=0),0) FROM jobs WHERE owner=?");count.bind(1,owner);count.step();
   auto out=Json::object();out.set("version",version);out.set("minimum_retention_ms",retention_ms);out.set("limit",limit);
-  out.set("compacted_jobs",static_cast<std::int64_t>(ids.size()));out.set("deleted_detail_rows",details);out.set("deleted_robots_records",robots);
-  out.set("has_more_jobs",more);out.set("retained_job_keys",count.num(0));out.set("unarchived_jobs",count.num(1));
+  out.set("compacted_jobs",compacted);out.set("archive_quota_blocked_jobs",blocked);out.set("deleted_detail_rows",details);out.set("deleted_robots_records",robots);
+  out.set("has_more_jobs",more||blocked>0);out.set("retained_job_keys",count.num(0));out.set("unarchived_jobs",count.num(1));
   auto limits=Json::object();limits.set("max_jobs_per_owner",owner_details);limits.set("max_jobs_global",global_details);limits.set("job_capacity_scope","unarchived_details");
   limits.set("max_jobs_per_call",std::int64_t{64});limits.set("max_robots_per_call",std::int64_t{64});limits.set("max_summary_bytes",max_summary_bytes);out.set("limits",limits);
   out.set("external_requests",std::int64_t{0});out.set("model_calls",std::int64_t{0});return out;
@@ -165,6 +183,20 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool
 
 Json Store::compact_jobs(const std::string& owner,std::int64_t limit) {
   require_identifier(owner);require(limit>=1&&limit<=64,"E_SCHEMA","Job compaction limit must be 1..64");
-  std::lock_guard lock(mutex_);Tx tx(db_);require_principal_active_locked(owner);auto out=compact_jobs_locked(owner,limit);tx.commit();return out;
+  std::lock_guard lock(mutex_);Json out;
+  { Tx tx(db_);require_principal_active_locked(owner);out=compact_jobs_locked(owner,limit);tx.commit(); }
+  // Compaction is already committed. Reclamation is best-effort and bounded;
+  // a busy reader must not make callers believe the logical deletion failed.
+  auto reclaim=Json::object();std::int64_t selected=0;
+  { Sql mode(db_,"PRAGMA auto_vacuum");mode.step();selected=mode.num(0); }
+  reclaim.set("auto_vacuum_mode",selected);reclaim.set("page_budget",std::int64_t{128});
+  reclaim.set("status",selected==2?"completed":"requires_offline_conversion");
+  if(selected==2) {
+    try {
+      // Drain all SQLITE_ROW results: SQLite can reclaim one page per step.
+      Sql vacuum(db_,"PRAGMA incremental_vacuum(128)");while(vacuum.step()){}
+    }catch(const Error&e){reclaim.set("status","deferred");reclaim.set("error_code",e.code);}
+  }
+  out.set("storage_reclamation",reclaim);return out;
 }
 }

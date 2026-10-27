@@ -1,0 +1,16 @@
+{
+  "verification_scope": "Integrated Release recovery candidate, targeted CTest 10/10 passed; no remote CI result claimed",
+  "business_schema": 15,
+  "prior_five_node_candidate_recovered": false,
+  "change": "New empty databases use incremental auto-vacuum; public compaction drains a bounded 128-page reclaim after committing logical changes.",
+  "tests": [
+    "incremental_storage",
+    "retention"
+  ],
+  "limits": [
+    "Existing NONE/FULL databases explicitly report requires_offline_conversion; no silent full VACUUM or data rewrite.",
+    "Legacy conversion tool is NOT implemented in this recovery batch.",
+    "WAL readers can delay physical release; no promise of immediate file shrink.",
+    "Quarantined backups remain refused."
+  ]
+}

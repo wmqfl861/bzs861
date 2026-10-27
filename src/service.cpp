@@ -382,23 +382,26 @@ namespace bzs {
       std::mutex wait_mutex;
       std::condition_variable_any wake;
       while(!stop.stop_requested()) {
-        step(stop);
+        if(step(stop))continue; // Wait only when no work was leased.
         std::unique_lock lock(wait_mutex);
         wake.wait_for(lock,stop,std::chrono::milliseconds(20),[]{return false;});
       }
     }
   }
-  BackgroundWorker::BackgroundWorker(Store& store,const FixtureCatalog& fixtures,WebService* web) {
+  BackgroundWorker::BackgroundWorker(Store& store,const FixtureCatalog& fixtures,WebService* web,BackgroundOptions options) {
+    require(options.reads>=1&&options.reads<=8&&options.maps>=1&&options.maps<=8&&options.searches>=1&&options.searches<=8,
+            "E_ARGUMENT","Background pool sizes must be 1..8");
+    lanes_.reserve(web?1+options.reads+options.maps+options.searches:1);
     // Do not admit work until every requested lane exists. A partial startup
     // can therefore stop and join without waiting on an already-dispatched RPC.
     const auto ready=std::make_shared<std::latch>(1);
     try {
-      lanes_[0]=std::jthread([&store,&fixtures,ready](std::stop_token token) {
+      lanes_.emplace_back([&store,&fixtures,ready](std::stop_token token) {
         ready->wait();
         background_lane(token,[&](std::stop_token stop) {
           std::optional<Lease> l;
           try {
-            l=store.lease_next();
+            l=store.lease_next(10000,stop);
             if(l) {
               const auto&doc=fixtures.get(l->fixture_id);
               auto parsed=parse_document(doc.raw, doc.content_type, doc.title);
@@ -415,15 +418,16 @@ namespace bzs {
             }catch(...) {
             }
           }
+          return l.has_value();
         });
       });
       if(!web) { ready->count_down();return; }
-      lanes_[1]=std::jthread([&store,web,ready](std::stop_token token) {
+      for(unsigned i=0;i<options.reads;++i)lanes_.emplace_back([&store,web,ready](std::stop_token token) {
         ready->wait();
         background_lane(token,[&](std::stop_token stop) {
           std::optional<ReadLease> read;
           try {
-            read=store.lease_next_read();
+            read=store.lease_next_read(stop);
             if(read) {
               if(stop.stop_requested())store.fail_read(*read,"E_SHUTDOWN",0,0);
               else web->execute_read(*read);
@@ -433,14 +437,15 @@ namespace bzs {
             // reservation; recovery marks this attempt unknown, never free.
             if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) {}
           }
+          return read.has_value();
         });
       });
-      lanes_[2]=std::jthread([&store,web,ready](std::stop_token token) {
+      for(unsigned i=0;i<options.maps;++i)lanes_.emplace_back([&store,web,ready](std::stop_token token) {
         ready->wait();
         background_lane(token,[&](std::stop_token stop) {
           std::optional<MapLease> map;
           try {
-            map=web->lease_map();
+            map=web->lease_map(stop);
             if(map) {
               if(stop.stop_requested())store.fail_map(*map,"E_SHUTDOWN",0,0);
               else web->execute_map(*map);
@@ -448,16 +453,18 @@ namespace bzs {
           } catch(...) {
             if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) {}
           }
+          return map.has_value();
         });
       });
-      lanes_[3]=std::jthread([&store,web,ready](std::stop_token token) {
+      for(unsigned i=0;i<options.searches;++i)lanes_.emplace_back([&store,web,ready](std::stop_token token) {
         ready->wait();
         background_lane(token,[&](std::stop_token stop) {
           std::optional<SearchLease> search;
           try {
-            search=web->lease_search();
+            search=web->lease_search(stop);
             if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
           }catch(...) { if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) {} }
+          return search.has_value();
         });
       });
       ready->count_down();
@@ -487,7 +494,7 @@ namespace bzs {
   void BackgroundWorker::join() {
     for(auto& lane:lanes_)if(lane.joinable())lane.join();
   }
-  BackgroundWorker start_worker(Store& store,const FixtureCatalog& fixtures,WebService* web) {
-    return BackgroundWorker(store,fixtures,web);
+  BackgroundWorker start_worker(Store& store,const FixtureCatalog& fixtures,WebService* web,BackgroundOptions options) {
+    return BackgroundWorker(store,fixtures,web,options);
   }
 }

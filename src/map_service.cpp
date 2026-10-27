@@ -74,7 +74,7 @@ namespace {
 Json WebService::submit_map(const std::string& owner,const Json& args) { return store_.map_submit(owner,args,sites_); }
 Json WebService::submit_crawl(const std::string& owner,const Json& args) { return store_.crawl_submit(owner,args,sites_); }
 Json WebService::sites() { return sites_.describe(store_.now()); }
-std::optional<MapLease> WebService::lease_map() { return store_.lease_next_map(sites_); }
+std::optional<MapLease> WebService::lease_map(std::stop_token stop) { return store_.lease_next_map(sites_,stop); }
 void WebService::execute_map(const MapLease& lease) {
   std::int64_t requests=-1,bytes=-1;std::optional<Json> observation;
   try {

@@ -173,9 +173,14 @@ struct GatedWorker:Worker{
     bool fail=false,expired=false;
     {
       std::unique_lock lock(mutex);++entered[method];peak[method]=std::max(peak[method],++active[method]);
-      peak_total=std::max(peak_total,++active_total);changed.notify_all();
-      if(!changed.wait_for(lock,std::chrono::seconds(15),[&]{return !held.contains(method);}))gate_expired=expired=true;
+      peak_total=std::max(peak_total,++active_total);
+      // Bind the injected failure to the first admitted call, not whichever
+      // pooled call wins the wake-up race after release_all(). The recovery
+      // assertions below still require the original job's unknown charge and
+      // the second job's successful, exactly-once completion.
       fail=throw_once.erase(method)!=0;
+      changed.notify_all();
+      if(!changed.wait_for(lock,std::chrono::seconds(15),[&]{return !held.contains(method);}))gate_expired=expired=true;
     }
     auto leave=[&]{std::lock_guard lock(mutex);--active[method];--active_total;changed.notify_all();};
     try{
@@ -254,6 +259,40 @@ TEST(all_background_rpc_lanes_are_bounded_and_stop_before_taking_more_work){
   CHECK(store.job_get("bob",map).at("usage").at("external_requests").num()==1);
   CHECK(store.session_get("carol",search).at("state").str()=="completed");
 }
+
+// Stop is checked under the Store lock/transaction as well as by the pool.
+// This exercises cancellation after entry, without scheduler sleeps or mocks
+// of the durable claim. All accounting and terminal-state assertions remain.
+void stopped_claims(bool inside) {
+  for(int kind=0;kind<4;++kind) {
+    Temp t;Worker worker;std::stop_source stop;bool armed=false;
+    Store store(t.path/"db",[&]{if(armed){armed=false;stop.request_stop();}return worker.now;});
+    WebService web(store,worker,SourceRegistry(search_manifest()),SiteRegistry(manifest()));
+    const auto read=submit(store,"stop-read",1);
+    const auto map=web.submit_map("bob",map_args(urls("stop-map",1),"stop-map")).at("job_id").str();
+    const auto search=submit_search(web,"stop-search");
+    const auto fixture=store.job_create("dave","plain","stop-fixture").at("job_id").str();
+    if(inside)armed=true;else stop.request_stop();
+    if(kind==0)CHECK(!store.lease_next(10000,stop.get_token()));
+    if(kind==1)CHECK(!store.lease_next_read(stop.get_token()));
+    if(kind==2)CHECK(!web.lease_map(stop.get_token()));
+    if(kind==3)CHECK(!web.lease_search(stop.get_token()));
+    CHECK(stop.stop_requested());CHECK(!armed);
+    CHECK(store.job_get("dave",fixture).at("state").str()=="queued");
+    for(const auto& pair:std::vector<std::pair<std::string,std::string>>{{"alice",read},{"bob",map}}) {
+      const auto job=store.job_get(pair.first,pair.second);
+      CHECK(job.at("state").str()=="queued");CHECK(job.at("dispatches").num()==0);
+      CHECK(job.at("usage").at("external_requests").num()==0);
+      CHECK(job.at("usage").at("unknown_requests_charged").num()==0);
+    }
+    CHECK(store.session_get("carol",search).at("state").str()=="queued");
+    CHECK(worker.calls.empty());
+    // Cancellation has not consumed the queued work: normal admission follows.
+    CHECK(store.lease_next());CHECK(store.lease_next_read());CHECK(web.lease_map());CHECK(web.lease_search());
+  }
+}
+TEST(pre_stopped_claimers_do_not_reserve_or_dispatch) { stopped_claims(false); }
+TEST(stop_requested_inside_lease_transaction_does_not_reserve_or_dispatch) { stopped_claims(true); }
 
 TEST(background_read_failure_retains_unknown_usage_and_other_lanes_keep_progressing){
   Temp t;GatedWorker worker;Store store(t.path/"db",[&]{return worker.now;});
