@@ -401,7 +401,7 @@ namespace bzs {
         background_lane(token,[&](std::stop_token stop) {
           std::optional<Lease> l;
           try {
-            l=store.lease_next();
+            l=store.lease_next(10000,stop);
             if(l) {
               const auto&doc=fixtures.get(l->fixture_id);
               auto parsed=parse_document(doc.raw, doc.content_type, doc.title);
@@ -427,7 +427,7 @@ namespace bzs {
         background_lane(token,[&](std::stop_token stop) {
           std::optional<ReadLease> read;
           try {
-            read=store.lease_next_read();
+            read=store.lease_next_read(stop);
             if(read) {
               if(stop.stop_requested())store.fail_read(*read,"E_SHUTDOWN",0,0);
               else web->execute_read(*read);
@@ -445,7 +445,7 @@ namespace bzs {
         background_lane(token,[&](std::stop_token stop) {
           std::optional<MapLease> map;
           try {
-            map=web->lease_map();
+            map=web->lease_map(stop);
             if(map) {
               if(stop.stop_requested())store.fail_map(*map,"E_SHUTDOWN",0,0);
               else web->execute_map(*map);
@@ -461,7 +461,7 @@ namespace bzs {
         background_lane(token,[&](std::stop_token stop) {
           std::optional<SearchLease> search;
           try {
-            search=web->lease_search();
+            search=web->lease_search(stop);
             if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
           }catch(...) { if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) {} }
           return search.has_value();

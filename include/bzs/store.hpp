@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <stop_token>
 #include <vector>
 struct sqlite3;
 struct sqlite3_context;
@@ -220,7 +221,7 @@ namespace bzs {
     Json session_events(const std::string& owner,const std::string& id,std::int64_t after_id=0,std::int64_t limit=20);
     Json session_cancel(const std::string& owner,const std::string& id);
     Json session_page(const std::string& owner,const std::string& id,const std::string& version,const std::string& cursor,std::int64_t page_size=20);
-    std::optional<SearchLease> lease_next_search(const SourceRegistry& registry);
+    std::optional<SearchLease> lease_next_search(const SourceRegistry& registry,std::stop_token stop={});
     bool search_lease_live(const SearchLease& lease);
     bool complete_search(const SearchLease& lease,const Json& result,const SourceRegistry& registry);
     void fail_search(const SearchLease& lease,const std::string& error);
@@ -239,7 +240,7 @@ namespace bzs {
     Json job_results(const std::string& owner, const std::string& job_id,
                      std::int64_t offset=0, std::int64_t limit=20);
     std::string active_read_attempt(const std::string& owner, const std::string& job_id);
-    std::optional<ReadLease> lease_next_read();
+    std::optional<ReadLease> lease_next_read(std::stop_token stop={});
     bool read_lease_live(const ReadLease& lease);
     bool complete_read(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
                        const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
@@ -250,7 +251,7 @@ namespace bzs {
     Json map_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
     Json crawl_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
     Json crawl_edges(const std::string& owner,const std::string& id,std::int64_t offset=0,std::int64_t limit=20);
-    std::optional<MapLease> lease_next_map(const SiteRegistry& sites);
+    std::optional<MapLease> lease_next_map(const SiteRegistry& sites,std::stop_token stop={});
     bool map_lease_live(const MapLease& lease);
     bool complete_map(const MapLease& lease,const Json& response,const SiteRegistry& sites,
                       std::int64_t external_requests,std::int64_t content_bytes,
@@ -258,7 +259,7 @@ namespace bzs {
     void fail_map(const MapLease& lease,const std::string& error_code,
                   std::int64_t external_requests=-1,std::int64_t content_bytes=-1,const Json* observation=nullptr);
     std::string active_map_attempt(const std::string& owner,const std::string& job_id);
-    std::optional<Lease> lease_next(std::int64_t lease_ms=10000);
+    std::optional<Lease> lease_next(std::int64_t lease_ms=10000,std::stop_token stop={});
     bool complete(const Lease& lease, const SourceDocument& input, const ParsedDocument& parsed);
     void fail(const Lease& lease, const std::string& error_code);
     void settle_interruptions();

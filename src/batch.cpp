@@ -463,9 +463,12 @@ void Store::settle_read_jobs_locked() {
   }
 }
 
-std::optional<ReadLease> Store::lease_next_read() {
-  std::lock_guard lock(mutex_);Transaction tx(db_);settle_read_jobs_locked();
+std::optional<ReadLease> Store::lease_next_read(std::stop_token stopping) {
+  std::lock_guard lock(mutex_);Transaction tx(db_);
+  if(stopping.stop_requested())return std::nullopt;
+  settle_read_jobs_locked();
   for(;;) {
+    if(stopping.stop_requested())return std::nullopt;
     Sql job(db_,"SELECT j.id,j.owner,j.epoch,j.deadline,j.auth_epoch,j.max_attempts,b.max_requests-b.charged_requests,b.max_bytes-b.charged_bytes,b.per_page_timeout_ms FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id WHERE j.kind='web.read_many' AND j.state='queued' ORDER BY b.last_dispatch_sequence,j.created_at,j.id LIMIT 1");
     if(!job.step()){tx.commit();return std::nullopt;}
     const auto id=job.text(0),owner=job.text(1);const auto now=clock_();
@@ -490,6 +493,7 @@ std::optional<ReadLease> Store::lease_next_read() {
     const auto timeout=std::min(job.num(8),job.num(3)-now);
     ReadLease lease{id,owner,item.text(1),random_id(),job.num(2)+1,item.num(0),item.num(2),
                     std::min(per_item_requests,job.num(6)),std::min(per_item_bytes,job.num(7)),timeout,job.num(3),publication_sequence_locked()};
+    if(stopping.stop_requested())return std::nullopt;
     Sql reserve(db_,"UPDATE read_job_budgets SET charged_requests=charged_requests+?,charged_bytes=charged_bytes+?,last_dispatch_sequence=? WHERE job_id=?");
     reserve.bind(1,lease.request_grant);reserve.bind(2,lease.byte_grant);reserve.bind(3,next_queue_sequence(db_));reserve.bind(4,id);reserve.step();
     Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,lease.url);const auto snapshot=current.step()?current.text(0):"";

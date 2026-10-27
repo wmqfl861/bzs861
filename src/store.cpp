@@ -1722,10 +1722,11 @@ namespace bzs {
     settle_map_jobs_locked();
     tx.commit();
   }
-  std::optional<Lease> Store::lease_next(std::int64_t lease_ms) {
+  std::optional<Lease> Store::lease_next(std::int64_t lease_ms,std::stop_token stopping) {
     require(lease_ms>=1&&lease_ms<=60000, "E_SCHEMA", "Invalid lease duration");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    if(stopping.stop_requested())return std::nullopt;
     auto now=clock_();
     settle_interruptions_locked();
     // auth_epoch only moves on real permission changes; document deletes use per-document tombstones.
@@ -1740,6 +1741,7 @@ namespace bzs {
       tx.commit();
       return std::nullopt;
     }
+    if(stopping.stop_requested())return std::nullopt;
     Lease l {
       s.text(0), s.text(1), s.text(2), s.num(3)+1
     };

@@ -243,9 +243,14 @@ Json Store::session_cancel(const std::string& owner,const std::string& id) {
   }
   out.set("completed_results_preserved",true);tx.commit();return out;
 }
-std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& registry) {
-  std::lock_guard lock(mutex_);refresh_source_publication_locked();Transaction tx(db_);settle_searches_locked();
+std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& registry,std::stop_token stopping) {
+  std::lock_guard lock(mutex_);
+  if(stopping.stop_requested())return std::nullopt;
+  refresh_source_publication_locked();Transaction tx(db_);
+  if(stopping.stop_requested())return std::nullopt;
+  settle_searches_locked();
   for(std::size_t attempts=0;attempts<256;++attempts) {
+    if(stopping.stop_requested())return std::nullopt;
     Statement s(db_,"SELECT id,owner,epoch,manifest_sha256,request_json,deadline,source_generation FROM search_streams WHERE kind='web' AND state='queued' ORDER BY last_dispatch,created_at,id LIMIT 1");if(!s.step()) { tx.commit();return std::nullopt; }
     const auto id=s.text(0);bool approved=s.text(3)==search_registry_identity(registry);auto request=Json::parse(s.text(4),16384);
     if(approved)try { const auto ids=request.at("sources");(void)source_capture_locked(registry,ids);for(std::size_t i=0;i<ids.size();++i) { const auto* source=registry.find(ids.at(i).str());require(source,"E_SOURCE_REVIEW","Source removed",409);source->require_review(clock_());require(source_publication_mode_locked(source->id,s.num(6))<2,"E_SOURCE_REVIEW","Source permission was withdrawn",409); } }catch(const Error&) { approved=false; }
@@ -253,6 +258,7 @@ std::optional<SearchLease> Store::lease_next_search(const SourceRegistry& regist
     Statement source(db_,"SELECT position,source_id FROM search_stream_sources WHERE session_id=? AND state='pending' ORDER BY position LIMIT 1");source.bind(1,id);
     if(!source.step()) { Statement done(db_,"UPDATE search_streams SET state='completed' WHERE id=?");done.bind(1,id);done.step();stream_event_locked(id,"completed");stream_receipt_locked(id);continue; }
     const auto sequence=scalar(db_,"SELECT CAST(value AS INTEGER) FROM settings WHERE key='search_dispatch_sequence'");require(sequence<std::numeric_limits<std::int64_t>::max(),"E_STORAGE","Dispatch sequence exhausted",500);
+    if(stopping.stop_requested())return std::nullopt;
     sql(db_,"UPDATE settings SET value=CAST(value AS INTEGER)+1 WHERE key='search_dispatch_sequence'");
     SearchLease lease{id,s.text(1),source.text(1),s.text(3),s.num(2)+1,source.num(0),s.num(5),request};
     const auto lease_until=std::min(lease.deadline_ms,clock_()+request.at("timeout_ms").num()+10000);
@@ -405,7 +411,7 @@ Json Store::session_page(const std::string& owner,const std::string& id,const st
   tx.commit();return out;
 }
 Json WebService::submit_search(const std::string& owner,const Json& args) { return store_.search_submit(owner,args,registry_); }
-std::optional<SearchLease> WebService::lease_search() { return store_.lease_next_search(registry_); }
+std::optional<SearchLease> WebService::lease_search(std::stop_token stop) { return store_.lease_next_search(registry_,stop); }
 void WebService::execute_search(const SearchLease& lease) {
   if(!store_.search_lease_live(lease))return;
   try {
