@@ -1,0 +1,37 @@
+{
+  "module": "OPS-00 process lifecycle",
+  "base": "d29223551041f5d0f39fa4ca4c6ce936af5a89d9",
+  "implemented": [
+    "bounded readiness and health checks, private regular logs and JSON birth identities",
+    "exclusive launcher operation lock; pidfd or typed Windows handle verification",
+    "cleanup only owned newly started children; preserve prior worker and uncertain stop records",
+    "MCP autostart failure is visible; configurable startup budget only"
+  ],
+  "validation": {
+    "stdlib_lifecycle": {
+      "passed": 11,
+      "failed": 0
+    },
+    "pytest_launcher_boundary": {
+      "passed": 13
+    },
+    "focused_modules_and_existing_control": {
+      "passed": 151,
+      "overlaps_other_modules": true
+    },
+    "actual_worker_core_smoke": {
+      "passed": true,
+      "repeat_start_same_identity": true,
+      "stop_confirmed": true
+    }
+  },
+  "failure_retained": "initial experimental 10-second cold-start readiness expired under load; final startup_timeout_s=30 default configurable 1..120, invalid values rejected before spawning",
+  "limits": [
+    "Linux executed locally; new exact-commit Windows CI required",
+    "not a general supervisor, log rotation, macOS support or zero-orphan power-loss guarantee",
+    "legacy integer PID records fail closed and require operator review",
+    "full integrated outcomes recorded separately; no future CI success implied"
+  ],
+  "business_schema": 15,
+  "sources_enabled": false
+}

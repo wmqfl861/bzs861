@@ -1,3 +1,17 @@
+# 2026-10-27 当前接续：离线维护、启动器、RPC
+
+本批从 PR #5 的 `d29223551041f5d0f39fa4ca4c6ce936af5a89d9` 接续。输入PR的Linux/Windows运行40513707647已成功；不能把该成绩当成本批新代码CI。当前顺序见[三个模块计划](../planning/NEXT_THREE_MODULES_20261027.md)。
+
+新增显式[旧库离线转换](../OFFLINE_STORAGE.md)、[启动器生命周期](../LAUNCHER_LIFECYCLE.md)及[Worker RPC边界](../WORKER_RPC_BOUNDARY.md)。旧库工具拒绝隔离备份和未知格式，内部预演逐表/rowid一致后才改写同一持锁原库；未验证结果保持停服。启动器旧数字PID不可自动接管。RPC认证和Origin仍先于解析。
+
+**本地完整Debug CTest为37通过/5个进程超时，不是全绿。** 同一五个二进制独立诊断均通过，但sessions仍约90秒；原60秒门槛未改，合入仍需新SHA CI和超时核查。Python全量1497通过；仅新维护源/测试做了定向ASan/UBSan，未跑完整新sanitizer门禁。
+
+本批验证以 `validation/next_three_modules_20261027/` 为准。准确远端SHA的CI、Windows实机行为和目标部署分开核对；本地自审不冒充外部签字。D1–D7仍待定，来源启用0、schema15、原83/161/10及37/46/0保持。下一步优先核对远端新CI和部署验证，再做允许范围内的持续运行；没有D1/D2就不跳到真实来源签收，没有D4/D5就不开放恢复或缩短身份保留。
+
+以下保留上批交接，旧“未来转换”表示上批状态，不再是本批实现缺失：
+
+---
+
 # bzs861 recovery handoff — 2026-10-27
 
 Base: main `1d8e80e5f1bd1b5f9ad8d1e5fc211c8cd403ca31`, tree

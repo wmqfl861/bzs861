@@ -1,4 +1,5 @@
 #include "bzs/json.hpp"
+#include "bzs/maintenance.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <utility>
@@ -65,6 +66,18 @@ namespace {
 }
 int main(int argc, char**argv) {
   try {
+    if(argc>=2&&(std::string(argv[1])=="storage-inspect"||std::string(argv[1])=="storage-convert")) {
+      require(argc>=3,"E_ARGUMENT","Specify the existing metadata database file");
+      const bool convert=std::string(argv[1])=="storage-convert";
+      require((!convert&&argc==3)||(convert&&(argc==4||argc==6)&&std::string(argv[3])=="--confirm-offline"),
+              "E_ARGUMENT","storage-convert requires PATH --confirm-offline [--timeout-ms N]; stop searchd first");
+      int timeout=120000;
+      if(argc==6){require(std::string(argv[4])=="--timeout-ms","E_ARGUMENT","Unknown maintenance option");
+        std::string v=argv[5];auto [p,e]=std::from_chars(v.data(),v.data()+v.size(),timeout);
+        require(e==std::errc{}&&p==v.data()+v.size(),"E_ARGUMENT","Invalid maintenance timeout");}
+      auto result=convert?convert_storage_incremental(argv[2],timeout):inspect_storage(argv[2]);
+      std::cout<<result.dump(true)<<'\n';return 0;
+    }
     unsigned short port=8610;
     int i=1;
     if(i<argc&&std::string(argv[i])=="--port") {

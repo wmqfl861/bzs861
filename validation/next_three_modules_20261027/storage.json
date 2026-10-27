@@ -1,0 +1,36 @@
+{
+  "module": "P2-A explicit offline conversion",
+  "base": "d29223551041f5d0f39fa4ca4c6ce936af5a89d9",
+  "implemented": [
+    "read-only inspection without Store migration/sweep",
+    "exclusive SQLite lock through scratch preflight and atomic rewrite of same original",
+    "typed ordinary/virtual/shadow content and rowid comparisons; FTS and foreign key checks",
+    "safe refusal for unknown schema/index, quarantined copies, live locks, invalid paths and deadlines",
+    "local Python/native CLI only; no MCP/HTTP restore endpoint"
+  ],
+  "validation": {
+    "release_native": {
+      "groups": 5,
+      "assertions": 121,
+      "failed": 0
+    },
+    "cli_adapter": {
+      "passed": 1
+    },
+    "targeted_sanitizer": {
+      "groups": 5,
+      "assertions": 121,
+      "exit": 0,
+      "coverage": "new maintenance.cpp and its test instrumented; linked pre-existing Release core not instrumented; NOT full sanitizer suite"
+    }
+  },
+  "limits": [
+    "final integrated and new remote CI results recorded separately",
+    "no physical power-loss/disk-full fault injection or real user database conversion",
+    "deadlines interrupt SQLite work; not hard real-time disk I/O",
+    "unknown post-write validation quarantines if writable; quarantine-write failure requires operator to keep offline"
+  ],
+  "business_schema": 15,
+  "restore_quarantine_clearance": false,
+  "key_retention_changed": false
+}

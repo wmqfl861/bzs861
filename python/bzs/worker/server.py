@@ -884,6 +884,9 @@ class Worker:
         return None
 
 
+from .rpc import InvalidEnvelope, MAX_BODY, decode_envelope
+
+
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
                "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch, "fetch.profile": worker.fetch_profile,
@@ -896,20 +899,27 @@ def make_app(worker: Worker, token: str) -> web.Application:
         if request.headers.get("Origin"):
             return web.json_response({"error": {"code": "E_ORIGIN", "message": "browser origins are refused"}}, status=403)
         try:
-            payload = await request.json()
-            method = methods[payload["method"]]
-            result = await method(payload.get("params") or {})
-            return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False))
-        except KeyError:
-            return web.json_response({"error": {"code": "E_METHOD", "message": "unknown method"}})
+            method_name, params = decode_envelope(await request.read())
+            method = methods.get(method_name)
+            if method is None:
+                return web.json_response({"error": {"code": "E_METHOD", "message": "unknown method"}})
+            result = await method(params)
+            try:
+                return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False, allow_nan=False))
+            except (ValueError, TypeError, UnicodeError):
+                return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker result is not valid JSON"}})
+        except web.HTTPRequestEntityTooLarge:
+            return web.json_response({"error": {"code": "E_REQUEST_TOO_LARGE", "message": "worker request exceeds body limit"}}, status=413)
+        except InvalidEnvelope as exc:
+            return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)}}, status=400)
         except ManifestMismatch as exc:
             return web.json_response({"error": {"code": "E_MANIFEST_MISMATCH", "message": str(exc)}}, status=400)
         except (ValueError, TypeError) as exc:
             return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)[:300]}})
-        except Exception as exc:  # report, never crash the worker
-            return web.json_response({"error": {"code": "E_INTERNAL", "message": f"{type(exc).__name__}: {exc}"[:300]}})
+        except Exception:  # report, never crash the worker
+            return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker operation failed"}})
 
-    app = web.Application(client_max_size=1024 * 1024)
+    app = web.Application(client_max_size=MAX_BODY)
     app.router.add_post("/rpc", rpc)
 
     async def on_start(_app):

@@ -26,7 +26,7 @@ jobs:
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
           cmake --build --preset dev -j 2
           ctest --preset dev --output-junit "$PWD/build/ctest-results.xml"
-          .venv/bin/python tools/verify_ctest_junit.py "$PWD/build/ctest-results.xml" --minimum 40
+          .venv/bin/python tools/verify_ctest_junit.py "$PWD/build/ctest-results.xml" --minimum 42
       - name: Address and undefined-behavior checks
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
@@ -34,6 +34,7 @@ jobs:
         run: |
           cmake --preset asan -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
           cmake --build --preset asan-core -j 2
+          ./build-asan/bzs_storage_maintenance_tests
           ./build-asan/bzs_background_pool_tests
           ./build-asan/bzs_receipt_retention_tests
           ./build-asan/bzs_archive_quota_tests
@@ -105,12 +106,12 @@ jobs:
         shell: pwsh
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
-          ctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|source_publication|search_modes|cache_freshness_[123]|revalidation|direct_shared|revocation|capacity_cycles|http_cli|http_revocation|request_executor|long_document_recall|gram_index|background_pool|receipt_retention|archive_quota|incremental_storage|cache_shard_contract|ci_reporting)$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml"
+          ctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|source_publication|search_modes|cache_freshness_[123]|revalidation|direct_shared|revocation|capacity_cycles|http_cli|http_revocation|request_executor|long_document_recall|gram_index|background_pool|receipt_retention|archive_quota|incremental_storage|storage_maintenance|launcher_lifecycle|cache_shard_contract|ci_reporting)$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify collected Windows JUnit
         shell: pwsh
         run: |
-          python tools/verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml" --minimum 29
+          python tools/verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml" --minimum 31
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Retain test logs
         if: always()

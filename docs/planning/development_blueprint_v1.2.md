@@ -1,8 +1,11 @@
 # bzs861 开发蓝图 v1.2
 
-**方案来源：2026-10-17｜执行更新：2026-10-23｜已交付输入：0.1.9（3ef86c6）｜当前：0.1.10 接手后的五项增量｜83个工作包、161项验收ID全部保留。**
 
-v1.1 蓝图与 v0.3 规格继续提供功能语义；三值核验、字节证据、来源审核、权限、删除/恢复和会话重取等要求保留。v1.2 调整实现方式与排序，不能通过替换机制或保留 ID 降低验收性质。机器可读切片及 161 项验收映射见 `slices_v1.2.json`；当前 JSON 与本蓝图为规划权威。`tools/plan_v1_2.py check` 只读校验实际计划的结构，旧 `--write` 已明确禁用，避免重建时丢失整合约束、映射和审查状态；结构校验不能替代验收。当前实现与真实测试以 `../DEVELOPMENT_STATUS.md` 和 `../../validation/s2_next_five/final-report.json` 为准；0.1.1、0.1.2、0.1.3、0.1.4 证据分别保留于 `../../validation/s1_review/`、`../../validation/s0_s2_progress/`、`../../validation/s2_discovery/`、`../../validation/s2_crawl/`，S0/S1/S2 均未签署完整验收。
+> 2026-10-27 当前执行入口：[三个模块接续计划](NEXT_THREE_MODULES_20261027.md)和[当前交接](../handoff/NEXT_AGENT.md)。本文件历史批次文字不作为当前发布或测试结论；原包定义、依赖和验收不变。
+
+**方案来源：2026-10-17｜执行更新：2026-10-27｜本批输入：PR #5 d292235｜版本0.1.10 / schema15｜83个工作包、161项验收ID全部保留，完整签收数不变。**
+
+v1.1 蓝图与 v0.3 规格继续提供功能语义；三值核验、字节证据、来源审核、权限、删除/恢复和会话重取等要求保留。v1.2 调整实现方式与排序，不能通过替换机制或保留 ID 降低验收性质。机器可读切片及 161 项验收映射见 `slices_v1.2.json`；当前 JSON 与本蓝图为规划权威。`tools/plan_v1_2.py check` 只读校验实际计划的结构，旧 `--write` 已明确禁用，避免重建时丢失整合约束、映射和审查状态；结构校验不能替代验收。历史批次实现与测试保留于 `../DEVELOPMENT_STATUS.md` 和 `../../validation/s2_next_five/final-report.json`；本批以 `../../validation/next_three_modules_20261027/` 的准确输入报告为准；0.1.1、0.1.2、0.1.3、0.1.4 证据分别保留于 `../../validation/s1_review/`、`../../validation/s0_s2_progress/`、`../../validation/s2_discovery/`、`../../validation/s2_crawl/`，S0/S1/S2 均未签署完整验收。
 
 ## 1. 采用的排序与本轮边界
 
@@ -31,7 +34,7 @@ Agent 经 Python MCP 适配层调用回环 HTTP 上的 C++ searchd；核心以�
 | 层 | 选择 | 理由 / 许可 |
 |---|---|---|
 | 核心 | C++20、CMake、SQLite（FTS5）、Boost.Beast、json-c、libxml2、OpenSSL | 沿用已交付核心；Windows 具体依赖按固定基线与真实 CI 核验 |
-| 中文检索 | 自研 FTS5 分词器：包装 unicode61，中日韩字符输出单字并叠加二元组 | 两字词、单字都能走索引；简繁转换 S3 用 OpenCC |
+| 中文检索 | 当前 bzs-ascii-cjk/2：ASCII 单词、C++/C# 同位 token、中日韩单字/二元组；非 unicode61 包装 | 两字词、单字都能走索引；简繁转换 S3 用 OpenCC |
 | 排序 | FTS5 `bm25()`（标题加权）+ 精确语义核验；外部结果按索引族做 RRF | 修正 0.0.1 的排序缺陷 |
 | worker | Python ≥3.10、aiohttp（客户端+服务端）、lxml、trafilatura | Apache-2.0 / BSD |
 | 浏览器（S3） | Playwright + worker 内本地出口代理 | Apache-2.0；替代自研 CDP 驱动 |
