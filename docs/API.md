@@ -332,3 +332,29 @@ schema13在12基础上组合来源发布规则、主体撤权和共享读取结�
 迟到成员继承原发布捕获和租约，不新增物理请求或改变付款人。部分索引只包含 running/open/正请求预留的付款项；每次最多评估 32 个返回候选，不承诺 SQL 只扫描 32 行。加入与关闭在 `BEGIN IMMEDIATE` 事务中协调，关闭对同一尝试不可逆，时钟回拨不会重新开放。持久租约不证明原执行进程存活；执行丢失仍按原租约到期记录未知，不自动重发。
 
 升级前停止旧 Core，旧二进制打开 schema15 返回 `E_SCHEMA_VERSION`，不支持新旧进程混用；备份隔离和永久幂等身份保持。完整规则见[共享读取](SHARED_READS.md)，实际升级与回归范围见[本批验证记录](../validation/shared_read_late_20261024/README.md)，不由版本号推导验证成功。
+
+### 2026-10-27 storage maintenance recovery
+
+Local frozen searches have no idempotency key. Their receipt exists while the
+session/stream payload is retained; after expiry, bounded lazy settlement can
+remove zero-usage orphan receipts. A collected local session returns 404.
+Keyed web search receipts and job identities retain their original permanent
+replay contract. Each settlement removes at most 512 old local receipts;
+a frozen search has two settlement phases. Charged/unknown work is not collected.
+
+`stats` now exposes `archive_bytes`, `payload_bytes`, `quota_payload_bytes` and
+`payload_over_quota`. Snapshot payload and archive JSON share the existing
+owner byte quota; substring tokens still have their independent quota.
+`content_bytes` remains snapshot-only. None of these logical counters is the
+physical SQLite file size. Archive bytes are calculated over retained owner
+rows, not maintained in a second mutable business ledger.
+
+`jobs.compact` returns `archive_quota_blocked_jobs`; if a summary cannot fit,
+its detail rows and permanent key are preserved. Operators must resolve capacity,
+not treat the blocked record as compacted. After a public compaction commits,
+incremental stores attempt at most 128 free pages of physical reclamation and
+report `storage_reclamation` (`completed` or `deferred`). Live WAL readers can
+delay file shrink. Existing NONE/FULL databases return
+`requires_offline_conversion`: this batch does not implement a legacy full
+conversion tool and never runs a full VACUUM during startup. Backup quarantine
+and the business schema15 remain unchanged.

@@ -11,8 +11,8 @@
 | 2 | P1-A | 方案 A 已实现并通过本地定向复验；精确提交 CI 另查，D7 未决定 | 至少 4,000 篇、每篇至少 30 KB 的离线自然文本，最旧目标的短语、node.js、café 命中；短文档和词内子串回归保持；记录 Release 耗时 |
 | 3 | P2-C | 已实现并通过本地复验；准确提交CI另查 | 008、Mediapartners-Google*、非 ASCII 无关 UA 不使整站 deny_all，诊断可见；自身/通配损坏仍拒绝 |
 | 4 | P2-B 第 1、2 点 | 已实现；本地完整回归与成本复验见本批摘要，发布状态单独核对 | CJK/混合/符号/溢出回归；派生 gram 字节计入统计和配额；同语料成本比较；不升业务 schema |
-| 5 | P2-D | 未完成 | 不同 origin 的批读并发、同 origin 礼貌间隔和现有崩溃恢复全部验证 |
-| 6 | P2-A 非 D5 部分 | 未完成 | 无键收据不永久增长、归档字节可见且计配额、增量回收行为有实际证据；有键身份保留不变 |
+| 5 | P2-D | 2026-10-27 重建并通过本地定向回归；准确提交CI另查 | 不同 origin 的批读并发、同 origin 礼貌间隔和现有崩溃恢复全部验证 |
+| 6 | P2-A 非 D5 部分 | 收据/归档/新库增量回收已重建；旧库离线转换未实现，未整体签收 | 无键收据不永久增长、归档字节可见且计配额、增量回收行为有实际证据；有键身份保留不变 |
 
 P1-B 新增等待队列不是无限接纳：普通队列默认 `4 * request_threads`，本地队列默认 `max(4 * request_threads,16)`；显式 `--request-queue` 覆盖两者。独立取消槽保持 1 槽且不排队。只对执行前的明确 `503/E_REQUEST_BACKPRESSURE` 做最多 3 次、初始 10 秒窗口内的重试；不重试未知执行结果。整体业务时限不会因重试重置。
 
@@ -48,3 +48,21 @@ P1-A 的词级候选只能作优先层，不能作为所有子串结果的必选
 CJK窗口不再写入gram，混合叶子以必要CJK位置条件及非CJK gram组成候选超集；词级分词器和精确匹配语义不变。新增独立owner派生索引字节预算及stats，事务内更新/删除/撤回计量，首次导入不扫描不存在的旧索引。派生格式从gram/1到gram/2，业务schema15不变；低配额旧库重建保留原文，收紧发布不因原有超限而失败。合同见[子串索引说明](../SUBSTRING_INDEX.md)。
 
 本轮三个产品节点为P1-A、P2-C、P2-B(1/2)，各一提交；之后只接续P2-D，再P2-A非D5部分。D1–D7依旧待定。作者复核与本地测试不等于独立外审或准确远端SHA的CI；发布受阻时保留提交及补丁，不宣称已推送。
+
+## 2026-10-27 reconstruction supersedes stale delivery notes
+
+Main `1d8e80e5f1bd1b5f9ad8d1e5fc211c8cd403ca31` already contains the preceding
+three-node delivery. The later five-node source was not recovered, so its
+unverified numbers are not reused. This recovery implements and tests P2-D and
+the P2-A non-D5 receipt/quota/new-store reclamation work, plus mandatory cache
+sharding/JUnit fixes. See [current handoff](../handoff/NEXT_AGENT.md).
+
+P2-A is not fully closed for legacy storage conversion: existing NONE/FULL
+stores remain unchanged and report `requires_offline_conversion`. No silent
+full-file rewrite or unverified rowid/FTS repair is shipped. A future explicit
+conversion tool must prove ordinary-table contents, rowid/index correspondence,
+key/evidence preservation and quarantine without relaxing D4/D5. CI artifact
+and Windows stability confirmation are separate from local implementation.
+Original package definitions and all pending owner decisions remain unchanged.
+
+审核另修复了后台停止期间等锁线程继续领取的竞态；fixture/read/map/search 的领取事务复查 stop_token，保留原租约及用量规则。原故障注入改为绑定首次准入，而非并发唤醒的随机赢家；新反例、原失败和最终整合复验分开保留。此补充不增加业务证明链或改 RPC 合同。
