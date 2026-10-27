@@ -238,6 +238,21 @@ def cmd_call(args) -> int:
         return 1
 
 
+def cmd_storage(args) -> int:
+    cfg = config.load()
+    native = Path(cfg.searchd).with_name("searchctl.exe" if os.name == "nt" else "searchctl")
+    command = [str(native), "storage-" + args.storage_action, args.database]
+    if args.storage_action == "convert":
+        if not args.confirm_offline:
+            raise SystemExit("E_ARGUMENT: stop searchd and supply --confirm-offline")
+        command += ["--confirm-offline", "--timeout-ms", str(args.timeout_ms)]
+    try:
+        return subprocess.run(command, check=False).returncode
+    except OSError as exc:
+        print(f"E_MAINTENANCE: cannot start native helper: {exc}", file=sys.stderr)
+        return 2
+
+
 def cmd_jobs_compact(args) -> int:
     cfg = config.load()
     try:
@@ -415,6 +430,15 @@ def main(argv: list[str] | None = None) -> int:
                              "Active and paused jobs remain. Repeating this command may compact the next eligible batch.")
     compact.add_argument("--limit", type=int, default=16, help="maximum jobs in this batch, 1..64 (default: 16; validated by the core)")
     compact.set_defaults(fn=cmd_jobs_compact)
+    p = sub.add_parser("storage", help="explicit offline native storage maintenance; never autostarts")
+    actions = p.add_subparsers(dest="storage_action", required=True)
+    for action in ("inspect", "convert"):
+        sp = actions.add_parser(action)
+        sp.add_argument("database", help="existing metadata.sqlite file")
+        if action == "convert":
+            sp.add_argument("--confirm-offline", action="store_true")
+            sp.add_argument("--timeout-ms", type=int, default=120000)
+        sp.set_defaults(fn=cmd_storage)
     sub.add_parser("search-modes", help="inspect source-only fast/balanced/deep search budgets").set_defaults(fn=cmd_search_modes)
     p = sub.add_parser("search", help="web search from the terminal")
     p.add_argument("query", nargs="+")
