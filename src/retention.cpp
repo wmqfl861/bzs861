@@ -183,6 +183,20 @@ Json Store::compact_jobs_locked(const std::string& owner,std::int64_t limit,bool
 
 Json Store::compact_jobs(const std::string& owner,std::int64_t limit) {
   require_identifier(owner);require(limit>=1&&limit<=64,"E_SCHEMA","Job compaction limit must be 1..64");
-  std::lock_guard lock(mutex_);Tx tx(db_);require_principal_active_locked(owner);auto out=compact_jobs_locked(owner,limit);tx.commit();return out;
+  std::lock_guard lock(mutex_);Json out;
+  { Tx tx(db_);require_principal_active_locked(owner);out=compact_jobs_locked(owner,limit);tx.commit(); }
+  // Compaction is already committed. Reclamation is best-effort and bounded;
+  // a busy reader must not make callers believe the logical deletion failed.
+  auto reclaim=Json::object();std::int64_t selected=0;
+  { Sql mode(db_,"PRAGMA auto_vacuum");mode.step();selected=mode.num(0); }
+  reclaim.set("auto_vacuum_mode",selected);reclaim.set("page_budget",std::int64_t{128});
+  reclaim.set("status",selected==2?"completed":"requires_offline_conversion");
+  if(selected==2) {
+    try {
+      // Drain all SQLITE_ROW results: SQLite can reclaim one page per step.
+      Sql vacuum(db_,"PRAGMA incremental_vacuum(128)");while(vacuum.step()){}
+    }catch(const Error&e){reclaim.set("status","deferred");reclaim.set("error_code",e.code);}
+  }
+  out.set("storage_reclamation",reclaim);return out;
 }
 }

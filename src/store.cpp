@@ -240,6 +240,10 @@ namespace bzs {
       sqlite3_limit(db_, SQLITE_LIMIT_SQL_LENGTH, 65536);
       sqlite3_limit(db_, SQLITE_LIMIT_EXPR_DEPTH, 64);
       register_fts_tokenizer(db_);
+      // Only an empty new database can select this mode without a full rewrite.
+      // Existing NONE/FULL databases remain untouched; never VACUUM at startup.
+      if(scalar(db_,"PRAGMA user_version")==0&&scalar(db_,"SELECT COUNT(*) FROM sqlite_master")==0)
+        exec(db_,"PRAGMA auto_vacuum=INCREMENTAL;");
       exec(db_, "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;");
       migrate();
       checked(sqlite3_create_function_v2(db_,"bzs_site_publication",6,SQLITE_UTF8,this,&Store::site_publication_sql,nullptr,nullptr,nullptr),db_);
