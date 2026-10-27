@@ -35,7 +35,7 @@ def test_launcher_passes_exact_same_review_file_to_worker_and_core(tmp_path, mon
                         worker_args=["--test-host", "fixture.test=127.0.0.1"])
     calls = []
     monkeypatch.setattr(cli, "_read_pid", lambda name: None)
-    monkeypatch.setattr(cli, "_spawn", lambda name, command: calls.append((name, command)))
+    monkeypatch.setattr(cli, "_spawn", lambda name, command, **kwargs: calls.append((name, command)))
     cli.start(cfg)
     assert [name for name, _ in calls] == ["worker", "searchd"]
     for _, command in calls:
@@ -61,7 +61,7 @@ def test_launcher_rejects_worker_policy_overrides_before_starting_either_process
     cfg = config.Config(searchd=str(executable), sites=str(tmp_path / "approved.json"), worker_args=arguments)
     calls = []
     monkeypatch.setattr(cli, "_read_pid", lambda name: None)
-    monkeypatch.setattr(cli, "_spawn", lambda name, command: calls.append((name, command)))
+    monkeypatch.setattr(cli, "_spawn", lambda name, command, **kwargs: calls.append((name, command)))
     with pytest.raises(SystemExit, match="E_CONFIG.*shared site policy"):
         cli.start(cfg)
     assert calls == []

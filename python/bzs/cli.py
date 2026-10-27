@@ -4,78 +4,38 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import math
 import os
-import signal
 import subprocess
 import sys
 import time
-import urllib.request
 from pathlib import Path
 
-from . import __version__, config
+from . import __version__, config, process_control
 from .core_client import CoreClient, CoreError
 from .urls import to_uri
 
 
 def _pid_file(name: str) -> Path:
-    return config.home() / "run" / f"{name}.pid"
+    return process_control.record_path(name)
 
 
 def _alive(pid: int) -> bool:
-    if os.name == "nt":
-        # os.kill(pid, 0) would *terminate* the process on Windows; query it instead.
-        import ctypes
-        from ctypes import wintypes
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
-        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
-        if not handle:
-            return False
-        code = wintypes.DWORD()
-        try:
-            return bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259  # STILL_ACTIVE
-        finally:
-            kernel32.CloseHandle(handle)
-    try:
-        os.kill(pid, 0)
-        return True
-    except (OSError, ValueError):
-        return False
+    return process_control.valid_pid(pid) and process_control.birth_identity(pid) is not None
 
 
 def _is_ours(name: str, pid: int) -> bool:
-    """Best effort against PID reuse after a crash: on Linux check the command line."""
-    cmdline = Path(f"/proc/{pid}/cmdline")
-    if not cmdline.exists():
-        return True  # other platforms: rely on the pid file
-    text = cmdline.read_bytes().replace(b"\0", b" ").decode("utf-8", "replace")
-    return ("searchd" in text) if name == "searchd" else ("bzs.worker.server" in text)
+    return process_control.valid_pid(pid) and process_control.owned_pid(name) == pid
 
 
 def _read_pid(name: str) -> int | None:
-    try:
-        pid = int(_pid_file(name).read_text().strip())
-        return pid if _alive(pid) and _is_ours(name, pid) else None
-    except (OSError, ValueError):
-        return None
+    return process_control.owned_pid(name)
 
 
-def _spawn(name: str, cmd: list[str]) -> subprocess.Popen:
-    logs = config.home() / "logs"
-    logs.mkdir(parents=True, exist_ok=True)
-    log = open(logs / f"{name}.log", "a", encoding="utf-8")
-    kwargs: dict = {"stdout": subprocess.PIPE, "stderr": log, "stdin": subprocess.DEVNULL, "text": True, "encoding": "utf-8"}
-    if os.name == "nt":
-        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0)
-    else:
-        kwargs["start_new_session"] = True
-    proc = subprocess.Popen(cmd, **kwargs)
-    line = proc.stdout.readline() if proc.stdout else ""
-    if not line:
-        raise RuntimeError(f"{name} exited during startup; see {logs / (name + '.log')}")
-    ready = json.loads(line)
-    _pid_file(name).parent.mkdir(parents=True, exist_ok=True)
-    _pid_file(name).write_text(str(proc.pid))
-    print(f"{name} ready on 127.0.0.1:{ready.get('port')} (pid {proc.pid})")
+def _spawn(name: str, cmd: list[str], *, timeout: float = 30.0) -> subprocess.Popen:
+    proc = process_control.spawn(name, cmd, timeout=timeout)
+    ready = process_control.read_record(name)
+    print(f"{name} ready on 127.0.0.1:{ready['port']} (pid {proc.pid})")
     return proc
 
 
@@ -93,8 +53,11 @@ def cmd_init(args) -> int:
     return 0
 
 
-def start(cfg: config.Config) -> None:
+def start(cfg: config.Config) -> list[tuple[str, subprocess.Popen]]:
     h = config.home()
+    if (type(cfg.startup_timeout_s) not in (int, float) or not math.isfinite(cfg.startup_timeout_s)
+            or not 1 <= cfg.startup_timeout_s <= 120):
+        raise RuntimeError("startup_timeout_s must be a finite number in 1..120")
     if cfg.proxy or cfg.proxy_remote_dns or cfg.allow_cidrs:
         raise SystemExit("E_CONFIG: production proxies, proxy_remote_dns and allow_cidrs are disabled")
     for argument in cfg.worker_args:
@@ -106,36 +69,45 @@ def start(cfg: config.Config) -> None:
     if not Path(cfg.searchd).exists():
         raise SystemExit(f"searchd not found at {cfg.searchd}; build with `cmake --preset release && cmake --build --preset release`")
     site_args = ["--sites", cfg.sites] if cfg.sites else []
-    if _read_pid("worker") is None:
-        _spawn("worker", [sys.executable, "-m", "bzs.worker.server", "--port", str(cfg.worker_port),
-                          "--token-file", str(h / "worker.token"), "--sources", cfg.sources, *site_args, *cfg.worker_args])
-    else:
-        print("worker already running")
-    if _read_pid("searchd") is None:
-        _spawn("searchd", [cfg.searchd, "--auth", str(h / "auth.json"), "--state", cfg.state_dir,
-                           "--fixtures", cfg.fixtures, "--port", str(cfg.core_port), "--threads", str(cfg.threads),
-                           "--worker", f"http://127.0.0.1:{cfg.worker_port}", "--worker-token-file", str(h / "worker.token"),
-                           "--sources", cfg.sources, *site_args])
-    else:
-        print("searchd already running")
+    commands = [
+        ("worker", cfg.worker_port, [sys.executable, "-m", "bzs.worker.server", "--port", str(cfg.worker_port),
+         "--token-file", str(h / "worker.token"), "--sources", cfg.sources, *site_args, *cfg.worker_args]),
+        ("searchd", cfg.core_port, [cfg.searchd, "--auth", str(h / "auth.json"), "--state", cfg.state_dir,
+         "--fixtures", cfg.fixtures, "--port", str(cfg.core_port), "--threads", str(cfg.threads),
+         "--worker", f"http://127.0.0.1:{cfg.worker_port}", "--worker-token-file", str(h / "worker.token"),
+         "--sources", cfg.sources, *site_args]),
+    ]
+    created = []
+    with process_control.control_lock():
+        try:
+            for name, port, command in commands:
+                if type(port) is not int or not 1 <= port <= 65535:
+                    raise RuntimeError("configured ports must be integers in 1..65535")
+                if _read_pid(name) is None:
+                    proc = _spawn(name, command, timeout=cfg.startup_timeout_s)
+                    if proc is not None:
+                        created.append((name, proc))
+                else:
+                    record = process_control.read_record(name)
+                    if record["state"] != "ready" or record["port"] != port:
+                        raise RuntimeError(f"{name}: existing process is not ready on the configured port")
+                    print(f"{name} already running")
+        except BaseException:
+            for name, proc in reversed(created):
+                process_control.cleanup_child(name, proc)
+            raise
+    return created
 
 
 def stop() -> None:
-    for name in ("searchd", "worker"):
-        pid = _read_pid(name)
-        if pid is None:
-            continue
-        os.kill(pid, signal.SIGTERM)
-        for _ in range(50):
-            if not _alive(pid):
-                break
-            time.sleep(0.1)
-        _pid_file(name).unlink(missing_ok=True)
-        print(f"stopped {name} (pid {pid})")
+    with process_control.control_lock():
+        for name in ("searchd", "worker"):
+            if process_control.stop_owned(name):
+                print(f"stopped {name}")
 
 
 def cmd_start(args) -> int:
-    start(config.load())
+    ensure_running(config.load())
     return 0
 
 
@@ -163,12 +135,26 @@ def cmd_status(args) -> int:
 
 
 def ensure_running(cfg: config.Config) -> None:
-    if not _client(cfg).healthy():
-        start(cfg)
-        for _ in range(50):
+    if _read_pid("searchd") is not None and _read_pid("worker") is not None:
+        core_record = process_control.read_record("searchd")
+        worker_record = process_control.read_record("worker")
+        if (core_record["state"] == worker_record["state"] == "ready"
+                and core_record["port"] == cfg.core_port and worker_record["port"] == cfg.worker_port
+                and _client(cfg).healthy()):
+            return
+    created = start(cfg)
+    try:
+        deadline = time.monotonic() + 5.0
+        while time.monotonic() < deadline:
             if _client(cfg).healthy():
                 return
             time.sleep(0.1)
+        raise RuntimeError("searchd health check failed")
+    except BaseException:
+        with process_control.control_lock():
+            for name, proc in reversed(created):
+                process_control.cleanup_child(name, proc)
+        raise
 
 
 def cmd_mcp(args) -> int:
@@ -183,8 +169,9 @@ def cmd_mcp(args) -> int:
                 ensure_running(config.load())
             finally:
                 sys.stdout = saved
-        except (FileNotFoundError, RuntimeError, SystemExit) as exc:
+        except (OSError, ValueError, RuntimeError, SystemExit) as exc:
             print(f"bzs: autostart failed: {exc}", file=sys.stderr)
+            return 2
     extra = ["--insecure-no-auth"] if args.insecure_no_auth else []
     if args.admin_tools:
         extra.append("--admin-tools")

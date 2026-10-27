@@ -256,6 +256,8 @@ if(BZS_BUILD_TESTS)
   add_test(NAME contracts COMMAND bzs_contract_tests
     ${CMAKE_CURRENT_SOURCE_DIR}/docs/planning/validation/contract_cases.json)
   find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+  add_test(NAME launcher_lifecycle COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/launcher_lifecycle.py)
+  set_tests_properties(launcher_lifecycle PROPERTIES TIMEOUT 60)
   add_test(NAME cache_shard_contract COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_cache_shards.py --executable $<TARGET_FILE:bzs_cache_freshness_tests> --source ${CMAKE_CURRENT_SOURCE_DIR}/tests/cache_freshness.cpp)
   set_tests_properties(cache_shard_contract PROPERTIES TIMEOUT 30)
   add_test(NAME ci_reporting COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/test_ci_reporting.py)
