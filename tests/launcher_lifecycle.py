@@ -121,12 +121,14 @@ class Lifecycle(unittest.TestCase):
         record = pc.record_path("worker").read_bytes()
         if os.name == "nt":
             # Exercise failure classification without terminating another PID.
-            real = pc._kernel()
-            with patch.object(pc, "_kernel") as get:
+            birth = pc.birth_identity(proc.pid)
+            self.assertIsNotNone(birth)
+            # Keep the initial identity observation valid; deny only the
+            # later termination handle, not the earlier read-only probe.
+            with patch.object(pc, "birth_identity", return_value=birth), patch.object(pc, "_kernel") as get:
                 get.return_value.OpenProcess.return_value = 0
-                with self.assertRaises(RuntimeError):
+                with self.assertRaisesRegex(RuntimeError, "termination handle"):
                     pc.stop_owned("worker", timeout=0.05)
-            self.assertIsNotNone(real)
         else:
             with self.assertRaisesRegex(RuntimeError, "not confirmed"):
                 pc.stop_owned("worker", timeout=0.05)

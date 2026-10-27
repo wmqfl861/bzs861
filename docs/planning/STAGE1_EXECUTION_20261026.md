@@ -12,9 +12,9 @@
 | 3 | P2-C | 已实现并通过本地复验；准确提交CI另查 | 008、Mediapartners-Google*、非 ASCII 无关 UA 不使整站 deny_all，诊断可见；自身/通配损坏仍拒绝 |
 | 4 | P2-B 第 1、2 点 | 已实现；本地完整回归与成本复验见本批摘要，发布状态单独核对 | CJK/混合/符号/溢出回归；派生 gram 字节计入统计和配额；同语料成本比较；不升业务 schema |
 | 5 | P2-D | 2026-10-27 重建并通过本地定向回归；准确提交CI另查 | 不同 origin 的批读并发、同 origin 礼貌间隔和现有崩溃恢复全部验证 |
-| 6 | P2-A 非 D5 部分 | 收据/归档/新库增量回收已重建；旧库离线转换未实现，未整体签收 | 无键收据不永久增长、归档字节可见且计配额、增量回收行为有实际证据；有键身份保留不变 |
+| 6 | P2-A 非 D5 部分 | 收据/归档/新库回收已重建；本批增加显式旧库转换，整合门槛未全绿，仍未整体签收 | 无键收据不永久增长、归档字节可见且计配额、增量回收行为有实际证据；有键身份保留不变 |
 
-P1-B 新增等待队列不是无限接纳：普通队列默认 `4 * request_threads`，本地队列默认 `max(4 * request_threads,16)`；显式 `--request-queue` 覆盖两者。独立取消槽保持 1 槽且不排队。只对执行前的明确 `503/E_REQUEST_BACKPRESSURE` 做最多 3 次、初始 10 秒窗口内的重试；不重试未知执行结果。整体业务时限不会因重试重置。
+P1-B 新增等待队列不是无限接纳：普通队列默认 `4 * request_threads`，本地队列默认 `max(4 * request_threads,16)`；显式 `--request-queue` 覆盖两者。独立取消槽保持 1 槽且不排队。只对执行前的明确 `503/E_REQUEST_BACKPRESSURE` 做最多 3 次、初始 10 秒窗口内退避的重试；不重试未知执行结果。整体业务时限不会因重试重置。
 
 ## D1–D7 决策状态
 
@@ -66,3 +66,7 @@ and Windows stability confirmation are separate from local implementation.
 Original package definitions and all pending owner decisions remain unchanged.
 
 审核另修复了后台停止期间等锁线程继续领取的竞态；fixture/read/map/search 的领取事务复查 stop_token，保留原租约及用量规则。原故障注入改为绑定首次准入，而非并发唤醒的随机赢家；新反例、原失败和最终整合复验分开保留。此补充不增加业务证明链或改 RPC 合同。
+
+## 2026-10-27 后续三个模块
+
+从PR #5准确输入接续，先补P2-A旧库显式离线转换，再做既有OPS-00启动器及API-00/CONTRACT-01输入边界。详见[NEXT_THREE_MODULES_20261027.md](NEXT_THREE_MODULES_20261027.md)。上文“旧库转换未实现”是前一批记录；本批提供停服、排它锁、临时预演、rowid/FTS保持和原库原子改写，不提供隔离恢复。完整P2-A及产品验收仍不能由局部测试推导。

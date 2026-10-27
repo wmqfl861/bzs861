@@ -1,0 +1,34 @@
+{
+  "module": "API-00 / CONTRACT-01 strict Worker RPC",
+  "base": "d29223551041f5d0f39fa4ca4c6ce936af5a89d9",
+  "initial_old_source_counterexamples": {
+    "passed": 9,
+    "failed": 29,
+    "cases": 38,
+    "note": "Initial suite; four result/transport-boundary tests added later. Original logs retained."
+  },
+  "final_new_loopback_cases": 42,
+  "focused_modules_and_existing_control": 151,
+  "full_python": {
+    "passed": 1497,
+    "failed": 0,
+    "skipped": 0,
+    "included_in_ctest": true
+  },
+  "auth_and_origin_before_decode": true,
+  "rejected_requests_dispatch": false,
+  "limits": {
+    "body_bytes": 1048576,
+    "depth": 64,
+    "nodes": 20000,
+    "integer": "signed64"
+  },
+  "business_worker_methods_unchanged": true,
+  "existing_cancel_mock_adaptation": "Two handler requests now supply raw read() bytes; prior registry/authentication assertions retained.",
+  "outbound_policy_changed": false,
+  "limits_not_proven": [
+    "No OS sandbox",
+    "No global admission/connection-bound guarantee",
+    "Exact new remote CI remains pending"
+  ]
+}

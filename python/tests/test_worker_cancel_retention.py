@@ -214,7 +214,8 @@ async def test_rpc_handler_reports_params_not_internal_error_without_side_effect
     app = make_app(worker, TOKEN)
     handler = next(route.handler for route in app.router.routes() if route.method == "POST")
     request = SimpleNamespace(headers={"Authorization": f"Bearer {TOKEN}"},
-                              json=AsyncMock(return_value={"method": "fetch.cancel", "params": params}))
+                              json=AsyncMock(),
+                              read=AsyncMock(return_value=json.dumps({"method": "fetch.cancel", "params": params}).encode()))
     response = await handler(request)
     assert json.loads(response.text)["error"]["code"] == "E_PARAMS"
     assert worker._read_attempts == {} and worker._retired_attempts == {}
@@ -228,8 +229,9 @@ async def test_transport_authorization_still_precedes_cancellation(worker, clock
     app = make_app(worker, TOKEN)
     handler = next(route.handler for route in app.router.routes() if route.method == "POST")
     request = SimpleNamespace(headers=headers,
-                              json=AsyncMock(return_value={"method": "fetch.cancel", "params": {"attempt_id": IDENTITY}}))
+                              json=AsyncMock(), read=AsyncMock(return_value=b"{}"))
     response = await handler(request)
     assert response.status == status and json.loads(response.text)["error"]["code"] == code
     request.json.assert_not_awaited()
+    request.read.assert_not_awaited()
     assert worker._retired_attempts == {}
