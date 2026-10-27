@@ -24,6 +24,9 @@ namespace bzs {
   // Safe optional word-FTS candidate query. Other shapes use substring candidates,
   // never a lossy approximation which could silently drop matching documents.
   std::optional<std::string> fts_candidates(const Query& q);
+  // Optional token-aligned priority tier for raw-substring leaves. NOT a
+  // superset: always combine with a separately budgeted original fallback.
+  std::optional<std::string> priority_fts_candidates(const Query& q);
   // Supplementary FTS5/ascii/detail=none candidate expression over indexed_grams.
   // These are necessary substring grams, not replacements for exact matching.
   // nullopt denotes an unconstrained candidate set; callers retain a safe word

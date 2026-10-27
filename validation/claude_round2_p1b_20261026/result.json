@@ -1,0 +1,54 @@
+{
+  "finding": "P1-B",
+  "base_commit": "d62473d4d5265e43f350909e27e32ddb1c01f95a",
+  "scope": "bounded ordinary/local queues, unchanged cancellation reserve, admission-only bounded retry",
+  "new_tests": [
+    "tests/request_executor.cpp",
+    "Admission.test_local_stats_not_starved_by_held_external_reads",
+    "Admission.test_16_delayed_reads_and_16_stats_with_bounded_client_retry",
+    "Admission.test_full_or_expired_queue_is_retriable_without_late_side_effects",
+    "Admission.test_mcp_stdio_24_parallel_local_searches",
+    "python/tests/test_core_backpressure.py"
+  ],
+  "results": {
+    "baseline_held_stats": {
+      "http_503": 16,
+      "http_200": 0
+    },
+    "ctest_focused": {
+      "passed": 3,
+      "failed": 0,
+      "suites": [
+        "request_executor",
+        "http_cli",
+        "http_admission"
+      ]
+    },
+    "python": {
+      "passed": 1400,
+      "failed": 0
+    },
+    "plan_guard": {
+      "passed": 13
+    }
+  },
+  "commands": [
+    "cmake --build --preset release -j 2",
+    "ctest --test-dir build-release -R \"^(request_executor|http_cli|http_admission)$\" --output-on-failure",
+    "cd python && python -m pytest -q",
+    "python tools/test_plan_guard.py"
+  ],
+  "original_failure": "Initial mixed workload p95=1.178219890s >1s. Local default queue now max(4*request_threads,16); explicit queue values (including0) override both pools. Threshold unchanged.",
+  "inputs": {
+    "apps/searchd/main.cpp": "7b7ac59580369cdff729aafdac98a4bb588eaf56d063d64263d50eff763d9ebc",
+    "include/bzs/request_executor.hpp": "2467ea6e0d66978f2590844fe6ac9cc28ecb7349c5c5f2fbe47a37b336add129",
+    "python/bzs/core_client.py": "daa1801b35ae3875332d6c3715745518b94c87fafe68332a306421a6bb62ed51",
+    "tests/request_executor.cpp": "75dbbd7f345df8f3040a6e10f9a848ddcf574827f47ed7e792013dcffeee660d",
+    "tests/http_admission.py": "c2b99b5af02ddc11a8ec74ac87e2d9ed4fcd4ef7bc70c866e2e7f22ba95e8e9b",
+    "python/tests/test_core_backpressure.py": "6acc96af4c86ee1cff4cdbd2f7203efa0cae761f2ad67f7a8dfdcca383f518b9",
+    "tests/integration.py": "de273ec88fd532274edd77d0153d57c6d02edf37f328f568d760249385374065"
+  },
+  "ci": "pending publication; exact SHA workflow artifacts required",
+  "schema": 15,
+  "decisions": "D1-D7 pending; no source enablement, new sharing or identity expiry"
+}

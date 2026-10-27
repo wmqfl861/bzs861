@@ -1,0 +1,40 @@
+{
+  "scope": "P1-A plan A only",
+  "input_commit": "88c770c5129f2bdc04d705434cb40e6f2b827fa6",
+  "baseline": {
+    "command": "same tests/long_document_recall.cpp linked to unchanged input core",
+    "exit": 1,
+    "counterexample": "\"machine learning\" gram_candidates=4001 found=0 scanned=2000 partial=1 elapsed_ms=155\nFAIL has(result,target) at 53\n"
+  },
+  "candidate": {
+    "ctest": {
+      "command": "ctest --test-dir build-release -R '^(core|long_document_recall)$' --output-on-failure",
+      "passed": 2,
+      "failed": 0
+    },
+    "pytest": {
+      "cwd": "python",
+      "command": "python -m pytest -q -p no:cacheprovider tests",
+      "passed": 1400,
+      "failed": 0
+    },
+    "long_document_output": "\"machine learning\" gram_candidates=4001 found=1 scanned=2000 partial=1 elapsed_ms=232\nnode.js gram_candidates=4001 found=1 scanned=2000 partial=1 elapsed_ms=207\ncafé gram_candidates=4001 found=1 scanned=2000 partial=1 elapsed_ms=248\n\"machine learning\" OR node.js gram_candidates=4001 found=1 scanned=2000 partial=1 elapsed_ms=221\nreference AND \"machine learning\" gram_candidates=1 found=1 scanned=1 partial=0 elapsed_ms=7\ninbody:node.js gram_candidates=4001 found=1 scanned=2000 partial=1 elapsed_ms=215\nPASS long_document_recall and priority_fallback_semantics\n"
+  },
+  "audit": [
+    "Priority expression is never intersected with the fallback; NOT/unsupported branches remain eligible in fallback.",
+    "Original exact matching, owner, deletion/publication/epoch checks retained.",
+    "Cross-tier dedup precedes budget and partial detection.",
+    "Ranking explicitly uses original match_score for prioritized queries."
+  ],
+  "validation": "local source review and regression, not external signoff or full package acceptance",
+  "ci": "Exact published SHA workflow runs and linux/windows test artifacts must be checked separately.",
+  "source_sha256": {
+    "src/store.cpp": "35a8ffc9666f0d95a676b9bf7a21cb44bde8ae4196bcf29ef12be7a051c37a26",
+    "src/query.cpp": "f1ad1704054f93e3d9c057f71536eacda1e3af306b28d74f99b1c87246eb6c73",
+    "include/bzs/query.hpp": "3320bd1ca173c8366f80ea6204bf7764b775ae1dbbcb6cb37e950c5fd7fc4766",
+    "tests/long_document_recall.cpp": "16bda3f3b95caeb6891a745227b18d9e1c40524e1c06c3d7a8ab2185227108e0",
+    "tests/fixtures/recall_corpus.txt": "060390f0dc54a33bdeba4527605bf00b922a0e28491764b15bc689f3b911c8bd"
+  },
+  "schema": 15,
+  "decisions": "D1-D7 pending; no source activation, B-24 expansion or semantic change"
+}

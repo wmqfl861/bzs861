@@ -1,0 +1,104 @@
+{
+  "recorded_date_utc": "2026-10-26",
+  "repository": "wmqfl861/bzs861",
+  "target": "main after verification",
+  "baseline": {
+    "commit": "6410d272a2adefe25386af766da9d389a8a4d347",
+    "tree": "0a614980a651ba457eab0ef97931a40b80644d6f",
+    "server_blob": "b25ce135aac2daf5c02ba29c3f197067c4465924",
+    "source_byte_verified": true,
+    "ci_run": 40183102494,
+    "ci_conclusion": "success",
+    "ci_scope": "published baseline only"
+  },
+  "scope": "Strict durable cancellation parameters and non-renewing finite retired receipts; CACHE-01/FT-032/B-24 sub-scope only",
+  "production_changed_methods": [
+    "_attempt_id",
+    "fetch_cancel"
+  ],
+  "all_other_worker_method_asts_unchanged": true,
+  "environment": {
+    "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "aiohttp": "3.13.3",
+    "pytest": "9.0.2",
+    "pytest_asyncio": "1.3.0"
+  },
+  "execution": {
+    "mode": "exact production AST method/handler isolation, not normal full package import",
+    "baseline": {
+      "passed": 31,
+      "failed": 23,
+      "skipped": 0,
+      "exit_code": 1,
+      "seconds_reported_by_pytest": 0.52,
+      "log": "baseline.log.gz",
+      "uncompressed_log": {
+        "bytes": 17589,
+        "sha256": "1b1bd98dc4e5cee1005ef99f01126f04c15ebcdd717628a1f264b740b35becd3",
+        "git_blob": "8590405d65834fda54073180167e99ae9e022ab5"
+      }
+    },
+    "candidate": {
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "seconds_reported_by_pytest": 0.11,
+      "log": "candidate.log"
+    },
+    "commands": [
+      "python validation/cancel_retention_20261026/run_isolated.py --source <byte-verified baseline server.py> --tests python/tests/test_worker_cancel_retention.py",
+      "python validation/cancel_retention_20261026/run_isolated.py --source python/bzs/worker/server.py --tests python/tests/test_worker_cancel_retention.py"
+    ],
+    "expected_normal_ci_command": "python -m pytest python/tests/test_worker_cancel_retention.py",
+    "counts_overlap": true
+  },
+  "not_executed_here": [
+    "full checkout build/CTest",
+    "normal Worker package import and startup",
+    "TCP integration",
+    "ASan/UBSan",
+    "independent external review",
+    "cloud-computer verification"
+  ],
+  "source_preservation": "Full fetched server matches the baseline Git blob; production diff is limited to two methods. Tree publication will reuse the exact baseline tree and add only the listed new tests/evidence. No historical validation file is replaced.",
+  "version": "0.1.10",
+  "schema": 15,
+  "schema_changed": false,
+  "accepted_packages_added": 0,
+  "unavailable_previous_candidate": "Earlier schema16/join_read_url commits were mentioned in handoff context but their bytes were not available in this environment and are NOT included or superseded.",
+  "publication": "Prepare candidate on an isolated branch in the same repository; main requires fresh-head non-force update and the candidate own CI. No future CI result is claimed.",
+  "inputs_and_evidence": {
+    "python/bzs/worker/server.py": {
+      "bytes": 61938,
+      "sha256": "77e7930442fc82d41bd307fa7028cefeb3c5457e8ae04c2cd2cbe59d35bd27e0",
+      "git_blob": "3fd09371284a651a8e355e690a3c0194ce16b0ef"
+    },
+    "python/tests/test_worker_cancel_retention.py": {
+      "bytes": 10855,
+      "sha256": "dbb5e03af68356a96c74e22920c812ab869dcf6c1a6f4d6c1df05f5097bfd86a",
+      "git_blob": "519b62594980265ef315f35c2fb2f3123605aace"
+    },
+    "validation/cancel_retention_20261026/run_isolated.py": {
+      "bytes": 3282,
+      "sha256": "a9e7293a4655a50d797789e10b81b7ad2887f9e2181892167ae66f3f400d8727",
+      "git_blob": "0ea731f3f6455569b8d2259cd079118e2878adbd"
+    },
+    "validation/cancel_retention_20261026/baseline.log.gz": {
+      "bytes": 1711,
+      "sha256": "fa4ab9c36541a44945d8bdf7e77164631e6cdea750fb2500ce8787fd1bb3010c",
+      "git_blob": "cb8df15374024a06e519260e51425ccf118ebfe5"
+    },
+    "validation/cancel_retention_20261026/candidate.log": {
+      "bytes": 468,
+      "sha256": "f451e0c3be40bdb6e3501996e437656be24eba25fb6eda5166b390db95d72035",
+      "git_blob": "067951fcf749a1e94183b04019532a3102f8f9d3"
+    },
+    "validation/cancel_retention_20261026/implementation.patch": {
+      "bytes": 1785,
+      "sha256": "4a6fb68279f58436cc81b026c956091c40a1cc7a46c19d1c57aa5dce8e5a3c88",
+      "git_blob": "2559d841ab9db42f1ca91beb57c129fa30a0e559"
+    }
+  }
+}

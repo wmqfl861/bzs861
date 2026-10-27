@@ -1,0 +1,40 @@
+name: audit-dependencies
+on:
+  push:
+    branches:
+      - 'work/project-audit-*'
+    paths:
+      - '.github/workflows/audit-dependencies.yml'
+      - 'tools/requirements-s1-lock.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wheels:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Download pinned Linux CPython 3.13 audit dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bzs-audit-wheels"
+          python3 -m pip --isolated download --only-binary=:all: --python-version 3.13 --implementation cp --abi cp313 \
+            --platform manylinux_2_34_x86_64 --platform manylinux_2_28_x86_64 --platform manylinux_2_17_x86_64 --platform manylinux2014_x86_64 \
+            --dest "$RUNNER_TEMP/bzs-audit-wheels" -r tools/requirements-s1-lock.txt
+          cp tools/requirements-s1-lock.txt "$RUNNER_TEMP/bzs-audit-wheels/"
+          git rev-parse HEAD > "$RUNNER_TEMP/bzs-audit-wheels/COMMIT"
+          (cd "$RUNNER_TEMP/bzs-audit-wheels" && sha256sum ./*.whl requirements-s1-lock.txt COMMIT > SHA256SUMS)
+          # Download only: no downloaded package is installed or executed here.
+          # The manifest binds downloaded bytes; it is not a publisher attestation.
+      - name: Retain dependency input for reproducible offline audit
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bzs-audit-wheels-cp313-${{ github.sha }}
+          path: ${{ runner.temp }}/bzs-audit-wheels/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0

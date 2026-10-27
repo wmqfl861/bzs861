@@ -5,6 +5,7 @@
 #include <new>
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <charconv>
 #include <cstdint>
 #include <unordered_set>
@@ -163,12 +164,27 @@ namespace bzs {
     grams[2].reserve(std::min(text.size(),std::size_t{4096}));
     std::size_t distinct=0,seen=0;
     std::uint64_t previous=0,before_previous=0;
+    std::bitset<128> ascii_single;
+    std::bitset<16384> ascii_pair;
     const auto add=[&](std::size_t width,std::uint64_t value) {
+      // Frequent ASCII singles/pairs dominate duplicate lookups in technical
+      // prose. A tiny fixed bitset bypasses hash probes without changing bytes,
+      // distinct counts, Unicode handling or the overflow contract.
+      if(width==0&&value<128) {
+        const auto slot=static_cast<std::size_t>(value);
+        if(ascii_single.test(slot))return true;
+        ascii_single.set(slot);
+      } else if(width==1&&(value>>21)<128&&(value&0x1fffff)<128) {
+        const auto slot=static_cast<std::size_t>((value>>21)*128+(value&0x1fffff));
+        if(ascii_pair.test(slot))return true;
+        ascii_pair.set(slot);
+      }
       if(grams[width].insert(value).second)++distinct;
       return distinct<=substring_max_field_grams;
     };
     for(std::size_t offset=0;offset<text.size();) {
       const auto current=static_cast<std::uint64_t>(ascii_fold_codepoint(decode(text,offset)));
+      if(is_cjk(static_cast<char32_t>(current))) { seen=0;continue; }
       // Casts precede shifts: char32_t itself may only be 32 bits.
       if(!add(0,current)||
          (seen>=1&&!add(1,(previous<<21)|current))||
@@ -195,25 +211,40 @@ namespace bzs {
     require(max_grams>=1&&max_grams<=32,"E_QUERY_LIMIT","Substring candidate gram budget out of range");
     std::vector<char32_t> points;points.reserve(text.size());
     for(std::size_t offset=0;offset<text.size();)points.push_back(ascii_fold_codepoint(decode(text,offset)));
-    if(points.empty())return {};
-    const auto width=std::min(points.size(),std::size_t{3});
-    std::vector<std::uint64_t> grams;grams.reserve(points.size()-width+1);
-    for(std::size_t offset=0;offset+width<=points.size();++offset) {
-      std::uint64_t value=0;
-      for(std::size_t i=0;i<width;++i)value=(value<<21)|static_cast<std::uint64_t>(points[offset+i]);
-      grams.push_back(value);
+    std::vector<std::string> grams;
+    constexpr std::array<char,3> widths{'u','b','t'};
+    for(std::size_t begin=0;begin<points.size();) {
+      if(is_cjk(points[begin])) { ++begin;continue; }
+      auto end=begin;while(end<points.size()&&!is_cjk(points[end]))++end;
+      const auto width=std::min(end-begin,std::size_t{3});
+      for(auto offset=begin;offset+width<=end;++offset) {
+        std::uint64_t value=0;
+        for(std::size_t i=0;i<width;++i)value=(value<<21)|static_cast<std::uint64_t>(points[offset+i]);
+        grams.push_back(encoded_gram(widths[width-1],value));
+      }
+      begin=end;
     }
     std::sort(grams.begin(),grams.end());grams.erase(std::unique(grams.begin(),grams.end()),grams.end());
     const auto count=std::min(grams.size(),max_grams);
-    constexpr std::array<char,3> widths{'u','b','t'};
     std::vector<std::string> out;out.reserve(count);
     for(std::size_t i=0;i<count;++i) {
-      // Spread selection across distinct gram values instead of retaining only
-      // a possibly repetitive prefix. Any subset is still a necessary filter.
       const auto position=count==1?std::size_t{0}:i*(grams.size()-1)/(count-1);
-      out.push_back(encoded_gram(widths[width-1],grams[position]));
+      out.push_back(grams[position]);
     }
     return out;
+  }
+  std::vector<std::string> query_cjk_runs(std::string_view text) {
+    require(text.size()<=4096&&valid_utf8(text),"E_QUERY_LIMIT","Invalid CJK query leaf");
+    std::vector<std::string> runs;
+    for(std::size_t offset=0;offset<text.size()&&runs.size()<8;) {
+      const auto start=offset;
+      if(!is_cjk(decode(text,offset)))continue;
+      while(offset<text.size()) {
+        auto next=offset;if(!is_cjk(decode(text,next)))break;offset=next;
+      }
+      runs.emplace_back(text.substr(start,offset-start));
+    }
+    return runs;
   }
   void register_fts_tokenizer(sqlite3* db) {
     auto* api=api_for(db);

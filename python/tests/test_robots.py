@@ -137,7 +137,7 @@ def test_invalid_foreign_member_cannot_erase_an_unrepresentable_applicable_rule(
 
 
 @pytest.mark.parametrize("value", ["BzsBot/1", "bzsbot 1", "BzsBot2", "Bzs Bot", "Other, BzsBot/1",
-                                   "*bot", "*/1", "* BzsBot", "", "360", "爬虫"])
+                                   "*bot", "*/1", "* BzsBot", "", "BzsBot*", "Bzs🧪Bot"])
 def test_ambiguous_self_wildcard_or_unclassifiable_agents_still_fail_closed(value):
     record = parse_robots((f"User-agent: {value}\nDisallow: /\nUser-agent: *\nAllow: /\n").encode())
     assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_invalid_product_token"]
@@ -212,3 +212,38 @@ def test_robots_freshness_rejects_unknown_or_ambiguous_vary_selections(value):
                                 now_ms=1_800_000_000_000)
     assert record["state"] == "deny_all" and record["diagnostics"] == ["robots_cache_revalidation_required"]
     assert not rule_decision(record, URL("https://fixture.test/public"))["allowed"]
+
+
+@pytest.mark.parametrize("foreign", ["008", "360", "Mediapartners-Google*", "Яндекс", "爬虫"])
+@pytest.mark.parametrize("agent", ["BzsBot", "*"])
+@pytest.mark.parametrize("position", [0, 1, 2])
+def test_nonmatching_product_spellings_do_not_poison_applicable_groups(foreign, agent, position):
+    groups = [f"User-agent: {agent}\nDisallow: /locked\n",
+              f"User-agent: {agent}\nDisallow: /secret\n"]
+    groups.insert(position, f"User-agent: {foreign}\nAllow: /locked\nDisallow: /public\n")
+    record = parse_robots("".join(groups).encode())
+    assert record["state"] == "rules"
+    assert record["diagnostics"] == ["ignored_unrelated_product_tokens"]
+    assert record["rules"] == [{"pattern": "/locked", "allow": False}, {"pattern": "/secret", "allow": False}]
+    assert not rule_decision(record, URL("https://fixture.test/locked"))["allowed"]
+    assert rule_decision(record, URL("https://fixture.test/public"))["allowed"]
+
+
+@pytest.mark.parametrize("foreign", ["008", "Mediapartners-Google*", "Яндекс"])
+@pytest.mark.parametrize("first", [True, False])
+def test_ignored_product_keeps_shared_group_and_empty_rule_boundary(foreign, first):
+    members = [foreign, "BzsBot"] if first else ["BzsBot", foreign]
+    body = "".join(f"User-agent: {member}\n" for member in members) + "Disallow: /private\n"
+    record = parse_robots(body.encode())
+    assert record["state"] == "rules"
+    assert not rule_decision(record, URL("https://fixture.test/private"))["allowed"]
+    record = parse_robots((f"User-agent: BzsBot\nDisallow:\nUser-agent: {foreign}\nDisallow: /\n").encode())
+    assert record["state"] == "rules" and record["rules"] == []
+
+
+@pytest.mark.parametrize("value", ["BzsBot*", "Bzs Bot", "Other, BzsBot/1", "*/1", "*bot"])
+def test_damaged_self_or_wildcard_still_dominates_unrelated_groups(value):
+    body = f"User-agent: 008\nAllow: /\nUser-agent: {value}\nDisallow: /\nUser-agent: *\nAllow: /\n"
+    record = parse_robots(body.encode())
+    assert record["state"] == "deny_all"
+    assert record["diagnostics"] == ["robots_invalid_product_token"]

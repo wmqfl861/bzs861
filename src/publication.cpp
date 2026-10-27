@@ -439,10 +439,19 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
   save.bind(1,owner);save.bind(2,key);save.bind(3,snapshot_id);save.bind(4,encoded);save.bind(5,index?1:0);save.bind(6,snippet?1:0);save.bind(7,restricted?1:0);save.bind(8,generation);save.bind(9,clock_());save.bind(10,index_generation);save.bind(11,snippet_generation);save.step();
   // The current policy is keyed by exact normalized retrieval URL, so historical
   // host/default-port/fragment aliases cannot retain a public index entry.
-  Sql remove(db_,"DELETE FROM content_fts WHERE owner=? AND document_id IN (SELECT id FROM documents WHERE owner=? AND (url_key=? OR representation_key=?))");
-  remove.bind(1,owner);remove.bind(2,owner);remove.bind(3,key);remove.bind(4,key);remove.step();
-  Sql substring(db_,"DELETE FROM substring_fts WHERE rowid IN (SELECT rowid FROM documents WHERE owner=? AND (url_key=? OR representation_key=?))");
-  substring.bind(1,owner);substring.bind(2,key);substring.bind(3,key);substring.step();
+  // Use the same transactional removal path for both indices and accounting.
+  // Freeze IDs before mutating the indices under this publication observation.
+  std::vector<std::string> indexed_ids;
+  std::set<std::string> existing_grams;
+  {
+    Sql documents(db_,"SELECT id,EXISTS(SELECT 1 FROM substring_fts f WHERE f.rowid=d.rowid) FROM documents d WHERE owner=? AND (url_key=? OR representation_key=?)");
+    documents.bind(1,owner);documents.bind(2,key);documents.bind(3,key);
+    while(documents.step()) {
+      indexed_ids.push_back(documents.text(0));
+      if(documents.num(1))existing_grams.insert(documents.text(0));
+    }
+  }
+  for(const auto& id:indexed_ids)remove_document_index_locked(id);
   if(!index) {
     // Once hidden by noindex, a frozen row cannot reappear after a later allow.
     // Explicit immutable snapshots and evidence remain available to their owner.
@@ -452,7 +461,12 @@ void Store::publish_policy_locked(const std::string& owner,const std::string& ur
     Sql index_rows(db_,"SELECT d.id,s.title,s.canonical_text,d.url FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND (d.url_key=? OR d.representation_key=?) AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1 AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2");
     index_rows.bind(1,owner);index_rows.bind(2,key);index_rows.bind(3,key);
     while(index_rows.step()) {
-      index_document_locked(owner,index_rows.text(0),index_rows.text(1),index_rows.text(2),index_rows.text(3));
+      // Current snapshot/bytes cannot change inside this publication transaction.
+      // Reinstating its prior row consumes no new budget, even after a legacy
+      // rebuild exceeded a newly reduced limit. Never let a quota error undo a
+      // tightening restriction. Newly exposed rows still require fresh quota.
+      index_document_locked(owner,index_rows.text(0),index_rows.text(1),index_rows.text(2),index_rows.text(3),
+                            !existing_grams.contains(index_rows.text(0)));
     }
   }
 }

@@ -1,0 +1,175 @@
+{
+  "scope": "P2-B points 1/2; includes integrated verification of P1-A plan A and P2-C",
+  "input_commit": "27d8643f5ade025fc62112c24f2bfa833ffb0615",
+  "delivery_base": "88c770c5129f2bdc04d705434cb40e6f2b827fa6",
+  "implementation": [
+    "Omit every CJK-containing gram window and use bounded CJK FTS runs as necessary mixed-leaf filters.",
+    "Separate owner quota for serialized substring-index tokens; existing snapshot quota unchanged.",
+    "Atomic derived index/accounting rebuild, transaction rollback, replacement/deletion/publication accounting.",
+    "Avoid first-import scan of a guaranteed absent old word index; replacements retain original removal.",
+    "Existing over-quota index reinsertion during publication tightening cannot defeat the restriction."
+  ],
+  "new_tests": [
+    "cjk_windows_and_overflow",
+    "mixed_candidate_supersets",
+    "account_replace_delete_and_publication",
+    "independent_quota_rolls_back_every_write",
+    "derived_rebuild_is_atomic_and_business_schema_stays_15"
+  ],
+  "baseline_probe": {
+    "exit": 1,
+    "output": "cjk_grams_omitted=0 owner_index_bytes_visible=0"
+  },
+  "review_discovered_failure": {
+    "test": "derived_rebuild_is_atomic_and_business_schema_stays_15 / lower quota + nosnippet",
+    "initial_exit": 1,
+    "initial_error": "Owner substring index quota exceeded",
+    "fixed": "Prior existing unchanged rows consume no new budget on reindex; new rows still enforce quota.",
+    "final_gram_index_assertions": 135
+  },
+  "verification": {
+    "release": {
+      "command": "ctest --test-dir build-release --output-on-failure",
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "exit": 0,
+      "seconds": 218.22,
+      "includes_pytest_passed": 1441
+    },
+    "sanitizers": {
+      "command": "ctest --test-dir build-asan -R '^(core|gram_index|long_document_recall|site_publication)$' --output-on-failure",
+      "mode": "Debug, address+undefined, detect_leaks=1:halt_on_error=1; UBSAN halt_on_error=1:print_stacktrace=1",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "exit": 0,
+      "seconds": 161.55,
+      "scope": "four targeted suites, NOT the entire sanitizer workflow"
+    },
+    "original_contracts": 34,
+    "plan_guard": 13,
+    "plan_structure_exit": 0,
+    "counts_overlap": true,
+    "real_legacy_rebuild": {
+      "business_tables_unchanged": 38,
+      "schema_before": 15,
+      "schema_after": 15,
+      "old_binary_rejects_new_derived_marker": true,
+      "note": "Legacy benchmark has 300 real imported documents; native test separately retains evidence, sessions and keyed job identities."
+    }
+  },
+  "cost_measurement": {
+    "documents": 300,
+    "bytes_per_document": 50000,
+    "repetitions": 3,
+    "statistic": "median",
+    "execution_order": "rotating binary order; no concurrent local checks in accepted run",
+    "reference": "actual 44253a7 build, pre-P2B build, exact final binary",
+    "corpora": {
+      "english_pool.txt": {
+        "bytes": 5361135,
+        "sha256": "d2d8caeb7fe5c8aa52ff58757ef78434440ba6cee4b415a29831ff88a8fb2aba"
+      },
+      "chinese_pool.txt": {
+        "bytes": 196527,
+        "sha256": "10723b1b10602a7882faa23c2d0b4b814e88d1bbc35dd1e67eecaeda7e251935"
+      }
+    },
+    "final": {
+      "chinese": {
+        "44253a7": {
+          "elapsed_ms": 2823,
+          "disk_bytes": 65847296,
+          "content_bytes": 14999780
+        },
+        "before": {
+          "elapsed_ms": 9574,
+          "disk_bytes": 173252608,
+          "content_bytes": 14999780
+        },
+        "candidate": {
+          "elapsed_ms": 3444,
+          "disk_bytes": 86061056,
+          "content_bytes": 14999780
+        }
+      },
+      "english": {
+        "44253a7": {
+          "elapsed_ms": 1580,
+          "disk_bytes": 52408320,
+          "content_bytes": 15000000
+        },
+        "before": {
+          "elapsed_ms": 3641,
+          "disk_bytes": 80506880,
+          "content_bytes": 15000000
+        },
+        "candidate": {
+          "elapsed_ms": 2673,
+          "disk_bytes": 80506880,
+          "content_bytes": 15000000
+        }
+      }
+    },
+    "ratios": {
+      "chinese_disk_vs_44253a7": 1.3069793480965415,
+      "chinese_write_vs_44253a7": 1.2199787460148779,
+      "english_disk_vs_before": 1.0,
+      "english_write_vs_before": 0.7341389728096677
+    },
+    "all_requested_cost_thresholds_met": true,
+    "candidate_binary_sha256": "a8781af56d9e89ddb8965a6d06e59f98cac303d3d2b5bdff8aa7cb6eb6eaeedd",
+    "limits": "Fresh databases and one Linux environment, not an SLA. Chinese corpus matches Claude hash; installed English pool differs from Claude, but is identical across all three local builds. Legacy database files need not shrink immediately."
+  },
+  "original_failures_retained": [
+    "Initial cost median Chinese write ratio 1.5266 failed 1.5 gate; later tuning followed, no gate change.",
+    "Second series English write median regressed; not accepted as a pass.",
+    "Intermediate cost-frozen series overlapped preservation hashing; accepted final repeat ran separately before sanitizer build.",
+    "Initial native rebuild assertion compared ingest and snapshot projections; corrected to compare the same snapshot projection without changing production behavior.",
+    "Unencoded CJK URL probe rejected by both old and new binaries; not treated as a new product defect."
+  ],
+  "audit": {
+    "result": "local scoped source review and regression passed",
+    "not_external_reviewer_signoff": true,
+    "checks": [
+      "Necessary filters remain supersets; priority tier does not restrict fallback.",
+      "Word tokenizer, raw substring semantics, source approval and owner/publication/deletion fences retained.",
+      "Index quota failure rolls back snapshots and all derived accounting.",
+      "Low quota on restored legacy content must not stop publication tightening.",
+      "Business schema and immutable business records remain unchanged."
+    ],
+    "existing_warning": "GCC14 -Wnonnull at unchanged src/batch.cpp:275 reproduced in baseline and candidate; not newly introduced or resolved by these three nodes."
+  },
+  "source_sha256": {
+    "src/tokenizer.cpp": "56032105caec7f83843d5f243521d6acb52ba2601ba6731739e59540ec13d279",
+    "src/query.cpp": "d621628e76b1807a2ff7e8938fd50411d0394efa89d2d19405f17cdb9c2f7f6d",
+    "src/store.cpp": "941fef00f592d683445bed48fc429340858c576ab140fd0064475d88c877a849",
+    "src/publication.cpp": "bac8664fa8745f4e09087506661122c2421ee5ae9864408dc1e044546c8b8980",
+    "include/bzs/tokenizer.hpp": "05302972a9e6c29ea5732e914f286f849a9ea841f4ed184abdaccc5d2111a0d4",
+    "include/bzs/store.hpp": "ccee432a0123d8870319614060d2e6d52a1eea768991ed56c8c082f73f34ed45",
+    "tests/gram_index.cpp": "ea8f50a1e7fbd9fbd2d8154cb3dbd659a6997040b37159dae01524206e6f2578",
+    "tests/index_cost.cpp": "902e05ed7f050984e493e788609ecaf9720c0adfe82bacf7560108d7c0b4219e",
+    "CMakeLists.txt": "fc1743e50eac457ba4eecf2fb8637ce5082ba6033e1847ade27c3e7c59360e20",
+    "CMakePresets.json": "06996a3c268033d4cd667e26c8a57d2ba2af2e40f9a759c2915abf03a15e5afd",
+    ".github/workflows/ci.yml": "987a5d2f8b6efab97ca5f5dd500755f100a4a94b63d687092e7c5040b53d45bb"
+  },
+  "environment": {
+    "python": "3.13.5",
+    "system": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "compiler": "GCC14.2",
+    "sqlite": "3.46.1",
+    "build": "Release plus targeted Debug ASan/UBSan"
+  },
+  "version": "0.1.10",
+  "business_schema": 15,
+  "derived_format": "bzs-ascii-cjk/2+codepoint-grams/2",
+  "decisions": "D1-D7 pending; no source/site activation, B-24 extension, business schema upgrade, retention change or recovery-isolation release.",
+  "publication_at_recording": {
+    "push_executed": false,
+    "reason": "Current GitHub connector exposes read actions only; connected desktop offline; container outbound GitHub DNS unavailable.",
+    "expected_remote_head": "88c770c5129f2bdc04d705434cb40e6f2b827fa6",
+    "exact_candidate_remote_ci": "not_run"
+  },
+  "raw_evidence": "Original outputs retained outside Git and supplied in conversation archive. CI raw-log artifact upload is configured, not claimed executed for these unpushed commits."
+}
