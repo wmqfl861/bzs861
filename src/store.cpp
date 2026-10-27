@@ -819,7 +819,7 @@ namespace bzs {
           Stmt accounting(db_,"SELECT s.http_cache_bytes,u.bytes FROM snapshots s JOIN usage u ON u.owner=? WHERE s.id=?");
           accounting.bind(1,owner);accounting.bind(2,latest);require(accounting.step(),"E_STORAGE","Missing snapshot accounting",500);
           const auto delta=http_bytes-accounting.num(0);
-          require(delta<=0||accounting.num(1)<=options_.max_bytes_per_owner-delta,"E_QUOTA","Owner snapshot quota exceeded",507);
+          require(payload_quota_fits_locked(owner,delta),"E_QUOTA","Owner snapshot and archive quota exceeded",507);
           Stmt touch(db_, "UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
           touch.bind(1, meta_json);
           touch.bind(2, http_bytes);touch.bind(3,latest);
@@ -843,12 +843,11 @@ namespace bzs {
     {
       Stmt used(db_, "SELECT bytes,snapshots FROM usage WHERE owner=?");
       used.bind(1, owner);
-      std::int64_t b=0, n=0;
+      std::int64_t n=0;
       if(used.step()) {
-        b=used.num(0);
         n=used.num(1);
       }
-      require(b+bytes<=options_.max_bytes_per_owner&&n+1<=options_.max_snapshots_per_owner, "E_QUOTA", "Owner snapshot quota exceeded", 507);
+      require(payload_quota_fits_locked(owner,bytes)&&n+1<=options_.max_snapshots_per_owner, "E_QUOTA", "Owner snapshot and archive quota exceeded", 507);
     }
     const bool new_document=did.empty();
     if(new_document) {
@@ -1583,9 +1582,15 @@ namespace bzs {
     out.set("quota_substring_bytes",options_.max_substring_bytes_per_owner);
     require(bytes>=0&&index_bytes>=0&&bytes<=std::numeric_limits<std::int64_t>::max()-index_bytes,
             "E_STORAGE","Invalid storage byte accounting",500);
-    out.set("accounted_storage_bytes",bytes+index_bytes);
+    const auto archive_bytes=archive_bytes_locked(owner);
+    require(archive_bytes<=std::numeric_limits<std::int64_t>::max()-bytes-index_bytes,"E_STORAGE","Invalid archive accounting",500);
+    out.set("archive_bytes",archive_bytes);
+    out.set("quota_payload_bytes",options_.max_bytes_per_owner);
+    out.set("payload_bytes",bytes+archive_bytes);
+    out.set("payload_over_quota",bytes>options_.max_bytes_per_owner||archive_bytes>options_.max_bytes_per_owner-bytes);
+    out.set("accounted_storage_bytes",bytes+index_bytes+archive_bytes);
     out.set("substring_index_over_quota",index_bytes>options_.max_substring_bytes_per_owner);
-    out.set("storage_accounting_scope","snapshot_payloads_and_serialized_substring_tokens_not_physical_sqlite_size");
+    out.set("storage_accounting_scope","snapshot_payloads_archive_summaries_and_serialized_substring_tokens_not_physical_sqlite_size");
     out.set("sqlite_version", sqlite3_libversion());
     return out;
   }

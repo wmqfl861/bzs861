@@ -132,6 +132,8 @@ namespace bzs {
     Json compact_jobs_locked(const std::string& owner,std::int64_t limit,bool all_owners=false);
     std::int64_t compact_robots_locked(const std::string& owner,std::int64_t limit);
     void job_capacity_locked(const std::string& owner);
+    std::int64_t archive_bytes_locked(const std::string& owner);
+    bool payload_quota_fits_locked(const std::string& owner,std::int64_t extra);
     Json read_job_locked(const std::string& owner, const std::string& id);
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
     void migrate_shared_reads_locked();
