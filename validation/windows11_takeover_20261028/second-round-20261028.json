@@ -1,0 +1,51 @@
+{
+  "round": "blocker-fixes + three blueprint modules",
+  "input_commit": "9cfe35b13f1ad36c5972a4c7f1a0ce8a9c2c25dc",
+  "work_branch": "work/windows11-audit-20261028-1100",
+  "commits": ["7e438ea", "28a0ad0", "d98452b", "52b8418"],
+  "blocker_fixes": {
+    "commit": "7e438ea",
+    "method": "17 counterexample tests written first and confirmed failing on the previous implementation (1 pre-existing guard test already passed); after the fix, mutation checks removed each guard (creation-time attribution, root identity abort, forget gating under a busy lock) and confirmed its test fails",
+    "A_attribution": "_win_terminate_tree opens every candidate once before signalling anything; each target's creation time must be strictly after its verified parent's and no later than the snapshot completion time; the root instance's creation must match the trusted anchor (mismatch aborts the whole stop); termination and waiting use the same pinned handle. A completely dead root cannot bound its children's creation window, so candidates are reported and never signalled. Documented boundary: grandchildren of a middle process that died before it could be opened are invisible (missed cleanup, never a misattributed kill).",
+    "B_failure_reporting": "INVALID_HANDLE_VALUE rejected; Process32First/Next distinguish ERROR_NO_MORE_FILES from enumeration failure (partial table aborts the stop); OpenProcess separates gone/access-denied/other; TerminateProcess and wait results checked; one shared monotonic deadline for the whole tree; every handle closed; cleanup_child and stop_owned raise with retained identities and keep the PID record whenever an exit is unconfirmed",
+    "C_record_hygiene": "process reclamation and shared-record mutation are separated; without the control lock cleanup_children passes forget=False so a stale cleanup can never unlink a concurrent launcher's replacement record",
+    "tests": "python/tests/test_process_tree.py: 18 tests (fake-API attribution/failure matrix + real Windows processes: full-tree stop, bystander survival, dead-root candidates retained)"
+  },
+  "blueprint_modules": [
+    {
+      "package": "MAP-01 (sitemap gzip archives)",
+      "commit": "28a0ad0",
+      "gap": "implementation_status remaining: 'gzip 归档不自动展开' - .xml.gz sitemap entities always failed discovery",
+      "delivered": "fetch.gunzip_archive (single member, output bounded by the hop's max_content_bytes, damaged/truncated/multi-member refused); map_fetch expands only sitemap/auto hops and parses as application/xml; hop usage still charges compressed bytes",
+      "tests": "4 integration cases through real worker hops (candidates, E_CONTENT_TOO_LARGE, trailing garbage, page-hop non-expansion) + 1 unit case (round trip, NUL padding, budget, truncation, trailing, second member)",
+      "acceptance": "MAP-01 remains partial; FT-027 full acceptance and site-coverage claims unchanged"
+    },
+    {
+      "package": "OPS-00 (diagnostics + long-run bounding)",
+      "commit": "d98452b",
+      "gap": "audit: worker internal failures left no trace anywhere; Fetcher._host_locks grew unbounded",
+      "delivered": "bzs.worker logger: method-level ERROR records with tracebacks to stderr only (stdout reserved for the ready line; no tokens/headers/bodies logged), wired in main(); launcher already pipes stderr to logs/worker.log. Host-lock registry capped at 4096 with idle retirement; busy entries never retired",
+      "tests": "internal KeyError -> E_INTERNAL response without the secret AND an ERROR record with the traceback; stderr-only stream check; registry bound across 4160 hosts with busy entry retained",
+      "acceptance": "OPS-00 remains partial; metric/capacity baselines and OPS-01 unchanged"
+    },
+    {
+      "package": "API-00/auth (client-token file integrity)",
+      "commit": "52b8418",
+      "gap": "audit: unlocked read-modify-write lost concurrent adds (reproduced: 24 concurrent adds lost 22); load_clients accepted wrong types (string scopes -> per-character scopes)",
+      "delivered": "add/revoke hold an exclusive per-file lock (sibling run/mcp-clients.lock of the clients file; tests lock inside their own temp tree) with a 30s retry deadline; control_lock gained path+timeout while keeping fail-fast defaults; load_clients strictly validates entry shape and raises, verifier fails closed for the whole file",
+      "tests": "24-thread concurrent adds all persist and verify (fails with the lock neutralized); five malformed entry kinds raise and fail verification closed",
+      "acceptance": "local admin tooling only; no remote MCP exposure added"
+    }
+  ],
+  "verification_windows11": {
+    "pytest_full": "1533 passed / 0 failed / 0 errors (was 1523; +10 new)",
+    "contracts": "34/34", "plan_structure": "valid 83/161/10", "plan_guard": "13/13",
+    "ctest_debug_release_j1": "see final report; no C++ source changed this round (all commits touch Python/tests), binaries rebuilt at b93d6fe+web.cpp state",
+    "live_mcp_smoke": "see final report"
+  },
+  "policy": {
+    "sources_enabled": 0, "schema": 15, "D1_D7": "pending", "B24_expansion": false,
+    "quarantine_clearance": false, "main_pushed": false, "prs_merged": 0,
+    "package_status_changed": false
+  }
+}
