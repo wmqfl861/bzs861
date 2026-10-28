@@ -73,5 +73,21 @@ void options() {
   for(const auto o:{BackgroundOptions{0,1,1},BackgroundOptions{1,9,1},BackgroundOptions{1,1,0}}){bool rejected=false;try{auto p=start_worker(s,f,nullptr,o);}catch(const Error&e){rejected=e.code=="E_ARGUMENT";}CHECK(rejected);}
   auto p=start_worker(s,f);CHECK(p.joinable());BackgroundWorker moved; moved=std::move(p);moved.request_stop();moved.join();CHECK(!moved.joinable());
 }
+void fixture_lane_shutdown_never_abandons_claimed_lease() {
+  // Invariant: after request_stop+join, a claimed fixture job is always in a
+  // terminal state. It must not sit in 'running' until its 10s lease expires:
+  // the lane fails a claimed lease with E_SHUTDOWN when stop is observed,
+  // exactly like the read/map/search lanes.
+  for(int i=0;i<3;++i) {
+    Temp t;Store s(t.p/"db");FixtureCatalog fixtures(BZS_FIXTURE_DIR);
+    const auto id=s.job_create("alice","plain","shutdown-race-"+std::to_string(i)).at("job_id").str();
+    auto pool=start_worker(s,fixtures);
+    until([&]{return s.job_get("alice",id).at("state").str()!="queued";});
+    pool.request_stop();pool.join();CHECK(!pool.joinable());
+    const auto state=s.job_get("alice",id).at("state").str();
+    CHECK(state=="succeeded"||state=="failed");
+  }
+  std::cout<<"fixture_lane shutdown leaves no running lease\n";
 }
-int main(){try{reads(1);reads(4);map_pacing();options();std::cout<<"4 pool checks passed\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
+}
+int main(){try{reads(1);reads(4);map_pacing();options();fixture_lane_shutdown_never_abandons_claimed_lease();std::cout<<"5 pool checks passed\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

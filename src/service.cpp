@@ -405,7 +405,10 @@ namespace bzs {
             if(l) {
               const auto&doc=fixtures.get(l->fixture_id);
               auto parsed=parse_document(doc.raw, doc.content_type, doc.title);
-              if(!stop.stop_requested())store.complete(*l, doc, parsed);
+              // Same shutdown discipline as the read/map/search lanes: a
+              // claimed job is never abandoned for its lease to expire.
+              if(stop.stop_requested())store.fail(*l, "E_SHUTDOWN");
+              else store.complete(*l, doc, parsed);
             }
           }catch(const Error&e) {
             if(l)try {
