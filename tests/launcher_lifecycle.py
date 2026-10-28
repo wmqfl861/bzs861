@@ -138,9 +138,14 @@ class Lifecycle(unittest.TestCase):
         proc = pc.spawn("worker", self.command(), timeout=5)
         self.children.append(proc)
         r = pc.read_record("worker")
-        r["birth"] += "-not-the-same-process"
+        if os.name == "nt" and r["birth"].startswith("win:"):
+            # A different but well-formed creation time: a pid now held by
+            # another instance must abort the whole stop.
+            r["birth"] = f"win:{int(r['birth'][4:]) + 1}"
+        else:
+            r["birth"] += "-not-the-same-process"
         pc.record_path("worker").write_text(json.dumps(r))
-        with self.assertRaisesRegex(RuntimeError, "identity changed"):
+        with self.assertRaisesRegex(RuntimeError, "identity changed|unverified"):
             pc.stop_owned("worker", timeout=0.05)
         self.assertIsNone(proc.poll())
         self.assertTrue(pc.record_path("worker").exists())
@@ -151,14 +156,13 @@ class Lifecycle(unittest.TestCase):
         self.children.append(proc)
         record = pc.record_path("worker").read_bytes()
         if os.name == "nt":
-            # Exercise failure classification without terminating another PID.
-            birth = pc.birth_identity(proc.pid)
-            self.assertIsNotNone(birth)
-            # Keep the initial identity observation valid; deny only the
-            # later termination handle, not the earlier read-only probe.
-            with patch.object(pc, "birth_identity", return_value=birth), patch.object(pc, "_kernel") as get:
-                get.return_value.OpenProcess.return_value = 0
-                with self.assertRaisesRegex(RuntimeError, "termination handle"):
+            # Exercise failure classification without terminating anything:
+            # every open in the verified-tree walk is denied.
+            class DeniedApi(pc._RealWinApi):
+                def open(self, pid):
+                    raise pc._ProcessDenied(pid)
+            with patch.object(pc, "_RealWinApi", DeniedApi):
+                with self.assertRaisesRegex(RuntimeError, "not confirmed"):
                     pc.stop_owned("worker", timeout=0.05)
         else:
             with self.assertRaisesRegex(RuntimeError, "not confirmed"):
