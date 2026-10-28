@@ -188,6 +188,30 @@ def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 2.0) -> N
         _forget(name, r)
 
 
+def cleanup_children(children: "list[tuple[str, subprocess.Popen]]", *, lock: bool = True) -> None:
+    """Best-effort cleanup of every child of this invocation.
+
+    A failure while cleaning one detached child must not skip the remaining
+    ones. When the control lock is busy, cleanup still proceeds: only Popen
+    handles of this invocation are terminated and record removal stays guarded
+    by the compare-and-unlink in _forget.
+    """
+    with contextlib.ExitStack() as stack:
+        if lock:
+            try:
+                stack.enter_context(control_lock())
+            except (OSError, RuntimeError):
+                pass  # Leaving this invocation's children running is worse.
+        failures: list[str] = []
+        for name, proc in reversed(list(children)):
+            try:
+                cleanup_child(name, proc)
+            except Exception as exc:  # Keep cleaning the remaining children.
+                failures.append(f"{name}: {exc}")
+        if failures:
+            raise RuntimeError("child cleanup incomplete: " + "; ".join(failures))
+
+
 def spawn(name: str, command: list[str], *, timeout: float = 30.0) -> subprocess.Popen:
     if not math.isfinite(timeout) or not 0 < timeout <= 120:
         raise ValueError("startup timeout must be finite and in (0, 120]")
@@ -273,9 +297,17 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
         k = _kernel()
         h = k.OpenProcess(0x1000 | 0x100000 | 1, False, pid)
         if not h:
+            import ctypes
+            if ctypes.get_last_error() == 87:  # exited after the identity probe
+                _forget(name, r)
+                return False
             raise RuntimeError(f"{name}: cannot obtain termination handle; record retained")
         try:
-            if _win_birth(k, h) != r["birth"]:
+            birth = _win_birth(k, h)
+            if birth is None:  # exited between the identity probe and this handle
+                _forget(name, r)
+                return False
+            if birth != r["birth"]:
                 raise RuntimeError(f"{name}: process identity changed; refusing termination")
             if not k.TerminateProcess(h, 0) or k.WaitForSingleObject(h, int(timeout * 1000)) != 0:
                 raise RuntimeError(f"{name}: stop not confirmed; record retained")
@@ -290,7 +322,11 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
             _forget(name, r)
             return False
         try:
-            if birth_identity(pid) != r["birth"]:
+            birth = birth_identity(pid)
+            if birth is None:  # exited between the identity probe and the pidfd
+                _forget(name, r)
+                return False
+            if birth != r["birth"]:
                 raise RuntimeError(f"{name}: process identity changed; refusing termination")
             signal.pidfd_send_signal(fd, signal.SIGTERM)
             if not select.select([fd], [], [], timeout)[0]:
