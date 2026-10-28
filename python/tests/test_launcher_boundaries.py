@@ -138,42 +138,73 @@ def test_cleanup_children_reports_every_failed_child(tmp_path,monkeypatch):
 
 
 @pytest.mark.skipif(os.name!="nt",reason="Windows termination-handle race")
-def test_stop_owned_tolerates_fully_reaped_root(tmp_path,monkeypatch):
-    # Root exits and is reaped before the stop: the pid resolves to nothing;
-    # with no attributable children the record is removed quietly.
+def test_stop_owned_preserves_record_after_root_wait(tmp_path,monkeypatch):
+    # A root exit is not proof that its whole formerly managed tree is gone.
+    # Keep a verified handle so PID reuse cannot make this native test flaky.
     import json,subprocess,sys
     monkeypatch.setenv("BZS_HOME",str(tmp_path))
     from bzs import config,process_control
-    gone=subprocess.Popen([sys._base_executable,"-c","pass"])
-    birth=process_control.birth_identity(gone.pid)
-    assert birth is not None
-    gone.wait()  # reaped: OpenProcess will report the pid as gone
-    record={"version":1,"name":"searchd","pid":gone.pid,"birth":birth,"port":8610,"state":"ready"}
-    config._private_write(process_control.record_path("searchd"),json.dumps(record))
+    api=process_control._RealWinApi()
+    gone=subprocess.Popen([sys._base_executable,"-u","-c",
+        "import sys;print('ready',flush=True);sys.stdin.readline()"],
+        stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
+    handle=None
     try:
-        assert process_control.stop_owned("searchd") is False
-    except RuntimeError as exc:
-        if "identity changed" not in str(exc):
-            raise
-        pytest.skip("the reaped pid was reused during the test")
-    assert not process_control.record_path("searchd").exists()
+        assert gone.stdout.readline().strip()==b"ready"
+        birth=process_control.birth_identity(gone.pid)
+        assert birth is not None
+        handle=api.open(gone.pid)
+        gone.stdin.write(b"\n");gone.stdin.flush()
+        gone.wait(timeout=5)
+        assert api.exited(handle)
+        record={"version":1,"name":"searchd","pid":gone.pid,"birth":birth,"port":8610,"state":"ready"}
+        path=process_control.record_path("searchd")
+        config._private_write(path,json.dumps(record))
+        before=path.read_bytes()
+        terminate=Mock(side_effect=AssertionError("an already-exited root must not cause a signal"))
+        monkeypatch.setattr(process_control._RealWinApi,"terminate",terminate)
+        with pytest.raises(RuntimeError,match="stop not confirmed; record retained"):
+            process_control.stop_owned("searchd")
+        terminate.assert_not_called()
+        assert path.read_bytes()==before
+    finally:
+        if gone.poll() is None: gone.kill()
+        gone.wait(timeout=5)
+        gone.stdin.close();gone.stdout.close()
+        if handle is not None: api.close(handle)
 
 
 @pytest.mark.skipif(os.name!="nt",reason="Windows termination-handle race")
-def test_stop_owned_forgets_record_when_target_exited_but_not_reaped(tmp_path,monkeypatch):
-    # Exited yet unreaped: the still-open zombie handle proves the recorded
-    # birth, so the stop verifies identity and forgets without signalling.
+def test_stop_owned_preserves_record_when_root_exited_before_wait(tmp_path,monkeypatch):
+    # Verify the OS exit state without calling Popen.wait/poll first. Retaining
+    # its birth identity still does not prove that all descendants have exited.
     import json,subprocess,sys
     monkeypatch.setenv("BZS_HOME",str(tmp_path))
     from bzs import config,process_control
-    zombie=subprocess.Popen([sys._base_executable,"-c","import time;time.sleep(0.3)"])
-    birth=process_control.birth_identity(zombie.pid)
-    assert birth is not None
-    time.sleep(0.8)  # exited, never reaped: OpenProcess succeeds, wait state exited
-    record={"version":1,"name":"worker","pid":zombie.pid,"birth":birth,"port":8611,"state":"ready"}
-    config._private_write(process_control.record_path("worker"),json.dumps(record))
+    api=process_control._RealWinApi()
+    zombie=subprocess.Popen([sys._base_executable,"-u","-c",
+        "import sys;print('ready',flush=True);sys.stdin.readline()"],
+        stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
+    handle=None
     try:
-        assert process_control.stop_owned("worker") is False
-        assert not process_control.record_path("worker").exists()
+        assert zombie.stdout.readline().strip()==b"ready"
+        birth=process_control.birth_identity(zombie.pid)
+        assert birth is not None
+        handle=api.open(zombie.pid)
+        zombie.stdin.write(b"\n");zombie.stdin.flush()
+        assert api.wait(handle,5000)=="signaled"
+        record={"version":1,"name":"worker","pid":zombie.pid,"birth":birth,"port":8611,"state":"ready"}
+        path=process_control.record_path("worker")
+        config._private_write(path,json.dumps(record))
+        before=path.read_bytes()
+        terminate=Mock(side_effect=AssertionError("unknown dead-root ancestry must not be signalled"))
+        monkeypatch.setattr(process_control._RealWinApi,"terminate",terminate)
+        with pytest.raises(RuntimeError,match="stop not confirmed; record retained"):
+            process_control.stop_owned("worker")
+        terminate.assert_not_called()
+        assert path.read_bytes()==before
     finally:
+        if zombie.poll() is None: zombie.kill()
         zombie.wait(timeout=5)
+        zombie.stdin.close();zombie.stdout.close()
+        if handle is not None: api.close(handle)

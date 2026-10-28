@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 REQUIRED = {
     'test_stop_owned_kills_the_whole_real_tree',
     'test_unrelated_process_survives_a_tree_stop',
+    'test_stop_owned_preserves_record_after_root_wait',
+    'test_stop_owned_preserves_record_when_root_exited_before_wait',
     'test_pid_reused_during_snapshot_enumeration_cannot_redirect_signal',
     'test_host_limit_held_under_real_fetch_churn',
     'test_internal_diagnostic_does_not_leak_exception_text',
