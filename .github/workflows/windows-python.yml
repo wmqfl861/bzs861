@@ -1,0 +1,44 @@
+name: Windows Python safety
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  windows-python:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install locked worker and Python test environment
+        shell: pwsh
+        run: |
+          python -m venv .venv-win
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./.venv-win/Scripts/python.exe -m pip install -r tools/requirements-s1-lock.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./.venv-win/Scripts/python.exe -m pip install --no-deps --no-build-isolation -e "python[test]"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./.venv-win/Scripts/python.exe -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Full Python tests including actual Windows process trees
+        shell: pwsh
+        working-directory: python
+        run: |
+          & ../.venv-win/Scripts/python.exe -m pytest -q -p no:cacheprovider tests --junitxml="$env:GITHUB_WORKSPACE/windows-python.xml"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Require real process and resource-bound cases without skips
+        shell: pwsh
+        run: |
+          & ./.venv-win/Scripts/python.exe tools/verify_windows_python.py "$env:GITHUB_WORKSPACE/windows-python.xml"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Retain Python report including failed runs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-python-${{ github.sha }}
+          path: windows-python.xml
+          if-no-files-found: warn
+          retention-days: 14

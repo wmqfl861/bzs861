@@ -1,7 +1,7 @@
 """Synthetic origins -> real worker -> persistent core -> HTTP/CLI/MCP discovery.
 
 No public network requests. Only explicitly mapped .test hosts use the loopback
-test exception; the production resolver and reviewed-site checks stay enabled.
+ test exception; the production resolver and reviewed-site checks stay enabled.
 """
 from __future__ import annotations
 
@@ -259,6 +259,69 @@ class DiscoveryEndToEnd(unittest.TestCase):
         self.assertEqual(results["content_trust"], "untrusted_web_content")
         self.assertIn(self.stack.url("/map/candidates/atom"), [item["url"] for item in results["items"]])
         self.assertTrue(all(item["body_read"] is False for item in results["items"]))
+
+    def test_06b_gzip_index_via_mcp_preserves_idempotency_scope_and_unread_candidates(self):
+        from mcp.client.session import ClientSession
+        from mcp.client.stdio import StdioServerParameters, stdio_client
+        before = self.ok("stats")["documents"]
+        async def run():
+            env = dict(self.stack.env, BZS_CORE_URL=f"http://127.0.0.1:{self.stack.core_port}",
+                       SEARCH_API_TOKEN=self.stack.api_token)
+            launch = StdioServerParameters(command=CONFIG.python, args=["-m", "bzs.mcp_server"],
+                                          env=env, cwd=str(CONFIG.pydir))
+            with open(self.stack.root / "gzip-mcp.log", "w", encoding="utf-8") as log:
+                async with stdio_client(launch, errlog=log) as streams:
+                    async with ClientSession(*streams) as session:
+                        await session.initialize()
+                        args = {"site_id": "bzs-map", "seeds": [self.stack.url("/map/gzip/index.xml.gz")],
+                                "scope_path": "/map/gzip/", "idempotency_key": "gzip-mcp",
+                                "max_requests": 10, "max_bytes": 32768}
+                        submitted = await session.call_tool("map_site", args)
+                        self.assertFalse(submitted.is_error, submitted)
+                        job_id = submitted.structured_content["job_id"]
+                        deadline = asyncio.get_running_loop().time() + 15
+                        while True:
+                            response = await session.call_tool("get_job", {"job_id": job_id})
+                            self.assertFalse(response.is_error, response)
+                            job = response.structured_content
+                            if job["state"] in ("succeeded", "failed", "partial", "cancelled"):
+                                break
+                            self.assertLess(asyncio.get_running_loop().time(), deadline, job)
+                            await asyncio.sleep(0.025)
+                        self.assertEqual(job["state"], "succeeded", job)
+                        result = await session.call_tool("job_results", {"job_id": job_id})
+                        self.assertFalse(result.is_error, result)
+                        counts = self.stack.counts()
+                        replay = await session.call_tool("map_site", args)
+                        self.assertFalse(replay.is_error, replay)
+                        self.assertEqual(replay.structured_content["job_id"], job_id)
+                        self.assertEqual(self.stack.counts(), counts)
+                        return result.structured_content
+        result = asyncio.run(asyncio.wait_for(run(), 30))
+        items = result["items"]
+        # Sitemap index documents are themselves metadata candidates; neither
+        # they nor the leaf URLs are ingested as page bodies by a map job.
+        self.assertEqual({item["url"] for item in items},
+                         {self.stack.url("/map/gzip/leaf.xml.gz"), self.stack.url("/map/gzip/candidate-one")})
+        self.assertEqual(len(items), 2)
+        self.assertTrue(all(not item["body_read"] and "snapshot_id" not in item for item in items))
+        self.assertEqual(self.ok("stats")["documents"], before)
+        counts = self.stack.counts()
+        for path in ("/map/gzip/index.xml.gz", "/map/gzip/leaf.xml.gz"):
+            self.assertEqual(counts.get(("bzs-map.test", path), 0), 1)
+        for path in ("/map/gzip/candidate-one", "/map/private/never", "/outside/never.xml.gz"):
+            self.assertEqual(counts.get(("bzs-map.test", path), 0), 0)
+
+    def test_06c_damaged_archives_never_publish_partial_candidates(self):
+        before = self.ok("stats")["documents"]
+        for kind in ("multimember", "truncated"):
+            job = self.submit([f"/map/gzip/{kind}.xml.gz"], "gzip-" + kind,
+                              scope_path="/map/gzip/")
+            final = self.completed(job["job_id"])
+            self.assertEqual(final["state"], "failed", final)
+            self.assertIn("E_DISCOVERY_PARSE", json.dumps(final))
+            self.assertEqual(self.results(job["job_id"]), [])
+        self.assertEqual(self.ok("stats")["documents"], before)
 
     def test_07_native_cli_uses_the_same_map_operation(self):
         executable = Path(CONFIG.server).with_name("searchctl.exe" if os.name == "nt" else "searchctl")
