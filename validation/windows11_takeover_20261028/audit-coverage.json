@@ -1,13 +1,59 @@
 {
   "method": "four parallel read-only audit agents plus lead re-review of every changed path and the process/network/storage boundaries; all findings re-verified against source before fixing",
   "read_fully": {
-    "cpp": ["src/maintenance.cpp", "src/store.cpp (open/schema/backup/search paths)", "src/service.cpp", "src/web.cpp (read/freshness/shared-flight paths)", "apps/searchd/main.cpp", "apps/searchctl/main.cpp", "tests/storage_maintenance.cpp", "tests/background_pool.cpp", "tests/launcher_lifecycle.py"],
-    "python": ["bzs/cli.py", "bzs/process_control.py", "bzs/config.py", "bzs/core_client.py", "bzs/worker/server.py", "bzs/worker/rpc.py", "bzs/mcp_server.py", "bzs/mcp_auth.py", "bzs/worker/netguard.py", "tests/e2e_web.py (harness)", "tests/e2e_revocation.py (harness)"],
-    "build_ci": [".github/workflows/ci.yml", "CMakeLists.txt", "CMakePresets.json", "python/pyproject.toml", "tools/requirements-s1-lock.txt"]
+    "cpp": [
+      "src/maintenance.cpp",
+      "src/store.cpp (open/schema/backup/search paths)",
+      "src/service.cpp",
+      "src/web.cpp (read/freshness/shared-flight paths)",
+      "apps/searchd/main.cpp",
+      "apps/searchctl/main.cpp",
+      "tests/storage_maintenance.cpp",
+      "tests/background_pool.cpp",
+      "tests/launcher_lifecycle.py"
+    ],
+    "python": [
+      "bzs/cli.py",
+      "bzs/process_control.py",
+      "bzs/config.py",
+      "bzs/core_client.py",
+      "bzs/worker/server.py",
+      "bzs/worker/rpc.py",
+      "bzs/mcp_server.py",
+      "bzs/mcp_auth.py",
+      "bzs/worker/netguard.py",
+      "tests/e2e_web.py (harness)",
+      "tests/e2e_revocation.py (harness)"
+    ],
+    "build_ci": [
+      ".github/workflows/ci.yml",
+      "CMakeLists.txt",
+      "CMakePresets.json",
+      "python/pyproject.toml",
+      "tools/requirements-s1-lock.txt"
+    ]
   },
   "reviewed_via_agent_reports_with_lead spot_checks": {
-    "cpp_concurrency_search": ["src/batch.cpp", "src/map.cpp", "src/crawl.cpp", "src/sessions.cpp", "src/retention.cpp", "src/revocation.cpp", "src/query.cpp", "src/tokenizer.cpp", "src/publication.cpp", "src/http_cache.cpp", "include/bzs/request_executor.hpp"],
-    "python_worker": ["worker/fetch.py", "worker/robots.py", "worker/discovery.py", "worker/sites.py", "worker/sources/*"]
+    "cpp_concurrency_search": [
+      "src/batch.cpp",
+      "src/map.cpp",
+      "src/crawl.cpp",
+      "src/sessions.cpp",
+      "src/retention.cpp",
+      "src/revocation.cpp",
+      "src/query.cpp",
+      "src/tokenizer.cpp",
+      "src/publication.cpp",
+      "src/http_cache.cpp",
+      "include/bzs/request_executor.hpp"
+    ],
+    "python_worker": [
+      "worker/fetch.py",
+      "worker/robots.py",
+      "worker/discovery.py",
+      "worker/sites.py",
+      "worker/sources/*"
+    ]
   },
   "not_covered_this_round": [
     "python/bzs/evaluation*.py, golden.py, probe*.py, replay.py (offline evaluation tooling; no Windows-native hazard identified, not exercised end-to-end here)",
@@ -23,12 +69,34 @@
     "thread pools bounded; stop tokens rechecked inside claim transactions; late completions are clean no-ops"
   ],
   "open_observations_not_fixed": [
-    "web.cpp search cache lock held across a Store transaction (serialization, no deadlock: lock order cache->store only)",
-    "politeness sleep up to 3s is not stop-token aware at the margins",
-    "worker internal errors are not logged anywhere (leak-safe but undiagnosable)",
-    "business E_PARAMS returns HTTP 200 vs envelope E_PARAMS 400 (contract-sanctioned)",
-    "search_registry_identity recomputed per lease/completion; publication SQL function parses JSON per row (Debug CPU hot spots behind the suite timeouts)",
-    "mcp_auth load_clients does not type-check scopes; add/revoke clients are unlocked read-modify-writes",
-    "worker _host_locks grows without bound (memory only)"
-  ]
+    "web.cpp search cache lock is held across a Store transaction; current lock order is cache->store and no deadlock was established, but serialization remains a performance observation requiring same-input profiling before optimization.",
+    "politeness sleep can delay stop-token observation by up to the existing bounded sleep interval at margins; long-running crawl/map lane interaction has not had a dedicated soak test.",
+    "search_registry_identity is recomputed per lease/completion and publication SQL parses JSON per row; possible Debug CPU hot spots are not yet backed by a controlled before/after benchmark.",
+    "Offline evaluation/probe/replay tools were not exercised end-to-end in the Windows 11 takeover audit.",
+    "MSan/TSan are not configured in upstream CI; ASan/UBSan is covered by the Linux CI workflow."
+  ],
+  "resolved_since_initial_audit": [
+    {
+      "item": "mcp_auth scopes type validation and add/revoke lost-update race",
+      "commit": "0590036704099be31466e66f7840b5de36b321a8",
+      "evidence": "strict registry schema, duplicate rejection, locked read-modify-write and concurrency tests"
+    },
+    {
+      "item": "Worker host lock registry unbounded growth",
+      "commit": "f151d4a32273cead6731ddce7343092f5b595e1b",
+      "evidence": "4096 hard bound, holder/waiter/reference accounting, only truly idle eviction, capacity rejection tests"
+    },
+    {
+      "item": "Worker internal errors not diagnosable",
+      "commit": "d98452b",
+      "evidence": "stderr diagnostic with bounded method/category/module location and no exception values or request data"
+    },
+    {
+      "item": "Windows process tree PID reuse and stop result/record race",
+      "commit": "253b4d115485307d4cec6e0396e6c9f8f652fbe1",
+      "evidence": "pinned handles, ancestry recheck, conservative refusal and retained-record regression tests"
+    }
+  ],
+  "current_revision": "8085b86a844699f0590d6dcab2ec17f8234c6b31",
+  "updated": "2026-10-28"
 }
