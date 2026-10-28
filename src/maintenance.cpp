@@ -156,7 +156,12 @@ Json convert_storage_incremental(const std::filesystem::path& file,int timeout_m
   exec(src.db,"PRAGMA locking_mode=EXCLUSIVE; BEGIN EXCLUSIVE; COMMIT;");
   register_fts_tokenizer(src.db);sqlite3_progress_handler(src.db,1000,Deadline::expired,&deadline);
   supported(src.db);integrity(src.db,false);auto before=describe(src.db);
-  if(before.at("auto_vacuum").num()==2){before.set("status","already_incremental");return before;}
+  if(before.at("auto_vacuum").num()==2){
+    // A no-op conversion is still a maintenance request: verify FTS shadow
+    // consistency too; ordinary SQLite integrity_check is not a substitute.
+    integrity(src.db,true);
+    before.set("status","already_incremental");return before;
+  }
   const auto pages=before.at("page_count").num(),size=before.at("page_size").num();
   require(pages>0&&size>0&&pages<=(std::numeric_limits<std::int64_t>::max()-16*1024*1024)/(size*3),"E_STORAGE_FULL","Maintenance size is out of range",507);
   const auto needed=static_cast<std::uintmax_t>(pages*size*3+16*1024*1024);

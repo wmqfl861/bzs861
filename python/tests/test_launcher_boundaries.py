@@ -67,3 +67,11 @@ def test_configured_startup_deadline_passed_without_changing_request_timeout(cfg
     cli.start(cfg)
     assert spawn.call_count==2
     assert all(c.kwargs=={"timeout":17} for c in spawn.call_args_list)
+
+def test_cli_reports_lifecycle_errors_without_traceback(cfg, monkeypatch, capsys):
+    monkeypatch.setattr(config, "load", lambda: cfg)
+    monkeypatch.setattr(cli, "ensure_running", Mock(side_effect=RuntimeError("health check failed")))
+    assert cli.main(["start"]) == 2
+    captured = capsys.readouterr()
+    assert "E_CLI: health check failed" in captured.err
+    assert "Traceback" not in captured.err
