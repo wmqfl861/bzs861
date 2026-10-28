@@ -1,3 +1,15 @@
+# 2026-10-28 当前入口：PR #8 接续复核
+
+当前输入为 `0c47a5f5539b47cbb5f53398ed6e41de5ba9eb69`。以[本批执行说明](../planning/OWNER_REVIEW_20261028.md)及 `validation/owner_review_20261028/result.json` 为准。此前本地 Debug 超时/缺依赖描述属于历史批次，不是当前新版本结果。
+
+本批修复进程快照竞态、host容量/并发、异常值泄露和认证配置歧义，并增加 host health诊断、只读mcp-token check、gzip真实MCP端到端覆盖与Windows完整pytest门禁。Release全量42/42，内含Python1573通过/5平台跳过；新SHA远端CI另查。没有合并main或部署Windows11；不要把旧输入成功当新版本通过。
+
+新增Windows完整pytest曾发现4个失败，已修复代码/旧测试并保留原日志；新提交自身CI必须重新确认，不能沿用早前输入成功。已退出的根即使句柄仍可打开，也保守拒绝自动清理其后代。
+
+保留D1–D7、来源禁用、schema15及原签收数量。审核范围主要为最新Python/进程/Worker/认证/地图调用链；未逐行审计全部历史C++、评估/回放或独立执行全部故障场景。历史交接如下，不能作为当前发布指令：
+
+---
+
 # 2026-10-27 当前接续：离线维护、启动器、RPC
 
 本批从 PR #5 的 `d29223551041f5d0f39fa4ca4c6ce936af5a89d9` 接续。输入PR的Linux/Windows运行40513707647已成功；不能把该成绩当成本批新代码CI。当前顺序见[三个模块计划](../planning/NEXT_THREE_MODULES_20261027.md)。

@@ -97,3 +97,11 @@ def test_lock_deadline_rejected_before_touching_files(tmp_path, deadline):
         with pc.control_lock(path, timeout_s=deadline):
             pass
     assert not path.exists()
+
+
+def test_already_exited_root_is_unknown_even_when_handle_remains():
+    api = FakeWinApi([FakeProc(ROOT, 1, ROOT_CREATION, alive=False),
+                      FakeProc(200, ROOT, 2000)])
+    assert pc._win_terminate_tree(ROOT, ROOT_CREATION, api=api)
+    assert not api.terminate_order and api.table[200].alive
+    assert api.closed == [ROOT]

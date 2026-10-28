@@ -36,7 +36,7 @@ def test_frozen_dataset_preserves_original_content_and_separates_splits():
     assert loaded.manifest_digest == hashlib.sha256((GOLDEN / "manifest.json").read_bytes()).hexdigest()
     assert len(loaded.queries) == 40
     assert Counter(q["split"] for q in loaded.queries) == {"development": 20, "regression": 15, "holdout": 5}
-    manifest = json.loads((GOLDEN / "manifest.json").read_text())
+    manifest = json.loads((GOLDEN / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["relevance_labels"] == "not_provided"
     assert manifest["ranking_evaluation"] == "not_executed"
 
@@ -154,7 +154,7 @@ def test_selection_rejects_unknown_capabilities_and_noninteger_limits(capability
 def test_frozen_input_change_is_rejected_without_rewriting_manifest(tmp_path):
     path = copy_frozen(tmp_path)
     manifest_before = (tmp_path / "manifest.json").read_bytes()
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     data["queries"][0]["query"] = "changed query"
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="hash mismatch"):
@@ -173,7 +173,7 @@ def test_frozen_input_change_is_rejected_without_rewriting_manifest(tmp_path):
 def test_frozen_manifest_refuses_changed_counts_identity_and_false_acceptance(tmp_path, field, value):
     path = copy_frozen(tmp_path)
     manifest_path = tmp_path / "manifest.json"
-    data = json.loads(manifest_path.read_text())
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
     data[field] = value
     manifest_path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError):
@@ -182,22 +182,24 @@ def test_frozen_manifest_refuses_changed_counts_identity_and_false_acceptance(tm
 
 def test_frozen_dataset_cannot_downgrade_by_deleting_its_marker(tmp_path):
     path = copy_frozen(tmp_path)
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     del data["dataset_id"]
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="frozen dataset"):
         load_golden(path)
 
 
-def test_missing_manifest_fails_and_crlf_checkout_keeps_exact_input_digest(tmp_path):
+@pytest.mark.parametrize("checkout_eol", [b"\n", b"\r\n"], ids=["lf-checkout", "crlf-checkout"])
+def test_missing_manifest_fails_and_crlf_checkout_keeps_exact_input_digest(tmp_path, checkout_eol):
     path = copy_frozen(tmp_path)
     manifest = tmp_path / "manifest.json"
     manifest.unlink()
     with pytest.raises(FileNotFoundError):
         load_golden(path)
     path = copy_frozen(tmp_path)
-    path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+    path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", checkout_eol))
+    path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
     loaded = load_golden(path)
     assert loaded.frozen is True
     assert loaded.digest == hashlib.sha256(path.read_bytes()).hexdigest()
-    assert loaded.digest != json.loads(manifest.read_text())["queries_sha256"]
+    assert loaded.digest != json.loads(manifest.read_text(encoding="utf-8"))["queries_sha256"]

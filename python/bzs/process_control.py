@@ -206,6 +206,10 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
             opened.append(root)
             if api.creation(root) != root_creation:
                 raise RuntimeError(f"pid {root_pid}: identity changed; refusing termination")
+            if api.exited(root):
+                # Preserve the existing fail-closed contract for an already
+                # exited root, even if another process still holds its handle.
+                return [f"pid {root_pid}: root had already exited; record retained"]
         except (_ProcessGone, _ProcessDenied, OSError) as exc:
             return [f"pid {root_pid}: root identity unavailable ({type(exc).__name__}); record retained"]
         try:
