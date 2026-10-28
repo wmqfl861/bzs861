@@ -495,7 +495,13 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("--insecure-no-auth is unavailable; HTTP MCP requires a client token")
     if args.cmd == "probe" and args.include_candidates and not args.only:
         ap.error("--include-candidates requires an explicit nonempty --only list")
-    return args.fn(args)
+    try:
+        return args.fn(args)
+    except (OSError, RuntimeError, ValueError) as exc:
+        # Expected local-file/lifecycle failures should be concise operator
+        # errors. Do not swallow SystemExit, KeyboardInterrupt, or other bugs.
+        print(f"E_CLI: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

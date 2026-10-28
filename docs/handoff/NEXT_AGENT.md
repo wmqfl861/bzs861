@@ -58,3 +58,9 @@ D1–D7 remain pending. No source activation, B-24 expansion, proof-chain busine
 mechanism, business schema upgrade or history rewriting. Version0.1.10/schema15,
 83 packages/161 acceptance IDs/10 slices and 37 partial/46 not_started/0 accepted
 are unchanged. Do not claim the whole phase/product or target-device deployment.
+
+## 2026-10-27 全代码复核追加
+
+复核 PR #6 的完整变更后补两处防御：已处于 INCREMENTAL 的数据库在返回 `already_incremental` 前也执行 FTS 完整性核查；本机 CLI 对预期的文件/生命周期异常返回简短非零错误，不输出误导性的 Python traceback。新增 `already_incremental_still_checks_fts_integrity`（6组/133断言）及 CLI 错误输出测试。旧schema、隔离、身份保留与来源策略均未改变。
+
+本轮本地复测：维护专项6组/133断言通过；启动器/存储 CLI 定向 pytest 14通过。当前容器缺少锁定依赖 `trafilatura` 和 `mcp`，所以该容器未运行完整 Python/Worker RPC 套件；准确提交的完整 Linux/Windows CI仍是合并门槛。测试失败/依赖缺失不记作通过。

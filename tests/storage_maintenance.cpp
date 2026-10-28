@@ -15,7 +15,7 @@ int assertions=0;
 void sql(sqlite3* db,const char* s){CHECK(sqlite3_exec(db,s,nullptr,nullptr,nullptr)==SQLITE_OK);}
 struct DB {sqlite3* p=nullptr;explicit DB(const std::filesystem::path& f){CHECK(sqlite3_open(f.string().c_str(),&p)==SQLITE_OK);register_fts_tokenizer(p);}~DB(){sqlite3_close(p);}};
 std::int64_t num(sqlite3* db,const char* q){sqlite3_stmt*s=nullptr;CHECK(sqlite3_prepare_v2(db,q,-1,&s,nullptr)==SQLITE_OK);std::unique_ptr<sqlite3_stmt,decltype(&sqlite3_finalize)> h(s,sqlite3_finalize);CHECK(sqlite3_step(s)==SQLITE_ROW);return sqlite3_column_int64(s,0);}
-template<class F>void rejects(F f,const std::string& c){try{f();}catch(const Error&e){CHECK(e.code==c);return;}throw std::runtime_error("expected "+c);}
+template<class F>void rejects(F f,const std::string& c){try{f();}catch(const Error&e){if(e.code!=c)throw std::runtime_error("expected "+c+", got "+e.code);CHECK(e.code==c);return;}throw std::runtime_error("expected "+c);}
 struct Temp {std::filesystem::path p=std::filesystem::temp_directory_path()/("bzs-maint-"+random_id());Temp(){std::filesystem::create_directories(p);}~Temp(){std::error_code e;std::filesystem::remove_all(p,e);}};
 struct Fixture {std::string evidence,job,session,doc;};
 Fixture fixture(const std::filesystem::path& file,int mode) {
@@ -61,6 +61,14 @@ void refusals_do_not_convert() {
  {DB db(path);sql(db.p,"DROP VIEW custom; UPDATE settings SET value='unknown-format' WHERE key='fts_tokenizer_version';");}
  rejects([&]{convert_storage_incremental(path);},"E_SCHEMA_VERSION");
 }
+void already_incremental_still_checks_fts_integrity() {
+ Temp t;const auto path=t.p/"state.db";fixture(path,0);
+ CHECK(convert_storage_incremental(path).at("status").str()=="converted");
+ // Corrupt derived FTS storage: a no-op conversion must never report success.
+ {DB db(path);sql(db.p,"DELETE FROM content_fts_data WHERE id=(SELECT min(id) FROM content_fts_data)");}
+ rejects([&]{convert_storage_incremental(path);},"E_STORAGE_INTEGRITY");
+ {DB db(path);CHECK(num(db.p,"PRAGMA auto_vacuum")==2);}
+}
 void rowid_change_rejected_before_source_rewrite() {
  Temp t;auto path=t.p/"state.db";fixture(path,0);
  {DB db(path);sql(db.p,"CREATE TABLE custom_gap(v TEXT);INSERT INTO custom_gap(rowid,v)VALUES(77,'keep'),(99,'keep2');");}
@@ -82,4 +90,4 @@ void deadline_and_readonly_inspection() {
  {DB db(path);CHECK(num(db.p,"PRAGMA auto_vacuum")==0);CHECK(num(db.p,"SELECT count(*) FROM large_table")==512);CHECK(num(db.p,"PRAGMA user_version")==15);}
 }
 }
-int main(){try{convert_keeps_current_database();std::cout<<"PASS none_full_conversion_preserves_state\n";refusals_do_not_convert();std::cout<<"PASS lock_schema_quarantine_refusals\n";rowid_change_rejected_before_source_rewrite();std::cout<<"PASS rowid_change_refused\n";case_insensitive_rowid_aliases_are_refused();std::cout<<"PASS alias_shadowing_refused\n";deadline_and_readonly_inspection();std::cout<<"PASS deadline_and_readonly\n";std::cout<<"5 groups / "<<assertions<<" assertions / 0 failures\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
+int main(){try{convert_keeps_current_database();std::cout<<"PASS none_full_conversion_preserves_state\n";refusals_do_not_convert();std::cout<<"PASS lock_schema_quarantine_refusals\n";already_incremental_still_checks_fts_integrity();std::cout<<"PASS already_incremental_fts_integrity\\n";rowid_change_rejected_before_source_rewrite();std::cout<<"PASS rowid_change_refused\n";case_insensitive_rowid_aliases_are_refused();std::cout<<"PASS alias_shadowing_refused\n";deadline_and_readonly_inspection();std::cout<<"PASS deadline_and_readonly\n";std::cout<<"5 groups / "<<assertions<<" assertions / 0 failures\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}

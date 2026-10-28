@@ -22,6 +22,6 @@ VACUUM 可能重排没有整数主键的 rowid，因此预演只要发现任何 
 
 超时范围为 1..600000 毫秒，使用单调时钟及 SQLite 进度回调；这是可中断 SQL 的期限，不是物理磁盘 I/O 的硬实时上限。预演或源 VACUUM 中断会报错，不自动重试；成功改写后若复核未完成，只会收紧既有隔离标志并返回 `E_MAINTENANCE_QUARANTINED`。若隔离写入本身也失败，则返回 `E_MAINTENANCE_UNVERIFIED`：必须保持停服并人工检查，不能假定自动隔离成功。不要手动将隔离值改回 0。
 
-成功结果包含前后页数、模式及普通表检查数量，不包含业务正文。已是 INCREMENTAL 则报告 `already_incremental`，不重复全库重写。之后普通压缩仍沿用每次最多128页的增量回收限制。本轮不代表断电、坏盘、可信备份恢复或完整 P2-A 验收。
+成功结果包含前后页数、模式及普通表检查数量，不包含业务正文。已是 INCREMENTAL 则先执行 SQLite 与 FTS 完整性检查，再报告 `already_incremental`，不重复全库重写；发现不一致仍返回失败，不把“无需转换”当作“数据库健康”。之后普通压缩仍沿用每次最多128页的增量回收限制。本轮不代表断电、坏盘、可信备份恢复或完整 P2-A 验收。
 
 实现依据：SQLite 官方 `lang_vacuum.html`、`pragma.html#pragma_locking_mode`、`c3ref/backup_finish.html`。测试使用可丢弃的离线合成数据库，不访问用户实际数据库。
