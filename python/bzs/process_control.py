@@ -370,28 +370,42 @@ def _forget(name: str, record: dict) -> None:
 
 
 @contextlib.contextmanager
-def control_lock() -> Iterator[None]:
-    p = config.home() / "run" / "launcher.lock"
+def control_lock(path: "os.PathLike[str] | None" = None, *, timeout_s: float = 0.0) -> Iterator[None]:
+    """Exclusive lock over one launcher state directory (default launcher.lock).
+
+    timeout_s=0 keeps the historical fail-fast behavior ("another launcher
+    operation is running"); a positive timeout retries until the deadline for
+    short critical sections such as client-token read-modify-writes.
+    """
+    p = Path(path) if path is not None else config.home() / "run" / "launcher.lock"
     p.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd = os.open(p, os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
         if not stat.S_ISREG(os.fstat(fd).st_mode):
             raise RuntimeError("launcher lock is not a regular file")
-        if os.name == "nt":
-            import msvcrt
-            if os.fstat(fd).st_size == 0:
-                os.write(fd, b"0")
-            os.lseek(fd, 0, 0)
-            try:
-                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-            except OSError as exc:
-                raise RuntimeError("another launcher operation is running") from exc
-        else:
-            import fcntl
-            try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except OSError as exc:
-                raise RuntimeError("another launcher operation is running") from exc
+        deadline = time.monotonic() + max(0.0, timeout_s)
+        while True:
+            if os.name == "nt":
+                import msvcrt
+                if os.fstat(fd).st_size == 0:
+                    os.write(fd, b"0")
+                os.lseek(fd, 0, 0)
+                try:
+                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                    break
+                except OSError as exc:
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError("another launcher operation is running") from exc
+                    time.sleep(0.05)
+            else:
+                import fcntl
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as exc:
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError("another launcher operation is running") from exc
+                    time.sleep(0.05)
         yield
     finally:
         os.close(fd)  # keep the lock inode: unlinking permits split locks
