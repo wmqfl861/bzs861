@@ -1944,7 +1944,7 @@ namespace bzs {
       throw Error("E_BACKUP", "Cannot publish backup safely on this filesystem", 500);
     }
     Json report=Json::object();
-    report.set("backup_id", dst.stem().string());
+    report.set("backup_id", utf8_path(dst.stem()));
     report.set("pages", pages);
     report.set("restore_state", "quarantined");
     report.set("includes_credentials", false);

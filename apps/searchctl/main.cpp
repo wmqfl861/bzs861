@@ -179,7 +179,7 @@ int main(int argc, char**argv) {
       auto type=i<argc?arg():(std::filesystem::path(path).extension()==".txt"?"text/plain":"text/html");
       params.set("content_type", type);
       params.set("content", read_file(path));
-      params.set("title", std::filesystem::path(path).filename().string());
+      params.set("title", utf8_path(std::filesystem::path(path).filename()));
     } else if(command=="query"||command=="search"||command=="fixture-search") {
       op=command=="query"?"query.compile":command=="fixture-search"?"fixtures.search":"search";
       std::string q=arg();
