@@ -304,3 +304,18 @@ def test_gunzip_archive_round_trip_bounds_and_refusals():
         gunzip_archive(packed + b"zz", len(payload))
     with pytest.raises(ValueError, match="trailing"):
         gunzip_archive(packed + gzip.compress(b"<urlset/>"), len(payload))  # second member
+
+
+async def test_host_lock_registry_is_bounded_and_keeps_busy_entries():
+    from bzs.worker.fetch import MAX_HOST_LOCKS, Fetcher
+    fetcher = Fetcher(NetPolicy(), per_host=2)
+    for i in range(MAX_HOST_LOCKS + 64):
+        fetcher._sem(f"host{i}.example")
+    assert len(fetcher._host_locks) <= MAX_HOST_LOCKS
+    busy = fetcher._sem("busy.example")
+    await busy.acquire()
+    await busy.acquire()
+    assert busy.locked()
+    for i in range(256):
+        fetcher._sem(f"other{i}.example")
+    assert "busy.example" in fetcher._host_locks  # busy entries are never retired

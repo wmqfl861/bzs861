@@ -193,6 +193,9 @@ def decode_body(body: bytes, header_charset: str | None) -> tuple[str, str]:
     return body.decode("utf-8", errors="replace"), "utf-8-replace"
 
 
+MAX_HOST_LOCKS = 4096
+
+
 class Fetcher:
     def __init__(self, policy: NetPolicy, *, user_agent: str = DEFAULT_UA,
                  accept_language: str = "zh-CN,zh;q=0.9,en;q=0.8", max_bytes: int = 8 * 1024 * 1024,
@@ -229,6 +232,15 @@ class Fetcher:
 
     def _sem(self, host: str) -> asyncio.Semaphore:
         if host not in self._host_locks:
+            if len(self._host_locks) >= MAX_HOST_LOCKS:
+                # Bound long-run growth: retire idle per-host semaphores. Busy
+                # ones keep their entry; the registry can only exceed the cap
+                # by the number of concurrently busy distinct hosts, which the
+                # bounded pools already limit.
+                for idle in [h for h, s in self._host_locks.items() if not s.locked()]:
+                    if len(self._host_locks) < MAX_HOST_LOCKS:
+                        break
+                    del self._host_locks[idle]
             self._host_locks[host] = asyncio.Semaphore(self.per_host)
         return self._host_locks[host]
 

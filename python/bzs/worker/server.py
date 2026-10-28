@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import hmac
 import json
+import logging
 import re
 import sys
 import time
@@ -898,6 +899,21 @@ class Worker:
 
 from .rpc import InvalidEnvelope, MAX_BODY, decode_envelope
 
+_log = logging.getLogger("bzs.worker")
+
+
+def configure_stderr_logging() -> None:
+    """Terse diagnostics on stderr; stdout stays reserved for the ready line.
+
+    The launcher pipes worker stderr to logs/worker.log, so internal failures
+    become diagnosable without echoing anything into RPC responses. No token,
+    header or request body is ever logged; only method names and tracebacks.
+    """
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+    _log.addHandler(handler)
+    _log.setLevel(logging.INFO)
+
 
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
@@ -910,6 +926,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
             return web.json_response({"error": {"code": "E_AUTH", "message": "invalid worker token"}}, status=401)
         if request.headers.get("Origin"):
             return web.json_response({"error": {"code": "E_ORIGIN", "message": "browser origins are refused"}}, status=403)
+        method_name: str | None = None
         try:
             method_name, params = decode_envelope(await request.read())
             method = methods.get(method_name)
@@ -919,6 +936,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
             try:
                 return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False, allow_nan=False))
             except (ValueError, TypeError, UnicodeError):
+                _log.exception("rpc result is not serializable JSON (method=%r)", method_name)
                 return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker result is not valid JSON"}})
         except web.HTTPRequestEntityTooLarge:
             return web.json_response({"error": {"code": "E_REQUEST_TOO_LARGE", "message": "worker request exceeds body limit"}}, status=413)
@@ -929,6 +947,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
         except (ValueError, TypeError) as exc:
             return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)[:300]}})
         except Exception:  # report, never crash the worker
+            _log.exception("rpc internal failure (method=%r)", method_name)
             return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker operation failed"}})
 
     app = web.Application(client_max_size=MAX_BODY)
@@ -977,6 +996,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"E_CONFIG: {exc}", file=sys.stderr)
         return 2
     app = make_app(worker, token)
+    configure_stderr_logging()
+    _log.info("worker starting on 127.0.0.1:%d (sources manifest %s)", args.port, args.sources)
 
     async def run() -> None:
         runner = web.AppRunner(app, access_log=None)
