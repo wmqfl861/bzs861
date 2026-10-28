@@ -38,6 +38,7 @@ validation/windows11_takeover_20261028/audit-coverage.json。
 | `cc704c3` fix(web+tests) | 本机对无监听端口的回环连接是**静默丢弃**（实测 2s 超时而非拒绝），worker 死后 matching_profile 的 fetch.profile（本地无副作用探测）E_WORKER_TIMEOUT 致命 → 缓存读 504，违背"worker 挂了本地功能存活"。该探测现把 TIMEOUT 与 UNAVAILABLE 同等回退（真实抓取超时语义不变）。e2e 框架只杀残根导致 fakeweb.log/metadata 句柄滞留（WinError 32）：Stack.kill 树杀、rows() 显式关闭 sqlite 连接、test_10 杀 worker 前先补缓存去除墙钟耦合。e2e_web 15/15（原 1 败 1 错）。 |
 | `6f80450` test(win) | 实测 Debug 单独运行：direct_shared 260s（34 测试/10259 断言全过）超 240s 护栏、sessions 273s（23/298 全过）超 180s。套件内无 pacing sleep，成本为 synchronous=FULL 每提交 fsync + Debug CPU。Windows 护栏提至 420s（1.5x 余量），断言全保留。 |
 | `b93d6fe` fix(searchd) | Windows 上 SO_REUSEADDR 允许第二个 searchd **静默双绑定**忙端口并抢占连接（实测两个 searchd.exe 同绑 48610 且都报 ready）。Windows 改 SO_EXCLUSIVEADDRUSE：忙端口启动响亮失败（实测 rc=2 + E_ 错误），正常 stop→start 不受影响；POSIX 保持 reuse_address。 |
+| `898126d` fix(storage) | 首次推送 af90aae 的 Windows CI（CP1252 代码页）在新增 unicode_space_paths 组失败："No mapping for the Unicode character exists…"——`Store::backup` 的 backup_id 与 searchctl ingest 的 title 仍用 `path::string()` 经 ANSI 代码页转换，CP1252 无法表示中文名即抛错（ACP 936/65001 上不显现）。改 utf8_path，JSON 报告在所有代码页携带真实 UTF-8。storage_maintenance 双配置 7 组/146 断言本地复验通过；CP1252 行为由远端 Windows CI 验证。 |
 
 记录未修（非缺陷、业务决策或后续项）：
 - 五套件历史并行超时根因（fsync+Debug CPU 叠加）已定位并实测；改
@@ -68,6 +69,20 @@ validation/windows11_takeover_20261028/audit-coverage.json。
 launcher_lifecycle（venv 残根，4422e2e）、e2e_web 15 中 2 个
 （残根+丢弃型连接+墙钟，cc704c3）、e2e_revocation（句柄滞留，cc704c3）、
 sessions/direct_shared 超时（实测慢而有限，6f80450）。
+
+## 推送与远端 CI
+
+- PR：https://github.com/wmqfl861/bzs861/pull/8（draft；
+  base=`work/project-audit-followup-20261027`，即 PR #7 头分支）
+- 首次推送 `af90aae`：Linux success / Windows failure（storage_maintenance，
+  CP1252 backup_id 窄转换）→ 修复 `898126d`。
+- 最终提交 `898126ded189c03d750956f790f75140483a9af7`：
+  [run 40656300540](https://github.com/wmqfl861/bzs861/actions/runs/40656300540)
+  与 [run 40656293917](https://github.com/wmqfl861/bzs861/actions/runs/40656293917)
+  均 Linux+Windows **success**（含 Linux ASan/UBSan 全套与规划检查）。
+- 本地全量 CTest 双配置 42/42 在 b93d6fe 状态执行；898126d 仅改两行报告
+  字符串构造，storage_maintenance 双配置复验通过，全量矩阵由上述最终
+  SHA 的双平台 CI 覆盖。
 
 ## 边界重申
 
