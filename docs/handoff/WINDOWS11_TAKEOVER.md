@@ -121,3 +121,13 @@ C) 记录卫生——进程回收与共享记录修改分离，锁忙时 forget=
 本轮 Windows 11 验证：pytest 全量 **1533/0/0**；合同 34/34、规划结构
 有效、plan guard 13/13；CTest 双配置与真实 MCP 冒烟见第二轮摘要与最终
 报告（本轮无 C++ 源码变更）。83/161/10 与 37/46/0 未变；D1–D7 仍待决。
+
+**第二轮 CI**：中间 7e438ea/28a0ad0 的 Windows CI 在 launcher_lifecycle
+超时（两个生命周期测试仍指向已退役的 _kernel monkeypatch/畸形 birth 锚，
+Linux 42/42 通过）→ `9a590b9` 按验证树 API 重写后，最终头
+`9a590b9` 的 [run 40705536646](https://github.com/wmqfl861/bzs861/actions/runs/40705536646)
+与 [run 40705522400](https://github.com/wmqfl861/bzs861/actions/runs/40705522400)
+均 Linux+Windows success。本轮 CTest：Release 42/42（JUnit 校验一致）；
+Debug 41/42（唯一失败恰为编辑中途的旧测试文件，9a590b9 后单独复跑
+8.99s 通过；本轮无 C++ 源码变更）。真实启停+MCP 冒烟在新树终止路径下
+全过、零孤儿。

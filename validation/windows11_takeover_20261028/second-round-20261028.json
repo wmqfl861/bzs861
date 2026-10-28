@@ -2,7 +2,14 @@
   "round": "blocker-fixes + three blueprint modules",
   "input_commit": "9cfe35b13f1ad36c5972a4c7f1a0ce8a9c2c25dc",
   "work_branch": "work/windows11-audit-20261028-1100",
-  "commits": ["7e438ea", "28a0ad0", "d98452b", "52b8418"],
+  "commits": [
+    "7e438ea",
+    "28a0ad0",
+    "d98452b",
+    "52b8418",
+    "a66042d(docs)",
+    "9a590b9(test fix)"
+  ],
   "blocker_fixes": {
     "commit": "7e438ea",
     "method": "17 counterexample tests written first and confirmed failing on the previous implementation (1 pre-existing guard test already passed); after the fix, mutation checks removed each guard (creation-time attribution, root identity abort, forget gating under a busy lock) and confirmed its test fails",
@@ -39,13 +46,50 @@
   ],
   "verification_windows11": {
     "pytest_full": "1533 passed / 0 failed / 0 errors (was 1523; +10 new)",
-    "contracts": "34/34", "plan_structure": "valid 83/161/10", "plan_guard": "13/13",
-    "ctest_debug_release_j1": "see final report; no C++ source changed this round (all commits touch Python/tests), binaries rebuilt at b93d6fe+web.cpp state",
-    "live_mcp_smoke": "see final report"
+    "contracts": "34/34",
+    "plan_structure": "valid 83/161/10",
+    "plan_guard": "13/13",
+    "ctest_debug_release_j1": "Release 42/42 (JUnit verified 42/0/0); Debug 41/42 in the same run whose launcher_lifecycle executed the pre-fix test file mid-edit (CTest re-ran it alone after 9a590b9: Passed 8.99s); no C++ source changed this round",
+    "live_mcp_smoke": "fresh temp BZS_HOME (Chinese+space path), ports 48710/48711, this build's Release searchd: init/start/status/fixture.ingest OK; stdio MCP initialize+tools/list+search_local(中文 query) OK with clean stderr; stop confirmed for both components; zero orphaned managed processes through the new verified-tree stop"
   },
   "policy": {
-    "sources_enabled": 0, "schema": 15, "D1_D7": "pending", "B24_expansion": false,
-    "quarantine_clearance": false, "main_pushed": false, "prs_merged": 0,
+    "sources_enabled": 0,
+    "schema": 15,
+    "D1_D7": "pending",
+    "B24_expansion": false,
+    "quarantine_clearance": false,
+    "main_pushed": false,
+    "prs_merged": 0,
     "package_status_changed": false
+  },
+  "ci": {
+    "intermediate_failures": [
+      {
+        "sha": "7e438ea",
+        "windows": "failure",
+        "cause": "launcher_lifecycle Timeout: two lifecycle tests still targeted the retired _kernel monkeypatch / malformed birth anchor",
+        "linux": "success 42/42"
+      },
+      {
+        "sha": "28a0ad0",
+        "same_cause": true
+      }
+    ],
+    "fix": "9a590b9 realigns both tests with the verified-tree API (access-denied _RealWinApi subclass; well-formed alternate creation time)",
+    "final_sha": "9a590b9ce579c25eb7c312894e4d5de7ddce5ca1",
+    "final_ci": [
+      {
+        "run": 40705536646,
+        "url": "https://github.com/wmqfl861/bzs861/actions/runs/40705536646",
+        "linux": "success",
+        "windows": "success"
+      },
+      {
+        "run": 40705522400,
+        "url": "https://github.com/wmqfl861/bzs861/actions/runs/40705522400",
+        "linux": "success",
+        "windows": "success"
+      }
+    ]
   }
 }
