@@ -94,6 +94,15 @@ class Stack:
     def kill(self, name: str) -> None:
         proc = self.procs.get(name)
         if proc and proc.poll() is None:
+            if os.name == "nt":
+                # A venv python.exe is a launcher stub: the real interpreter is
+                # its child and survives terminate(), keeping the log file and
+                # port open. poll() already proves this pid is still ours.
+                try:
+                    from bzs import process_control
+                    process_control._win_terminate_descendants(proc.pid)
+                except Exception:
+                    pass
             proc.terminate()
             try:
                 proc.wait(timeout=8)
@@ -515,6 +524,9 @@ class EndToEnd(unittest.TestCase):
             log.close()
 
     def test_10_worker_down_is_explicit_and_local_features_survive(self):
+        # Re-establish the cache entry right before the kill: on slow machines
+        # the entry cached by test_04 can age out of the freshness heuristic.
+        self.ok("web.read", {"url": self.stack.url("/pages/article.html")})
         self.stack.kill("worker")
         self.err("web.search", {"query": "resumable"}, "E_WORKER_UNAVAILABLE", 503)
         self.err("web.read", {"url": self.stack.url("/pages/new.html")}, "E_WORKER_UNAVAILABLE", 503)

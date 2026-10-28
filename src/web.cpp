@@ -913,7 +913,10 @@ namespace bzs {
         require(current.size()==64&&std::all_of(current.begin(),current.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),"E_WORKER_PROTOCOL","Invalid current request profile",502);
         std::lock_guard lock(cache_mutex_);last_read_profile_=current;
       } catch(const Error& error) {
-        if(error.code!="E_WORKER_UNAVAILABLE")throw;
+        // This probe is local and side-effect free: a worker that is not
+        // answering now (refused, or connect dropped until the deadline on
+        // some Windows hosts) carries the same information as unavailable.
+        if(error.code!="E_WORKER_UNAVAILABLE"&&error.code!="E_WORKER_TIMEOUT")throw;
         std::lock_guard lock(cache_mutex_);current=last_read_profile_;
         if(current.empty())throw;
       }
