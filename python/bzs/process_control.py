@@ -56,6 +56,74 @@ def _win_birth(k, handle) -> str | None:
     return f"win:{(fields[0].dwHighDateTime << 32) | fields[0].dwLowDateTime}"
 
 
+def _win_snapshot_parents() -> dict[int, int]:
+    """pid -> parent pid via the toolhelp snapshot (best effort, one call)."""
+    import ctypes
+    from ctypes import wintypes as w
+
+    class Entry(ctypes.Structure):
+        _fields_ = [("size", w.DWORD), ("usage", w.DWORD), ("pid", w.DWORD),
+                    ("heap", ctypes.c_size_t), ("module", w.DWORD), ("threads", w.DWORD),
+                    ("ppid", w.DWORD), ("priority", ctypes.c_long), ("flags", w.DWORD),
+                    ("name", ctypes.c_char * 260)]
+    k = _kernel()
+    k.CreateToolhelp32Snapshot.argtypes = [w.DWORD, w.DWORD]
+    k.CreateToolhelp32Snapshot.restype = w.HANDLE
+    k.Process32First.argtypes = [w.HANDLE, ctypes.POINTER(Entry)]
+    k.Process32First.restype = w.BOOL
+    k.Process32Next.argtypes = [w.HANDLE, ctypes.POINTER(Entry)]
+    k.Process32Next.restype = w.BOOL
+    snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
+    if not snap:
+        raise OSError("cannot snapshot the process table")
+    parents: dict[int, int] = {}
+    try:
+        e = Entry()
+        e.size = ctypes.sizeof(Entry)
+        more = k.Process32First(snap, ctypes.byref(e))
+        while more:
+            parents[e.pid] = e.ppid
+            more = k.Process32Next(snap, ctypes.byref(e))
+    finally:
+        k.CloseHandle(snap)
+    return parents
+
+
+def _win_terminate_descendants(root_pid: int, *, grace_ms: int = 3000) -> None:
+    """Terminate every live process whose parent chain currently roots at root_pid.
+
+    Windows venv interpreters are launcher stubs: a Popen of sys.executable is
+    the launcher while the real interpreter is its child, so terminating the
+    recorded pid alone can orphan that child (and its own children, which then
+    keep ports and files open). Only processes whose chain in one snapshot
+    reaches root_pid are signalled; the caller must have verified root_pid's
+    birth identity first. A PID that was reused after the snapshot is caught
+    by the chain check unless its current parent is inside this tree.
+    """
+    parents = _win_snapshot_parents()
+    depth = {root_pid: 0}
+    grew = True
+    while grew:
+        grew = False
+        for pid, ppid in parents.items():
+            if pid not in depth and ppid in depth:
+                depth[pid] = depth[ppid] + 1
+                grew = True
+    k = _kernel()
+    for pid in sorted(depth, key=depth.get, reverse=True):  # leaves first
+        if pid == root_pid:
+            continue
+        h = k.OpenProcess(0x1000 | 0x100000 | 1, False, pid)
+        if not h:
+            continue  # already gone
+        try:
+            if k.WaitForSingleObject(h, 0) == 258:  # still running
+                k.TerminateProcess(h, 0)
+            k.WaitForSingleObject(h, grace_ms)
+        finally:
+            k.CloseHandle(h)
+
+
 def birth_identity(pid: int) -> str | None:
     if not valid_pid(pid):
         return None
@@ -172,6 +240,16 @@ def control_lock() -> Iterator[None]:
 
 def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 2.0) -> None:
     """Only an unreaped child handle of this invocation may be force-cleaned."""
+    if os.name == "nt":
+        birth = getattr(proc, "_bzs_birth", None)
+        if birth and birth_identity(proc.pid) == birth:
+            # Take down the interpreter tree below the launcher stub while the
+            # root identity is still verifiable; only snapshot-chained pids are
+            # signalled. Best effort: the root termination below still runs.
+            try:
+                _win_terminate_descendants(proc.pid)
+            except OSError:
+                pass
     try:
         if proc.poll() is None:
             try:
@@ -309,6 +387,12 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
                 return False
             if birth != r["birth"]:
                 raise RuntimeError(f"{name}: process identity changed; refusing termination")
+            # Windows venv interpreters run as launcher stub + real interpreter
+            # child; stop the verified tree below the recorded pid as well.
+            try:
+                _win_terminate_descendants(pid)
+            except OSError:
+                pass
             if not k.TerminateProcess(h, 0) or k.WaitForSingleObject(h, int(timeout * 1000)) != 0:
                 raise RuntimeError(f"{name}: stop not confirmed; record retained")
         finally:

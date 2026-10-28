@@ -89,6 +89,37 @@ class Lifecycle(unittest.TestCase):
         if marker.exists():
             self.assertIsNone(pc.birth_identity(int(marker.read_text())))
 
+    def test_windows_cleanup_kills_the_interpreter_tree(self):
+        if os.name != "nt":
+            self.skipTest("Windows venv launcher tree")
+        # sys.executable in a venv is a launcher stub; the -c code runs in its
+        # child, which here spawns a third sleeper. Cleanup of this invocation
+        # must take down the whole chain, not only the launcher pid.
+        real = Path(self.temp.name) / "real.pid"
+        leaf = Path(self.temp.name) / "leaf.pid"
+        inner = (f"import os,subprocess,sys,time;"
+                 f"open({str(real)!r},'w').write(str(os.getpid()));"
+                 f"subprocess.Popen([sys._base_executable,'-c',"
+                 f"\"import os,time;open({str(leaf)!r},'w').write(str(os.getpid()));time.sleep(60)\"]);"
+                 f"time.sleep(60)")
+        cmd = [sys.executable, "-c", inner]
+        with self.assertRaisesRegex(RuntimeError, "deadline"):
+            pc.spawn("worker", cmd, timeout=0.5)
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and not (real.exists() and leaf.exists()):
+            time.sleep(0.05)
+        pids = []
+        for path in (real, leaf):
+            if path.exists():
+                pids.append(int(path.read_text()))
+        for pid in pids:
+            while time.monotonic() < deadline:
+                if pc.birth_identity(pid) is None:
+                    break
+                time.sleep(0.1)
+            self.assertIsNone(pc.birth_identity(pid))
+        self.assertFalse(pc.record_path("worker").exists())
+
     def test_bad_readiness_and_oversize_are_cleaned(self):
         for body in ("not json", "x"*4097, json.dumps({"event":"ready", "port":True}),
                      json.dumps({"event":"ready","component":"foreign","host":"127.0.0.1","port":12345,"version":__version__})):
