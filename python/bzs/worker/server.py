@@ -82,7 +82,8 @@ class Worker:
                 "adapters": sorted(self.sources.adapters) if self.sources else [],
                 "robots_policy": POLICY_VERSION, "publication_policy": PUBLICATION_VERSION,
                 "http_revalidation": REVALIDATION_VERSION, "http_freshness": FRESHNESS_VERSION,
-                "sites_manifest_sha256": self.sites.digest}
+                "sites_manifest_sha256": self.sites.digest,
+                "host_admission": self.fetcher.admission_stats()}
 
     async def fetch_profile(self, params: dict) -> dict:
         if not isinstance(params, dict) or params:
@@ -898,6 +899,7 @@ class Worker:
 
 
 from .rpc import InvalidEnvelope, MAX_BODY, decode_envelope
+from .diagnostics import log_failure
 
 _log = logging.getLogger("bzs.worker")
 
@@ -907,7 +909,7 @@ def configure_stderr_logging() -> None:
 
     The launcher pipes worker stderr to logs/worker.log, so internal failures
     become diagnosable without echoing anything into RPC responses. No token,
-    header or request body is ever logged; only method names and tracebacks.
+    header or request body is logged; only method/category and value-free locations.
     """
     handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
@@ -935,8 +937,8 @@ def make_app(worker: Worker, token: str) -> web.Application:
             result = await method(params)
             try:
                 return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False, allow_nan=False))
-            except (ValueError, TypeError, UnicodeError):
-                _log.exception("rpc result is not serializable JSON (method=%r)", method_name)
+            except (ValueError, TypeError, UnicodeError) as exc:
+                log_failure(_log, method_name, exc, result=True)
                 return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker result is not valid JSON"}})
         except web.HTTPRequestEntityTooLarge:
             return web.json_response({"error": {"code": "E_REQUEST_TOO_LARGE", "message": "worker request exceeds body limit"}}, status=413)
@@ -946,8 +948,8 @@ def make_app(worker: Worker, token: str) -> web.Application:
             return web.json_response({"error": {"code": "E_MANIFEST_MISMATCH", "message": str(exc)}}, status=400)
         except (ValueError, TypeError) as exc:
             return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)[:300]}})
-        except Exception:  # report, never crash the worker
-            _log.exception("rpc internal failure (method=%r)", method_name)
+        except Exception as exc:  # report without serializing exception values
+            log_failure(_log, method_name, exc)
             return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker operation failed"}})
 
     app = web.Application(client_max_size=MAX_BODY)

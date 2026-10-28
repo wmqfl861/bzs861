@@ -162,8 +162,10 @@ async def test_internal_failure_is_diagnosed_on_stderr_not_in_response(rpc, capl
     records = [r for r in caplog.records if r.name == "bzs.worker"]
     assert records and "rpc internal failure" in records[0].getMessage()
     assert "search.multi" in records[0].getMessage()
-    assert records[0].exc_info and "private-worker-token" in "".join(
-        logging.Formatter().formatException(records[0].exc_info))
+    assert records[0].exc_info is None  # no later formatter may reveal values
+    assert "exception=KeyError" in records[0].getMessage()
+    assert "frames=" in records[0].getMessage()
+    assert "private-worker-token" not in caplog.text
 
 
 def test_worker_logging_goes_to_stderr_only(capsys):
@@ -172,11 +174,12 @@ def test_worker_logging_goes_to_stderr_only(capsys):
     try:
         try:
             raise RuntimeError("diagnostic boom")
-        except RuntimeError:
-            server._log.exception("simulated failure (method=%r)", "fetch.extract")
+        except RuntimeError as exc:
+            server.log_failure(server._log, "fetch.extract", exc)
     finally:
         server._log.handlers.clear()  # keep the module logger unconfigured
     captured = capsys.readouterr()
-    assert "simulated failure" in captured.err and "fetch.extract" in captured.err
-    assert "Traceback" in captured.err and "diagnostic boom" in captured.err
+    assert "rpc internal failure" in captured.err and "fetch.extract" in captured.err
+    assert "frames=" in captured.err and "exception=RuntimeError" in captured.err
+    assert "diagnostic boom" not in captured.err and "Traceback" not in captured.err
     assert captured.out == ""  # stdout stays reserved for the protocol
