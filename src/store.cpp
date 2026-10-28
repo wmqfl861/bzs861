@@ -226,7 +226,7 @@ namespace bzs {
     require(options_.max_snapshots_per_owner>=1&&options_.max_bytes_per_owner>=1&&options_.max_revisions_per_document>=1&&options_.max_substring_bytes_per_owner>=1,
             "E_SCHEMA","Invalid store quotas");
     if(path!=":memory:"&&!path.parent_path().empty())std::filesystem::create_directories(path.parent_path());
-    auto filename=path.string();
+    const auto filename=path==":memory:"?path.string():utf8_path(path);
     auto rc=sqlite3_open_v2(filename.c_str(), &db_, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_FULLMUTEX, nullptr);
     if(rc!=SQLITE_OK) {
       if(db_)sqlite3_close(db_);
@@ -1905,18 +1905,21 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     require(!std::filesystem::exists(dst), "E_BACKUP_EXISTS", "Backup destination already exists", 409);
     if(!dst.parent_path().empty())std::filesystem::create_directories(dst.parent_path());
-    const auto stage=dst.parent_path()/(dst.filename().string()+".partial-"+random_id());
+    // The staging name stays ASCII: deriving it from a non-ASCII destination
+    // filename would round-trip through the ANSI code page and can corrupt it.
+    const auto stage=dst.parent_path()/("bzs-backup-"+random_id()+".partial");
     struct Cleanup {
       std::filesystem::path path;
       ~Cleanup() {
         for(const auto& suffix : {"", "-wal", "-shm", "-journal"}) {
           std::error_code ignored;
-          std::filesystem::remove(path.string()+suffix, ignored);
+          std::filesystem::path victim=path; victim+=suffix;
+          std::filesystem::remove(victim, ignored);
         }
       }
     } cleanup{stage};
     sqlite3*raw=nullptr;
-    const auto open_rc=sqlite3_open_v2(stage.string().c_str(), &raw, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, nullptr);
+    const auto open_rc=sqlite3_open_v2(utf8_path(stage).c_str(), &raw, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, nullptr);
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> target(raw, sqlite3_close);
     checked(open_rc, raw);
 #ifndef _WIN32

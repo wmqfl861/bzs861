@@ -73,6 +73,14 @@ namespace bzs {
   std::int64_t now_ms() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
   }
+  std::string utf8_path(const std::filesystem::path& p) {
+#ifdef _WIN32
+    const auto u8=p.u8string();
+    return std::string(reinterpret_cast<const char*>(u8.data()), u8.size());
+#else
+    return p.string();
+#endif
+  }
   std::string read_file(const std::filesystem::path& p, std::size_t max) {
     std::ifstream f(p, std::ios::binary);
     require(f.good(), "E_FILE", "Cannot open input file");

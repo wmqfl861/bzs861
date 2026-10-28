@@ -1,12 +1,14 @@
 #include "bzs/maintenance.hpp"
 #include "bzs/error.hpp"
 #include "bzs/tokenizer.hpp"
+#include "bzs/util.hpp"
 #include <sqlite3.h>
 #include <openssl/evp.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <cctype>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <memory>
@@ -142,7 +144,7 @@ Json describe(sqlite3* db) {
 }
 } // namespace
 Json inspect_storage(const std::filesystem::path& file) {
-  auto path=existing_file(file);Database src(path.string(),SQLITE_OPEN_READONLY|SQLITE_OPEN_FULLMUTEX);
+  auto path=existing_file(file);Database src(utf8_path(path),SQLITE_OPEN_READONLY|SQLITE_OPEN_FULLMUTEX);
   register_fts_tokenizer(src.db);exec(src.db,"BEGIN");supported(src.db);auto out=describe(src.db);
   out.set("status",out.at("auto_vacuum").num()==2?"incremental":"requires_offline_conversion");
   out.set("read_only",true);exec(src.db,"ROLLBACK");return out;
@@ -150,7 +152,7 @@ Json inspect_storage(const std::filesystem::path& file) {
 Json convert_storage_incremental(const std::filesystem::path& file,int timeout_ms) {
   require(timeout_ms>=1&&timeout_ms<=600000,"E_ARGUMENT","Maintenance timeout must be 1..600000ms");
   auto path=existing_file(file);Deadline deadline{Clock::now()+std::chrono::milliseconds(timeout_ms)};
-  Database src(path.string(),SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX);
+  Database src(utf8_path(path),SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX);
   // Persist the exclusive SQLite lock across autocommit statements. No rename,
   // sidecar deletion or reopening of the source while the lock is held.
   exec(src.db,"PRAGMA locking_mode=EXCLUSIVE; BEGIN EXCLUSIVE; COMMIT;");
@@ -159,13 +161,20 @@ Json convert_storage_incremental(const std::filesystem::path& file,int timeout_m
   if(before.at("auto_vacuum").num()==2){
     // A no-op conversion is still a maintenance request: verify FTS shadow
     // consistency too; ordinary SQLite integrity_check is not a substitute.
+    // On SQLite >= 3.44 PRAGMA integrity_check also inspects virtual tables,
+    // so the result reports explicitly that the FTS-specific check ran.
     integrity(src.db,true);
+    before.set("fts_integrity_checked",true);
     before.set("status","already_incremental");return before;
   }
   const auto pages=before.at("page_count").num(),size=before.at("page_size").num();
   require(pages>0&&size>0&&pages<=(std::numeric_limits<std::int64_t>::max()-16*1024*1024)/(size*3),"E_STORAGE_FULL","Maintenance size is out of range",507);
   const auto needed=static_cast<std::uintmax_t>(pages*size*3+16*1024*1024);
-  require(std::filesystem::space(path.parent_path()).available>=needed&&std::filesystem::space(std::filesystem::temp_directory_path()).available>=needed,
+  std::error_code dir_ec,tmp_ec;
+  const auto dir_space=std::filesystem::space(path.parent_path(),dir_ec);
+  const auto temp_dir=std::filesystem::temp_directory_path(tmp_ec);
+  const auto tmp_space=std::filesystem::space(temp_dir,tmp_ec);
+  require(!dir_ec&&!tmp_ec&&dir_space.available>=needed&&tmp_space.available>=needed,
           "E_STORAGE_FULL","Insufficient free space for guarded full-file maintenance",507);
   const auto original=snapshot(src.db);deadline.check_now();
   // Empty filename is SQLite's disposable temporary database, not an exported
