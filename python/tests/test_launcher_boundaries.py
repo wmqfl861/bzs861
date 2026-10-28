@@ -19,7 +19,7 @@ def test_partial_start_only_cleans_new_worker(cfg, monkeypatch):
         if name=="searchd":raise RuntimeError("core failed")
         return created
     monkeypatch.setattr(cli,"_spawn",spawn)
-    monkeypatch.setattr(cli.process_control,"cleanup_child",lambda name,proc:clean.append((name,proc)))
+    monkeypatch.setattr(cli.process_control,"cleanup_child",lambda name,proc,**kw:clean.append((name,proc)))
     with pytest.raises(RuntimeError,match="core failed"):cli.start(cfg)
     assert clean==[("worker",created)]
 
@@ -37,7 +37,7 @@ def test_health_failure_is_not_success_and_cleans_new_children(cfg,monkeypatch):
     tick=iter(range(20));monkeypatch.setattr(cli.time,"monotonic",lambda:next(tick));monkeypatch.setattr(cli.time,"sleep",lambda _:None)
     cleanup=Mock();monkeypatch.setattr(cli.process_control,"cleanup_child",cleanup)
     with pytest.raises(RuntimeError,match="health check failed"):cli.ensure_running(cfg)
-    cleanup.assert_called_once_with("searchd",created)
+    cleanup.assert_called_once();assert cleanup.call_args.args[:2]==("searchd",created)
 
 def test_mcp_does_not_run_after_failed_autostart(cfg,monkeypatch):
     from bzs import mcp_server
@@ -54,7 +54,7 @@ def test_health_exception_also_cleans_new_children(cfg,monkeypatch):
     monkeypatch.setattr(cli,"_client",Mock(side_effect=FileNotFoundError("missing credential file")))
     cleanup=Mock();monkeypatch.setattr(cli.process_control,"cleanup_child",cleanup)
     with pytest.raises(FileNotFoundError):cli.ensure_running(cfg)
-    cleanup.assert_called_once_with("worker",created)
+    cleanup.assert_called_once();assert cleanup.call_args.args[:2]==("worker",created)
 
 @pytest.mark.parametrize("value", [0, -1, 121, True, "30", float("nan"), float("inf")])
 def test_invalid_startup_deadline_fails_before_creating_children(cfg,monkeypatch,value):
@@ -85,7 +85,7 @@ def test_health_failure_still_cleans_remaining_children_when_one_cleanup_fails(c
     monkeypatch.setattr(cli,"_client",lambda cfg:SimpleNamespace(healthy=lambda:False))
     tick=iter(range(20));monkeypatch.setattr(cli.time,"monotonic",lambda:next(tick));monkeypatch.setattr(cli.time,"sleep",lambda _:None)
     calls=[]
-    def cleanup(name,proc):
+    def cleanup(name,proc,**kw):
         calls.append(name)
         if name=="searchd":raise RuntimeError("stop not confirmed; record retained")
     monkeypatch.setattr(cli.process_control,"cleanup_child",cleanup)
@@ -99,9 +99,9 @@ def test_start_failure_reports_failed_child_cleanup(cfg,monkeypatch):
         if name=="worker":return worker
         raise RuntimeError("core failed")
     monkeypatch.setattr(cli,"_spawn",spawn)
-    def cleanup(name,proc):raise RuntimeError("worker stuck")
+    def cleanup(name,proc,**kw):raise RuntimeError("worker stuck")
     monkeypatch.setattr(cli.process_control,"cleanup_child",cleanup)
-    with pytest.raises(RuntimeError,match="cleanup incomplete: worker: worker stuck"):cli.start(cfg)
+    with pytest.raises(RuntimeError,match="child cleanup incomplete: worker stuck"):cli.start(cfg)
 
 
 def test_stop_attempts_both_components_when_first_fails(cfg,monkeypatch):
@@ -123,7 +123,7 @@ def test_cleanup_children_cleans_all_children_without_lock(tmp_path,monkeypatch)
         raise RuntimeError("another launcher operation is running");yield None
     monkeypatch.setattr(process_control,"control_lock",busy_lock)
     cleaned=[]
-    monkeypatch.setattr(process_control,"cleanup_child",lambda n,p:cleaned.append(n))
+    monkeypatch.setattr(process_control,"cleanup_child",lambda n,p,**kw:cleaned.append(n))
     process_control.cleanup_children([("worker",object()),("searchd",object())])
     assert cleaned==["searchd","worker"]
 
@@ -131,36 +131,49 @@ def test_cleanup_children_cleans_all_children_without_lock(tmp_path,monkeypatch)
 def test_cleanup_children_reports_every_failed_child(tmp_path,monkeypatch):
     monkeypatch.setenv("BZS_HOME",str(tmp_path))
     from bzs import process_control
-    def cleanup(n,p):raise RuntimeError(f"{n} stuck")
+    def cleanup(n,p,**kw):raise RuntimeError(f"{n} stuck")
     monkeypatch.setattr(process_control,"cleanup_child",cleanup)
-    with pytest.raises(RuntimeError,match="searchd: searchd stuck; worker: worker stuck"):
+    with pytest.raises(RuntimeError,match="child cleanup incomplete: searchd stuck; worker stuck"):
         process_control.cleanup_children([("worker",object()),("searchd",object())])
 
 
 @pytest.mark.skipif(os.name!="nt",reason="Windows termination-handle race")
-def test_stop_owned_tolerates_exit_between_identity_probe_and_termination(tmp_path,monkeypatch):
+def test_stop_owned_tolerates_fully_reaped_root(tmp_path,monkeypatch):
+    # Root exits and is reaped before the stop: the pid resolves to nothing;
+    # with no attributable children the record is removed quietly.
     import json,subprocess,sys
     monkeypatch.setenv("BZS_HOME",str(tmp_path))
     from bzs import config,process_control
-    gone=subprocess.Popen([sys.executable,"-c","pass"]).pid
-    time.sleep(0.3)  # exited; the identity probe below still claims the recorded birth
-    monkeypatch.setattr(process_control,"birth_identity",lambda pid:"win:1")
-    record={"version":1,"name":"searchd","pid":gone,"birth":"win:1","port":8610,"state":"ready"}
+    gone=subprocess.Popen([sys._base_executable,"-c","pass"])
+    birth=process_control.birth_identity(gone.pid)
+    assert birth is not None
+    gone.wait()  # reaped: OpenProcess will report the pid as gone
+    record={"version":1,"name":"searchd","pid":gone.pid,"birth":birth,"port":8610,"state":"ready"}
     config._private_write(process_control.record_path("searchd"),json.dumps(record))
-    assert process_control.stop_owned("searchd") is False
+    try:
+        assert process_control.stop_owned("searchd") is False
+    except RuntimeError as exc:
+        if "identity changed" not in str(exc):
+            raise
+        pytest.skip("the reaped pid was reused during the test")
     assert not process_control.record_path("searchd").exists()
 
 
 @pytest.mark.skipif(os.name!="nt",reason="Windows termination-handle race")
-def test_stop_owned_forgets_record_when_target_exited_after_open(tmp_path,monkeypatch):
+def test_stop_owned_forgets_record_when_target_exited_but_not_reaped(tmp_path,monkeypatch):
+    # Exited yet unreaped: the still-open zombie handle proves the recorded
+    # birth, so the stop verifies identity and forgets without signalling.
     import json,subprocess,sys
     monkeypatch.setenv("BZS_HOME",str(tmp_path))
     from bzs import config,process_control
-    zombie=subprocess.Popen([sys.executable,"-c","import time;time.sleep(0.2)"])
-    pid=zombie.pid
-    time.sleep(0.5)  # exited but never reaped: OpenProcess succeeds, wait state is exited
-    monkeypatch.setattr(process_control,"birth_identity",lambda pid:"win:1")
-    record={"version":1,"name":"worker","pid":pid,"birth":"win:1","port":8611,"state":"ready"}
+    zombie=subprocess.Popen([sys._base_executable,"-c","import time;time.sleep(0.3)"])
+    birth=process_control.birth_identity(zombie.pid)
+    assert birth is not None
+    time.sleep(0.8)  # exited, never reaped: OpenProcess succeeds, wait state exited
+    record={"version":1,"name":"worker","pid":zombie.pid,"birth":birth,"port":8611,"state":"ready"}
     config._private_write(process_control.record_path("worker"),json.dumps(record))
-    assert process_control.stop_owned("worker") is False
-    assert not process_control.record_path("worker").exists()
+    try:
+        assert process_control.stop_owned("worker") is False
+        assert not process_control.record_path("worker").exists()
+    finally:
+        zombie.wait(timeout=5)

@@ -95,7 +95,7 @@ def start(cfg: config.Config) -> list[tuple[str, subprocess.Popen]]:
         except BaseException:
             # The control lock is already held here; every child of this
             # invocation must be attempted even if one cleanup fails.
-            process_control.cleanup_children(created, lock=False)
+            process_control.cleanup_children(created, acquire_lock=False)
             raise
     return created
 

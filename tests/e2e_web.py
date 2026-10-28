@@ -100,9 +100,11 @@ class Stack:
                 # port open. poll() already proves this pid is still ours.
                 try:
                     from bzs import process_control
-                    process_control._win_terminate_descendants(proc.pid)
-                except Exception:
-                    pass
+                    birth = process_control.birth_identity(proc.pid)
+                    if birth:
+                        process_control._win_terminate_tree(proc.pid, int(birth.split(":")[1]))
+                except Exception as exc:
+                    print(f"[kill {name}] tree stop reported: {exc}", file=sys.stderr)
             proc.terminate()
             try:
                 proc.wait(timeout=8)
