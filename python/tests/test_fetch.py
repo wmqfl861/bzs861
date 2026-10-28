@@ -285,3 +285,22 @@ async def test_waiting_for_host_capacity_consumes_the_same_request_deadline():
 def test_unbound_proxy_modes_are_rejected_before_any_connection(options):
     with pytest.raises(ValueError, match="disabled"):
         Fetcher(NetPolicy(), **options)
+
+
+def test_gunzip_archive_round_trip_bounds_and_refusals():
+    import gzip
+    from bzs.worker.fetch import gunzip_archive
+    payload = b"<urlset>" + b"<url><loc>https://x.test/a</loc></url>" * 8 + b"</urlset>"
+    packed = gzip.compress(payload)
+    assert gunzip_archive(packed, len(payload)) == payload
+    assert gunzip_archive(packed + b"\x00" * 4, len(payload)) == payload  # NUL padding tolerated
+    with pytest.raises(ValueError, match="too large"):
+        gunzip_archive(packed, len(payload) - 1)
+    with pytest.raises(ValueError, match="not a gzip"):
+        gunzip_archive(b"<xml/>", 1024)
+    with pytest.raises(ValueError, match="damaged"):
+        gunzip_archive(packed[:-4], len(payload))  # truncated CRC/size trailer
+    with pytest.raises(ValueError, match="trailing"):
+        gunzip_archive(packed + b"zz", len(payload))
+    with pytest.raises(ValueError, match="trailing"):
+        gunzip_archive(packed + gzip.compress(b"<urlset/>"), len(payload))  # second member

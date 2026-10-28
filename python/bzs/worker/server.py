@@ -23,7 +23,7 @@ from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
 from .freshness import VERSION as FRESHNESS_VERSION, response_freshness
 from .fetch import (DEFAULT_UA, DirectReadControl, FetchAdmissionDenied, FetchBudget,
-                    FetchStopped, Fetcher, decode_body, host_of)
+                    FetchStopped, Fetcher, decode_body, gunzip_archive, host_of)
 from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
                           extraction_restriction_observation, incomplete_publication,
@@ -600,8 +600,20 @@ class Worker:
                 if page["status"] == "ok" and response.http_status == 200:
                     out.update(self._cache_metadata(response))
                 return out
-            parsed = await asyncio.wait_for(asyncio.to_thread(discover, response.body, out["final_url"],
-                                                              content_type=response.headers.get("content-type", response.content_type), kind=params["kind"],
+            body = response.body
+            content_type = response.headers.get("content-type", response.content_type)
+            if params["kind"] in ("auto", "sitemap") and body[:2] == b"\x1f\x8b":
+                # A .xml.gz sitemap arrives as a gzip archive entity (transport
+                # Content-Encoding is already removed by the HTTP client).
+                try:
+                    body = await asyncio.wait_for(asyncio.to_thread(
+                        gunzip_archive, body, params["max_content_bytes"]), remaining())
+                except ValueError as exc:
+                    out["error_code"] = "E_CONTENT_TOO_LARGE" if "too large" in str(exc) else "E_DISCOVERY_PARSE"
+                    return out
+                content_type = "application/xml"
+            parsed = await asyncio.wait_for(asyncio.to_thread(discover, body, out["final_url"],
+                                                              content_type=content_type, kind=params["kind"],
                                                               depth=params.get("depth", 0), max_entries=params.get("max_entries", 1000),
                                                               max_input_bytes=params["max_content_bytes"]), remaining())
             remaining()

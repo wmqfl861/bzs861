@@ -126,6 +126,45 @@ class FetchResult:
         return m.group(1) if m else None
 
 
+GZIP_MAGIC = b"\x1f\x8b"
+
+
+def gunzip_archive(body: bytes, max_bytes: int) -> bytes:
+    """Decode exactly one complete gzip archive member, bounded on output.
+
+    Sitemaps are commonly published as .xml.gz archives delivered as the entity
+    body (not transport Content-Encoding, which the HTTP client already
+    removes). Output is capped at max_bytes before any caller sees it; a
+    damaged, truncated or multi-member archive is refused instead of partially
+    decoded. Raises ValueError with "too large" for budget overflow.
+    """
+    import zlib
+    if not body.startswith(GZIP_MAGIC):
+        raise ValueError("not a gzip archive")
+    try:
+        d = zlib.decompressobj(16 + zlib.MAX_WBITS)
+        out = bytearray()
+        chunk = body
+        while True:
+            piece = d.decompress(chunk, max_bytes - len(out) + 1)
+            out += piece
+            if len(out) > max_bytes:
+                raise ValueError("decompressed archive too large")
+            if d.eof:
+                break
+            tail = d.unconsumed_tail
+            if not tail:
+                raise ValueError("damaged gzip archive")  # input ended mid-stream
+            if not piece and tail is chunk:
+                raise ValueError("damaged gzip archive")  # no forward progress
+            chunk = tail
+        if d.unused_data.strip(b"\x00"):
+            raise ValueError("trailing data after the gzip member")
+        return bytes(out)
+    except zlib.error as exc:
+        raise ValueError(f"damaged gzip archive: {exc}") from exc
+
+
 def decode_body(body: bytes, header_charset: str | None) -> tuple[str, str]:
     """Honor BOM or a usable declared text encoding, replacing damaged bytes.
 
