@@ -42,3 +42,53 @@ def test_http_mcp_cannot_disable_client_auth(module, monkeypatch, capsys):
         impl.main(args)
     assert exc.value.code == 2
     assert "requires a client token" in capsys.readouterr().err
+
+
+async def test_malformed_client_entries_fail_closed(tmp_path):
+    import hashlib, json as _json
+    from bzs.mcp_auth import add_client
+    path = tmp_path / "mcp_clients.json"
+    good = add_client("laptop", path)
+    digest = hashlib.sha256(b"x").hexdigest()
+    for broken in (
+        {"name": "a", "sha256": digest, "scopes": "search"},           # string scope
+        {"name": "a", "sha256": digest, "disabled": "yes"},            # non-bool disabled
+        {"name": 7, "sha256": digest},                                 # non-str name
+        {"name": "a", "sha256": "ZZ" + digest[2:]},                    # non-hex digest
+        "not-an-object",
+    ):
+        raw = _json.loads(path.read_text(encoding="utf-8"))
+        raw["clients"].append(broken)
+        path.write_text(_json.dumps(raw), encoding="utf-8")
+        with pytest.raises(ValueError):
+            load_clients(path)
+        # The verifier fails closed for the whole file, not just the entry.
+        assert await StaticTokenVerifier(path).verify_token(good) is None
+    path.write_text(_json.dumps({"clients": _json.loads(path.read_text(encoding="utf-8"))["clients"][:1]}), encoding="utf-8")
+    assert (await StaticTokenVerifier(path).verify_token(good)).client_id == "laptop"
+
+
+async def test_concurrent_adds_never_lose_tokens(tmp_path):
+    import threading
+    from bzs.mcp_auth import add_client
+    path = tmp_path / "mcp_clients.json"
+    names = [f"client-{i:02d}" for i in range(24)]
+    results = {}
+    errors = []
+
+    def worker(name):
+        try:
+            results[name] = add_client(name, path)
+        except Exception as exc:  # noqa: BLE001 - collect and assert below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=worker, args=(n,)) for n in names]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=60)
+    assert not errors, errors
+    stored = {c["name"] for c in load_clients(path)}
+    assert stored == set(names)  # no silently dropped write
+    for name, token in results.items():
+        assert (await StaticTokenVerifier(path).verify_token(token)).client_id == name

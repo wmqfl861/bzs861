@@ -325,7 +325,12 @@ if(BZS_BUILD_TESTS)
     # Retain the >8 MiB escaped snapshot and bounded-capacity cases while
     # collecting per-case progress after a Windows-only 90 s suite timeout.
     # This process watchdog does not change any request deadline or assertion.
-    set_tests_properties(direct_shared PROPERTIES TIMEOUT 240)
+    # 2026-10-28 Windows 11 measurement, suites run alone in Debug: direct_shared
+    # 260 s (34 tests/10259 assertions), sessions 273 s (23/298). No pacing
+    # sleeps inside; cost is fsync-per-commit plus Debug CPU. Watchdogs raised
+    # with 1.5x headroom; every original assertion is still executed.
+    set_tests_properties(direct_shared PROPERTIES TIMEOUT 420)
+    set_tests_properties(sessions PROPERTIES TIMEOUT 420)
   endif()
   # 77 = dependencies missing -> reported as skipped, not passed.
   set_tests_properties(e2e_web PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)

@@ -93,17 +93,25 @@ def start(cfg: config.Config) -> list[tuple[str, subprocess.Popen]]:
                         raise RuntimeError(f"{name}: existing process is not ready on the configured port")
                     print(f"{name} already running")
         except BaseException:
-            for name, proc in reversed(created):
-                process_control.cleanup_child(name, proc)
+            # The control lock is already held here; every child of this
+            # invocation must be attempted even if one cleanup fails.
+            process_control.cleanup_children(created, acquire_lock=False)
             raise
     return created
 
 
 def stop() -> None:
+    failures: list[str] = []
     with process_control.control_lock():
         for name in ("searchd", "worker"):
-            if process_control.stop_owned(name):
-                print(f"stopped {name}")
+            try:
+                if process_control.stop_owned(name):
+                    print(f"stopped {name}")
+            except (OSError, RuntimeError) as exc:
+                # One component's failed stop must not skip the other one.
+                failures.append(f"{name}: {exc}")
+    if failures:
+        raise RuntimeError("; ".join(failures))
 
 
 def cmd_start(args) -> int:
@@ -151,9 +159,9 @@ def ensure_running(cfg: config.Config) -> None:
             time.sleep(0.1)
         raise RuntimeError("searchd health check failed")
     except BaseException:
-        with process_control.control_lock():
-            for name, proc in reversed(created):
-                process_control.cleanup_child(name, proc)
+        # A busy control lock must not leave this invocation's detached
+        # children running; cleanup_children still proceeds without it.
+        process_control.cleanup_children(created)
         raise
 
 

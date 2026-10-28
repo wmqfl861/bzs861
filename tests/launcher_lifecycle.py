@@ -89,6 +89,37 @@ class Lifecycle(unittest.TestCase):
         if marker.exists():
             self.assertIsNone(pc.birth_identity(int(marker.read_text())))
 
+    def test_windows_cleanup_kills_the_interpreter_tree(self):
+        if os.name != "nt":
+            self.skipTest("Windows venv launcher tree")
+        # sys.executable in a venv is a launcher stub; the -c code runs in its
+        # child, which here spawns a third sleeper. Cleanup of this invocation
+        # must take down the whole chain, not only the launcher pid.
+        real = Path(self.temp.name) / "real.pid"
+        leaf = Path(self.temp.name) / "leaf.pid"
+        inner = (f"import os,subprocess,sys,time;"
+                 f"open({str(real)!r},'w').write(str(os.getpid()));"
+                 f"subprocess.Popen([sys._base_executable,'-c',"
+                 f"\"import os,time;open({str(leaf)!r},'w').write(str(os.getpid()));time.sleep(60)\"]);"
+                 f"time.sleep(60)")
+        cmd = [sys.executable, "-c", inner]
+        with self.assertRaisesRegex(RuntimeError, "deadline"):
+            pc.spawn("worker", cmd, timeout=0.5)
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline and not (real.exists() and leaf.exists()):
+            time.sleep(0.05)
+        pids = []
+        for path in (real, leaf):
+            if path.exists():
+                pids.append(int(path.read_text()))
+        for pid in pids:
+            while time.monotonic() < deadline:
+                if pc.birth_identity(pid) is None:
+                    break
+                time.sleep(0.1)
+            self.assertIsNone(pc.birth_identity(pid))
+        self.assertFalse(pc.record_path("worker").exists())
+
     def test_bad_readiness_and_oversize_are_cleaned(self):
         for body in ("not json", "x"*4097, json.dumps({"event":"ready", "port":True}),
                      json.dumps({"event":"ready","component":"foreign","host":"127.0.0.1","port":12345,"version":__version__})):
@@ -107,9 +138,14 @@ class Lifecycle(unittest.TestCase):
         proc = pc.spawn("worker", self.command(), timeout=5)
         self.children.append(proc)
         r = pc.read_record("worker")
-        r["birth"] += "-not-the-same-process"
+        if os.name == "nt" and r["birth"].startswith("win:"):
+            # A different but well-formed creation time: a pid now held by
+            # another instance must abort the whole stop.
+            r["birth"] = f"win:{int(r['birth'][4:]) + 1}"
+        else:
+            r["birth"] += "-not-the-same-process"
         pc.record_path("worker").write_text(json.dumps(r))
-        with self.assertRaisesRegex(RuntimeError, "identity changed"):
+        with self.assertRaisesRegex(RuntimeError, "identity changed|unverified"):
             pc.stop_owned("worker", timeout=0.05)
         self.assertIsNone(proc.poll())
         self.assertTrue(pc.record_path("worker").exists())
@@ -120,14 +156,13 @@ class Lifecycle(unittest.TestCase):
         self.children.append(proc)
         record = pc.record_path("worker").read_bytes()
         if os.name == "nt":
-            # Exercise failure classification without terminating another PID.
-            birth = pc.birth_identity(proc.pid)
-            self.assertIsNotNone(birth)
-            # Keep the initial identity observation valid; deny only the
-            # later termination handle, not the earlier read-only probe.
-            with patch.object(pc, "birth_identity", return_value=birth), patch.object(pc, "_kernel") as get:
-                get.return_value.OpenProcess.return_value = 0
-                with self.assertRaisesRegex(RuntimeError, "termination handle"):
+            # Exercise failure classification without terminating anything:
+            # every open in the verified-tree walk is denied.
+            class DeniedApi(pc._RealWinApi):
+                def open(self, pid):
+                    raise pc._ProcessDenied(pid)
+            with patch.object(pc, "_RealWinApi", DeniedApi):
+                with self.assertRaisesRegex(RuntimeError, "not confirmed"):
                     pc.stop_owned("worker", timeout=0.05)
         else:
             with self.assertRaisesRegex(RuntimeError, "not confirmed"):

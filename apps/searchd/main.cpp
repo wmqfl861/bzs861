@@ -303,7 +303,16 @@ namespace {
     public: Listener(net::io_context&io, unsigned short port, Service&s, RequestExecutor& requests,RequestExecutor& locals,RequestExecutor& controls,const Auth&a):io_(io), acceptor_(io), service_(s), requests_(requests),locals_(locals),controls_(controls),auth_(a) {
       tcp::endpoint ep(net::ip::make_address("127.0.0.1"), port);
       acceptor_.open(ep.protocol());
+#ifdef _WIN32
+      // Windows SO_REUSEADDR permits a second silent bind that steals the
+      // port; SO_EXCLUSIVEADDRUSE makes a busy port fail loudly at startup.
+      BOOL exclusive=TRUE;
+      if(setsockopt(acceptor_.native_handle(),SOL_SOCKET,SO_EXCLUSIVEADDRUSE,
+                    reinterpret_cast<const char*>(&exclusive),sizeof(exclusive))!=0)
+        throw Error("E_ARGUMENT","Cannot set exclusive port use",500);
+#else
       acceptor_.set_option(net::socket_base::reuse_address(true));
+#endif
       acceptor_.bind(ep);
       acceptor_.listen(64);
     }

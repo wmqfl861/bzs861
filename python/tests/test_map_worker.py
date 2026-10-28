@@ -1,6 +1,7 @@
 """Automatic discovery admission tested against local, in-process HTTP only."""
 import asyncio
 import copy
+import gzip
 import hashlib
 import json
 import secrets
@@ -39,6 +40,23 @@ async def map_site():
     async def handle(request):
         calls.append({"path": request.path, "raw_path": request.raw_path, "ua": request.headers.get("User-Agent"),
                       "time": time.monotonic()})
+        if request.path == "/page.gz":
+            origin = f"http://{request.host}"
+            page = (f'<html><body><a href="{origin}/gz/one">link</a></body></html>').encode()
+            return web.Response(body=gzip.compress(page), content_type="application/gzip")
+        if request.path == "/sitemap.xml.gz":
+            origin = f"http://{request.host}"
+            xml = (f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<url><loc>{origin}/gz/one</loc></url>'
+                   f'<url><loc>{origin}/gz/two</loc></url></urlset>').encode()
+            return web.Response(body=gzip.compress(xml), content_type="application/gzip")
+        if request.path == "/sitemap-huge.xml.gz":
+            origin = f"http://{request.host}"
+            xml = (f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<url><loc>{origin}/gz/one</loc></url></urlset>').encode() + b" " * (600 * 1024)
+            return web.Response(body=gzip.compress(xml), content_type="application/gzip")
+        if request.path == "/sitemap-bad.xml.gz":
+            return web.Response(body=gzip.compress(b"<urlset") + b"garbage", content_type="application/gzip")
         if request.path == "/robots.txt":
             return web.Response(status=state["robots_status"], body=state["robots_body"], headers=state["robots_headers"])
         if request.path == "/jump":
@@ -458,3 +476,41 @@ def test_encoded_url_preservation_does_not_bypass_production_netpolicy():
     for value in ("http://127。0。0。1/map/%61", "http://10.0.0.1/map", "http://user:secret@fixture.test/map"):
         with pytest.raises(PolicyError):
             canonical_map_url(value, policy)
+
+
+async def test_gzip_sitemap_archive_is_expanded_for_discovery(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap.xml.gz", kind="sitemap", record=robots["robots"]))
+    assert result["status"] == "ok"
+    origin = f"http://{server.host}:{server.port}"
+    urls = sorted(c["url"] for c in result["discovery"]["candidates"])
+    assert urls == [f"{origin}/gz/one", f"{origin}/gz/two"]
+    # The archive bytes, not the expanded XML, are what was charged.
+    assert result["usage"]["content_bytes"] < 200
+
+
+async def test_gzip_sitemap_archive_over_the_hop_budget_is_refused(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap-huge.xml.gz", kind="sitemap",
+                                          record=robots["robots"], max_content_bytes=512 * 1024))
+    assert result["status"] == "error" and result["error_code"] == "E_CONTENT_TOO_LARGE"
+
+
+async def test_gzip_sitemap_archive_with_trailing_garbage_is_refused(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap-bad.xml.gz", kind="sitemap",
+                                          record=robots["robots"]))
+    assert result["status"] == "error" and result["error_code"] == "E_DISCOVERY_PARSE"
+
+
+async def test_gzip_body_is_not_expanded_for_page_hops(map_worker):
+    # Archive expansion is scoped to sitemap/auto discovery hops: a gzip body
+    # on a page hop must fail extraction, never silently decode to links.
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/page.gz", kind="page", record=robots["robots"]))
+    assert result["status"] == "error" or result.get("page", {}).get("status") != "ok"
+    assert not result.get("discovery", {}).get("candidates")

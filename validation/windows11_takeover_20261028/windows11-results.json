@@ -1,0 +1,72 @@
+{
+  "machine": "Windows 11 x64 (10.0.22624), MSVC 14.44, ACP 65001",
+  "input_commit": "8a7d552bb3199dce1333e22cde3d4f666d3e21df",
+  "input_ci": {"run": 40617784255, "linux": "success", "windows": "success", "validates_input_only": true},
+  "work_branch": "work/windows11-audit-20261028-1100",
+  "commits": ["6fcf790", "8478df2", "98f7b31", "0e761a9", "4422e2e", "cc704c3", "6f80450", "b93d6fe", "af90aae(docs)", "898126d"],
+  "remote": {
+    "pr": {"number": 8, "url": "https://github.com/wmqfl861/bzs861/pull/8", "draft": true, "base": "work/project-audit-followup-20261027"},
+    "first_push": {"sha": "af90aaef71fb52e01eee395415928165c0a3e1af", "linux": "success", "windows": "failure", "failure": "storage_maintenance: 'No mapping for the Unicode character exists in the target multi-byte code page' (backup_id/title narrowed through ANSI CP1252)"},
+    "final_sha": "898126ded189c03d750956f790f75140483a9af7",
+    "final_ci": [
+      {"run": 40656300540, "url": "https://github.com/wmqfl861/bzs861/actions/runs/40656300540", "linux": "success", "windows": "success"},
+      {"run": 40656293917, "url": "https://github.com/wmqfl861/bzs861/actions/runs/40656293917", "linux": "success", "windows": "success"}
+    ]
+  },
+  "build": {
+    "cmake": "VS 17 2022 x64 + vcpkg 6719fd4d toolchain, BZS_REQUIRE_PYTHON_TESTS=ON",
+    "debug": {"exit": 0, "errors": 0},
+    "release": {"exit": 0, "errors": 0}
+  },
+  "python_full": {
+    "command": ".venv python -m pytest -q -p no:cacheprovider tests (from python/)",
+    "runs": [
+      {"note": "pre-fix first run; log truncated at 1.2 MB before the failing test name could be kept", "passed": 1501, "failed": 1, "errors": 6, "unidentified_transient": true},
+      {"note": "pre-fix second run", "passed": 1502, "failed": 0, "errors": 6},
+      {"note": "post-fix", "passed": 1505, "failed": 0, "errors": 0}
+    ]
+  },
+  "planning_checks": {
+    "validate_contracts": {"passed": 34, "total": 34},
+    "plan_v1_2_check": {"structure_valid": true, "packages": 83, "acceptance_mappings": 161, "slices": 10},
+    "plan_guard": {"passed": 13, "failed": 0}
+  },
+  "ctest_debug": {
+    "command": "ctest -C Debug --output-on-failure -j 1 --output-junit (absolute path)",
+    "first_full_run": {"passed": 37, "failed": 5, "failures": ["sessions Timeout 180s", "direct_shared Timeout 240s", "launcher_lifecycle Failed", "e2e_web Failed", "e2e_revocation Failed"], "first_failure_logs_preserved": true},
+    "root_causes": {
+      "launcher_lifecycle": "venv python.exe launcher stub; real interpreter survives terminate (fixed 4422e2e)",
+      "e2e_web": "same stub leak + host drops instead of refusing dead loopback connects + cache freshness wall-clock coupling (fixed cc704c3)",
+      "e2e_revocation": "sqlite handles kept by tracebacks and stub-held log handles (fixed cc704c3)",
+      "sessions": "slow-but-finite: 273s alone, 23 tests/298 assertions 0 failures; fsync-per-commit + Debug CPU",
+      "direct_shared": "slow-but-finite: 260s alone, 34 tests/10259 assertions 0 failures"
+    },
+    "final_full_run": {"passed": 42, "failed": 0, "junit": "42/0/0 verified by tools/verify_ctest_junit.py, consistent with raw log"}
+  },
+  "ctest_release": {
+    "command": "ctest -C Release --output-on-failure -j 1 --output-junit (absolute path)",
+    "final_full_run": {"passed": 42, "failed": 0, "junit": "42/0/0 verified, consistent with raw log"}
+  },
+  "live_usage_validation": {
+    "home": "fresh temp BZS_HOME with Chinese characters and spaces",
+    "ports": [48610, 48611],
+    "checks": 38,
+    "failures": 0,
+    "highlights": [
+      "init -> start -> status -> duplicate start keeps the same searchd pid -> stop (no orphaned managed processes) -> restart; indexed documents survive restart",
+      "CJK query 搜索, symbol std::expected and C# each return exactly 1 hit",
+      "document.read by snapshot_id; evidence.create 0..62 (UTF-8 boundary) + evidence.read returns the Chinese quote",
+      "second searchd on the busy port exits rc=2 with an E_ error (SO_EXCLUSIVEADDRUSE)",
+      "real stdio MCP: initialize, tools/list, search_local, read_range",
+      "storage-inspect/convert on the Chinese+space path DB; E_STORAGE_BUSY under a live BEGIN IMMEDIATE holder; already_incremental + fts_integrity_checked"
+    ]
+  },
+  "environment_limitations": [
+    "ACP=65001: the pre-fix ANSI-vs-UTF-8 SQLite path defect cannot be observed on this machine (path::string() is already UTF-8); it reproduces on standard Chinese Windows (ACP 936). The fix and the wide-literal unicode test group are code-page independent.",
+    "The first pytest run's single transient failure was lost to the 1.2 MB log cap before its name could be recorded; it did not recur in two further full runs."
+  ],
+  "policy": {
+    "sources_enabled": 0, "schema": 15, "D1_D7": "pending", "B24_expansion": false,
+    "quarantine_clearance": false, "main_pushed": false, "prs_merged": 0
+  }
+}

@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import hmac
 import json
+import logging
 import re
 import sys
 import time
@@ -23,7 +24,7 @@ from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
 from .freshness import VERSION as FRESHNESS_VERSION, response_freshness
 from .fetch import (DEFAULT_UA, DirectReadControl, FetchAdmissionDenied, FetchBudget,
-                    FetchStopped, Fetcher, decode_body, host_of)
+                    FetchStopped, Fetcher, decode_body, gunzip_archive, host_of)
 from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
                           extraction_restriction_observation, incomplete_publication,
@@ -600,8 +601,20 @@ class Worker:
                 if page["status"] == "ok" and response.http_status == 200:
                     out.update(self._cache_metadata(response))
                 return out
-            parsed = await asyncio.wait_for(asyncio.to_thread(discover, response.body, out["final_url"],
-                                                              content_type=response.headers.get("content-type", response.content_type), kind=params["kind"],
+            body = response.body
+            content_type = response.headers.get("content-type", response.content_type)
+            if params["kind"] in ("auto", "sitemap") and body[:2] == b"\x1f\x8b":
+                # A .xml.gz sitemap arrives as a gzip archive entity (transport
+                # Content-Encoding is already removed by the HTTP client).
+                try:
+                    body = await asyncio.wait_for(asyncio.to_thread(
+                        gunzip_archive, body, params["max_content_bytes"]), remaining())
+                except ValueError as exc:
+                    out["error_code"] = "E_CONTENT_TOO_LARGE" if "too large" in str(exc) else "E_DISCOVERY_PARSE"
+                    return out
+                content_type = "application/xml"
+            parsed = await asyncio.wait_for(asyncio.to_thread(discover, body, out["final_url"],
+                                                              content_type=content_type, kind=params["kind"],
                                                               depth=params.get("depth", 0), max_entries=params.get("max_entries", 1000),
                                                               max_input_bytes=params["max_content_bytes"]), remaining())
             remaining()
@@ -886,6 +899,21 @@ class Worker:
 
 from .rpc import InvalidEnvelope, MAX_BODY, decode_envelope
 
+_log = logging.getLogger("bzs.worker")
+
+
+def configure_stderr_logging() -> None:
+    """Terse diagnostics on stderr; stdout stays reserved for the ready line.
+
+    The launcher pipes worker stderr to logs/worker.log, so internal failures
+    become diagnosable without echoing anything into RPC responses. No token,
+    header or request body is ever logged; only method names and tracebacks.
+    """
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+    _log.addHandler(handler)
+    _log.setLevel(logging.INFO)
+
 
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
@@ -898,6 +926,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
             return web.json_response({"error": {"code": "E_AUTH", "message": "invalid worker token"}}, status=401)
         if request.headers.get("Origin"):
             return web.json_response({"error": {"code": "E_ORIGIN", "message": "browser origins are refused"}}, status=403)
+        method_name: str | None = None
         try:
             method_name, params = decode_envelope(await request.read())
             method = methods.get(method_name)
@@ -907,6 +936,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
             try:
                 return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False, allow_nan=False))
             except (ValueError, TypeError, UnicodeError):
+                _log.exception("rpc result is not serializable JSON (method=%r)", method_name)
                 return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker result is not valid JSON"}})
         except web.HTTPRequestEntityTooLarge:
             return web.json_response({"error": {"code": "E_REQUEST_TOO_LARGE", "message": "worker request exceeds body limit"}}, status=413)
@@ -917,6 +947,7 @@ def make_app(worker: Worker, token: str) -> web.Application:
         except (ValueError, TypeError) as exc:
             return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)[:300]}})
         except Exception:  # report, never crash the worker
+            _log.exception("rpc internal failure (method=%r)", method_name)
             return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker operation failed"}})
 
     app = web.Application(client_max_size=MAX_BODY)
@@ -965,6 +996,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"E_CONFIG: {exc}", file=sys.stderr)
         return 2
     app = make_app(worker, token)
+    configure_stderr_logging()
+    _log.info("worker starting on 127.0.0.1:%d (sources manifest %s)", args.port, args.sources)
 
     async def run() -> None:
         runner = web.AppRunner(app, access_log=None)

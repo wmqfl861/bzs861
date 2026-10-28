@@ -56,6 +56,233 @@ def _win_birth(k, handle) -> str | None:
     return f"win:{(fields[0].dwHighDateTime << 32) | fields[0].dwLowDateTime}"
 
 
+def _win_creation_of(birth: object) -> int | None:
+    """Creation FILETIME encoded in a birth identity, or None."""
+    if isinstance(birth, str) and birth.startswith("win:") and birth[4:].isdigit():
+        return int(birth[4:])
+    return None
+
+
+class _ProcessGone(Exception):
+    """The pid no longer names any process (OpenProcess error 87)."""
+
+
+class _ProcessDenied(Exception):
+    """The process exists but this launcher may not open it (error 5)."""
+
+
+class _RealWinApi:
+    """ctypes-backed process operations; the tree stopper's only Windows surface."""
+
+    # query limited + synchronize + terminate
+    _OPEN_MASK = 0x1000 | 0x100000 | 1
+
+    def __init__(self, kernel=None):
+        import ctypes
+        from ctypes import wintypes as w
+        self._ctypes, self._w = ctypes, w
+        self._k = kernel or _kernel()
+        k = self._k
+        k.CreateToolhelp32Snapshot.argtypes = [w.DWORD, w.DWORD]
+        k.CreateToolhelp32Snapshot.restype = w.HANDLE
+        k.Process32First.argtypes = [w.HANDLE, ctypes.c_void_p]
+        k.Process32First.restype = w.BOOL
+        k.Process32Next.argtypes = [w.HANDLE, ctypes.c_void_p]
+        k.Process32Next.restype = w.BOOL
+        k.GetSystemTimeAsFileTime.argtypes = [ctypes.POINTER(w.FILETIME)]
+
+    def snapshot(self):
+        """Return (pid -> parent pid, completion FILETIME) or raise OSError.
+
+        INVALID_HANDLE_VALUE and mid-table enumeration errors are failures:
+        a silently partial table must never be treated as the whole truth.
+        """
+        ctypes, k = self._ctypes, self._k
+        invalid = ctypes.c_void_p(-1).value
+        snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
+        if not snap or snap == invalid:
+            raise OSError("cannot snapshot the process table")
+        parents = {}
+
+        class Entry(ctypes.Structure):
+            _fields_ = [("size", self._w.DWORD), ("usage", self._w.DWORD), ("pid", self._w.DWORD),
+                        ("heap", ctypes.c_size_t), ("module", self._w.DWORD), ("threads", self._w.DWORD),
+                        ("ppid", self._w.DWORD), ("priority", ctypes.c_long), ("flags", self._w.DWORD),
+                        ("name", ctypes.c_char * 260)]
+        try:
+            e = Entry()
+            e.size = ctypes.sizeof(Entry)
+            more = k.Process32First(snap, ctypes.byref(e))
+            if not more and ctypes.get_last_error() != 18:  # ERROR_NO_MORE_FILES
+                raise OSError("process enumeration failed")
+            while more:
+                parents[e.pid] = e.ppid
+                more = k.Process32Next(snap, ctypes.byref(e))
+                if not more and ctypes.get_last_error() != 18:
+                    raise OSError("process enumeration failed mid-table")
+        finally:
+            k.CloseHandle(snap)
+        ft = self._w.FILETIME()
+        k.GetSystemTimeAsFileTime(ctypes.byref(ft))
+        return parents, (ft.dwHighDateTime << 32) | ft.dwLowDateTime
+
+    def open(self, pid):
+        ctypes = self._ctypes
+        h = self._k.OpenProcess(self._OPEN_MASK, False, pid)
+        if h:
+            return h
+        error = ctypes.get_last_error()
+        if error == 87:
+            raise _ProcessGone(pid)
+        if error == 5:
+            raise _ProcessDenied(pid)
+        raise OSError(f"cannot open pid {pid} (error {error})")
+
+    def creation(self, handle):
+        import ctypes
+        from ctypes import wintypes as w
+        fields = [w.FILETIME() for _ in range(4)]
+        if not self._k.GetProcessTimes(handle, *(ctypes.byref(f) for f in fields)):
+            raise OSError("cannot query process creation time")
+        return (fields[0].dwHighDateTime << 32) | fields[0].dwLowDateTime
+
+    def exited(self, handle) -> bool:
+        waited = self._k.WaitForSingleObject(handle, 0)
+        if waited == 0:
+            return True
+        if waited == 258:
+            return False
+        raise OSError("cannot query process wait state")
+
+    def terminate(self, handle) -> bool:
+        return bool(self._k.TerminateProcess(handle, 0))
+
+    def wait(self, handle, ms):
+        waited = self._k.WaitForSingleObject(handle, int(ms))
+        if waited == 0:
+            return "signaled"
+        if waited == 258:
+            return "timeout"
+        raise OSError("wait failed")
+
+    def close(self, handle):
+        self._k.CloseHandle(handle)
+
+
+def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline_s: float = 10.0) -> list[str]:
+    """Terminate every process provably descending from one root instance.
+
+    Attribution contract (why an unrelated process is never signalled):
+    - A process records its parent's PID at creation and never changes it, and
+      a PID cannot be reused while its holder lives. "ppid == P, created after
+      the verified creation of P's instance" therefore identifies true children
+      of that instance.
+    - Every target is opened once before anything is signalled; its creation
+      time must be strictly after its verified parent's and no later than the
+      snapshot completion time (a pid reused after the snapshot has a later
+      creation and is rejected). Termination and waiting use that same pinned
+      handle, so reuse between enumeration and open cannot redirect a signal.
+    - A live root whose creation differs from the trusted anchor aborts the
+      whole stop (the pid names another instance now).
+    - A completely gone root cannot bound its children's creation window (the
+      pid may have been recycled before it died), so candidates are reported
+      unconfirmed and never signalled. A still-openable exited root keeps its
+      verified creation and its children remain attributable.
+    - Failures (snapshot, enumeration, access denied, terminate, wait timeout)
+    - are collected per target and never reported as success.
+
+    Safety boundary, stated honestly: grandchildren of a middle process that
+    died before the snapshot opened it are invisible to this walk (their ppid
+    dangles) and are neither signalled nor reported. Cost: a possibly missed
+    cleanup; never a misattributed kill.
+    """
+    api = api or _RealWinApi()
+    unconfirmed: list[str] = []
+    opened: list = []
+    targets: list[tuple[int, int, object]] = []  # (depth, pid, handle)
+    try:
+        try:
+            parents, snap_ft = api.snapshot()
+        except OSError as exc:
+            return [f"process table unavailable ({exc}); nothing signalled"]
+
+        root_handle = None
+        root_live = False
+        if root_pid in parents:
+            try:
+                root_handle = api.open(root_pid)
+                opened.append(root_handle)
+                if api.creation(root_handle) != root_creation:
+                    raise RuntimeError(f"pid {root_pid}: identity changed; refusing termination")
+                root_live = not api.exited(root_handle)
+                if root_live:
+                    targets.append((0, root_pid, root_handle))
+            except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                root_handle = None  # gone or unverifiable: fall through to candidates
+
+        if root_handle is None:
+            # No handle to the root instance: children cannot be bound to it.
+            candidates = sorted(p for p, pp in parents.items() if pp == root_pid and p != root_pid)
+            for pid in candidates:
+                unconfirmed.append(f"pid {pid}: parent of dead root; not provably owned, not signalled")
+            return unconfirmed
+
+        # Breadth-first verification; creation times anchor each child to its
+        # verified parent instance.
+        from collections import deque
+        queue = deque([(root_pid, root_creation, 0)])
+        while queue:
+            parent_pid, parent_creation, depth = queue.popleft()
+            for child in sorted(p for p, pp in parents.items() if pp == parent_pid and p != parent_pid):
+                try:
+                    handle = api.open(child)
+                except _ProcessGone:
+                    continue  # already exited; nothing to signal or verify
+                except _ProcessDenied:
+                    unconfirmed.append(f"pid {child}: access denied; not signalled")
+                    continue
+                except OSError as exc:
+                    unconfirmed.append(f"pid {child}: cannot open ({exc}); not signalled")
+                    continue
+                opened.append(handle)
+                try:
+                    creation = api.creation(handle)
+                    if not parent_creation < creation <= snap_ft:
+                        # Created before the verified parent instance (an old
+                        # orphan re-linked by pid coincidence) or after the
+                        # snapshot (a reused pid): both are unattributable.
+                        unconfirmed.append(f"pid {child}: creation does not bind to parent {parent_pid}; not signalled")
+                        continue
+                    if api.exited(handle):
+                        continue  # exited; still a verified anchor for its children
+                    targets.append((depth + 1, child, handle))
+                    queue.append((child, creation, depth + 1))
+                except OSError as exc:
+                    unconfirmed.append(f"pid {child}: cannot verify ({exc}); not signalled")
+
+        # Signal deepest-first; one shared monotonic budget for the whole tree.
+        deadline = time.monotonic() + deadline_s
+        for depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
+            try:
+                if api.exited(handle):
+                    continue
+                if not api.terminate(handle):
+                    unconfirmed.append(f"pid {pid}: terminate refused")
+                    continue
+                remaining = deadline - time.monotonic()
+                if remaining <= 0 or api.wait(handle, remaining * 1000) != "signaled":
+                    unconfirmed.append(f"pid {pid}: exit not confirmed within budget")
+            except OSError as exc:
+                unconfirmed.append(f"pid {pid}: {exc}")
+        return unconfirmed
+    finally:
+        for handle in opened:
+            try:
+                api.close(handle)
+            except Exception:
+                pass
+
+
 def birth_identity(pid: int) -> str | None:
     if not valid_pid(pid):
         return None
@@ -143,49 +370,112 @@ def _forget(name: str, record: dict) -> None:
 
 
 @contextlib.contextmanager
-def control_lock() -> Iterator[None]:
-    p = config.home() / "run" / "launcher.lock"
+def control_lock(path: "os.PathLike[str] | None" = None, *, timeout_s: float = 0.0) -> Iterator[None]:
+    """Exclusive lock over one launcher state directory (default launcher.lock).
+
+    timeout_s=0 keeps the historical fail-fast behavior ("another launcher
+    operation is running"); a positive timeout retries until the deadline for
+    short critical sections such as client-token read-modify-writes.
+    """
+    p = Path(path) if path is not None else config.home() / "run" / "launcher.lock"
     p.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd = os.open(p, os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
         if not stat.S_ISREG(os.fstat(fd).st_mode):
             raise RuntimeError("launcher lock is not a regular file")
-        if os.name == "nt":
-            import msvcrt
-            if os.fstat(fd).st_size == 0:
-                os.write(fd, b"0")
-            os.lseek(fd, 0, 0)
-            try:
-                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-            except OSError as exc:
-                raise RuntimeError("another launcher operation is running") from exc
-        else:
-            import fcntl
-            try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except OSError as exc:
-                raise RuntimeError("another launcher operation is running") from exc
+        deadline = time.monotonic() + max(0.0, timeout_s)
+        while True:
+            if os.name == "nt":
+                import msvcrt
+                if os.fstat(fd).st_size == 0:
+                    os.write(fd, b"0")
+                os.lseek(fd, 0, 0)
+                try:
+                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                    break
+                except OSError as exc:
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError("another launcher operation is running") from exc
+                    time.sleep(0.05)
+            else:
+                import fcntl
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    break
+                except OSError as exc:
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError("another launcher operation is running") from exc
+                    time.sleep(0.05)
         yield
     finally:
         os.close(fd)  # keep the lock inode: unlinking permits split locks
 
 
-def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 2.0) -> None:
-    """Only an unreaped child handle of this invocation may be force-cleaned."""
+def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 5.0, forget: bool = True) -> None:
+    """Reclaim a child of this invocation and, when allowed, its record.
+
+    On Windows the launcher-stub tree is stopped through the verified-tree
+    stopper before the Popen itself is reaped, all under one shared deadline.
+    Any exit that cannot be confirmed is raised with the identity kept in the
+    message; the shared PID record is only removed when the caller holds the
+    control lock and everything is confirmed gone.
+    """
+    unconfirmed: list[str] = []
+    deadline = time.monotonic() + grace
+    if os.name == "nt":
+        creation = _win_creation_of(getattr(proc, "_bzs_birth", None))
+        if creation is not None:
+            unconfirmed = _win_terminate_tree(proc.pid, creation, deadline_s=grace)
     try:
         if proc.poll() is None:
             try:
                 proc.terminate()
             except ProcessLookupError:
                 pass  # This unreaped owned child exited between poll and signal.
-        proc.wait(timeout=grace)
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            proc.wait(timeout=remaining)
     except subprocess.TimeoutExpired:
         proc.kill()
-        proc.wait(timeout=grace)
-    r = read_record(name)
-    if r and r["pid"] == proc.pid and r["birth"] == getattr(proc, "_bzs_birth", None):
-        # No PID reuse before the owned child is reaped; caller holds control lock.
-        _forget(name, r)
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            proc.wait(timeout=remaining)
+    if unconfirmed or proc.poll() is None:
+        detail = "; ".join(unconfirmed) if unconfirmed else f"pid {proc.pid}: exit not confirmed"
+        raise RuntimeError(f"{name}: child cleanup incomplete: {detail}")
+    if forget:
+        r = read_record(name)
+        if r and r["pid"] == proc.pid and r["birth"] == getattr(proc, "_bzs_birth", None):
+            # The re-read comparison only narrows the window; the unlink is
+            # not atomic against an unlocked writer, so this runs only under
+            # the control lock (see cleanup_children).
+            _forget(name, r)
+
+
+def cleanup_children(children: "list[tuple[str, subprocess.Popen]]", *, acquire_lock: bool = True, forget: bool = True) -> None:
+    """Best-effort cleanup of every child of this invocation.
+
+    A failure while cleaning one child must not skip the remaining ones. When
+    the control lock cannot be taken, processes are still reclaimed through
+    this invocation's own handles, but shared PID records are left untouched:
+    mutating them without the lock races a concurrent launcher's writes.
+    """
+    with contextlib.ExitStack() as stack:
+        locked = not acquire_lock  # caller already holds the lock
+        if acquire_lock:
+            try:
+                stack.enter_context(control_lock())
+                locked = True
+            except (OSError, RuntimeError):
+                pass  # Leaving this invocation's children running is worse.
+        failures: list[str] = []
+        for name, proc in reversed(list(children)):
+            try:
+                cleanup_child(name, proc, forget=forget and locked)
+            except Exception as exc:  # Keep cleaning the remaining children.
+                failures.append(str(exc))
+        if failures:
+            raise RuntimeError("child cleanup incomplete: " + "; ".join(failures))
 
 
 def spawn(name: str, command: list[str], *, timeout: float = 30.0) -> subprocess.Popen:
@@ -266,21 +556,20 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
     if r is None:
         return False
     pid = r["pid"]
-    if birth_identity(pid) is None:
-        _forget(name, r)
-        return False
     if os.name == "nt":
-        k = _kernel()
-        h = k.OpenProcess(0x1000 | 0x100000 | 1, False, pid)
-        if not h:
-            raise RuntimeError(f"{name}: cannot obtain termination handle; record retained")
-        try:
-            if _win_birth(k, h) != r["birth"]:
-                raise RuntimeError(f"{name}: process identity changed; refusing termination")
-            if not k.TerminateProcess(h, 0) or k.WaitForSingleObject(h, int(timeout * 1000)) != 0:
-                raise RuntimeError(f"{name}: stop not confirmed; record retained")
-        finally:
-            k.CloseHandle(h)
+        # Windows venv interpreters are launcher stubs whose real interpreter
+        # is a child: stopping means the verified tree, not only the recorded
+        # pid, and the record survives until every member is confirmed gone.
+        creation = _win_creation_of(r["birth"])
+        if creation is None:
+            raise RuntimeError(f"{name}: unverified PID record birth; refusing automatic control")
+        was_alive = birth_identity(pid) is not None
+        unconfirmed = _win_terminate_tree(pid, creation, deadline_s=timeout)
+        if unconfirmed or birth_identity(pid) is not None:
+            raise RuntimeError(f"{name}: stop not confirmed; record retained"
+                               + ("; " + "; ".join(unconfirmed) if unconfirmed else ""))
+        _forget(name, r)
+        return was_alive
     else:
         if not hasattr(os, "pidfd_open") or not hasattr(signal, "pidfd_send_signal"):
             raise RuntimeError("safe persisted stopping requires Linux pidfds")
@@ -290,7 +579,11 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
             _forget(name, r)
             return False
         try:
-            if birth_identity(pid) != r["birth"]:
+            birth = birth_identity(pid)
+            if birth is None:  # exited between the identity probe and the pidfd
+                _forget(name, r)
+                return False
+            if birth != r["birth"]:
                 raise RuntimeError(f"{name}: process identity changed; refusing termination")
             signal.pidfd_send_signal(fd, signal.SIGTERM)
             if not select.select([fd], [], [], timeout)[0]:

@@ -77,7 +77,18 @@ INVALID = [
     b'{"method":"fetch.extract","params":{"x":[' + b'0,'*20000 + b'0]}}',
 ]
 
-@pytest.mark.parametrize("body", INVALID)
+# Short ids keep PYTEST_CURRENT_TEST within the 32767-character Windows
+# environment-variable cap; the bodies themselves stay byte-exact.
+INVALID_IDS = [
+    "dup-method", "dup-method-escaped", "dup-cancel-id", "dup-param-key",
+    "params-null", "params-false", "params-zero", "params-array", "params-string",
+    "method-false", "method-array", "empty-object", "top-array", "top-null",
+    "top-string", "top-number", "unexpected-field", "nan", "infinity",
+    "float-overflow", "int-overflow", "int-underflow", "lone-surrogate",
+    "surrogate-key", "invalid-utf8", "depth-65", "nodes-20001",
+]
+
+@pytest.mark.parametrize("body", INVALID, ids=INVALID_IDS)
 async def test_rejected_envelope_has_no_dispatch_or_cancel_effects(rpc, body):
     worker, post = rpc
     status, reply = await post(body)
@@ -139,3 +150,33 @@ async def test_exact_existing_transport_limit_is_not_reduced(rpc):
     status, reply = await post(payload + b' ' * (1024 * 1024 - len(payload)))
     assert status == 200 and reply["result"]["ok"]
     assert worker.calls == [("health", {})]
+
+
+async def test_internal_failure_is_diagnosed_on_stderr_not_in_response(rpc, caplog):
+    import logging
+    worker, post = rpc
+    with caplog.at_level(logging.ERROR, logger="bzs.worker"):
+        status, reply = await post(json.dumps({"method": "search.multi", "params": {}}).encode())
+    assert status == 200 and reply["error"]["code"] == "E_INTERNAL"
+    assert "private-worker-token" not in json.dumps(reply)
+    records = [r for r in caplog.records if r.name == "bzs.worker"]
+    assert records and "rpc internal failure" in records[0].getMessage()
+    assert "search.multi" in records[0].getMessage()
+    assert records[0].exc_info and "private-worker-token" in "".join(
+        logging.Formatter().formatException(records[0].exc_info))
+
+
+def test_worker_logging_goes_to_stderr_only(capsys):
+    from bzs.worker import server
+    server.configure_stderr_logging()
+    try:
+        try:
+            raise RuntimeError("diagnostic boom")
+        except RuntimeError:
+            server._log.exception("simulated failure (method=%r)", "fetch.extract")
+    finally:
+        server._log.handlers.clear()  # keep the module logger unconfigured
+    captured = capsys.readouterr()
+    assert "simulated failure" in captured.err and "fetch.extract" in captured.err
+    assert "Traceback" in captured.err and "diagnostic boom" in captured.err
+    assert captured.out == ""  # stdout stays reserved for the protocol

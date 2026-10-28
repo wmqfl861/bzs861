@@ -17,7 +17,7 @@ from typing import Any
 
 from mcp.server.auth.provider import AccessToken
 
-from . import config
+from . import config, process_control
 
 _NAME = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 
@@ -26,12 +26,43 @@ def clients_path() -> Path:
     return config.home() / "mcp_clients.json"
 
 
+def _clients_lock(clients_file: Path) -> Path:
+    # Sibling of the clients file: the default lands in $BZS_HOME/run, and a
+    # test's temporary file gets a temporary lock instead of touching a real
+    # installation.
+    return clients_file.parent / "run" / "mcp-clients.lock"
+
+
 def load_clients(path: Path | None = None) -> list[dict[str, Any]]:
+    """Load and strictly validate client entries; malformed input fails closed.
+
+    Every entry must have a well-formed name and sha256, and optional fields
+    must have their declared types (scopes: list of str, disabled: bool).
+    A malformed file raises ValueError: the verifier rejects every request
+    until an operator repairs it, instead of silently keeping a partial
+    allow-list or turning a string scope into per-character scopes.
+    """
     path = path or clients_path()
     if not path.exists():
         return []
     data = json.loads(path.read_text(encoding="utf-8"))
-    return [c for c in data.get("clients", []) if isinstance(c, dict) and c.get("sha256") and c.get("name")]
+    clients: list[dict[str, Any]] = []
+    for index, entry in enumerate(data.get("clients", [])):
+        if not isinstance(entry, dict):
+            raise ValueError(f"mcp client entry {index}: expected an object")
+        name = entry.get("name")
+        digest = entry.get("sha256")
+        if not isinstance(name, str) or not _NAME.match(name):
+            raise ValueError(f"mcp client entry {index}: invalid name")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ValueError(f"mcp client {name!r}: invalid sha256 digest")
+        scopes = entry.get("scopes", ["search"])
+        if not isinstance(scopes, list) or not all(isinstance(s, str) and s for s in scopes):
+            raise ValueError(f"mcp client {name!r}: scopes must be a list of names")
+        if "disabled" in entry and not isinstance(entry["disabled"], bool):
+            raise ValueError(f"mcp client {name!r}: disabled must be a boolean")
+        clients.append(entry)
+    return clients
 
 
 def _save(clients: list[dict[str, Any]], path: Path) -> None:
@@ -42,24 +73,29 @@ def add_client(name: str, path: Path | None = None) -> str:
     if not _NAME.match(name):
         raise ValueError("client name: 1-64 letters, digits, '.', '_' or '-'")
     path = path or clients_path()
-    clients = load_clients(path)
-    if any(c["name"] == name for c in clients):
-        raise ValueError(f"client {name!r} already exists; revoke it first")
-    token = "bzsmcp_" + secrets.token_urlsafe(32)
-    clients.append({"name": name, "sha256": hashlib.sha256(token.encode()).hexdigest(),
-                    "created_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "scopes": ["search"]})
-    _save(clients, path)
+    # Locked read-modify-write: two concurrent `bzs mcp-token add` runs must
+    # serialize (or fail loudly at the deadline) instead of silently dropping
+    # whichever write lands first.
+    with process_control.control_lock(_clients_lock(path), timeout_s=30):
+        clients = load_clients(path)
+        if any(c["name"] == name for c in clients):
+            raise ValueError(f"client {name!r} already exists; revoke it first")
+        token = "bzsmcp_" + secrets.token_urlsafe(32)
+        clients.append({"name": name, "sha256": hashlib.sha256(token.encode()).hexdigest(),
+                        "created_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "scopes": ["search"]})
+        _save(clients, path)
     return token
 
 
 def revoke_client(name: str, path: Path | None = None) -> bool:
     path = path or clients_path()
-    clients = load_clients(path)
-    kept = [c for c in clients if c["name"] != name]
-    if len(kept) == len(clients):
-        return False
-    _save(kept, path)
-    return True
+    with process_control.control_lock(_clients_lock(path), timeout_s=30):
+        clients = load_clients(path)
+        kept = [c for c in clients if c["name"] != name]
+        if len(kept) == len(clients):
+            return False
+        _save(kept, path)
+        return True
 
 
 class StaticTokenVerifier:
