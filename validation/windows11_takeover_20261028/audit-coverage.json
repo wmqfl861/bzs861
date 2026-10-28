@@ -1,0 +1,34 @@
+{
+  "method": "four parallel read-only audit agents plus lead re-review of every changed path and the process/network/storage boundaries; all findings re-verified against source before fixing",
+  "read_fully": {
+    "cpp": ["src/maintenance.cpp", "src/store.cpp (open/schema/backup/search paths)", "src/service.cpp", "src/web.cpp (read/freshness/shared-flight paths)", "apps/searchd/main.cpp", "apps/searchctl/main.cpp", "tests/storage_maintenance.cpp", "tests/background_pool.cpp", "tests/launcher_lifecycle.py"],
+    "python": ["bzs/cli.py", "bzs/process_control.py", "bzs/config.py", "bzs/core_client.py", "bzs/worker/server.py", "bzs/worker/rpc.py", "bzs/mcp_server.py", "bzs/mcp_auth.py", "bzs/worker/netguard.py", "tests/e2e_web.py (harness)", "tests/e2e_revocation.py (harness)"],
+    "build_ci": [".github/workflows/ci.yml", "CMakeLists.txt", "CMakePresets.json", "python/pyproject.toml", "tools/requirements-s1-lock.txt"]
+  },
+  "reviewed_via_agent_reports_with_lead spot_checks": {
+    "cpp_concurrency_search": ["src/batch.cpp", "src/map.cpp", "src/crawl.cpp", "src/sessions.cpp", "src/retention.cpp", "src/revocation.cpp", "src/query.cpp", "src/tokenizer.cpp", "src/publication.cpp", "src/http_cache.cpp", "include/bzs/request_executor.hpp"],
+    "python_worker": ["worker/fetch.py", "worker/robots.py", "worker/discovery.py", "worker/sites.py", "worker/sources/*"]
+  },
+  "not_covered_this_round": [
+    "python/bzs/evaluation*.py, golden.py, probe*.py, replay.py (offline evaluation tooling; no Windows-native hazard identified, not exercised end-to-end here)",
+    "long-running soak/interaction of crawl+map lanes beyond the existing suites",
+    "MSan/TSan (not configured upstream); ASan/UBSan deferred to Linux CI per handoff rules"
+  ],
+  "verified_correct_highlights": [
+    "storage maintenance: exclusive-lock-before-mutation, scratch preflight with typed rowid/content digests, quarantine tightening, refusal set (schema/quarantine/links/space/timeout) all fail-closed",
+    "process identity: birth identity (creation FILETIME / boot_id+starttime) checked at every control point; legacy numeric PID records refused; no name-based process kills anywhere",
+    "worker RPC: auth/Origin precede body parsing; strict envelope (dup keys incl. escaped, depth, nodes, int64, finite floats, surrogates) with zero side effects before dispatch; credentials never echoed",
+    "netguard: numeric-host forms, Unicode host spellings, NAT64/6to4/Teredo recursion, DNS-pinned resolver, per-hop redirect revalidation, proxies disabled",
+    "search semantics: in-word substrings, CJK bigrams with exact phrase positions, accented byte-exact terms, field/boolean queries; owner/deletion/publication constraints re-checked in final projection; partial flags honest",
+    "thread pools bounded; stop tokens rechecked inside claim transactions; late completions are clean no-ops"
+  ],
+  "open_observations_not_fixed": [
+    "web.cpp search cache lock held across a Store transaction (serialization, no deadlock: lock order cache->store only)",
+    "politeness sleep up to 3s is not stop-token aware at the margins",
+    "worker internal errors are not logged anywhere (leak-safe but undiagnosable)",
+    "business E_PARAMS returns HTTP 200 vs envelope E_PARAMS 400 (contract-sanctioned)",
+    "search_registry_identity recomputed per lease/completion; publication SQL function parses JSON per row (Debug CPU hot spots behind the suite timeouts)",
+    "mcp_auth load_clients does not type-check scopes; add/revoke clients are unlocked read-modify-writes",
+    "worker _host_locks grows without bound (memory only)"
+  ]
+}
