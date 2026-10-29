@@ -4,6 +4,7 @@
 #include "bzs/util.hpp"
 #include <algorithm>
 #include <cctype>
+#include <set>
 namespace bzs {
   Json QueryNode::json()const {
     Json j=Json::object();
@@ -422,6 +423,26 @@ namespace bzs {
     std::vector<const QueryNode*> out;
     collect_leaves(root, out);
     return out;
+  }
+  bool is_refused_filter_operator_name(const std::string& name) {
+    static const std::set<std::string> refused{
+      "after","before","since","until","lang","language","region","loc",
+      "inurl","intext","inanchor","allintitle","allinbody","allinurl","allintext",
+      "ext","containsexact","source"};
+    return refused.count(name)>0;
+  }
+  void require_no_unmodelled_filter_operators(const std::string& query) {
+    // Reuse the lexer's own tokens so quoting, escapes, the leading-NOT sign
+    // and parenthesis grouping are classified exactly as the parser sees them.
+    for(const auto& t:lex(query)) {
+      const auto colon=t.text.find(':');
+      if(colon==std::string::npos||colon==0||colon>16)continue;
+      if(!is_refused_filter_operator_name(ascii_lower(t.text.substr(0,colon))))continue;
+      // Only an entirely unquoted "name:" prefix is an operator invocation;
+      // a fully quoted token ("after:x") is a literal search.
+      if(t.has_unquoted_prefix(t.text.substr(0,colon+1)))
+        throw Error("E_QUERY_SYNTAX","unmodelled filter operator in query is refused for web search (modelled: site:, filetype:, intitle:, inbody:)",400);
+    }
   }
   Query parse_query(const Json& input) {
     Query q;

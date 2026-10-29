@@ -437,40 +437,12 @@ namespace bzs {
     // Engine filter operators this grammar does not model. Refusing them
     // beats forwarding them upstream as ordinary literals (FT-011: never
     // silently drop a condition); quoting such text keeps it a literal search.
-    bool refused_operator_name(const std::string& name) {
-      static const std::set<std::string> refused{
-        "after","before","since","until","lang","language","region","loc",
-        "inurl","intext","inanchor","allintitle","allinbody","allinurl","allintext",
-        "ext","containsexact","source"};
-      return refused.count(name)>0;
-    }
-    // Word-level mirror of the lexer's quote accounting: an operator name in
-    // a word's unquoted prefix is an operator invocation even when only its
-    // operand is quoted (after:"x"); a fully quoted token ("after:x") is a
-    // literal search and stays allowed. Parens end words like whitespace.
-    void require_no_unmodelled_operators(const std::string& query) {
-      std::size_t i=0;
-      while(i<query.size()) {
-        if(std::isspace(static_cast<unsigned char>(query[i]))||query[i]=='('||query[i]==')') { ++i; continue; }
-        std::size_t start=i;
-        while(i<query.size()&&!std::isspace(static_cast<unsigned char>(query[i]))&&query[i]!='('&&query[i]!=')')++i;
-        const std::string word=query.substr(start,i-start);
-        const auto colon=word.find(':');
-        if(colon==std::string::npos||colon==0||colon>16)continue;
-        const auto quote=word.find('"');
-        // Quote at or before the colon: the operator-looking text sits inside
-        // the quoted literal; an unquoted prefix ending in the colon is real.
-        if(quote!=std::string::npos&&quote<=colon)continue;
-        if(refused_operator_name(ascii_lower(word.substr(0,colon))))
-          throw Error("E_QUERY_SYNTAX","unmodelled filter operator in query is refused for web search (modelled: site:, filetype:, intitle:, inbody:)",400);
-      }
-    }
     bool refuse_unmodelled_operator(const QueryNode& n) {
       if(n.field!="any"||(n.op!="term"&&n.op!="literal"))return false;
       const auto colon=n.value.find(':');
       if(colon==std::string::npos||colon<1||colon>16)return false;
       const auto prefix=ascii_lower(n.value.substr(0,colon));
-      return refused_operator_name(prefix);
+      return is_refused_filter_operator_name(prefix);
     }
     // Field conditions must sit in a top-level positive conjunction: under NOT
     // the required-every semantics would silently invert, under OR one branch
@@ -648,7 +620,7 @@ namespace bzs {
     // passthrough: a query whose filter syntax cannot be modelled is refused,
     // never forwarded as if its conditions were verified. `parsed` must outlive
     // `conditions`: intitle entries keep a pointer to their AST leaf.
-    require_no_unmodelled_operators(query);
+    require_no_unmodelled_filter_operators(query);
     const auto parsed=parse_query(Json::string(query));
     require_condition_shape(parsed.root,false,false);
     const auto conditions=collect_conditions(parsed);

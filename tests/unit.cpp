@@ -1500,7 +1500,17 @@ namespace {
     rejects([&]{web.search("a", obj(R"({"query":"copper inurl:\"docs\""})"));},"E_QUERY_SYNTAX");
     rejects([&]{web.search("a", obj(R"({"query":"copper allinurl:docs"})"));},"E_QUERY_SYNTAX");
     rejects([&]{web.search("a", obj(R"({"query":"copper allintext:docs"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper -after:\"2026-01-01\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper -inurl:\"docs\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"(-lang:\"en\") copper"})"));},"E_QUERY_SYNTAX");
     CHECK(!dispatched);  // refusals happen before any worker call
+    // Multi-word and modeled-phrase literals inside quotes stay dispatchable.
+    bool literal_dispatched=false;
+    w.handler=[&](const std::string&, const Json&){literal_dispatched=true;return obj(R"({"results":{}})");};
+    web.search("a", obj(R"({"query":"copper \"guide after:2026-01-01\""})"));
+    web.search("a", obj(R"({"query":"copper \"(after:2026-01-01)\""})"));
+    web.search("a", obj(R"({"query":"intitle:\"guide after:2026\" copper"})"));
+    CHECK(literal_dispatched);
     // A fully quoted token is a literal search, not an operator invocation.
     bool quoted_dispatched=false;
     w.handler=[&](const std::string&, const Json&){quoted_dispatched=true;return obj(R"({"results":{}})");};
