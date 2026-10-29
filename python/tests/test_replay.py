@@ -247,4 +247,7 @@ def test_artifact_output_rejects_device_directory_name(tmp_path):
 
     with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
         write_new_directory(tmp_path / "CON", {"report.json": b"{}"}, label="test")
-    assert not (tmp_path / "CON").exists()
+    # Windows treats reserved device names specially: Path.exists("CON") may
+    # report True even when no filesystem entry was created. Assert the parent
+    # stayed empty instead of probing the reserved path itself.
+    assert list(tmp_path.iterdir()) == []
