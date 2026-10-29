@@ -538,3 +538,51 @@ def test_probe_checkpoint_depth_bounds_containers_like_the_baseline(tmp_path, de
     else:
         with pytest.raises(ValueError, match="nesting"):
             read_report(tmp_path)
+
+
+def test_write_report_validates_tuples_as_json_arrays_and_keeps_the_previous_checkpoint(tmp_path):
+    # json.dumps serializes a tuple as an array; the structural validator
+    # must count it that way too, or a wide/deep tuple could overwrite a good
+    # checkpoint with a report the reader refuses.
+    from bzs.probe_state import MAX_JSON_NODES, MAX_JSON_DEPTH, read_report, read_report_with_digest, write_report
+
+    write_report(tmp_path, {"schema_version": 2, "rows": []})
+    before = read_report_with_digest(tmp_path)[1]
+    with pytest.raises(ValueError, match="node count"):
+        write_report(tmp_path, {"items": (0,) * MAX_JSON_NODES})
+    deep = (0,)
+    for _ in range(MAX_JSON_DEPTH + 1):
+        deep = (deep,)
+    with pytest.raises(ValueError, match="nesting"):
+        write_report(tmp_path, {"items": deep})
+    assert read_report_with_digest(tmp_path)[1] == before
+    assert read_report(tmp_path) == {"schema_version": 2, "rows": []}
+    # A tuple just under the budget round-trips through both sides.
+    write_report(tmp_path, {"items": (0,) * (MAX_JSON_NODES - 3)})
+    assert read_report(tmp_path)["items"] == [0] * (MAX_JSON_NODES - 3)
+
+
+def test_probe_checkpoint_counts_object_keys_not_only_values(tmp_path):
+    # 500k scalar pairs: the values alone stay inside the budget, so only the
+    # key accounting pushes the total past it (1 root + 500k keys + 500k
+    # values = 1,000,001 nodes).
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    pairs = ",".join(f'"k{i}":0' for i in range(500_000))
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b"{" + pairs.encode() + b"}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
+
+
+def test_probe_checkpoint_sibling_depth_is_stable_after_a_deep_branch(tmp_path):
+    # A deep branch followed by a sibling container pins per-level depth: a
+    # late-bound level generator would inflate the sibling's depth and reject
+    # this legal report.
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    raw = b'{"a":' + b"[" * 60 + b"0" + b"]" * 60 + b',"b":{"c":[1,2,3]}}'
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(raw)
+    report = read_report(tmp_path)
+    assert report["b"] == {"c": [1, 2, 3]}

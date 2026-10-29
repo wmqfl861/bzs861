@@ -128,7 +128,7 @@ def _validate_structure(root: object) -> None:
         count += 1
         if count > MAX_JSON_NODES:
             raise ValueError("probe report JSON node count exceeds its limit")
-        if not isinstance(value, (dict, list)):
+        if not isinstance(value, (dict, list, tuple)):
             continue
         if depth > MAX_JSON_DEPTH:
             raise ValueError("probe report JSON nesting exceeds its limit")
@@ -140,6 +140,8 @@ def _validate_structure(root: object) -> None:
                 raise ValueError("probe report JSON node count exceeds its limit")
             children = value.values()
         else:
+            # tuple serializes as a JSON array; it must carry array semantics
+            # here too or a writer could emit an unreadable checkpoint.
             children = value
         stack.append(_level(children, depth + 1))
 
