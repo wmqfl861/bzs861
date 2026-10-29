@@ -92,3 +92,16 @@ async def test_concurrent_adds_never_lose_tokens(tmp_path):
     assert stored == set(names)  # no silently dropped write
     for name, token in results.items():
         assert (await StaticTokenVerifier(path).verify_token(token)).client_id == name
+
+
+
+@pytest.mark.parametrize("raw", [
+    '{"clients":[],"clients":[]}',
+    '{"clients":[{"name":"one","name":"two","sha256":"' + "a" * 64 + '"}]}',
+    '{"clients":[{"name":"one","sha256":"' + "a" * 64 + '","sha256":"' + "b" * 64 + '"}]}',
+])
+def test_client_registry_rejects_duplicate_json_keys(tmp_path, raw):
+    path = tmp_path / "mcp_clients.json"
+    path.write_text(raw, encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_clients(path)
