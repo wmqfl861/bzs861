@@ -229,3 +229,22 @@ def test_replay_output_failure_never_publishes_partial_report_directory(tmp_path
     result = replay(str(path), str(out))
     assert result["status"] == "passed"
     assert (out / "replay_report.json").is_file() and (out / "replay_report.md").is_file()
+
+
+
+@pytest.mark.parametrize("name", ["../escape", r"..\escape", "C:stream", "NUL", "name.", "name "])
+def test_artifact_output_rejects_cross_platform_unsafe_names(tmp_path, name):
+    from bzs.artifact_output import write_new_directory
+
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(tmp_path / "safe-output", {name: b"not written"}, label="test")
+    assert not (tmp_path / "safe-output").exists()
+    assert not (tmp_path / "escape").exists()
+
+
+def test_artifact_output_rejects_device_directory_name(tmp_path):
+    from bzs.artifact_output import write_new_directory
+
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(tmp_path / "CON", {"report.json": b"{}"}, label="test")
+    assert not (tmp_path / "CON").exists()

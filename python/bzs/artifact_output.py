@@ -13,18 +13,31 @@ from .probe_state import atomic_write
 MAX_OUTPUT_FILE_BYTES = 64 * 1024 * 1024
 
 
+def _validate_component(value: str, *, label: str) -> None:
+    if (not value or value in (".", "..") or any(ch in value for ch in ("/", "\\", ":", "\x00"))
+            or value.endswith((".", " "))):
+        raise ValueError(f"E_OUTPUT_PATH: invalid {label} path component")
+    # Reject Windows device names even when the same artifact is prepared on POSIX.
+    stem = value.split(".", 1)[0].upper()
+    reserved = {"CON", "PRN", "AUX", "NUL"}
+    reserved.update(f"COM{i}" for i in range(1, 10))
+    reserved.update(f"LPT{i}" for i in range(1, 10))
+    if stem in reserved:
+        raise ValueError(f"E_OUTPUT_PATH: reserved {label} path component")
+
+
 def write_new_directory(path: str | Path, files: dict[str, bytes], *, label: str) -> None:
     """Stage all files and publish by one directory rename under a stable lock."""
     out = Path(path)
-    if not out.name or out.name in (".", ".."):
-        raise ValueError(f"E_OUTPUT_PATH: invalid {label} output directory")
+    _validate_component(out.name, label=label + " output directory")
     if out.exists() or out.is_symlink():
         raise ValueError(f"E_OUTPUT_EXISTS: {label} output directory already exists")
     if not isinstance(files, dict) or not files:
         raise ValueError(f"E_OUTPUT_SCHEMA: {label} output file set is empty")
     for name, raw in files.items():
-        if not isinstance(name, str) or Path(name).name != name or name in ("", ".", ".."):
+        if not isinstance(name, str) or Path(name).name != name:
             raise ValueError(f"E_OUTPUT_PATH: invalid {label} output filename")
+        _validate_component(name, label=label + " output filename")
         if not isinstance(raw, bytes) or len(raw) > MAX_OUTPUT_FILE_BYTES:
             raise ValueError(f"E_OUTPUT_LIMIT: invalid {label} output file size")
 
