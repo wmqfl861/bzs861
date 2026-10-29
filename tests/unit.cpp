@@ -1496,7 +1496,16 @@ namespace {
     rejects([&]{web.search("a", obj(R"({"query":"-inbody:hidden"})"));},"E_QUERY_SYNTAX");
     rejects([&]{web.search("a", obj(R"({"query":"copper after:2026-01-01"})"));},"E_QUERY_SYNTAX");
     rejects([&]{web.search("a", obj(R"({"query":"inurl:docs copper"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper after:\"2026-01-01\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper inurl:\"docs\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper allinurl:docs"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper allintext:docs"})"));},"E_QUERY_SYNTAX");
     CHECK(!dispatched);  // refusals happen before any worker call
+    // A fully quoted token is a literal search, not an operator invocation.
+    bool quoted_dispatched=false;
+    w.handler=[&](const std::string&, const Json&){quoted_dispatched=true;return obj(R"({"results":{}})");};
+    web.search("a", obj(R"({"query":"copper \"after:2026-01-01\""})"));
+    CHECK(quoted_dispatched);
   }
   TEST(web_search_refuses_oversize_condition_values_without_truncation) {
     Temp t;Store s(t.path/"db");FakeWorker w;bool dispatched=false;

@@ -279,7 +279,7 @@ class EndToEnd(unittest.TestCase):
         entries = {(e["kind"], e["value"]): e for e in filters["conditions"]}
         self.assertEqual({k for k in entries}, {("site", HOST), ("filetype", "html"), ("intitle", "resumable")})
         self.assertEqual(entries[("site", HOST)]["removed"], 1)
-        self.assertEqual(entries[("filetype", "html")]["removed"], 3)  # extensionless + off-site + limit-hidden .txt row
+        self.assertEqual(entries[("filetype", "html")]["removed"], 3)  # extensionless + off-site + bing's extensionless /article.html/ duplicate
         self.assertEqual(entries[("intitle", "resumable")]["removed"], 5)
         per_source = {p["source_id"]: p for p in entries[("site", HOST)]["per_source"]}
         # Native execution location is not satisfaction: the engine ignored the
