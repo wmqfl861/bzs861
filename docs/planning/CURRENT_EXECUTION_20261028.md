@@ -70,3 +70,13 @@ D1–D7 仍待用户明确答复；来源启用 0；业务 schema 15；永久带
 - 保留前批 `test_prepare_output_failure_never_publishes_a_partial_package`、`test_replay_output_failure_never_publishes_partial_report_directory` 与离线链路端到端测试。
 
 当前 head 的测试门禁必须以 GitHub Actions 实际结果为准；不得将 CI pending 写成通过。若失败，修复后再推送。
+
+## 2026-10-29 三个大模块接续
+
+A. 离线证据与产物发布：Probe错误脱敏、Evaluation/Replay原子发布、跨平台路径、并发发布及离线证据链门禁。
+
+B. Crawl/Map有界持续交互：新增同源循环回归，分别执行48次map尝试（42实际dispatch、6取消前拒绝）和40次page尝试（36实际dispatch、4取消前拒绝），核对用量、重放、候选/页面产物、host admission和收据增长。这是短时确定性回归，不代表长时间soak或真实来源验收。
+
+C. 本地搜索性能基准：新增`python -m bzs.local_benchmark --query "..." --iterations 20 --warmup 3`，仅向127.0.0.1的`search`操作发送请求，不调用`web.search`。记录延迟分布与查询哈希，不保存查询正文、响应正文或token，不宣称缓存命中。先提供可重复基线工具，待在目标Windows 11/同配置环境实测后才决定是否优化缓存锁/SQL。
+
+对应测试：`test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free`、`test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separate`、`test_benchmark_is_loopback_only_and_never_records_credentials_or_body`及参数边界测试。完整CI仍是合入门槛。
