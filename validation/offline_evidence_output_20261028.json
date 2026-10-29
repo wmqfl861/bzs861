@@ -34,5 +34,68 @@
     "acceptance_ids": 161,
     "slices": 10,
     "fully_accepted_packages": 0
+  },
+  "five_node_increment": {
+    "revision": "2026-10-29",
+    "base": "df97acf9f063bd7b7dd6191b7a09bb36690e9c62",
+    "nodes": [
+      {
+        "id": "OFFLINE-01",
+        "name": "probe exception redaction",
+        "tests": [
+          "test_probe_persists_error_class_not_secret_exception_text"
+        ]
+      },
+      {
+        "id": "OFFLINE-02",
+        "name": "cross-platform artifact path validation",
+        "tests": [
+          "test_artifact_output_rejects_cross_platform_unsafe_names",
+          "test_artifact_output_rejects_device_directory_name"
+        ]
+      },
+      {
+        "id": "OFFLINE-03",
+        "name": "concurrent artifact publication",
+        "tests": [
+          "test_concurrent_publishers_produce_exactly_one_complete_output"
+        ]
+      },
+      {
+        "id": "OFFLINE-04",
+        "name": "fail-closed publication lock",
+        "tests": [
+          "test_artifact_output_rejects_nonregular_publication_lock"
+        ]
+      },
+      {
+        "id": "OFFLINE-05",
+        "name": "directory-entry durability reporting",
+        "tests": [
+          "test_parent_directory_flush_failure_reports_published_state"
+        ]
+      }
+    ],
+    "additional_tests": [
+      "test_prepare_output_failure_never_publishes_a_partial_package",
+      "test_replay_output_failure_never_publishes_partial_report_directory",
+      "test_offline_probe_replay_evaluation_chain_never_promotes_synthetic_evidence"
+    ],
+    "verification": {
+      "local_execution": "not performed in this tool environment; exact SHA CI is the gate",
+      "ci": "pending"
+    },
+    "constraints": {
+      "network_requests": 0,
+      "model_calls": 0,
+      "source_activation": false,
+      "holdout_enabled": false,
+      "business_schema": 15,
+      "D1_D7": "pending",
+      "acceptance_packages": 83,
+      "acceptance_ids": 161,
+      "slices": 10,
+      "fully_accepted_packages": 0
+    }
   }
 }

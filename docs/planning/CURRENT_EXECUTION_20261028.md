@@ -49,3 +49,24 @@ D1–D7 仍待用户明确答复；来源启用 0；业务 schema 15；永久带
 新增 \`artifact_output.write_new_directory\`：evaluation package 与 replay report 先在同一父目录的 staging 目录中写完，逐文件 flush/fsync，再在稳定 SQLite sidecar 锁内一次性重命名发布。任何文件写入失败时清理 staging，最终目标目录不留下半成品；同名既有结果仍拒绝覆盖。锁文件保留，避免删除锁文件造成并发锁分裂。
 
 新增 \`test_prepare_output_failure_never_publishes_a_partial_package\` 与 \`test_replay_output_failure_never_publishes_partial_report_directory\`，模拟第二个文件写入时磁盘失败，验证最终目录不存在、staging 被清理，恢复后可用同一路径重新运行。该变更不触发网络、不创建标签、不放宽 holdout/质量门槛。准确提交的完整 CI 是最终验收条件。
+
+## 2026-10-29：离线证据可靠性五节点增量
+
+本批继续在既有离线评估/回放链上开发，不启用来源、不调用模型、不生成真实相关性标签：
+
+1. Probe 失败信息脱敏：SourceError 只记录受限状态码，其他适配器异常只记录异常类别；不把异常文本、Authorization 片段或 URL 查询参数写入持久报告。
+2. 跨平台输出路径校验：最终目录与文件名拒绝斜杠/反斜杠、ADS 冒号、NUL、尾随点/空格和 Windows 保留设备名，避免 POSIX 生成 Windows 不可移植或危险的产物名。
+3. 并发发布合同：两个并发发布者争用同一目标时最多一个成功，最终 JSON/Markdown 必须属于同一发布者且完整；另一方明确拒绝。
+4. 锁文件 fail-closed：发布锁若不是普通文件（例如同名目录）则拒绝发布，不能绕过锁继续写产物。
+5. 目录发布持久性：POSIX 在发布前 fsync staging 目录，重命名后 fsync 父目录；父目录同步失败时明确报告“已发布但持久性未确认”，不谎称回滚。Windows Python 无可移植目录 fsync API，本实现只保证文件 flush/fsync 与同卷目录重命名，不宣称抵抗 Windows 物理断电。
+
+新增/更新测试：
+- `test_probe_persists_error_class_not_secret_exception_text`（SourceError 与普通异常两种情况）
+- `test_artifact_output_rejects_cross_platform_unsafe_names`
+- `test_artifact_output_rejects_device_directory_name`
+- `test_concurrent_publishers_produce_exactly_one_complete_output`
+- `test_artifact_output_rejects_nonregular_publication_lock`
+- `test_parent_directory_flush_failure_reports_published_state`
+- 保留前批 `test_prepare_output_failure_never_publishes_a_partial_package`、`test_replay_output_failure_never_publishes_partial_report_directory` 与离线链路端到端测试。
+
+当前 head 的测试门禁必须以 GitHub Actions 实际结果为准；不得将 CI pending 写成通过。若失败，修复后再推送。
