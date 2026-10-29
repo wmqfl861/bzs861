@@ -1,0 +1,179 @@
+{
+  "review": "full-code-audit-20261029",
+  "base": "83d45cd825d9dfc3ee09268eb65fc2f971b8ed69",
+  "base_tree": "f36268e54af75a3e4d05f44d681908a83a62ef8e",
+  "upstream_branch": "work/blueprint-v2-dev-20261029",
+  "branch": "work/project-audit-full-20261029",
+  "verified_code_commit": "73478c51fa729280fcb51c06f5081313333e077c",
+  "verified_code_tree": "04dddf6a1c4bbeb8a00dafd362dccaaa67fdaf37",
+  "reviewer_kind": "implementation_assistant_self_review_and_executable_regression_not_external_signoff",
+  "scope": {
+    "production_inventory_files": 88,
+    "production_inventory_lines": 22698,
+    "python_ast_files": 363,
+    "deep_review": "six reproduced defect families and adjacent boundaries",
+    "line_by_line_exhaustive_proof": false
+  },
+  "findings": [
+    {
+      "id": "AUD-01",
+      "severity": "high",
+      "area": "CACHE-01 shared no-store settlement",
+      "defect": "Cancelled or paused members received succeeded/transient receipts when another shared member remained live.",
+      "fix": "Use common per-member settlement eligibility, retain the original payer and publish only to live members.",
+      "before": "Four cancellation/pause reproductions fail on baseline.",
+      "after_tests": [
+        "no_store_shared_cancel_payer",
+        "no_store_shared_cancel_subscriber",
+        "no_store_shared_pause_payer",
+        "no_store_shared_pause_subscriber",
+        "no_store_initial_shared_members_obey_per_member_control"
+      ]
+    },
+    {
+      "id": "AUD-02",
+      "severity": "high",
+      "area": "CACHE-01 transient publication fences",
+      "defect": "Successful no-store batch completion did not reject deletion of final or intermediate redirect aliases.",
+      "fix": "Run the existing transient publication projection with captured authorization/deletion/publication fences in the same transaction as usage and receipts.",
+      "before": "Deleted-final-target reproduction fails on baseline.",
+      "after_tests": [
+        "no_store_deleted_redirect_target_is_not_success",
+        "no_store_batch_alias_deletions_fence_single_and_shared_receipts",
+        "no_store_cancel_expiry_and_auth_changes_never_publish_receipts",
+        "no_store_receipt_failure_rolls_back_all_members_and_settles_usage_once"
+      ]
+    },
+    {
+      "id": "AUD-03",
+      "severity": "high",
+      "area": "Core RPC transport",
+      "defect": "Core clients could follow redirects and forward credentials/replay a mutating request; some refused transport redirects were accepted as success from their JSON body. Health checks followed redirects.",
+      "fix": "Disable redirect following in urllib and aiohttp, reject all 3xx before JSON parsing and preserve existing bounded backpressure retry.",
+      "before": "Eleven real-loopback reproductions fail on baseline.",
+      "after_tests": [
+        "test_core_call_refuses_redirect_without_forwarding_credentials_or_body",
+        "test_core_health_does_not_follow_redirects"
+      ]
+    },
+    {
+      "id": "AUD-04",
+      "severity": "medium",
+      "area": "Offline artifact output",
+      "defect": "Portable name validation omitted Windows reserved punctuation/control characters, superscript device names and case aliases between files.",
+      "fix": "Reject these names and conservative casefold collisions before creating output directories/locks.",
+      "before": "Twenty-five name/collision cases fail on baseline Linux.",
+      "after_tests": [
+        "test_names_rejected_before_creating_output",
+        "test_case_aliases_rejected_without_partial_publication"
+      ]
+    },
+    {
+      "id": "AUD-05",
+      "severity": "medium",
+      "area": "GOV-01 SPDX evidence classification",
+      "defect": "Regex token extraction erased invalid bytes, accepted empty or malformed license evidence, and confused WITH exceptions with license identifiers.",
+      "fix": "Bound and validate exact tokens against the curated license/exception sets, leaving unsupported syntax as unclassified raw evidence.",
+      "before": "Eleven malformed/exception cases fail on baseline.",
+      "after_tests": [
+        "test_sbom_does_not_turn_invalid_text_into_an_spdx_expression",
+        "test_sbom_exception_is_not_a_second_license",
+        "test_curated_subset_preserves_license_ids_and_compound_flag",
+        "test_unrecognized_or_incomplete_evidence_is_not_promoted"
+      ]
+    },
+    {
+      "id": "AUD-06",
+      "severity": "medium",
+      "area": "Local search benchmark",
+      "defect": "Benchmark accepted worker-style ok/empty statuses but rejected the real Core success envelope; mocked tests repeated the wrong contract.",
+      "fix": "Accept Core success/partial statuses, reject unsupported statuses, add a real Core/Worker end-to-end benchmark test.",
+      "before": "Real process benchmark fails with non-success envelope on the original benchmark module.",
+      "after_tests": [
+        "test_benchmark_uses_core_envelope_status_not_worker_status",
+        "test_11_local_benchmark_accepts_the_actual_core_envelope"
+      ]
+    }
+  ],
+  "baseline": {
+    "ctest": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    "pytest": {
+      "passed": 1634,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "verification": {
+    "release_ctest": {
+      "total": 42,
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    "python": {
+      "total": 1708,
+      "passed": 1703,
+      "failed": 0,
+      "skipped": 5
+    },
+    "asan_ubsan_native_executables": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "halt_on_error": true,
+      "leak_detection": true
+    },
+    "design_contracts": 34,
+    "plan_guard": 13,
+    "original_plan": {
+      "packages": 83,
+      "acceptance_ids": 161,
+      "slices": 10,
+      "product_acceptance_checked": false
+    },
+    "native_input_matches_final": true,
+    "frozen_input_manifest_sha256": "cb5d71cd8391ac0210918078cdac47d54eb5525ba89c1e47f60b1af87f6c8957",
+    "executable_input_manifest_sha256": "ce9b102b717f271aa76e780be460f731f0c81458481e57ff8955ea3e3440f0f7"
+  },
+  "preservation": {
+    "base": "83d45cd825d9dfc3ee09268eb65fc2f971b8ed69",
+    "python_ast_files": 363,
+    "syntax_errors": [],
+    "protected_files": 4542,
+    "historical_validation_files": 4534,
+    "changed_protected_paths": []
+  },
+  "limits": [
+    "No separate ordinary Debug CTest run; native sanitizer build uses Debug.",
+    "No local Windows run or candidate-specific GitHub CI.",
+    "No MSan/TSan, real source activation, paid model calls, production database/restore or long-duration soak validation.",
+    "Full Windows 60-package/67-SPDX SBOM was not regenerated; parser regressions do not constitute legal approval.",
+    "Source inventory/static parsing and full regressions do not prove all historical lines defect-free."
+  ],
+  "history_preserved": [
+    "53 baseline defect reproductions failed: native5, redirects11, metadata36, real benchmark1.",
+    "The initial standalone pytest invocation from repo root failed collection (9 import errors); corrected working-directory run is separately recorded.",
+    "Premature native relink, initial benchmark path error, duplicate-test editing correction and Unicode normalization self-review are retained in external evidence."
+  ],
+  "constraints": {
+    "schema": 15,
+    "source_activation_changed": false,
+    "holdout_changed": false,
+    "D1_D7_changed": false,
+    "old_validation_modified": false,
+    "planning_definitions_changed": false,
+    "acceptance_signoffs_changed": false
+  },
+  "publication": {
+    "code_pushed": false,
+    "remote_audit_branch_at": "83d45cd825d9dfc3ee09268eb65fc2f971b8ed69",
+    "main_changed": false,
+    "local_agent_branch_changed": false,
+    "candidate_ci": "not_run",
+    "delivery": "verified Git bundle and patch, not a remote release"
+  }
+}
