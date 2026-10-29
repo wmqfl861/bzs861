@@ -314,6 +314,110 @@ namespace {
     CHECK(!store.cached("alice",urls(2)[0]));
     CHECK(store.job_get("alice",id).at("state").str()=="succeeded");
   }
+void no_store_shared_control(const std::string& action, bool stop_payer, bool late=true) {
+  Temp t; Store store(t.path/"db"); Fake worker; WebService web(store,worker,{});
+  const auto payer=web.submit_reads("alice",args(urls(1),"audit-payer")).at("job_id").str();
+  Json admitted;
+  if(!late)admitted=web.submit_reads("alice",args(urls(1),"audit-subscriber"));
+  const auto lease=store.lease_next_read(); CHECK(lease);
+  worker.response=[&](const Json& p) {
+    if(late)admitted=web.submit_reads("alice",args(urls(1),"audit-subscriber"));
+    store.job_control("alice",stop_payer?payer:admitted.at("job_id").str(),action);
+    auto result=Fake::ok(p);result.set("http_freshness",no_store_freshness(p));return result;
+  };
+  web.execute_read(*lease); worker.response={};
+  const auto subscriber=admitted.at("job_id").str();
+  const auto stopped=stop_payer?payer:subscriber, active=stop_payer?subscriber:payer;
+  CHECK(item(store,active).at("state").str()=="succeeded");
+  CHECK(!item(store,stopped).has("receipt"));
+  CHECK(item(store,stopped).at("state").str()=="failed");
+  CHECK(store.job_get("alice",stopped).at("state").str()==(action=="pause"?"paused":"cancelled"));
+  CHECK(store.job_get("alice",payer).at("budget").at("charged_requests").num()==1);
+  CHECK(store.job_get("alice",subscriber).at("budget").at("charged_requests").num()==0);
+  CHECK(store.stats("alice").at("snapshots").num()==0);
+}
+TEST(no_store_shared_cancel_payer) { no_store_shared_control("cancel",true); }
+TEST(no_store_shared_cancel_subscriber) { no_store_shared_control("cancel",false); }
+TEST(no_store_shared_pause_payer) { no_store_shared_control("pause",true); }
+TEST(no_store_shared_pause_subscriber) { no_store_shared_control("pause",false); }
+TEST(no_store_deleted_redirect_target_is_not_success) {
+  Temp t; Store store(t.path/"db"); Fake worker; WebService web(store,worker,{});
+  const std::string final_url="https://batch.example/redirect-target";
+  const auto old=store.ingest("alice",{final_url,"old target","text/plain","old"});
+  const auto id=web.submit_reads("alice",args(urls(1),"audit-deleted-final")).at("job_id").str();
+  worker.response=[&](const Json& p) {
+    store.erase("alice",old.at("document_id").str());
+    auto result=Fake::ok(p); result.set("final_url",final_url);
+    auto freshness=no_store_freshness(p);freshness.set("url",final_url);result.set("http_freshness",freshness);
+    return result;
+  };
+  drain(store,web);worker.response={};
+  CHECK(item(store,id).at("state").str()=="failed");
+  CHECK(item(store,id).at("error_code").str()=="E_TARGET_DELETED");
+  CHECK(!item(store,id).has("receipt"));
+}
+  TEST(no_store_initial_shared_members_obey_per_member_control) {
+    for(bool payer:{false,true})for(const std::string action:{"cancel","pause"})no_store_shared_control(action,payer,false);
+  }
+  TEST(no_store_batch_alias_deletions_fence_single_and_shared_receipts) {
+    for(bool shared:{false,true})for(bool intermediate:{false,true}) {
+      Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+      const std::string mid="https://batch.example/middle",final="https://batch.example/final";
+      const auto old=store.ingest("alice",{intermediate?mid:final,"old","text/plain","old"});
+      const auto payer=web.submit_reads("alice",args(urls(1),"alias-payer")).at("job_id").str();
+      std::vector<std::string> jobs{payer};
+      if(shared)jobs.push_back(web.submit_reads("alice",args(urls(1),"alias-member")).at("job_id").str());
+      worker.response=[&](const Json& p) {
+        store.erase("alice",old.at("document_id").str());
+        // Reimport does not restore the older read's deletion permission.
+        store.ingest("alice",{intermediate?mid:final,"new","text/plain","new"});
+        auto r=Fake::ok(p),chain=Json::array();chain.push(Json::string(mid));chain.push(Json::string(final));
+        r.set("redirects",chain);r.set("final_url",final);
+        auto freshness=no_store_freshness(p);freshness.set("url",final);r.set("http_freshness",freshness);
+        r.set("usage",Json::parse(R"({"external_requests":3,"content_bytes":100})"));return r;
+      };
+      drain(store,web);worker.response={};CHECK(worker.reads.size()==1);
+      for(const auto& id:jobs) {
+        CHECK(item(store,id).at("state").str()=="failed");CHECK(item(store,id).at("error_code").str()=="E_TARGET_DELETED");
+        CHECK(!item(store,id).has("receipt"));CHECK(!item(store,id).at("usage_unknown").flag());
+      }
+      CHECK(store.job_get("alice",payer).at("budget").at("charged_requests").num()==3);
+      if(shared)CHECK(store.job_get("alice",jobs[1]).at("budget").at("charged_requests").num()==0);
+      CHECK(!store.cached("alice",urls(1)[0]));
+    }
+  }
+  TEST(no_store_cancel_expiry_and_auth_changes_never_publish_receipts) {
+    for(bool shared:{false,true})for(const std::string reason:{"cancel","expiry","auth"}) {
+      Temp t;std::int64_t now=1000000;Store store(t.path/"db",[&]{return now;});Fake worker;WebService web(store,worker,{});
+      const auto payer=web.submit_reads("alice",args(urls(1),"stale-payer")).at("job_id").str();
+      std::vector<std::string> jobs{payer};
+      if(shared)jobs.push_back(web.submit_reads("alice",args(urls(1),"stale-member")).at("job_id").str());
+      worker.response=[&](const Json& p) {
+        if(reason=="cancel")for(const auto& id:jobs)store.job_control("alice",id,"cancel");
+        if(reason=="expiry")now+=3600001;
+        if(reason=="auth")sql(store.raw_handle(),"UPDATE subjects SET epoch=epoch+1 WHERE owner='alice';");
+        auto r=Fake::ok(p);r.set("http_freshness",no_store_freshness(p));return r;
+      };
+      drain(store,web);worker.response={};CHECK(worker.reads.size()==1);
+      for(const auto& id:jobs) { CHECK(item(store,id).at("state").str()=="failed");CHECK(!item(store,id).has("receipt")); }
+      CHECK(store.job_get("alice",payer).at("budget").at("charged_requests").num()==1);
+      if(shared)CHECK(store.job_get("alice",jobs[1]).at("budget").at("charged_requests").num()==0);
+      CHECK(store.stats("alice").at("snapshots").num()==0);
+    }
+  }
+  TEST(no_store_receipt_failure_rolls_back_all_members_and_settles_usage_once) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    const auto payer=web.submit_reads("alice",args(urls(1),"atomic-nostore-payer")).at("job_id").str();
+    const auto member=web.submit_reads("alice",args(urls(1),"atomic-nostore-member")).at("job_id").str();
+    worker.response=[](const Json& p){auto r=Fake::ok(p);r.set("http_freshness",no_store_freshness(p));return r;};
+    sql(store.raw_handle(),"CREATE TRIGGER reject_transient_receipt BEFORE UPDATE OF state ON read_job_items WHEN NEW.state='succeeded' BEGIN SELECT RAISE(ABORT,'receipt unavailable'); END;");
+    drain(store,web);CHECK(worker.reads.size()==1);
+    for(const auto& id:{payer,member}) {CHECK(item(store,id).at("error_code").str()=="E_STORAGE");CHECK(!item(store,id).has("receipt"));}
+    CHECK(store.stats("alice").at("snapshots").num()==0);
+    CHECK(store.job_get("alice",payer).at("budget").at("charged_requests").num()==1);
+    CHECK(store.job_get("alice",member).at("budget").at("charged_requests").num()==0);
+    CHECK(scalar(store.raw_handle(),"SELECT COUNT(*) FROM read_shared_attempts WHERE settled=1 AND external_requests=1")==1);
+  }
   TEST(api_dispatch_and_fixture_jobs_coexist) {
     Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
     FixtureCatalog fixtures(BZS_FIXTURE_DIR);Service service(store,fixtures,t.path/"backups",&web);

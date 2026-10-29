@@ -115,6 +115,7 @@ namespace bzs {
     Json seal_publication_locked(const Json& policy,const Json& history);
     Json current_publication_ceiling_locked(const std::string& owner,const std::string& url,const Json& policy);
     void prepare_web_publication_locked(const std::string& owner,const std::string& url,ParsedDocument& parsed,Json& meta);
+    Json project_transient_web_locked(const std::string& owner,const std::string& url,ParsedDocument parsed,const Json& meta);
     void seal_frozen_publication_locked(const std::string& owner,const std::string& document_id,const Json& history);
     Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
     bool alias_fences_live_locked(const Json& fences);
@@ -144,7 +145,8 @@ namespace bzs {
     std::vector<ReadLease> shared_read_members_locked(const ReadLease& payer);
     bool shared_read_live_locked(const ReadLease& payer);
     void settle_shared_read_locked(const ReadLease& payer,const std::string& error,
-                                   std::int64_t requests,std::int64_t bytes,const Json* snapshot=nullptr);
+                                   std::int64_t requests,std::int64_t bytes,const Json* snapshot=nullptr,
+                                   const Json* transient_receipt=nullptr);
     void settle_read_jobs_locked();
     void settle_read_job_locked(const std::string& id);
     bool owns_read_lease_locked(const ReadLease& lease);
@@ -201,7 +203,7 @@ namespace bzs {
     Json ingest_web(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta,
                     std::int64_t expected_deletion_generation);
     // Transient no-store delivery: run the same publication preparation and
-    // fences as an ingest, but persist nothing. Returns the projection a
+    // fences as an ingest, but retain no body or snapshot. Returns the projection a
     // windowed result needs (indexed, current site deployment, sealed policy).
     Json project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta);
     // Per-member delivery fence for a transient body: recheck revocation,
@@ -255,9 +257,8 @@ namespace bzs {
                        const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
     // Settle a no-store response without a snapshot: live members end
     // 'succeeded' with a NULL snapshot and a delivered-transient receipt.
-    bool complete_read_transient(const ReadLease& lease, std::int64_t external_requests, std::int64_t content_bytes,
-                                 const Json* publication=nullptr, const std::string& final_url="",
-                                 const Json* redirect_observations=nullptr);
+    bool complete_read_transient(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
+                                 const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
     // Negative usage means an unknown outcome. Its entire durable grant stays charged.
     void fail_read(const ReadLease& lease, const std::string& error_code,
                    std::int64_t external_requests=-1, std::int64_t content_bytes=-1,

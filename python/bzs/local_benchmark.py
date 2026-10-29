@@ -25,7 +25,7 @@ def benchmark(query, *, port=8610, iterations=20, warmup=3, timeout=10.0, token=
             if not 200 <= status < 300: raise RuntimeError("local search API returned non-success HTTP status "+str(status))
             try: envelope = json.loads(raw.decode("utf-8","strict"))
             except (UnicodeError, json.JSONDecodeError) as exc: raise RuntimeError("local search API returned invalid JSON") from exc
-            if not isinstance(envelope,dict) or envelope.get("status") not in ("ok","partial","empty"): raise RuntimeError("local search API returned a non-success envelope")
+            if not isinstance(envelope,dict) or envelope.get("status") not in ("success","partial"): raise RuntimeError("local search API returned a non-success envelope")
             return (time.perf_counter()-start)*1000, status
         finally: conn.close()
     for _ in range(warmup):

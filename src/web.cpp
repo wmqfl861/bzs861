@@ -1767,8 +1767,7 @@ namespace bzs {
       if(artifact.transient) {
         // A no-store batch item settles delivered-transient: usage charged,
         // restrictive observations retained, no snapshot and no rerun.
-        (void)store_.complete_read_transient(lease,requests,bytes,observation?&*observation:nullptr,
-                                             observed_url.empty()?artifact.meta.at("final_url").str():observed_url,&redirect_observations);
+        (void)store_.complete_read_transient(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
         return;
       }
       (void)store_.complete_read(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);

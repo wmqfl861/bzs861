@@ -186,33 +186,43 @@ def metadata_license_field(dist_info: Path):
 
 
 def parse_spdx_expression(value: str):
-    """Return (is_spdx_expression, license_ids, has_compound_operator)."""
-    tokens = re.findall(r"\(|\)|[\w][\w.+\-]*", value)
-    ids, ops = [], []
-    expect_id = True
-    for tok in tokens:
-        if tok in ("AND", "OR"):
-            if expect_id:
-                return False, [], False
-            ops.append(tok)
-            expect_id = True
-        elif tok == "WITH":
-            if expect_id:
-                return False, [], False
-            expect_id = True  # next token is an exception id
-        elif tok in ("(", ")"):
-            return False, [], False  # measured set never uses parens; stay strict
-        else:
-            if not expect_id:
-                return False, [], False
-            ids.append(tok)
-            expect_id = False
-    if expect_id and ids:
-        return False, [], False
-    id_ok = all(i in CURATED_SPDX_IDS for i in ids if True)
-    if not id_ok:
-        return False, [], bool(ops)
-    return True, ids, bool(ops)
+    """Validate our curated flat SPDX subset, without discarding input bytes.
+
+    This is not a complete SPDX parser: grouped expressions, LicenseRef values
+    and unlisted identifiers remain unclassified raw evidence. WITH must name
+    a known exception, not a second license. IDs are case-insensitive; operators
+    are case-sensitive (SPDX 2.x Annex D). Never infer permissions from syntax.
+    """
+    invalid = (False, [], False)
+    if not isinstance(value, str) or not value.strip() or len(value) > 4096:
+        return invalid
+    tokens = value.split()
+    if len(tokens) > 256:
+        return invalid
+    licenses = {item.casefold(): item for item in CURATED_SPDX_IDS}
+    exceptions = {item.casefold() for item in CURATED_SPDX_EXCEPTIONS}
+    ids, compound, pos = [], False, 0
+    while pos < len(tokens):
+        # Exact token lookup: punctuation, partial IDs and unknown text cannot
+        # be silently erased by regex token extraction and become valid SPDX.
+        license_id = licenses.get(tokens[pos].casefold())
+        if license_id is None:
+            return invalid
+        ids.append(license_id)
+        pos += 1
+        if pos < len(tokens) and tokens[pos] == "WITH":
+            pos += 1
+            if pos >= len(tokens) or tokens[pos].casefold() not in exceptions:
+                return invalid
+            pos += 1
+        if pos == len(tokens):
+            return True, ids, compound
+        if tokens[pos] not in ("AND", "OR"):
+            return invalid
+        compound = True
+        pos += 1
+    # Ending at an operator is not a complete expression.
+    return invalid
 
 
 def classify_license(value):
