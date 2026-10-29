@@ -12,6 +12,7 @@ def benchmark(query, *, port=8610, iterations=20, warmup=3, timeout=10.0, token=
     if not isinstance(token, str) or not 32 <= len(token) <= 512 or any(ord(ch) <= 32 or ord(ch) >= 127 for ch in token): raise ValueError("SEARCH_API_TOKEN must be 32..512 printable ASCII characters")
     payload = json.dumps({"operation":"search","params":{"query":query}}, ensure_ascii=False, separators=(",",":"), allow_nan=False).encode("utf-8")
     samples, statuses = [], []
+    total_start = time.monotonic()
     def once():
         conn = connection_factory("127.0.0.1", port, timeout=timeout)
         start = time.perf_counter()
@@ -28,7 +29,6 @@ def benchmark(query, *, port=8610, iterations=20, warmup=3, timeout=10.0, token=
             return (time.perf_counter()-start)*1000, status
         finally: conn.close()
     for _ in range(warmup): once()
-    total_start = time.monotonic()
     for _ in range(iterations):
         elapsed,status=once(); samples.append(elapsed); statuses.append(status)
     ordered=sorted(samples)
