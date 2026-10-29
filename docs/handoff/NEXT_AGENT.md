@@ -1,3 +1,15 @@
+# 2026-10-28 当前入口：PR #8 接续复核
+
+当前输入为 `0c47a5f5539b47cbb5f53398ed6e41de5ba9eb69`。以[本批执行说明](../planning/OWNER_REVIEW_20261028.md)及 `validation/owner_review_20261028/result.json` 为准。此前本地 Debug 超时/缺依赖描述属于历史批次，不是当前新版本结果。
+
+本批修复进程快照竞态、host容量/并发、异常值泄露和认证配置歧义，并增加 host health诊断、只读mcp-token check、gzip真实MCP端到端覆盖与Windows完整pytest门禁。Release全量42/42，内含Python1573通过/5平台跳过；新SHA远端CI另查。没有合并main或部署Windows11；不要把旧输入成功当新版本通过。
+
+新增Windows完整pytest曾发现4个失败，已修复代码/旧测试并保留原日志；新提交自身CI必须重新确认，不能沿用早前输入成功。已退出的根即使句柄仍可打开，也保守拒绝自动清理其后代。
+
+保留D1–D7、来源禁用、schema15及原签收数量。审核范围主要为最新Python/进程/Worker/认证/地图调用链；未逐行审计全部历史C++、评估/回放或独立执行全部故障场景。历史交接如下，不能作为当前发布指令：
+
+---
+
 # 2026-10-27 当前接续：离线维护、启动器、RPC
 
 本批从 PR #5 的 `d29223551041f5d0f39fa4ca4c6ce936af5a89d9` 接续。输入PR的Linux/Windows运行40513707647已成功；不能把该成绩当成本批新代码CI。当前顺序见[三个模块计划](../planning/NEXT_THREE_MODULES_20261027.md)。
@@ -64,3 +76,16 @@ are unchanged. Do not claim the whole phase/product or target-device deployment.
 复核 PR #6 的完整变更后补两处防御：已处于 INCREMENTAL 的数据库在返回 `already_incremental` 前也执行 FTS 完整性核查；本机 CLI 对预期的文件/生命周期异常返回简短非零错误，不输出误导性的 Python traceback。新增 `already_incremental_still_checks_fts_integrity`（6组/133断言）及 CLI 错误输出测试。旧schema、隔离、身份保留与来源策略均未改变。
 
 本轮本地复测：维护专项6组/133断言通过；启动器/存储 CLI 定向 pytest 14通过。当前容器缺少锁定依赖 `trafilatura` 和 `mcp`，所以该容器未运行完整 Python/Worker RPC 套件；准确提交的完整 Linux/Windows CI仍是合并门槛。测试失败/依赖缺失不记作通过。
+
+
+---
+
+# 2026-10-28 全代码审核接续（优先级高于上面的历史批次）
+
+当前执行入口：docs/planning/CURRENT_EXECUTION_20261028.md。本交接只确认准确提交与门禁，不将局部测试等同于产品签收。
+
+- PR #9 的审核头：8085b86a844699f0590d6dcab2ec17f8234c6b31，基于 PR #8 头 0c47a5f5539b47cbb5f53398ed6e41de5ba9eb69。
+- 已确认 CI：原生 Linux/Windows run 40737010760 成功；完整 Windows Python safety run 40737010752 成功；Linux ASan/UBSan 在原生检查工作流内执行并通过。
+- 本轮三个接续节点：OPS-00/SEC-01 host admission 聚合诊断；AUTH-01/OPS-00 只读 bzs mcp-token check 与并发注册表；MAP-01/API-00 gzip sitemap 端到端验收。所有均仍属于 partial 工作包。
+- 全代码覆盖边界见 validation/windows11_takeover_20261028/audit-coverage.json。离线 evaluation/probe/replay 工具未端到端执行，crawl/map 长时交互未做 soak，MSan/TSan 未配置。
+- D1–D7 仍待明确答复；来源启用 0，schema15，永久带键身份、B-24、隔离备份和原验收映射均不变。禁止把历史不同批次的状态计数混写成当前通过数。

@@ -194,11 +194,60 @@ def test_replay_only_uncertain_rows_are_not_success(tmp_path):
 def test_replay_output_does_not_overwrite_probe_or_previous_replay(tmp_path):
     path, _ = recording(tmp_path)
     before = path.read_bytes()
-    with pytest.raises(ValueError, match="not empty"):
+    with pytest.raises(ValueError, match="OUTPUT_EXISTS"):
         replay(str(path), str(path.parent))
     assert path.read_bytes() == before
     replay(str(path), str(tmp_path / "replay"))
     original = (tmp_path / "replay" / "replay_report.json").read_bytes()
-    with pytest.raises(ValueError, match="not empty"):
+    with pytest.raises(ValueError, match="OUTPUT_EXISTS"):
         replay(str(path), str(tmp_path / "replay"))
     assert (tmp_path / "replay" / "replay_report.json").read_bytes() == original
+
+
+
+def test_replay_output_failure_never_publishes_partial_report_directory(tmp_path, monkeypatch):
+    from bzs import artifact_output
+
+    path, _ = recording(tmp_path)
+    out = tmp_path / "interrupted-replay"
+    original = artifact_output.atomic_write
+    calls = 0
+
+    def fail_second_write(target, data):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("synthetic disk-full during replay output")
+        return original(target, data)
+
+    monkeypatch.setattr(artifact_output, "atomic_write", fail_second_write)
+    with pytest.raises(OSError, match="disk-full"):
+        replay(str(path), str(out))
+    assert not out.exists()
+    assert not list(tmp_path.glob(".interrupted-replay.stage-*"))
+    monkeypatch.setattr(artifact_output, "atomic_write", original)
+    result = replay(str(path), str(out))
+    assert result["status"] == "passed"
+    assert (out / "replay_report.json").is_file() and (out / "replay_report.md").is_file()
+
+
+
+@pytest.mark.parametrize("name", ["../escape", r"..\escape", "C:stream", "NUL", "name.", "name "])
+def test_artifact_output_rejects_cross_platform_unsafe_names(tmp_path, name):
+    from bzs.artifact_output import write_new_directory
+
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(tmp_path / "safe-output", {name: b"not written"}, label="test")
+    assert not (tmp_path / "safe-output").exists()
+    assert not (tmp_path / "escape").exists()
+
+
+def test_artifact_output_rejects_device_directory_name(tmp_path):
+    from bzs.artifact_output import write_new_directory
+
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(tmp_path / "CON", {"report.json": b"{}"}, label="test")
+    # Windows treats reserved device names specially: Path.exists("CON") may
+    # report True even when no filesystem entry was created. Assert the parent
+    # stayed empty instead of probing the reserved path itself.
+    assert list(tmp_path.iterdir()) == []

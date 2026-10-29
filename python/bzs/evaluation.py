@@ -29,7 +29,7 @@ def utc_now() -> str:
 def runtime_identity() -> dict:
     from . import __version__
     root = Path(__file__).resolve().parent
-    names = ("evaluation.py", "evaluation_format.py", "evaluation_ablation.py", "golden.py", "probe_format.py", "probe_state.py", "replay.py")
+    names = ("evaluation.py", "evaluation_format.py", "evaluation_ablation.py", "artifact_output.py", "golden.py", "probe_format.py", "probe_state.py", "replay.py")
     return {"files": {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names},
             "bzs_version": __version__, "python": platform.python_version(), "implementation": platform.python_implementation(),
             "os": platform.system(), "architecture": platform.machine()}

@@ -196,6 +196,34 @@ def decode_body(body: bytes, header_charset: str | None) -> tuple[str, str]:
 MAX_HOST_LOCKS = 4096
 
 
+class _HostSemaphore(asyncio.Semaphore):
+    """Track holders AND waiters; locked() only means all permits are used."""
+    def __init__(self, permits: int):
+        super().__init__(permits)
+        self.users = 0
+        self.holders = 0
+        self.references = 0  # registered synchronously before wait_for yields
+
+    @property
+    def idle(self) -> bool:
+        return self.users == 0 and self.references == 0
+
+    async def acquire(self) -> bool:
+        self.users += 1
+        try:
+            result = await super().acquire()
+            self.holders += 1
+            return result
+        except BaseException:
+            self.users -= 1
+            raise
+
+    def release(self) -> None:
+        super().release()
+        self.users -= 1
+        self.holders -= 1
+
+
 class Fetcher:
     def __init__(self, policy: NetPolicy, *, user_agent: str = DEFAULT_UA,
                  accept_language: str = "zh-CN,zh;q=0.9,en;q=0.8", max_bytes: int = 8 * 1024 * 1024,
@@ -214,7 +242,9 @@ class Fetcher:
         self.proxy_remote_dns = False
         self._resolver: GuardedResolver | None = None
         self._session: aiohttp.ClientSession | None = None
-        self._host_locks: dict[str, asyncio.Semaphore] = {}
+        self._host_locks: dict[str, _HostSemaphore] = {}
+        self._host_evictions = 0
+        self._host_rejections = 0
 
     async def start(self) -> None:
         self._resolver = GuardedResolver(self.policy, self.test_hosts)
@@ -230,19 +260,30 @@ class Fetcher:
         if self._session:
             await self._session.close()
 
-    def _sem(self, host: str) -> asyncio.Semaphore:
+    def _sem(self, host: str) -> _HostSemaphore:
         if host not in self._host_locks:
             if len(self._host_locks) >= MAX_HOST_LOCKS:
-                # Bound long-run growth: retire idle per-host semaphores. Busy
-                # ones keep their entry; the registry can only exceed the cap
-                # by the number of concurrently busy distinct hosts, which the
-                # bounded pools already limit.
-                for idle in [h for h, s in self._host_locks.items() if not s.locked()]:
-                    if len(self._host_locks) < MAX_HOST_LOCKS:
+                for key, slot in self._host_locks.items():
+                    if slot.idle:
+                        del self._host_locks[key]
+                        self._host_evictions = min(self._host_evictions + 1, 2**63 - 1)
                         break
-                    del self._host_locks[idle]
-            self._host_locks[host] = asyncio.Semaphore(self.per_host)
+                else:
+                    # Explicit pre-dispatch refusal, not unbounded registry
+                    # growth or silently replacing a held/queued host slot.
+                    self._host_rejections = min(self._host_rejections + 1, 2**63 - 1)
+                    raise FetchAdmissionDenied("E_HOST_CAPACITY", "host admission registry is full")
+            self._host_locks[host] = _HostSemaphore(self.per_host)
         return self._host_locks[host]
+
+    def admission_stats(self) -> dict[str, int]:
+        """Aggregate local diagnostics only; never expose hostnames or URLs."""
+        slots = self._host_locks.values()
+        return {"limit": MAX_HOST_LOCKS, "entries": len(self._host_locks),
+                "active_hosts": sum(not slot.idle for slot in slots),
+                "holders": sum(slot.holders for slot in slots),
+                "waiters": sum(slot.users - slot.holders for slot in slots),
+                "evictions": self._host_evictions, "capacity_rejections": self._host_rejections}
 
     def request_headers(self, *, accept: str | None = None, headers: dict | None = None) -> dict[str, str]:
         # Do not let the installed optional decoder set change a cached
@@ -310,8 +351,11 @@ class Fetcher:
                 if remaining <= 0:
                     raise asyncio.TimeoutError()
                 sem = self._sem(host)
-                await asyncio.wait_for(sem.acquire(), remaining)
+                sem.references += 1  # pin even before the acquire task starts
+                acquired = False
                 try:
+                    await asyncio.wait_for(sem.acquire(), remaining)
+                    acquired = True
                     # Waiting for another request to this host is part of the same deadline.
                     remaining = deadline - time.monotonic()
                     if remaining <= 0:
@@ -473,7 +517,9 @@ class Fetcher:
                                          "ok" if resp.status < 400 else "http_error")
                         return result
                 finally:
-                    sem.release()
+                    if acquired:
+                        sem.release()
+                    sem.references -= 1
             result.status = "network_error"
             result.error = "too many redirects"
         except PolicyError as exc:

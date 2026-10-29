@@ -170,101 +170,102 @@ class _RealWinApi:
 
 
 def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline_s: float = 10.0) -> list[str]:
-    """Terminate every process provably descending from one root instance.
+    """Stop a verified tree without treating a stale PID snapshot as identity.
 
-    Attribution contract (why an unrelated process is never signalled):
-    - A process records its parent's PID at creation and never changes it, and
-      a PID cannot be reused while its holder lives. "ppid == P, created after
-      the verified creation of P's instance" therefore identifies true children
-      of that instance.
-    - Every target is opened once before anything is signalled; its creation
-      time must be strictly after its verified parent's and no later than the
-      snapshot completion time (a pid reused after the snapshot has a later
-      creation and is rejected). Termination and waiting use that same pinned
-      handle, so reuse between enumeration and open cannot redirect a signal.
-    - A live root whose creation differs from the trusted anchor aborts the
-      whole stop (the pid names another instance now).
-    - A completely gone root cannot bound its children's creation window (the
-      pid may have been recycled before it died), so candidates are reported
-      unconfirmed and never signalled. A still-openable exited root keeps its
-      verified creation and its children remain attributable.
-    - Failures (snapshot, enumeration, access denied, terminate, wait timeout)
-    - are collected per target and never reported as success.
+    Pin the trusted root first, open candidate handles, then take a fresh table
+    while those handles remain open. Every ancestry edge must still exist in
+    that table and each child's creation must follow its verified parent's.
+    Windows retains process IDs while handles exist; signals use those same
+    handles. A snapshot completion timestamp alone cannot exclude reuse DURING
+    enumeration. Parent-PID spoofing by an equally privileged process is outside
+    this local operator contract; this is not a hostile-process sandbox.
 
-    Safety boundary, stated honestly: grandchildren of a middle process that
-    died before the snapshot opened it are invisible to this walk (their ppid
-    dangles) and are neither signalled nor reported. Cost: a possibly missed
-    cleanup; never a misattributed kill.
+    Missing/denied roots and descendants are never inferred to be safely gone.
+    A final table check reports children born during the stop without signalling
+    unverified newcomers. Orphans behind an intermediate process that vanished
+    before inspection cannot be discovered by this mechanism; do not advertise
+    a general process supervisor or zero-orphan guarantee.
     """
+    if (not valid_pid(root_pid) or type(root_creation) is not int or root_creation <= 0
+            or type(deadline_s) not in (int, float) or not math.isfinite(deadline_s)
+            or not 0 < deadline_s <= 60):
+        raise ValueError("invalid process identity or tree-stop deadline")
     api = api or _RealWinApi()
+    deadline = time.monotonic() + deadline_s
     unconfirmed: list[str] = []
     opened: list = []
-    targets: list[tuple[int, int, object]] = []  # (depth, pid, handle)
+    # pid -> (parent PID, creation, depth, pinned handle)
+    candidates: dict[int, tuple[int, int, int, object]] = {}
+
+    def expired() -> bool:
+        return time.monotonic() >= deadline
+
     try:
         try:
-            parents, snap_ft = api.snapshot()
-        except OSError as exc:
-            return [f"process table unavailable ({exc}); nothing signalled"]
-
-        root_handle = None
-        root_live = False
-        if root_pid in parents:
-            try:
-                root_handle = api.open(root_pid)
-                opened.append(root_handle)
-                if api.creation(root_handle) != root_creation:
-                    raise RuntimeError(f"pid {root_pid}: identity changed; refusing termination")
-                root_live = not api.exited(root_handle)
-                if root_live:
-                    targets.append((0, root_pid, root_handle))
-            except (_ProcessGone, _ProcessDenied, OSError) as exc:
-                root_handle = None  # gone or unverifiable: fall through to candidates
-
-        if root_handle is None:
-            # No handle to the root instance: children cannot be bound to it.
-            candidates = sorted(p for p, pp in parents.items() if pp == root_pid and p != root_pid)
-            for pid in candidates:
-                unconfirmed.append(f"pid {pid}: parent of dead root; not provably owned, not signalled")
-            return unconfirmed
-
-        # Breadth-first verification; creation times anchor each child to its
-        # verified parent instance.
+            root = api.open(root_pid)
+            opened.append(root)
+            if api.creation(root) != root_creation:
+                raise RuntimeError(f"pid {root_pid}: identity changed; refusing termination")
+            if api.exited(root):
+                # Preserve the existing fail-closed contract for an already
+                # exited root, even if another process still holds its handle.
+                return [f"pid {root_pid}: root had already exited; record retained"]
+        except (_ProcessGone, _ProcessDenied, OSError) as exc:
+            return [f"pid {root_pid}: root identity unavailable ({type(exc).__name__}); record retained"]
+        try:
+            parents, _ = api.snapshot()
+        except OSError:
+            return ["process table unavailable; nothing signalled"]
+        children: dict[int, list[int]] = {}
+        for pid, parent in parents.items():
+            if valid_pid(pid) and pid != parent:
+                children.setdefault(parent, []).append(pid)
         from collections import deque
         queue = deque([(root_pid, root_creation, 0)])
+        seen = {root_pid}
         while queue:
-            parent_pid, parent_creation, depth = queue.popleft()
-            for child in sorted(p for p, pp in parents.items() if pp == parent_pid and p != parent_pid):
-                try:
-                    handle = api.open(child)
-                except _ProcessGone:
-                    continue  # already exited; nothing to signal or verify
-                except _ProcessDenied:
-                    unconfirmed.append(f"pid {child}: access denied; not signalled")
+            parent, parent_creation, depth = queue.popleft()
+            for pid in sorted(children.get(parent, [])):
+                if pid in seen:
+                    unconfirmed.append(f"pid {pid}: cyclic ancestry; not signalled")
                     continue
-                except OSError as exc:
-                    unconfirmed.append(f"pid {child}: cannot open ({exc}); not signalled")
-                    continue
-                opened.append(handle)
+                seen.add(pid)
+                if expired():
+                    return [*unconfirmed, "tree verification deadline exceeded; nothing signalled"]
                 try:
+                    handle = api.open(pid)
+                    opened.append(handle)
                     creation = api.creation(handle)
-                    if not parent_creation < creation <= snap_ft:
-                        # Created before the verified parent instance (an old
-                        # orphan re-linked by pid coincidence) or after the
-                        # snapshot (a reused pid): both are unattributable.
-                        unconfirmed.append(f"pid {child}: creation does not bind to parent {parent_pid}; not signalled")
+                    if creation <= parent_creation:
+                        unconfirmed.append(f"pid {pid}: creation does not bind to parent {parent}; not signalled")
                         continue
-                    if api.exited(handle):
-                        continue  # exited; still a verified anchor for its children
-                    targets.append((depth + 1, child, handle))
-                    queue.append((child, creation, depth + 1))
-                except OSError as exc:
-                    unconfirmed.append(f"pid {child}: cannot verify ({exc}); not signalled")
-
-        # Signal deepest-first; one shared monotonic budget for the whole tree.
-        deadline = time.monotonic() + deadline_s
+                    candidates[pid] = (parent, creation, depth + 1, handle)
+                    # An exited but pinned parent can still anchor descendants.
+                    queue.append((pid, creation, depth + 1))
+                except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                    unconfirmed.append(f"pid {pid}: identity unavailable ({type(exc).__name__}); not signalled")
+        # Revalidate membership AFTER opening every handle, not against the old
+        # snapshot. PID reuse before OpenProcess cannot redirect this check.
+        try:
+            current, _ = api.snapshot()
+        except OSError:
+            return [*unconfirmed, "membership recheck failed; nothing signalled"]
+        verified = {root_pid}
+        targets = [(0, root_pid, root)]
+        for pid, (parent, creation, depth, handle) in candidates.items():
+            if parent not in verified or current.get(pid) != parent:
+                unconfirmed.append(f"pid {pid}: parent chain changed or disappeared; not signalled")
+                continue
+            verified.add(pid)
+            targets.append((depth, pid, handle))
+        confirmed = set()
         for depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
             try:
                 if api.exited(handle):
+                    confirmed.add(pid)
+                    continue
+                if expired():
+                    unconfirmed.append(f"pid {pid}: tree-stop deadline exceeded")
                     continue
                 if not api.terminate(handle):
                     unconfirmed.append(f"pid {pid}: terminate refused")
@@ -272,8 +273,21 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
                 remaining = deadline - time.monotonic()
                 if remaining <= 0 or api.wait(handle, remaining * 1000) != "signaled":
                     unconfirmed.append(f"pid {pid}: exit not confirmed within budget")
-            except OSError as exc:
-                unconfirmed.append(f"pid {pid}: {exc}")
+                else:
+                    confirmed.add(pid)
+            except OSError:
+                unconfirmed.append(f"pid {pid}: exit verification failed")
+        # No second signalling pass: newcomers are not part of the verified set.
+        try:
+            if expired():
+                unconfirmed.append("final tree check not completed within budget")
+            else:
+                final, _ = api.snapshot()
+                for pid, parent in final.items():
+                    if parent in verified and pid not in seen and pid != parent:
+                        unconfirmed.append(f"pid {pid}: residual or new descendant; record retained")
+        except OSError:
+            unconfirmed.append("final tree check unavailable; record retained")
         return unconfirmed
     finally:
         for handle in opened:
@@ -333,7 +347,7 @@ def read_record(name: str) -> dict | None:
             raise ValueError("symlink")
         fd = os.open(p, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0))
         with os.fdopen(fd, "rb") as f:
-            if not stat.S_ISREG(os.fstat(f.fileno()).st_mode):
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
                 raise ValueError("non-regular PID record")
             raw = f.read(MAX_READY + 1)
         if len(raw) > MAX_READY:
@@ -358,6 +372,8 @@ def owned_pid(name: str) -> int | None:
         return None
     birth = birth_identity(r["pid"])
     if birth is None:
+        if r["birth"].startswith("win:"):
+            raise RuntimeError(f"{name}: managed root exited; descendant state requires operator review")
         return None
     if birth != r["birth"]:
         raise RuntimeError(f"{name}: PID has been reused; refusing automatic control")
@@ -377,6 +393,9 @@ def control_lock(path: "os.PathLike[str] | None" = None, *, timeout_s: float = 0
     operation is running"); a positive timeout retries until the deadline for
     short critical sections such as client-token read-modify-writes.
     """
+    if (type(timeout_s) not in (int, float) or not math.isfinite(timeout_s)
+            or not 0 <= timeout_s <= 60):
+        raise ValueError("lock timeout must be finite and in 0..60 seconds")
     p = Path(path) if path is not None else config.home() / "run" / "launcher.lock"
     p.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd = os.open(p, os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)

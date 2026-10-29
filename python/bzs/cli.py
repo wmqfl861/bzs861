@@ -217,6 +217,11 @@ def cmd_mcp_token(args) -> int:
         ok = revoke_client(args.name)
         print("revoked" if ok else "no such client")
         return 0 if ok else 1
+    if args.action == "check":
+        clients = load_clients()
+        print(json.dumps({"valid": True, "clients": len(clients),
+                          "active": sum(not c.get("disabled", False) for c in clients)}, sort_keys=True))
+        return 0
     for client in load_clients():
         print(f"{client['name']:24s} created {client.get('created_at', '?')}  scopes={','.join(client.get('scopes', []))}")
     return 0
@@ -406,7 +411,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--insecure-no-auth", action="store_true", help="removed: HTTP transport always requires client tokens")
     p.set_defaults(fn=cmd_mcp)
     p = sub.add_parser("mcp-token", help="manage per-client tokens for the MCP HTTP transport")
-    p.add_argument("action", choices=("add", "list", "revoke"))
+    p.add_argument("action", choices=("add", "list", "revoke", "check"))
     p.add_argument("name", nargs="?", default="")
     p.set_defaults(fn=cmd_mcp_token)
     sub.add_parser("mcp-config", help="print MCP client configuration").set_defaults(fn=cmd_mcp_config)
