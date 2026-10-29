@@ -738,3 +738,23 @@ async def test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separ
     assert len(calls) == 1 + completed
     assert stats["entries"] == 1 and stats["holders"] == stats["waiters"] == 0
     assert len(worker._retired_attempts) == 41
+
+
+
+async def test_crawl_parallel_same_origin_pages_release_all_admission_slots(crawl_worker):
+    worker, server, calls, *_ = crawl_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    attempts = [__import__("secrets").token_hex(24) for _ in range(16)]
+    results = await asyncio.gather(*[
+        worker.map_fetch(page_grant(worker, server, f"/parallel-page?i={index}",
+                                    record=robots["robots"], attempt_id=attempt))
+        for index, attempt in enumerate(attempts)
+    ])
+    assert all(result["status"] == "ok" for result in results)
+    assert all(result["page"]["status"] == "ok" for result in results)
+    assert all(result["usage"]["external_requests"] == 1 for result in results)
+    assert len(calls) == 17  # one robots request plus sixteen page requests
+    stats = worker.fetcher.admission_stats()
+    assert stats["entries"] == 1
+    assert stats["holders"] == 0 and stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 17
