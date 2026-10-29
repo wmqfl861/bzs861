@@ -1,0 +1,92 @@
+{
+  "batch": "blueprint-next-ten-2026-10-29",
+  "base": "13591decd79aecbbf08882ea2470274a80d5703b",
+  "branch": "work/blueprint-next-ten-v2-20261029",
+  "nodes": [
+    {
+      "id": "N01",
+      "area": "MAP-01",
+      "change": "remove duplicate same-origin soak test definition",
+      "validation": "one collected definition"
+    },
+    {
+      "id": "N02",
+      "area": "CRAWL-01",
+      "change": "remove duplicate crawl page soak test definition",
+      "validation": "one collected definition"
+    },
+    {
+      "id": "N03",
+      "area": "LOCAL-BENCHMARK",
+      "change": "require HTTP 2xx; separate warmup/measured statuses"
+    },
+    {
+      "id": "N04",
+      "area": "LOCAL-BENCHMARK",
+      "change": "reject redirect and malformed response envelopes",
+      "tests": [
+        "test_benchmark_rejects_redirects_and_unknown_envelopes"
+      ]
+    },
+    {
+      "id": "N05",
+      "area": "LOCAL-BENCHMARK",
+      "change": "enforce 4MiB response cap and connection cleanup",
+      "tests": [
+        "test_benchmark_rejects_oversized_response_and_closes_connection"
+      ]
+    },
+    {
+      "id": "N06",
+      "area": "PROBE",
+      "change": "limit checkpoint JSON to one million nodes in addition to byte/depth limits"
+    },
+    {
+      "id": "N07",
+      "area": "PROBE",
+      "change": "test duplicate keys, NaN, depth and total-node limits"
+    },
+    {
+      "id": "N08",
+      "area": "REPLAY",
+      "change": "ensure parser exception text is not persisted",
+      "tests": [
+        "test_replay_does_not_persist_parser_exception_text"
+      ]
+    },
+    {
+      "id": "N09",
+      "area": "AUTH-01",
+      "change": "reject duplicate JSON keys in client registry",
+      "tests": [
+        "test_client_registry_rejects_duplicate_json_keys"
+      ]
+    },
+    {
+      "id": "N10",
+      "area": "MAP/CRAWL",
+      "change": "concurrent same-origin dispatch and host admission release tests",
+      "tests": [
+        "test_map_parallel_same_origin_requests_release_all_host_admission_slots",
+        "test_crawl_parallel_same_origin_pages_release_admission"
+      ]
+    }
+  ],
+  "review": {
+    "static_source_review": "performed",
+    "local_pytest": "not performed in this tool environment",
+    "exact_sha_ci": "pending"
+  },
+  "constraints": {
+    "production_sources_enabled": false,
+    "external_search": false,
+    "model_calls": 0,
+    "holdout_enabled": false,
+    "schema": 15,
+    "D1_D7": "pending",
+    "packages": 83,
+    "acceptance_ids": 161,
+    "slices": 10,
+    "fully_accepted": 0
+  }
+}
