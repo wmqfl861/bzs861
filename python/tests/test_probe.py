@@ -581,7 +581,7 @@ def test_probe_checkpoint_sibling_depth_is_stable_after_a_deep_branch(tmp_path):
     # this legal report.
     from bzs.probe_state import REPORT_NAME, read_report
 
-    raw = b'{"a":' + b"[" * 60 + b"0" + b"]" * 60 + b',"b":{"c":[1,2,3]}}'
+    raw = b'{"a":' + b"[" * 63 + b"0" + b"]" * 63 + b',"b":{"c":[1,2,3]}}'
     path = tmp_path / REPORT_NAME
     path.write_bytes(raw)
     report = read_report(tmp_path)
