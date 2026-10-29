@@ -11,7 +11,7 @@ def benchmark(query, *, port=8610, iterations=20, warmup=3, timeout=10.0, token=
     token = os.environ.get("SEARCH_API_TOKEN", "") if token is None else token
     if not isinstance(token, str) or not 32 <= len(token) <= 512 or any(ord(ch) <= 32 or ord(ch) >= 127 for ch in token): raise ValueError("SEARCH_API_TOKEN must be 32..512 printable ASCII characters")
     payload = json.dumps({"operation":"search","params":{"query":query}}, ensure_ascii=False, separators=(",",":"), allow_nan=False).encode("utf-8")
-    samples, statuses = [], []
+    samples, statuses, warmup_statuses = [], [], []
     total_start = time.monotonic()
     def once():
         conn = connection_factory("127.0.0.1", port, timeout=timeout)
@@ -22,18 +22,20 @@ def benchmark(query, *, port=8610, iterations=20, warmup=3, timeout=10.0, token=
             status = int(response.status)
             raw = response.read(4*1024*1024+1)
             if len(raw) > 4*1024*1024: raise RuntimeError("local API response exceeded 4 MiB")
-            if status >= 400: raise RuntimeError("local search API returned HTTP "+str(status))
+            if not 200 <= status < 300: raise RuntimeError("local search API returned non-success HTTP status "+str(status))
             try: envelope = json.loads(raw.decode("utf-8","strict"))
             except (UnicodeError, json.JSONDecodeError) as exc: raise RuntimeError("local search API returned invalid JSON") from exc
             if not isinstance(envelope,dict) or envelope.get("status") not in ("ok","partial","empty"): raise RuntimeError("local search API returned a non-success envelope")
             return (time.perf_counter()-start)*1000, status
         finally: conn.close()
-    for _ in range(warmup): once()
+    for _ in range(warmup):
+        _, warmup_status = once()
+        warmup_statuses.append(warmup_status)
     for _ in range(iterations):
         elapsed,status=once(); samples.append(elapsed); statuses.append(status)
     ordered=sorted(samples)
     p95=ordered[max(0,min(len(ordered)-1,math.ceil(0.95*len(ordered))-1))]
-    return {"schema_version":1,"operation":"search","network_scope":"loopback_only","query_sha256":hashlib.sha256(query.encode("utf-8")).hexdigest(),"query_bytes":len(query.encode("utf-8")),"iterations":iterations,"warmup":warmup,"statuses":statuses,"latency_ms":{"min":round(min(samples),3),"median":round(statistics.median(samples),3),"p95":round(p95,3),"max":round(max(samples),3),"first_measured":round(samples[0],3),"subsequent_median":round(statistics.median(samples[1:]),3) if len(samples)>1 else None},"elapsed_total_ms":round((time.monotonic()-total_start)*1000,3),"environment":{"python":platform.python_version(),"platform":platform.system()},"response_bodies_recorded":False,"credentials_recorded":False,"cache_hit_claimed":False}
+    return {"schema_version":1,"operation":"search","network_scope":"loopback_only","query_sha256":hashlib.sha256(query.encode("utf-8")).hexdigest(),"query_bytes":len(query.encode("utf-8")),"iterations":iterations,"warmup":warmup,"statuses":{"warmup":warmup_statuses,"measured":statuses},"latency_ms":{"min":round(min(samples),3),"median":round(statistics.median(samples),3),"p95":round(p95,3),"max":round(max(samples),3),"first_measured":round(samples[0],3),"subsequent_median":round(statistics.median(samples[1:]),3) if len(samples)>1 else None},"elapsed_total_ms":round((time.monotonic()-total_start)*1000,3),"environment":{"python":platform.python_version(),"platform":platform.system()},"response_bodies_recorded":False,"credentials_recorded":False,"cache_hit_claimed":False}
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description="Benchmark local searchd only; does not call external sources.")

@@ -31,3 +31,58 @@ def test_benchmark_rejects_invalid_or_unbounded_arguments(kwargs):
 
 def test_benchmark_rejects_invalid_token():
     with pytest.raises(ValueError,match="SEARCH_API_TOKEN"): bench.benchmark("local query",token="short")
+
+
+
+@pytest.mark.parametrize("status,payload,error", [
+    (302, {"status": "ok"}, "HTTP status 302"),
+    (200, {"status": "unknown"}, "non-success envelope"),
+])
+def test_benchmark_rejects_redirects_and_unknown_envelopes(status, payload, error):
+    class BadResponse:
+        def __init__(self):
+            self.status = status
+        def read(self, limit=-1):
+            return json.dumps(payload).encode()[:limit]
+    class BadConnection:
+        def __init__(self, host, port, timeout):
+            assert host == "127.0.0.1"
+            self.closed = False
+        def request(self, *args, **kwargs):
+            pass
+        def getresponse(self):
+            return BadResponse()
+        def close(self):
+            self.closed = True
+    with pytest.raises(RuntimeError, match=error):
+        bench.benchmark("local query", token="t" * 40, warmup=0, iterations=1,
+                        connection_factory=BadConnection)
+
+
+def test_benchmark_rejects_oversized_response_and_closes_connection():
+    class OversizedResponse:
+        status = 200
+        def read(self, limit=-1):
+            return b"x" * limit
+    made = []
+    class OversizedConnection:
+        def __init__(self, host, port, timeout):
+            self.closed = False
+            made.append(self)
+        def request(self, *args, **kwargs):
+            pass
+        def getresponse(self):
+            return OversizedResponse()
+        def close(self):
+            self.closed = True
+    with pytest.raises(RuntimeError, match="exceeded 4 MiB"):
+        bench.benchmark("local query", token="t" * 40, warmup=0, iterations=1,
+                        connection_factory=OversizedConnection)
+    assert len(made) == 1 and made[0].closed
+
+
+def test_benchmark_reports_warmup_and_measured_http_statuses_separately():
+    Connection.calls.clear()
+    result = bench.benchmark("local query", token="t" * 40, warmup=2, iterations=3,
+                             connection_factory=Connection)
+    assert result["statuses"] == {"warmup": [200, 200], "measured": [200, 200, 200]}

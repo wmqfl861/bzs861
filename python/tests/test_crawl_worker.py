@@ -741,31 +741,20 @@ async def test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separ
 
 
 
-async def test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separate(crawl_worker):
-    worker, server, calls, state, *_ = crawl_worker
+async def test_crawl_parallel_same_origin_pages_release_all_admission_slots(crawl_worker):
+    worker, server, calls, *_ = crawl_worker
     robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
-    assert robots["status"] == "ok"
-
-    completed = 0
-    cancelled = 0
-    for index in range(40):
-        attempt = __import__("secrets").token_hex(24)
-        params = page_grant(worker, server, f"/page?soak={index}", attempt=attempt, record=robots["robots"])
-        if index % 10 == 0:
-            await worker.fetch_cancel({"attempt_id": attempt})
-            result = await worker.map_fetch(params)
-            assert result["error_code"] == "E_CANCELLED"
-            assert result["usage"] == {"external_requests": 0, "content_bytes": 0}
-            assert "page" not in result and "discovery" not in result
-            cancelled += 1
-        else:
-            result = await worker.map_fetch(params)
-            assert result["status"] == "ok" and result["page"]["status"] in ("ok", "empty_content")
-            assert result["usage"]["external_requests"] == 1
-            completed += 1
-
+    attempts = [__import__("secrets").token_hex(24) for _ in range(16)]
+    results = await asyncio.gather(*[
+        worker.map_fetch(page_grant(worker, server, f"/parallel-page?i={index}",
+                                    record=robots["robots"], attempt_id=attempt))
+        for index, attempt in enumerate(attempts)
+    ])
+    assert all(result["status"] == "ok" for result in results)
+    assert all(result["page"]["status"] == "ok" for result in results)
+    assert all(result["usage"]["external_requests"] == 1 for result in results)
+    assert len(calls) == 17  # one robots request plus sixteen page requests
     stats = worker.fetcher.admission_stats()
-    assert completed == 36 and cancelled == 4
-    assert len(calls) == 1 + completed
-    assert stats["entries"] == 1 and stats["holders"] == stats["waiters"] == 0
-    assert len(worker._retired_attempts) == 41
+    assert stats["entries"] == 1
+    assert stats["holders"] == 0 and stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 17

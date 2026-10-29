@@ -457,3 +457,28 @@ async def test_probe_persists_error_class_not_secret_exception_text(tmp_path, sc
     assert first["error"] == ("source_error:rate_limited" if error_kind == "source"
                               else "adapter_error:RuntimeError")
     assert first["status"] == ("rate_limited" if error_kind == "source" else "error")
+
+
+
+@pytest.mark.parametrize("raw", [
+    b'{"schema_version":2,"schema_version":2}',
+    b'{"value":NaN}',
+    b'{"value":' + b'[' * 70 + b'0' + b']' * 70 + b'}',
+])
+def test_probe_checkpoint_rejects_ambiguous_nonfinite_or_deep_json(tmp_path, raw):
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / REPORT_NAME).write_bytes(raw)
+    with pytest.raises(ValueError):
+        read_report(tmp_path)
+
+
+
+def test_probe_checkpoint_rejects_excessive_total_json_nodes(tmp_path):
+    from bzs.probe_state import MAX_JSON_NODES, REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"items":[' + b"0," * MAX_JSON_NODES + b"0]}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)

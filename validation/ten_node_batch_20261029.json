@@ -1,0 +1,90 @@
+{
+  "batch": "blueprint-ten-nodes-2026-10-29",
+  "base": "4082b86f57e19bdad489da0702978f34af1289eb",
+  "branch": "work/blueprint-ten-modules-20261029",
+  "nodes": [
+    {
+      "id": "N01",
+      "area": "MAP-01",
+      "change": "remove duplicate same-origin soak test definition",
+      "validation": "pytest collection contains exactly one definition"
+    },
+    {
+      "id": "N02",
+      "area": "CRAWL-01",
+      "change": "remove duplicate page-soak test definition",
+      "validation": "pytest collection contains exactly one definition"
+    },
+    {
+      "id": "N03",
+      "area": "LOCAL-BENCHMARK",
+      "change": "require HTTP 2xx and retain warmup/measured statuses separately",
+      "validation": "benchmark unit tests"
+    },
+    {
+      "id": "N04",
+      "area": "LOCAL-BENCHMARK",
+      "change": "cover redirect, malformed envelope, oversized response, and connection closure",
+      "tests": [
+        "test_benchmark_rejects_redirects_and_unknown_envelopes",
+        "test_benchmark_rejects_oversized_response_and_closes_connection",
+        "test_benchmark_reports_warmup_and_measured_http_statuses_separately"
+      ]
+    },
+    {
+      "id": "N05",
+      "area": "QA-01/PROBE",
+      "change": "bound total JSON checkpoint nodes at 1,000,000 in addition to byte/depth bounds"
+    },
+    {
+      "id": "N06",
+      "area": "QA-01/PROBE",
+      "change": "reject duplicate keys, nonfinite numbers, excess nesting and excessive node counts",
+      "tests": [
+        "test_probe_checkpoint_rejects_ambiguous_nonfinite_or_deep_json",
+        "test_probe_checkpoint_rejects_excessive_total_json_nodes"
+      ]
+    },
+    {
+      "id": "N07",
+      "area": "QA-01/REPLAY",
+      "change": "ensure parser exception details are not persisted",
+      "test": "test_replay_does_not_persist_parser_exception_text"
+    },
+    {
+      "id": "N08",
+      "area": "AUTH-01",
+      "change": "reject duplicate JSON keys in client registry",
+      "test": "test_client_registry_rejects_duplicate_json_keys"
+    },
+    {
+      "id": "N09",
+      "area": "MAP-01",
+      "change": "parallel same-origin map admission regression",
+      "test": "test_map_parallel_same_origin_requests_release_all_host_admission_slots"
+    },
+    {
+      "id": "N10",
+      "area": "CRAWL-01",
+      "change": "parallel same-origin page admission regression",
+      "test": "test_crawl_parallel_same_origin_pages_release_all_admission_slots"
+    }
+  ],
+  "verification": {
+    "local_execution": "not available in this tool environment",
+    "exact_head_ci": "pending",
+    "release_claim": "none"
+  },
+  "constraints": {
+    "production_sources_enabled": false,
+    "external_search_called": false,
+    "model_calls": 0,
+    "holdout_enabled": false,
+    "business_schema": 15,
+    "D1_D7": "pending",
+    "packages": 83,
+    "acceptance_ids": 161,
+    "slices": 10,
+    "fully_accepted": 0
+  }
+}

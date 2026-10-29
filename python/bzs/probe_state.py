@@ -20,6 +20,7 @@ MAX_REPORT_BYTES = 64 * 1024 * 1024
 REPORT_NAME = "probe_report.json"
 _LOCK_NAME = "probe.lock"
 MAX_JSON_DEPTH = 64
+MAX_JSON_NODES = 1_000_000
 
 
 def _regular_path(out: Path, name: str) -> Path:
@@ -138,14 +139,23 @@ def read_report_with_digest(out: Path) -> tuple[dict, str]:
     if not isinstance(report, dict):
         raise ValueError("probe report must be an object")
     stack = [(report, 1)]
+    node_count = 0
     while stack:
         value, depth = stack.pop()
+        node_count += 1
+        if node_count > MAX_JSON_NODES:
+            raise ValueError("probe report JSON node count exceeds its limit")
         if depth > MAX_JSON_DEPTH:
             raise ValueError("probe report JSON nesting exceeds its limit")
         if isinstance(value, dict):
-            stack.extend((v, depth + 1) for v in value.values() if isinstance(v, (dict, list)))
+            # Keys are JSON nodes too; count them so a wide object cannot evade
+            # the structural bound by keeping every value scalar.
+            node_count += len(value)
+            if node_count > MAX_JSON_NODES:
+                raise ValueError("probe report JSON node count exceeds its limit")
+            stack.extend((v, depth + 1) for v in value.values())
         elif isinstance(value, list):
-            stack.extend((v, depth + 1) for v in value if isinstance(v, (dict, list)))
+            stack.extend((v, depth + 1) for v in value)
     return report, hashlib.sha256(raw).hexdigest()
 
 
