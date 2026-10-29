@@ -80,3 +80,23 @@ B. Crawl/Map有界持续交互：新增同源循环回归，分别执行48次map
 C. 本地搜索性能基准：新增`python -m bzs.local_benchmark --query "..." --iterations 20 --warmup 3`，仅向127.0.0.1的`search`操作发送请求，不调用`web.search`。记录延迟分布与查询哈希，不保存查询正文、响应正文或token，不宣称缓存命中。先提供可重复基线工具，待在目标Windows 11/同配置环境实测后才决定是否优化缓存锁/SQL。
 
 对应测试：`test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free`、`test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separate`、`test_benchmark_is_loopback_only_and_never_records_credentials_or_body`及参数边界测试。完整CI仍是合入门槛。
+
+
+## 后续十节点开发与审核（2026-10-29）
+
+当前批次基于上一批十节点的最终代码链，工作包定义与原验收状态不变。
+
+1. MAP-01：移除重复定义的同源持续请求测试。
+2. CRAWL-01：移除重复定义的持续页面测试。
+3. 本机搜索基准：仅接受 HTTP 2xx，并分开记录 warmup/measured 状态。
+4. 基准失败矩阵：拒绝重定向和未知响应 envelope。
+5. 基准资源控制：4 MiB 响应上限，异常后保证关闭连接。
+6. Probe checkpoint：增加总 JSON 节点数上限 1,000,000。
+7. Probe 恶意结构测试：重复键、NaN、深度和节点数超限。
+8. Replay：异常文本不写入持久化报告。
+9. AUTH-01：客户端注册表重复 JSON 键 fail-closed。
+10. MAP/CRAWL：24 个同源 map 与 16 个同源 page 并发请求后，检查结果、预算、收据及 host admission 状态。
+
+所有新增测试必须由本批最终 HEAD 的 Linux/Windows checks 和 Windows Python safety 执行。失败时修复后重跑；不允许跳过测试或用其他 SHA 的通过结果代替。未在本环境本地运行的项目，明确依赖 CI 验收。
+
+本批不启用生产来源、不访问外部搜索、不调用模型、不触碰 holdout。D1–D7 待定，schema15、83工作包/161验收/10切片、0完整签收保持。
