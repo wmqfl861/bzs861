@@ -1323,6 +1323,31 @@ namespace {
       {"id":"arxiv","provider":"arxiv","index_family":"arxiv","capability":"papers","kind":"api","enabled":true,"min_interval_ms":0},
       {"id":"off","provider":"x","index_family":"x","capability":"web","kind":"api","enabled":false}]})")));
   }
+  // Offline fixture for the native condition path: one source's stored contract
+  // declares native_filters (config/sources.json has none populated).
+  SourceRegistry native_registry(const std::string& native_id, std::initializer_list<const char*> kinds) {
+    auto manifest=reviewed_sources(obj(R"({"version":1,"sources":[
+      {"id":"bing","provider":"microsoft","index_family":"bing","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"ddg","provider":"duckduckgo","index_family":"ddg","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"arxiv","provider":"arxiv","index_family":"arxiv","capability":"papers","kind":"api","enabled":true,"min_interval_ms":0}]})"));
+    Json native=Json::array();
+    for(const auto* kind:kinds)native.push(Json::string(kind));
+    for(std::size_t i=0; i<manifest.at("sources").size(); ++i)
+      if(manifest.at("sources").at(i).at("id").str()==native_id)
+        manifest.at("sources").at(i).at("contract").set("native_filters",native);
+    return SourceRegistry(manifest);
+  }
+  Json condition_entry(const Json& filters, const std::string& kind, const std::string& value) {
+    const auto& list=filters.at("conditions");
+    for(std::size_t i=0; i<list.size(); ++i)
+      if(list.at(i).at("kind").str()==kind&&list.at(i).at("value").str()==value)return list.at(i);
+    throw Error("E_INTERNAL","missing condition entry: "+kind+":"+value,500);
+  }
+  Json condition_source(const Json& entry, const std::string& id) {
+    const auto& list=entry.at("per_source");
+    for(std::size_t i=0; i<list.size(); ++i)if(list.at(i).at("source_id").str()==id)return list.at(i);
+    throw Error("E_INTERNAL","missing per-source condition entry: "+id,500);
+  }
   TEST(web_search_merges_and_cools_down) {
     Temp t;
     Store s(t.path/"db");
@@ -1363,6 +1388,190 @@ namespace {
       return obj(R"({"results":{"arxiv":{"status":"ok","hits":[{"url":"https://arxiv.org/abs/1","title":"Paper","snippet":"s","rank":1}]}}})");
     };
     CHECK(web.search("a", obj(R"({"query":"attention","category":"papers"})")).at("result_count").num()==1);
+  }
+  TEST(web_search_native_condition_engine_ignores_removes_hits_and_reports_not_satisfied) {
+    // (a) The manifest declares site native and the worker reports native
+    // execution, but the engine ignored it: violating hits are removed and the
+    // report says native-executed-not-satisfied (native is a location, not a
+    // verification).
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string& m, const Json& p) {
+      CHECK(m=="search.multi");
+      CHECK(p.has("conditions")&&p.at("conditions").size()==1);
+      CHECK(p.at("conditions").at(0).at("kind").str()=="site"&&p.at("conditions").at(0).at("value").str()=="example.com");
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    CHECK(!r.at("partial").flag());
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(e.at("removed").num()==1);
+    auto p=condition_source(e,"bing");
+    CHECK(p.at("classification").str()=="native");
+    CHECK(p.at("native_execution").str()=="executed");
+    CHECK(p.at("local_verification").str()=="verified");
+    CHECK(p.at("satisfied").flag()==false);
+    CHECK(p.at("removed").num()==1);
+    CHECK(r.at("filters").at("removed_unverified").num()==1);
+  }
+  TEST(web_search_missing_worker_condition_report_is_unexecuted_never_satisfied) {
+    // (b) A stub worker swallows the conditions object: no report means not
+    // executed, and an unverifiable condition can never claim satisfaction.
+    // Its unverified hits are removed, not silently kept.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json& p) {
+      CHECK(p.has("conditions")&&p.at("conditions").at(0).at("kind").str()=="inbody");
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X needle","snippet":"x","rank":1}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"inbody"}));
+    auto r=web.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==0);
+    CHECK(r.at("filters").at("removed_unverified").num()==1);
+    CHECK(r.at("sources").at(0).at("status").str()=="ok");
+    auto e=condition_entry(r.at("filters"),"inbody","marker");
+    auto p=condition_source(e,"bing");
+    CHECK(p.at("classification").str()=="native");
+    CHECK(p.at("native_execution").str()=="not_executed");
+    CHECK(p.at("local_verification").str()=="unverifiable");
+    CHECK(!p.has("satisfied"));
+  }
+  TEST(web_search_strict_unsupported_condition_errors_or_removes_sources_explicitly) {
+    // (c) No native_filters anywhere: an unverifiable condition is an explicit
+    // error. When one source declares it native, the others are removed before
+    // dispatch with a filter status in the sources report (usage does not diverge).
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X needle","snippet":"x","rank":1}],
+        "conditions":[{"kind":"inbody","value":"marker","execution":"native"}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    rejects([&] {
+      web.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing","ddg"]})"));
+    }, "E_CAPABILITY_UNAVAILABLE");
+    WebService native(s, w, native_registry("bing", {"inbody"}));
+    auto r=native.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing","ddg"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("usage").at("external_requests").num()==1);
+    CHECK(r.at("partial").flag());
+    auto removed=false;
+    for(std::size_t i=0; i<r.at("sources").size(); ++i) {
+      auto x=r.at("sources").at(i);
+      if(x.at("source_id").str()=="ddg")
+        removed=x.at("status").str()=="skipped"&&x.at("reason").str()=="condition_unsupported"&&
+                x.at("filter").at(0).at("kind").str()=="inbody"&&x.at("hits").num()==0;
+    }
+    CHECK(removed);
+    auto e=condition_entry(r.at("filters"),"inbody","marker");
+    auto pb=condition_source(e,"bing");
+    CHECK(pb.at("classification").str()=="native");
+    CHECK(pb.at("native_execution").str()=="executed");
+    CHECK(!pb.has("satisfied"));  // native execution still does not claim satisfaction
+    auto pd=condition_source(e,"ddg");
+    CHECK(pd.at("classification").str()=="unsupported");
+    CHECK(pd.at("native_execution").str()=="not_executed");
+    CHECK(!pd.has("local_verification"));
+  }
+  TEST(durable_web_search_uses_the_same_condition_plan) {
+    // (d) web.search.start runs the same search(): strict failures settle
+    // through the existing fail_search semantics (source-level unknown), and a
+    // locally verified condition filters the frozen result version.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto strict=web.submit_search("a", obj(R"({"query":"needle inbody:marker","sources":["bing"],"idempotency_key":"strict-1"})"));
+    while(auto lease=web.lease_search())web.execute_search(*lease);
+    auto failed=s.session_get("a", strict.at("session_id").str());
+    CHECK(failed.at("state").str()=="completed");
+    CHECK(failed.at("unknown_source_attempts").num()==1);
+    CHECK(failed.at("error_code").str()=="E_CAPABILITY_UNAVAILABLE");
+    auto verified=web.submit_search("a", obj(R"({"query":"guide site:example.com","sources":["bing"],"idempotency_key":"site-1"})"));
+    while(auto lease=web.lease_search())web.execute_search(*lease);
+    auto done=s.session_get("a", verified.at("session_id").str());
+    CHECK(done.at("state").str()=="completed");
+    auto page=s.session_page("a", verified.at("session_id").str(), done.at("result_set_version").str(), "", 10);
+    CHECK(page.at("hits").size()==1);
+    CHECK(page.at("hits").at(0).at("url").str()=="https://docs.example.com/x");
+  }
+  TEST(web_search_site_condition_keeps_local_recheck_when_native) {
+    // (e) Native classification never weakens the QRY-04 lite local recheck:
+    // violating hosts are removed under a native declaration, and compliant
+    // results report satisfied only because local verification ran.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    CHECK(r.at("results").at(0).at("rank").num()==1);
+    CHECK(r.at("filters").at("site").at(0).str()=="example.com");
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(condition_source(e,"bing").at("local_verification").str()=="verified");
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://docs.example.com/no-title-term","title":"No term here","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    auto ok=web.search("a", obj(R"({"query":"compliant site:example.com intitle:guide","sources":["bing"]})"));
+    CHECK(ok.at("result_count").num()==1);
+    CHECK(ok.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    auto ti=condition_entry(ok.at("filters"),"intitle","guide");
+    CHECK(ti.at("removed").num()==1);
+    CHECK(condition_source(ti,"bing").at("local_verification").str()=="verified");
+    CHECK(condition_source(ti,"bing").at("satisfied").flag()==false);
+    auto e2=condition_entry(ok.at("filters"),"site","example.com");
+    CHECK(e2.at("removed").num()==0);
+    auto p2=condition_source(e2,"bing");
+    CHECK(p2.at("local_verification").str()=="verified");
+    CHECK(p2.at("satisfied").flag());
+  }
+  TEST(web_search_cache_reprojection_preserves_the_filters_report) {
+    // (f) A cache hit must answer with the same per-condition execution report
+    // the original search produced.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto first=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(first.at("result_count").num()==1);
+    CHECK(first.at("filters").at("removed_unverified").num()==1);
+    CHECK(first.at("filters").has("conditions"));
+    auto second=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(second.at("from_cache").flag());
+    CHECK(second.at("filters").canonical()==first.at("filters").canonical());
+    CHECK(second.at("results").canonical()==first.at("results").canonical());
+    CHECK(w.calls.size()==1);
   }
   TEST(web_search_cache_spares_sources) {
     Temp t;

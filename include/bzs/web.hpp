@@ -11,6 +11,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -39,6 +40,10 @@ namespace bzs {
     std::string id, provider, family, capability, kind, status;
     std::string budget_key;
     Json contract;
+    // Condition kinds (site/filetype/intitle/inbody) the stored manifest contract
+    // declares natively executable upstream. Empty means every condition is
+    // emulated locally or unsupported (strict) for this source.
+    std::set<std::string> native_filters;
     bool enabled=false, by_default=false;
     std::int64_t weight=100, min_interval_ms=0, daily_cap=0;
     std::int64_t cooldown_blocked_ms=30*60*1000, cooldown_rate_ms=10*60*1000, cooldown_error_ms=5*60*1000;

@@ -13,6 +13,10 @@ from aiohttp import web
 
 HOST = "bzs-e2e.test"
 
+# Param echo: the last query parameters each engine endpoint received. Tests
+# fetch /echo/params to prove what the adapters actually sent upstream.
+RECEIVED: dict[str, dict] = {}
+
 ARTICLE = """<!doctype html><html><head><meta charset="utf-8"><title>Resumable crawling guide</title></head>
 <body><nav>Home | Products | Login</nav>
 <main><article><h1>Resumable crawling guide</h1>
@@ -33,15 +37,26 @@ def base(port: int) -> str:
     return f"http://{HOST}:{port}"
 
 
-def ddg_page(port: int) -> str:
+def ddg_page(port: int, probe: bool = False) -> str:
     def link(path: str) -> str:
         return "//duckduckgo.com/l/?uddg=" + quote(base(port) + path, safe="") + "&rut=abc"
+    # Condition-violating fixture rows, served only when the query carries the
+    # "filterprobe" marker so ordinary fixtures keep their exact shapes:
+    # extensionless URL, off-site host, and a title lacking the intitle term.
+    probe_rows = "" if not probe else f"""
+<div class="result results_links"><h2><a class="result__a" href="{link('/pages/filterprobe')}">Extensionless filterprobe</a></h2>
+<a class="result__snippet">No URL extension evidence.</a></div>
+<div class="result results_links"><h2><a class="result__a" href="https://elsewhere.example/filterprobe">Offsite filterprobe</a></h2>
+<a class="result__snippet">Wrong host entirely.</a></div>
+<div class="result results_links"><h2><a class="result__a" href="{link('/pages/filterprobe-wrong-title.html')}">Wrong title filterprobe</a></h2>
+<a class="result__snippet">On site with an extension, but the title lacks the intitle term.</a></div>"""
     return f"""<html><body><div id="links">
 <div class="result results_links result--ad"><a class="result__a" href="https://ads.example/">Ad</a></div>
 <div class="result results_links"><h2 class="result__title"><a class="result__a" href="{link('/pages/article.html')}">Resumable crawling guide</a></h2>
 <a class="result__snippet">Persist the frontier for resumable crawling.</a></div>
 <div class="result results_links"><h2><a class="result__a" href="{link('/pages/zh.html')}">断点续爬实现</a></h2>
 <a class="result__snippet">持久化待抓取队列。</a></div>
+{probe_rows}
 </div></body></html>"""
 
 
@@ -64,10 +79,22 @@ def make_app(port_ref: dict) -> web.Application:
     app = web.Application()
 
     async def ddg(request):
-        return web.Response(text=ddg_page(port_ref["port"]), content_type="text/html")
+        form = await request.post()
+        q = form.get("q", "") if hasattr(form, "get") else ""
+        RECEIVED["ddg"] = {"endpoint": "POST /ddg/html/", "q": q, "kl": form.get("kl", "")}
+        return web.Response(text=ddg_page(port_ref["port"], "filterprobe" in q), content_type="text/html")
 
     async def bing(request):
+        q = request.query.get("q", "")
+        RECEIVED["bing"] = {"endpoint": "GET /bing/search", "q": q, "mkt": request.query.get("mkt", "")}
         return web.Response(text=bing_page(port_ref["port"]), content_type="text/html")
+
+    async def echo_params(request):
+        return web.json_response(RECEIVED)
+
+    async def filterprobe(request):
+        return web.Response(text="<html><head><title>Filterprobe</title></head><body><p>probe page</p></body></html>",
+                            content_type="text/html")
 
     async def blocked(request):
         return web.Response(text=CAPTCHA, content_type="text/html", status=200)
@@ -138,14 +165,16 @@ def make_app(port_ref: dict) -> web.Application:
         q = request.query.get("srsearch", "")
         return web.json_response({"query": {"search": [{"title": "Web crawler", "snippet": f"A <span class=\"searchmatch\">{q}</span> bot"}]}})
 
-    for path, handler in (("/ddg/html/", ddg), ("/bing/search", bing), ("/blocked/html/", blocked),
+    for path, handler in (("/ddg/html/", ddg), ("/bing/search", bing), ("/echo/params", echo_params),
+                          ("/blocked/html/", blocked),
                           ("/pages/article.html", article), ("/pages/article.html/", article), ("/pages/zh.html", zh),
                           ("/pages/other.html", other), ("/pages/redirect", redirect),
                           ("/pages/redirect-private", redirect_private), ("/pages/redirect-loopback", redirect_loopback),
                           ("/pages/soft-redirect-unicode", soft_redirect_unicode), ("/pages/robots/{kind}", robots),
                           ("/headers/redirect/{kind}", header_redirect), ("/headers/echo", header_echo),
                           ("/pages/challenge", challenge), ("/pages/big", big), ("/pages/slow", slow),
-                          ("/pages/paper.pdf", pdf), ("/wiki/api.php", wiki), ("/pages/中文路径", zh)):
+                          ("/pages/paper.pdf", pdf), ("/wiki/api.php", wiki), ("/pages/中文路径", zh),
+                          ("/pages/filterprobe", filterprobe), ("/pages/filterprobe-wrong-title.html", filterprobe)):
         app.router.add_route("*", path, handler)
     return app
 
@@ -162,7 +191,7 @@ async def start(port: int = 0) -> tuple[web.AppRunner, int]:
 
 def manifest(port: int) -> dict:
     b = base(port)
-    def src(id_, adapter, family, capability="web", kind="scrape", default=True, **params):
+    def src(id_, adapter, family, capability="web", kind="scrape", default=True, native_filters=None, **params):
         contract = {"id": id_, "provider_id": id_, "index_family": family, "adapter_id": adapter,
                     "capability": "web" if capability == "encyclopedia" else capability,
                     "endpoint": params["base_url"], "enabled": True, "logical_service_id": id_,
@@ -172,11 +201,15 @@ def manifest(port: int) -> dict:
                                "redistribution_policy": "links_only", "approved_by": "offline-fixture"},
                     "limits": {"max_concurrency": 1, "min_interval_ms": 0, "shared_budget_key": id_,
                                "request_quota": 1000, "quota_window_seconds": 86400}}
+        # Offline demonstration of the native condition path: this fixture
+        # declares a condition kind its adapter truly translates upstream.
+        if native_filters is not None:
+            contract["native_filters"] = native_filters
         return {"id": id_, "provider": id_, "index_family": family, "capability": capability, "kind": kind,
                 "enabled": True, "default": default, "min_interval_ms": 0, "daily_cap": 1000, "status": "test",
                 "params": {"adapter": adapter, **params}, "contract": contract}
     return {"version": 1, "sources": [
-        src("ddg", "duckduckgo_html", "duckduckgo", base_url=f"{b}/ddg/html/"),
+        src("ddg", "duckduckgo_html", "duckduckgo", base_url=f"{b}/ddg/html/", native_filters=["site"]),
         src("bing", "bing_html", "bing", base_url=f"{b}/bing/search"),
         src("blocked", "duckduckgo_html", "blocked", default=False, base_url=f"{b}/blocked/html/"),
         src("wiki", "wikipedia_api", "wikipedia", capability="encyclopedia", kind="api", base_url=f"{b}/wiki/api.php", lang="en"),

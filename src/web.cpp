@@ -295,6 +295,13 @@ namespace bzs {
               limits.at("quota_window_seconds").num()==86400,"E_SOURCE_CONFIG","S1 quota differs from its source contract",500);
       s.budget_key=limits.at("shared_budget_key").str();
       require_identifier(s.budget_key);
+      if(c.has("native_filters")&&c.at("native_filters").is_array()) {
+        // Contract validation (strings, unique) already ran above; unknown kinds
+        // stay inert declarations that no query condition ever matches.
+        auto declared=c.at("native_filters");
+        for(std::size_t n=0; n<declared.size(); ++n)
+          if(declared.at(n).is_string())s.native_filters.insert(declared.at(n).str());
+      }
       auto shape=std::make_tuple(limits.at("max_concurrency").num(),s.min_interval_ms,s.daily_cap);
       require(!budgets.contains(s.budget_key)||budgets.at(s.budget_key)==shape,"E_SOURCE_CONFIG","Shared budget limits differ",500);
       budgets[s.budget_key]=shape;
@@ -409,6 +416,39 @@ namespace bzs {
   namespace {
     constexpr std::int64_t search_cache_ttl_ms=10*60*1000, partial_cache_ttl_ms=2*60*1000;
     constexpr std::size_t search_cache_entries=256, search_cache_bytes=16*1024*1024, search_cache_entry_bytes=512*1024;
+    // FT-011: one query-grammar directive becomes one hard condition with a
+    // per-source execution plan. Values double as the worker conditions payload.
+    struct SearchCondition {
+      std::string kind, value;         // site|filetype|intitle|inbody
+      const QueryNode* node=nullptr;   // intitle leaf, for boundary-aware title rechecks
+      bool locally_verifiable() const { return kind=="site"||kind=="filetype"||kind=="intitle"; }
+      std::string label() const { return kind+":"+value; }
+    };
+    std::vector<SearchCondition> collect_conditions(const Query& parsed) {
+      std::vector<SearchCondition> out;
+      for(const auto& host:parsed.hosts)out.push_back( {"site",host,nullptr});
+      for(const auto& type:parsed.types)out.push_back( {"filetype",type=="text/html"?"html":"txt",nullptr});
+      for(const auto* leaf:positive_leaves(parsed.root)) {
+        if(leaf->field=="title")out.push_back( {"intitle",leaf->value,leaf});
+        else if(leaf->field=="body")out.push_back( {"inbody",leaf->value,leaf});
+      }
+      return out;
+    }
+    // Search hits carry no fetched content_type: filetype evidence is the URL
+    // extension only. Extensionless (or otherwise unevidenced) URLs are
+    // unverified and removed, never silently kept.
+    std::string url_extension_type(std::string_view url) {
+      auto path=url.substr(0,url.find('?'));
+      if(auto hash=path.find('#');hash!=std::string_view::npos)path=path.substr(0,hash);
+      auto slash=path.rfind('/');
+      auto last=slash==std::string_view::npos?path:path.substr(slash+1);
+      auto dot=last.rfind('.');
+      if(dot==std::string_view::npos||dot+1==last.size())return "";
+      auto ext=ascii_lower(last.substr(dot+1));
+      if(ext=="html"||ext=="htm")return "text/html";
+      if(ext=="txt")return "text/plain";
+      return "";
+    }
   }
   std::optional<Json> WebService::cache_get(const std::string& key) {
     std::lock_guard lock(cache_mutex_);
@@ -549,12 +589,51 @@ namespace bzs {
       require(remaining()>0,"E_DEADLINE","Search deadline exhausted before cached response publication",408);
       return *hit;
     }
+    // FT-011 condition plan. Parse errors surface instead of the old silent
+    // passthrough: a query whose filter syntax cannot be modelled is refused,
+    // never forwarded as if its conditions were verified. `parsed` must outlive
+    // `conditions`: intitle entries keep a pointer to their AST leaf.
+    const auto parsed=parse_query(Json::string(query));
+    const auto conditions=collect_conditions(parsed);
+    auto classification=[&](const SourceSpec& s,const SearchCondition& c) {
+      return s.native_filters.contains(c.kind)?"native":(c.locally_verifiable()?"emulated":"unsupported");
+    };
     Json report=Json::array();
+    std::map<std::string,std::string> final_status;
+    // Strict default: a condition that is neither declared native in the source
+    // manifest nor locally computable removes that source explicitly; a query no
+    // remaining source can execute is an explicit error, never a silent drop.
+    std::vector<const SourceSpec*> dispatchable;
+    for(const auto* s:selected) {
+      bool unsupported=false;
+      for(const auto& condition:conditions)
+        if(!s->native_filters.contains(condition.kind)&&!condition.locally_verifiable())unsupported=true;
+      if(unsupported) {
+        Json r=Json::object();
+        r.set("source_id", s->id);
+        r.set("status", "skipped");
+        r.set("reason", "condition_unsupported");
+        Json dropped=Json::array();
+        for(const auto& condition:conditions)if(std::string(classification(*s,condition))=="unsupported") {
+          Json d=Json::object();
+          d.set("kind",condition.kind);
+          d.set("value",condition.value);
+          dropped.push(d);
+        }
+        r.set("filter", dropped);
+        r.set("hits", static_cast<std::int64_t>(0));
+        final_status[s->id]="skipped";
+        report.push(r);
+      } else dispatchable.push_back(s);
+    }
+    if(!conditions.empty()&&dispatchable.empty())
+      throw Error("E_CAPABILITY_UNAVAILABLE",
+                  "No selected source supports query condition: "+conditions.front().label(),422);
     Json ids=Json::array();
     std::vector<const SourceSpec*> admitted;
     std::vector<std::pair<const SourceSpec*, std::string>> decisions;
     std::int64_t wait=0;
-    for(const auto* s:selected) {
+    for(const auto* s:dispatchable) {
       auto reason=store_.source_admit(s->budget_key, s->min_interval_ms, s->daily_cap);
       if(reason=="min_interval"&&s->min_interval_ms<=3000)wait=std::max(wait, s->min_interval_ms);
       decisions.emplace_back(s, reason);
@@ -577,10 +656,14 @@ namespace bzs {
       r.set("status", "skipped");
       r.set("reason", reason);
       r.set("hits", static_cast<std::int64_t>(0));
+      final_status[s->id]="skipped";
       report.push(r);
     }
     std::vector<SourceHits> collected;
     bool partial=report.size()>0;
+    // Worker-reported native executions feed the per-source condition report.
+    // A source absent from native_reported did not execute.
+    std::map<std::string,std::set<std::pair<std::string,std::string>>> native_reported;
     if(!admitted.empty()) {
       Json params=Json::object();
       params.set("query", query);
@@ -590,6 +673,16 @@ namespace bzs {
       if(!language.empty())params.set("language", language);
       params.set("sources", ids);
       params.set("manifest_sha256",registry_.manifest_digest());
+      if(!conditions.empty()) {
+        Json payload=Json::array();
+        for(const auto& condition:conditions) {
+          Json c=Json::object();
+          c.set("kind",condition.kind);
+          c.set("value",utf8_prefix(condition.value,256));
+          payload.push(c);
+        }
+        params.set("conditions",payload);
+      }
       const auto rpc_timeout=std::min<std::int64_t>(left,timeout+4000);
       auto resp=[&] {
         try { return worker_.call("search.multi",params,static_cast<int>(rpc_timeout)); }
@@ -613,11 +706,24 @@ namespace bzs {
           r.set("error", "worker returned no result");
           r.set("hits", static_cast<std::int64_t>(0));
           store_.source_report(s->budget_key, "error", "missing", 0);
+          final_status[s->id]="error";
           partial=true;
           report.push(r);
           continue;
         }
         auto x=results.at(s->id);
+        // RPC anti-silence: a condition this source did not explicitly report as
+        // natively executed is treated as not executed (mirrors the missing-result
+        // discipline above); old workers cannot silently swallow conditions.
+        if(x.has("conditions")&&x.at("conditions").is_array()) {
+          auto reported=x.at("conditions");
+          for(std::size_t i=0; i<reported.size(); ++i) {
+            auto entry=reported.at(i);
+            auto kind=opt_string(entry,"kind"),value=opt_string(entry,"value");
+            if(!kind.empty()&&!value.empty()&&opt_string(entry,"execution")=="native")
+              native_reported[s->id].insert({kind,value});
+          }
+        }
         auto status=opt_string(x, "status");
         auto error=opt_string(x, "error");
         if(status.empty())status="error";
@@ -663,6 +769,7 @@ namespace bzs {
         store_.source_report(s->budget_key, status.empty()?"error":status, error, cooldown);
         if(status!="ok"&&status!="empty")partial=true;
         r.set("status", status.empty()?"error":status);
+        final_status[s->id]=status.empty()?"error":status;
         r.set("hits", static_cast<std::int64_t>(sh.hits.size()));
         r.set("elapsed_ms", opt_int(x, "elapsed_ms", 0));
         if(x.has("http_status")&&x.at("http_status").is_integer())r.set("http_status", x.at("http_status").num());
@@ -673,35 +780,107 @@ namespace bzs {
     }
     auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
     Json filters=Json::object();
-    try {
-      // Verify site: constraints on result hosts instead of trusting upstream (QRY-04 lite).
-      auto parsed=parse_query(Json::string(query));
-      if(!parsed.hosts.empty()) {
-        Json kept=Json::array();
-        std::int64_t removed=0;
-        for(std::size_t i=0; i<merged.size(); ++i) {
-          auto r=merged.at(i);
-          std::string host;
-          try {
-            host=metadata_host(r.at("url").str());
-          }catch(const Error&) {
+    // Local post-hoc verification runs for every locally computable condition,
+    // native or not (QRY-04 lite strictly additive: native execution location is
+    // never treated as result satisfaction). A hit no contributing source has
+    // verifiably executed an unverifiable condition for is unverified and removed.
+    std::vector<std::int64_t> condition_removed(conditions.size(),0);
+    std::map<std::pair<std::string,std::string>,std::int64_t> source_condition_removed;
+    std::int64_t removed_total=0;
+    if(!conditions.empty()) {
+      Json kept=Json::array();
+      for(std::size_t i=0; i<merged.size(); ++i) {
+        auto row=merged.at(i);
+        const auto url=row.at("url").str();
+        const auto title=row.has("title")&&row.at("title").is_string()?row.at("title").str():"";
+        std::string host;
+        try { host=metadata_host(url); }catch(const Error&) {}
+        std::vector<std::size_t> violated;
+        for(std::size_t c=0; c<conditions.size(); ++c) {
+          const auto& condition=conditions[c];
+          if(condition.kind=="site") {
+            // Kept from QRY-04 lite: any declared host may match (any-of group).
+            bool ok=std::any_of(conditions.begin(),conditions.end(),[&](const SearchCondition& k) {
+              return k.kind=="site"&&(host==k.value||(host.size()>k.value.size()&&host.ends_with("."+k.value)));
+            });
+            if(!ok)violated.push_back(c);
+          } else if(condition.kind=="filetype") {
+            if(url_extension_type(url)!=(condition.value=="html"?"text/html":"text/plain"))violated.push_back(c);
+          } else if(condition.kind=="intitle") {
+            if(condition.node&&leaf_matches(ascii_lower(title),*condition.node,1).empty())violated.push_back(c);
+          } else {
+            // inbody: search hits expose no body text, so only a worker-reported
+            // native execution by every contributing source verifies the hit.
+            const auto sent=utf8_prefix(condition.value,256);
+            auto provenance=row.has("sources")&&row.at("sources").is_array()?row.at("sources"):Json::array();
+            bool verified=provenance.size()>0;
+            for(std::size_t j=0; j<provenance.size()&&verified; ++j) {
+              auto contributor=provenance.at(j).at("source_id").str();
+              verified=native_reported.count(contributor)&&native_reported.at(contributor).count({condition.kind,sent});
+            }
+            if(!verified)violated.push_back(c);
           }
-          bool ok=std::any_of(parsed.hosts.begin(), parsed.hosts.end(), [&](const std::string& h) {
-            return host==h||(host.size()>h.size()&&host.ends_with("."+h));
-          });
-          if(ok) {
-            r.set("rank", static_cast<std::int64_t>(kept.size()+1));
-            kept.push(r);
-          } else ++removed;
         }
-        merged=kept;
-        Json sites=Json::array();
-        for(const auto& h:parsed.hosts)sites.push(Json::string(h));
-        filters.set("site", sites);
-        filters.set("removed_unverified", removed);
+        if(violated.empty()) {
+          row.set("rank", static_cast<std::int64_t>(kept.size()+1));
+          kept.push(row);
+          continue;
+        }
+        ++removed_total;
+        for(auto c:violated)++condition_removed[c];
+        auto provenance=row.has("sources")&&row.at("sources").is_array()?row.at("sources"):Json::array();
+        for(std::size_t j=0; j<provenance.size(); ++j) {
+          auto contributor=provenance.at(j).at("source_id").str();
+          for(auto c:violated)++source_condition_removed[{contributor,conditions[c].label()}];
+        }
       }
-    }catch(const Error&) {
-      // Engine syntax our parser does not model; results are passed through unverified.
+      merged=kept;
+      Json sites=Json::array();
+      bool has_site=false;
+      for(const auto& condition:conditions)if(condition.kind=="site") {
+        sites.push(Json::string(condition.value));
+        has_site=true;
+      }
+      if(has_site)filters.set("site", sites);
+      filters.set("removed_unverified", removed_total);
+      // B-04: per-condition execution status. native != satisfied: an entry only
+      // claims satisfied when local verification actually ran and found nothing.
+      Json entries=Json::array();
+      for(std::size_t c=0; c<conditions.size(); ++c) {
+        const auto& condition=conditions[c];
+        Json entry=Json::object();
+        entry.set("kind",condition.kind);
+        entry.set("value",condition.value);
+        entry.set("removed",condition_removed[c]);
+        Json per_source_report=Json::array();
+        for(const auto* s:selected) {
+          Json p=Json::object();
+          p.set("source_id",s->id);
+          auto cls=classification(*s,condition);
+          p.set("classification",cls);
+          const auto sent=utf8_prefix(condition.value,256);
+          p.set("native_execution",
+                native_reported.count(s->id)&&native_reported.at(s->id).count({condition.kind,sent})?
+                "executed":"not_executed");
+          const auto status=final_status.count(s->id)?final_status.at(s->id):"skipped";
+          // Sources that returned no answer make no verification claim at all.
+          if(status!="ok"&&status!="empty") {
+            per_source_report.push(p);
+            continue;
+          }
+          p.set("local_verification",condition.locally_verifiable()?"verified":"unverifiable");
+          if(condition.locally_verifiable()) {
+            auto key=std::make_pair(s->id,condition.label());
+            auto removed=source_condition_removed.count(key)?source_condition_removed.at(key):0;
+            p.set("removed",removed);
+            p.set("satisfied",removed==0);
+          }
+          per_source_report.push(p);
+        }
+        entry.set("per_source",per_source_report);
+        entries.push(entry);
+      }
+      filters.set("conditions",entries);
     }
     Json usage=Json::object();
     usage.set("external_requests", static_cast<std::int64_t>(admitted.size()));

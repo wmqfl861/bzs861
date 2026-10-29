@@ -54,7 +54,9 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 `results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
 
-索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。已支持的 site 条件在结果中复核；其余未支持条件不能静默丢弃。
+索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。
+
+**查询条件执行（FT-011 有意行为变更，strict 默认）**：`site:`、`filetype:`、`intitle:`、`inbody:` 等查询语法条件现在按来源分类执行并在 `filters` 报告中逐条件披露，取代旧运行时。**旧行为（已废弃）**：只有 `site:` 有本地复核，`filetype:`/`intitle:`/`inbody:` 及解析失败的过滤语法静默透传引擎、结果未核验即返回。**新行为**：本地可计算条件（`site:`→结果 host、`intitle:`→结果标题、`filetype:`→仅 URL 扩展名证据；无扩展名 URL 计为未核验并剔除）无论是否声明 native 一律保留本地事后复核；按来源清单 `native_filters` 声明分类 native/emulated/unsupported；strict 默认下 unsupported 条件（如无来源声明 native 的 `inbody:`）显式返回 `E_CAPABILITY_UNAVAILABLE`（422）或显式剔除该来源（sources 报告保留 `status=skipped`、`reason=condition_unsupported` 与 filter 明细，用量不含未派发来源），绝不静默。`filters.conditions[]` 逐条件给出每来源 `classification`/`native_execution`/`local_verification`/`satisfied`：worker 未返回某条件执行报告一律按未执行处理，native 执行位置不冒充结果满足。无法本地核验且无人执行的条件命中按未核验剔除。查询过滤语法无法解析时同样显式报错，不再静默透传。durable 路径 `web.search.start` 走同一执行：strict 失败经既有 fail_search 进入来源级 unknown/partial；`filters` 报告随来源 payload_json 持久化，但 session_page/stream 投影本轮不透出该报告（已知边界）。
 
 原同步 web.search 保持兼容；需要联网冻结版本、分页、断线重取和取消时使用 web.search.start。完整 SESSION-01/02 工作包仍未签收。
 

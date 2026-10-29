@@ -261,6 +261,45 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(version, self.ok("session.cancel", {"session_id": session_id})["result_set_version"])
         self.assertEqual(3, self.ok("session.get", {"session_id": session_id})["dispatched_source_attempts"])
 
+    def test_02c_query_conditions_are_enforced_and_reported(self):
+        # The ddg fixture manifest declares native site support (offline
+        # demonstration of the native path); bing stays emulated.
+        query = f"filterprobe site:{HOST} filetype:html intitle:resumable"
+        r = self.ok("web.search", {"query": query, "sources": ["ddg", "bing"]})
+        results = r["results"]
+        # Survivors: only the on-site .html hit whose title contains the
+        # intitle term. Off-site, extensionless and wrong-title rows are gone.
+        self.assertEqual(len(results), 1, results)
+        self.assertTrue(results[0]["url"].startswith(self.stack.url("/pages/article.html")))
+        filters = r["filters"]
+        self.assertEqual(filters["site"], [HOST])
+        self.assertEqual(filters["removed_unverified"], 5)
+        entries = {(e["kind"], e["value"]): e for e in filters["conditions"]}
+        self.assertEqual({k for k in entries}, {("site", HOST), ("filetype", "html"), ("intitle", "resumable")})
+        self.assertEqual(entries[("site", HOST)]["removed"], 1)
+        self.assertEqual(entries[("filetype", "html")]["removed"], 2)  # extensionless + off-site URLs
+        self.assertEqual(entries[("intitle", "resumable")]["removed"], 5)
+        per_source = {p["source_id"]: p for p in entries[("site", HOST)]["per_source"]}
+        # Native execution location is not satisfaction: the engine ignored the
+        # site term (fixture returns an off-site row) and local recheck removed it.
+        self.assertEqual((per_source["ddg"]["classification"], per_source["ddg"]["native_execution"],
+                          per_source["ddg"]["local_verification"], per_source["ddg"]["satisfied"],
+                          per_source["ddg"]["removed"]), ("native", "executed", "verified", False, 1))
+        self.assertEqual(per_source["bing"]["classification"], "emulated")
+        # The engine actually received the site term in its upstream query.
+        with self.stack.opener.open(f"http://127.0.0.1:{self.stack.web_port}/echo/params", timeout=10) as echo:
+            received = json.load(echo)
+        self.assertIn(f"site:{HOST}", received["ddg"]["q"])
+        self.assertIn(f"site:{HOST}", received["bing"]["q"])
+        # Cache reprojection keeps the filters report byte-identical.
+        cached = self.ok("web.search", {"query": query, "sources": ["ddg", "bing"]})
+        self.assertTrue(cached["from_cache"])
+        self.assertEqual(cached["filters"], filters)
+        # Strict default: inbody has no body evidence and no native support in
+        # these manifests, so the search is an explicit error, never a silent drop.
+        self.err("web.search", {"query": "filterprobe inbody:needle", "sources": ["ddg", "bing"]},
+                 "E_CAPABILITY_UNAVAILABLE", 422)
+
     def test_03_blocked_source_cools_down_and_others_still_answer(self):
         r = self.ok("web.search", {"query": "resumable", "sources": ["blocked", "ddg"]})
         statuses = {s["source_id"]: s["status"] for s in r["sources"]}

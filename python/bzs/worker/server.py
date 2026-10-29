@@ -108,7 +108,19 @@ class Worker:
         timeout_s = timeout_ms / 1000.0
         if not query or not ids:
             raise ValueError("query and sources are required")
-        return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
+        conditions = params.get("conditions")
+        if conditions is not None:
+            # Structured query-grammar conditions the core classifies per source.
+            # Anything malformed is rejected, never silently dropped.
+            if not isinstance(conditions, list) or len(conditions) > 16:
+                raise ValueError("invalid search.multi conditions")
+            for condition in conditions:
+                if (not isinstance(condition, dict) or set(condition) != {"kind", "value"}
+                        or condition["kind"] not in ("site", "filetype", "intitle", "inbody")
+                        or not isinstance(condition["value"], str) or not 1 <= len(condition["value"]) <= 256):
+                    raise ValueError("invalid search.multi conditions entry")
+        return {"results": await self.sources.run_many(ids, query, limit, params.get("language"),
+                                                       timeout_s, conditions)}
 
     async def fetch_extract(self, params: dict, *, _direct_control: DirectReadControl | None = None) -> dict:
         if not isinstance(params, dict):

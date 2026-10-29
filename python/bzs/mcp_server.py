@@ -168,7 +168,10 @@ def build_server(token_verifier: Any = None, auth: Any = None, *, admin_tools: b
         "sources; each comes with the source's "
         "snippet (not the page text) and which sources found it. category: web (default), papers, code, news, "
         "encyclopedia, all. "
-        "site:example.com constraints are verified against result hosts. Identical searches within ~10 minutes "
+        "Query conditions are enforced, never silently dropped: site: and intitle: are re-verified against each "
+        "result, filetype: uses URL-extension evidence only (extensionless URLs are removed), and a condition no "
+        "selected source natively supports (such as inbody:) is an explicit error. The filters report distinguishes "
+        "native execution from verified satisfaction. Identical searches within ~10 minutes "
         "are answered from cache (from_cache=true); pass refresh=true only when you need newer results. "
         "Optional mode fast/balanced/deep bounds source search only; inspect list_search_modes. Explicit "
         "budget overrides can only tighten that preset, and sources beyond its source cap are refused."))
