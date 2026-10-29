@@ -404,7 +404,10 @@ async def test_site_lane_enforces_actual_start_interval_and_new_429_blocks_queue
     first, second = await asyncio.gather(worker.map_fetch(grant(worker, server, "/map")),
                                          worker.map_fetch(grant(worker, server, "/map/again")))
     assert first["status"] == second["status"] == "ok"
-    assert calls[1]["time"] - calls[0]["time"] >= 0.05
+    # Pacing bounds the worker-side dispatch gap (min_interval_ms=60); the
+    # server-side arrival gap also carries loop/network jitter. 45ms still
+    # catches an unpaced back-to-back dispatch regression (which lands near 0).
+    assert calls[1]["time"] - calls[0]["time"] >= 0.045
     calls.clear()
     rate, queued = await asyncio.gather(worker.map_fetch(grant(worker, server, "/rate")),
                                         worker.map_fetch(grant(worker, server, "/map/after-rate")))
