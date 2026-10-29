@@ -548,6 +548,69 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
   settle_read_job_locked(lease.job_id);tx.commit();return true;
 }
 
+bool Store::complete_read_transient(const ReadLease& lease,std::int64_t requests,std::int64_t bytes,
+                                    const Json* publication,const std::string& final_url,const Json* redirect_observations) {
+  // A no-store body settles once without any snapshot row: state='succeeded',
+  // NULL snapshot_id and a delivered-transient receipt distinguish it from a
+  // retention-deleted receipt, so retry_failed never reruns it.
+  auto marker=Json::object();marker.set("transient","no_store");
+  const auto encoded=marker.dump();
+  std::lock_guard lock(mutex_);Transaction tx(db_);
+  if(!owns_read_lease_locked(lease)){tx.commit();return false;}
+  const auto members=shared_read_members_locked(lease);
+  if(!members.empty()) {
+    bool any=false;
+    for(const auto& member:members)any=any||(live_read_lease_locked(member)&&
+      deletion_generation_locked(member.owner,member.url)==member.deletion_generation);
+    require(any,"E_LEASE_EXPIRED","Shared read has no live subscriber at commit",409);
+    require(deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation,"E_TARGET_DELETED",
+            "Document was deleted after this read started",409);
+    if((publication||redirect_observations)&&requests>0) {
+      Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
+      const auto apply=[&](const std::string& target,const Json& policy) {
+        bool live=true;try { (void)alias_fences_locked(lease.owner,lease.url,target,created.num(0)); } catch(const Error& e) { if(e.code!="E_TARGET_DELETED")throw;live=false; }
+        if(live)observe_policy_locked(lease.owner,lease.url,target,policy);
+      };
+      if(publication)apply(final_url,*publication);
+      if(redirect_observations)for(std::size_t i=0;i<redirect_observations->size();++i) {
+        const auto observation=redirect_observations->at(i);apply(observation.at("url").str(),observation.at("publication"));
+      }
+    }
+    reconcile_read_usage_locked(lease,requests,bytes);
+    for(const auto& member:members) {
+      if(member.job_id!=lease.job_id)reconcile_read_usage_locked(member,0,0);
+      Sql done(db_,"UPDATE read_job_items SET state='succeeded',snapshot_id=NULL,receipt_json=?,error_code=NULL WHERE job_id=? AND position=?");
+      done.bind(1,encoded);done.bind(2,member.job_id);done.bind(3,member.input_index);done.step();
+    }
+    Sql settled(db_,"UPDATE read_shared_attempts SET settled=1,external_requests=?,content_bytes=?,error_code='' WHERE attempt_id=? AND settled=0");
+    settled.bind(1,requests);settled.bind(2,bytes);settled.bind(3,lease.attempt_id);settled.step();
+    for(const auto& member:members)settle_read_job_locked(member.job_id);
+    tx.commit();return true;
+  }
+  if(!live_read_lease_locked(lease)) {
+    reconcile_read_usage_locked(lease,requests,bytes);
+    Sql reject(db_,"UPDATE read_job_items SET state='failed',error_code='E_LEASE_EXPIRED' WHERE job_id=? AND position=?");
+    reject.bind(1,lease.job_id);reject.bind(2,lease.input_index);reject.step();settle_read_job_locked(lease.job_id);tx.commit();return false;
+  }
+  require(deletion_generation_locked(lease.owner,lease.url)==lease.deletion_generation,"E_TARGET_DELETED",
+          "Document was deleted after this read started",409);
+  if((publication||redirect_observations)&&requests>0) {
+    Sql created(db_,"SELECT created_delete_sequence FROM jobs WHERE id=?");created.bind(1,lease.job_id);created.step();
+    const auto apply=[&](const std::string& target,const Json& policy) {
+      bool live=true;try { (void)alias_fences_locked(lease.owner,lease.url,target,created.num(0)); } catch(const Error& e) { if(e.code!="E_TARGET_DELETED")throw;live=false; }
+      if(live)observe_policy_locked(lease.owner,lease.url,target,policy);
+    };
+    if(publication)apply(final_url,*publication);
+    if(redirect_observations)for(std::size_t i=0;i<redirect_observations->size();++i) {
+      const auto observation=redirect_observations->at(i);apply(observation.at("url").str(),observation.at("publication"));
+    }
+  }
+  reconcile_read_usage_locked(lease,requests,bytes);
+  Sql done(db_,"UPDATE read_job_items SET state='succeeded',snapshot_id=NULL,receipt_json=?,error_code=NULL WHERE job_id=? AND position=?");
+  done.bind(1,encoded);done.bind(2,lease.job_id);done.bind(3,lease.input_index);done.step();
+  settle_read_job_locked(lease.job_id);tx.commit();return true;
+}
+
 void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64_t requests,std::int64_t bytes,const Json* publication,const std::string& final_url,const Json* redirect_observations) {
   require_identifier(error);
   std::lock_guard lock(mutex_);Transaction tx(db_);
@@ -650,6 +713,14 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
         receipt.set("indexed",receipt.at("indexed").flag()&&visible.num(0)!=0&&mode<2);
         auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");deployment.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");deployment.set("generation",site_publication_cached_generation_);
         receipt.set("site_publication",deployment);item.set("receipt",receipt);
+      } else if(!available&&rows.text(9).empty()&&!rows.text(10).empty()) {
+        // Succeeded with a NULL snapshot: a delivered-transient receipt is the
+        // only observable marker and never names a snapshot identity. A
+        // receipt whose snapshot was removed by retention keeps its non-empty
+        // snapshot_id and stays hidden.
+        auto receipt=Json::parse(rows.text(10));
+        if(receipt.is_object()&&receipt.has("transient")&&receipt.at("transient").str()=="no_store")
+          item.set("receipt",receipt);
       }
     }
     items.push(item);next=rows.num(0)+1;

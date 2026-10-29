@@ -999,6 +999,61 @@ namespace bzs {
     tx.commit();
     return out;
   }
+  Json Store::project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
+    // Same fence, history and observation discipline as an ingest, without the
+    // snapshot: a persisted success would publish this artifact's policy, so a
+    // transient one retains a restrictive policy as an observation instead.
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    require_principal_active_locked(owner);
+    refresh_site_publication_locked(false);
+    auto m=Json::parse(meta.dump());
+    prepare_web_publication_locked(owner,url,parsed,m);
+    if(parsed.publication.has("version")&&restrictive_publication(parsed.publication))
+      observe_policy_locked(owner,url,m.has("final_url")?m.at("final_url").str():url,parsed.publication);
+    const auto generation=m.has("site_publication_generation")?m.at("site_publication_generation").num():site_publication_bound_generation_;
+    require(generation>=0&&generation<=site_publication_cached_generation_,"E_SITE_POLICY_STALE","Read publication generation is not active in this store",409);
+    const auto mode=site_publication_mode_locked("web",site_bindings_locked(url,m).canonical(),generation,url,m.dump());
+    auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");
+    deployment.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");
+    deployment.set("generation",site_publication_cached_generation_);deployment.set("artifact_generation",generation);
+    Json out=Json::object();
+    out.set("indexed",parsed.publication.at("index_allowed").flag()&&mode<2);
+    out.set("site_publication",deployment);out.set("publication",parsed.publication);
+    tx.commit();
+    return out;
+  }
+  Json Store::transient_delivery_projection(const std::string& owner, const std::string& url, const std::string& final_url,
+                                            const Json& redirects, const Json& fence, const Json& publication,
+                                            const Json& site_publication) {
+    // Delivery-time recheck mirroring the stored-result window guard: the body
+    // itself is shared, permission to publish it to this member is not.
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    require_principal_active_locked(owner);
+    require(epoch_locked(owner)==fence.at("epoch").num(),"E_POLICY_CHANGED","Permissions changed during this read",409);
+    require(deletion_generation_locked(owner,url)==fence.at("generation").num(),
+            "E_TARGET_DELETED","Document was deleted after this read started",409);
+    const auto sequence=fence.at("sequence").num();
+    (void)alias_fences_locked(owner,url,final_url,sequence);
+    for(std::size_t i=0;i<redirects.size();++i)
+      (void)alias_fences_locked(owner,url,redirects.at(i).str(),sequence);
+    refresh_site_publication_locked(false);
+    auto policy=current_publication_ceiling_locked(owner,url,publication);
+    policy=current_publication_ceiling_locked(owner,final_url,policy);
+    for(std::size_t i=0;i<redirects.size();++i)policy=current_publication_ceiling_locked(owner,redirects.at(i).str(),policy);
+    auto bindings_meta=Json::object();bindings_meta.set("final_url",final_url);bindings_meta.set("redirects",redirects);
+    const auto generation=site_publication.at("artifact_generation").num();
+    const auto mode=site_publication_mode_locked("web",site_bindings_locked(url,bindings_meta).canonical(),generation,url,bindings_meta.dump());
+    auto current=Json::object();current.set("version","bzs-site-publication-1");
+    current.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");
+    current.set("generation",site_publication_cached_generation_);current.set("artifact_generation",generation);
+    Json out=Json::object();
+    out.set("indexed",publication.at("index_allowed").flag()&&policy.at("index_allowed").flag()&&mode<2);
+    out.set("site_publication",current);
+    tx.commit();
+    return out;
+  }
   std::optional<Json> Store::cached(const std::string& owner, const std::string& url) {
     std::lock_guard lock(mutex_);
     require_principal_active_locked(owner);

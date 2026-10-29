@@ -60,7 +60,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 ### 读取结果与缓存
 
-读取结果包括文档/快照 ID、来源与最终 URL、标题、版本、抓取时间、缓存状态、索引状态、文本窗口、元数据、抓取/解析状态和 `content_trust=untrusted_web_content`。文本窗口的起止是原文 UTF-8 字节边界。
+读取结果包括文档/快照 ID、来源与最终 URL、标题、版本、抓取时间、缓存状态、索引状态、文本窗口、元数据、抓取/解析状态和 `content_trust=untrusted_web_content`。文本窗口的起止是原文 UTF-8 字节边界。no-store 的 200 全量响应返回瞬时变体：`transient="no_store"`，无文档/快照 ID、版本与 `cache` 对象，其余字段（URL、标题、窗口、元数据、抓取状态、`content_trust`、`usage`/`shared_read`）照常；该正文一次性交付，不落盘、不可复用。
 
 普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
@@ -161,7 +161,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 | `job.results` | `job_id`；可选 `offset=0`、`limit=20` | 依输入顺序返回条目；`offset` 为 0–20，`limit` 为 1–20；用 `next_offset` / `has_more` 继续读取 |
 | `job.control` | `job_id`、`action` | `pause`、`resume`、`cancel`；批量任务另外支持显式 `retry_failed` |
 
-成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。
+成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。no-store 条目以 `state=succeeded` 终结但不建快照：`available=false`，`receipt` 仅携带 `transient="no_store"` 标记（无快照身份），用量照记且 `retry_failed` 不重跑。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。`used_pages` 按成功条目计数，交付瞬时的成功条目同样计入；瞬时正文无快照可读，该计数不等于可读正文的数量。
 
 兼容任务可在派发事务中共享一次物理读取；新 `read_many.submit` 任务的首项也可在创建事务内加入尚开放、未结算的原尝试。迟到加入要求同 owner、权限代际、任务创建删除序号、精确 URL 和目标删除代际相同，预算覆盖原预留、期限覆盖原租约、有效超时兼容，且当前快照与当前全局页面发布序号（`publication_sequence`）严格等于原捕获。每次物理尝试最多累计 32 个成员，取消不释放槽位；幂等重提、其他既存 pending 项、暂停项和显式重试不通过提交入口迟到加入。不能加入的新任务按原调度继续排队，普通 `web.read`、map/crawl 和来源搜索不参与。完整合同见[共享读取](SHARED_READS.md)。
 
@@ -313,7 +313,7 @@ robots过期记录仅可作为绑定旧表示重新验证，不能直接放行�
 
 同 owner 兼容 `read_many` 在派发事务中可共享一次实际请求，schema15 进一步允许兼容新任务首项迟到加入。各订阅者保持独立任务身份/回执与取消，原付款者承担实际或未知用量，付款者取消但仍有其他有效成员时归属不变、原尝试仍可接纳兼容成员。订阅者 `associated_*` 仅表示关联，不是可相加的消耗；压缩后归属仍保留。每次物理尝试最多累计 32 个成员，详见[共享读取](SHARED_READS.md)。
 
-原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；no-store因本接口总返回持久快照而报`E_CACHE_POLICY`，不会先落盘再删除。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
+原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；`web.read`与`read_many`对no-store的200全量响应交付一次性瞬时正文（`transient="no_store"`，无快照/复用元数据），不会先落盘再删除；crawl/map与304重验证仍报`E_CACHE_POLICY`。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，瞬时结果无`cache`对象，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
 
 schema13在12基础上组合来源发布规则、主体撤权和共享读取结构，保留原数据与账本。来源清单显式激活持久政策，旧缓存/冻结会话与在途来源回复每次重查；后续放宽不复活旧摘要。真实旧库升级、旧HTTP字段默认不新鲜、备份继续隔离的实际证据见当前报告；版本号不等于所有历史路径或安全恢复已经验收。
 

@@ -102,7 +102,7 @@ Python `CoreError` 仅从失败 body 提取 object 类型的 `usage`、`shared_r
 
 ## 缓存与限制性观察
 
-共享不放宽[HTTP 新鲜度](HTTP_FRESHNESS.md)、[条件重验证](HTTP_REVALIDATION.md)或[重定向缓存](HTTP_REDIRECT_CACHE.md)合同。`no-store` 仍返回 `E_CACHE_POLICY`，不会创建一个临时正文成功响应，也不会因为已有订阅者而持久保存禁止存储的表示。
+共享不放宽[HTTP 新鲜度](HTTP_FRESHNESS.md)、[条件重验证](HTTP_REVALIDATION.md)或[重定向缓存](HTTP_REDIRECT_CACHE.md)合同。`no-store` 的 200 全量响应按共享读取模型交付瞬时正文：同一 flight 的已准入成员获得同一物理正文与 `same_physical_receipt` 语义，付款方一次计费，结果带 `transient="no_store"` 且无快照身份；不变量是零留存（不供未来请求复用），而不是零成员交付。窗口化在内存中投影（快照/发布投影等价，逐成员复核撤销/删除屏障），不会因为已有订阅者而持久保存禁止存储的表示；304 与既有成员失败路径仍按原合同拒绝或计费。
 
 缓存限制或路由变化导致的失效绑定本次原缓存快照与 metadata 摘要，迟到失败不能撤销另一调用后来提交的新表示。用量或 profile 收据错误也不能绕过独立有效的缓存撤销和限制性发布观察：已单独验证的原地址、中间跳或最终表示限制继续在原权限和删除屏障下生效。无效正文不能发布；有效限制也不能借此变成放宽旧策略的许可。
 

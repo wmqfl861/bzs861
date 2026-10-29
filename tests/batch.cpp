@@ -265,6 +265,55 @@ namespace {
     CHECK(web.submit_reads("alice",args(urls(1))).at("reused").flag());drain(store,web);CHECK(worker.reads.size()==1);
     CHECK(store.stats("alice").at("snapshots").num()==0);
   }
+  Json no_store_freshness(const Json& params) {
+    auto r=Json::parse(R"({"version":"bzs-http-freshness-1","url":"","request_profile":"","cache_control":"no-store","vary":"","date":"","age":"","expires":"","pragma":"","received_at_ms":1700000000000,"response_delay_ms":0,"invalid":false})");
+    r.set("url",params.at("url"));r.set("request_profile",sha256("batch-no-store"));return r;
+  }
+  TEST(no_store_items_settle_delivered_transient_without_snapshots) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    worker.response=[](const Json& p) { auto r=Fake::ok(p);r.set("http_freshness",no_store_freshness(p));return r; };
+    auto id=web.submit_reads("alice",args(urls(2),"no-store")).at("job_id").str();drain(store,web);
+    const auto status=store.job_get("alice",id);
+    CHECK(status.at("state").str()=="succeeded");CHECK(status.at("succeeded_items").num()==2);
+    CHECK(status.at("usage").at("external_requests").num()==2);CHECK(status.at("usage").at("content_bytes").num()==200);
+    CHECK(status.at("usage").at("reserved_requests").num()==0);CHECK(status.at("budget").at("charged_requests").num()==2);
+    CHECK(status.at("used_pages").num()==2);
+    CHECK(store.stats("alice").at("snapshots").num()==0);CHECK(!store.cached("alice",urls(1)[0]));
+    for(std::size_t i=0;i<2;++i) {
+      const auto entry=item(store,id,i);
+      CHECK(entry.at("state").str()=="succeeded");CHECK(!entry.at("available").flag());
+      CHECK(entry.at("receipt").at("transient").str()=="no_store");CHECK(!entry.at("receipt").has("snapshot_id"));
+      CHECK(entry.at("external_requests").num()==1);CHECK(!entry.at("usage_unknown").flag());
+    }
+    CHECK(worker.reads==urls(2));
+    rejects([&]{store.job_control("alice",id,"retry_failed");},"E_JOB_STATE");
+  }
+  TEST(no_store_delivered_transient_items_never_rerun_on_retry_failed) {
+    Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
+    auto options=args(urls(2),"no-store-partial");options.set("max_attempts",std::int64_t{2});
+    worker.response=[](const Json& p) {
+      auto r=Fake::ok(p);
+      if(p.at("url").str().ends_with("/0"))r.set("http_freshness",no_store_freshness(p));
+      else r.set("status","http_error");
+      return r;
+    };
+    auto id=web.submit_reads("alice",options).at("job_id").str();drain(store,web);
+    CHECK(item(store,id).at("state").str()=="succeeded");CHECK(item(store,id).at("receipt").at("transient").str()=="no_store");
+    CHECK(item(store,id,1).at("error_code").str()=="E_FETCH_HTTP");
+    CHECK(store.job_get("alice",id).at("state").str()=="failed");
+    CHECK(store.job_control("alice",id,"retry_failed").at("state").str()=="queued");
+    worker.response=[](const Json& p) { auto r=Fake::ok(p);if(p.at("url").str().ends_with("/0"))r.set("http_freshness",no_store_freshness(p));return r; };
+    drain(store,web);
+    const std::vector<std::string> reran{urls(2)[0],urls(2)[1],urls(2)[1]};
+    CHECK(worker.reads==reran);
+    CHECK(item(store,id).at("state").str()=="succeeded");CHECK(item(store,id).at("receipt").at("transient").str()=="no_store");
+    CHECK(item(store,id).at("attempts").num()==1);CHECK(item(store,id,1).at("state").str()=="succeeded");
+    // Only the retried cacheable item persisted a snapshot.
+    CHECK(store.stats("alice").at("snapshots").num()==1);
+    CHECK(item(store,id,1).at("receipt").at("snapshot_id").str()==store.cached("alice",urls(2)[1])->at("snapshot_id").str());
+    CHECK(!store.cached("alice",urls(2)[0]));
+    CHECK(store.job_get("alice",id).at("state").str()=="succeeded");
+  }
   TEST(api_dispatch_and_fixture_jobs_coexist) {
     Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
     FixtureCatalog fixtures(BZS_FIXTURE_DIR);Service service(store,fixtures,t.path/"backups",&web);

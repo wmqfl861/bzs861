@@ -518,25 +518,47 @@ TEST(each_post_commit_window_rechecks_current_revocation_deletion_and_policy) {
 }
 
 TEST(shared_fetch_errors_broadcast_once_and_do_not_cache_failure_or_retry) {
-  for(const std::string kind:{"network","network_unknown","timeout","unavailable","malformed","no_store"}) {
+  for(const std::string kind:{"network","network_unknown","timeout","unavailable","malformed"}) {
     Fixture f;f.worker.responder([&](const Worker::Call& call) {
       if(kind=="unavailable")throw Error("E_WORKER_UNAVAILABLE","synthetic unavailable",503);
       if(kind=="network")return Json::parse(R"({"status":"network_error","error":"synthetic network failure","usage":{"external_requests":1,"content_bytes":25}})");
       if(kind=="network_unknown")return Json::parse(R"({"status":"network_error","error":"synthetic unknown network usage"})");
       if(kind=="timeout")return Json::parse(R"({"status":"timeout","error":"synthetic timeout"})");
-      auto out=f.worker.page(call,false,kind=="no_store"?"no-store":"max-age=60");
+      auto out=f.worker.page(call);
       if(kind=="malformed")out.set("text",std::int64_t{42});
       return out;
     });
     Running run(f.worker);const auto a=run.read(f.web,"alice");CHECK(f.worker.wait_requests(1));const auto b=run.read(f.web,"alice");
     CHECK(wait_state(f.web,1,2));f.worker.release_all();
-    const std::string expected=(kind=="network"||kind=="network_unknown")?"E_FETCH_NETWORK":kind=="timeout"?"E_FETCH_TIMEOUT":kind=="unavailable"?"E_WORKER_UNAVAILABLE":kind=="no_store"?"E_CACHE_POLICY":"E_WORKER_PROTOCOL";
+    const std::string expected=(kind=="network"||kind=="network_unknown")?"E_FETCH_NETWORK":kind=="timeout"?"E_FETCH_TIMEOUT":kind=="unavailable"?"E_WORKER_UNAVAILABLE":"E_WORKER_PROTOCOL";
     const auto paid=run.failure(a,expected),associated=run.failure(b,expected);
-    const bool known=kind=="network"||kind=="malformed"||kind=="no_store";
+    const bool known=kind=="network"||kind=="malformed";
     usage(paid,"payer",2,1,kind=="network"?25:100,known);usage(associated,"subscriber",2,1,kind=="network"?25:100,known);
     same_physical_receipt(paid,associated);CHECK(f.worker.calls().size()==1);CHECK(f.store.stats("alice").at("snapshots").num()==0);
     CHECK(wait_state(f.web,0,0));f.worker.responder({});usage(f.web.read("alice",read_args()),"payer",1);CHECK(f.worker.calls().size()==2);
   }
+}
+
+TEST(shared_no_store_delivers_the_same_transient_body_to_every_member_once) {
+  Fixture f;f.worker.responder([&](const Worker::Call& call){return f.worker.page(call,false,"no-store");});
+  auto first=read_args(),second=read_args();
+  first.set("max_bytes",std::int64_t{12});second.set("start_byte",std::int64_t{13});second.set("max_bytes",std::int64_t{6});
+  Running run(f.worker);const auto a=run.read(f.web,"alice",first);CHECK(f.worker.wait_requests(1));
+  const auto b=run.read(f.web,"alice",second);CHECK(wait_state(f.web,1,2));f.worker.release_all();
+  const auto paid=run.success(a),associated=run.success(b);
+  for(const auto& result:{paid,associated}) {
+    CHECK(result.at("transient").str()=="no_store");CHECK(!result.has("snapshot_id"));CHECK(!result.has("document_id"));
+    CHECK(!result.has("cache"));CHECK(result.at("content_trust").str()=="untrusted_web_content");
+    CHECK(result.at("content").at("total_bytes").num()==static_cast<std::int64_t>(body.size()));
+  }
+  CHECK(paid.at("content").at("text").str()=="sharedneedle");
+  CHECK(associated.at("content").at("text").str()=="中文");
+  usage(paid,"payer",2,1,100);usage(associated,"subscriber",2,1,100);same_physical_receipt(paid,associated);
+  CHECK(f.worker.calls().size()==1);CHECK(f.store.stats("alice").at("snapshots").num()==0);
+  CHECK(wait_state(f.web,0,0));
+  // Zero retention, not zero member delivery: nothing is reusable afterwards.
+  rejects([&]{f.web.read("alice",read_args(target,"cache_only"));},"E_NOT_CACHED");
+  usage(f.web.read("alice",read_args()),"payer",1);CHECK(f.worker.calls().size()==2);
 }
 
 TEST(late_shared_no_store_cannot_invalidate_a_newer_successful_representation) {
@@ -545,7 +567,8 @@ TEST(late_shared_no_store_cannot_invalidate_a_newer_successful_representation) {
   Running run(f.worker);const auto a=run.read(f.web,"alice");CHECK(f.worker.wait_requests(2));const auto b=run.read(f.web,"alice");CHECK(wait_state(f.web,1,2));
   f.now.fetch_add(1000);Store writer(f.temp.path/"db",[&]{return f.now.load();});Worker current([&]{return f.now.load();});current.release_all();WebService new_web(writer,current,{});
   const auto latest=new_web.read("alice",read_args());const auto metadata=writer.cached("alice",target)->at("meta").canonical();
-  f.worker.release_all();run.failure(a,"E_CACHE_POLICY");run.failure(b,"E_CACHE_POLICY");
+  f.worker.release_all();const auto late_a=run.success(a),late_b=run.success(b);
+  CHECK(late_a.at("transient").str()=="no_store");CHECK(!late_a.has("snapshot_id"));same_physical_receipt(late_a,late_b);
   CHECK(f.store.cached("alice",target)->at("meta").canonical()==metadata);
   const auto hit=f.web.read("alice",read_args(target,"cache_only"));CHECK(hit.at("from_cache").flag());CHECK(hit.at("snapshot_id").str()==latest.at("snapshot_id").str());
   CHECK(f.worker.calls().size()==2);CHECK(current.calls().size()==1);CHECK(wait_state(f.web,0,0));

@@ -758,6 +758,42 @@ namespace bzs {
     out.set("content_trust", "untrusted_web_content");
     return out;
   }
+  Json WebService::transient_window(const std::string& owner,const Json& fields,const Json& fence,std::int64_t start,std::int64_t max_bytes) {
+    // In-memory windowing for a no-store body: identical start_byte/max_bytes
+    // and content_trust semantics, no snapshot identity and no reuse metadata.
+    const auto text=fields.at("text").str();
+    const auto total=static_cast<std::int64_t>(text.size());
+    require(start<=total, "E_EVIDENCE_RANGE", "start_byte beyond end of text");
+    require(utf8_boundary(text, static_cast<std::size_t>(start)), "E_EVIDENCE_RANGE", "start_byte splits a UTF-8 character");
+    auto end=std::min(total, start+max_bytes);
+    while(end>start&&!utf8_boundary(text, static_cast<std::size_t>(end)))--end;
+    require(start==total||end>start,"E_EVIDENCE_RANGE","max_bytes cannot hold the next UTF-8 character");
+    const auto& url=fields.at("url").str();
+    auto projection=store_.transient_delivery_projection(owner,url,fields.at("final_url").str(),fields.at("redirects"),
+                                                         fence,fields.at("publication"),fields.at("site_publication"));
+    auto content=Json::object();
+    content.set("text", text.substr(static_cast<std::size_t>(start), static_cast<std::size_t>(end-start)));
+    content.set("start_byte", start);
+    content.set("end_byte", end);
+    content.set("total_bytes", total);
+    content.set("truncated", end<total);
+    content.set("next_start_byte", end<total?Json::integer(end):Json());
+    Json out=Json::object();
+    out.set("url", fields.at("url"));
+    out.set("final_url", fields.at("final_url"));
+    out.set("title", fields.at("title"));
+    out.set("fetched_at_ms", fields.at("fetched_at_ms").num());
+    out.set("from_cache", false);
+    out.set("indexed", projection.at("indexed"));
+    out.set("site_publication", projection.at("site_publication"));
+    out.set("content", content);
+    out.set("links_count", fields.at("links_count").num());
+    out.set("metadata", fields.at("metadata"));
+    out.set("fetch", fields.at("fetch"));
+    out.set("content_trust", "untrusted_web_content");
+    out.set("transient", "no_store");
+    return out;
+  }
   void WebService::prune_direct_members_locked() {
     const auto now=std::chrono::steady_clock::now();
     for(auto it=direct_read_members_.begin();it!=direct_read_members_.end();) {
@@ -1046,7 +1082,7 @@ namespace bzs {
         ReadArtifact artifact;
         try {
           observation=decode_observation(url,r);
-          artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r);
+          artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r,false,true);
           if(receipt_error)std::rethrow_exception(receipt_error);
           // Single-member reads retain legacy-worker behavior. Once shared,
           // every returned representation must prove the admitted profile.
@@ -1087,12 +1123,43 @@ namespace bzs {
             if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
             throw Error("E_CANCELLED","No active direct read members remain",409);
           }
-          const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
-          // Keep only the fields consumed by window, independently encoded.
-          // Store already bounds each field; aggregating body and publication
-          // copies would introduce new JSON byte/node limits after commit.
-          for(const auto* field:{"snapshot_id","document_id","url","title","revision","indexed","site_publication","meta","links"})
-            flight->snapshot_fields.emplace(field,snap.at(field).dump());
+          if(artifact.transient) {
+            // No snapshot exists to share: publication preparation, fences and
+            // restrictive observations run once here, then every admitted
+            // member windows the same physical body in memory.
+            auto projection=store_.project_transient_web(owner,url,artifact.parsed,artifact.meta);
+            auto& parsed=artifact.parsed;
+            parsed.title=utf8_prefix(parsed.title.empty()?std::string("Untitled"):parsed.title,1024);
+            if(parsed.text.size()>1024*1024) {
+              parsed.text=utf8_prefix(parsed.text,1024*1024);
+              artifact.meta.set("text_truncated",true);
+            }
+            Json fetch=Json::object();
+            for(const auto* k: {
+              "http_status", "content_type", "charset", "extractor", "extract_status", "warnings", "redirects", "text_truncated", "revalidated"
+            })if(artifact.meta.has(k))fetch.set(k, artifact.meta.at(k));
+            auto& fields=flight->transient_fields;
+            fields.emplace("url",Json::string(url).dump());
+            fields.emplace("title",Json::string(parsed.title).dump());
+            fields.emplace("text",Json::string(parsed.text).dump());
+            fields.emplace("final_url",Json::string(artifact.meta.at("final_url").str()).dump());
+            fields.emplace("redirects",artifact.meta.at("redirects").dump());
+            fields.emplace("metadata",(artifact.meta.has("metadata")?artifact.meta.at("metadata"):Json::object()).dump());
+            fields.emplace("fetched_at_ms",Json::integer(artifact.meta.at("fetched_at_ms").num()).dump());
+            fields.emplace("links_count",Json::integer(static_cast<std::int64_t>(parsed.links.size())).dump());
+            fields.emplace("fetch",fetch.dump());
+            fields.emplace("publication",projection.at("publication").dump());
+            fields.emplace("indexed",Json::boolean(projection.at("indexed").flag()).dump());
+            fields.emplace("site_publication",projection.at("site_publication").dump());
+            flight->transient=true;
+          } else {
+            const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
+            // Keep only the fields consumed by window, independently encoded.
+            // Store already bounds each field; aggregating body and publication
+            // copies would introduce new JSON byte/node limits after commit.
+            for(const auto* field:{"snapshot_id","document_id","url","title","revision","indexed","site_publication","meta","links"})
+              flight->snapshot_fields.emplace(field,snap.at(field).dump());
+          }
         } catch(const Error& error) {
           if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
             apply_observations();
@@ -1123,16 +1190,23 @@ namespace bzs {
     const auto details=receipt(Json::parse(flight->physical_usage_json));
     try {
       if(flight->error)std::rethrow_exception(flight->error);
-      auto snap=Json::object();
-      for(const auto& [field,encoded]:flight->snapshot_fields)snap.set(field,Json::parse(encoded,encoded.size()));
-      const auto meta=snap.at("meta");
       std::function<void(const std::string&)> before_window;
       { std::lock_guard lock(direct_reads_mutex_);before_window=direct_read_window_for_test_; }
       if(before_window)before_window(payer?"payer":"subscriber");
-      auto guard=Json::object();guard.set("version","bzs-http-read-result-1");guard.set("url",url);
-      guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("publication_fence",publication_fence);
-      auto out=window(owner,snap,start,max_bytes,false,meta.at("fetched_at_ms").num(),guard);
-      out.set("cache",http_read_freshness(meta,url,store_.now(),max_age));
+      Json out;
+      if(flight->transient) {
+        auto fields=Json::object();
+        for(const auto& [field,encoded]:flight->transient_fields)fields.set(field,Json::parse(encoded,encoded.size()));
+        out=transient_window(owner,fields,publication_fence,start,max_bytes);
+      } else {
+        auto snap=Json::object();
+        for(const auto& [field,encoded]:flight->snapshot_fields)snap.set(field,Json::parse(encoded,encoded.size()));
+        const auto meta=snap.at("meta");
+        auto guard=Json::object();guard.set("version","bzs-http-read-result-1");guard.set("url",url);
+        guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("publication_fence",publication_fence);
+        out=window(owner,snap,start,max_bytes,false,meta.at("fetched_at_ms").num(),guard);
+        out.set("cache",http_read_freshness(meta,url,store_.now(),max_age));
+      }
       for(const auto* field:{"usage","shared_read"})out.set(field,details.at(field));
       return out;
     } catch(const Error& error) {
@@ -1213,7 +1287,7 @@ namespace bzs {
     }
     return out;
   }
-  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty) {
+  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty,bool allow_transient) {
     require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     auto status=opt_string(r, "status");
     if(r.has("representation_publication"))
@@ -1227,7 +1301,13 @@ namespace bzs {
       }
       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
     }
-    require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
+    // Direct reads branch to a transient delivery before rejecting an
+    // unpersistable prefix; crawl/map keep the strict persistence contract.
+    bool transient=false;
+    if(allow_transient) {
+      if(!http_redirect_storage_allowed(r,url,store_.now()))transient=true;
+    } else
+      require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
       require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str())&&r.at(key).str().find('\0')==std::string::npos,"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
@@ -1314,30 +1394,38 @@ namespace bzs {
     meta.set("content_type", doc.content_type);
     if(r.has("http_freshness")) {
       const auto record=validate_http_freshness(r.at("http_freshness"),final_url);
-      require(http_freshness(record,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
-      if(!incomplete)meta.set("http_freshness",record);
+      const bool storable=http_freshness(record,store_.now(),7*86400).at("store_allowed").flag();
+      if(!storable) {
+        // Unadmitted callers keep the strict rejection; admitted direct reads
+        // mark the artifact transient and attach no reuse metadata.
+        require(allow_transient,"E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
+        transient=true;
+      }
+      if(storable&&!incomplete)meta.set("http_freshness",record);
     }
-    if(r.has("http_cache")) {
+    if(r.has("http_cache")&&!transient) {
       require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
       meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
     }
     if(r.has("http_redirect_chain")) {
       require(!incomplete,"E_WORKER_PROTOCOL","A truncated response cannot prove a reusable redirect representation",502);
       const auto chain=validate_http_redirect_receipt(r,url);
-      if(status=="ok"&&r.at("http_status").num()==200) {
-        // Core-only, transient scope grant, including equal policies whose
-        // optional wrapper was omitted. Store consumes it before persistence.
-        auto scope=Json::object();scope.set("version","bzs-final-publication-scope-1");scope.set("url",final_url);
-        meta.set("validated_final_publication_scope",scope);
-      }
-      if(http_redirect_chain_cacheable(chain)) {
-        auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
-        // The optional proof must fit the existing aggregate metadata allowance.
-        // Its policy observations were already enforced before this omission.
-        if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
+      if(!transient) {
+        if(status=="ok"&&r.at("http_status").num()==200) {
+          // Core-only, transient scope grant, including equal policies whose
+          // optional wrapper was omitted. Store consumes it before persistence.
+          auto scope=Json::object();scope.set("version","bzs-final-publication-scope-1");scope.set("url",final_url);
+          meta.set("validated_final_publication_scope",scope);
+        }
+        if(http_redirect_chain_cacheable(chain)) {
+          auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
+          // The optional proof must fit the existing aggregate metadata allowance.
+          // Its policy observations were already enforced before this omission.
+          if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
+        }
       }
     }
-    return {std::move(doc),std::move(parsed),std::move(meta)};
+    return {std::move(doc),std::move(parsed),std::move(meta),transient};
   }
   WebService::ReadArtifact WebService::decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base) {
     require(base.has_value(),"E_WORKER_PROTOCOL","Unsolicited 304 has no retained representation",502);
@@ -1464,11 +1552,18 @@ namespace bzs {
         store_.fail_read(lease,code,requests,bytes,observation?&*observation:nullptr,observed_url,&redirect_observations);
         return;
       }
-      auto artifact=status=="not_modified"?decode_not_modified(lease.url,response,base):decode_read(lease.url,response);
+      auto artifact=status=="not_modified"?decode_not_modified(lease.url,response,base):decode_read(lease.url,response,false,true);
       const auto& final_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:artifact.parsed.publication;
       if(restrictive_publication(final_policy)) { observation=final_policy;observed_url=artifact.meta.at("final_url").str(); }
       if(artifact.parsed.representation_publication.has("version")&&restrictive_publication(artifact.parsed.publication)) {
         auto logical=Json::object();logical.set("url",lease.url);logical.set("publication",artifact.parsed.publication);redirect_observations.push(logical);
+      }
+      if(artifact.transient) {
+        // A no-store batch item settles delivered-transient: usage charged,
+        // restrictive observations retained, no snapshot and no rerun.
+        (void)store_.complete_read_transient(lease,requests,bytes,observation?&*observation:nullptr,
+                                             observed_url.empty()?artifact.meta.at("final_url").str():observed_url,&redirect_observations);
+        return;
       }
       (void)store_.complete_read(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
     } catch(const Error& error) {

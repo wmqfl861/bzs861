@@ -200,6 +200,15 @@ namespace bzs {
     // comparison and snapshot/index writes share one transaction.
     Json ingest_web(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta,
                     std::int64_t expected_deletion_generation);
+    // Transient no-store delivery: run the same publication preparation and
+    // fences as an ingest, but persist nothing. Returns the projection a
+    // windowed result needs (indexed, current site deployment, sealed policy).
+    Json project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta);
+    // Per-member delivery fence for a transient body: recheck revocation,
+    // deletion and alias fences, then project current publication ceilings.
+    Json transient_delivery_projection(const std::string& owner, const std::string& url, const std::string& final_url,
+                                       const Json& redirects, const Json& fence, const Json& publication,
+                                       const Json& site_publication);
     // Current snapshot summary for (owner,url), if any; used for read caching.
     std::optional<Json> cached(const std::string& owner, const std::string& url);
     // Fence a previously cached representation after a non-storable response.
@@ -244,6 +253,11 @@ namespace bzs {
     bool read_lease_live(const ReadLease& lease);
     bool complete_read(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
                        const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
+    // Settle a no-store response without a snapshot: live members end
+    // 'succeeded' with a NULL snapshot and a delivered-transient receipt.
+    bool complete_read_transient(const ReadLease& lease, std::int64_t external_requests, std::int64_t content_bytes,
+                                 const Json* publication=nullptr, const std::string& final_url="",
+                                 const Json* redirect_observations=nullptr);
     // Negative usage means an unknown outcome. Its entire durable grant stays charged.
     void fail_read(const ReadLease& lease, const std::string& error_code,
                    std::int64_t external_requests=-1, std::int64_t content_bytes=-1,
