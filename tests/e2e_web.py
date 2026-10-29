@@ -273,11 +273,13 @@ class EndToEnd(unittest.TestCase):
         self.assertTrue(results[0]["url"].startswith(self.stack.url("/pages/article.html")))
         filters = r["filters"]
         self.assertEqual(filters["site"], [HOST])
-        self.assertEqual(filters["removed_unverified"], 5)
+        # 6, not 5: verification inspects every returned hit pre-fusion,
+        # including the violating row the merged limit used to hide.
+        self.assertEqual(filters["removed_unverified"], 6)
         entries = {(e["kind"], e["value"]): e for e in filters["conditions"]}
         self.assertEqual({k for k in entries}, {("site", HOST), ("filetype", "html"), ("intitle", "resumable")})
         self.assertEqual(entries[("site", HOST)]["removed"], 1)
-        self.assertEqual(entries[("filetype", "html")]["removed"], 2)  # extensionless + off-site URLs
+        self.assertEqual(entries[("filetype", "html")]["removed"], 3)  # extensionless + off-site + limit-hidden .txt row
         self.assertEqual(entries[("intitle", "resumable")]["removed"], 5)
         per_source = {p["source_id"]: p for p in entries[("site", HOST)]["per_source"]}
         # Native execution location is not satisfaction: the engine ignored the
