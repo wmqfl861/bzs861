@@ -1,0 +1,1335 @@
+{
+ "anomalies": [
+  {
+   "detail": "License-Expression: Apache-2.0 AND MIT",
+   "kind": "compound",
+   "name": "aiohttp"
+  },
+  {
+   "detail": "License-Expression: Apache-2.0 OR BSD-3-Clause",
+   "kind": "compound",
+   "name": "cryptography"
+  },
+  {
+   "detail": "License-Expression: Apache-2.0 OR BSD-2-Clause",
+   "kind": "compound",
+   "name": "packaging"
+  },
+  {
+   "detail": "License-Expression: Apache-2.0 AND CNRI-Python",
+   "kind": "compound",
+   "name": "regex"
+  },
+  {
+   "detail": "License-Expression: MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later",
+   "kind": "compound",
+   "name": "tld"
+  },
+  {
+   "detail": "SPDX licenseConcluded is LicenseRef-vcpkg-null (no license conclusion)",
+   "kind": "no-license",
+   "name": "libiconv"
+  },
+  {
+   "detail": "SPDX licenseConcluded is LicenseRef-vcpkg-null (no license conclusion)",
+   "kind": "no-license",
+   "name": "vcpkg-make"
+  },
+  {
+   "detail": "METADATA License is free text, not an SPDX expression; classifiers suggest: License :: OSI Approved :: Apache Software License",
+   "kind": "non-spdx-text",
+   "name": "aiosignal"
+  },
+  {
+   "detail": "METADATA License is free text, not an SPDX expression; classifiers suggest: License :: OSI Approved :: BSD License",
+   "kind": "non-spdx-text",
+   "name": "jusText"
+  },
+  {
+   "detail": "METADATA License is free text, not an SPDX expression; classifiers suggest: License :: OSI Approved :: BSD License ; License :: OSI Approved :: Apache Software License",
+   "kind": "non-spdx-text",
+   "name": "python-dateutil"
+  },
+  {
+   "detail": "License-Expression: MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later",
+   "kind": "strong-copyleft",
+   "name": "tld"
+  },
+  {
+   "detail": "License: MPL-2.0",
+   "kind": "weak-copyleft",
+   "name": "certifi"
+  },
+  {
+   "detail": "License-Expression: MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later",
+   "kind": "weak-copyleft",
+   "name": "tld"
+  }
+ ],
+ "binding": {
+  "git_branch": "work/blueprint-v2-dev-20261029",
+  "git_commit": "146138773eb3ad114a5c2b8a8c479b31e24aa98c",
+  "local_binding_note": "NOT wheel hashes: audit-dependencies.yml (wheels job) hashes downloaded cp313 wheel bytes in CI; this offline report instead hashes the lock file and each python dist-info METADATA file, plus each vcpkg.spdx.json. Those hashes bind local metadata text, not wheel/distribution bytes.",
+  "lock_file": "C:\\bzs861-v2\\tools\\requirements-s1-lock.txt",
+  "lock_sha256": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb",
+  "lock_sha256_at_head": "0b7863d00c53c72b43a29a51c9887199601f24bf3e85041302f8b9d19129bcfb",
+  "lock_unchanged_vs_head": true,
+  "metadata_files_hashed": 60,
+  "metadatas_aggregate_sha256": "358343ffd17de92872c899e652190709d8e818ca691a9ef2f8849b9da10339e3",
+  "tool": "tools/sbom_report.py",
+  "tool_sha256": "051e98e3313148074e745e3061cf1c8f48788bf49191c2758b724df9999c9777",
+  "vcpkg_baseline": "6719fd4d4cd3b2d4575f6164da4a02f757b3b067",
+  "vcpkg_baseline_git_object": "commit",
+  "vcpkg_baseline_in_ci_yml": true,
+  "vcpkg_share": "C:\\tools\\vcpkg-bzs\\installed\\x64-windows\\share",
+  "vcpkg_spdx_aggregate_sha256": "cb427c1a6525a673f377064a7ec9a091a67a3ada725bd14bd57e16576355f92f"
+ },
+ "counts": {
+  "anomalies_by_kind": {
+   "compound": 5,
+   "no-license": 2,
+   "non-spdx-text": 3,
+   "strong-copyleft": 1,
+   "weak-copyleft": 2
+  },
+  "python_dist_info_missing": 0,
+  "python_packages": 60,
+  "replacement_strategy_null": 127,
+  "total_rows": 127,
+  "vcpkg_installed_ports": 67,
+  "vcpkg_ports_without_spdx_on_this_machine": 0,
+  "vcpkg_rows": 67,
+  "vcpkg_spdx_docs": 67
+ },
+ "diff_vs_hand_table": {
+  "coverage_note": "hand table names 14 of 127 measured rows; it is component-level (one row for two boost ports, none for the other 53 boost ports, zlib, libiconv and the 5 vcpkg-* build-tool ports, and none for transitive python pins)",
+  "measured_not_covered_by_hand_table": [
+   "aiohappyeyeballs",
+   "aiosignal",
+   "annotated-types",
+   "anyio",
+   "attrs",
+   "babel",
+   "boost-algorithm",
+   "boost-align",
+   "boost-array",
+   "boost-assert",
+   "boost-bind",
+   "boost-cmake",
+   "boost-compat",
+   "boost-concept-check",
+   "boost-config",
+   "boost-container",
+   "boost-container-hash",
+   "boost-context",
+   "boost-conversion",
+   "boost-core",
+   "boost-date-time",
+   "boost-describe",
+   "boost-detail",
+   "boost-endian",
+   "boost-exception",
+   "boost-function",
+   "boost-function-types",
+   "boost-fusion",
+   "boost-headers",
+   "boost-integer",
+   "boost-intrusive",
+   "boost-io",
+   "boost-iterator",
+   "boost-lexical-cast",
+   "boost-logic",
+   "boost-move",
+   "boost-mp11",
+   "boost-mpl",
+   "boost-numeric-conversion",
+   "boost-optional",
+   "boost-pool",
+   "boost-predef",
+   "boost-preprocessor",
+   "boost-range",
+   "boost-regex",
+   "boost-smart-ptr",
+   "boost-static-assert",
+   "boost-static-string",
+   "boost-system",
+   "boost-throw-exception",
+   "boost-tokenizer",
+   "boost-tuple",
+   "boost-type-index",
+   "boost-type-traits",
+   "boost-typeof",
+   "boost-uninstall",
+   "boost-unordered",
+   "boost-utility",
+   "boost-variant2",
+   "boost-winapi",
+   "certifi",
+   "cffi",
+   "charset-normalizer",
+   "click",
+   "courlan",
+   "cryptography",
+   "dateparser",
+   "frozenlist",
+   "h11",
+   "htmldate",
+   "httpcore2",
+   "httpx2",
+   "idna",
+   "iniconfig",
+   "jsonschema",
+   "jsonschema-specifications",
+   "justext",
+   "libiconv",
+   "lxml_html_clean",
+   "multidict",
+   "opentelemetry-api",
+   "packaging",
+   "pluggy",
+   "propcache",
+   "pycparser",
+   "pydantic",
+   "pydantic_core",
+   "pygments",
+   "pyjwt",
+   "python-dateutil",
+   "python-multipart",
+   "pytz",
+   "referencing",
+   "regex",
+   "rpds-py",
+   "setuptools",
+   "six",
+   "sse-starlette",
+   "starlette",
+   "tld",
+   "truststore",
+   "typing-inspection",
+   "typing_extensions",
+   "tzlocal",
+   "urllib3",
+   "uvicorn",
+   "vcpkg-boost",
+   "vcpkg-cmake",
+   "vcpkg-cmake-config",
+   "vcpkg-cmake-get-vars",
+   "vcpkg-make",
+   "yarl",
+   "zlib"
+  ],
+  "provenance": "hand labels transcribed verbatim from docs/DEPENDENCIES.md table 『当前依赖范围』 at git commit 146138773eb3ad114a5c2b8a8c479b31e24aa98c (tools/sbom_report.py HAND_TABLE); statuses: match=measured equals hand label, refined=hand placeholder/ambiguity resolved by measured evidence, mismatch=definite label differs, not-measured=no row",
+  "rows": [
+   {
+    "component": "SQLite（含 FTS5）",
+    "hand_label": "Public Domain",
+    "measured": {
+     "sqlite3": "blessing"
+    },
+    "status": "mismatch"
+   },
+   {
+    "component": "Boost.Asio / Beast",
+    "hand_label": "BSL-1.0",
+    "measured": {
+     "boost-asio": "BSL-1.0",
+     "boost-beast": "BSL-1.0"
+    },
+    "status": "match"
+   },
+   {
+    "component": "json-c",
+    "hand_label": "MIT",
+    "measured": {
+     "json-c": "MIT"
+    },
+    "status": "match"
+   },
+   {
+    "component": "libxml2",
+    "hand_label": "MIT",
+    "measured": {
+     "libxml2": "MIT"
+    },
+    "status": "match"
+   },
+   {
+    "component": "OpenSSL libcrypto",
+    "hand_label": "Apache-2.0",
+    "measured": {
+     "openssl": "Apache-2.0"
+    },
+    "status": "match"
+   },
+   {
+    "component": "aiohttp",
+    "hand_label": "Apache-2.0 / MIT，按发行物核对",
+    "measured": {
+     "aiohttp": "Apache-2.0 AND MIT"
+    },
+    "status": "refined"
+   },
+   {
+    "component": "lxml / cssselect",
+    "hand_label": "BSD-3-Clause",
+    "measured": {
+     "cssselect": "BSD-3-Clause",
+     "lxml": "BSD-3-Clause"
+    },
+    "status": "match"
+   },
+   {
+    "component": "trafilatura",
+    "hand_label": "Apache-2.0",
+    "measured": {
+     "trafilatura": "Apache-2.0"
+    },
+    "status": "match"
+   },
+   {
+    "component": "MCP Python SDK",
+    "hand_label": "MIT",
+    "measured": {
+     "mcp": "MIT",
+     "mcp-types": "MIT"
+    },
+    "status": "match"
+   },
+   {
+    "component": "pytest / pytest-asyncio",
+    "hand_label": "MIT / Apache-2.0，按发行物核对",
+    "measured": {
+     "pytest": "MIT",
+     "pytest-asyncio": "Apache-2.0"
+    },
+    "status": "refined"
+   }
+  ]
+ },
+ "generated_at": "2026-10-29T12:27:54Z",
+ "rows": [
+  {
+   "kind": "python",
+   "license": "PSF-2.0",
+   "license_evidence": "dist-info:aiohappyeyeballs-2.7.1.dist-info/METADATA#License",
+   "name": "aiohappyeyeballs",
+   "replacement_strategy": null,
+   "version": "2.7.1"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0 AND MIT",
+   "license_evidence": "dist-info:aiohttp-3.14.5.dist-info/METADATA#License-Expression",
+   "name": "aiohttp",
+   "replacement_strategy": null,
+   "version": "3.14.5"
+  },
+  {
+   "kind": "python",
+   "license": "Apache 2.0",
+   "license_evidence": "dist-info:aiosignal-1.4.0.dist-info/METADATA#License",
+   "name": "aiosignal",
+   "replacement_strategy": null,
+   "version": "1.4.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:annotated_types-0.8.0.dist-info/METADATA#License-Expression",
+   "name": "annotated-types",
+   "replacement_strategy": null,
+   "version": "0.8.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:anyio-4.15.1.dist-info/METADATA#License-Expression",
+   "name": "anyio",
+   "replacement_strategy": null,
+   "version": "4.15.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:attrs-26.1.0.dist-info/METADATA#License-Expression",
+   "name": "attrs",
+   "replacement_strategy": null,
+   "version": "26.1.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:babel-2.18.0.dist-info/METADATA#License",
+   "name": "babel",
+   "replacement_strategy": null,
+   "version": "2.18.0"
+  },
+  {
+   "kind": "python",
+   "license": "MPL-2.0",
+   "license_evidence": "dist-info:certifi-2026.7.22.dist-info/METADATA#License",
+   "name": "certifi",
+   "replacement_strategy": null,
+   "version": "2026.7.22"
+  },
+  {
+   "kind": "python",
+   "license": "MIT-0",
+   "license_evidence": "dist-info:cffi-2.1.1.dist-info/METADATA#License-Expression",
+   "name": "cffi",
+   "replacement_strategy": null,
+   "version": "2.1.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:charset_normalizer-3.5.2.dist-info/METADATA#License",
+   "name": "charset-normalizer",
+   "replacement_strategy": null,
+   "version": "3.5.2"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:click-8.5.0.dist-info/METADATA#License-Expression",
+   "name": "click",
+   "replacement_strategy": null,
+   "version": "8.5.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:courlan-1.4.0.dist-info/METADATA#License-Expression",
+   "name": "courlan",
+   "replacement_strategy": null,
+   "version": "1.4.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0 OR BSD-3-Clause",
+   "license_evidence": "dist-info:cryptography-50.0.2.dist-info/METADATA#License-Expression",
+   "name": "cryptography",
+   "replacement_strategy": null,
+   "version": "50.0.2"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:cssselect-1.6.0.dist-info/METADATA#License-Expression",
+   "name": "cssselect",
+   "replacement_strategy": null,
+   "version": "1.6.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:dateparser-1.4.3.dist-info/METADATA#License-Expression",
+   "name": "dateparser",
+   "replacement_strategy": null,
+   "version": "1.4.3"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:frozenlist-1.8.0.dist-info/METADATA#License",
+   "name": "frozenlist",
+   "replacement_strategy": null,
+   "version": "1.8.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:h11-0.16.0.dist-info/METADATA#License",
+   "name": "h11",
+   "replacement_strategy": null,
+   "version": "0.16.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:htmldate-1.11.0.dist-info/METADATA#License-Expression",
+   "name": "htmldate",
+   "replacement_strategy": null,
+   "version": "1.11.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:httpcore2-2.13.1.dist-info/METADATA#License-Expression",
+   "name": "httpcore2",
+   "replacement_strategy": null,
+   "version": "2.13.1"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:httpx2-2.13.1.dist-info/METADATA#License-Expression",
+   "name": "httpx2",
+   "replacement_strategy": null,
+   "version": "2.13.1"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:idna-3.20.dist-info/METADATA#License-Expression",
+   "name": "idna",
+   "replacement_strategy": null,
+   "version": "3.20"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:iniconfig-2.3.1.dist-info/METADATA#License-Expression",
+   "name": "iniconfig",
+   "replacement_strategy": null,
+   "version": "2.3.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:jsonschema-4.26.0.dist-info/METADATA#License-Expression",
+   "name": "jsonschema",
+   "replacement_strategy": null,
+   "version": "4.26.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:jsonschema_specifications-2025.9.1.dist-info/METADATA#License-Expression",
+   "name": "jsonschema-specifications",
+   "replacement_strategy": null,
+   "version": "2025.9.1"
+  },
+  {
+   "kind": "python",
+   "license": "The BSD 2-Clause License",
+   "license_evidence": "dist-info:justext-3.0.2.dist-info/METADATA#License",
+   "name": "jusText",
+   "replacement_strategy": null,
+   "version": "3.0.2"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:lxml-6.1.3.dist-info/METADATA#License",
+   "name": "lxml",
+   "replacement_strategy": null,
+   "version": "6.1.3"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:lxml_html_clean-0.4.5.dist-info/METADATA#License",
+   "name": "lxml_html_clean",
+   "replacement_strategy": null,
+   "version": "0.4.5"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:mcp-2.3.0.dist-info/METADATA#License",
+   "name": "mcp",
+   "replacement_strategy": null,
+   "version": "2.3.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:mcp_types-2.3.0.dist-info/METADATA#License",
+   "name": "mcp-types",
+   "replacement_strategy": null,
+   "version": "2.3.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:multidict-7.1.0.dist-info/METADATA#License-Expression",
+   "name": "multidict",
+   "replacement_strategy": null,
+   "version": "7.1.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:opentelemetry_api-1.45.1.dist-info/METADATA#License-Expression",
+   "name": "opentelemetry-api",
+   "replacement_strategy": null,
+   "version": "1.45.1"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0 OR BSD-2-Clause",
+   "license_evidence": "dist-info:packaging-26.3.dist-info/METADATA#License-Expression",
+   "name": "packaging",
+   "replacement_strategy": null,
+   "version": "26.3"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pluggy-1.7.0.dist-info/METADATA#License",
+   "name": "pluggy",
+   "replacement_strategy": null,
+   "version": "1.7.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:propcache-0.5.4.dist-info/METADATA#License",
+   "name": "propcache",
+   "replacement_strategy": null,
+   "version": "0.5.4"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:pycparser-3.11.dist-info/METADATA#License-Expression",
+   "name": "pycparser",
+   "replacement_strategy": null,
+   "version": "3.11"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pydantic-2.14.1.dist-info/METADATA#License-Expression",
+   "name": "pydantic",
+   "replacement_strategy": null,
+   "version": "2.14.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pydantic_core-2.50.1.dist-info/METADATA#License-Expression",
+   "name": "pydantic_core",
+   "replacement_strategy": null,
+   "version": "2.50.1"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-2-Clause",
+   "license_evidence": "dist-info:pygments-2.21.0.dist-info/METADATA#License-Expression",
+   "name": "Pygments",
+   "replacement_strategy": null,
+   "version": "2.21.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pyjwt-2.15.1.dist-info/METADATA#License-Expression",
+   "name": "PyJWT",
+   "replacement_strategy": null,
+   "version": "2.15.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pytest-9.1.1.dist-info/METADATA#License-Expression",
+   "name": "pytest",
+   "replacement_strategy": null,
+   "version": "9.1.1"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:pytest_asyncio-1.4.0.dist-info/METADATA#License-Expression",
+   "name": "pytest-asyncio",
+   "replacement_strategy": null,
+   "version": "1.4.0"
+  },
+  {
+   "kind": "python",
+   "license": "Dual License",
+   "license_evidence": "dist-info:python_dateutil-2.9.0.post0.dist-info/METADATA#License",
+   "name": "python-dateutil",
+   "replacement_strategy": null,
+   "version": "2.9.0.post0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:python_multipart-0.0.32.dist-info/METADATA#License-Expression",
+   "name": "python-multipart",
+   "replacement_strategy": null,
+   "version": "0.0.32"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:pytz-2026.5.dist-info/METADATA#License",
+   "name": "pytz",
+   "replacement_strategy": null,
+   "version": "2026.5"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:referencing-0.37.0.dist-info/METADATA#License-Expression",
+   "name": "referencing",
+   "replacement_strategy": null,
+   "version": "0.37.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0 AND CNRI-Python",
+   "license_evidence": "dist-info:regex-2026.9.29.dist-info/METADATA#License-Expression",
+   "name": "regex",
+   "replacement_strategy": null,
+   "version": "2026.9.29"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:rpds_py-2026.9.1.dist-info/METADATA#License-Expression",
+   "name": "rpds-py",
+   "replacement_strategy": null,
+   "version": "2026.9.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:setuptools-84.0.0.dist-info/METADATA#License-Expression",
+   "name": "setuptools",
+   "replacement_strategy": null,
+   "version": "84.0.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:six-1.17.0.dist-info/METADATA#License",
+   "name": "six",
+   "replacement_strategy": null,
+   "version": "1.17.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:sse_starlette-3.5.0.dist-info/METADATA#License-Expression",
+   "name": "sse-starlette",
+   "replacement_strategy": null,
+   "version": "3.5.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:starlette-1.8.0.dist-info/METADATA#License-Expression",
+   "name": "starlette",
+   "replacement_strategy": null,
+   "version": "1.8.0"
+  },
+  {
+   "kind": "python",
+   "license": "MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later",
+   "license_evidence": "dist-info:tld-0.13.2.dist-info/METADATA#License-Expression",
+   "name": "tld",
+   "replacement_strategy": null,
+   "version": "0.13.2"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:trafilatura-2.3.1.dist-info/METADATA#License-Expression",
+   "name": "trafilatura",
+   "replacement_strategy": null,
+   "version": "2.3.1"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:truststore-0.10.5.dist-info/METADATA#License-Expression",
+   "name": "truststore",
+   "replacement_strategy": null,
+   "version": "0.10.5"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:typing_inspection-0.4.4.dist-info/METADATA#License-Expression",
+   "name": "typing-inspection",
+   "replacement_strategy": null,
+   "version": "0.4.4"
+  },
+  {
+   "kind": "python",
+   "license": "PSF-2.0",
+   "license_evidence": "dist-info:typing_extensions-4.16.0.dist-info/METADATA#License-Expression",
+   "name": "typing_extensions",
+   "replacement_strategy": null,
+   "version": "4.16.0"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:tzlocal-5.4.4.dist-info/METADATA#License-Expression",
+   "name": "tzlocal",
+   "replacement_strategy": null,
+   "version": "5.4.4"
+  },
+  {
+   "kind": "python",
+   "license": "MIT",
+   "license_evidence": "dist-info:urllib3-2.8.0.dist-info/METADATA#License-Expression",
+   "name": "urllib3",
+   "replacement_strategy": null,
+   "version": "2.8.0"
+  },
+  {
+   "kind": "python",
+   "license": "BSD-3-Clause",
+   "license_evidence": "dist-info:uvicorn-0.54.0.dist-info/METADATA#License-Expression",
+   "name": "uvicorn",
+   "replacement_strategy": null,
+   "version": "0.54.0"
+  },
+  {
+   "kind": "python",
+   "license": "Apache-2.0",
+   "license_evidence": "dist-info:yarl-1.25.1.dist-info/METADATA#License",
+   "name": "yarl",
+   "replacement_strategy": null,
+   "version": "1.25.1"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-algorithm/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-algorithm",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-align/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-align",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-array/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-array",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-asio/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-asio",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-assert/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-assert",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-beast/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-beast",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-bind/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-bind",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-cmake/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-cmake",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-compat/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-compat",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-concept-check/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-concept-check",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-config/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-config",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-container/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-container",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-container-hash/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-container-hash",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-context/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-context",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-conversion/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-conversion",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-core/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-core",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-date-time/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-date-time",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-describe/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-describe",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-detail/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-detail",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-endian/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-endian",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-exception/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-exception",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-function/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-function",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-function-types/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-function-types",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-fusion/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-fusion",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-headers/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-headers",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-integer/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-integer",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-intrusive/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-intrusive",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-io/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-io",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-iterator/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-iterator",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-lexical-cast/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-lexical-cast",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-logic/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-logic",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-move/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-move",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-mp11/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-mp11",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-mpl/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-mpl",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-numeric-conversion/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-numeric-conversion",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-optional/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-optional",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-pool/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-pool",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-predef/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-predef",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-preprocessor/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-preprocessor",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-range/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-range",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-regex/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-regex",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-smart-ptr/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-smart-ptr",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-static-assert/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-static-assert",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-static-string/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-static-string",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-system/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-system",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-throw-exception/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-throw-exception",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-tokenizer/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-tokenizer",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-tuple/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-tuple",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-type-index/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-type-index",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-type-traits/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-type-traits",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-typeof/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-typeof",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/boost-uninstall/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-uninstall",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-unordered/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-unordered",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-utility/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-utility",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-variant2/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-variant2",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "BSL-1.0",
+   "license_evidence": "vcpkg-spdx:share/boost-winapi/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "boost-winapi",
+   "replacement_strategy": null,
+   "version": "1.92.0"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/json-c/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "json-c",
+   "replacement_strategy": null,
+   "version": "0.19-20260627#1"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "NOASSERTION",
+   "license_evidence": "vcpkg-spdx:share/libiconv/vcpkg.spdx.json#licenseConcluded=LicenseRef-vcpkg-null",
+   "name": "libiconv",
+   "replacement_strategy": null,
+   "version": "1.19"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/libxml2/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "libxml2",
+   "replacement_strategy": null,
+   "version": "2.15.4"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "Apache-2.0",
+   "license_evidence": "vcpkg-spdx:share/openssl/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "openssl",
+   "replacement_strategy": null,
+   "version": "3.6.5#2"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "blessing",
+   "license_evidence": "vcpkg-spdx:share/sqlite3/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "sqlite3",
+   "replacement_strategy": null,
+   "version": "3.53.4#2"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/vcpkg-boost/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "vcpkg-boost",
+   "replacement_strategy": null,
+   "version": "2026-08-21"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/vcpkg-cmake/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "vcpkg-cmake",
+   "replacement_strategy": null,
+   "version": "2025-08-07"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/vcpkg-cmake-config/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "vcpkg-cmake-config",
+   "replacement_strategy": null,
+   "version": "2026-07-21"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "MIT",
+   "license_evidence": "vcpkg-spdx:share/vcpkg-cmake-get-vars/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "vcpkg-cmake-get-vars",
+   "replacement_strategy": null,
+   "version": "2025-05-29"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "NOASSERTION",
+   "license_evidence": "vcpkg-spdx:share/vcpkg-make/vcpkg.spdx.json#licenseConcluded=LicenseRef-vcpkg-null",
+   "name": "vcpkg-make",
+   "replacement_strategy": null,
+   "version": "2026-07-09#1"
+  },
+  {
+   "kind": "vcpkg-port",
+   "license": "Zlib",
+   "license_evidence": "vcpkg-spdx:share/zlib/vcpkg.spdx.json#SPDXRef-port.licenseConcluded",
+   "name": "zlib",
+   "replacement_strategy": null,
+   "version": "1.3.2#2"
+  }
+ ],
+ "schema": "bzs-sbom-report/1",
+ "scope_limits": [
+  "row licenses are metadata text as installed (dist-info METADATA / vcpkg.spdx.json); LICENSE files themselves were not re-read or legally reviewed",
+  "NOASSERTION rows are enumerated in anomalies; no license was inferred",
+  "CI runner system packages remain covered only by the existing validation/s1_review/environment.json record (recorded, not re-reviewed)",
+  "not a full-product or release SBOM acceptance; project license choice stays with the repository owner"
+ ]
+}
