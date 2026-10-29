@@ -5,7 +5,23 @@
 Windows Python safety CI 双绿）。工作分支 `work/blueprint-v2-dev-20261029`。
 本轮按"计划 → 独立审核计划 → 并行开发 → 独立审核成果 → 全量验证 → 推送"
 执行；三个节点均依赖已满足、不涉 D1–D7、不启用任何来源或站点。
-独立审核结论：GO（有条件）；下列修订按审核意见并入（本地复核不削弱、
+独立审核结论（2026-10-29 第二次，对照 d3d6d75 逐锚点核实）：GO（有条件），
+10 项修订折入：①测试引用改 python/tests/test_search_modes_adapters.py:162；
+②SRC-03 明确 strict 并非既有运行时概念——当前 filetype/intitle/inbody
+静默透传，本节点将其改为显式错误/来源剔除是 FT-011 要求的**有意行为变更**，
+须在 API.md 声明；③filetype 仿真核验只依据 URL 扩展名证据（搜索命中无
+已取 content_type），无扩展名 URL 计为未核验并剔除，不得静默保留；
+④strict 来源剔除须在 sources 报告中保留该来源的 filter 状态，用量/报告
+不漂移；⑤批读 delivered-transient 标记须经 job_results 投影可见
+（succeeded+空 snapshot_id 默认不可分辨于保留期删除，需一条守卫分支）；
+⑥明确 web.cpp:1230（重定向前缀 no-store 直读）须在直读路径**先于**该
+require 分支到瞬时交付，而 crawl/map 保持严格 decode_read；⑦瞬时交付需
+内存窗口化路径（window() 是 store 背书的：snapshot/document/revision/
+store_.range+发布投影），DirectReadFlight 须为订阅者携带瞬时段位——
+这是本节点最大单体工作项；⑧used_pages 计数含 succeeded，瞬时段会虚增
+"pages"——在 API.md 记录该语义；⑨e2e test_304_no_store(146-159) 列入
+不翻转清单；⑩锁定包实测 60 个（非 58；62 是含注释行数），GOV 验收标准
+改 60+67。原第一轮审核修订继续有效（本地复核不削弱、
 零留存措辞、批读项终态表示、GOV 计数/路径、304 单独决策、RPC 反静默、
 durable 路径语义、必改测试清单）。
 
@@ -122,7 +138,7 @@ audit-dependencies 通道已备但从未执行记录。
 
 **交付边界（含审核计数/路径修正）**：
 1. `tools/sbom_report.py`：读 `tools/requirements-s1-lock.txt`
-   （**实测 58 个锁定包**，非 62）+ .venv dist-info 许可
+   （**实测 60 个锁定包**；62 为含 2 行注释的总行数）+ .venv dist-info 许可
    （License-Expression→License→classifier 回退）+ vcpkg SPDX
    （`C:/tools/vcpkg-bzs/installed/x64-windows/share/<port>/vcpkg.spdx.json`，
    **实测 67 份 SPDX 文档**；机器外路径作为参数并记录 vcpkg baseline
@@ -139,7 +155,7 @@ audit-dependencies 通道已备但从未执行记录。
 
 **明确不做**：全产品独立签收（C-16 需独立审核者，不自我宣称）；不新增
 任何依赖；不选定项目自身许可证（owner 决定）；不复审 CI 系统镜像。
-**验收条件**：58+67 条目全覆盖、每条有许可证据与来源字段、
+**验收条件**：60+67 条目全覆盖、每条有许可证据与来源字段、
 NOASSERTION 显式枚举、脚本可重复且绑定提交、差异报告可操作。
 
 ## 编排与门禁
