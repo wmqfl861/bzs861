@@ -472,3 +472,13 @@ def test_probe_checkpoint_rejects_ambiguous_nonfinite_or_deep_json(tmp_path, raw
     (tmp_path / REPORT_NAME).write_bytes(raw)
     with pytest.raises(ValueError):
         read_report(tmp_path)
+
+
+
+def test_probe_checkpoint_rejects_excessive_total_json_nodes(tmp_path):
+    from bzs.probe_state import MAX_JSON_NODES, REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"items":[' + b"0," * MAX_JSON_NODES + b"0]}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
