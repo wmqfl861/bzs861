@@ -546,3 +546,22 @@ async def test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_
     assert len(calls) == 1 + completed  # robots + actual dispatches; cancelled IDs never hit the wire
     assert stats["entries"] == 1 and stats["holders"] == stats["waiters"] == 0
     assert len(worker._retired_attempts) == 49
+
+
+
+async def test_map_parallel_same_origin_requests_release_all_host_admission_slots(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = cached_rules(worker)
+    attempts = [secrets.token_hex(24) for _ in range(24)]
+    results = await asyncio.gather(*[
+        worker.map_fetch(grant(worker, server, f"/parallel?i={index}", record=robots, attempt=attempt))
+        for index, attempt in enumerate(attempts)
+    ])
+    assert all(result["status"] == "ok" for result in results)
+    assert all(len(result["discovery"]["candidates"]) == 2 for result in results)
+    assert all(result["usage"]["external_requests"] == 1 for result in results)
+    assert len(calls) == 24
+    stats = worker.fetcher.admission_stats()
+    assert stats["entries"] == 1
+    assert stats["holders"] == 0 and stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 24
