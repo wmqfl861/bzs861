@@ -514,3 +514,35 @@ async def test_gzip_body_is_not_expanded_for_page_hops(map_worker):
     result = await worker.map_fetch(grant(worker, server, "/page.gz", kind="page", record=robots["robots"]))
     assert result["status"] == "error" or result.get("page", {}).get("status") != "ok"
     assert not result.get("discovery", {}).get("candidates")
+
+
+
+async def test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    assert robots["status"] == "ok"
+
+    completed = 0
+    cancelled = 0
+    for index in range(48):
+        attempt = secrets.token_hex(24)
+        params = grant(worker, server, f"/map?soak={index}", record=robots["robots"], attempt=attempt)
+        if index % 8 == 0:
+            await worker.fetch_cancel({"attempt_id": attempt})
+            result = await worker.map_fetch(params)
+            assert result["error_code"] == "E_CANCELLED"
+            assert result["usage"] == {"external_requests": 0, "content_bytes": 0}
+            assert "discovery" not in result
+            cancelled += 1
+        else:
+            result = await worker.map_fetch(params)
+            assert result["status"] == "ok"
+            assert len(result["discovery"]["candidates"]) == 2
+            assert result["usage"]["external_requests"] == 1
+            completed += 1
+
+    stats = worker.fetcher.admission_stats()
+    assert completed == 42 and cancelled == 6
+    assert len(calls) == 1 + completed  # robots + actual dispatches; cancelled IDs never hit the wire
+    assert stats["entries"] == 1 and stats["holders"] == stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 49
