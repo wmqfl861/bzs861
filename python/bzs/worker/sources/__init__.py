@@ -104,6 +104,7 @@ class SourceSet:
         native_kinds = getattr(adapter, "native_filter_kinds", ())
         applied = [dict(condition) for condition in (conditions or []) if condition.get("kind") in native_kinds]
         applied = applied or None
+        dispatched = False
         try:
             # Review validity is checked for every call, including after the lane wait.
             spec = self.specs[source_id]
@@ -111,6 +112,7 @@ class SourceSet:
             key = spec["contract"]["limits"]["shared_budget_key"]
             semaphore = self.semaphores[key]
             async def execute():
+                nonlocal dispatched
                 async with semaphore:
                     async with self.start_locks[key]:
                         if self.cooldown_until.get(key, 0) > time.monotonic():
@@ -126,6 +128,7 @@ class SourceSet:
                         if remaining <= 0:
                             raise asyncio.TimeoutError()
                         self.last_start[key] = time.monotonic()
+                    dispatched = True
                     try:
                         if applied is None:
                             # Unchanged adapters keep their exact old call shape.
@@ -164,9 +167,15 @@ class SourceSet:
             # Per-condition execution report. The core treats any condition this
             # report does not explicitly mark "native" as not executed.
             translated = {(condition["kind"], condition["value"]) for condition in (applied or [])}
+            # Native execution is claimed only when the adapter call actually
+            # started: cooldown, review refusal or a pre-dispatch timeout leave
+            # the condition unexecuted, never natively satisfied.
+            def execution_of(condition):
+                if (condition["kind"], condition["value"]) not in translated:
+                    return "unsupported"
+                return "native" if dispatched else "not_executed"
             out["conditions"] = [{"kind": condition["kind"], "value": condition["value"],
-                                  "execution": "native" if (condition["kind"], condition["value"]) in translated
-                                               else "unsupported"}
+                                  "execution": execution_of(condition)}
                                  for condition in conditions]
         out["elapsed_ms"] = int((time.monotonic() - started) * 1000)
         return out

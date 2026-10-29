@@ -434,6 +434,36 @@ namespace bzs {
       }
       return out;
     }
+    // Engine filter operators this grammar does not model. Refusing them
+    // beats forwarding them upstream as ordinary literals (FT-011: never
+    // silently drop a condition); quoting such text keeps it a literal search.
+    bool refuse_unmodelled_operator(const QueryNode& n) {
+      if(n.field!="any"||(n.op!="term"&&n.op!="literal"))return false;
+      const auto colon=n.value.find(':');
+      if(colon==std::string::npos||colon<1||colon>16)return false;
+      const auto prefix=ascii_lower(n.value.substr(0,colon));
+      static const std::set<std::string> refused{
+        "after","before","since","until","lang","language","region","loc",
+        "inurl","intext","inanchor","allintitle","allinbody","ext","containsexact","source"};
+      return refused.count(prefix)>0;
+    }
+    // Field conditions must sit in a top-level positive conjunction: under NOT
+    // the required-every semantics would silently invert, under OR one branch
+    // cannot express it; unmodelled operators are refused instead of forwarded.
+    void require_condition_shape(const QueryNode& n,bool under_not,bool under_or) {
+      if(refuse_unmodelled_operator(n))
+        throw Error("E_QUERY_SYNTAX","unmodelled filter operator in query is refused for web search (modelled: site:, filetype:, intitle:, inbody:)",400);
+      if(n.op=="not") {
+        for(const auto& c:n.children)require_condition_shape(c,true,under_or);
+        return;
+      }
+      if(n.op=="and"||n.op=="or") {
+        for(const auto& c:n.children)require_condition_shape(c,under_not,under_or||n.op=="or");
+        return;
+      }
+      if(!n.field.empty()&&n.field!="any"&&(under_not||under_or))
+        throw Error("E_QUERY_SYNTAX","field conditions require a top-level positive conjunction",400);
+    }
     // Search hits carry no fetched content_type: filetype evidence is the URL
     // extension only. Extensionless (or otherwise unevidenced) URLs are
     // unverified and removed, never silently kept.
@@ -594,7 +624,10 @@ namespace bzs {
     // never forwarded as if its conditions were verified. `parsed` must outlive
     // `conditions`: intitle entries keep a pointer to their AST leaf.
     const auto parsed=parse_query(Json::string(query));
+    require_condition_shape(parsed.root,false,false);
     const auto conditions=collect_conditions(parsed);
+    for(const auto& condition:conditions)
+      require(condition.value.size()<=256, "E_QUERY_LIMIT", "Condition values are limited to 256 bytes", 400);
     auto classification=[&](const SourceSpec& s,const SearchCondition& c) {
       return s.native_filters.contains(c.kind)?"native":(c.locally_verifiable()?"emulated":"unsupported");
     };
@@ -678,7 +711,7 @@ namespace bzs {
         for(const auto& condition:conditions) {
           Json c=Json::object();
           c.set("kind",condition.kind);
-          c.set("value",utf8_prefix(condition.value,256));
+          c.set("value",condition.value);
           payload.push(c);
         }
         params.set("conditions",payload);
@@ -778,64 +811,54 @@ namespace bzs {
         collected.push_back(std::move(sh));
       }
     }
-    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
     Json filters=Json::object();
-    // Local post-hoc verification runs for every locally computable condition,
-    // native or not (QRY-04 lite strictly additive: native execution location is
-    // never treated as result satisfaction). A hit no contributing source has
-    // verifiably executed an unverifiable condition for is unverified and removed.
+    // Local post-hoc verification runs per source BEFORE fusion and the global
+    // limit, so every hit a source returned is inspected: a source cut by the
+    // merged limit, or one that contributed no hit, makes no verification
+    // claim (B-04: satisfied requires evidence actually checked). Native is
+    // an execution location, never a satisfaction.
     std::vector<std::int64_t> condition_removed(conditions.size(),0);
     std::map<std::pair<std::string,std::string>,std::int64_t> source_condition_removed;
+    std::map<std::string,std::int64_t> source_inspected;
     std::int64_t removed_total=0;
     if(!conditions.empty()) {
-      Json kept=Json::array();
-      for(std::size_t i=0; i<merged.size(); ++i) {
-        auto row=merged.at(i);
-        const auto url=row.at("url").str();
-        const auto title=row.has("title")&&row.at("title").is_string()?row.at("title").str():"";
-        std::string host;
-        try { host=metadata_host(url); }catch(const Error&) {}
-        std::vector<std::size_t> violated;
-        for(std::size_t c=0; c<conditions.size(); ++c) {
-          const auto& condition=conditions[c];
-          if(condition.kind=="site") {
-            // Kept from QRY-04 lite: any declared host may match (any-of group).
-            bool ok=std::any_of(conditions.begin(),conditions.end(),[&](const SearchCondition& k) {
-              return k.kind=="site"&&(host==k.value||(host.size()>k.value.size()&&host.ends_with("."+k.value)));
-            });
-            if(!ok)violated.push_back(c);
-          } else if(condition.kind=="filetype") {
-            if(url_extension_type(url)!=(condition.value=="html"?"text/html":"text/plain"))violated.push_back(c);
-          } else if(condition.kind=="intitle") {
-            if(condition.node&&leaf_matches(ascii_lower(title),*condition.node,1).empty())violated.push_back(c);
-          } else {
-            // inbody: search hits expose no body text, so only a worker-reported
-            // native execution by every contributing source verifies the hit.
-            const auto sent=utf8_prefix(condition.value,256);
-            auto provenance=row.has("sources")&&row.at("sources").is_array()?row.at("sources"):Json::array();
-            bool verified=provenance.size()>0;
-            for(std::size_t j=0; j<provenance.size()&&verified; ++j) {
-              auto contributor=provenance.at(j).at("source_id").str();
-              verified=native_reported.count(contributor)&&native_reported.at(contributor).count({condition.kind,sent});
+      for(auto& sh:collected) {
+        source_inspected[sh.source_id]=static_cast<std::int64_t>(sh.hits.size());
+        std::vector<SourceHit> kept;
+        for(auto& hit:sh.hits) {
+          std::string host;
+          try { host=metadata_host(hit.url); }catch(const Error&) {}
+          std::vector<std::size_t> violated;
+          for(std::size_t c=0; c<conditions.size(); ++c) {
+            const auto& condition=conditions[c];
+            if(condition.kind=="site") {
+              // Kept from QRY-04 lite: any declared host may match (any-of group).
+              bool ok=std::any_of(conditions.begin(),conditions.end(),[&](const SearchCondition& k) {
+                return k.kind=="site"&&(host==k.value||(host.size()>k.value.size()&&host.ends_with("."+k.value)));
+              });
+              if(!ok)violated.push_back(c);
+            } else if(condition.kind=="filetype") {
+              if(url_extension_type(hit.url)!=(condition.value=="html"?"text/html":"text/plain"))violated.push_back(c);
+            } else if(condition.kind=="intitle") {
+              if(condition.node&&leaf_matches(ascii_lower(hit.title),*condition.node,1).empty())violated.push_back(c);
+            } else {
+              // inbody: hits expose no body text; only this source's own
+              // worker-reported native execution can verify its hits.
+              const bool verified=native_reported.count(sh.source_id)&&
+                native_reported.at(sh.source_id).count({condition.kind,condition.value});
+              if(!verified)violated.push_back(c);
             }
-            if(!verified)violated.push_back(c);
           }
+          if(violated.empty()) { kept.push_back(std::move(hit)); continue; }
+          ++removed_total;
+          for(auto c:violated)++condition_removed[c];
+          for(auto c:violated)++source_condition_removed[{sh.source_id,conditions[c].label()}];
         }
-        if(violated.empty()) {
-          row.set("rank", static_cast<std::int64_t>(kept.size()+1));
-          kept.push(row);
-          continue;
-        }
-        ++removed_total;
-        for(auto c:violated)++condition_removed[c];
-        auto provenance=row.has("sources")&&row.at("sources").is_array()?row.at("sources"):Json::array();
-        for(std::size_t j=0; j<provenance.size(); ++j) {
-          auto contributor=provenance.at(j).at("source_id").str();
-          for(auto c:violated)++source_condition_removed[{contributor,conditions[c].label()}];
-        }
+        sh.hits=std::move(kept);
       }
-      merged=kept;
-      Json sites=Json::array();
+    }
+    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
+     Json sites=Json::array();
       bool has_site=false;
       for(const auto& condition:conditions)if(condition.kind=="site") {
         sites.push(Json::string(condition.value));
@@ -858,13 +881,20 @@ namespace bzs {
           p.set("source_id",s->id);
           auto cls=classification(*s,condition);
           p.set("classification",cls);
-          const auto sent=utf8_prefix(condition.value,256);
+          const auto& sent=condition.value;
           p.set("native_execution",
                 native_reported.count(s->id)&&native_reported.at(s->id).count({condition.kind,sent})?
                 "executed":"not_executed");
           const auto status=final_status.count(s->id)?final_status.at(s->id):"skipped";
-          // Sources that returned no answer make no verification claim at all.
+          // Sources that returned no answer make no verification claim at all;
+          // an answering source that contributed no hit was never checked.
           if(status!="ok"&&status!="empty") {
+            per_source_report.push(p);
+            continue;
+          }
+          const auto inspected=source_inspected.count(s->id)?source_inspected.at(s->id):0;
+          if(inspected==0) {
+            p.set("local_verification","not_checked");
             per_source_report.push(p);
             continue;
           }
@@ -881,7 +911,6 @@ namespace bzs {
         entries.push(entry);
       }
       filters.set("conditions",entries);
-    }
     Json usage=Json::object();
     usage.set("external_requests", static_cast<std::int64_t>(admitted.size()));
     usage.set("model_calls", static_cast<std::int64_t>(0));

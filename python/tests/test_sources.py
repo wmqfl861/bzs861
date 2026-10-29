@@ -502,3 +502,24 @@ def test_a_truncated_response_is_not_parsed_as_a_complete_search():
     with pytest.raises(SourceError) as exc:
         adapter.check(response)
     assert exc.value.status == "too_large"
+
+
+async def test_run_one_reports_not_executed_when_cooldown_blocks_dispatch(monkeypatch):
+    # A planned native condition whose adapter call never started (cooldown,
+    # review refusal, pre-dispatch timeout) is reported not_executed: the core
+    # must never map it to native execution.
+    spec = json.loads(json.dumps(fakeweb.manifest(1)["sources"][0]))
+    sources = SourceSet([spec], None)
+    adapter = sources.adapters[spec["id"]]
+    adapter.native_filter_kinds = ("site",)
+
+    async def never(query, limit, language, timeout_s, conditions=None):
+        raise AssertionError("cooldown must prevent dispatch")
+
+    adapter.search = never
+    key = spec["contract"]["limits"]["shared_budget_key"]
+    sources.cooldown_until[key] = time.monotonic() + 60
+    out = await sources.run_one(spec["id"], "fixture", 5, None, 5,
+                                [{"kind": "site", "value": "example.com"}])
+    assert out["status"] == "skipped"
+    assert out["conditions"] == [{"kind": "site", "value": "example.com", "execution": "not_executed"}]

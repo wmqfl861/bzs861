@@ -1484,6 +1484,78 @@ namespace {
     CHECK(pd.at("native_execution").str()=="not_executed");
     CHECK(!pd.has("local_verification"));
   }
+  TEST(web_search_condition_shapes_and_unmodelled_operators_are_refused) {
+    // FT-011 review: field conditions under NOT/OR cannot express the
+    // required-every semantics, and unmodelled engine operators must not be
+    // forwarded upstream as ordinary literals.
+    Temp t;Store s(t.path/"db");FakeWorker w;bool dispatched=false;
+    w.handler=[&](const std::string&, const Json&){dispatched=true;return obj(R"({"results":{}})");};
+    WebService web(s, w, native_registry("bing", {"site","inbody"}));
+    rejects([&]{web.search("a", obj(R"({"query":"copper -intitle:forbidden"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"intitle:copper OR intitle:tin"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"-inbody:hidden"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper after:2026-01-01"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"inurl:docs copper"})"));},"E_QUERY_SYNTAX");
+    CHECK(!dispatched);  // refusals happen before any worker call
+  }
+  TEST(web_search_refuses_oversize_condition_values_without_truncation) {
+    Temp t;Store s(t.path/"db");FakeWorker w;bool dispatched=false;
+    w.handler=[&](const std::string&, const Json&){dispatched=true;return obj(R"({"results":{}})");};
+    WebService web(s, w, native_registry("bing", {"inbody"}));
+    std::string huge(257,'a');
+    rejects([&]{web.search("a", obj(std::string(R"({"query":"inbody:)")+huge+R"("})"));},"E_QUERY_LIMIT");
+    CHECK(!dispatched);
+    // 256 bytes is accepted and transported verbatim.
+    std::string exact(256,'b');bool seen=false;
+    w.handler=[&](const std::string&, const Json& p){
+      seen=p.at("conditions").at(0).at("value").str()==exact;
+      return obj(R"({"results":{"bing":{"status":"empty","hits":[]}}})");
+    };
+    web.search("a", obj(std::string(R"({"query":"inbody:)")+exact+R"("})"));
+    CHECK(seen);
+  }
+  TEST(web_search_per_source_satisfaction_requires_inspected_evidence) {
+    // Review repro: with per_source cutting hits after fusion, a source whose
+    // only hit was off-site used to report verified/satisfied without any of
+    // its rows being inspected. Verification now runs pre-fusion on every
+    // returned hit; a source that contributed no inspected hit reports
+    // not_checked and never claims satisfaction.
+    Temp t;Store s(t.path/"db");FakeWorker w;
+    w.handler=[](const std::string&, const Json& p) {
+      // bing returns the on-site rank-1 hit; ddg only an off-site rank-2 hit.
+      (void)p;
+      return obj(R"({"results":{
+        "bing":{"status":"ok","hits":[
+          {"url":"https://docs.example.com/a","title":"Copper guide","snippet":"","rank":1}]},
+        "ddg":{"status":"ok","hits":[
+          {"url":"https://other.example/b","title":"Off-site","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"copper site:example.com","limit":1})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/a");
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(e.at("removed").num()==1);  // ddg's off-site hit was inspected and removed
+    auto bing=condition_source(e,"bing");
+    CHECK(bing.at("local_verification").str()=="verified");
+    CHECK(bing.at("satisfied").flag()==true);
+    auto ddg=condition_source(e,"ddg");
+    CHECK(ddg.at("local_verification").str()=="verified");
+    CHECK(ddg.at("satisfied").flag()==false);
+    CHECK(ddg.at("removed").num()==1);
+    // An answering source with zero hits makes no verification claim.
+    w.handler=[](const std::string&, const Json&){
+      return obj(R"({"results":{
+        "bing":{"status":"ok","hits":[
+          {"url":"https://docs.example.com/a","title":"Copper","snippet":"","rank":1}]},
+        "ddg":{"status":"empty","hits":[]}}})");
+    };
+    auto r2=web.search("a", obj(R"({"query":"copper site:example.com"})"));
+    auto e2=condition_entry(r2.at("filters"),"site","example.com");
+    auto ddg2=condition_source(e2,"ddg");
+    CHECK(ddg2.at("local_verification").str()=="not_checked");
+    CHECK(!ddg2.has("satisfied"));
+  }
   TEST(durable_web_search_uses_the_same_condition_plan) {
     // (d) web.search.start runs the same search(): strict failures settle
     // through the existing fail_search semantics (source-level unknown), and a
