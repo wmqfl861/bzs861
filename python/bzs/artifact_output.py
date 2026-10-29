@@ -1,6 +1,8 @@
 """Publish immutable offline evaluation/replay artifacts as one directory."""
 from __future__ import annotations
 
+import ctypes
+import errno
 import os
 from pathlib import Path
 import shutil
@@ -11,6 +13,35 @@ import tempfile
 from .probe_state import atomic_write
 
 MAX_OUTPUT_FILE_BYTES = 64 * 1024 * 1024
+
+
+def _rename_noreplace(source: Path, destination: Path) -> None:
+    """Atomically publish a directory without replacing a concurrently created target."""
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(errno.EEXIST, "destination already exists", str(destination))
+    if os.name == "nt":
+        # Python's Windows rename uses a non-replacing move.
+        os.rename(source, destination)
+        return
+    if sys_platform_linux():
+        libc = ctypes.CDLL(None, use_errno=True)
+        renameat2 = getattr(libc, "renameat2", None)
+        if renameat2 is None:
+            raise OSError(errno.ENOTSUP, "atomic no-replace directory rename is unavailable")
+        renameat2.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint]
+        renameat2.restype = ctypes.c_int
+        result = renameat2(-100, os.fsencode(source), -100, os.fsencode(destination), 1)
+        if result == 0:
+            return
+        code = ctypes.get_errno()
+        raise OSError(code, os.strerror(code), str(destination))
+    # Do not silently fall back to POSIX rename semantics, which may replace an
+    # empty destination directory after the caller's existence check.
+    raise OSError(errno.ENOTSUP, "atomic no-replace directory rename is unsupported on this platform")
+
+
+def sys_platform_linux() -> bool:
+    return os.name == "posix" and __import__("sys").platform.startswith("linux")
 
 
 def _fsync_directory(path: Path) -> None:
@@ -83,7 +114,7 @@ def write_new_directory(path: str | Path, files: dict[str, bytes], *, label: str
         _fsync_directory(stage)
         if out.exists() or out.is_symlink():
             raise ValueError(f"E_OUTPUT_EXISTS: {label} output directory was created concurrently")
-        os.rename(stage, out)
+        _rename_noreplace(stage, out)
         stage = None
         try:
             _fsync_directory(parent)

@@ -65,3 +65,23 @@ def test_parent_directory_flush_failure_reports_published_state(tmp_path, monkey
     assert (out / "report.json").read_bytes() == b"{}"
     assert (out / "report.md").read_bytes() == b"complete"
     assert not list(tmp_path.glob(".published-result.stage-*"))
+
+
+
+def test_external_destination_race_never_replaces_existing_directory(tmp_path, monkeypatch):
+    import bzs.artifact_output as output
+
+    out = tmp_path / "raced-output"
+    real_rename = output._rename_noreplace
+
+    def race_create_target(stage, destination):
+        destination.mkdir()
+        (destination / "owner.txt").write_text("external-owner", encoding="utf-8")
+        return real_rename(stage, destination)
+
+    monkeypatch.setattr(output, "_rename_noreplace", race_create_target)
+    with pytest.raises(FileExistsError):
+        write_new_directory(out, {"report.json": b"ours"}, label="test")
+    assert (out / "owner.txt").read_text(encoding="utf-8") == "external-owner"
+    assert not (out / "report.json").exists()
+    assert not list(tmp_path.glob(".raced-output.stage-*"))
