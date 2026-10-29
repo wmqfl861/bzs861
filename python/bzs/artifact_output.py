@@ -13,6 +13,18 @@ from .probe_state import atomic_write
 MAX_OUTPUT_FILE_BYTES = 64 * 1024 * 1024
 
 
+def _fsync_directory(path: Path) -> None:
+    """Persist directory entries on POSIX; Windows lacks a portable Python equivalent."""
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    fd = os.open(path, flags)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def _validate_component(value: str, *, label: str) -> None:
     if (not value or value in (".", "..") or any(ch in value for ch in ("/", "\\", ":", "\x00"))
             or value.endswith((".", " "))):
@@ -67,12 +79,19 @@ def write_new_directory(path: str | Path, files: dict[str, bytes], *, label: str
         stage = Path(tempfile.mkdtemp(prefix=f".{out.name}.stage-", dir=parent))
         for name, raw in files.items():
             atomic_write(stage / name, raw)
-        # Cooperating writers serialize on the persistent SQLite sidecar. The
-        # final directory is visible only after every artifact has been flushed.
+        # Persist staged directory entries before publishing the directory.
+        _fsync_directory(stage)
         if out.exists() or out.is_symlink():
             raise ValueError(f"E_OUTPUT_EXISTS: {label} output directory was created concurrently")
         os.rename(stage, out)
         stage = None
+        try:
+            _fsync_directory(parent)
+        except OSError as exc:
+            # The directory is already visible and complete, but crash durability
+            # could not be confirmed. Never pretend it was rolled back or safe to
+            # retry at the same path.
+            raise OSError("E_OUTPUT_DURABILITY_UNCONFIRMED: output was published but parent directory flush failed") from exc
     finally:
         if stage is not None:
             shutil.rmtree(stage, ignore_errors=True)

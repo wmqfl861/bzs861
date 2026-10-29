@@ -42,3 +42,26 @@ def test_artifact_output_rejects_nonregular_publication_lock(tmp_path):
     with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
         write_new_directory(out, {"report.json": b"{}"}, label="test")
     assert not out.exists()
+
+
+
+def test_parent_directory_flush_failure_reports_published_state(tmp_path, monkeypatch):
+    import bzs.artifact_output as output
+
+    out = tmp_path / "published-result"
+    real = output._fsync_directory
+    calls = 0
+
+    def fail_parent(path):
+        nonlocal calls
+        calls += 1
+        if path == tmp_path:
+            raise OSError("synthetic directory flush failure")
+        return real(path)
+
+    monkeypatch.setattr(output, "_fsync_directory", fail_parent)
+    with pytest.raises(OSError, match="E_OUTPUT_DURABILITY_UNCONFIRMED"):
+        write_new_directory(out, {"report.json": b"{}", "report.md": b"complete"}, label="test")
+    assert (out / "report.json").read_bytes() == b"{}"
+    assert (out / "report.md").read_bytes() == b"complete"
+    assert not list(tmp_path.glob(".published-result.stage-*"))
