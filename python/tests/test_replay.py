@@ -194,12 +194,12 @@ def test_replay_only_uncertain_rows_are_not_success(tmp_path):
 def test_replay_output_does_not_overwrite_probe_or_previous_replay(tmp_path):
     path, _ = recording(tmp_path)
     before = path.read_bytes()
-    with pytest.raises(ValueError, match="not empty"):
+    with pytest.raises(ValueError, match="OUTPUT_EXISTS"):
         replay(str(path), str(path.parent))
     assert path.read_bytes() == before
     replay(str(path), str(tmp_path / "replay"))
     original = (tmp_path / "replay" / "replay_report.json").read_bytes()
-    with pytest.raises(ValueError, match="not empty"):
+    with pytest.raises(ValueError, match="OUTPUT_EXISTS"):
         replay(str(path), str(tmp_path / "replay"))
     assert (tmp_path / "replay" / "replay_report.json").read_bytes() == original
 
