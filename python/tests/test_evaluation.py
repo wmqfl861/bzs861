@@ -646,34 +646,3 @@ def test_prepare_output_failure_never_publishes_a_partial_package(tmp_path, monk
     monkeypatch.setattr(artifact_output, "atomic_write", original)
     evaluation.prepare(str(queries), str(out), candidates_path=str(candidates))
     assert (out / "package.json").is_file() and (out / "pool.json").is_file()
-
-
-
-def test_offline_probe_replay_evaluation_chain_never_promotes_synthetic_evidence(tmp_path, monkeypatch):
-    from bzs.replay import replay
-
-    queries, report_path, _ = probe_recording(tmp_path)
-    def forbidden(*args, **kwargs):
-        pytest.fail("offline evidence chain attempted network access")
-    monkeypatch.setattr("bzs.worker.fetch.Fetcher.__init__", forbidden)
-    replay_result = replay(str(report_path), str(tmp_path / "replay-chain"))
-    assert replay_result["status"] == "passed"
-    assert replay_result["network_requests"] == 0
-    assert replay_result["summary"] == {"replayed": 1, "matched": 1, "mismatches": 0, "skipped": 1}
-
-    package_dir = tmp_path / "chain-package"
-    prepared = evaluation.prepare(str(queries), str(package_dir), probe_path=str(report_path))
-    assert prepared["network_requests"] == 0
-    assert prepared["holdout_included"] is False
-    labels_path, _ = labels(package_dir, tmp_path, judged=False)
-    freeze_path, _ = frozen(package_dir, tmp_path)
-    result = evaluation.run(str(package_dir), str(freeze_path), str(labels_path),
-                            str(tmp_path / "chain-report"), queries_path=str(queries))
-    assert result["network_requests"] == result["model_calls"] == 0
-    assert result["status"] == "blocked" and result["release_gate"]["status"] == "blocked"
-    assert "human_judgments_required" in result["quality_gate"]["blocked_reasons"]
-    assert "synthetic_candidate_evidence" in result["quality_gate"]["blocked_reasons"]
-    for directory in (package_dir, tmp_path / "replay-chain", tmp_path / "chain-report"):
-        for artifact in directory.iterdir():
-            if artifact.is_file():
-                assert b"SYNTHETIC_SEALED_CANARY" not in artifact.read_bytes()

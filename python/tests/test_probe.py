@@ -434,3 +434,26 @@ def test_parser_identity_binds_the_actual_adapter_registry(tmp_path, monkeypatch
     assert before["files"][registry] != after["files"][registry]
     assert before["code_sha256"] != after["code_sha256"]
     assert before["dependencies"] == after["dependencies"]
+
+
+
+@pytest.mark.parametrize("error_kind", ["adapter", "source"])
+async def test_probe_persists_error_class_not_secret_exception_text(tmp_path, scripted, error_kind):
+    manifest, golden, out = inputs(tmp_path)
+    secret = "SENSITIVE_TOKEN_9f7a?api_key=PRIVATE_VALUE"
+
+    async def handler(source, query, limit):
+        if error_kind == "source":
+            raise SourceError("rate_limited", "upstream failed with " + secret, 429, 1000)
+        raise RuntimeError("request failed Authorization: Bearer " + secret)
+
+    scripted.handler = handler
+    report = await run_probe(manifest, golden, out)
+    raw_json = (out / "probe_report.json").read_text(encoding="utf-8")
+    raw_md = (out / "probe_report.md").read_text(encoding="utf-8")
+    assert secret not in raw_json and secret not in raw_md
+    assert "PRIVATE_VALUE" not in raw_json + raw_md
+    first = report["rows"][0]
+    assert first["error"] == ("source_error:rate_limited" if error_kind == "source"
+                              else "adapter_error:RuntimeError")
+    assert first["status"] == ("rate_limited" if error_kind == "source" else "error")
