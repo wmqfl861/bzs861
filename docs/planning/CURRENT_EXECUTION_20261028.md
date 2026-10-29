@@ -49,3 +49,8 @@ D1–D7 仍待用户明确答复；来源启用 0；业务 schema 15；永久带
 新增 \`artifact_output.write_new_directory\`：evaluation package 与 replay report 先在同一父目录的 staging 目录中写完，逐文件 flush/fsync，再在稳定 SQLite sidecar 锁内一次性重命名发布。任何文件写入失败时清理 staging，最终目标目录不留下半成品；同名既有结果仍拒绝覆盖。锁文件保留，避免删除锁文件造成并发锁分裂。
 
 新增 \`test_prepare_output_failure_never_publishes_a_partial_package\` 与 \`test_replay_output_failure_never_publishes_partial_report_directory\`，模拟第二个文件写入时磁盘失败，验证最终目录不存在、staging 被清理，恢复后可用同一路径重新运行。该变更不触发网络、不创建标签、不放宽 holdout/质量门槛。准确提交的完整 CI 是最终验收条件。
+
+
+### 离线证据链端到端验收（2026-10-28）
+
+新增 \`test_offline_probe_replay_evaluation_chain_never_promotes_synthetic_evidence\`：使用合成且隔离的 probe 记录，在禁止创建 Fetcher 的条件下连续执行 replay→evaluation prepare→freeze→run。测试要求 replay 与 prepare 声明零网络调用，保留 uncertain 行为 skipped，缺少人工标签/证据来源为 synthetic 时质量门禁和 release gate 必须 blocked，且 holdout canary 不得泄漏到输出。此测试是工具链合同验证，不代表真实来源 S0、人工 qrels 或 FT-042 通过。
