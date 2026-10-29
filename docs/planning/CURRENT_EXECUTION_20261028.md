@@ -80,3 +80,25 @@ B. Crawl/Map有界持续交互：新增同源循环回归，分别执行48次map
 C. 本地搜索性能基准：新增`python -m bzs.local_benchmark --query "..." --iterations 20 --warmup 3`，仅向127.0.0.1的`search`操作发送请求，不调用`web.search`。记录延迟分布与查询哈希，不保存查询正文、响应正文或token，不宣称缓存命中。先提供可重复基线工具，待在目标Windows 11/同配置环境实测后才决定是否优化缓存锁/SQL。
 
 对应测试：`test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free`、`test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separate`、`test_benchmark_is_loopback_only_and_never_records_credentials_or_body`及参数边界测试。完整CI仍是合入门槛。
+
+
+## 2026-10-29：十节点增量审核批次
+
+本批只在现有已部分实现的能力上补齐可重复验收，不更改83包/161验收/10切片定义，不把节点级通过改写为工作包签收。
+
+1. **MAP-01 测试唯一性**：删除重复定义的同源持续 hop 测试，避免 pytest 同名函数覆盖前一个定义而产生假性重复覆盖。
+2. **CRAWL-01 测试唯一性**：删除重复定义的持续页面 hop 测试，保留一个权威版本。
+3. **本机基准 HTTP 合同**：只接受 2xx；记录 warmup 与 measured 的状态码分组，防止 3xx 被错误计作成功。
+4. **基准故障矩阵**：测试重定向、未知响应包络、超过4MiB的响应和异常后连接关闭。
+5. **Probe checkpoint 结构上限**：在64MiB/深度64之外新增总 JSON 节点上限，防止大量标量节点造成过度遍历。
+6. **Checkpoint 节点上限回归**：覆盖重复键、非有限数、深度与总节点超限。
+7. **Replay 异常脱敏**：解析器抛出含敏感文本的异常时，持久报告只保留 error 状态，不包含异常原文。
+8. **AUTH-01 注册表严格性**：覆盖顶层和客户端对象的重复 JSON 键，确保配置解析 fail-closed。
+9. **MAP-01 并发准入**：24个同源回环 map 请求并发执行后，核对候选、用量、收据和 host holder/waiter 均收敛到有界状态。
+10. **CRAWL-01 并发准入**：16个同源回环 page 请求并发执行后，核对发布、用量、收据和 host admission 收敛。
+
+### 测试状态与限制
+
+以上新增/调整用例需由本批准确 SHA 的 Windows Python safety 与 Linux/Windows 原生 CI 执行。代码通过静态检查不等于测试通过；pending/failed 结果必须保留。所有站点均为隔离回环 fixture，不启用生产来源，不发起外部网络或模型调用。
+
+本批没有做真实性能提升声明。基准工具只测量本机 API；缓存锁、SQL 或事务顺序只有在相同构建、相同语料、相同参数的可重复基准证明收益且语义不变后才允许优化。
