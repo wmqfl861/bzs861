@@ -194,7 +194,7 @@ def parse_spdx_expression(value: str):
     are case-sensitive (SPDX 2.x Annex D). Never infer permissions from syntax.
     """
     invalid = (False, [], False)
-    if not isinstance(value, str) or not value.strip() or len(value) > 4096:
+    if not isinstance(value, str) or not value.isascii() or not value.strip() or len(value) > 4096:
         return invalid
     tokens = value.split()
     if len(tokens) > 256:

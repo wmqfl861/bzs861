@@ -30,3 +30,9 @@ def test_curated_subset_preserves_license_ids_and_compound_flag(raw, ids, compou
     "MIT OR " * 300 + "MIT", " " * 4097, None])
 def test_unrecognized_or_incomplete_evidence_is_not_promoted(raw):
     assert sbom.parse_spdx_expression(raw) == (False, [], False)
+
+
+@pytest.mark.parametrize("raw", ["BſD-3-Clause", "MIT\u00a0AND\u00a0BSD-3-Clause"])
+def test_unicode_casefold_and_spacing_cannot_create_curated_spdx_ids(raw):
+    assert sbom.parse_spdx_expression(raw) == (False, [], False)
+    assert sbom.classify_license(raw)[0] == "non-spdx-text"
