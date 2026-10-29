@@ -1,0 +1,38 @@
+{
+  "revision": "offline evaluation/probe/replay follow-up",
+  "base": "83c1cfe93389c7c75794c63ed9ef4e024b1fad0c",
+  "scope": [
+    "offline evaluation package output",
+    "offline replay output",
+    "failure recovery and output immutability"
+  ],
+  "finding": {
+    "id": "EVAL-OUTPUT-ATOMICITY",
+    "severity": "medium",
+    "before": "Evaluation package and replay reports created final output directory before writing all files; a mid-write failure could leave an incomplete directory that subsequent runs refused to overwrite.",
+    "fix": "Use sibling staging directories, a persistent SQLite publication lock, and final directory rename only after all output files are complete.",
+    "tests": [
+      "test_prepare_output_failure_never_publishes_a_partial_package",
+      "test_replay_output_failure_never_publishes_partial_report_directory"
+    ]
+  },
+  "verification": {
+    "source_review": "updated by inspection",
+    "new_tests": "added; exact SHA CI pending",
+    "full_pytest": "pending CI",
+    "ctest": "pending CI",
+    "linux_asan_ubsan": "pending exact SHA CI"
+  },
+  "policy": {
+    "network_requests": 0,
+    "model_calls": 0,
+    "holdout_enabled": false,
+    "source_activation": false,
+    "business_schema": 15,
+    "D1_D7": "pending",
+    "acceptance_packages": 83,
+    "acceptance_ids": 161,
+    "slices": 10,
+    "fully_accepted_packages": 0
+  }
+}

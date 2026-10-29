@@ -15,7 +15,8 @@ from typing import Any
 
 from .golden import GoldenSet, load_golden
 from .probe_format import canonical_json
-from .probe_state import _open_regular, _regular_path, atomic_write
+from .artifact_output import write_new_directory
+from .probe_state import _open_regular, _regular_path
 
 VERSION = 1
 MAX_JSON_BYTES = 64 * 1024 * 1024
@@ -141,18 +142,10 @@ def file_bytes(value: dict) -> bytes:
 
 
 def write_directory(path: str | Path, files: dict[str, bytes]) -> None:
-    """An exclusive new directory owns this result; no previous artifact is replaced."""
-    out = Path(path)
-    need(not out.exists() and not out.is_symlink(), "E_EVAL_OUTPUT_EXISTS", "choose a new output directory")
+    """Publish the complete immutable package atomically; never leave a partial final directory."""
     for name, raw in files.items():
         need(Path(name).name == name and len(raw) <= MAX_JSON_BYTES, "E_EVAL_LIMIT", "invalid output file")
-    out.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        out.mkdir()
-    except FileExistsError as exc:
-        raise ValueError("E_EVAL_OUTPUT_EXISTS: another run owns the output directory") from exc
-    for name, raw in files.items():
-        atomic_write(out / name, raw)
+    write_new_directory(path, files, label="evaluation")
 
 
 def selected_golden(path: str | Path, splits: list[str]) -> tuple[GoldenSet, list[dict]]:

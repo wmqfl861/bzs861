@@ -202,3 +202,30 @@ def test_replay_output_does_not_overwrite_probe_or_previous_replay(tmp_path):
     with pytest.raises(ValueError, match="not empty"):
         replay(str(path), str(tmp_path / "replay"))
     assert (tmp_path / "replay" / "replay_report.json").read_bytes() == original
+
+
+
+def test_replay_output_failure_never_publishes_partial_report_directory(tmp_path, monkeypatch):
+    from bzs import artifact_output
+
+    path, _ = recording(tmp_path)
+    out = tmp_path / "interrupted-replay"
+    original = artifact_output.atomic_write
+    calls = 0
+
+    def fail_second_write(target, data):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("synthetic disk-full during replay output")
+        return original(target, data)
+
+    monkeypatch.setattr(artifact_output, "atomic_write", fail_second_write)
+    with pytest.raises(OSError, match="disk-full"):
+        replay(str(path), str(out))
+    assert not out.exists()
+    assert not list(tmp_path.glob(".interrupted-replay.stage-*"))
+    monkeypatch.setattr(artifact_output, "atomic_write", original)
+    result = replay(str(path), str(out))
+    assert result["status"] == "passed"
+    assert (out / "replay_report.json").is_file() and (out / "replay_report.md").is_file()
