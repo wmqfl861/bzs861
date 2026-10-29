@@ -482,3 +482,59 @@ def test_probe_checkpoint_rejects_excessive_total_json_nodes(tmp_path):
     path.write_bytes(b'{"items":[' + b"0," * MAX_JSON_NODES + b"0]}")
     with pytest.raises(ValueError, match="node count"):
         read_report(tmp_path)
+
+
+def test_probe_checkpoint_wide_array_is_rejected_without_materializing_the_frontier(tmp_path):
+    # A ~4 MB report of two million scalars is inside the byte budget; the
+    # node budget must reject it while the walk still holds one lazy iterator
+    # per level (the eager-tuple frontier peaked at ~143 MiB in review).
+    import tracemalloc
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"items":[' + b"0," * 2_000_000 + b"0]}")
+    tracemalloc.start()
+    try:
+        with pytest.raises(ValueError, match="node count"):
+            read_report(tmp_path)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert peak < 80 * 1024 * 1024
+
+
+def test_probe_checkpoint_wide_object_keys_are_counted_before_descending(tmp_path):
+    from bzs.probe_state import MAX_JSON_NODES, REPORT_NAME, read_report
+
+    keys = ",".join(f'"k{i}":0' for i in range(MAX_JSON_NODES + 1))
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b"{" + keys.encode() + b"}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
+
+
+def test_write_report_rejects_over_limit_reports_and_keeps_the_previous_checkpoint(tmp_path):
+    # Reader and writer share one structural contract: a report that could be
+    # written but not resumed would strand already-charged reservations.
+    from bzs.probe_state import MAX_JSON_NODES, read_report, write_report
+
+    write_report(tmp_path, {"schema_version": 2, "rows": []})
+    with pytest.raises(ValueError, match="node count"):
+        write_report(tmp_path, {"items": [0] * (MAX_JSON_NODES + 1)})
+    assert read_report(tmp_path) == {"schema_version": 2, "rows": []}
+
+
+@pytest.mark.parametrize("depth,accepted", [(63, True), (64, False)])
+def test_probe_checkpoint_depth_bounds_containers_like_the_baseline(tmp_path, depth, accepted):
+    # Root object is depth 1; N nested lists put the innermost container at
+    # depth N+1. Baseline semantics: a scalar leaf inside the deepest legal
+    # container (64) stays legal, a 65th container level is rejected.
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"x":' + b"[" * depth + b"0" + b"]" * depth + b"}")
+    if accepted:
+        assert isinstance(read_report(tmp_path), dict)
+    else:
+        with pytest.raises(ValueError, match="nesting"):
+            read_report(tmp_path)

@@ -401,13 +401,25 @@ async def test_expired_record_after_host_queue_wait_is_rechecked_before_dispatch
 async def test_site_lane_enforces_actual_start_interval_and_new_429_blocks_queued_hop(map_worker):
     worker, server, calls, *_ = map_worker
     worker.sites.sites["fixture-site"]["limits"]["min_interval_ms"] = 60
+    # Assert the worker-side dispatch gap (what pacing actually guarantees) on
+    # one clock: server arrival gaps carry loop/network jitter on loaded hosts.
+    real_fetch = worker.fetcher.fetch
+    dispatch_times = []
+
+    async def tracing_fetch(url, **kwargs):
+        inner = kwargs.get("before_dispatch")
+        if inner is not None:
+            def traced(actual):
+                dispatch_times.append(time.monotonic())
+                return inner(actual)
+            kwargs["before_dispatch"] = traced
+        return await real_fetch(url, **kwargs)
+    worker.fetcher.fetch = tracing_fetch
     first, second = await asyncio.gather(worker.map_fetch(grant(worker, server, "/map")),
                                          worker.map_fetch(grant(worker, server, "/map/again")))
+    worker.fetcher.fetch = real_fetch
     assert first["status"] == second["status"] == "ok"
-    # Pacing bounds the worker-side dispatch gap (min_interval_ms=60); the
-    # server-side arrival gap also carries loop/network jitter. 45ms still
-    # catches an unpaced back-to-back dispatch regression (which lands near 0).
-    assert calls[1]["time"] - calls[0]["time"] >= 0.045
+    assert dispatch_times[1] - dispatch_times[0] >= 0.055
     calls.clear()
     rate, queued = await asyncio.gather(worker.map_fetch(grant(worker, server, "/rate")),
                                         worker.map_fetch(grant(worker, server, "/map/after-rate")))
