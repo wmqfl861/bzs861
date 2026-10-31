@@ -21,6 +21,18 @@ class CoreError(Exception):
         self.details = {} if details is None else details
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Core RPCs must never replay a request or forward a bearer to another URL."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _refuse_redirect(status: int) -> None:
+    if 300 <= status < 400:
+        raise CoreError("E_CORE_REDIRECT", "searchd redirects are not allowed", status)
+
+
 def _unwrap(status: int, body: dict[str, Any]) -> dict[str, Any]:
     if status >= 400 or body.get("status") == "failed":
         err = (body.get("errors") or [{}])[0]
@@ -66,7 +78,8 @@ class CoreClient:
                     try:
                         timeout = aiohttp.ClientTimeout(total=max(0.001, deadline - time.monotonic()))
                         async with session.post(f"{self.url}/api/v0/call", data=payload,
-                                                headers=self._headers(), timeout=timeout) as resp:
+                                                headers=self._headers(), timeout=timeout, allow_redirects=False) as resp:
+                            _refuse_redirect(resp.status)
                             body = await resp.json(content_type=None)
                             return _unwrap(resp.status, body)
                     except CoreError as exc:
@@ -83,7 +96,7 @@ class CoreClient:
     def call_sync(self, operation: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         payload = json.dumps({"operation": operation, "params": params or {}}, ensure_ascii=False).encode("utf-8")
         req = urllib.request.Request(f"{self.url}/api/v0/call", payload, self._headers(), method="POST")
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
         started = time.monotonic()
         retry_until = started + min(10.0, self.timeout)
         deadline = started + self.timeout
@@ -92,9 +105,11 @@ class CoreClient:
             try:
                 try:
                     with opener.open(req, timeout=max(0.001, deadline - time.monotonic())) as resp:
+                        _refuse_redirect(resp.status)
                         return _unwrap(resp.status, json.load(resp))
                 except urllib.error.HTTPError as resp:
                     with resp:
+                        _refuse_redirect(resp.code)
                         return _unwrap(resp.code, json.load(resp))
                 except urllib.error.URLError as exc:
                     raise CoreError("E_CORE_UNAVAILABLE", f"searchd is not reachable at {self.url}; run `bzs start`", 503) from exc
@@ -108,7 +123,7 @@ class CoreClient:
                 retries += 1
 
     def healthy(self) -> bool:
-        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
         try:
             with opener.open(f"{self.url}/healthz", timeout=2) as resp:
                 return resp.status == 200

@@ -85,3 +85,21 @@ def test_external_destination_race_never_replaces_existing_directory(tmp_path, m
     assert (out / "owner.txt").read_text(encoding="utf-8") == "external-owner"
     assert not (out / "report.json").exists()
     assert not list(tmp_path.glob(".raced-output.stage-*"))
+
+
+@pytest.mark.parametrize("name", [
+    'a<b', 'a>b', 'a"b', 'a|b', 'a?b', 'a*b', 'a\x01b', 'a\x1fb',
+    'COM¹.txt', 'LPT².json', 'com³', 'lpt¹.txt',
+])
+@pytest.mark.parametrize("directory", [False, True])
+def test_names_rejected_before_creating_output(tmp_path, name, directory):
+    out = tmp_path / name if directory else tmp_path / "report"
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(out, {"report.json" if directory else name: b"{}"}, label="test")
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_case_aliases_rejected_without_partial_publication(tmp_path):
+    with pytest.raises(ValueError, match="E_OUTPUT_PATH"):
+        write_new_directory(tmp_path / "report", {"Report.json": b"one", "report.json": b"two"}, label="test")
+    assert list(tmp_path.iterdir()) == []

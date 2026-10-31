@@ -57,14 +57,14 @@ def _fsync_directory(path: Path) -> None:
 
 
 def _validate_component(value: str, *, label: str) -> None:
-    if (not value or value in (".", "..") or any(ch in value for ch in ("/", "\\", ":", "\x00"))
+    if (not value or value in (".", "..") or any(ord(ch) < 32 or ch in '<>:"/\\|?*' for ch in value)
             or value.endswith((".", " "))):
         raise ValueError(f"E_OUTPUT_PATH: invalid {label} path component")
     # Reject Windows device names even when the same artifact is prepared on POSIX.
     stem = value.split(".", 1)[0].upper()
     reserved = {"CON", "PRN", "AUX", "NUL"}
-    reserved.update(f"COM{i}" for i in range(1, 10))
-    reserved.update(f"LPT{i}" for i in range(1, 10))
+    reserved.update(f"COM{i}" for i in "123456789¹²³")
+    reserved.update(f"LPT{i}" for i in "123456789¹²³")
     if stem in reserved:
         raise ValueError(f"E_OUTPUT_PATH: reserved {label} path component")
 
@@ -77,10 +77,16 @@ def write_new_directory(path: str | Path, files: dict[str, bytes], *, label: str
         raise ValueError(f"E_OUTPUT_EXISTS: {label} output directory already exists")
     if not isinstance(files, dict) or not files:
         raise ValueError(f"E_OUTPUT_SCHEMA: {label} output file set is empty")
+    names: set[str] = set()
     for name, raw in files.items():
         if not isinstance(name, str) or Path(name).name != name:
             raise ValueError(f"E_OUTPUT_PATH: invalid {label} output filename")
         _validate_component(name, label=label + " output filename")
+        # Never let case-insensitive filesystems replace one staged member with
+        # another. Use the same conservative rule when preparing on POSIX.
+        if name.casefold() in names:
+            raise ValueError(f"E_OUTPUT_PATH: colliding {label} output filenames")
+        names.add(name.casefold())
         if not isinstance(raw, bytes) or len(raw) > MAX_OUTPUT_FILE_BYTES:
             raise ValueError(f"E_OUTPUT_LIMIT: invalid {label} output file size")
 

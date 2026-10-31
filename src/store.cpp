@@ -999,12 +999,10 @@ namespace bzs {
     tx.commit();
     return out;
   }
-  Json Store::project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
+  Json Store::project_transient_web_locked(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
     // Same fence, history and observation discipline as an ingest, without the
     // snapshot: a persisted success would publish this artifact's policy, so a
     // transient one retains a restrictive policy as an observation instead.
-    std::lock_guard lock(mutex_);
-    Tx tx(db_);
     require_principal_active_locked(owner);
     refresh_site_publication_locked(false);
     auto m=Json::parse(meta.dump());
@@ -1020,6 +1018,12 @@ namespace bzs {
     Json out=Json::object();
     out.set("indexed",parsed.publication.at("index_allowed").flag()&&mode<2);
     out.set("site_publication",deployment);out.set("publication",parsed.publication);
+    return out;
+  }
+  Json Store::project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    auto out=project_transient_web_locked(owner,url,std::move(parsed),meta);
     tx.commit();
     return out;
   }

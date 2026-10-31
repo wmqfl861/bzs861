@@ -6,7 +6,7 @@ from bzs import local_benchmark as bench
 
 class Response:
     status=200
-    def read(self, limit=-1): return json.dumps({"status":"ok","result":{"secret_body":"not recorded"}}).encode()[:limit]
+    def read(self, limit=-1): return json.dumps({"status":"success","result":{"secret_body":"not recorded"}}).encode()[:limit]
 class Connection:
     calls=[]
     def __init__(self,host,port,timeout): assert host=="127.0.0.1"; self.closed=False; Connection.calls.append(self)
@@ -35,8 +35,11 @@ def test_benchmark_rejects_invalid_token():
 
 
 @pytest.mark.parametrize("status,payload,error", [
-    (302, {"status": "ok"}, "HTTP status 302"),
+    (302, {"status": "success"}, "HTTP status 302"),
     (200, {"status": "unknown"}, "non-success envelope"),
+    (200, {"status": "ok"}, "non-success envelope"),
+    (200, {"status": "empty"}, "non-success envelope"),
+    (200, {"status": "failed"}, "non-success envelope"),
 ])
 def test_benchmark_rejects_redirects_and_unknown_envelopes(status, payload, error):
     class BadResponse:
@@ -86,3 +89,16 @@ def test_benchmark_reports_warmup_and_measured_http_statuses_separately():
     result = bench.benchmark("local query", token="t" * 40, warmup=2, iterations=3,
                              connection_factory=Connection)
     assert result["statuses"] == {"warmup": [200, 200], "measured": [200, 200, 200]}
+
+
+@pytest.mark.parametrize("envelope_status", ["success", "partial"])
+def test_benchmark_uses_core_envelope_status_not_worker_status(envelope_status):
+    class CoreResponse(Response):
+        def read(self, limit=-1):
+            return json.dumps({"status": envelope_status, "result": {}}).encode()[:limit]
+    class CoreConnection(Connection):
+        def getresponse(self):
+            return CoreResponse()
+    report = bench.benchmark("local query", token="t" * 40, warmup=0, iterations=1,
+                             connection_factory=CoreConnection)
+    assert report["statuses"]["measured"] == [200]

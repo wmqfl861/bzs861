@@ -578,6 +578,21 @@ class EndToEnd(unittest.TestCase):
         self.assertTrue(cached["from_cache"])
 
 
+
+    def test_11_local_benchmark_accepts_the_actual_core_envelope(self):
+        from bzs.local_benchmark import benchmark
+        query = "benchmark-local-review-marker"
+        status, envelope = self.stack.call("search", {"query": query})
+        self.assertEqual(status, 200)
+        self.assertEqual(envelope["status"], "success")
+        report = benchmark(query, port=self.stack.core_port, token=self.stack.api_token,
+                           warmup=1, iterations=2, timeout=5)
+        self.assertEqual(report["statuses"], {"warmup": [200], "measured": [200, 200]})
+        self.assertEqual(report["query_sha256"], hashlib.sha256(query.encode()).hexdigest())
+        self.assertFalse(report["response_bodies_recorded"])
+        self.assertNotIn(self.stack.api_token, json.dumps(report))
+
+
 def main() -> int:
     global CONFIG
     ap = argparse.ArgumentParser()
