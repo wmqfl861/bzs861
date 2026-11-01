@@ -1261,7 +1261,18 @@ namespace {
     CHECK(s.snapshot("a", "s1").at("source_kind").str()=="import");
   }
   TEST(dedup_and_rrf_fusion) {
-    CHECK(dedup_key("https://www.Example.com/a/?utm_source=x&b=2&a=1#frag")==dedup_key("http://example.com:80/a?a=1&b=2"));
+    // R-01 conservative identity: only scheme/host case and default ports
+    // normalize. www, query order, fragments, trailing slashes, tracking
+    // params, and scheme differences are all resource-distinct now.
+    CHECK(dedup_key("https://EXAMPLE.com/a")==dedup_key("https://example.com/a"));
+    CHECK(dedup_key("http://example.com:80/a")==dedup_key("http://example.com/a"));
+    CHECK(dedup_key("https://example.com:443/a")==dedup_key("https://example.com/a"));
+    CHECK(dedup_key("https://example.com/a")!=dedup_key("http://example.com/a"));
+    CHECK(dedup_key("https://www.example.com/a")!=dedup_key("https://example.com/a"));
+    CHECK(dedup_key("https://example.com/a")!=dedup_key("https://example.com/a/"));
+    CHECK(dedup_key("https://example.com/a?id=1&id=2")!=dedup_key("https://example.com/a?id=2&id=1"));
+    CHECK(dedup_key("https://example.com/#/a")!=dedup_key("https://example.com/#/b"));
+    CHECK(dedup_key("https://example.com/a?utm_source=x")!=dedup_key("https://example.com/a"));
     CHECK(dedup_key("https://example.com/a")!=dedup_key("https://example.com/b"));
     CHECK(dedup_key("ftp://example.com/").empty());
     auto manifest=Json::parse(R"({"version":1,"sources":[
@@ -1274,13 +1285,23 @@ namespace {
       {"yahoo", {{"http://a.example", "A", "", 1}, {"https://b.example/", "B", "", 1}}},
       {"ddg", {{"https://b.example/", "B", "from ddg", 5}, {"https://c.example/", "C", "", 1}}}};
     auto out=fuse(in, reg, 10);
-    CHECK(out.size()==3);
-    // b.example appears in two families (bing family counted once, ddg) and wins.
+    // http://a.example and https://a.example/ are now distinct resources
+    // (R-01), so 4 groups. b.example wins across two families.
+    CHECK(out.size()==4);
     CHECK(out.at(0).at("url").str()=="https://b.example/");
     CHECK(out.at(0).at("index_families").num()==2);
-    CHECK(out.at(0).at("snippet").str()=="from ddg");
-    CHECK(out.at(1).at("url").str()=="https://a.example/");
-    CHECK(out.at(1).at("sources").size()==2);
+    // R-01 donor consistency: the best-ranked donor (bing, rank 2) owns
+    // url/title/snippet. Its snippet is empty, so "" is correct; the
+    // ddg rank-5 snippet is NOT borrowed across donors anymore.
+    CHECK(out.at(0).at("snippet").str()=="");
+    // Both a.example variants exist as separate results.
+    bool has_http_a=false, has_https_a=false;
+    for(std::size_t i=0;i<out.size();++i) {
+      auto u=out.at(i).at("url").str();
+      if(u=="http://a.example")has_http_a=true;
+      if(u=="https://a.example/")has_https_a=true;
+    }
+    CHECK(has_http_a);CHECK(has_https_a);
   }
   TEST(public_url_policy) {
     for(auto u: {"http://localhost/", "http://127.0.0.1/", "http://10.1.2.3/", "http://169.254.169.254/latest/meta-data",

@@ -13,13 +13,7 @@
 #include <tuple>
 namespace bzs {
   namespace {
-    bool tracking_param(std::string_view k) {
-      static const std::set<std::string, std::less<>> exact= {
-        "gclid", "dclid", "fbclid", "msclkid", "yclid", "igshid", "mc_cid", "mc_eid", "_hsenc", "_hsmi", "spm", "ved", "ei", "usg"
-      };
-      return k.starts_with("utm_")||exact.contains(k);
-    }
-    // Identity comparison for the existing ordinary HTTP client. This is not
+        // Identity comparison for the existing ordinary HTTP client. This is not
     // automatic-site admission: escaped separators remain distinct, while URI
     // requoting and dot resolution can identify its actual response URL.
     std::string read_identity(std::string_view input) {
@@ -154,36 +148,30 @@ namespace bzs {
     }
   }
   std::string publication_url_identity(std::string_view url) { return read_identity(url); }
-  std::string dedup_key(std::string_view url) {
-    std::size_t p=0;
-    if(url.starts_with("https://"))p=8;
-    else if(url.starts_with("http://"))p=7;
-    else return {};
-    auto end=url.find_first_of("/?#", p);
-    auto authority=ascii_lower(url.substr(p, end==std::string_view::npos?url.size()-p:end-p));
-    if(authority.empty()||authority.find('@')!=std::string::npos)return {};
-    if(p==7&&authority.ends_with(":80"))authority.resize(authority.size()-3);
-    else if(p==8&&authority.ends_with(":443"))authority.resize(authority.size()-4);
-    if(authority.starts_with("www."))authority.erase(0, 4);
-    std::string rest=end==std::string_view::npos?"":std::string(url.substr(end));
-    if(auto hash=rest.find('#'); hash!=std::string::npos)rest.resize(hash);
-    std::string path=rest, query;
-    if(auto q=rest.find('?'); q!=std::string::npos) {
-      path=rest.substr(0, q);
-      query=rest.substr(q+1);
+  // R-01 conservative search-dedup identity. Only safe, normative
+    // equivalences merge; resource-distinct variations stay distinct.
+    // Preserves: scheme differences, www vs bare host, trailing slash on
+    // non-root paths, fragment/SPA-route differences, query order and
+    // duplicate keys, all parameter values (no tracking-param stripping).
+    // Normalizes only: scheme/host case, default ports (:80/:443).
+    // SEARCH_DEDUP_VERSION enters the search cache key; bump on algorithm
+    // change so old cached results silently expire instead of mixing.
+    constexpr const char* SEARCH_DEDUP_VERSION="2";
+    std::string dedup_key(std::string_view url) {
+        std::size_t p=0;
+        std::string scheme;
+        if(url.starts_with("https://")) {p=8;scheme="https";}
+        else if(url.starts_with("http://")) {p=7;scheme="http";}
+        else return {};
+        auto end=url.find_first_of("/?#", p);
+        auto authority=ascii_lower(url.substr(p, end==std::string_view::npos?url.size()-p:end-p));
+        if(authority.empty()||authority.find('@')!=std::string_view::npos)return {};
+        if(scheme=="http"&&authority.ends_with(":80"))authority.resize(authority.size()-3);
+        else if(scheme=="https"&&authority.ends_with(":443"))authority.resize(authority.size()-4);
+        // Keep the rest verbatim: path, query (order + duplicates), fragment.
+        std::string rest=end==std::string_view::npos?"":std::string(url.substr(end));
+        return scheme+"://"+authority+rest;
     }
-    while(path.size()>1&&path.back()=='/')path.pop_back();
-    if(path=="/")path.clear();
-    std::vector<std::string> kept;
-    for(auto& kv:split(query, '&')) {
-      auto key=kv.substr(0, kv.find('='));
-      if(!tracking_param(ascii_lower(key)))kept.push_back(kv);
-    }
-    std::sort(kept.begin(), kept.end());
-    std::string out=authority+path;
-    for(std::size_t i=0; i<kept.size(); ++i)out+=(i?"&":"?")+kept[i];
-    return out;
-  }
   std::string normalize_iri(std::string_view url) {
     require(url.size()<=4096&&valid_utf8(url)&&url.find('\0')==std::string_view::npos, "E_URL", "Invalid URL");
     auto scheme_end=url.find("://");
@@ -348,12 +336,17 @@ namespace bzs {
         if(retain_publication_urls)g.publication_urls.insert(h.url);
         if(fresh)g.first_seen=order++;
         bool better=h.rank<g.best_rank;
-        bool upgrade=g.url.starts_with("http://")&&h.url.starts_with("https://");
-        if(better||g.url.empty()||upgrade)g.url=h.url;
-        if(better||g.title.empty()) {
+        // R-01 donor consistency: url/title/snippet always come from the
+        // same selected hit (the better-ranked one). No cross-donor upgrade:
+        // a later https hit does not lend its URL to the earlier hit's
+        // title/snippet, nor vice versa.
+        if(better||g.url.empty()) {
+          g.url=h.url;
           if(!h.title.empty())g.title=h.title;
+          else if(g.title.empty())g.title=h.title;
+          if(!h.snippet.empty())g.snippet=h.snippet;
+          else if(g.snippet.empty())g.snippet=h.snippet;
         }
-        if((better&&!h.snippet.empty())||g.snippet.empty())g.snippet=h.snippet.empty()?g.snippet:h.snippet;
         g.best_rank=std::min(g.best_rank, h.rank);
         auto& f=g.family[fam];
         if(f.first==0||h.rank<f.first)f.first=h.rank;
@@ -607,6 +600,7 @@ namespace bzs {
     for(const auto& id:selected_ids)key_sources.push(Json::string(id));
     key_parts.set("sources",key_sources);
     key_parts.set("mode",mode.name);key_parts.set("budget",effective_budget);key_parts.set("omitted_sources",omitted);
+    key_parts.set("dedup_version",SEARCH_DEDUP_VERSION);
     const auto source_generation=store_.source_publication_capture(registry_,key_sources);
     for(const auto* source:selected)source->require_review(store_.now());
     if(retain_publication_urls)key_parts.set("internal_publication_urls",true);
