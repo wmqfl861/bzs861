@@ -12,7 +12,7 @@ class Connection:
     def __init__(self,host,port,timeout): assert host=="127.0.0.1"; self.closed=False; Connection.calls.append(self)
     def request(self,method,path,body,headers):
         assert method=="POST" and path=="/api/v0/call"; assert headers["Authorization"]=="Bearer "+"t"*40
-        payload=json.loads(body); assert payload["operation"]=="search" and "query" in payload["params"]
+        payload=json.loads(body); assert payload["operation"]=="search.once" and "query" in payload["params"]
     def getresponse(self): return Response()
     def close(self): self.closed=True
 
@@ -20,7 +20,7 @@ def test_benchmark_is_loopback_only_and_never_records_credentials_or_body():
     Connection.calls.clear()
     result=bench.benchmark("中文 query",port=8610,iterations=5,warmup=2,token="t"*40,connection_factory=Connection)
     assert len(Connection.calls)==7 and all(x.closed for x in Connection.calls)
-    assert result["network_scope"]=="loopback_only" and result["operation"]=="search"
+    assert result["network_scope"]=="loopback_only" and result["operation"]=="search.once"
     assert result["latency_ms"]["p95"]>=result["latency_ms"]["min"]
     assert result["response_bodies_recorded"] is False and result["credentials_recorded"] is False and result["cache_hit_claimed"] is False
     assert "secret_body" not in json.dumps(result) and "tttttt" not in json.dumps(result)
