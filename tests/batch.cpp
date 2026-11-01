@@ -114,7 +114,7 @@ namespace {
     Temp t;Store store(t.path/"db");Fake worker;WebService web(store,worker,{});
     std::vector<std::string> input={"http://example.com/path","https://example.com/path", "https://www.example.com/path/",
       "https://example.com/path?utm_source=one","https://example.com/path?utm_source=two"};
-    CHECK(dedup_key(input[0])==dedup_key(input[4]));
+    CHECK(dedup_key(input[0])!=dedup_key(input[4]));  // R-01: conservative identity
     web.submit_reads("alice",args(input));drain(store,web);CHECK(worker.reads==input);
     CHECK(store.stats("alice").at("documents").num()==5);
   }
