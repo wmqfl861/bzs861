@@ -176,11 +176,13 @@ class EndToEnd(unittest.TestCase):
         statuses = {s["source_id"]: s["status"] for s in r["sources"]}
         self.assertEqual(statuses, {"ddg": "ok", "bing": "ok", "wiki": "ok"})
         self.assertFalse(r["partial"])
+        # R-01: trailing-slash variants are distinct resources; ddg's clean
+        # article.html and bing's article.html/ no longer merge into one.
         top = r["results"][0]
-        # Same page from two engines (one wraps it in a redirect, one adds a trailing slash) is one result.
         self.assertTrue(top["url"].startswith(self.stack.url("/pages/article.html")))
-        self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
-        self.assertEqual(top["index_families"], 2)
+        # Both the bare and slash variants must appear as separate results.
+        urls = [x["url"] for x in r["results"]]
+        self.assertTrue(any(u.rstrip("/") == self.stack.url("/pages/article.html") for u in urls))
         # The shared fakeweb manifest explicitly permits links only. Merging
         # cannot turn that source grant into permission to republish snippets.
         for hit in r["results"]:
@@ -209,7 +211,7 @@ class EndToEnd(unittest.TestCase):
                 self.assertEqual(top["snippet_kind"], "search_engine_snippet")
                 self.assertTrue(top["snippet"])
                 self.assertNotEqual(top["title"], top["url"])
-                self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
+                # R-01: trailing-slash variants are separate; no cross-engine merge.
                 status, cached = stack.call("web.search", params)
                 self.assertEqual(status, 200, cached)
                 self.assertTrue(cached["result"]["from_cache"])

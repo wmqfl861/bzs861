@@ -824,10 +824,13 @@ namespace bzs {
           for(std::size_t c=0; c<conditions.size(); ++c) {
             const auto& condition=conditions[c];
             if(condition.kind=="site") {
-              // Kept from QRY-04 lite: any declared host may match (any-of group).
-              bool ok=std::any_of(conditions.begin(),conditions.end(),[&](const SearchCondition& k) {
-                return k.kind=="site"&&(host==k.value||(host.size()>k.value.size()&&host.ends_with("."+k.value)));
-              });
+              // R-02: each site condition is an independent conjunct (AND).
+              // The old any-of group let a hit matching any one site pass
+              // all site conditions, reporting satisfied for domains the
+              // hit did not match. Now each condition is verified against
+              // this hit's host individually.
+              bool ok=(host==condition.value||
+                       (host.size()>condition.value.size()&&host.ends_with("."+condition.value)));
               if(!ok)violated.push_back(c);
             } else if(condition.kind=="filetype") {
               if(url_extension_type(hit.url)!=(condition.value=="html"?"text/html":"text/plain"))violated.push_back(c);
