@@ -1368,6 +1368,48 @@ namespace {
     }
     CHECK(has_http_a);CHECK(has_https_a);
   }
+  TEST(fuse_output_is_independent_of_source_order) {
+    // CL-12: identical inputs must fuse identically in any source (and hit)
+    // order. The winning donor is chosen by (rank, url); url/title/snippet
+    // move as a whole so an empty field is never filled from another hit;
+    // group ties break on the dedup key and equal ranks in the sources list
+    // resolve by source id - never by arrival order.
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true},
+      {"id":"srcy","provider":"y","index_family":"famy","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    std::vector<SourceHits> base= {
+      {"srcx", {{"http://SHARED.example/a", "upper title", "upper snippet", 1},
+                {"http://only-x.example/b", "x only", "", 1}}},
+      {"srcy", {{"http://shared.example/a", "", "", 1},
+                {"http://shared.example:80/a", "late title", "late snippet", 2},
+                {"http://only-y.example/c", "y only", "", 1}}}};
+    const auto run=[&](const std::vector<SourceHits>& inputs) { return fuse(inputs, reg, 10, 60, true); };
+    const auto reference=run(base);
+    for(const bool y_first:{false,true}) {
+      std::vector<SourceHits> inputs=y_first?std::vector<SourceHits> {base[1],base[0]}
+                                             :std::vector<SourceHits> {base[0],base[1]};
+      for(const bool reverse_hits:{false,true}) {
+        auto candidate=inputs;
+        if(reverse_hits)for(auto& source:candidate)std::reverse(source.hits.begin(),source.hits.end());
+        CHECK(run(candidate).canonical()==reference.canonical());
+      }
+    }
+    CHECK(reference.size()==3);
+    // Equal-rank tie resolves by url: the uppercase variant sorts first and
+    // the whole donor moves as one (its title, not the rank-2 late title).
+    CHECK(reference.at(0).at("url").str()=="http://SHARED.example/a");
+    CHECK(reference.at(0).at("title").str()=="upper title");
+    CHECK(reference.at(0).at("snippet").str()=="upper snippet");
+    // All actual contributing variants stay recorded for publication checks.
+    CHECK(reference.at(0).at("publication_urls").size()==3);
+    // sources list orders by (rank, source_id): the equal ranks resolve by id.
+    const auto sources=reference.at(0).at("sources");
+    CHECK(sources.size()==3);
+    CHECK(sources.at(0).at("source_id").str()=="srcx");CHECK(sources.at(0).at("rank").num()==1);
+    CHECK(sources.at(1).at("source_id").str()=="srcy");CHECK(sources.at(1).at("rank").num()==1);
+    CHECK(sources.at(2).at("source_id").str()=="srcy");CHECK(sources.at(2).at("rank").num()==2);
+  }
   TEST(public_url_policy) {
     for(auto u: {"http://localhost/", "http://127.0.0.1/", "http://10.1.2.3/", "http://169.254.169.254/latest/meta-data",
                  "http://192.168.1.1/", "http://2130706433/", "http://0x7f000001/", "http://1.2.3/", "http://printer.local/", "http://012.0.0.1/"})

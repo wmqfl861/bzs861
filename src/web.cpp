@@ -313,15 +313,13 @@ namespace bzs {
   Json fuse(const std::vector<SourceHits>& results, const SourceRegistry& registry, std::size_t limit, std::int64_t k, bool retain_publication_urls) {
     require(k>=1&&k<=1000000,"E_SCHEMA","RRF k must be in 1..1000000");
     struct Agg {
-      std::string url, title, snippet;
+      std::string url, title, snippet, key;
       std::int64_t best_rank=1<<30;
-      std::size_t first_seen=0;
       std::map<std::string, std::pair<std::int64_t, std::int64_t>> family;  // family -> (best rank, weight)
       std::vector<std::pair<std::string, std::int64_t>> sources;
       std::set<std::string> publication_urls;
     };
     std::map<std::string, Agg> groups;
-    std::size_t order=0;
     for(const auto& r:results) {
       const auto* spec=registry.find(r.source_id);
       if(!spec)continue;
@@ -334,18 +332,16 @@ namespace bzs {
         auto [it, fresh]=groups.try_emplace(key);
         auto& g=it->second;
         if(retain_publication_urls)g.publication_urls.insert(h.url);
-        if(fresh)g.first_seen=order++;
-        bool better=h.rank<g.best_rank;
-        // R-01 donor consistency: url/title/snippet always come from the
-        // same selected hit (the better-ranked one). No cross-donor upgrade:
-        // a later https hit does not lend its URL to the earlier hit's
-        // title/snippet, nor vice versa.
+        if(fresh)g.key=key;
+        // Strict donor consistency (R-01, CL-12): url, title and snippet are
+        // replaced as a whole from the winning hit; an empty field stays
+        // empty instead of borrowing another variant's fields. The winner is
+        // (rank, url), so the output never depends on source arrival order.
+        bool better=h.rank<g.best_rank||(h.rank==g.best_rank&&h.url<g.url);
         if(better||g.url.empty()) {
           g.url=h.url;
-          if(!h.title.empty())g.title=h.title;
-          else if(g.title.empty())g.title=h.title;
-          if(!h.snippet.empty())g.snippet=h.snippet;
-          else if(g.snippet.empty())g.snippet=h.snippet;
+          g.title=h.title;
+          g.snippet=h.snippet;
         }
         g.best_rank=std::min(g.best_rank, h.rank);
         auto& f=g.family[fam];
@@ -369,7 +365,9 @@ namespace bzs {
     std::sort(ranked.begin(), ranked.end(), [](const Scored& a, const Scored& b) {
       if(a.score!=b.score)return a.score>b.score;
       if(a.g->best_rank!=b.g->best_rank)return a.g->best_rank<b.g->best_rank;
-      return a.g->first_seen<b.g->first_seen;
+      // Deterministic final tie-break on the dedup key, not arrival order:
+      // permuting the sources must not change the output (CL-12).
+      return a.g->key<b.g->key;
     });
     Json out=Json::array();
     for(std::size_t i=0; i<ranked.size()&&i<limit; ++i) {
@@ -387,7 +385,8 @@ namespace bzs {
       Json src=Json::array();
       auto sorted=g.sources;
       std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) {
-        return a.second<b.second;
+        if(a.second!=b.second)return a.second<b.second;
+        return a.first<b.first;  // rank ties resolve by source id, not arrival
       });
       for(const auto& [id, rank]:sorted) {
         Json s=Json::object();
