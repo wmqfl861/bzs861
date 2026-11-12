@@ -69,7 +69,11 @@ if [ "$suite" = bzs_session_tests ]; then
       survivor) exit 0 ;;
       runtime) printf 'fixture could not start\n' >&2; exit 1 ;;
       exception) printf 'FAIL fixture_exception: database unavailable\n'; exit 1 ;;
-      mixed-error) printf 'FAIL fixture_assertion: check failed: invariant\nFAIL fixture_exception: database unavailable\n'; exit 1 ;;
+      missing-field)
+        printf 'RUN contributor_overflow_tightens_capture_ceiling\n'
+        printf 'FAIL contributor_overflow_tightens_capture_ceiling: Missing field: captured_mode\n'
+        printf '{"tests":120,"passed":119}\n'
+        exit 1 ;;
       exit-code) printf 'FAIL fixture_error: check failed: incomplete run\n'; exit 2 ;;
       timeout) printf 'FAIL fixture_then_hang: check failed: incomplete run\n'; sleep 2; exit 1 ;;
     esac
@@ -223,11 +227,32 @@ class MutationHarness(unittest.TestCase):
     def test_non_assertion_exit_one_is_harness_error(self):
         self.assert_harness_error("runtime")
 
-    def test_test_exception_is_not_an_assertion_kill(self):
-        self.assert_harness_error("exception")
+    def test_uncaught_exception_fail_line_is_kill(self):
+        # unit.cpp-family runners print `FAIL <test>: <what>` for uncaught
+        # test exceptions as well as CHECK failures; exit 1 with such a line
+        # is a test-level kill, not a harness error.
+        result = self.run_harness(fault="exception")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for mutant in MUTANTS:
+            self.assertIn(f"[{mutant}] KILLED by: bzs_session_tests", result.stdout)
+        self.assertIn("fixture_exception", result.stdout)
+        self.assert_restored()
 
-    def test_mixed_assertion_and_test_exception_is_harness_error(self):
-        self.assert_harness_error("mixed-error")
+    def test_uncaught_exception_missing_field_is_kill(self):
+        # CI run 43268736001 (b66f367): M1 was genuinely killed by bzs_tests
+        # through a Json at() exception - `FAIL <test>: Missing field:
+        # captured_mode`, exit 1, no "check failed:" text anywhere.
+        result = self.run_harness(fault="missing-field")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for mutant in MUTANTS:
+            self.assertIn(f"[{mutant}] KILLED by: bzs_session_tests", result.stdout)
+            log = (self.out / f"run-{mutant}-bzs_session_tests.log").read_text()
+            self.assertIn(
+                "FAIL contributor_overflow_tightens_capture_ceiling: Missing field: captured_mode",
+                log)
+            self.assertNotIn("No such file or directory", log)
+        self.assertIn("contributor_overflow_tightens_capture_ceiling", result.stdout)
+        self.assert_restored()
 
     def test_error_exit_with_assertion_text_is_not_killed(self):
         self.assert_harness_error("exit-code")

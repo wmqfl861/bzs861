@@ -5,7 +5,8 @@
 # Disables each tightening statement (M1 contributor overflow, M2 incomplete
 # stored-binding scan, M3 legacy crawl marker propagation), rebuilds the
 # publication-sensitive native suites and reports which suite killed the
-# mutant. Success requires a passing baseline and assertion kills for M1-M3.
+# mutant. Success requires a passing baseline and test-level kills (a
+# `FAIL <test>: ...` line with exit 1) for M1-M3.
 #
 # Usage: tools/mutation_check.sh <repo> <build-dir> [cmake] [config]
 #   repo        isolated worktree, with no concurrent writers/build consumers
@@ -94,7 +95,7 @@ resolve_suites() {
   done
 }
 
-run_suites() {  # $1 = label; only assertion failures count as kills
+run_suites() {  # $1 = label; only test-level failures count as kills
   local label=$1 t log rc
   local killed=()
   for t in "${SUITES[@]}"; do
@@ -108,16 +109,19 @@ run_suites() {  # $1 = label; only assertion failures count as kills
     if [[ "$label" == baseline ]]; then
       fail "[baseline] $t FAILED (exit $rc; see $log); no mutations run"
     fi
-    # These native harnesses return 1 for failed tests. Require their CHECK
-    # diagnostic as well, so launch errors, crashes and test exceptions are not
-    # credited as kills. Keep the complete original log, including FAIL names.
-    local assertion='^FAIL [^[:space:]]+.*: check failed: '
-    if (( rc != 1 )) || ! grep -Eq "$assertion" "$log"; then
-      fail "[$label] $t harness failure (exit $rc, not an assertion kill; see $log)"
+    # These native harnesses return 1 for failed tests and print one
+    # `FAIL <test>: <reason>` line per failure - for failed CHECK assertions
+    # ("check failed: ...") and for uncaught test exceptions alike (e.g. a
+    # Json at() "Missing field: ..." killed M1 in CI run 43268736001, with no
+    # "check failed:" text anywhere). Any such line with exit 1 is a
+    # test-level kill; launch errors, crashes, timeouts and exit-1 runs
+    # without FAIL lines stay harness errors. The complete log is kept.
+    local fail_line='^FAIL [A-Za-z0-9_]+: '
+    if (( rc != 1 )) || ! grep -Eq "$fail_line" "$log"; then
+      fail "[$label] $t harness failure (exit $rc, not a test-level kill; see $log)"
     fi
-    if grep '^FAIL ' "$log" | grep -Ev "$assertion" > /dev/null; then
-      fail "[$label] $t test exception alongside assertion failures (see $log)"
-    fi
+    printf '[%s] %s killed tests: %s\n' "$label" "$t" \
+      "$(grep -E "$fail_line" "$log" | sed -E 's/^FAIL ([A-Za-z0-9_]+):.*/\1/' | paste -sd' ' -)"
     killed+=("$t")
   done
   if [[ "$label" == baseline ]]; then
@@ -125,7 +129,7 @@ run_suites() {  # $1 = label; only assertion failures count as kills
   elif (( ${#killed[@]} )); then
     printf '[%s] KILLED by: %s\n' "$label" "${killed[*]}"
   else
-    printf '[%s] SURVIVED (no assertion failed)\n' "$label"
+    printf '[%s] SURVIVED (no test failed)\n' "$label"
     return 1
   fi
 }
