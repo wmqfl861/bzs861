@@ -276,17 +276,32 @@ bool Store::search_lease_live(const SearchLease& lease) { std::lock_guard lock(m
 Json Store::search_bindings_locked(const std::string& owner,const std::string& url,const Json& contributing_urls) {
   auto bindings=site_bindings_locked(url,Json::object());std::set<std::string> urls;urls.insert(publication_url_identity(url));
   for(std::size_t i=0;i<contributing_urls.size()&&urls.size()<=24;++i)urls.insert(publication_url_identity(contributing_urls.at(i).str()));
+  // Defense in depth (CL-03): through public surfaces a fused group carries
+  // at most max_sources(20) x max_per_source(30) x publication_urls(30) = 600
+  // raw contributing URLs, and under R-01 its variants share one identity,
+  // so neither clause is reachable today (see the caps in
+  // src/search_modes.cpp and the <=30 provenance check in
+  // freeze_search_locked). Locked directly by the test
+  // contributor_overflow_tightens_capture_ceiling; if those caps ever rise,
+  // this ceiling fires again.
   if(urls.size()>24||contributing_urls.size()>600) { bindings.set("captured_mode",std::int64_t{2});return bindings; }
   const auto candidates=urls;
   bool incomplete=false;std::int64_t records=0;
   for(const auto& candidate:candidates) {
   Statement known(db_,"SELECT d.representation_key,s.meta_json,s.site_bindings_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url_key=? AND s.source_kind='web' ORDER BY d.id LIMIT 25");known.bind(1,owner);known.bind(2,url_key(candidate));
   while(known.step()) {
+    // CL-03: the scan counts deleted history under the same url_key too;
+    // >24 records tighten the ceiling (locked by
+    // binding_history_overflow_tightens_capture_ceiling).
     if(++records>24) { incomplete=true;break; }
     const auto current=site_bindings_locked(candidate,Json::parse(known.text(1),8*1024*1024));const auto chain=current.at("urls");
     for(std::size_t i=0;i<chain.size();++i)urls.insert(chain.at(i).str());
     if(!known.text(0).empty())urls.insert(publication_url_identity(known.text(0)));
     const auto stored=Json::parse(known.text(2),128*1024);
+    // CL-03: a marker on a deleted record's snapshot is invisible to the
+    // current-snapshot recheck in the projection SQL; only this propagation
+    // carries it into the captured bindings (locked by
+    // legacy_crawl_marker_on_deleted_history_tightens_capture).
     if(stored.has("legacy_crawl_unverified")&&stored.at("legacy_crawl_unverified").flag())bindings.set("legacy_crawl_unverified",true);
     if(urls.size()>24) { incomplete=true;break; }
   }

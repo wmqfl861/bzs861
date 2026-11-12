@@ -23,6 +23,13 @@ namespace bzs {
     static void set(Store& store,std::function<void()> callback) {
       std::lock_guard lock(store.mutex_);store.search_unlocked_for_test_=std::move(callback);
     }
+    // CL-03 M1: the >600 raw contributing-URL ceiling is unreachable through
+    // public surfaces (see the comment in Store::search_bindings_locked), so
+    // the capture path is driven directly with a synthetic contributor list.
+    static Json search_bindings(Store& store,const std::string& owner,const std::string& url,const Json& contributing) {
+      std::lock_guard lock(store.mutex_);
+      return store.search_bindings_locked(owner,url,contributing);
+    }
   };
 }
 using namespace bzs;
@@ -1095,6 +1102,29 @@ namespace {
     }, "E_CAPABILITY_UNAVAILABLE");
     CHECK(svc.capabilities().at("live_web_sources").num()==0);
     CHECK(!svc.capabilities().at("production_ready").flag());
+  }
+  TEST(contributor_overflow_tightens_capture_ceiling) {
+    // CL-03 M1: more than 600 raw contributing URLs (or more than 24 distinct
+    // identities) must tighten the captured ceiling to captured_mode=2 even
+    // though every URL is the same clean resource - the raw-count ceiling is
+    // unreachable through public surfaces, so this drives the capture path
+    // through the test hook.
+    Temp t;
+    Store store(t.path/"db");
+    const auto identities=[&](std::int64_t count) {
+      auto list=Json::array();
+      for(std::int64_t i=0;i<count;++i)list.push(Json::string("https://clean.example/doc"));
+      return list;
+    };
+    const auto at_ceiling=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(600));
+    CHECK(!at_ceiling.has("captured_mode"));
+    CHECK(at_ceiling.at("urls").size()==1);
+    const auto overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(601));
+    CHECK(overflow.at("captured_mode").num()==2);
+    auto distinct=Json::array();
+    for(std::int64_t i=0;i<25;++i)distinct.push(Json::string("https://clean.example/variant"+std::to_string(i)));
+    const auto identities_overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",distinct);
+    CHECK(identities_overflow.at("captured_mode").num()==2);
   }
   TEST(internal_error_diagnostics_are_structured_and_counted) {
     // CL-14: every swallowed internal error leaves one structured JSON event
