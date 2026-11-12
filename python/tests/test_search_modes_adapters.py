@@ -48,7 +48,7 @@ async def test_mcp_omits_absent_mode_and_budget_for_core_legacy_defaults(mcp):
 @pytest.mark.parametrize("change", [{"mode": None}, {"mode": True}, {"mode": "null"},
                                      {"max_sources": True}, {"max_sources": "2"}, {"max_sources": 2.0},
                                      {"deadline_ms": None}, {"per_source": False}, {"timeout_ms": "1000"},
-                                     {"limit": 1.0}, {"sources": "[]"}, {"sources": [1]}, {"extra": 1}])
+                                     {"limit": 1.0}, {"sources": "[1]"}, {"sources": [1]}, {"extra": 1}])
 async def test_mcp_rejects_raw_coercion_before_core(mcp, tool, change):
     instance, calls, _ = mcp
     request = {"query": "fixture", **change}

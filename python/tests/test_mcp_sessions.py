@@ -58,7 +58,7 @@ async def test_search_session_annotations_and_required_identities(server):
 
 
 @pytest.mark.parametrize("changed", [
-    {"sources": value} for value in (None, "null", '["fixture"]', "[]", True, [1], [None])
+    {"sources": value} for value in (None, "null", True, [1], [None])
 ] + [{key: value} for key in ("limit", "per_source", "timeout_ms", "deadline_ms")
      for value in (True, "1000", 1.0, None)] + [{"extra": 1}, {"language": "null"}, {"language": None}])
 async def test_raw_search_shape_never_widens_source_selection_or_budget(server, changed):
@@ -66,6 +66,16 @@ async def test_raw_search_shape_never_widens_source_selection_or_budget(server, 
     with pytest.raises(ToolError, match="E_SCHEMA"):
         await instance.call_tool("start_web_search", {"query": "fixture", "idempotency_key": "fixture", **changed})
     assert calls == []
+
+
+@pytest.mark.parametrize(("encoded", "decoded"), [('["fixture"]', ["fixture"]), ("[]", [])])
+async def test_encoded_source_array_strings_forward_decoded(server, encoded, decoded):
+    # CL-04r: JSON arrays sent as strings decode to exactly the caller's
+    # selection; they forward as lists instead of being refused.
+    instance, calls = server
+    await instance.call_tool("start_web_search", {"query": "fixture", "idempotency_key": "fixture",
+                                                  "sources": encoded})
+    assert calls[-1][1]["sources"] == decoded
 
 
 @pytest.mark.parametrize("name,args", [

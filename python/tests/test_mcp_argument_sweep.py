@@ -6,6 +6,9 @@ The sweep proves every tool in list_tools() refuses those wire shapes before
 anything is forwarded to the core, and that the advertised schemas carry no
 null wire type.
 """
+import inspect
+import json
+
 import pytest
 
 from mcp.server.mcpserver.exceptions import ToolError
@@ -125,3 +128,130 @@ async def test_unknown_fields_are_refused_for_every_tool(server):
         with pytest.raises(ToolError, match="E_SCHEMA"):
             await instance.call_tool(name, {**MINIMAL_ARGUMENTS[name], "unexpected_field": 1})
         assert calls == [], name
+
+
+async def test_list_arguments_accept_json_array_strings_and_forward_decoded(server):
+    # CL-04r: some desktop clients send JSON arrays as strings and the SDK
+    # would decode them. A string decoding to a list of strings is accepted
+    # and forwarded as the decoded list; malformed strings stay refused.
+    instance, calls = server
+    tools = {tool.name: tool for tool in await instance.list_tools()}
+    checked = 0
+    for name, tool in tools.items():
+        schema = tool.input_schema
+        for param, field in schema.get("properties", {}).items():
+            if _schema_types(field) != ["array"]:
+                continue
+            assert field["items"]["type"] == "string", (name, param)
+            for decoded in (MINIMAL_ARGUMENTS[name].get(param, ["fixture"]), []):
+                encoded = json.dumps(decoded)
+                before = len(calls)
+                result = await instance.call_tool(name, {**MINIMAL_ARGUMENTS[name], param: encoded})
+                assert not result.is_error, (name, param)
+                assert len(calls) == before + 1, (name, param)
+                forwarded = calls[-1][1].get(param)
+                assert type(forwarded) is list, (name, param, forwarded)
+                assert forwarded == decoded, (name, param, forwarded)
+            for malformed in ('["a",1]', '"x"', "null", "{}", "[1]", "[true]",
+                              "[null]", '[["a"]]', "true", "5", "["):
+                before = len(calls)
+                with pytest.raises(ToolError, match="E_SCHEMA"):
+                    await instance.call_tool(name, {**MINIMAL_ARGUMENTS[name], param: malformed})
+                assert len(calls) == before, (name, param, malformed)
+            checked += 1
+    assert checked >= 5, "expected urls/seeds/sources across read_urls, map_site, crawl_site, web_search"
+
+
+async def test_required_type_errors_do_not_suggest_omitting(server):
+    # CL-04r: "omit it to use its default" is wrong advice for required
+    # parameters such as urls; the hint only applies to defaulted ones.
+    instance, calls = server
+    with pytest.raises(ToolError, match=r"E_SCHEMA: invalid JSON type for urls$"):
+        await instance.call_tool("read_urls", {"urls": 5, "idempotency_key": "no-omit"})
+    assert calls == []
+    checked = 0
+    for tool in await instance.list_tools():
+        schema = tool.input_schema
+        for param in schema.get("required", []):
+            kind, = _schema_types(schema["properties"][param])
+            for wrong in WRONG_VALUES[kind]:
+                with pytest.raises(ToolError, match="E_SCHEMA") as exc_info:
+                    await instance.call_tool(tool.name, {**MINIMAL_ARGUMENTS[tool.name], param: wrong})
+                assert calls == [], (tool.name, param, wrong)
+                assert "omit it" not in str(exc_info.value), (tool.name, param, wrong)
+            checked += 1
+    assert checked >= 31, "all registered required parameters must be checked"
+    with pytest.raises(ToolError, match="omit it to use its default"):
+        await instance.call_tool("web_search", {"query": "alpha", "limit": "5"})
+    assert calls == []
+
+
+@pytest.mark.parametrize("depth", [2000, 10000])
+async def test_deep_json_list_strings_raise_schema_error_without_core_calls(server, depth):
+    instance, calls = server
+    # Python 3.12's C decoder can accept depth 2000; the deeper case also
+    # exercises its RecursionError path without changing recursion settings.
+    encoded = "[" * depth + '"x"' + "]" * depth
+    checked = 0
+    for tool in await instance.list_tools():
+        for param, field in tool.input_schema.get("properties", {}).items():
+            if _schema_types(field) != ["array"]:
+                continue
+            with pytest.raises(Exception) as exc_info:
+                await instance.call_tool(tool.name, {**MINIMAL_ARGUMENTS[tool.name], param: encoded})
+            assert calls == [], (tool.name, param)
+            assert isinstance(exc_info.value, ToolError), (tool.name, param, type(exc_info.value).__name__)
+            assert "E_SCHEMA" in str(exc_info.value), (tool.name, param)
+            checked += 1
+    assert checked >= 5, "deep JSON must be rejected for every registered list parameter"
+
+
+@pytest.mark.parametrize("name", ["web_search", "start_web_search"])
+async def test_omitted_sources_differ_from_encoded_empty_selection(server, name):
+    instance, calls = server
+    arguments = dict(MINIMAL_ARGUMENTS[name])
+    await instance.call_tool(name, arguments)
+    await instance.call_tool(name, {**arguments, "sources": "[]"})
+    operation = "web.search" if name == "web_search" else "web.search.start"
+    assert calls == [(operation, {**arguments, "category": "web"}),
+                     (operation, {**arguments, "sources": []})]
+
+
+async def test_defaulted_nonnullable_type_error_suggests_omitting(server):
+    instance, calls = server
+    with pytest.raises(ToolError, match="E_SCHEMA") as exc_info:
+        await instance.call_tool("search_session_events", {"session_id": "s", "limit": "20"})
+    assert calls == []
+    assert "omit it to use its default" in str(exc_info.value)
+
+
+async def test_every_defaulted_parameter_type_error_suggests_omitting(server):
+    instance, calls = server
+    checked = 0
+    for tool in await instance.list_tools():
+        parameters = inspect.signature(instance._registered_tool(tool.name).fn).parameters
+        for param, field in tool.input_schema.get("properties", {}).items():
+            if parameters[param].default is inspect.Parameter.empty:
+                continue
+            kind, = _schema_types(field)
+            for wrong in WRONG_VALUES[kind]:
+                with pytest.raises(ToolError, match="E_SCHEMA") as exc_info:
+                    await instance.call_tool(tool.name, {**MINIMAL_ARGUMENTS[tool.name], param: wrong})
+                assert calls == [], (tool.name, param, wrong)
+                assert "omit it to use its default" in str(exc_info.value), (tool.name, param, wrong)
+            checked += 1
+    assert checked >= 57, "all registered defaulted parameters must be checked"
+
+
+async def test_required_nullable_parameter_keeps_null_guard_without_omit_hint(server):
+    instance, calls = server
+
+    @instance.tool()
+    async def required_nullable(selection: str | None) -> dict:
+        return await mcp_server._call("fixture.required_nullable", {"selection": selection})
+
+    for wrong in (1, None, "null"):
+        with pytest.raises(ToolError, match="E_SCHEMA") as exc_info:
+            await instance.call_tool("required_nullable", {"selection": wrong})
+        assert calls == []
+        assert "omit it" not in str(exc_info.value)
