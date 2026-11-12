@@ -11,6 +11,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
         with:
           persist-credentials: false
+      - name: Reject CRLF in the index (CL-21)
+        run: |
+          bad=$(git ls-files --eol | awk '$1=="i/crlf"')
+          if [ -n "$bad" ]; then
+            echo "files stored with CRLF in the index:"; echo "$bad"; exit 1
+          fi
       - name: Install build dependencies
         run: |
           sudo apt-get update
