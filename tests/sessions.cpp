@@ -274,7 +274,7 @@ TEST(frozen_known_redirect_binding_survives_target_revival_and_route_change) {
     const auto fresh=web.submit_search("alice",input("fresh")).at("session_id").str();execute_one(web);CHECK(store.session_page("alice",fresh,store.session_get("alice",fresh).at("result_set_version").str(),"",20).at("hits").size()==3);
   }
 }
-TEST(incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker) {
+TEST(legacy_crawl_marker_on_stored_snapshot_blocks_exactly_that_url) {
   // CL-03: exact values only. The legacy marker on the stored snapshot
   // blocks exactly that URL; the other 23 fresh hits stay visible, and a
   // later withdrawal removes exactly one more. The previous assertions (a

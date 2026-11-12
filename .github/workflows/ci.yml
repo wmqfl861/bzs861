@@ -33,6 +33,18 @@ jobs:
           cmake --build --preset dev -j 2
           ctest --preset dev --output-junit "$PWD/build/ctest-results.xml"
           .venv/bin/python tools/verify_ctest_junit.py "$PWD/build/ctest-results.xml" --minimum 42
+      - name: Verify capture mutations (CL-03r)
+        timeout-minutes: 30
+        env:
+          MUTATION_OUTPUT_DIR: ${{ github.workspace }}/mutation-logs
+          MUTATION_SUITE_TIMEOUT: "600"
+        run: |
+          set -o pipefail
+          mkdir -p "$MUTATION_OUTPUT_DIR"
+          .venv/bin/python tools/test_mutation_check.py 2>&1 | tee "$MUTATION_OUTPUT_DIR/harness-tests.log"
+          # Reuse the tested dev build. The script restores source and rebuilds
+          # the affected targets on exit, before any later normal test consumer.
+          bash tools/mutation_check.sh "$PWD" "$PWD/build" cmake Debug 2>&1 | tee "$MUTATION_OUTPUT_DIR/summary.log"
       - name: Address and undefined-behavior checks
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
@@ -76,6 +88,7 @@ jobs:
           path: |
             build/ctest-results.xml
             build/Testing/Temporary/*.log
+            mutation-logs/*.log
           retention-days: 14
           if-no-files-found: warn
   windows:

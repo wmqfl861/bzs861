@@ -5,38 +5,135 @@
 # Disables each tightening statement (M1 contributor overflow, M2 incomplete
 # stored-binding scan, M3 legacy crawl marker propagation), rebuilds the
 # publication-sensitive native suites and reports which suite killed the
-# mutant. Expected after CL-03: every mutation is KILLED. Commits touching
-# the publication/revocation/deletion paths in src/sessions.cpp should attach
-# this script's results to their description.
+# mutant. Success requires a passing baseline and assertion kills for M1-M3.
 #
-# Usage: tools/mutation_check.sh <repo> <build-dir> [cmake]
-#   repo        path to the repository worktree (modified and restored)
-#   build-dir   an already-configured CMake build directory
-#   cmake       optional path to the cmake executable (default: cmake on PATH)
-# The build directory is rebuilt in place; run this on a clean tree only.
-set -u
-REPO=${1:?usage: mutation_check.sh REPO BUILD-DIR [CMAKE]}
-BUILD=${2:?usage: mutation_check.sh REPO BUILD-DIR [CMAKE]}
+# Usage: tools/mutation_check.sh <repo> <build-dir> [cmake] [config]
+#   repo        isolated worktree, with no concurrent writers/build consumers
+#   build-dir   already-configured CMake build directory for that worktree
+#   cmake       optional executable (default: cmake on PATH)
+#   config      explicit build configuration (default: Debug)
+# MUTATION_OUTPUT_DIR selects the log directory (default: a new temp directory).
+# MUTATION_SUITE_TIMEOUT is a positive number of seconds (default: 600).
+# Requires Bash and GNU timeout. The source and affected build targets are
+# restored on exit, including errors and HUP/INT/TERM. SIGKILL/power loss cannot
+# be trapped: preserve/recover sessions.cpp.mutation-backup before another run.
+set -euo pipefail
+REPO=${1:?usage: mutation_check.sh REPO BUILD-DIR [CMAKE] [CONFIG]}
+BUILD=${2:?usage: mutation_check.sh REPO BUILD-DIR [CMAKE] [CONFIG]}
 CMAKE=${3:-cmake}
-OUT=${MUTATION_OUTPUT_DIR:-$(mktemp -d)}
-SUITES="bzs_session_tests bzs_site_publication_tests bzs_source_publication_tests bzs_tests bzs_batch_tests bzs_direct_shared_tests bzs_revocation_tests bzs_crawl_tests"
+CONFIG=${4:-Debug}
+SUITE_TIMEOUT=${MUTATION_SUITE_TIMEOUT:-600}
+SUITES=(bzs_session_tests bzs_site_publication_tests bzs_source_publication_tests bzs_tests bzs_batch_tests bzs_direct_shared_tests bzs_revocation_tests bzs_crawl_tests)
 F=$REPO/src/sessions.cpp
-cp "$F" "$F.orig"
-restore() { cp "$F.orig" "$F"; rm -f "$F.orig"; }
-trap restore EXIT
-echo "results in $OUT"
+BACKUP_DIR=$F.mutation-backup
+BACKUP=$BACKUP_DIR/sessions.cpp
 
-run_suites() {  # $1 = label
-  local label=$1 killed=""
-  for t in $SUITES; do
-    if ("$BUILD/$t" >"$OUT/run-$label-$t.log" 2>&1 || "$BUILD/Debug/$t" >"$OUT/run-$label-$t.log" 2>&1); then :; else killed="$killed $t"; fi
+fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+[[ "$SUITE_TIMEOUT" =~ ^[0-9]+([.][0-9]+)?$ && "$SUITE_TIMEOUT" =~ [1-9] ]] || fail 'MUTATION_SUITE_TIMEOUT must be positive seconds'
+command -v timeout >/dev/null || fail 'GNU timeout is required'
+[[ -f "$F" && ! -L "$F" ]] || fail "source is not a regular non-symlink file: $F"
+# Refuse legacy recovery files too. An atomic directory reservation prevents
+# concurrent invocations from replacing each other's only original copy.
+[[ ! -e "$F.orig" && ! -L "$F.orig" ]] || fail "existing backup must be recovered first: $F.orig"
+OUT=${MUTATION_OUTPUT_DIR:-$(mktemp -d)}
+mkdir -p "$OUT"
+mkdir "$BACKUP_DIR" || fail "cannot reserve backup (recover any previous run first): $BACKUP_DIR"
+source_dirty=0
+build_dirty=0
+
+build_targets() {
+  "$CMAKE" --build "$BUILD" --config "$CONFIG" --parallel 1 --target "${SUITES[@]}" >"$OUT/build-$1.log" 2>&1
+}
+
+restore() {
+  local status=$?
+  trap - EXIT
+  # Let recovery finish even if a second interrupt arrives.
+  trap '' HUP INT TERM
+  if (( source_dirty )); then
+    if ! cp "$BACKUP" "$F"; then
+      printf 'ERROR: source restore failed; original retained at %s\n' "$BACKUP" >&2
+      exit 1
+    fi
+  fi
+  if (( build_dirty )); then
+    if build_targets restored; then
+      printf '[restored] source and affected build targets restored\n'
+    else
+      printf 'ERROR: restored-source BUILD FAILED; rebuild before using %s (see %s/build-restored.log)\n' "$BUILD" "$OUT" >&2
+      status=1
+    fi
+  fi
+  if ! rm -f "$BACKUP" || ! rmdir "$BACKUP_DIR"; then
+    printf 'ERROR: could not remove owned backup: %s\n' "$BACKUP_DIR" >&2
+    status=1
+  fi
+  exit "$status"
+}
+trap restore EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+cp "$F" "$BACKUP"
+printf 'results in %s (config %s)\n' "$OUT" "$CONFIG"
+
+declare -A EXECUTABLES
+resolve_suites() {
+  local t candidate
+  for t in "${SUITES[@]}"; do
+    # Prefer the requested multi-config layout; select once after the baseline
+    # build, not by retrying a failed suite at another path. Check .exe first
+    # because Git Bash also accepts a suffix-less path for a Windows executable.
+    for candidate in "$BUILD/$CONFIG/$t.exe" "$BUILD/$CONFIG/$t" "$BUILD/$t.exe" "$BUILD/$t"; do
+      if [[ -f "$candidate" && -x "$candidate" ]]; then
+        EXECUTABLES[$t]=$candidate
+        break
+      fi
+    done
+    [[ -n "${EXECUTABLES[$t]:-}" ]] || fail "missing executable for $t (config $CONFIG)"
   done
-  if [ -n "$killed" ]; then echo "[$label] KILLED by:$killed"; else echo "[$label] SURVIVED (no suite failed)"; fi
+}
+
+run_suites() {  # $1 = label; only assertion failures count as kills
+  local label=$1 t log rc
+  local killed=()
+  for t in "${SUITES[@]}"; do
+    log=$OUT/run-$label-$t.log
+    rc=0
+    timeout --kill-after=5 "$SUITE_TIMEOUT" "${EXECUTABLES[$t]}" >"$log" 2>&1 || rc=$?
+    if (( rc == 0 )); then continue; fi
+    if (( rc == 124 || rc == 137 )); then
+      fail "[$label] $t TIMEOUT (exit $rc; see $log)"
+    fi
+    if [[ "$label" == baseline ]]; then
+      fail "[baseline] $t FAILED (exit $rc; see $log); no mutations run"
+    fi
+    # These native harnesses return 1 for failed tests. Require their CHECK
+    # diagnostic as well, so launch errors, crashes and test exceptions are not
+    # credited as kills. Keep the complete original log, including FAIL names.
+    local assertion='^FAIL [^[:space:]]+.*: check failed: '
+    if (( rc != 1 )) || ! grep -Eq "$assertion" "$log"; then
+      fail "[$label] $t harness failure (exit $rc, not an assertion kill; see $log)"
+    fi
+    if grep '^FAIL ' "$log" | grep -Ev "$assertion" > /dev/null; then
+      fail "[$label] $t test exception alongside assertion failures (see $log)"
+    fi
+    killed+=("$t")
+  done
+  if [[ "$label" == baseline ]]; then
+    printf '[baseline] PASS\n'
+  elif (( ${#killed[@]} )); then
+    printf '[%s] KILLED by: %s\n' "$label" "${killed[*]}"
+  else
+    printf '[%s] SURVIVED (no assertion failed)\n' "$label"
+    return 1
+  fi
 }
 
 # 0) unmodified baseline must pass everything, or the results mean nothing
-echo "=== baseline (unmodified) ==="
-"$CMAKE" --build "$BUILD" --target $SUITES >"$OUT/build-baseline.log" 2>&1 || { echo "baseline BUILD FAILED"; exit 1; }
+printf '=== baseline (unmodified) ===\n'
+build_targets baseline || fail "baseline BUILD FAILED (see $OUT/build-baseline.log)"
+resolve_suites
 run_suites baseline
 
 declare -A MUT
@@ -47,12 +144,16 @@ MUT[M2_incomplete_records]='s/if(incomplete) { bindings.set("captured_mode",std:
 # M3: legacy crawl marker no longer propagated into the captured bindings
 MUT[M3_legacy_marker]='s/if(stored.has("legacy_crawl_unverified")\&\&stored.at("legacy_crawl_unverified").flag())bindings.set("legacy_crawl_unverified",true);//'
 
+status=0
 for name in M1_contributor_overflow M2_incomplete_records M3_legacy_marker; do
-  cp "$F.orig" "$F"
-  sed -i "${MUT[$name]}" "$F"
-  if cmp -s "$F" "$F.orig"; then echo "[$name] PATTERN NOT APPLIED (source changed? update tools/mutation_check.sh)"; continue; fi
-  echo "=== mutation $name ==="
-  if ! "$CMAKE" --build "$BUILD" --target $SUITES >"$OUT/build-$name.log" 2>&1; then echo "[$name] BUILD FAILED"; continue; fi
-  run_suites "$name"
+  source_dirty=1
+  sed "${MUT[$name]}" "$BACKUP" > "$F"
+  if cmp -s "$F" "$BACKUP"; then
+    fail "[$name] PATTERN NOT APPLIED (source changed? update tools/mutation_check.sh)"
+  fi
+  printf '=== mutation %s ===\n' "$name"
+  build_dirty=1
+  build_targets "$name" || fail "[$name] BUILD FAILED (see $OUT/build-$name.log)"
+  run_suites "$name" || status=1
 done
-echo "ALL DONE"
+exit "$status"

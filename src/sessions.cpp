@@ -290,7 +290,8 @@ Json Store::search_bindings_locked(const std::string& owner,const std::string& u
   for(const auto& candidate:candidates) {
   Statement known(db_,"SELECT d.representation_key,s.meta_json,s.site_bindings_json FROM documents d JOIN snapshots s ON s.id=d.current_snapshot WHERE d.owner=? AND d.url_key=? AND s.source_kind='web' ORDER BY d.id LIMIT 25");known.bind(1,owner);known.bind(2,url_key(candidate));
   while(known.step()) {
-    // CL-03: the scan counts deleted history under the same url_key too;
+    // CL-03: the inner join counts live documents under the same url_key
+    // (e.g. host-case variants), not erased rows with current_snapshot=NULL.
     // >24 records tighten the ceiling (locked by
     // binding_history_overflow_tightens_capture_ceiling).
     if(++records>24) { incomplete=true;break; }
@@ -298,10 +299,10 @@ Json Store::search_bindings_locked(const std::string& owner,const std::string& u
     for(std::size_t i=0;i<chain.size();++i)urls.insert(chain.at(i).str());
     if(!known.text(0).empty())urls.insert(publication_url_identity(known.text(0)));
     const auto stored=Json::parse(known.text(2),128*1024);
-    // CL-03: a marker on a deleted record's snapshot is invisible to the
-    // current-snapshot recheck in the projection SQL; only this propagation
-    // carries it into the captured bindings (locked by
-    // legacy_crawl_marker_on_deleted_history_tightens_capture).
+    // CL-03: a marker on a live variant document's current snapshot under
+    // the same url_key reaches web-session paging only through this
+    // propagation into captured/recomputed bindings (locked by
+    // legacy_crawl_marker_on_variant_document_tightens_capture).
     if(stored.has("legacy_crawl_unverified")&&stored.at("legacy_crawl_unverified").flag())bindings.set("legacy_crawl_unverified",true);
     if(urls.size()>24) { incomplete=true;break; }
   }
