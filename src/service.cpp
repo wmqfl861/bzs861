@@ -418,14 +418,14 @@ namespace bzs {
             if(l)try {
               store.fail(*l, e.code);
             }catch(...) {
-              log_internal("service.lane_document.fail",nullptr);  // CL-14
+              log_current_internal("service.lane_document.fail");
             }
           } catch(...) {
-            log_internal("service.lane_document",nullptr);  // CL-14
+            log_current_internal("service.lane_document");
             if(l)try {
               store.fail(*l, "E_INTERNAL");
             }catch(...) {
-              log_internal("service.lane_document.fail",nullptr);  // CL-14
+              log_current_internal("service.lane_document.fail");
             }
           }
           return l.has_value();
@@ -445,8 +445,8 @@ namespace bzs {
           } catch(...) {
             // On an unreported RPC/storage failure, retain the full durable
             // reservation; recovery marks this attempt unknown, never free.
-            log_internal("service.lane_read",nullptr);  // CL-14
-            if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) { log_internal("service.lane_read.fail",nullptr); }
+            log_current_internal("service.lane_read");
+            if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) { log_current_internal("service.lane_read.fail"); }
           }
           return read.has_value();
         });
@@ -462,8 +462,8 @@ namespace bzs {
               else web->execute_map(*map);
             }
           } catch(...) {
-            log_internal("service.lane_map",nullptr);  // CL-14
-            if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) { log_internal("service.lane_map.fail",nullptr); }
+            log_current_internal("service.lane_map");
+            if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) { log_current_internal("service.lane_map.fail"); }
           }
           return map.has_value();
         });
@@ -476,8 +476,8 @@ namespace bzs {
             search=web->lease_search(stop);
             if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
           }catch(...) {
-            log_internal("service.lane_search",nullptr);  // CL-14
-            if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) { log_internal("service.lane_search.fail",nullptr); }
+            log_current_internal("service.lane_search");
+            if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) { log_current_internal("service.lane_search.fail"); }
           }
           return search.has_value();
         });

@@ -29,4 +29,13 @@ namespace bzs {
       // already recorded the error.
     }
   }
+  void log_current_internal(const char* where) noexcept {
+    try {
+      throw;
+    } catch(const std::exception& exception) {
+      log_internal(where,&exception);
+    } catch(...) {
+      log_internal(where,nullptr);
+    }
+  }
 }

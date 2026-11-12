@@ -1,4 +1,5 @@
 #include "bzs/service.hpp"
+#include "bzs/diagnostics.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <atomic>
@@ -7,6 +8,7 @@
 #include <iostream>
 #include <mutex>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <thread>
 using namespace bzs;
@@ -42,6 +44,73 @@ struct Worker:WorkerPort {
   }
 };
 template<class F> void until(F f) {auto end=std::chrono::steady_clock::now()+15s;while(!f()){CHECK(std::chrono::steady_clock::now()<end);std::this_thread::sleep_for(5ms);}}
+struct CapturedClog {
+  std::ostringstream stream;
+  std::streambuf* previous=std::clog.rdbuf(stream.rdbuf());
+  ~CapturedClog(){std::clog.rdbuf(previous);}
+};
+thread_local int read_lane_clock_fault=0;
+struct FaultWorker:WorkerPort {
+  const int fault;
+  int calls=0;
+  explicit FaultWorker(bool standard):fault(standard?1:2){}
+  Json call(const std::string& method,const Json&,int) override {
+    CHECK(method=="fetch.extract");++calls;
+    // execute_read swallows worker errors. Its failure write must throw to
+    // reach service.lane_read; arm only this lane's next Store clock call.
+    read_lane_clock_fault=fault;
+    throw std::runtime_error("CL-14r worker canary");
+  }
+};
+void read_lane_internal_diagnostics(bool standard) {
+  // Regression: passing nullptr in service.cpp loses the active exception.
+  // Use the existing injectable Store clock, not a production testing branch.
+  Temp t;FaultWorker w(standard);
+  Store s(t.p/"db",[]() -> std::int64_t {
+    const auto fault=read_lane_clock_fault;read_lane_clock_fault=0;
+    if(fault==1)throw std::runtime_error("CL-14r lane canary");
+    if(fault==2)throw 14;
+    return 1700000000000LL;
+  });
+  FixtureCatalog fixtures(BZS_FIXTURE_DIR);WebService web(s,w,{});
+  ReadManyOptions options;options.max_requests=3;options.max_bytes=4096;
+  const auto id=s.read_many_submit("alice",{"https://pool.example/page"},"lane-fault",options).at("job_id").str();
+  // Only the read lane can log. Capture outlives the pool even on assertion
+  // failure; never inspect its buffer or w.calls until all lanes are joined.
+  CapturedClog captured;
+  const auto before=internal_error_count();
+  auto pool=start_worker(s,fixtures,&web,{1,1,1});
+  until([&]{const auto state=s.job_get("alice",id).at("state").str();return state=="failed"||state=="succeeded";});
+  pool.request_stop();pool.join();CHECK(!pool.joinable());CHECK(w.calls==1);
+  const auto job=s.job_get("alice",id);
+  CHECK(job.at("state").str()=="failed");CHECK(job.at("dispatches").num()==1);
+  CHECK(job.at("lease_until_ms").num()==0);
+  // A diagnostic must not refund unknown usage or publish an artifact.
+  CHECK(job.at("budget").at("charged_requests").num()==3);
+  CHECK(job.at("budget").at("charged_bytes").num()==4096);
+  const auto usage=job.at("usage");
+  CHECK(usage.at("unknown_requests_charged").num()==3);
+  CHECK(usage.at("unknown_bytes_charged").num()==4096);
+  CHECK(usage.at("external_requests").num()==0);CHECK(usage.at("content_bytes").num()==0);
+  CHECK(usage.at("reserved_requests").num()==0);CHECK(usage.at("reserved_bytes").num()==0);
+  const auto item=s.job_results("alice",id).at("items").at(0);
+  CHECK(item.at("error_code").str()=="E_INTERNAL");CHECK(item.at("usage_unknown").flag());CHECK(!item.has("receipt"));
+  CHECK(internal_error_count()==before+1);
+  std::istringstream events(captured.stream.str());std::string line;
+  CHECK(static_cast<bool>(std::getline(events,line)));
+  const auto event=Json::parse(line);
+  CHECK(!std::getline(events,line));
+  CHECK(event.at("event").str()=="internal_error");
+  CHECK(event.at("where").str()=="service.lane_read");
+  std::cout<<"read_lane "<<(standard?"std":"nonstd")<<" where=service.lane_read counter_delta=1 unknown_charge=3/4096\n";
+  if(standard) {
+    CHECK(event.at("type").str()!="unknown");
+    CHECK(event.at("type").str().find("runtime_error")!=std::string::npos);
+    CHECK(event.at("message").str()=="CL-14r lane canary");
+  } else {
+    CHECK(event.at("type").str()=="unknown");CHECK(!event.has("message"));
+  }
+}
 void reads(unsigned width) {
   Temp t;Worker w;Store s(t.p/"db");FixtureCatalog fixtures(BZS_FIXTURE_DIR);WebService web(s,w,{});
   std::vector<std::string> ids;
@@ -90,4 +159,4 @@ void fixture_lane_shutdown_never_abandons_claimed_lease() {
   std::cout<<"fixture_lane shutdown leaves no running lease\n";
 }
 }
-int main(){try{reads(1);reads(4);map_pacing();options();fixture_lane_shutdown_never_abandons_claimed_lease();std::cout<<"5 pool checks passed\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
+int main(){try{read_lane_internal_diagnostics(false);read_lane_internal_diagnostics(true);reads(1);reads(4);map_pacing();options();fixture_lane_shutdown_never_abandons_claimed_lease();std::cout<<"7 pool checks passed\n";return 0;}catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
