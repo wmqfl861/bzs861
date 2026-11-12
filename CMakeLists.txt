@@ -14,7 +14,7 @@ find_path(JSONC_INCLUDE_DIR json-c/json.h REQUIRED)
 find_library(JSONC_LIBRARY NAMES json-c json-c-static REQUIRED)
 find_path(BOOST_INCLUDE_DIR boost/beast.hpp REQUIRED)
 add_library(bzs_core
-  src/json.cpp src/util.cpp src/query.cpp src/html.cpp src/tokenizer.cpp src/highlight.cpp
+  src/json.cpp src/util.cpp src/diagnostics.cpp src/query.cpp src/html.cpp src/tokenizer.cpp src/highlight.cpp
   src/store.cpp src/maintenance.cpp src/revocation.cpp src/sessions.cpp src/publication.cpp src/source_publication.cpp src/search_modes.cpp src/retention.cpp src/batch.cpp src/map.cpp src/crawl.cpp src/crawl_trap.cpp src/sites.cpp src/map_service.cpp src/contracts.cpp src/http_cache.cpp src/web.cpp src/service.cpp)
 target_include_directories(bzs_core PUBLIC include PRIVATE ${JSONC_INCLUDE_DIR})
 target_link_libraries(bzs_core PUBLIC SQLite::SQLite3 OpenSSL::Crypto PRIVATE LibXml2::LibXml2 ${JSONC_LIBRARY})

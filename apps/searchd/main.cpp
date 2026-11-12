@@ -1,4 +1,5 @@
 #include "bzs/service.hpp"
+#include "bzs/diagnostics.hpp"
 #include "bzs/request_executor.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
@@ -199,7 +200,9 @@ namespace {
         output=envelope(rid,result).dump();
       }catch(const Error& error) {
         status=error.http_status;output=failure(rid,error).dump();
-      }catch(const std::exception&) {
+      }catch(const std::exception& e) {
+        // CL-14: leave a structured, sanitised trace before the opaque 500.
+        log_internal("searchd.dispatch",&e);
         status=500;output="{\"status\":\"failed\",\"errors\":[{\"code\":\"E_INTERNAL\"}]}";
       }
       log_request(rid,status,started);
@@ -269,7 +272,9 @@ namespace {
       }catch(const Error&e) {
         status=e.http_status;
         respond(static_cast<http::status>(status), failure(rid,e).dump());
-      }catch(const std::exception&) {
+      }catch(const std::exception& e) {
+        // CL-14: leave a structured, sanitised trace before the opaque 500.
+        log_internal("searchd.request",&e);
         status=500;
         respond(http::status::internal_server_error, "{\"status\":\"failed\",\"errors\":[{\"code\":\"E_INTERNAL\"}]}");
       }

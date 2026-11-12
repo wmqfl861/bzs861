@@ -452,6 +452,7 @@ namespace bzs {
       Stmt docs(db_,"SELECT id,url FROM documents WHERE url_key=''");
       std::vector<std::pair<std::string,std::string>> keys;
       while(docs.step()) {
+        // Intentional fallback: an unnormalisable URL keeps its raw form as key.
         auto url=docs.text(1);try { url=map_url(url); } catch(const Error&) {}
         keys.emplace_back(docs.text(0),std::move(url));
       }
@@ -460,6 +461,7 @@ namespace bzs {
       keys.clear();
       while(representations.step()) {
         auto key=representations.text(1);
+        // Intentional fallback: malformed meta/URL keeps the raw key material.
         if(representations.text(3)=="web")try { const auto meta=Json::parse(representations.text(2),8*1024*1024);if(meta.has("final_url")) { key=meta.at("final_url").str();try { key=map_url(key); } catch(const Error&) {} } } catch(const Error&) {}
         keys.emplace_back(representations.text(0),std::move(key));
       }

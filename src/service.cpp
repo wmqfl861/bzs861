@@ -1,4 +1,5 @@
 #include "bzs/service.hpp"
+#include "bzs/diagnostics.hpp"
 #include "bzs/contracts.hpp"
 #include "bzs/search_modes.hpp"
 #include "bzs/error.hpp"
@@ -328,7 +329,10 @@ namespace bzs {
     if(op=="stats") {
       args.allowed( {
       });
-      return store_.stats(p.subject);
+      // CL-14: surface swallowed internal errors alongside store statistics.
+      auto out=store_.stats(p.subject);
+      out.set("internal_errors", internal_error_count());
+      return out;
     }
     if(op=="job.create") {
       args.allowed( {
@@ -414,11 +418,14 @@ namespace bzs {
             if(l)try {
               store.fail(*l, e.code);
             }catch(...) {
+              log_internal("service.lane_document.fail",nullptr);  // CL-14
             }
           } catch(...) {
+            log_internal("service.lane_document",nullptr);  // CL-14
             if(l)try {
               store.fail(*l, "E_INTERNAL");
             }catch(...) {
+              log_internal("service.lane_document.fail",nullptr);  // CL-14
             }
           }
           return l.has_value();
@@ -438,7 +445,8 @@ namespace bzs {
           } catch(...) {
             // On an unreported RPC/storage failure, retain the full durable
             // reservation; recovery marks this attempt unknown, never free.
-            if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) {}
+            log_internal("service.lane_read",nullptr);  // CL-14
+            if(read)try { store.fail_read(*read,"E_INTERNAL"); } catch(...) { log_internal("service.lane_read.fail",nullptr); }
           }
           return read.has_value();
         });
@@ -454,7 +462,8 @@ namespace bzs {
               else web->execute_map(*map);
             }
           } catch(...) {
-            if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) {}
+            log_internal("service.lane_map",nullptr);  // CL-14
+            if(map)try { store.fail_map(*map,"E_INTERNAL"); } catch(...) { log_internal("service.lane_map.fail",nullptr); }
           }
           return map.has_value();
         });
@@ -466,7 +475,10 @@ namespace bzs {
           try {
             search=web->lease_search(stop);
             if(search) { if(stop.stop_requested())store.fail_search(*search,"E_SHUTDOWN");else web->execute_search(*search); }
-          }catch(...) { if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) {} }
+          }catch(...) {
+            log_internal("service.lane_search",nullptr);  // CL-14
+            if(search)try { store.fail_search(*search,"E_INTERNAL"); }catch(...) { log_internal("service.lane_search.fail",nullptr); }
+          }
           return search.has_value();
         });
       });

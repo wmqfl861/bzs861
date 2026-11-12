@@ -1,4 +1,5 @@
 #include "bzs/service.hpp"
+#include "bzs/diagnostics.hpp"
 #include "bzs/highlight.hpp"
 #include "bzs/tokenizer.hpp"
 #include "bzs/error.hpp"
@@ -1094,6 +1095,43 @@ namespace {
     }, "E_CAPABILITY_UNAVAILABLE");
     CHECK(svc.capabilities().at("live_web_sources").num()==0);
     CHECK(!svc.capabilities().at("production_ready").flag());
+  }
+  TEST(internal_error_diagnostics_are_structured_and_counted) {
+    // CL-14: every swallowed internal error leaves one structured JSON event
+    // on stderr with the site, exception type and a truncated message - no
+    // URL, query, body or token material - and the counter surfaced through
+    // the stats operation increases by exactly that count.
+    std::ostringstream captured;
+    auto* previous=std::clog.rdbuf(captured.rdbuf());
+    const auto before=internal_error_count();
+    try {
+      throw std::runtime_error("boom");
+    }catch(const std::exception& e) {
+      log_internal("test.site",&e);
+    }
+    log_internal("test.site2",nullptr);
+    std::clog.rdbuf(previous);
+    CHECK(internal_error_count()==before+2);
+    const auto text=captured.str();
+    const auto first_line=text.substr(0,text.find('\n'));
+    auto second_line=text.substr(text.find('\n')+1);
+    second_line.pop_back();  // trailing newline
+    const auto first=Json::parse(first_line);
+    CHECK(first.at("event").str()=="internal_error");
+    CHECK(first.at("where").str()=="test.site");
+    CHECK(first.at("message").str()=="boom");
+    CHECK(first.at("type").str().find("runtime_error")!=std::string::npos);
+    const auto second=Json::parse(second_line);
+    CHECK(second.at("where").str()=="test.site2");
+    CHECK(second.at("type").str()=="unknown");
+    Temp t;
+    Store s(t.path/"db");
+    FixtureCatalog f(BZS_FIXTURE_DIR);
+    Service svc(s, f, t.path/"backup");
+    const auto stats=svc.dispatch( {
+      "a", false
+    }, req("stats", Json::object()));
+    CHECK(stats.at("internal_errors").num()==internal_error_count());
   }
   TEST(admin_backup) {
     Temp t;
