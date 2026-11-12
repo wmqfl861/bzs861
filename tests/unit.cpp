@@ -542,6 +542,71 @@ namespace {
     rejects([&]{store.search_once("alice",query,2000,101);},"E_SCHEMA");
     rejects([&]{store.search_once("alice",query,0,1);},"E_SCHEMA");
   }
+  TEST(site_queries_push_host_predicate_into_candidate_windows) {
+    // CL-02 regression (R-03 follow-up): a site: query must find targets
+    // that rank below other hosts' documents on every candidate path (FTS
+    // BM25, priority+substring, substring-only), and partial must stay
+    // truthful: false while every matching candidate fits the budget, true
+    // once matching candidates on the target host itself exceed it.
+    Temp t;std::int64_t now=1800000000000;
+    Store store(t.path/"db",[&]{return now;});
+    std::string long_body="alpha";
+    for(int i=0;i<400;++i)long_body+=" filler"+std::to_string(i);
+    store.ingest("alice",text("https://target.example/doc",long_body,"target page"));
+    for(int i=0;i<30;++i) {
+      ++now;
+      store.ingest("alice",text("https://other.example/p"+std::to_string(i),
+                                "alpha alpha alpha alpha filler0 tail","alpha "+std::to_string(i)));
+    }
+    store.ingest("alice",text("https://notexample.com/x","alpha alpha alpha alpha filler0 tail","decoy"));
+    const auto hit_urls=[&](const Json& r) {
+      std::vector<std::string> urls;
+      for(std::size_t i=0;i<r.at("hits").size();++i)urls.push_back(r.at("hits").at(i).at("url").str());
+      return urls;
+    };
+    const auto contains=[](const std::vector<std::string>& urls,const char* needle) {
+      for(const auto& u:urls)if(u==needle)return true;
+      return false;
+    };
+    // The target ranks 31st overall (long body, oldest ingest) yet must be
+    // found with a one-row budget on all three candidate paths, because the
+    // host predicate now runs inside the candidate SQL.
+    for(const char* expression: {"alpha site:target.example","\"alpha\" site:target.example",
+                                 "\"alpha filler0\" site:target.example"}) {
+      for(const std::int64_t budget: {1,2}) {
+        const auto r=store.search_once("alice",q(expression),budget,10);
+        CHECK(contains(hit_urls(r),"https://target.example/doc"));
+        CHECK(!r.at("partial").flag());
+      }
+    }
+    // Matching candidates on the target host itself exceed the budget.
+    for(int i=0;i<3;++i) {
+      ++now;
+      store.ingest("alice",text("https://target.example/short"+std::to_string(i),
+                                "alpha alpha alpha alpha filler0 tail","short "+std::to_string(i)));
+    }
+    const auto tight=store.search_once("alice",q("alpha site:target.example"),1,10);
+    CHECK(tight.at("returned_count").num()==1);CHECK(tight.at("partial").flag());
+    // Conjunction stays AND inside the SQL: no document is on both hosts.
+    const auto none=store.search_once("alice",q("alpha site:target.example site:other.example"),10,10);
+    CHECK(none.at("returned_count").num()==0);CHECK(!none.at("partial").flag());
+    // Parent domain matches subdomains with a dot boundary only: the decoy
+    // host notarget.example must never be returned for site:target.example.
+    store.ingest("alice",text("https://sub.target.example/deep","alpha alpha alpha alpha filler0 tail","deep"));
+    store.ingest("alice",text("https://notarget.example/decoy","alpha alpha alpha alpha filler0 tail","decoy"));
+    // Five matching candidates on target.example and its subdomain; budget 4
+    // reports partial=true, budget 5 finds every match and stays complete.
+    const auto narrow=store.search_once("alice",q("alpha site:target.example"),4,100);
+    CHECK(narrow.at("returned_count").num()==4);CHECK(narrow.at("partial").flag());
+    CHECK(!contains(hit_urls(narrow),"https://notarget.example/decoy"));
+    const auto full=store.search_once("alice",q("alpha site:target.example"),5,100);
+    CHECK(full.at("returned_count").num()==5);CHECK(!full.at("partial").flag());
+    CHECK(contains(hit_urls(full),"https://sub.target.example/deep"));
+    // site: currently requires a top-level positive conjunction, so the
+    // bounded-scan path (pure NOT expressions) cannot combine with it at
+    // all; lock that grammar boundary alongside the window behaviour.
+    rejects([&]{store.search_once("alice",q("site:target.example NOT absent"),10,10);},"E_QUERY_SYNTAX");
+  }
   TEST(store_candidate_predicate_agreement) {
     Temp t;
     Store s(t.path/"db");

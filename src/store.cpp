@@ -1282,17 +1282,14 @@ namespace bzs {
   Json Store::search_impl(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit,bool freeze) {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
 
-    // R-03: over-fetch candidates when deterministic host/type filters
-    // are present, then skip non-matching candidates before they consume
-    // the budget in the row loop. The SQL LIMIT is increased by a fixed
-    // multiplier so pre-filtering happens without changing the reported
-    // scanned_candidates semantics (only candidates that pass matches()
-    // are counted as scanned; non-matching are silently skipped).
-    const bool has_deterministic_filters=!q.hosts.empty();
-    // When filters are present, fetch more rows so matching ones aren't
-    // crowded out by irrelevant ones in the LIMIT window.
-    const auto fetch_limit=has_deterministic_filters?
-      std::min<std::int64_t>(max_candidates*10,max_candidates+2000):max_candidates;
+    // CL-02: q.hosts is pushed into every candidate SQL (exact match or
+    // dotted suffix, AND across conditions, mirroring matches()), so
+    // foreign-host rows never consume the candidate window and the
+    // one-extra-row partial check below stays truthful. matches() in the
+    // final loop remains the authoritative filter.
+    std::string host_filter;
+    for(std::size_t i=0;i<q.hosts.size();++i)
+      host_filter+=" AND (d.host=? OR (length(d.host)>length(?) AND substr(d.host,-length(?)-1)='.'||?))";
     auto fts=fts_candidates(q);
     const auto substrings=substring_candidates(q);
     const auto priority=priority_fts_candidates(q);
@@ -1306,6 +1303,7 @@ namespace bzs {
  ORDER BY r LIMIT ?)SQL";
       if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
         " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
       word_sql=sql;
     }
     if(!fts&&substrings) {
@@ -1314,11 +1312,13 @@ namespace bzs {
  WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
     } else if(!fts) {
       sql=R"SQL(SELECT d.id,s.id,d.url,d.host,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
     }
     struct Hit {
       std::string doc,snap;
@@ -1356,26 +1356,13 @@ namespace bzs {
         if(words||substrings) { rows.bind(bind++,words?*words:*substrings);rows.bind(bind++,owner); }
         rows.bind(bind++,owner);
         if(words&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
+        for(const auto& h:q.hosts) { rows.bind(bind++,h);rows.bind(bind++,h);rows.bind(bind++,h);rows.bind(bind++,h); }
         // Even with zero remaining slots, inspect one additional unique row
         // so partial is truthful. At most max_candidates duplicates can exist.
-        rows.bind(bind,fetch_limit+1);
+        rows.bind(bind,max_candidates+1);
         while(rows.step()) {
           const auto id=rows.text(0);
           if(!seen.insert(id).second)continue;
-          // R-03: deterministic host/type filter BEFORE budget counting so
-          // irrelevant candidates don't consume max_candidates. The URL is
-          // now in the SELECT (column index 2) for this check. matches()
-          // in the final loop remains the authoritative filter.
-          if(has_deterministic_filters) {
-            const auto candidate_host=rows.text(3);
-            bool host_ok=true;
-            if(!q.hosts.empty()) {
-              host_ok=false;
-              for(const auto& h:q.hosts)
-                if(candidate_host==h||(candidate_host.size()>h.size()&&candidate_host.ends_with("."+h))) { host_ok=true;break; }
-            }
-            if(!host_ok)continue;
-          }
           if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
           candidates.push_back({id,rows.text(1),words?static_cast<std::int64_t>(-rows.real(4)*1000.0):0,
                                 rows.num(5),rows.text(6),rows.num(7),false});
