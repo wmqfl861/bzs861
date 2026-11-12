@@ -286,7 +286,7 @@ if(BZS_BUILD_TESTS)
   add_test(NAME e2e_cache_freshness COMMAND ${BZS_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e_cache_freshness.py
     --server $<TARGET_FILE:searchd> --python ${BZS_PYTHON} --repo ${CMAKE_CURRENT_SOURCE_DIR})
   set_tests_properties(e2e_cache_freshness PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)
-  add_test(NAME e2e_cache_policy_review COMMAND ${BZS_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/validation/s2_takeover/cache_review/probe_http_policy.py
+  add_test(NAME e2e_cache_policy_review COMMAND ${BZS_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/tests/probe_http_policy.py
     --server $<TARGET_FILE:searchd> --python ${BZS_PYTHON} --repo ${CMAKE_CURRENT_SOURCE_DIR})
   set_tests_properties(e2e_cache_policy_review PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)
   add_test(NAME e2e_revocation COMMAND ${BZS_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e_revocation.py
