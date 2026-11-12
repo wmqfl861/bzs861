@@ -313,7 +313,7 @@ namespace bzs {
   Json fuse(const std::vector<SourceHits>& results, const SourceRegistry& registry, std::size_t limit, std::int64_t k, bool retain_publication_urls) {
     require(k>=1&&k<=1000000,"E_SCHEMA","RRF k must be in 1..1000000");
     struct Agg {
-      std::string url, title, snippet, key;
+      std::string url, title, snippet, key, donor_source_id;
       std::int64_t best_rank=1<<30;
       std::map<std::string, std::pair<std::int64_t, std::int64_t>> family;  // family -> (best rank, weight)
       std::vector<std::pair<std::string, std::int64_t>> sources;
@@ -333,15 +333,17 @@ namespace bzs {
         auto& g=it->second;
         if(retain_publication_urls)g.publication_urls.insert(h.url);
         if(fresh)g.key=key;
-        // Strict donor consistency (R-01, CL-12): url, title and snippet are
-        // replaced as a whole from the winning hit; an empty field stays
-        // empty instead of borrowing another variant's fields. The winner is
-        // (rank, url), so the output never depends on source arrival order.
-        bool better=h.rank<g.best_rank||(h.rank==g.best_rank&&h.url<g.url);
+        // Strict donor consistency (R-01, CL-12r): url, title and snippet are
+        // replaced as a whole, including empty fields. The full donor order
+        // (rank, url, source_id, title, snippet) also resolves exact rank/URL
+        // ties, independent of source arrival and repeated-hit order.
+        const bool better=std::tie(h.rank,h.url,r.source_id,h.title,h.snippet)<
+                          std::tie(g.best_rank,g.url,g.donor_source_id,g.title,g.snippet);
         if(better||g.url.empty()) {
           g.url=h.url;
           g.title=h.title;
           g.snippet=h.snippet;
+          g.donor_source_id=r.source_id;
         }
         g.best_rank=std::min(g.best_rank, h.rank);
         auto& f=g.family[fam];

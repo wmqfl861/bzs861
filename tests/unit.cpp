@@ -5,6 +5,7 @@
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
+#include <algorithm>
 #include <atomic>
 #include <barrier>
 #include <chrono>
@@ -1437,33 +1438,35 @@ namespace {
     CHECK(has_http_a);CHECK(has_https_a);
   }
   TEST(fuse_output_is_independent_of_source_order) {
-    // CL-12: identical inputs must fuse identically in any source (and hit)
-    // order. The winning donor is chosen by (rank, url); url/title/snippet
-    // move as a whole so an empty field is never filled from another hit;
-    // group ties break on the dedup key and equal ranks in the sources list
-    // resolve by source id - never by arrival order.
+    // CL-12r: identical inputs must fuse identically in any source (and hit)
+    // order. The donor order is (rank, url, source_id, title, snippet);
+    // url/title/snippet move as a whole, including empty fields. Group ties
+    // break on the dedup key and source ties by id, never arrival order.
     auto manifest=Json::parse(R"({"version":1,"sources":[
       {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true},
       {"id":"srcy","provider":"y","index_family":"famy","capability":"web","kind":"api","enabled":true}]})");
     SourceRegistry reg(reviewed_sources(manifest));
     std::vector<SourceHits> base= {
       {"srcx", {{"http://SHARED.example/a", "upper title", "upper snippet", 1},
-                {"http://only-x.example/b", "x only", "", 1}}},
+                {"http://only-x.example/b", "x only", "", 1},
+                {"http://tied.example/d", "z title from x", "z snippet from x", 1}}},
       {"srcy", {{"http://shared.example/a", "", "", 1},
                 {"http://shared.example:80/a", "late title", "late snippet", 2},
-                {"http://only-y.example/c", "y only", "", 1}}}};
+                {"http://only-y.example/c", "y only", "", 1},
+                {"http://tied.example/d", "a title from y", "a snippet from y", 1}}}};
     const auto run=[&](const std::vector<SourceHits>& inputs) { return fuse(inputs, reg, 10, 60, true); };
     const auto reference=run(base);
+    const auto canonical=reference.canonical();
     for(const bool y_first:{false,true}) {
-      std::vector<SourceHits> inputs=y_first?std::vector<SourceHits> {base[1],base[0]}
-                                             :std::vector<SourceHits> {base[0],base[1]};
-      for(const bool reverse_hits:{false,true}) {
-        auto candidate=inputs;
-        if(reverse_hits)for(auto& source:candidate)std::reverse(source.hits.begin(),source.hits.end());
-        CHECK(run(candidate).canonical()==reference.canonical());
+      for(const bool reverse_x:{false,true})for(const bool reverse_y:{false,true}) {
+        auto candidate=base;
+        if(reverse_x)std::reverse(candidate[0].hits.begin(),candidate[0].hits.end());
+        if(reverse_y)std::reverse(candidate[1].hits.begin(),candidate[1].hits.end());
+        if(y_first)std::reverse(candidate.begin(),candidate.end());
+        CHECK(run(candidate).canonical()==canonical);
       }
     }
-    CHECK(reference.size()==3);
+    CHECK(reference.size()==4);
     // Equal-rank tie resolves by url: the uppercase variant sorts first and
     // the whole donor moves as one (its title, not the rank-2 late title).
     CHECK(reference.at(0).at("url").str()=="http://SHARED.example/a");
@@ -1477,6 +1480,77 @@ namespace {
     CHECK(sources.at(0).at("source_id").str()=="srcx");CHECK(sources.at(0).at("rank").num()==1);
     CHECK(sources.at(1).at("source_id").str()=="srcy");CHECK(sources.at(1).at("rank").num()==1);
     CHECK(sources.at(2).at("source_id").str()=="srcy");CHECK(sources.at(2).at("rank").num()==2);
+    // An exact rank/URL tie resolves by source id before title or snippet,
+    // even though srcy's title and snippet are lexicographically smaller.
+    const auto tied=reference.at(1);
+    CHECK(tied.at("rank").num()==2);
+    CHECK(tied.at("url").str()=="http://tied.example/d");
+    CHECK(tied.at("title").str()=="z title from x");
+    CHECK(tied.at("snippet").str()=="z snippet from x");
+    CHECK(tied.at("snippet_kind").str()=="search_engine_snippet");
+    CHECK(tied.at("index_families").num()==2);
+    CHECK(tied.at("score_micro").num()==32786);
+    // Keep JSON escape literals outside CHECK's MSVC stringification.
+    const std::string expected_urls=R"(["http:\/\/tied.example\/d"])";
+    CHECK(tied.at("publication_urls").canonical()==expected_urls);
+    CHECK(tied.at("sources").canonical()==R"([{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcy"}])");
+    CHECK(reference.at(2).at("url").str()=="http://only-x.example/b");
+    CHECK(reference.at(3).at("url").str()=="http://only-y.example/c");
+  }
+  TEST(fuse_same_source_ties_use_title_before_snippet) {
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    const SourceHits source={"srcx", {
+      {"https://tie.example/same", "z title", "", 1},
+      {"https://tie.example/same", "", "z snippet", 1},
+      {"https://tie.example/same", "a title", "a snippet", 1}}};
+    const auto reference=fuse({source},reg,10,60,true);
+    const auto canonical=reference.canonical();
+    std::vector<std::size_t> order={0,1,2};
+    do {
+      SourceHits candidate{source.source_id,{}};
+      for(const auto i:order)candidate.hits.push_back(source.hits[i]);
+      CHECK(fuse({candidate},reg,10,60,true).canonical()==canonical);
+    } while(std::next_permutation(order.begin(),order.end()));
+    CHECK(reference.size()==1);
+    const auto hit=reference.at(0);
+    CHECK(hit.at("url").str()=="https://tie.example/same");
+    // Title is compared before snippet. The empty title and the nonempty
+    // snippet belong to the same donor; neither comes from another hit.
+    CHECK(hit.at("title").str()=="");
+    CHECK(hit.at("snippet").str()=="z snippet");
+    CHECK(hit.at("index_families").num()==1);
+    CHECK(hit.at("score_micro").num()==16393);
+    const std::string expected_urls=R"(["https:\/\/tie.example\/same"])";
+    CHECK(hit.at("publication_urls").canonical()==expected_urls);
+    CHECK(hit.at("sources").canonical()==R"([{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcx"}])");
+  }
+  TEST(fuse_same_source_and_title_ties_use_snippet) {
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    const SourceHits source={"srcx", {
+      {"https://tie.example/same", "same title", "z snippet", 1},
+      {"https://tie.example/same", "same title", "", 1},
+      {"https://tie.example/same", "same title", "a snippet", 1}}};
+    const auto reference=fuse({source},reg,10,60,true);
+    const auto canonical=reference.canonical();
+    std::vector<std::size_t> order={0,1,2};
+    do {
+      SourceHits candidate{source.source_id,{}};
+      for(const auto i:order)candidate.hits.push_back(source.hits[i]);
+      CHECK(fuse({candidate},reg,10,60,true).canonical()==canonical);
+    } while(std::next_permutation(order.begin(),order.end()));
+    CHECK(reference.size()==1);
+    const auto hit=reference.at(0);
+    CHECK(hit.at("url").str()=="https://tie.example/same");
+    CHECK(hit.at("title").str()=="same title");
+    // The final tuple field breaks the tie; an empty winning snippet stays empty.
+    CHECK(hit.at("snippet").str()=="");
+    CHECK(hit.at("sources").size()==3);
+    const std::string expected_urls=R"(["https:\/\/tie.example\/same"])";
+    CHECK(hit.at("publication_urls").canonical()==expected_urls);
   }
   TEST(public_url_policy) {
     for(auto u: {"http://localhost/", "http://127.0.0.1/", "http://10.1.2.3/", "http://169.254.169.254/latest/meta-data",
