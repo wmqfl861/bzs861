@@ -29,7 +29,7 @@ async def test_prepare_and_cancel_forward_exact_core_objects(monkeypatch, name, 
     assert calls == [(operation, core_args)] and result == original
 
 
-@pytest.mark.parametrize("read_id", [None, "", "a" * 48])
+@pytest.mark.parametrize("read_id", ["", "a" * 48])
 async def test_read_url_forwards_supplied_handle_without_silent_downgrade(monkeypatch, read_id):
     calls = []
 
@@ -41,10 +41,28 @@ async def test_read_url_forwards_supplied_handle_without_silent_downgrade(monkey
     response = await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page", "read_id": read_id})
     expected = {"url": "https://example.com/page", "max_bytes": 20000,
                 "start_byte": 0, "freshness": "cache_first", "max_age_s": 604800}
-    if read_id is not None:
-        expected["read_id"] = read_id
+    expected["read_id"] = read_id
     assert calls == [("web.read", expected)]
     assert not response.is_error and response.structured_content["text"] == "done"
+
+
+async def test_read_url_refuses_explicit_null_handle(monkeypatch):
+    """CL-04: an explicit JSON null must not silently become an omitted read_id.
+
+    Omitting read_id is the caller's decision; sending null explicitly used to
+    be coerced away by the SDK. Refuse it like every other explicit null so the
+    caller states the intent (pass a string handle or omit the field).
+    """
+    calls = []
+
+    async def call(op, args):  # pragma: no cover - must not be reached
+        calls.append((op, args))
+        return {"content": {"text": "done"}}
+
+    monkeypatch.setattr(mcp_server, "_call", call)
+    with pytest.raises(ToolError, match="E_SCHEMA"):
+        await mcp_server.build_server().call_tool("read_url", {"url": "https://example.com/page", "read_id": None})
+    assert calls == []
 
 
 async def test_invalid_explicit_handle_keeps_core_error_and_does_not_retry_legacy(monkeypatch):
