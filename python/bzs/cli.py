@@ -39,8 +39,8 @@ def _spawn(name: str, cmd: list[str], *, timeout: float = 30.0) -> subprocess.Po
     return proc
 
 
-def _client(cfg: config.Config) -> CoreClient:
-    return CoreClient(cfg.core_url, config.api_token())
+def _client(cfg: config.Config, token: str | None = None) -> CoreClient:
+    return CoreClient(cfg.core_url, token if token is not None else config.api_token())
 
 
 def cmd_init(args) -> int:
@@ -50,7 +50,16 @@ def cmd_init(args) -> int:
     print(f"searchd binary: {cfg.searchd} ({'found' if Path(cfg.searchd).exists() else 'NOT FOUND - build it first'})")
     print(f"sources manifest: {cfg.sources} (edit to enable/disable sources)")
     print(f"site discovery policy: {cfg.sites} (empty by default; requires a reviewed site)")
+    print("tokens: owner (api.token, non-admin; MCP default) and admin (admin.token; management CLI only); "
+          "legacy single-token homes keep working (docs/WINDOWS.md)")
+    print("run `bzs doctor` to verify local secret-file permissions")
     return 0
+
+
+def cmd_doctor(args) -> int:
+    """CL-08: report whether other local accounts can read this home's secrets."""
+    from . import doctor
+    return 1 if doctor.check() else 0
 
 
 def start(cfg: config.Config) -> list[tuple[str, subprocess.Popen]]:
@@ -266,8 +275,10 @@ def cmd_jobs_compact(args) -> int:
 
 def cmd_revoke_principal(args) -> int:
     cfg = config.load()
+    # CL-08: principal revocation is an admin operation; use the dedicated
+    # admin token (falls back to api.token in legacy single-token homes).
     try:
-        result = _client(cfg).call_sync("principal.revoke", {"subject": args.subject})
+        result = _client(cfg, config.admin_token()).call_sync("principal.revoke", {"subject": args.subject})
     except CoreError as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -403,6 +414,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("start", help="start worker and searchd").set_defaults(fn=cmd_start)
     sub.add_parser("stop").set_defaults(fn=cmd_stop)
     sub.add_parser("status").set_defaults(fn=cmd_status)
+    sub.add_parser("doctor", help="verify local secret files are not exposed to other accounts").set_defaults(fn=cmd_doctor)
     p = sub.add_parser("mcp", help="run the MCP server (stdio by default)")
     p.add_argument("--transport", choices=("stdio", "streamable-http"), default="stdio")
     p.add_argument("--port", type=int, default=8612)

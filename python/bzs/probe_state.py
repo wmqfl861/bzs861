@@ -248,4 +248,9 @@ def record_body(out: Path, attempt_id: str, body: bytes) -> dict:
         stream.write(gzip.compress(body, mtime=0))
         stream.flush()
         os.fsync(stream.fileno())
+    if os.name == "nt":
+        # CL-08: 0o600 is ignored on Windows; apply the protected DACL instead
+        # and fail loudly (the recorded file stays on disk) if that is impossible.
+        from . import winsecurity
+        winsecurity.protect_path(path)
     return result

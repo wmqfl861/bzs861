@@ -13,6 +13,31 @@ def write_exclusive(path: Path, value: str) -> None:
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, 'w', encoding='utf-8') as stream:
         stream.write(value)
+    if os.name == 'nt':
+        protect_windows(path)
+
+def protect_windows(path: Path) -> None:
+    """CL-08: on Windows the 0o600 mode above is ignored; set a protected DACL.
+
+    Prefers the ctypes implementation from the bzs package (identical to
+    `bzs init`); when the script runs outside an installed bzs, fall back to
+    icacls by account name. Any failure is fatal and loud: the file stays on
+    disk and the operator is told the ACL could not be protected.
+    """
+    import subprocess
+    try:
+        from bzs import winsecurity
+    except ImportError:
+        winsecurity = None
+    if winsecurity is not None:
+        winsecurity.protect_path(path)
+        return
+    import getpass
+    grants = [f'{getpass.getuser()}:F', '*S-1-5-18:F']
+    result = subprocess.run(['icacls', str(path), '/inheritance:r', '/grant:r', *grants],
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f'E_LOCAL_SECURITY: icacls could not protect {path}: {result.stderr.strip()}')
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
