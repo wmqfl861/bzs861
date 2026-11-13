@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import codecs
 import re
+import ssl
 import time
 from dataclasses import dataclass, field
 from typing import Callable
@@ -228,7 +229,8 @@ class Fetcher:
     def __init__(self, policy: NetPolicy, *, user_agent: str = DEFAULT_UA,
                  accept_language: str = "zh-CN,zh;q=0.9,en;q=0.8", max_bytes: int = 8 * 1024 * 1024,
                  max_redirects: int = 5, per_host: int = 2, test_hosts: dict[str, str] | None = None,
-                 proxy: str | None = None, proxy_remote_dns: bool = False):
+                 proxy: str | None = None, proxy_remote_dns: bool = False,
+                 ssl_context: ssl.SSLContext | None = None):
         self.policy = policy
         self.test_hosts = test_hosts or {}
         self.user_agent = user_agent
@@ -240,6 +242,12 @@ class Fetcher:
             raise ValueError("outbound proxies are disabled until proxy connections can be bound to validated target IPs")
         self.proxy = None
         self.proxy_remote_dns = False
+        if ssl_context is not None and (ssl_context.verify_mode != ssl.CERT_REQUIRED
+                                        or not ssl_context.check_hostname):
+            # Tests inject their own CA through an explicitly built context;
+            # there is deliberately no switch that turns verification off.
+            raise ValueError("custom ssl contexts must keep certificate and hostname verification enabled")
+        self.ssl_context = ssl_context
         self._resolver: GuardedResolver | None = None
         self._session: aiohttp.ClientSession | None = None
         self._host_locks: dict[str, _HostSemaphore] = {}
@@ -248,7 +256,14 @@ class Fetcher:
 
     async def start(self) -> None:
         self._resolver = GuardedResolver(self.policy, self.test_hosts)
-        connector = aiohttp.TCPConnector(resolver=self._resolver, use_dns_cache=False, limit=64, limit_per_host=4)
+        # Explicit TLS policy (CL-20): system-trust certificate and hostname
+        # verification with a TLS 1.2 floor, instead of aiohttp's implicit
+        # connector defaults. Tests inject their own CA via ssl_context.
+        if self.ssl_context is None:
+            self.ssl_context = ssl.create_default_context()
+            self.ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+        connector = aiohttp.TCPConnector(resolver=self._resolver, use_dns_cache=False, limit=64, limit_per_host=4,
+                                         ssl=self.ssl_context)
         self._session = aiohttp.ClientSession(connector=connector, trust_env=False,
                                               cookie_jar=aiohttp.DummyCookieJar(), auto_decompress=True)
         # aiohttp 3.10+ otherwise retries idempotent requests on a disconnected
