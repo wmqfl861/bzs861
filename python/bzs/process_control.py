@@ -406,8 +406,6 @@ def control_lock(path: "os.PathLike[str] | None" = None, *, timeout_s: float = 0
         while True:
             if os.name == "nt":
                 import msvcrt
-                if os.fstat(fd).st_size == 0:
-                    os.write(fd, b"0")
                 os.lseek(fd, 0, 0)
                 try:
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
