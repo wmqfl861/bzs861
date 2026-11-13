@@ -566,7 +566,7 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
             _rec("verified_set", verified=sorted(verified), equal_tick=sorted(equal_tick),
                  equal_descendants=sorted(equal_descendants), targets=sorted(t[1] for t in targets))
         confirmed = set()
-        for depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
+        for _depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
             identity = f"pid {pid} ({names.get(pid, '?')}) created {creations.get(pid, '?')}"
             try:
                 if api.exited(handle):

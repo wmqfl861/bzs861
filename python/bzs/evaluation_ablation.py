@@ -208,12 +208,17 @@ def _contributions(pool: dict, value: dict, labels: dict) -> list[dict]:
         complete = not unresolved and all(row["status"] in ("ok", "empty") for row in outcomes)
         judged = all(labels.get((qid, doc), {}).get("grade") is not None for doc in ids)
 
+        # counts() is defined and fully consumed inside this single loop
+        # iteration (both call sites feed the rows.append below), so the
+        # pool-scope bindings it closes over (ids/qid/complete/judged) can
+        # never be observed from a later iteration; ruff B023 is a false
+        # positive here and is suppressed per-line for that reason.
         def counts(key: str, members: dict) -> dict:
-            returned = [doc for doc in ids if key in members[doc]]
+            returned = [doc for doc in ids if key in members[doc]]  # noqa: B023
             exclusive = [doc for doc in returned if members[doc] == [key]]
             return {"returned_documents": len(returned),
-                    "exclusive_documents": len(exclusive) if complete else None,
-                    "exclusive_relevant_documents": sum(labels[(qid, doc)]["grade"] > 0 for doc in exclusive) if complete and judged else None}
+                    "exclusive_documents": len(exclusive) if complete else None,  # noqa: B023
+                    "exclusive_relevant_documents": sum(labels[(qid, doc)]["grade"] > 0 for doc in exclusive) if complete and judged else None}  # noqa: B023
 
         rows.append({"query_id": qid, "pool_documents": len(ids), "attribution_complete": complete,
                      "unattributed_document_ids": unresolved, "source_outcomes": outcomes,

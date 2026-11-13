@@ -24,9 +24,22 @@ jobs:
       - name: Install the Python worker and pinned test dependencies
         run: |
           python3 -m venv .venv
-          .venv/bin/python -m pip install -r tools/requirements-s1-lock.txt
+          .venv/bin/python -m pip install --require-hashes -r tools/requirements-s1-lock.txt
           .venv/bin/python -m pip install --no-deps --no-build-isolation -e "python[test]"
           .venv/bin/python -m pip check
+      - name: Python lint gate (ruff E9,F,B)
+        # CL-11 item 5. ruff is a CI-only tool, so it is not part of the
+        # hashed worker lockfile; it gets its own version+hash pin here.
+        run: |
+          printf '%s\n' \
+            'ruff==0.17.5' \
+            '    --hash=sha256:40ca8afaac309b41a5b2e09e4e7beb1f824826b93c25697c4d74f573324fba4e' \
+            '    --hash=sha256:86bd1f3b83c25f9b8055c6e796f0685b39d3127ce947322098c3108cf82fd586' \
+            '    --hash=sha256:aa415d57c244299279901d776607fee3df7831c2a7435433fbfacde8632c6550' \
+            '    --hash=sha256:625e57d80cd43352d12ea81690f3eac46cddc8c0f35026d137fb0f157f94592e' \
+            > "$RUNNER_TEMP/ruff-pin.txt"
+          .venv/bin/python -m pip install --require-hashes -r "$RUNNER_TEMP/ruff-pin.txt"
+          .venv/bin/python -m ruff check --select E9,F,B python/bzs
       - name: Build and test core, contracts, HTTP, worker and MCP
         run: |
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON

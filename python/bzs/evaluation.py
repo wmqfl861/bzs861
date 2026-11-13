@@ -94,7 +94,7 @@ def _probe_input(path: str, golden, selected: list[dict]) -> tuple[dict, str, di
         need(isinstance(adapter, str) and adapter in ADAPTERS and isinstance(params, dict) and
              not params.keys() - {"adapter", "base_url", "lang", "region", "site", "site_url"},
              "E_EVAL_SCHEMA", "invalid recorded parser configuration")
-        for key, value in params.items():
+        for _key, value in params.items():
             text(value, "parser parameter", 8192)
         need(params.get("adapter", adapter) == adapter, "E_EVAL_IDENTITY", "probe adapter mismatch")
         parsers[source] = ADAPTERS[adapter]({"id": source, "params": params}, None)
@@ -303,7 +303,7 @@ def _score_systems(pool: dict, labels: dict) -> tuple[list[dict], dict]:
             metrics, no_relevant = None, None
             if status in ("ok", "empty") and not missing_count:
                 scored = score_ranking(grades, run["document_ids"])
-                metrics = dict(zip(METRICS, (scored["ndcg"], scored["reciprocal_rank"], scored["precision"])))
+                metrics = dict(zip(METRICS, (scored["ndcg"], scored["reciprocal_rank"], scored["precision"]), strict=True))
                 no_relevant = scored["no_relevant"]
             rows.append({"query_id": qid, "split": query["split"], "category": query["category"],
                          "language": query["language"], "run_status": status,

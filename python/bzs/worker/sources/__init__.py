@@ -185,4 +185,4 @@ class SourceSet:
                        conditions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         results = await asyncio.gather(*(self.run_one(i, query, limit, language, timeout_s, conditions)
                                          for i in ids))
-        return dict(zip(ids, results))
+        return dict(zip(ids, results, strict=True))

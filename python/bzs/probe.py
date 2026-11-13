@@ -105,7 +105,7 @@ def _resume_report(out: Path, identity: dict, options: dict, sources: dict, plan
     need(isinstance(saved_plan, list) and len(saved_plan) == len(plan), "request plan mismatch")
     plan_keys = set(plan[0]) - {"state", "reason"} if plan else set()
     states = ("pending", "reserved", "completed", "uncertain", "skipped")
-    for saved, expected in zip(saved_plan, plan):
+    for saved, expected in zip(saved_plan, plan, strict=True):
         need(isinstance(saved, dict) and saved.keys() == expected.keys(), "invalid plan item")
         need(canonical_json({key: saved[key] for key in plan_keys}) ==
              canonical_json({key: expected[key] for key in plan_keys}), "request plan mismatch")
