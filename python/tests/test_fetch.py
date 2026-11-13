@@ -319,3 +319,18 @@ async def test_host_lock_registry_is_bounded_and_keeps_busy_entries():
     for i in range(256):
         fetcher._sem(f"other{i}.example")
     assert "busy.example" in fetcher._host_locks  # busy entries are never retired
+
+
+def test_default_user_agent_is_honest_and_versioned():
+    # CL-07: the worker's default identity must identify the project, never
+    # impersonate a browser. Sites that refuse this UA are reported honestly;
+    # --user-agent exists for explicit operator choice, not for bypass.
+    import bzs
+    from bzs.worker import fetch as fetch_module
+    ua = fetch_module.DEFAULT_UA
+    for browser_token in ("Mozilla", "Chrome", "Safari"):
+        assert browser_token not in ua, f"default UA must not impersonate a browser: {ua!r}"
+    assert ua.startswith(f"bzs861/{bzs.__version__} (")
+    assert "(+https://github.com/wmqfl861/bzs861)" in ua
+    # The default must actually be what a bare Fetcher sends.
+    assert Fetcher(NetPolicy()).user_agent == ua

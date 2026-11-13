@@ -13,14 +13,16 @@ from urllib.parse import urljoin, urlsplit
 import aiohttp
 from yarl import URL
 
+from .. import __version__
 from .netguard import GuardedResolver, NetPolicy, PolicyError
 from .publication import restriction_observation
 from .revalidation import conditional_headers, request_profile
 from .freshness import raw_response_freshness
 from .redirect_cache import make_chain
 
-DEFAULT_UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-              "Chrome/130.0.0.0 Safari/537.36")
+# Honest project identity (CL-07): never impersonate a browser. If a site
+# refuses this UA, report the refusal; do not rotate identities to bypass.
+DEFAULT_UA = f"bzs861/{__version__} (+https://github.com/wmqfl861/bzs861)"
 _META_CHARSET = re.compile(rb"<meta[^>]{0,200}?charset=[\"']?\s*([A-Za-z0-9_\-]{2,40})", re.I)
 _ALIASES = {"gb2312": "gb18030", "gbk": "gb18030", "x-gbk": "gb18030", "big5": "big5hkscs", "utf8": "utf-8"}
 _CROSS_ORIGIN_HEADERS = frozenset(("user-agent", "accept", "accept-language", "accept-encoding"))
