@@ -20,6 +20,59 @@ from . import __version__, config
 MAX_PID = 2**31 - 1
 MAX_READY = 4096
 
+# CL-25 signature-3 forensics: env-gated, in-memory event cache covering the
+# lifecycle cleanup paths. Events are appended BEFORE a failure happens
+# (pre-failure capture); the lifecycle test dumps them only when it fails.
+# With the gate unset every hook below is skipped and this module's behavior,
+# timing and pass/fail semantics are unchanged (instrumentation only).
+_LIFECYCLE_DUMP_ENV = "BZS_TEST_LIFECYCLE_DUMP"
+_forensics_cache: "list[dict]" = []
+_forensics_gate: "bool | None" = None
+_FORENSICS_MAX_EVENTS = 20000
+
+
+def _forensics_on() -> bool:
+    global _forensics_gate
+    if _forensics_gate is None:
+        _forensics_gate = bool(os.environ.get(_LIFECYCLE_DUMP_ENV))
+    return _forensics_gate
+
+
+def _forensics_record(kind: str, **fields) -> None:
+    if not _forensics_on():
+        return
+    event = {"kind": kind, "t": round(time.monotonic(), 6), "wall": time.time()}
+    event.update(fields)
+    _forensics_cache.append(event)
+    overflow = len(_forensics_cache) - _FORENSICS_MAX_EVENTS
+    if overflow > 0:
+        del _forensics_cache[:overflow]
+        _forensics_cache.append({"kind": "cache_truncated", "dropped": overflow,
+                                 "t": round(time.monotonic(), 6), "wall": time.time()})
+
+
+def _forensics_events() -> "list[dict]":
+    return list(_forensics_cache)
+
+
+def _forensics_mark(label: str) -> None:
+    if not _forensics_on():
+        return
+    _forensics_cache.append({"kind": "mark", "label": label,
+                             "t": round(time.monotonic(), 6), "wall": time.time()})
+
+
+def _forensics_chain(exc: "BaseException | None", limit: int = 6) -> "list[str]":
+    chain: list[str] = []
+    seen: set = set()
+    while exc is not None and id(exc) not in seen and len(chain) < limit:
+        nxt = exc.__cause__ if exc.__cause__ is not None else exc.__context__
+        if nxt is not None:
+            chain.append(f"{type(nxt).__name__}: {nxt}")
+        seen.add(id(exc))
+        exc = nxt
+    return chain
+
 
 def valid_pid(pid: object) -> bool:
     return type(pid) is int and 1 < pid <= MAX_PID
@@ -74,8 +127,12 @@ class _ProcessDenied(Exception):
 class _RealWinApi:
     """ctypes-backed process operations; the tree stopper's only Windows surface."""
 
-    # query limited + synchronize + terminate
-    _OPEN_MASK = 0x1000 | 0x100000 | 1
+    # step 1 (identity): query limited + synchronize
+    _QUERY_MASK = 0x1000 | 0x100000
+    # step 2 (signalling): terminate, opened by PID while the query handle is held
+    _TERMINATE_MASK = 1
+    _SYSTEM_PROCESS_INFORMATION = 5  # NtQuerySystemInformation class
+    _STATUS_INFO_LENGTH_MISMATCH = 0xC0000004
 
     def __init__(self, kernel=None):
         import ctypes
@@ -90,9 +147,13 @@ class _RealWinApi:
         k.Process32Next.argtypes = [w.HANDLE, ctypes.c_void_p]
         k.Process32Next.restype = w.BOOL
         k.GetSystemTimeAsFileTime.argtypes = [ctypes.POINTER(w.FILETIME)]
+        self._ntdll = ctypes.WinDLL("ntdll")
+        self._ntdll.NtQuerySystemInformation.argtypes = [w.UINT, w.LPVOID, w.ULONG,
+                                                         ctypes.POINTER(w.ULONG)]
+        self._ntdll.NtQuerySystemInformation.restype = w.LONG  # NTSTATUS
 
     def snapshot(self):
-        """Return (pid -> parent pid, completion FILETIME) or raise OSError.
+        """Return (pid -> (parent pid, image name), completion FILETIME) or raise OSError.
 
         INVALID_HANDLE_VALUE and mid-table enumeration errors are failures:
         a silently partial table must never be treated as the whole truth.
@@ -102,7 +163,7 @@ class _RealWinApi:
         snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
         if not snap or snap == invalid:
             raise OSError("cannot snapshot the process table")
-        parents = {}
+        entries = {}
 
         class Entry(ctypes.Structure):
             _fields_ = [("size", self._w.DWORD), ("usage", self._w.DWORD), ("pid", self._w.DWORD),
@@ -116,7 +177,7 @@ class _RealWinApi:
             if not more and ctypes.get_last_error() != 18:  # ERROR_NO_MORE_FILES
                 raise OSError("process enumeration failed")
             while more:
-                parents[e.pid] = e.ppid
+                entries[e.pid] = (e.ppid, e.name.split(b"\0", 1)[0].decode("mbcs", "replace"))
                 more = k.Process32Next(snap, ctypes.byref(e))
                 if not more and ctypes.get_last_error() != 18:
                     raise OSError("process enumeration failed mid-table")
@@ -124,19 +185,80 @@ class _RealWinApi:
             k.CloseHandle(snap)
         ft = self._w.FILETIME()
         k.GetSystemTimeAsFileTime(ctypes.byref(ft))
-        return parents, (ft.dwHighDateTime << 32) | ft.dwLowDateTime
+        return entries, (ft.dwHighDateTime << 32) | ft.dwLowDateTime
 
-    def open(self, pid):
+    def _open(self, pid, mask):
         ctypes = self._ctypes
-        h = self._k.OpenProcess(self._OPEN_MASK, False, pid)
+        h = self._k.OpenProcess(mask, False, pid)
         if h:
+            if _forensics_on():
+                _forensics_record("api_open", pid=pid, mask=mask, handle=h)
             return h
         error = ctypes.get_last_error()
+        if _forensics_on():
+            _forensics_record("api_open", pid=pid, mask=mask, error=error)
         if error == 87:
             raise _ProcessGone(pid)
         if error == 5:
             raise _ProcessDenied(pid)
         raise OSError(f"cannot open pid {pid} (error {error})")
+
+    def open(self, pid):
+        """Query+synchronize handle: enough to read identity, never to signal."""
+        return self._open(pid, self._QUERY_MASK)
+
+    def open_terminate(self, pid):
+        """Terminate handle, requested by PID only after membership is verified."""
+        return self._open(pid, self._TERMINATE_MASK)
+
+    def creation_without_handle(self, pid):
+        """Creation FILETIME for a pid this launcher cannot open, read from the
+        system process-information table without opening anything.
+
+        Returns None whenever the table cannot answer. The caller may use the
+        value ONLY to exclude a process as obviously older than its nominal
+        parent; this information never authorizes signalling.
+        """
+        ctypes, w = self._ctypes, self._w
+
+        class UnicodeString(ctypes.Structure):
+            _fields_ = [("length", w.USHORT), ("max_length", w.USHORT),
+                        ("buffer", ctypes.c_void_p)]
+
+        class SystemProcessInformation(ctypes.Structure):
+            # winternl.h SYSTEM_PROCESS_INFORMATION through the parent pid.
+            # HANDLE fields use c_void_p so the layout tracks pointer width.
+            _fields_ = [("next_offset", w.ULONG), ("thread_count", w.ULONG),
+                        ("working_set_private", ctypes.c_ulonglong),
+                        ("hard_fault_count", w.ULONG), ("thread_count_high_water", w.ULONG),
+                        ("cycle_time", ctypes.c_ulonglong), ("creation_time", ctypes.c_ulonglong),
+                        ("user_time", ctypes.c_ulonglong), ("kernel_time", ctypes.c_ulonglong),
+                        ("image_name", UnicodeString), ("base_priority", w.LONG),
+                        ("pid", ctypes.c_void_p), ("parent_pid", ctypes.c_void_p)]
+
+        if not valid_pid(pid):
+            return None
+        ntdll, size = self._ntdll, 1 << 16
+        for _ in range(8):  # bounded buffer-growth retries
+            buffer = ctypes.create_string_buffer(size)
+            status = ntdll.NtQuerySystemInformation(self._SYSTEM_PROCESS_INFORMATION,
+                                                    buffer, size, None)
+            if status == 0:
+                offset = 0
+                while True:
+                    entry = ctypes.cast(ctypes.byref(buffer, offset),
+                                        ctypes.POINTER(SystemProcessInformation)).contents
+                    # A zeroed/hidden creation time (protected processes) is
+                    # not evidence of age: treat it as unavailable.
+                    if entry.pid == pid:
+                        return int(entry.creation_time) if entry.creation_time > 0 else None
+                    if not entry.next_offset:
+                        return None
+                    offset += entry.next_offset
+            if status & 0xFFFFFFFF != self._STATUS_INFO_LENGTH_MISMATCH:
+                return None
+            size *= 2
+        return None
 
     def creation(self, handle):
         import ctypes
@@ -148,6 +270,8 @@ class _RealWinApi:
 
     def exited(self, handle) -> bool:
         waited = self._k.WaitForSingleObject(handle, 0)
+        if _forensics_on():
+            _forensics_record("api_exited", handle=handle, raw=waited)
         if waited == 0:
             return True
         if waited == 258:
@@ -155,10 +279,17 @@ class _RealWinApi:
         raise OSError("cannot query process wait state")
 
     def terminate(self, handle) -> bool:
-        return bool(self._k.TerminateProcess(handle, 0))
+        result = bool(self._k.TerminateProcess(handle, 0))
+        if not result and _forensics_on():
+            # The ACTUAL TerminateProcess return value plus its failure code.
+            _forensics_record("api_terminate", handle=handle, return_value=False,
+                              error=self._ctypes.get_last_error())
+        return result
 
     def wait(self, handle, ms):
         waited = self._k.WaitForSingleObject(handle, int(ms))
+        if _forensics_on():
+            _forensics_record("api_wait", handle=handle, requested_ms=int(ms), raw=waited)
         if waited == 0:
             return "signaled"
         if waited == 258:
@@ -175,10 +306,31 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
     Pin the trusted root first, open candidate handles, then take a fresh table
     while those handles remain open. Every ancestry edge must still exist in
     that table and each child's creation must follow its verified parent's.
-    Windows retains process IDs while handles exist; signals use those same
-    handles. A snapshot completion timestamp alone cannot exclude reuse DURING
+    Windows retains process IDs while handles exist; signals use handles opened
+    by PID while the query handle is held, so reuse cannot redirect them. A
+    snapshot completion timestamp alone cannot exclude reuse DURING
     enumeration. Parent-PID spoofing by an equally privileged process is outside
     this local operator contract; this is not a hostile-process sandbox.
+
+    A snapshot entry created strictly before its nominal parent cannot be that
+    parent's descendant (a true descendant's creation FILETIME is never earlier
+    than its parent's, but the creation clock has finite granularity, so
+    "later" can collapse into an equal tick); Windows never updates a child's
+    recorded ppid, so strictly-older entries are strangers that reused a dead
+    parent's PID and are excluded outright: not signalled and not unconfirmed.
+    When the query handle is denied, the system process table may supply the
+    creation time for this exclusion only - it never authorizes signalling.
+    Equal-tick entries are never signalled: each keeps its original query
+    handle, and only that same continuously-held handle entering the signaled
+    state after the stop resolves that one member's exit doubt - final-table
+    absence alone never does, and a resolved exit is never recorded as
+    membership confirmation. Candidate descendants of an equal-tick entry are
+    retained and recursively checked from the first snapshot the same way; any
+    surviving, unknown or failing one keeps the stop unconfirmed, and the final
+    table re-checks those parent PIDs for newcomers. A refused TerminateProcess
+    (or a terminate-handle open failure) likewise proves nothing: the member's
+    exit is confirmed only when the SAME still-held query handle is signaled;
+    timeouts, wait failures and errors keep it unconfirmed.
 
     Missing/denied roots and descendants are never inferred to be safely gone.
     A final table check reports children born during the stop without signalling
@@ -192,32 +344,90 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
         raise ValueError("invalid process identity or tree-stop deadline")
     api = api or _RealWinApi()
     deadline = time.monotonic() + deadline_s
+    # CL-25 signature-3 forensics: pre-failure event capture; no-op gate off.
+    _rec = _forensics_record
+    if _forensics_on():
+        _rec("tree_start", root_pid=root_pid, root_creation=root_creation,
+             deadline_s=deadline_s, deadline_t=round(deadline, 6))
+
+    def table(snapshot_entries):
+        return sorted([pid, parent, name]
+                      for pid, (parent, name) in snapshot_entries.items())
     unconfirmed: list[str] = []
     opened: list = []
-    # pid -> (parent PID, creation, depth, pinned handle)
+    # pid -> (parent PID, creation, depth, pinned query handle)
     candidates: dict[int, tuple[int, int, int, object]] = {}
+    names: dict[int, str] = {}
+    creations: dict[int, int] = {root_pid: root_creation}
+    # Equal-tick members (creation == nominal parent's creation):
+    # pid -> (nominal parent, parent creation, own creation, retained query
+    # handle or None, scan-time message to defer when no handle was retained).
+    equal_tick: dict[int, tuple[int, int, int, object, "str | None"]] = {}
+    # Candidate descendants of equal-tick members from the FIRST snapshot:
+    # pid -> (parent PID inside the equal-tick subtree, retained handle or None).
+    equal_descendants: dict[int, tuple[int, object]] = {}
 
     def expired() -> bool:
         return time.monotonic() >= deadline
+
+    def confirmed_by_pinned_handle(handle) -> bool:
+        # 终止请求失败不代表进程仍存活；仅同一已固定身份的进程句柄进入 signaled 状态，才确认该成员退出；否则仍计入未确认。
+        # WaitForSingleObject(handle, 0) semantics are subsumed: the call
+        # returns immediately when the pinned handle is already signaled, and a
+        # refused TerminateProcess often means the member is tearing itself
+        # down (Windows fails the request on an already-terminating process
+        # before it reaches the signaled state), so the SAME handle is given
+        # the remaining budget. WAIT_TIMEOUT, WAIT_FAILED and every error are
+        # NOT an exit.
+        remaining = deadline - time.monotonic()
+        try:
+            return remaining > 0 and api.wait(handle, remaining * 1000) == "signaled"
+        except OSError:
+            return False
+
+    def pinned_outcome(handle, pid, stage) -> bool:
+        # Forensics wrapper only: identical semantics plus wait evidence.
+        started = time.monotonic()
+        remaining_before = deadline - started
+        ok = confirmed_by_pinned_handle(handle)
+        if _forensics_on():
+            _rec("pinned_wait", pid=pid, handle=handle, stage=stage,
+                 remaining_before_s=round(remaining_before, 6),
+                 duration_s=round(time.monotonic() - started, 6), confirmed=ok)
+        return ok
 
     try:
         try:
             root = api.open(root_pid)
             opened.append(root)
-            if api.creation(root) != root_creation:
+            root_creation_now = api.creation(root)
+            if _forensics_on():
+                _rec("root_open", pid=root_pid, handle=root,
+                     creation_now=root_creation_now, creation_expected=root_creation)
+            if root_creation_now != root_creation:
                 raise RuntimeError(f"pid {root_pid}: identity changed; refusing termination")
             if api.exited(root):
                 # Preserve the existing fail-closed contract for an already
                 # exited root, even if another process still holds its handle.
+                if _forensics_on():
+                    _rec("root_already_exited", pid=root_pid, handle=root)
                 return [f"pid {root_pid}: root had already exited; record retained"]
         except (_ProcessGone, _ProcessDenied, OSError) as exc:
+            if _forensics_on():
+                _rec("root_open_failed", pid=root_pid,
+                     exc_type=type(exc).__name__, exc_str=str(exc))
             return [f"pid {root_pid}: root identity unavailable ({type(exc).__name__}); record retained"]
         try:
-            parents, _ = api.snapshot()
+            entries, _ = api.snapshot()
         except OSError:
+            if _forensics_on():
+                _rec("snapshot_initial_failed")
             return ["process table unavailable; nothing signalled"]
+        if _forensics_on():
+            _rec("snapshot_initial", entries=table(entries))
         children: dict[int, list[int]] = {}
-        for pid, parent in parents.items():
+        for pid, (parent, name) in entries.items():
+            names[pid] = name
             if valid_pid(pid) and pid != parent:
                 children.setdefault(parent, []).append(pid)
         from collections import deque
@@ -227,67 +437,247 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
             parent, parent_creation, depth = queue.popleft()
             for pid in sorted(children.get(parent, [])):
                 if pid in seen:
-                    unconfirmed.append(f"pid {pid}: cyclic ancestry; not signalled")
+                    unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}): cyclic ancestry; not signalled")
+                    if _forensics_on():
+                        _rec("member_cyclic", pid=pid, parent=parent)
                     continue
                 seen.add(pid)
                 if expired():
+                    if _forensics_on():
+                        _rec("walk_deadline_exceeded", phase="primary")
                     return [*unconfirmed, "tree verification deadline exceeded; nothing signalled"]
+                name = names.get(pid, "?")
                 try:
                     handle = api.open(pid)
                     opened.append(handle)
                     creation = api.creation(handle)
-                    if creation <= parent_creation:
-                        unconfirmed.append(f"pid {pid}: creation does not bind to parent {parent}; not signalled")
-                        continue
-                    candidates[pid] = (parent, creation, depth + 1, handle)
-                    # An exited but pinned parent can still anchor descendants.
-                    queue.append((pid, creation, depth + 1))
                 except (_ProcessGone, _ProcessDenied, OSError) as exc:
-                    unconfirmed.append(f"pid {pid}: identity unavailable ({type(exc).__name__}); not signalled")
+                    # No handle: the system process table can still answer for
+                    # pids this launcher may not open, but only to exclude an
+                    # entry as obviously older than its nominal parent.
+                    table_creation = api.creation_without_handle(pid)
+                    if _forensics_on():
+                        _rec("member_open_failed", pid=pid, name=name, parent=parent,
+                             parent_creation=parent_creation, depth=depth,
+                             exc_type=type(exc).__name__, exc_str=str(exc),
+                             table_creation=table_creation)
+                    if table_creation is not None and table_creation < parent_creation:
+                        continue
+                    own = f"created {table_creation}" if table_creation is not None else "creation unknown"
+                    message = (f"pid {pid} ({name}): identity unavailable"
+                               f" ({type(exc).__name__}); {own}; nominal parent {parent}"
+                               f" created {parent_creation}; not signalled")
+                    if table_creation == parent_creation:
+                        # Equal tick without a handle: no pinned handle can
+                        # ever confirm this pid, so the verdict is deferred to
+                        # the post-stop recheck and can never be released.
+                        equal_tick[pid] = (parent, parent_creation, table_creation, None, message)
+                        if _forensics_on():
+                            _rec("equal_tick_no_handle", pid=pid, parent=parent,
+                                 parent_creation=parent_creation, creation=table_creation,
+                                 message=message)
+                    else:
+                        unconfirmed.append(message)
+                    continue
+                if creation < parent_creation:
+                    # Strictly older than its nominal parent: PID reuse put a
+                    # stranger in the snapshot. Not signalled, not unconfirmed.
+                    if _forensics_on():
+                        _rec("member_excluded_older", pid=pid, name=name, parent=parent,
+                             parent_creation=parent_creation, creation=creation, depth=depth,
+                             reason="creation strictly before nominal parent (PID reuse)")
+                    continue
+                if creation == parent_creation:
+                    # 等时间戳不授权终止；同一持续持有的查询句柄确认退出，只解除该进程的退出疑义，不证明其后代已退出。
+                    # The entry keeps its original query handle; its verdict is
+                    # deferred to the post-stop recheck below.
+                    equal_tick[pid] = (parent, parent_creation, creation, handle, None)
+                    if _forensics_on():
+                        _rec("equal_tick_retained", pid=pid, name=name, parent=parent,
+                             parent_creation=parent_creation, creation=creation, depth=depth,
+                             handle=handle)
+                    continue
+                if _forensics_on():
+                    _rec("member_open", pid=pid, name=name, parent=parent,
+                         parent_creation=parent_creation, creation=creation, depth=depth,
+                         handle=handle)
+                candidates[pid] = (parent, creation, depth + 1, handle)
+                creations[pid] = creation
+                # An exited but pinned parent can still anchor descendants.
+                queue.append((pid, creation, depth + 1))
+        # Revised-B companion: retain and recursively check candidate
+        # descendants of equal-tick members, discovered from the FIRST
+        # snapshot. Nothing below an equal-tick edge ever enters the signal
+        # set; each member can only be proven gone by its own retained query
+        # handle, and the final table re-checks these parent PIDs.
+        sub_queue = deque(sorted(equal_tick))
+        while sub_queue:
+            member = sub_queue.popleft()
+            for pid in sorted(children.get(member, [])):
+                if pid in seen:
+                    unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}): cyclic ancestry"
+                                       f" below equal-tick pid {member}; not signalled")
+                    if _forensics_on():
+                        _rec("member_cyclic", pid=pid, parent=member, phase="equal_tick_subtree")
+                    continue
+                seen.add(pid)
+                if expired():
+                    if _forensics_on():
+                        _rec("walk_deadline_exceeded", phase="equal_tick_subtree")
+                    return [*unconfirmed, "tree verification deadline exceeded; nothing signalled"]
+                try:
+                    handle = api.open(pid)
+                    opened.append(handle)
+                    if _forensics_on():
+                        _rec("equal_descendant_open", pid=pid, name=names.get(pid, "?"),
+                             parent=member, handle=handle)
+                except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                    handle = None  # unknown: no pinned handle can confirm it
+                    if _forensics_on():
+                        _rec("equal_descendant_open_failed", pid=pid, name=names.get(pid, "?"),
+                             parent=member, exc_type=type(exc).__name__, exc_str=str(exc))
+                equal_descendants[pid] = (member, handle)
+                sub_queue.append(pid)
         # Revalidate membership AFTER opening every handle, not against the old
         # snapshot. PID reuse before OpenProcess cannot redirect this check.
         try:
             current, _ = api.snapshot()
         except OSError:
+            if _forensics_on():
+                _rec("snapshot_recheck_failed")
             return [*unconfirmed, "membership recheck failed; nothing signalled"]
+        if _forensics_on():
+            _rec("snapshot_recheck", entries=table(current))
         verified = {root_pid}
         targets = [(0, root_pid, root)]
         for pid, (parent, creation, depth, handle) in candidates.items():
-            if parent not in verified or current.get(pid) != parent:
-                unconfirmed.append(f"pid {pid}: parent chain changed or disappeared; not signalled")
+            if parent not in verified or current.get(pid, (None, None))[0] != parent:
+                unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}) created {creation}:"
+                                   f" parent chain changed or disappeared; nominal parent {parent}"
+                                   f" created {creations.get(parent, '?')}; not signalled")
+                if _forensics_on():
+                    _rec("member_recheck_excluded", pid=pid, parent=parent,
+                         creation=creation, depth=depth, handle=handle,
+                         table_parent_now=current.get(pid, (None, None))[0])
                 continue
             verified.add(pid)
             targets.append((depth, pid, handle))
+        if _forensics_on():
+            _rec("verified_set", verified=sorted(verified), equal_tick=sorted(equal_tick),
+                 equal_descendants=sorted(equal_descendants), targets=sorted(t[1] for t in targets))
         confirmed = set()
         for depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
+            identity = f"pid {pid} ({names.get(pid, '?')}) created {creations.get(pid, '?')}"
             try:
                 if api.exited(handle):
+                    if _forensics_on():
+                        _rec("target_confirmed", pid=pid, handle=handle, via="already_exited")
                     confirmed.add(pid)
                     continue
                 if expired():
-                    unconfirmed.append(f"pid {pid}: tree-stop deadline exceeded")
+                    unconfirmed.append(f"{identity}: tree-stop deadline exceeded")
+                    if _forensics_on():
+                        _rec("target_deadline_exceeded", pid=pid, handle=handle)
                     continue
-                if not api.terminate(handle):
-                    unconfirmed.append(f"pid {pid}: terminate refused")
+                try:
+                    # Termination access is requested by PID only after
+                    # membership is verified, while the query handle is still
+                    # held, so the PID cannot have been reused in between.
+                    terminate_handle = api.open_terminate(pid)
+                    opened.append(terminate_handle)
+                    if _forensics_on():
+                        _rec("target_open_terminate", pid=pid, query_handle=handle,
+                             terminate_handle=terminate_handle)
+                except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                    # The request itself failed: re-verify the exit, if at all,
+                    # on the SAME still-held query handle before counting the
+                    # member as anything.
+                    if pinned_outcome(handle, pid, "terminate_handle_unavailable"):
+                        confirmed.add(pid)
+                        continue
+                    unconfirmed.append(f"{identity}: termination handle unavailable"
+                                       f" ({type(exc).__name__}); not signalled")
+                    continue
+                terminate_return = api.terminate(terminate_handle)
+                if _forensics_on():
+                    _rec("target_terminate", pid=pid, query_handle=handle,
+                         terminate_handle=terminate_handle, return_value=terminate_return)
+                if not terminate_return:
+                    # TerminateProcess FALSE: the member may have exited (or
+                    # begun exiting) on its own between the exited() check and
+                    # the request; the pinned query handle decides.
+                    if pinned_outcome(handle, pid, "terminate_refused"):
+                        confirmed.add(pid)
+                        continue
+                    unconfirmed.append(f"{identity}: terminate refused")
                     continue
                 remaining = deadline - time.monotonic()
+                if _forensics_on():
+                    _rec("target_wait", pid=pid, query_handle=handle,
+                         remaining_before_s=round(remaining, 6))
                 if remaining <= 0 or api.wait(handle, remaining * 1000) != "signaled":
-                    unconfirmed.append(f"pid {pid}: exit not confirmed within budget")
+                    unconfirmed.append(f"{identity}: exit not confirmed within budget")
                 else:
+                    if _forensics_on():
+                        _rec("target_confirmed", pid=pid, query_handle=handle,
+                             via="post_terminate_wait")
                     confirmed.add(pid)
             except OSError:
-                unconfirmed.append(f"pid {pid}: exit verification failed")
+                unconfirmed.append(f"{identity}: exit verification failed")
+                if _forensics_on():
+                    _rec("target_verification_error", pid=pid, query_handle=handle)
+        # Post-stop recheck of the equal-tick subtree: only the SAME
+        # continuously-held query handle entering the signaled state resolves
+        # one member's exit doubt; final-table absence never does, and a
+        # resolved exit is never membership confirmation (these pids were
+        # never signalled and never join the verified set).
+        for pid in sorted(equal_tick):
+            parent, parent_creation, creation, handle, message = equal_tick[pid]
+            if handle is not None and pinned_outcome(handle, pid, "equal_tick_recheck"):
+                continue
+            detail = message or (f"pid {pid} ({names.get(pid, '?')}): creation {creation}"
+                                 f" does not bind to parent {parent} created {parent_creation};"
+                                 f" not signalled")
+            if _forensics_on():
+                _rec("equal_tick_unconfirmed", pid=pid, parent=parent,
+                     parent_creation=parent_creation, creation=creation, detail=detail)
+            unconfirmed.append(detail)
+        for pid in sorted(equal_descendants):
+            parent, handle = equal_descendants[pid]
+            if handle is not None and pinned_outcome(handle, pid, "equal_descendant_recheck"):
+                continue
+            reason = "exit unknown (no handle)" if handle is None else "still alive or exit unconfirmed"
+            detail = (f"pid {pid} ({names.get(pid, '?')}): descendant of equal-tick"
+                      f" pid {parent}; {reason}; not signalled")
+            if _forensics_on():
+                _rec("equal_descendant_unconfirmed", pid=pid, parent=parent, detail=detail)
+            unconfirmed.append(detail)
         # No second signalling pass: newcomers are not part of the verified set.
+        # The final table also re-checks the equal-tick subtree's parent PIDs:
+        # anything new below an equal-tick member is a residual descendant and
+        # keeps the record.
         try:
             if expired():
                 unconfirmed.append("final tree check not completed within budget")
+                if _forensics_on():
+                    _rec("final_check_deadline_exceeded")
             else:
                 final, _ = api.snapshot()
-                for pid, parent in final.items():
-                    if parent in verified and pid not in seen and pid != parent:
-                        unconfirmed.append(f"pid {pid}: residual or new descendant; record retained")
+                if _forensics_on():
+                    _rec("snapshot_final", entries=table(final))
+                watched = verified | set(equal_tick) | set(equal_descendants)
+                for pid, (parent, name) in final.items():
+                    if parent in watched and pid not in seen and pid != parent:
+                        unconfirmed.append(f"pid {pid} ({name}): residual or new descendant; record retained")
+                        if _forensics_on():
+                            _rec("new_descendant", pid=pid, name=name, parent=parent,
+                                 reason="residual or new descendant under a watched parent")
         except OSError:
             unconfirmed.append("final tree check unavailable; record retained")
+            if _forensics_on():
+                _rec("snapshot_final_failed")
+        if _forensics_on():
+            _rec("tree_end", unconfirmed=list(unconfirmed))
         return unconfirmed
     finally:
         for handle in opened:
@@ -305,11 +695,23 @@ def birth_identity(pid: int) -> str | None:
         k = _kernel()
         h = k.OpenProcess(0x1000 | 0x100000, False, pid)  # query + synchronize
         if not h:
-            if ctypes.get_last_error() == 87:  # no such PID
+            error = ctypes.get_last_error()
+            if _forensics_on():
+                _forensics_record("birth_sample", pid=pid, result=None, open_error=error)
+            if error == 87:  # no such PID
                 return None
             raise OSError("cannot open process identity handle")
         try:
-            return _win_birth(k, h)
+            try:
+                result = _win_birth(k, h)
+            except OSError as exc:
+                if _forensics_on():
+                    _forensics_record("birth_sample", pid=pid, result="error",
+                                      exc_str=str(exc), handle=h)
+                raise
+            if _forensics_on():
+                _forensics_record("birth_sample", pid=pid, result=result, handle=h)
+            return result
         finally:
             k.CloseHandle(h)
     if not Path("/proc/sys/kernel/random/boot_id").exists():
@@ -383,6 +785,11 @@ def owned_pid(name: str) -> int | None:
 def _forget(name: str, record: dict) -> None:
     if read_record(name) == record:
         record_path(name).unlink(missing_ok=True)
+        if _forensics_on():
+            _forensics_record("record_deleted", name=name, pid=record.get("pid"),
+                              record=record)
+    elif _forensics_on():
+        _forensics_record("record_kept", name=name, pid=record.get("pid"))
 
 
 @contextlib.contextmanager
@@ -406,8 +813,6 @@ def control_lock(path: "os.PathLike[str] | None" = None, *, timeout_s: float = 0
         while True:
             if os.name == "nt":
                 import msvcrt
-                if os.fstat(fd).st_size == 0:
-                    os.write(fd, b"0")
                 os.lseek(fd, 0, 0)
                 try:
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
@@ -441,10 +846,19 @@ def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 5.0, forg
     """
     unconfirmed: list[str] = []
     deadline = time.monotonic() + grace
+    if _forensics_on():
+        _forensics_record("cleanup_child_start", name=name, pid=proc.pid,
+                          birth=getattr(proc, "_bzs_birth", None), grace=grace,
+                          deadline_t=round(deadline, 6), forget=forget)
     if os.name == "nt":
         creation = _win_creation_of(getattr(proc, "_bzs_birth", None))
         if creation is not None:
             unconfirmed = _win_terminate_tree(proc.pid, creation, deadline_s=grace)
+        elif _forensics_on():
+            _forensics_record("cleanup_child_no_birth_anchor", name=name, pid=proc.pid)
+    if _forensics_on():
+        _forensics_record("cleanup_child_tree_done", name=name, pid=proc.pid,
+                          unconfirmed=list(unconfirmed))
     try:
         if proc.poll() is None:
             try:
@@ -459,8 +873,12 @@ def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 5.0, forg
         remaining = deadline - time.monotonic()
         if remaining > 0:
             proc.wait(timeout=remaining)
+    if _forensics_on():
+        _forensics_record("cleanup_child_reaped", name=name, pid=proc.pid, poll=proc.poll())
     if unconfirmed or proc.poll() is None:
         detail = "; ".join(unconfirmed) if unconfirmed else f"pid {proc.pid}: exit not confirmed"
+        if _forensics_on():
+            _forensics_record("cleanup_child_incomplete", name=name, pid=proc.pid, detail=detail)
         raise RuntimeError(f"{name}: child cleanup incomplete: {detail}")
     if forget:
         r = read_record(name)
@@ -468,6 +886,8 @@ def cleanup_child(name: str, proc: subprocess.Popen, *, grace: float = 5.0, forg
             # The re-read comparison only narrows the window; the unlink is
             # not atomic against an unlocked writer, so this runs only under
             # the control lock (see cleanup_children).
+            if _forensics_on():
+                _forensics_record("cleanup_child_forget_read", name=name, record=r)
             _forget(name, r)
 
 
@@ -487,6 +907,9 @@ def cleanup_children(children: "list[tuple[str, subprocess.Popen]]", *, acquire_
                 locked = True
             except (OSError, RuntimeError):
                 pass  # Leaving this invocation's children running is worse.
+        if _forensics_on():
+            _forensics_record("cleanup_children_start", count=len(children),
+                              locked=locked, forget=forget)
         failures: list[str] = []
         for name, proc in reversed(list(children)):
             try:
@@ -494,6 +917,8 @@ def cleanup_children(children: "list[tuple[str, subprocess.Popen]]", *, acquire_
             except Exception as exc:  # Keep cleaning the remaining children.
                 failures.append(str(exc))
         if failures:
+            if _forensics_on():
+                _forensics_record("cleanup_children_failures", failures=list(failures))
             raise RuntimeError("child cleanup incomplete: " + "; ".join(failures))
 
 
@@ -524,6 +949,9 @@ def spawn(name: str, command: list[str], *, timeout: float = 30.0) -> subprocess
     with logfile(stdout_path) as out, logfile(stderr_path) as err:
         offset = out.seek(0, os.SEEK_END)
         proc = subprocess.Popen(command, stdout=out, stderr=err, **options)
+    if _forensics_on():
+        _forensics_record("spawn_start", name=name, pid=proc.pid, timeout=timeout,
+                          command=" ".join(str(part) for part in command)[:400])
     try:
         birth = birth_identity(proc.pid)
         if birth is None:
@@ -532,6 +960,9 @@ def spawn(name: str, command: list[str], *, timeout: float = 30.0) -> subprocess
         expected_port = int(command[command.index("--port") + 1]) if "--port" in command else 0
         record = {"version": 1, "name": name, "pid": proc.pid, "birth": birth, "port": expected_port, "state": "starting"}
         config._private_write(record_path(name), json.dumps(record))
+        if _forensics_on():
+            _forensics_record("spawn_record_starting", name=name, pid=proc.pid,
+                              birth=birth, record=record)
         end = time.monotonic() + timeout
         data = b""
         with stdout_path.open("rb") as reader:
@@ -562,8 +993,15 @@ def spawn(name: str, command: list[str], *, timeout: float = 30.0) -> subprocess
             raise RuntimeError(f"{name} exited during readiness")
         record = {"version": 1, "name": name, "pid": proc.pid, "birth": birth, "port": ready["port"], "state": "ready"}
         config._private_write(record_path(name), json.dumps(record))
+        if _forensics_on():
+            _forensics_record("spawn_record_ready", name=name, pid=proc.pid, record=record)
         return proc
-    except BaseException:
+    except BaseException as exc:
+        if _forensics_on():
+            _forensics_record("spawn_abort", name=name, pid=proc.pid,
+                              birth=getattr(proc, "_bzs_birth", None),
+                              exc_type=type(exc).__name__, exc_str=str(exc),
+                              chain=_forensics_chain(exc))
         cleanup_child(name, proc)
         raise
 
@@ -582,9 +1020,15 @@ def stop_owned(name: str, *, timeout: float = 5.0) -> bool:
         creation = _win_creation_of(r["birth"])
         if creation is None:
             raise RuntimeError(f"{name}: unverified PID record birth; refusing automatic control")
+        if _forensics_on():
+            _forensics_record("stop_owned_start", name=name, pid=pid, birth=r["birth"],
+                              timeout=timeout)
         was_alive = birth_identity(pid) is not None
         unconfirmed = _win_terminate_tree(pid, creation, deadline_s=timeout)
         if unconfirmed or birth_identity(pid) is not None:
+            if _forensics_on():
+                _forensics_record("stop_owned_unconfirmed", name=name, pid=pid,
+                                  unconfirmed=list(unconfirmed))
             raise RuntimeError(f"{name}: stop not confirmed; record retained"
                                + ("; " + "; ".join(unconfirmed) if unconfirmed else ""))
         _forget(name, r)

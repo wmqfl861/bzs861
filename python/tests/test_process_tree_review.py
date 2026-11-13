@@ -1,5 +1,6 @@
 """2026-10-28 review regressions and bounded runtime contracts."""
 import json
+import os
 import pytest
 from bzs import process_control as pc
 from tests.test_process_tree import FakeProc, FakeWinApi, ROOT, ROOT_CREATION
@@ -49,7 +50,9 @@ def test_exited_pinned_parent_still_has_its_children_checked():
                       FakeProc(200, ROOT, 2000, alive=False), FakeProc(300, 200, 3000)])
     assert pc._win_terminate_tree(ROOT, ROOT_CREATION, api=api) == []
     assert api.terminate_order == [300, ROOT]
-    assert sorted(api.closed) == [ROOT, 200, 300]
+    # Each signalled member (300, ROOT) now closes a query and a terminate
+    # handle; the exited-but-pinned 200 was never asked for terminate access.
+    assert sorted(api.closed) == [ROOT, ROOT, 200, 300, 300]
 
 
 def test_membership_failure_never_signals_pinned_candidates():
@@ -105,3 +108,25 @@ def test_already_exited_root_is_unknown_even_when_handle_remains():
     assert pc._win_terminate_tree(ROOT, ROOT_CREATION, api=api)
     assert not api.terminate_order and api.table[200].alive
     assert api.closed == [ROOT]
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows byte-range lock semantics')
+def test_windows_locked_empty_lock_file_is_busy_not_permission_denied(tmp_path):
+    # CL-26: a concurrent creator may hold the lock file's byte 0 without the
+    # file ever being written. control_lock must report "busy" (RuntimeError)
+    # after its retry deadline, never a raw PermissionError from a pre-lock
+    # write, and it must not write into the lock file itself.
+    import msvcrt
+    path = tmp_path / 'launcher.lock'
+    path.write_bytes(b'')                      # empty: the CL-26 race window
+    holder = os.open(path, os.O_RDWR)
+    try:
+        msvcrt.locking(holder, msvcrt.LK_NBLCK, 1)   # byte 0 locked, no write
+        with pytest.raises(RuntimeError, match='another launcher operation is running'):
+            with pc.control_lock(path, timeout_s=0.2):
+                pass
+    finally:
+        os.close(holder)                       # releases the byte-range lock
+    with pc.control_lock(path, timeout_s=0.2):
+        pass
+    assert path.read_bytes() == b''            # the lock file is never written
