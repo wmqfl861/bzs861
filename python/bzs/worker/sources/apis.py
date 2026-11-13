@@ -215,3 +215,48 @@ class Marginalia(JsonApi):
                 hits.append(Hit(url, clean_text(self.text_field(item, "title", res)),
                                 clean_text(self.text_field(item, "description", res), 400), len(hits) + 1))
         return hits
+
+
+class Mwmbl(JsonApi):
+    """Mwmbl public v2 search API (https://api.mwmbl.org/api/v2/search/?q=).
+
+    The documented response is a top-level JSON array of result objects
+    (title, url, extract) - not the object shape the other JSON APIs use, so
+    this adapter parses it strictly itself. Terms and quota facts are recorded
+    in docs/sources/mwmbl.md; anonymous access is the S0 path (D15) and an
+    optional free API key only raises the monthly quota, never a paid tier.
+    """
+    default_base = "https://api.mwmbl.org/api/v2/search/"
+
+    async def request(self, query, limit, language, timeout_s):
+        headers = {"User-Agent": API_USER_AGENT}
+        key = os.environ.get(self.params.get("key_env", "BZS_MWMBL_KEY"), "")
+        if key:
+            headers["Authorization"] = f"Bearer {key}"
+        # Only the q parameter is documented for v2; the result count is capped
+        # locally by Adapter.search instead of an undocumented limit parameter.
+        return await self.fetcher.fetch(self.base_url, params={"q": query},
+                                        timeout_s=timeout_s, accept="application/json", headers=headers)
+
+    def parse(self, res, query, limit):
+        # Strict array parsing with the same guards as JsonApi.json (duplicate
+        # keys and non-finite values are rejected), applied to the documented
+        # top-level array instead of an object.
+        try:
+            data = json.loads(self.text(res), object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
+        except (ValueError, RecursionError) as exc:
+            raise SourceError("parse_error", f"invalid JSON: {exc}", res.http_status) from exc
+        if not isinstance(data, list):
+            raise SourceError("parse_error", "Mwmbl response must be an array", res.http_status)
+        if len(data) > 1000:
+            raise SourceError("parse_error", "Mwmbl response array is too long", res.http_status)
+        hits = []
+        for item in data:
+            if not isinstance(item, dict):
+                raise SourceError("parse_error", "Mwmbl results must be objects", res.http_status)
+            url = self.text_field(item, "url", res, required=True)
+            if not url.startswith(("http://", "https://")):
+                continue
+            hits.append(Hit(url, clean_text(self.text_field(item, "title", res, required=True)),
+                            clean_text(self.text_field(item, "extract", res), 400), len(hits) + 1))
+        return hits

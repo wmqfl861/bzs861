@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from ..fetch import Fetcher
-from .apis import Arxiv, GitHubRepos, HackerNews, Marginalia, StackExchange, Wikipedia
+from .apis import Arxiv, GitHubRepos, HackerNews, Marginalia, Mwmbl, StackExchange, Wikipedia
 from .base import Adapter, SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
 from .review import SourceReviewError, require_review, validate_spec
 from .engines import BaiduHtml, BingHtml, DuckDuckGoHtml, MojeekHtml, So360Html, SogouHtml
@@ -19,6 +19,7 @@ ADAPTERS: dict[str, type[Adapter]] = {
     "baidu_html": BaiduHtml, "sogou_html": SogouHtml, "so360_html": So360Html,
     "wikipedia_api": Wikipedia, "arxiv_api": Arxiv, "stackexchange_api": StackExchange,
     "hackernews_api": HackerNews, "github_api": GitHubRepos, "marginalia_api": Marginalia,
+    "mwmbl_api": Mwmbl,
 }
 
 
