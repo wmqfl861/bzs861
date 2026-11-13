@@ -769,6 +769,139 @@ class TestRecordHygiene:
         assert json.loads(path.read_text(encoding="utf-8")) == new
 
 
+# ------------------- anchored death checks (CL-25 signature-3 class)
+
+
+def await_original_identity_gone(query, anchor, deadline, *, now=time.monotonic,
+                                 sleep=time.sleep):
+    """Identity-anchored death verdict for one tree member (CL-25 signature-3
+    class, ported from launcher_lifecycle eda84e6).
+
+    The anchor is the member's ORIGINAL identity captured at first sight,
+    BEFORE the tree is stopped. A sample of None (nothing holds the pid any
+    more) OR a different valid identity (the pid was reused) confirms the
+    original identity is gone; a sample equal to the anchor keeps waiting; an
+    identity-query EXCEPTION never counts as an exit. The loop shares the
+    caller's single deadline; one sample after the deadline decides the
+    verdict. Returns (gone, last) where `last` is the deciding sample or the
+    deciding OSError.
+    """
+    gone = False
+    last = None
+    while now() < deadline:
+        try:
+            last = query()
+        except OSError as exc:
+            last = exc  # a query failure is not an exit; keep the window
+        else:
+            if last is None or last != anchor:
+                gone = True
+                break
+        sleep(0.1)
+    if not gone:
+        try:
+            last = query()
+        except OSError as exc:
+            last = exc
+        gone = last is None or (not isinstance(last, OSError) and last != anchor)
+    return gone, last
+
+
+class TestAnchoredDeathCheck:
+    """Deterministic regressions for the identity-anchored death check ported
+    from launcher_lifecycle's CL-25 signature-3 fix (eda84e6): the real-Windows
+    tests poll member pids whose ORIGINAL identities were anchored at first
+    sight, so a pid later held by a churn reuser reads as a DIFFERENT identity
+    and still confirms the original is gone. Fake samplers and a fake clock
+    exercise every verdict rule with no real pid churn."""
+
+    @staticmethod
+    def _clock(start=100.0):
+        state = {"t": start}
+        return ((lambda: state["t"]),
+                (lambda seconds: state.__setitem__("t", state["t"] + seconds)))
+
+    @staticmethod
+    def _sticky(samples):
+        """Sampler yielding `samples` in order, then repeating the last one."""
+        state = {"i": 0}
+        def query():
+            i = min(state["i"], len(samples) - 1)
+            state["i"] += 1
+            value = samples[i]
+            if isinstance(value, Exception):
+                raise value
+            return value
+        return query
+
+    def test_original_identity_persistently_alive_fails(self):
+        # Still the anchored identity at the deadline MUST fail.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor"]), "win:anchor", 105.0, now=now, sleep=sleep)
+        assert gone is False
+        assert last == "win:anchor"
+
+    def test_pid_reuse_different_identity_passes(self):
+        # Signature-3 class: the pid is later held by a DIFFERENT process; a
+        # different valid identity confirms the original identity is gone.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor", "win:anchor", "win:reuser"]),
+            "win:anchor", 105.0, now=now, sleep=sleep)
+        assert gone is True
+        assert last == "win:reuser"
+
+    def test_reuse_before_first_sample_passes(self):
+        # The pid got reused BEFORE the first poll: the first query already
+        # reports the reuser while the anchor keeps the first-sight identity.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:reuser"]), "win:anchor", 105.0, now=now, sleep=sleep)
+        assert gone is True
+        assert last == "win:reuser"
+
+    def test_none_sample_passes(self):
+        # Nothing holds the pid any more: the original identity is gone.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor", None]), "win:anchor", 105.0,
+            now=now, sleep=sleep)
+        assert gone is True
+        assert last is None
+
+    def test_identity_query_error_is_not_an_exit(self):
+        # Query exceptions are neither an exit nor a failure; the verdict only
+        # lands on a later None/different-identity sample.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky([OSError("probe failed"), OSError("probe failed"), None]),
+            "win:anchor", 105.0, now=now, sleep=sleep)
+        assert gone is True
+        assert last is None
+
+    def test_identity_query_error_at_deadline_does_not_pass(self):
+        # Only exceptions until the deadline: the original was never confirmed
+        # gone, so the verdict must not pass.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky([OSError("probe failed")]), "win:anchor", 105.0,
+            now=now, sleep=sleep)
+        assert gone is False
+        assert isinstance(last, OSError)
+
+    def test_exit_confirmed_only_by_the_final_sample_passes(self):
+        # The anchored identity is sampled for the whole window and the pid is
+        # released/reused only at the deciding sample AFTER the deadline: the
+        # shared deadline still yields a correct verdict from that one sample.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor"] * 10 + ["win:reuser"]),
+            "win:anchor", 101.0, now=now, sleep=sleep)
+        assert gone is True
+        assert last == "win:reuser"
+
+
 # ---------------------------------------------------------- real processes
 
 
@@ -794,15 +927,20 @@ class TestRealWindowsProcesses:
         proc = subprocess.Popen([sys.executable, "-c", inner],
                                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
         proc._bzs_birth = pc.birth_identity(proc.pid)
-        return proc, _read_pid(real), _read_pid(leaf)
-
-    def _gone(self, pid):
-        return pc.birth_identity(pid) is None
+        real_pid, leaf_pid = _read_pid(real), _read_pid(leaf)
+        # CL-25 signature-3 class (eda84e6 port): anchor each member's ORIGINAL
+        # identity at first sight - the writer is alive here, BEFORE any stop
+        # call - so a later churn reuser holding the pid reads as a DIFFERENT
+        # identity and still confirms the original is gone.
+        real_birth, leaf_birth = pc.birth_identity(real_pid), pc.birth_identity(leaf_pid)
+        assert real_birth is not None, "real interpreter not alive at first sight"
+        assert leaf_birth is not None, "leaf not alive at first sight"
+        return proc, real_pid, leaf_pid, real_birth, leaf_birth
 
     def test_stop_owned_kills_the_whole_real_tree(self, tmp_path, monkeypatch):
         import json
         monkeypatch.setenv("BZS_HOME", str(tmp_path))
-        proc, real_pid, leaf_pid = self._spawn_chain(tmp_path)
+        proc, real_pid, leaf_pid, real_birth, leaf_birth = self._spawn_chain(tmp_path)
         record = {"version": 1, "name": "worker", "pid": proc.pid,
                   "birth": proc._bzs_birth, "port": 8611, "state": "ready"}
         pc.record_path("worker").parent.mkdir(parents=True, exist_ok=True)
@@ -814,9 +952,15 @@ class TestRealWindowsProcesses:
                 proc.kill()
             proc.wait(timeout=5)
         deadline = time.monotonic() + 8
-        while time.monotonic() < deadline and not (self._gone(real_pid) and self._gone(leaf_pid)):
-            time.sleep(0.1)
-        assert self._gone(real_pid) and self._gone(leaf_pid)
+        for pid, birth in ((real_pid, real_birth), (leaf_pid, leaf_birth)):
+            gone, last = await_original_identity_gone(
+                lambda pid=pid: pc.birth_identity(pid), birth, deadline)
+            if not gone:
+                if isinstance(last, OSError):
+                    pytest.fail(f"pid {pid}: original identity {birth!r} not confirmed "
+                                f"gone; identity query failed at deadline: {last}")
+                pytest.fail(f"pid {pid}: original identity {birth!r} still alive at "
+                            f"deadline (last sample {last!r})")
         assert not pc.record_path("worker").exists()
 
     def test_handleless_creation_matches_handle_query_on_real_processes(self, tmp_path):
@@ -865,18 +1009,22 @@ class TestRealWindowsProcesses:
         monkeypatch.setenv("BZS_HOME", str(tmp_path))
         bystander = subprocess.Popen([sys._base_executable, "-c", "import time;time.sleep(60)"],
                                      creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
-        proc, real_pid, _leaf = self._spawn_chain(tmp_path)
+        proc, real_pid, _leaf_pid, real_birth, _leaf_birth = self._spawn_chain(tmp_path)
         try:
             pc._win_terminate_tree(proc.pid, int(proc._bzs_birth.split(":")[1]), deadline_s=10)
         finally:
             if proc.poll() is None:
                 proc.kill()
             proc.wait(timeout=5)
-        assert self._gone(real_pid)
         deadline = time.monotonic() + 5
-        while time.monotonic() < deadline and not self._gone(real_pid):
-            time.sleep(0.1)
-        assert self._gone(real_pid)
+        gone, last = await_original_identity_gone(
+            lambda: pc.birth_identity(real_pid), real_birth, deadline)
+        if not gone:
+            if isinstance(last, OSError):
+                pytest.fail(f"pid {real_pid}: original identity {real_birth!r} not "
+                            f"confirmed gone; identity query failed at deadline: {last}")
+            pytest.fail(f"pid {real_pid}: original identity {real_birth!r} still alive "
+                        f"at deadline (last sample {last!r})")
         assert bystander.poll() is None          # never touched by the tree stop
         bystander.kill()
         bystander.wait(timeout=5)
