@@ -2,7 +2,9 @@
 
 `search_ok.json` and `search_empty.json` encode the documented Mwmbl v2 search
 response shape: a top-level JSON array of objects with `title`, `url` and
-`extract` members (https://developer.mwmbl.org/). `rate_limited.txt` is a
+`extract` members (https://developer.mwmbl.org/). `search_too_long.json` is a
+generated fixture of 1001 well-formed rows exercising the adapter's >1000
+array-length rejection. `rate_limited.txt` is a
 placeholder 429 body; the adapter raises `rate_limited` from the HTTP status
 before parsing, so the exact 429 body bytes do not matter.
 

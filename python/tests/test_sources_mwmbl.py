@@ -123,6 +123,15 @@ def test_mwmbl_shape_failures_are_parse_errors(body):
     assert exc.value.status == "parse_error"
 
 
+def test_mwmbl_array_longer_than_1000_members_is_rejected():
+    # Same guard family as JsonApi.json: the top-level array is capped at 1000
+    # members; the fixture packs 1001 well-formed rows and must fail fast as
+    # parse_error instead of being indexed.
+    with pytest.raises(SourceError) as exc:
+        run(Mwmbl, fixture("search_too_long.json"))
+    assert exc.value.status == "parse_error"
+
+
 def test_mwmbl_http_429_is_rate_limited_with_retry_after():
     # 429 is the documented quota-exceeded signal (developer.mwmbl.org).
     with pytest.raises(SourceError) as exc:

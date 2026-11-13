@@ -36,9 +36,12 @@
 ## 缓存与再分发
 
 条款页对结果数据标注 **CC-BY-NC-SA 4.0**（署名—非商业—相同方式共享）：
-缓存与再分发结果须附署名并保持非商业用途。本项目为个人非商业搜索工具，配置
-中按 `redistribution_policy=links_only`（仅链接）记录；`cache_policy` 维持
-`unverified`，S0 后复核再定。启用后在任何对外输出中不得去掉 Marginalia 署名。
+缓存与再分发结果须附署名并保持非商业用途。本项目虽为个人非商业搜索工具，但
+config/sources.json 中 marginalia 的 `contract.review.redistribution_policy`
+实际值为 `"unverified"`（并非 `links_only`；再分发口径待 S0 实测后复核再定），
+`cache_policy` 同为 `"unverified"`。在复核更新这两项之前，require_review
+（python/bzs/worker/sources/review.py）对启用硬性拒绝。启用后在任何对外输出中
+不得去掉 Marginalia 署名。
 
 ## 响应形状
 

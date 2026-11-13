@@ -45,8 +45,12 @@ Wikimedia UA 政策要求自动化流量携带可识别的工具名/版本与联
 
 维基百科正文内容按 CC-BY-SA 4.0 授权（署名—相同方式共享；见
 <https://en.wikipedia.org/wiki/Wikipedia:Copyrights>）。本项目仅将搜索摘要
-片段与结果链接存入本地索引、按 `links_only` 记录再分发口径；对外输出如含
-正文片段须附署名与许可说明。`cache_policy` 维持 `unverified`，S0 后复核。
+片段与结果链接存入本地索引；config/sources.json 中 wikipedia_en/wikipedia_zh
+的 `contract.review.redistribution_policy` 实际值为 `"unverified"`（并非
+`links_only`；再分发口径待 S0 实测后复核再定），`cache_policy` 同为
+`"unverified"`。在复核更新这两项之前，require_review
+（python/bzs/worker/sources/review.py）对启用硬性拒绝。对外输出如含正文片段
+须附署名与许可说明。
 
 ## 结论
 
