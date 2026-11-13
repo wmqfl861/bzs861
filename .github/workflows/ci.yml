@@ -91,6 +91,92 @@ jobs:
             mutation-logs/*.log
           retention-days: 14
           if-no-files-found: warn
+  linux-tsan:
+    # ThreadSanitizer over the offline native test binaries (the Python
+    # worker e2e suites are out of scope here). The request pool, the
+    # background pools, the Store lock and the json-c lock are the core
+    # concurrency surfaces; a manual run on 6410d27 was clean, this job
+    # keeps it that way (CL-11).
+    name: linux-tsan (native offline tests)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev
+      - name: Build with ThreadSanitizer
+        # No CMAKE_BUILD_TYPE: the sanitizer flags carry the recommended
+        # -O1 -g and must not be overridden by the Debug -O0 defaults.
+        run: |
+          cmake -S . -B build-tsan -GNinja -DCMAKE_CXX_FLAGS="-fsanitize=thread -O1 -g" -DBZS_BUILD_TESTS=ON
+          cmake --build build-tsan -j 2
+      - name: Run native offline test binaries under TSan
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+        run: |
+          ./build-tsan/bzs_storage_maintenance_tests
+          ./build-tsan/bzs_background_pool_tests
+          ./build-tsan/bzs_request_executor_tests
+          ./build-tsan/bzs_receipt_retention_tests
+          ./build-tsan/bzs_archive_quota_tests
+          ./build-tsan/bzs_incremental_storage_tests
+          ./build-tsan/bzs_tests
+          ./build-tsan/bzs_batch_tests
+          ./build-tsan/bzs_map_tests
+          ./build-tsan/bzs_crawl_tests
+          ./build-tsan/bzs_site_publication_tests
+          ./build-tsan/bzs_contract_tests docs/planning/validation/contract_cases.json
+          ./build-tsan/bzs_retention_tests
+          ./build-tsan/bzs_fairness_tests
+          ./build-tsan/bzs_session_tests
+          ./build-tsan/bzs_revalidation_tests
+          ./build-tsan/bzs_direct_shared_tests
+          ./build-tsan/bzs_revocation_tests
+          ./build-tsan/bzs_source_publication_tests
+          ./build-tsan/bzs_cache_freshness_tests
+          ./build-tsan/bzs_search_mode_tests
+          ./build-tsan/bzs_capacity_cycles_tests
+          ./build-tsan/bzs_gram_index_tests
+          ./build-tsan/bzs_long_document_recall_tests
+  linux-release:
+    # Release is the configuration users actually run; exercise the offline
+    # native suites and the stdlib-only integration suites against a
+    # Release build (CL-11).
+    name: linux-release (native offline tests)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev
+      - name: Build Release
+        run: |
+          cmake --preset release
+          cmake --build --preset release -j 2
+      - name: Offline native and stdlib integration tests (Release)
+        run: |
+          ctest --test-dir build-release --output-on-failure \
+            -R "^(storage_maintenance|incremental_storage|archive_quota|receipt_retention|background_pool|gram_index|long_document_recall|request_executor|core|batch|map|crawl|site_publication|retention|fairness|sessions|source_publication|search_modes|revalidation|direct_shared|revocation|capacity_cycles|cache_freshness_[123]|contracts|launcher_lifecycle|cache_shard_contract|ci_reporting|http_cli|http_revocation)$" \
+            --output-junit "$PWD/build-release/ctest-results.xml"
+          python3 tools/verify_ctest_junit.py "$PWD/build-release/ctest-results.xml" --minimum 31
+      - name: Retain test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: linux-release-tests-${{ github.sha }}
+          path: |
+            build-release/ctest-results.xml
+            build-release/Testing/Temporary/*.log
+          retention-days: 14
+          if-no-files-found: warn
   windows:
     # Full worker packaging remains in S9. Preserve the already established,
     # blocking native core, batch, map, crawl, publication, contract, retention,
