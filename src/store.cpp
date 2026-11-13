@@ -225,6 +225,8 @@ namespace bzs {
   Store::Store(const std::filesystem::path& path, std::function<std::int64_t()> clock, StoreOptions options):path_(path), clock_(clock?std::move(clock):now_ms), options_(options) {
     require(options_.max_snapshots_per_owner>=1&&options_.max_bytes_per_owner>=1&&options_.max_revisions_per_document>=1&&options_.max_substring_bytes_per_owner>=1,
             "E_SCHEMA","Invalid store quotas");
+    require(options_.backup_step_pages>=1&&options_.backup_step_pages<=1000000&&options_.backup_deadline_ms>=1&&options_.backup_deadline_ms<=86400000,
+            "E_SCHEMA","Invalid backup paging bounds");
     if(path!=":memory:"&&!path.parent_path().empty())std::filesystem::create_directories(path.parent_path());
     const auto filename=path==":memory:"?path.string():utf8_path(path);
     auto rc=sqlite3_open_v2(filename.c_str(), &db_, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_FULLMUTEX, nullptr);
@@ -1976,7 +1978,26 @@ namespace bzs {
     return out;
   }
   Json Store::backup(const std::filesystem::path& dst) {
-    std::lock_guard lock(mutex_);
+    // CL-17/F-01: the copy is paged. Each batch holds the Store lock only for
+    // its own pages, so unrelated reads, searches and control calls keep their
+    // own deadlines while a backup runs; the lock is free between batches.
+    // Because the lock is released, a second backup could otherwise interleave
+    // its batches with the first: one backup runs at a time and later callers
+    // are rejected outright instead of queueing on the whole copy.
+    std::function<void()> between_pages;
+    {
+      std::lock_guard lock(mutex_);
+      require(!backup_active_, "E_BACKUP_IN_PROGRESS", "Another backup is already in progress", 409);
+      backup_active_=true;
+      between_pages=backup_page_hook_for_test_;
+    }
+    struct Leave {
+      Store& store;
+      ~Leave() {
+        std::lock_guard lock(store.mutex_);
+        store.backup_active_=false;
+      }
+    } leave{*this};
     require(!std::filesystem::exists(dst), "E_BACKUP_EXISTS", "Backup destination already exists", 409);
     if(!dst.parent_path().empty())std::filesystem::create_directories(dst.parent_path());
     // The staging name stays ASCII: deriving it from a non-ASCII destination
@@ -2001,13 +2022,56 @@ namespace bzs {
 #endif
     auto*b=sqlite3_backup_init(raw, "main", db_, "main");
     require(b!=nullptr, "E_BACKUP", "Backup initialization failed", 500);
-    auto step=sqlite3_backup_step(b, -1);
-    auto finish=sqlite3_backup_finish(b);
-    checked(step, raw);
-    checked(finish, raw);
-    require(step==SQLITE_DONE, "E_BACKUP", "Backup is incomplete", 500);
-    exec(raw, "PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL; UPDATE settings SET value='1' WHERE key='restore_quarantine';");
-    auto pages=scalar(raw, "PRAGMA page_count");
+    struct Finish {
+      sqlite3_backup* backup;
+      Store& store;
+      bool done=false;
+      ~Finish() {
+        if(!done) {
+          // The backup object refers to the source connection, so finishing
+          // it holds the Store lock like every other use of db_.
+          std::lock_guard lock(store.mutex_);
+          sqlite3_backup_finish(backup);
+        }
+      }
+    } finish{b,*this};
+    std::int64_t pages=0;
+    try {
+      const auto deadline_at=clock_()+options_.backup_deadline_ms;
+      for(;;) {
+        int rc=SQLITE_OK;
+        {
+          std::lock_guard lock(mutex_);
+          rc=sqlite3_backup_step(b, static_cast<int>(options_.backup_step_pages));
+        }
+        checked(rc, raw);
+        if(rc==SQLITE_DONE)break;
+        // Honest expiry: throw before anything is published, so Cleanup
+        // discards the staging copy and no partial database survives. The
+        // bound also stops a copy that keeps restarting because the source
+        // changed through another connection.
+        require(clock_()<deadline_at, "E_BACKUP_TIMEOUT",
+                "Backup deadline exceeded; the partial copy was discarded", 503);
+        if(between_pages)between_pages();
+      }
+      {
+        std::lock_guard lock(mutex_);
+        finish.done=true;
+        checked(sqlite3_backup_finish(b), raw);
+      }
+      exec(raw, "PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL; UPDATE settings SET value='1' WHERE key='restore_quarantine';");
+      pages=scalar(raw, "PRAGMA page_count");
+    }catch(...) {
+      if(!finish.done) {
+        std::lock_guard lock(mutex_);
+        finish.done=true;
+        sqlite3_backup_finish(b);
+      }
+      // Windows cannot remove an open file; close the destination first so
+      // Cleanup really deletes the partial staging copy.
+      target.reset();
+      throw;
+    }
     target.reset();
     // Publish only a closed, quarantined file. A hard link refuses to overwrite
     // an existing destination atomically. Unsupported filesystems fail closed.

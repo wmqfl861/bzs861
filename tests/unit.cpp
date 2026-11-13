@@ -24,6 +24,11 @@ namespace bzs {
     static void set(Store& store,std::function<void()> callback) {
       std::lock_guard lock(store.mutex_);store.search_unlocked_for_test_=std::move(callback);
     }
+    // Backup equivalent of set(): the barrier runs between backup page
+    // batches, with no Store lock held, so an unrelated read can proceed.
+    static void set_backup_hook(Store& store,std::function<void()> callback) {
+      std::lock_guard lock(store.mutex_);store.backup_page_hook_for_test_=std::move(callback);
+    }
     // CL-03 M1: the >600 raw contributing-URL ceiling is unreachable through
     // public surfaces (see the comment in Store::search_bindings_locked), so
     // the capture path is driven directly with a synthetic contributor list.
@@ -1072,6 +1077,105 @@ namespace {
     rejects([&] {
       s.backup(path);
     }, "E_BACKUP_EXISTS");
+  }
+  // CL-17 / F-01: backup.create used to run sqlite3_backup_step(b,-1) on the
+  // request thread while holding the Store mutex, so an unrelated read could
+  // not complete until the whole database was copied. The regression parks
+  // the backup between page batches (one page per batch via the options
+  // seam) and requires an unrelated search and a concurrent second backup
+  // to finish inside that window. Bounded waits are deadlock watchdogs only.
+  TEST(backup_yields_store_lock_between_pages) {
+    Temp t;
+    StoreOptions options;
+    options.backup_step_pages=1;
+    Store s(t.path/"db", {}, options);
+    s.ingest("a", text("https://x.example/a", "backup canary"));
+    std::mutex mutex;
+    std::condition_variable changed;
+    bool entered=false, proceed=false, read_done=false, second_rejected=false;
+    Json report;
+    std::exception_ptr backup_error, read_error;
+    StoreSearchTestAccess::set_backup_hook(s, [&] {
+      std::unique_lock lock(mutex);
+      if(entered)return;
+      entered=true;
+      changed.notify_all();
+      changed.wait_for(lock, std::chrono::seconds(5), [&] {return proceed;});
+    });
+    std::thread backup_thread([&] {
+      try {report=s.backup(t.path/"backup.sqlite");}
+      catch(...) {backup_error=std::current_exception();}
+    });
+    bool reached=false;
+    {
+      std::unique_lock lock(mutex);
+      reached=changed.wait_for(lock, std::chrono::seconds(5), [&] {return entered;});
+    }
+    bool second_error_unexpected=false;
+    if(reached) {
+      std::thread reader([&] {
+        try {
+          // Both an unrelated read and a write through the same connection
+          // must complete while the backup is parked: SQLite documents that
+          // the source is unlocked between steps and same-connection writes
+          // are propagated into the open backup automatically.
+          s.search_once("a", q("canary"));
+          s.ingest("a", text("https://x.example/during-backup", "written mid backup"));
+        }catch(...) {read_error=std::current_exception();}
+        {std::lock_guard lock(mutex);read_done=true;}changed.notify_all();
+      });
+      std::thread second([&] {
+        try {
+          s.backup(t.path/"second.sqlite");
+        }catch(const Error&e) {
+          second_rejected=e.code=="E_BACKUP_IN_PROGRESS";
+        }catch(...) {
+          second_error_unexpected=true;
+        }
+      });
+      reader.join();
+      second.join();
+    }
+    {std::lock_guard lock(mutex);proceed=true;}changed.notify_all();
+    backup_thread.join();
+    StoreSearchTestAccess::set_backup_hook(s, {});
+    CHECK(reached);
+    CHECK(!second_error_unexpected);
+    if(backup_error)std::rethrow_exception(backup_error);
+    if(read_error)std::rethrow_exception(read_error);
+    CHECK(read_done);
+    CHECK(second_rejected);
+    CHECK(report.at("restore_state").str()=="quarantined");
+    CHECK(report.at("contains_private_content").flag());
+    CHECK(!std::filesystem::exists(t.path/"second.sqlite"));
+    for(const auto& entry:std::filesystem::directory_iterator(t.path))
+      CHECK(entry.path().filename().string().find(".partial")==std::string::npos);
+  }
+  // CL-17 / F-01: expiry must be honest. A counting clock plus a one-page
+  // step budget makes the deadline fire deterministically after the first
+  // batch; the staging copy is discarded, no destination file appears, the
+  // single backup slot is free again, and the store still serves backups.
+  TEST(backup_deadline_discards_partial_and_keeps_slot_free) {
+    Temp t;
+    StoreOptions options;
+    options.backup_step_pages=1;
+    options.backup_deadline_ms=1;
+    std::int64_t now=1700000000000;
+    Store s(t.path/"db", [&] {return ++now;}, options);
+    s.ingest("a", text("https://x.example/a", "backup canary"));
+    const auto dir=t.path/"backups";
+    rejects([&] {s.backup(dir/"out.sqlite");}, "E_BACKUP_TIMEOUT");
+    CHECK(!std::filesystem::exists(dir/"out.sqlite"));
+    if(std::filesystem::exists(dir))
+      for(const auto& entry:std::filesystem::directory_iterator(dir)) {
+        const auto name=entry.path().filename().string();
+        CHECK(name.find(".partial")==std::string::npos);
+        CHECK(entry.path().extension()!=".sqlite");
+      }
+    Store plain(t.path/"db");
+    CHECK(plain.backup(dir/"out.sqlite").at("restore_state").str()=="quarantined");
+    CHECK(std::filesystem::file_size(dir/"out.sqlite")>0);
+    rejects([&] {Store blocked(dir/"out.sqlite");}, "E_RESTORE_QUARANTINED");
   }
   TEST(fixture_source_boundary) {
     FixtureCatalog f(BZS_FIXTURE_DIR);
