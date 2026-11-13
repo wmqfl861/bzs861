@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
-"""Validate the exact file CI uploads, including non-skipping required shards."""
+"""Validate the exact JUnit file(s) CI uploads, including non-skipping required shards.
+
+Multiple paths (Windows CI passes one JUnit per ctest config since CL-10) are
+checked as one union: the minimum count, the mandatory-shard set and the
+no-failure/no-skip rules apply across all files combined."""
 import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
 
-def verify(path: Path, minimum: int = 1) -> dict:
-    root = ET.parse(path).getroot()
-    tests = list(root.iter("testcase"))
+def verify(paths, minimum: int = 1) -> dict:
+    if isinstance(paths, Path):
+        paths = [paths]
+    tests = []
+    for path in paths:
+        root = ET.parse(path).getroot()
+        tests.extend(root.iter("testcase"))
     names = [test.get("name", "") for test in tests]
     if len(tests) < minimum or any(not name for name in names) or len(names) != len(set(names)):
         raise ValueError("JUnit has missing or duplicate tests")
@@ -17,12 +25,12 @@ def verify(path: Path, minimum: int = 1) -> dict:
     for test in tests:
         if any(test.find(tag) is not None for tag in ("failure", "error", "skipped")) or test.get("status") in ("fail", "failed", "notrun", "disabled"):
             raise ValueError("JUnit contains a failed or skipped test")
-    return {"tests": len(tests), "failed": 0, "skipped": 0, "xml": str(path)}
+    return {"tests": len(tests), "failed": 0, "skipped": 0, "xml": [str(path) for path in paths]}
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("path", type=Path)
+    p.add_argument("path", type=Path, nargs="+")
     p.add_argument("--minimum", type=int, default=1)
     a = p.parse_args()
     print(verify(a.path, a.minimum))

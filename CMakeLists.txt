@@ -190,13 +190,11 @@ if(BZS_BUILD_TESTS)
   add_test(NAME search_modes COMMAND bzs_search_mode_tests)
   set_tests_properties(search_modes PROPERTIES TIMEOUT 60)
   set_tests_properties(source_publication PROPERTIES TIMEOUT 60)
-  if(WIN32)
-    # Keep the complete 4 MiB persistence/backpressure fixture on slower
-    # Windows Debug runners; a bounded timeout still detects a hung suite.
-    set_tests_properties(sessions PROPERTIES TIMEOUT 180)
-  else()
-    set_tests_properties(sessions PROPERTIES TIMEOUT 60)
-  endif()
+  # CL-10 (2026-11-13 measurement round): Windows CI runs the heavy persistent
+  # suites at RelWithDebInfo, where sessions takes 33.1 s median on the
+  # reference Windows 11 VM (Debug: 245.7 s), so the watchdog returns to the
+  # Linux value (60 s, 1.8x headroom) on every platform.
+  set_tests_properties(sessions PROPERTIES TIMEOUT 60)
   add_executable(bzs_revalidation_tests tests/revalidation.cpp)
   target_link_libraries(bzs_revalidation_tests PRIVATE bzs_core Threads::Threads)
   if(MSVC)
@@ -320,17 +318,25 @@ if(BZS_BUILD_TESTS)
     # These are whole-process watchdogs for offline durable-store fixtures,
     # not product request deadlines. Windows Debug runs have reached the old
     # limits; retain every assertion and a bounded guard against a hung suite.
-    set_tests_properties(core PROPERTIES TIMEOUT 90)
     set_tests_properties(crawl site_publication PROPERTIES TIMEOUT 120)
-    # Retain the >8 MiB escaped snapshot and bounded-capacity cases while
-    # collecting per-case progress after a Windows-only 90 s suite timeout.
-    # This process watchdog does not change any request deadline or assertion.
-    # 2026-10-28 Windows 11 measurement, suites run alone in Debug: direct_shared
-    # 260 s (34 tests/10259 assertions), sessions 273 s (23/298). No pacing
-    # sleeps inside; cost is fsync-per-commit plus Debug CPU. Watchdogs raised
-    # with 1.5x headroom; every original assertion is still executed.
-    set_tests_properties(direct_shared PROPERTIES TIMEOUT 420)
-    set_tests_properties(sessions PROPERTIES TIMEOUT 420)
+    # CL-10 (2026-11-13): the heavy persistent suites (core, sessions,
+    # direct_shared, capacity_cycles, long_document_recall, cache_freshness_*)
+    # now gate on RelWithDebInfo in Windows CI (see .github/workflows/ci.yml),
+    # so their Windows watchdogs return to the Linux values - at most 1x the
+    # Linux timeout, well inside the review's "<=3x Linux" bound. Reference
+    # Windows 11 VM medians, 3 runs each, synchronous FULL kept (FULL vs OFF
+    # measured within noise, so the durability pragma stays; full data in the
+    # uncommitted measurement report
+    # C:/tools/phase25-3-20261113/cl10-report.md):
+    #   sessions             245.7 s Debug -> 33.1 s RelWithDebInfo, TIMEOUT 60
+    #   direct_shared        247.1 s Debug -> 29.9 s RelWithDebInfo, TIMEOUT 90
+    #   core                  74.6 s Debug -> 21.5 s RelWithDebInfo, TIMEOUT 45
+    #   long_document_recall 215.5 s Debug -> 37.1 s RelWithDebInfo, TIMEOUT 300
+    # Headroom 1.8x-8.1x at the Linux timeouts. capacity_cycles (180 s) and
+    # cache_freshness_[123] (60 s) never had Windows overrides and keep the
+    # Linux values. No assertion or test case is removed by this change: only
+    # the whole-process watchdogs shrank; every suite still runs to completion
+    # in the CI config it is gated on.
   endif()
   # 77 = dependencies missing -> reported as skipped, not passed.
   set_tests_properties(e2e_web PROPERTIES TIMEOUT 180 SKIP_RETURN_CODE 77)

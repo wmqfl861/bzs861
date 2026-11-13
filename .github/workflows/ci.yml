@@ -121,16 +121,25 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build-win --config Debug --parallel 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # CL-10: the heavy persistent suites gate on RelWithDebInfo (measured
+          # 3.5-8.3x faster than Debug on a Windows 11 reference VM; Debug keeps
+          # the fast subset below). Same multi-config build dir, targeted build.
+          cmake --build build-win --config RelWithDebInfo --parallel 2 --target bzs_tests bzs_session_tests bzs_direct_shared_tests bzs_capacity_cycles_tests bzs_long_document_recall_tests bzs_cache_freshness_tests
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Offline native and HTTP tests
         shell: pwsh
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
-          ctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|source_publication|search_modes|cache_freshness_[123]|revalidation|direct_shared|revocation|capacity_cycles|http_cli|http_revocation|request_executor|long_document_recall|gram_index|background_pool|receipt_retention|archive_quota|incremental_storage|storage_maintenance|launcher_lifecycle|cache_shard_contract|ci_reporting)$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml"
+          # CL-10: Debug runs the fast subset; the heavy persistent suites run
+          # RelWithDebInfo. The union is exactly the pre-CL-10 gate (31 tests).
+          ctest --test-dir build-win -C Debug -R "^(batch|map|crawl|site_publication|contracts|retention|fairness|source_publication|search_modes|revalidation|revocation|http_cli|http_revocation|request_executor|gram_index|background_pool|receipt_retention|archive_quota|incremental_storage|storage_maintenance|launcher_lifecycle|cache_shard_contract|ci_reporting)$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results-debug.xml"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build-win -C RelWithDebInfo -R "^(core|sessions|direct_shared|capacity_cycles|long_document_recall|cache_freshness_[123])$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results-relwithdebinfo.xml"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify collected Windows JUnit
         shell: pwsh
         run: |
-          python tools/verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml" --minimum 31
+          python tools/verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results-debug.xml" "$env:GITHUB_WORKSPACE/build-win/ctest-results-relwithdebinfo.xml" --minimum 31
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Retain test logs
         if: always()
@@ -138,7 +147,8 @@ jobs:
         with:
           name: windows-tests-${{ github.sha }}
           path: |
-            build-win/ctest-results.xml
+            build-win/ctest-results-debug.xml
+            build-win/ctest-results-relwithdebinfo.xml
             build-win/Testing/Temporary/*.log
           retention-days: 14
           if-no-files-found: warn
