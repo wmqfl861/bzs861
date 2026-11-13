@@ -1225,11 +1225,11 @@ namespace {
     CHECK(!at_ceiling.has("captured_mode"));
     CHECK(at_ceiling.at("urls").size()==1);
     const auto overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(601));
-    CHECK(overflow.at("captured_mode").num()==2);
+    CHECK(overflow.has("captured_mode") && overflow.at("captured_mode").num()==2);
     auto distinct=Json::array();
     for(std::int64_t i=0;i<25;++i)distinct.push(Json::string("https://clean.example/variant"+std::to_string(i)));
     const auto identities_overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",distinct);
-    CHECK(identities_overflow.at("captured_mode").num()==2);
+    CHECK(identities_overflow.has("captured_mode") && identities_overflow.at("captured_mode").num()==2);
   }
   TEST(internal_error_diagnostics_are_structured_and_counted) {
     // CL-14: every swallowed internal error leaves one structured JSON event
@@ -1267,6 +1267,44 @@ namespace {
       "a", false
     }, req("stats", Json::object()));
     CHECK(stats.at("internal_errors").num()==internal_error_count());
+  }
+  TEST(internal_error_message_truncation_keeps_utf8_boundary) {
+    // CL-14: the structured log cuts what() at 200 bytes; a hard byte cut can
+    // split a multi-byte UTF-8 character, so the tail must be trimmed back to
+    // a character boundary. 198 'x' bytes place the 200-byte cut two bytes
+    // into 故 (3 bytes per character): the message field must still decode as
+    // valid UTF-8 and end on the last whole character, slightly under 200.
+    const auto valid_utf8=[](const std::string& text) {
+      std::size_t i=0;
+      while(i<text.size()) {
+        const auto byte=static_cast<unsigned char>(text[i]);
+        std::size_t width=1;
+        if(byte>=0xC2&&byte<=0xDF)width=2;
+        else if(byte>=0xE0&&byte<=0xEF)width=3;
+        else if(byte>=0xF0&&byte<=0xF4)width=4;
+        else if(byte>=0x80)return false;
+        if(i+width>text.size())return false;
+        for(std::size_t k=1;k<width;++k)
+          if((static_cast<unsigned char>(text[i+k])&0xC0)!=0x80)return false;
+        i+=width;
+      }
+      return true;
+    };
+    std::ostringstream captured;
+    auto* previous=std::clog.rdbuf(captured.rdbuf());
+    try {
+      throw std::runtime_error(std::string(198,'x')+"故障故障故障");
+    }catch(const std::exception& e) {
+      log_internal("utf8.site",&e);
+    }
+    std::clog.rdbuf(previous);
+    const auto text=captured.str();
+    const auto line=text.substr(0,text.find('\n'));
+    const auto event=Json::parse(line);
+    const auto message=event.at("message").str();
+    CHECK(valid_utf8(message));
+    CHECK(message.size()==198);
+    CHECK(message==std::string(198,'x'));
   }
   TEST(admin_backup) {
     Temp t;

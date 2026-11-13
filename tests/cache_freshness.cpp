@@ -330,7 +330,8 @@ TEST(no_store_transient_delivery_records_restrictive_publication_observations) {
   w.deny=false;w.headers=policy();
   bool observed=false;
   w.during=[&] {
-    if(observed)return;observed=true;
+    if(observed)return;
+    observed=true;
     Store writer(t.path/"db",[&]{return w.now;});
     DenyingWorker nested;nested.deny=true;nested.headers=policy("no-store");
     WebService transient_web(writer,nested,{});
