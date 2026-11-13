@@ -6,6 +6,47 @@ schema14 为每个文档保存独立的 `documents.deletion_key`，用来检查�
 
 这个键只参与删除比较。请求仍使用原精确 URI，文档和快照仍保留原身份；不会根据该键从其他 URL 或其他 owner 查找正文。新鲜度、请求 profile、来源与站点准入、发布限制、预算和任务租约继续分别检查。
 
+## 四个 URL 身份函数的格
+
+仓库里有四个 URL 身份函数，用途不同、粗细不同（CL-18）：
+
+| 函数 | 实现 | 用途 |
+| --- | --- | --- |
+| `dedup_key` | `src/web.cpp`（声明于 `include/bzs/web.hpp`） | 搜索结果融合组键（R-01 保守去重，进入搜索缓存键的 `dedup_version`） |
+| `url_key`（即 `map_url`） | `src/sites.cpp` | 自动站点准入/文档键 |
+| `read_identity`（即 `publication_url_identity`） | `src/web.cpp` | 发布绑定与 HTTP 缓存路由的普通 HTTP 客户端身份 |
+| `deletion_url_key` | `src/util.cpp` | 删除屏障别名（本文其余部分） |
+
+在三者都接受的公共定义域上，等价关系满足：
+
+```
+dedup_key ⊆ url_key ⊆ read_identity
+即  dedup_key(a)==dedup_key(b)  =>  map_url(a)==map_url(b)
+    map_url(a)==map_url(b)      =>  publication_url_identity(a)==publication_url_identity(b)
+```
+
+因此"同一融合组 ⇒ 发布检查同一身份"永远成立：R-01 之后同一融合组里的 URL 只差主机名 ASCII 大小写和默认端口，而这两个维度在 `url_key` 和 `read_identity` 里同样折叠。各函数的归一化对比：
+
+| 维度 | dedup_key | url_key（map_url） | read_identity | deletion_url_key |
+| --- | --- | --- | --- | --- |
+| scheme 大小写 | 不折叠；非小写 `http://`/`https://` 前缀返回空哨兵 | 不折叠；且元数据准入只接受小写 http/https，其他 scheme 直接拒绝 | 同 url_key | 同 url_key；语法外整体退回精确原串 |
+| 主机名大小写 | ASCII 折叠 | ASCII 折叠 | ASCII 折叠 | ASCII 折叠 |
+| 默认端口 `:80`/`:443` | 仅去掉精确后缀（`:080` 不折叠） | 按数值解析折叠（`:080` 也折叠） | 按数值解析折叠 | 按数值解析折叠 |
+| 片段 `#…` | 保留（SPA 路由差异不融合） | 去掉 | 去掉 | 去掉 |
+| 空路径、末尾空 `?` | 保留差异 | 折叠为 `/`、去掉 | 折叠为 `/`、去掉 | 折叠为 `/`、去掉 |
+| percent 转义 | 原样保留（十六进制大小写也视为不同） | 原样保留；路径中拒绝编码分隔符/点 | 解码 unreserved，其余大写重编码（十六进制大小写折叠） | 同 read_identity |
+| 点段 `.`/`..` | 原样保留 | 直接拒绝（`E_SCOPE`） | 解析消解（`/a/../b` 与 `/b` 相同） | 原样保留 |
+| 查询参数顺序与重复 | 保留 | 保留 | 保留 | 保留 |
+| http 与 https | 区分 | 区分 | 区分 | 区分 |
+
+**deletion_key 的位置。** `deletion_url_key` 不在这条链的任何一端：它与 `read_identity` 使用相同的 unreserved 解码和默认端口折叠，但不做点段消解，所以在点段维度上比 `read_identity` 更细；它又比 `url_key` 粗，因为 `%2f` 与 `%2F`、`%41` 与 `A` 在删除身份下相同而 `url_key` 保留区别。URL 不满足元数据语法（如带下划线的主机、大写 scheme、IPv6 字面量、userinfo）时它整体退回精确原串，此时它比所有函数都细，也与 `dedup_key` 不可比——`dedup_key` 相同的一对（仅主机大小写不同）可以带有不同的删除键。"dedup 相同 ⇒ 删除键相同"只在元数据语法之内成立；删除比较本身完全发生在这个键上，不影响上面的链条。
+
+**定义域与空哨兵。** `dedup_key` 从不抛出：非 http/https、大写 scheme、userinfo（`@`）、空主机都返回空串，这是"无融合身份"哨兵，融合路径对空键直接跳过。`url_key` 与 `read_identity` 会按各自准入规则抛出（`normalize_iri`、`check_public_url`、`safe_path` 等）；同一融合键的成员只会被同时接受或同时拒绝，不存在"同组一半可准入、一半不可"的分裂。链条断言在三者都接受的公共定义域上；对含点段的路径 `url_key` 拒绝而 `read_identity` 接受时，`dedup_key` 相同 ⇒ `read_identity` 相同仍直接成立（发布检查身份不依赖 `url_key` 准入）。
+
+**R-01 语义说明。** 四个函数都区分 http 与 https：发布和删除的数据模型本来就把它们当成两个资源。R-01 之前较宽的融合让"一个变体上的限制挡住另一个变体"成为可能——例如旧爬取标记（legacy crawl marker）或封锁的发布身份能挡住另一 scheme 变体的命中——那只是因为两条结果被融合进了同一组。R-01 收紧融合后，组内所有成员共享同一个 `read_identity`：发布限制要么覆盖全组、要么全组不受影响，贡献者身份数也无法再靠组内变体凑出（见 `src/sessions.cpp` 中 captured_mode 上限的可达性注释）。所以 R-01 没有造成发布绕过，它让搜索行为与发布/删除的身份模型一致。任何改动这四个函数、使上述包含关系不再成立的提交都是规格回退。
+
+**性质测试。** `tests/url_identity_lattice.cpp`（CTest 名 `url_identity_lattice`）用固定种子的确定性生成器覆盖 scheme/主机大小写/端口/路径/查询/片段/percent 转义/punycode 与 UTF-8 主机/尾斜杠/默认端口/大写 scheme，每个提交运行 12000 对随机 URL（含姊妹变异对与定向对），断言 `dedup_key(a)==dedup_key(b)` ⇒ `url_key(a)==url_key(b)` ⇒ `read_identity(a)==read_identity(b)`（含 `dedup ⇒ read` 直接断言与准入对称性）。本文件描述的两层包含是严格的：存在 dedup 不同而 url_key 相同的对（空路径与 `/`、片段、末尾 `?`、`:080`），也存在 url_key 不同而 read_identity 相同的对（查询中转义十六进制大小写、unreserved 转义）。
+
 ## 等价范围
 
 实现入口为 [`deletion_url_key`](../src/util.cpp)。对已有元数据校验可接受的 HTTP/HTTPS URI，它采用以下有限规则：
