@@ -14,6 +14,14 @@ from bzs import __version__, process_control as pc
 
 
 class Lifecycle(unittest.TestCase):
+    # CL-25: a spawned child's inherited handle on logs\worker.log can survive
+    # child.wait() for a moment under heavy parallel load, making the tearDown
+    # TemporaryDirectory cleanup fail with a transient sharing violation
+    # (WinError 32) after every assertion already passed. Retry that one
+    # condition only; anything else propagates unchanged.
+    _CLEANUP_BACKOFF_S = (0.05, 0.1, 0.2, 0.4, 0.5)  # then stay at 500 ms
+    _CLEANUP_BUDGET_S = 5.0  # from the first attempt, time.monotonic()
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="bzs-lifecycle-")
         self.env = patch.dict(os.environ, {"BZS_HOME": self.temp.name})
@@ -26,7 +34,45 @@ class Lifecycle(unittest.TestCase):
                 child.kill()
             child.wait(timeout=5)
         self.env.stop()
-        self.temp.cleanup()
+        self._cleanup_temp_with_winerror32_retry()
+
+    def _cleanup_temp_with_winerror32_retry(self):
+        """self.temp.cleanup() with a bounded retry for transient WinError 32.
+
+        First attempt immediately; on a Windows PermissionError with
+        winerror==32 back off 50/100/200/400/500 ms then stay at 500 ms,
+        inside a 5 s time.monotonic() budget with every wait clipped to the
+        remaining budget and no retry after the deadline. Budget exhaustion
+        stays a test ERROR: the last exception is chained, and the test name,
+        held path, attempt count and elapsed time are recorded. Never
+        warn-and-pass; ignore_cleanup_errors is never used.
+        """
+        start = time.monotonic()
+        deadline = start + self._CLEANUP_BUDGET_S
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                self.temp.cleanup()
+                return
+            except PermissionError as exc:
+                if os.name != "nt" or getattr(exc, "winerror", None) != 32:
+                    raise
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise RuntimeError(
+                        f"{self.id()}: temp-dir cleanup still blocked after {attempt} attempts "
+                        f"in {time.monotonic() - start:.2f}s; held path: "
+                        f"{exc.filename or self.temp.name}"
+                    ) from exc
+                delay = (self._CLEANUP_BACKOFF_S[attempt - 1]
+                         if attempt <= len(self._CLEANUP_BACKOFF_S)
+                         else self._CLEANUP_BACKOFF_S[-1])
+                wait = min(delay, remaining)
+                print(f"[launcher-lifecycle] temp cleanup retry: test={self.id()} "
+                      f"attempt={attempt} winerror=32 path={exc.filename or self.temp.name!r} "
+                      f"wait_ms={wait * 1000:.0f}", file=sys.stderr)
+                time.sleep(wait)
 
     def command(self, before="", ready=None, after=""):
         ready = ready or {"event":"ready", "component":"bzs-worker", "host":"127.0.0.1", "port":12345, "version":__version__}
