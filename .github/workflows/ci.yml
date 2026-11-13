@@ -11,8 +11,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
         with:
           persist-credentials: false
-          # Full history: the changed-line format gate below needs the
-          # merge-base with origin/main (CL-11 item 4).
+          # Full history: the changed-line format gate below compares the
+          # exact push/pull_request event SHAs and fetches any missing
+          # event object by exact SHA (CL-11 item 4).
           fetch-depth: 0
       - name: Reject CRLF in the index (CL-21)
         run: |
@@ -43,17 +44,52 @@ jobs:
             > "$RUNNER_TEMP/ruff-pin.txt"
           .venv/bin/python -m pip install --require-hashes -r "$RUNNER_TEMP/ruff-pin.txt"
           .venv/bin/python -m ruff check --select E9,F,B python/bzs
-      - name: Changed-line clang-format check (CL-11)
-        # CL-11 item 4: check ONLY the lines changed relative to
-        # origin/main. There is deliberately no full-tree reformat gate:
-        # a full reformat would invalidate the file:line references in
-        # docs/ and validation/ and conflict with in-flight branches. If
-        # a one-shot full reformat is ever wanted, it must be a separate
-        # commit after the CL-01 merge with .git-blame-ignore-revs.
+      - name: Changed-line format gate regressions (CL-11 item 4)
+        # Merge gate: the changed-line checker's own regressions must run
+        # on native Linux with the real clang-format 18 BEFORE the gate.
+        # The suite builds real temporary git repositories and asserts
+        # exit codes, inspected added-line counts and that the gate never
+        # writes a repository byte (validation/ and untracked files
+        # included). The one fake formatter is labeled: the Windows wheel
+        # of clang-format 18.1.8 does not expand @response files, so the
+        # injection regression uses a response-file-emulating double;
+        # every other regression runs this real binary.
         run: |
-          sudo apt-get install -y --no-install-suggests clang-format
-          clang-format --version
-          .venv/bin/python tools/check_changed_format.py --base origin/main
+          sudo apt-get install -y --no-install-suggests clang-format-18
+          clang-format-18 --version
+          .venv/bin/python tools/test_check_changed_format.py \
+            --clang-format "$(command -v clang-format-18)"
+      - name: Changed-line clang-format check (CL-11)
+        # CL-11 item 4: check ONLY the lines changed by the exact event
+        # (pull_request: merge-base(base,head)..head with the event's own
+        # SHAs; push: before..after directly, all-zero after = explicit
+        # SKIP, all-zero before on main = empty tree, on a branch =
+        # declared merge-base(main,after) fallback). Checked bytes and
+        # .clang-format come from the exact head tree, never from the
+        # merge-checkout worktree, and the formatter receives source over
+        # stdin only. There is deliberately no full-tree reformat gate: a
+        # full reformat would invalidate the file:line references in
+        # docs/ and validation/ and conflict with in-flight branches.
+        run: |
+          sudo apt-get install -y --no-install-suggests clang-format-18
+          clang-format-18 --version
+          python3 - "$GITHUB_EVENT_NAME" "$GITHUB_EVENT_PATH" "$GITHUB_REF" \
+            > "$RUNNER_TEMP/format-event.json" <<'PY'
+          import json, sys
+          name, path, ref = sys.argv[1:4]
+          gh = json.load(open(path, encoding="utf-8"))
+          if name == "pull_request":
+              pr = gh["pull_request"]
+              event = {"event": "pull_request",
+                       "base": pr["base"]["sha"], "head": pr["head"]["sha"]}
+          else:
+              event = {"event": "push", "before": gh["before"],
+                       "after": gh["after"], "ref": ref}
+          json.dump(event, sys.stdout)
+          PY
+          .venv/bin/python tools/check_changed_format.py \
+            --clang-format "$(command -v clang-format-18)" \
+            --event-file "$RUNNER_TEMP/format-event.json"
       - name: Build and test core, contracts, HTTP, worker and MCP
         run: |
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
