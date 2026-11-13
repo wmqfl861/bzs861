@@ -1225,11 +1225,11 @@ namespace {
     CHECK(!at_ceiling.has("captured_mode"));
     CHECK(at_ceiling.at("urls").size()==1);
     const auto overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(601));
-    CHECK(overflow.at("captured_mode").num()==2);
+    CHECK(overflow.has("captured_mode") && overflow.at("captured_mode").num()==2);
     auto distinct=Json::array();
     for(std::int64_t i=0;i<25;++i)distinct.push(Json::string("https://clean.example/variant"+std::to_string(i)));
     const auto identities_overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",distinct);
-    CHECK(identities_overflow.at("captured_mode").num()==2);
+    CHECK(identities_overflow.has("captured_mode") && identities_overflow.at("captured_mode").num()==2);
   }
   TEST(internal_error_diagnostics_are_structured_and_counted) {
     // CL-14: every swallowed internal error leaves one structured JSON event
