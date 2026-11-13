@@ -437,6 +437,10 @@ def stop_record_with_api(monkeypatch, tmp_path, api):
     return pc.stop_owned("worker", timeout=5)
 
 
+# stop_owned takes the POSIX pidfd branch on non-Windows, so these fake-API
+# scripts of the Windows stop path (and their record lifecycle) never engage
+# there; skip them rather than assert a code path that was never driven.
+@pytest.mark.skipif(os.name != "nt", reason="Windows-only stop-tree semantics via fake API")
 class TestTerminateFailureRecheck:
     """Codex spec A: a refused TerminateProcess - or a terminate-handle open
     failure - is neither evidence that the member lives nor that it exited.
@@ -522,6 +526,7 @@ class TestTerminateFailureRecheck:
         assert pc.record_path("worker").exists()
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows-only stop-tree semantics via fake API")
 class TestEqualTickHandleAnchoredRecheck:
     """Codex revised-B: an equal-creation-tick entry is never terminated. Only
     the SAME continuously-held query handle entering the signaled state after
