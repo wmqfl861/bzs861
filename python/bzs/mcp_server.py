@@ -181,7 +181,8 @@ def _client() -> CoreClient:
         from . import config
         cfg = config.load()
         url = url or cfg.core_url
-        token = token or config.api_token()
+        # CL-08: the MCP default prefers the non-admin owner token when present.
+        token = token or config.mcp_token()
     return CoreClient(url, token)
 
 

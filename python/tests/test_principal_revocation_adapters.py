@@ -60,14 +60,23 @@ def test_programmatic_http_admin_tools_are_refused():
 
 def test_cli_passes_only_subject_to_core(monkeypatch, capsys):
     calls = []
+    credentials = {}
 
     class Client:
         def call_sync(self, operation, params):
             calls.append((operation, params))
             return {"subject": params["subject"], "revoked": True}
 
+    def fake_client(_cfg, token=None):
+        credentials["token"] = token
+        return Client()
+
     monkeypatch.setattr(cli.config, "load", lambda: object())
-    monkeypatch.setattr(cli, "_client", lambda _: Client())
+    monkeypatch.setattr(cli, "_client", fake_client)
+    # CL-08: principal revocation is a management command; it must use the
+    # dedicated admin token, not the non-admin MCP default.
+    monkeypatch.setattr(cli.config, "admin_token", lambda: "admin-sentinel")
     assert cli.main(["revoke-principal", "alice"]) == 0
     assert calls == [("principal.revoke", {"subject": "alice"})]
+    assert credentials["token"] == "admin-sentinel"
     assert '"revoked": true' in capsys.readouterr().out

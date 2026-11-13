@@ -11,7 +11,7 @@
 | searchd → worker | 回环 HTTP、独立 worker token、大小与时间限制；worker 不写数据库，不能仅凭核心声称已检查放行 |
 | worker → 网页/来源 | 检查目标并绑定实际连接，逐跳重查；来源执行还须满足审核和启用条件 |
 
-令牌不进入样例、网页上下文或公开日志。认证文件按平台权限规则保护；Windows ACL 与完整平台发布仍需验收。本机 MCP HTTP 不代表 S5 的 TLS、按客户端限流、审计和远程隔离已完成。
+令牌不进入样例、网页上下文或公开日志。认证文件按平台权限规则保护：POSIX 下 core 启动即拒绝组/其他人可读的认证文件，Python 端写入后保持 0600；Windows 下（CL-08）`bzs init`、`bzs mcp-token add`、`tools/create_auth.py` 和探针证据写入都设置受保护 DACL——断开继承，仅当前用户 SID 与 SYSTEM 保留完全控制，任何安全 API 失败都保留文件并如实报错（fail closed）。`bzs doctor` 逐个读取秘密文件（含 BZS_HOME 目录本身）的 DACL，发现 Everyone/Users/Authenticated Users 可读即报错退出；POSIX 端 doctor 复用 core 的组/其他人权限位规则。最小权限：`bzs init` 生成 owner（非管理员，api.token/MCP 默认）和 admin（仅 CLI 管理命令）两个令牌；旧的单令牌（管理员）家目录继续兼容。本机 MCP HTTP 不代表 S5 的 TLS、按客户端限流、审计和远程隔离已完成。
 
 ## 异常与内部诊断
 

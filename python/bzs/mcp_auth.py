@@ -115,7 +115,8 @@ def _save(clients: list[dict[str, Any]], path: Path) -> None:
     text = json.dumps({"clients": clients}, indent=2, allow_nan=False) + "\n"
     if len(text.encode("utf-8")) > MAX_CLIENTS_BYTES:
         raise ValueError("client registry byte limit exceeded")
-    config._private_write(path, text)
+    # CL-08: the client registry holds bearer-token digests; write it as a secret.
+    config._private_write(path, text, secret=True)
 
 
 def add_client(name: str, path: Path | None = None) -> str:
