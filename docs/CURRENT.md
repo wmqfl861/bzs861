@@ -1,19 +1,19 @@
 # bzs861 当前入口（唯一）
 
-更新：2026-11-13（阶段 2，PR #12 合并后）
+更新：2026-11-13（阶段 2.5 完成、阶段 3 集成中）
 
 ## 当前集成提交
 
-- `main` 头：`c6ccfac`（Merge pull request #12：阶段 0/1/1.5/1.6，99 个提交合入；本文件所在 PR 为其直接后继）
-- CI：[actions/runs 列表](https://github.com/wmqfl861/bzs861/actions?query=branch%3Amain)——合并前最后一个代码头 `b85eb56` 三绿（linux/windows/windows-python，均首次尝试通过）
+- `main` 头：`00ed444`（Merge PR #14：阶段 2.5 Windows 停止树可靠性，7 个提交；此前 PR #13 为 CL-05/PROC-1 文档批次）
+- CI：PR #14 头 `8a8f6d9` 三绿（linux 首轮红=新测试缺 POSIX 守卫，已按 D20 记录 job 131779933239 并修复；新头零重跑三绿）
 
 ## 正在进行的批次
 
-- `docs(CURRENT)` 本批（分支 `work/current-docs-20261113`，PR #13）：CL-05 唯一入口 + PROC-1 蓝图流程规则
+- 阶段 3（分支 `work/phase3-sources-20261113`）：CL-20 显式 TLS → CL-07 诚实 UA → CL-06 mwmbl_api+三份来源审核记录 → S0 命令（docs/S0_COMMAND.md）→ tools/accept_s1.py（九条标准+D15 public-key 拦截）。全部离线、来源保持禁用。
 
 ## 下一步
 
-阶段 2.5：从 `main` 开分支 `work/windows-stop-20261113`，先 CL-26（Windows 锁文件写入竞争），再 CL-25（停止进程树排除父 PID 复用的无关进程），一个 PR 到 `main`；验收见 `docs/reviews/claude-2026-11-13-phase1_6-rereview.md` 第 6 节。之后按同一复审第 6 节进入阶段 3（CL-20 → CL-07 → CL-06 → S0 → `tools/accept_s1.py`）。
+阶段 3 合入后交给用户：按 docs/S0_COMMAND.md 在自己机器上运行 S0 探测（marginalia 可先按 D15 用共享 key public）；给 marginalia 发邮件申请免费非商业 key；收到 key 并按审核结论启用后运行 tools/accept_s1.py 作为 S1 签收依据。之后阶段 4/5（CL-22/CL-11/CL-08/CL-17/CL-18/misc5 已并行准备完毕，待集成；CL-10/13/15 测量类待 CPU 空闲）。
 
 用户待办（不属于决策）：给 marginalia 发邮件申请免费非商业 key（现在即可发）；收到 S0 命令后在自己的机器上运行；在自己的机器上运行 `tools/accept_s1.py` 作为 S1 签收依据。
 
