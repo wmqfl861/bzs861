@@ -45,8 +45,27 @@ class Reporting(unittest.TestCase):
             self.assertTrue(re.search(debug_pattern, name) or re.search(heavy_pattern, name), name)
         for name in ["background_pool", "receipt_retention", "archive_quota", "incremental_storage"]:
             self.assertRegex(name, debug_pattern)
-        self.assertEqual(workflow.count("if: always()"), 2)
-        self.assertIn("verify_ctest_junit.py", workflow)
+        # Every reporting job must retain its own outputs even on failure;
+        # adding a job must not weaken the existing jobs' artifact checks.
+        jobs = dict(re.findall(r"(?ms)^  ([a-z][a-z0-9-]*):\n(.*?)(?=^  [a-z][a-z0-9-]*:\n|\Z)", workflow))
+        for job, paths in {
+            "linux": ["build/ctest-results.xml", "build/Testing/Temporary/*.log", "mutation-logs/*.log"],
+            "linux-release": ["build-release/ctest-results.xml", "build-release/Testing/Temporary/*.log"],
+            "windows": ["build-win/ctest-results-debug.xml", "build-win/ctest-results-relwithdebinfo.xml",
+                        "build-win/Testing/Temporary/*.log"],
+        }.items():
+            with self.subTest(job=job):
+                self.assertIn(job, jobs)
+                retention = re.search(r"(?ms)^      - name: Retain test logs\n(.*?)(?=^      - |\Z)", jobs[job])
+                self.assertIsNotNone(retention)
+                self.assertIn("        if: always()\n", retention.group(1))
+                self.assertIn("        uses: actions/upload-artifact@", retention.group(1))
+                for path in paths:
+                    self.assertIn(f"            {path}\n", retention.group(1))
+        self.assertIn('verify_ctest_junit.py "$PWD/build/ctest-results.xml" --minimum 42', jobs["linux"])
+        self.assertIn('verify_ctest_junit.py "$PWD/build-release/ctest-results.xml" --minimum 31', jobs["linux-release"])
+        self.assertIn('verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results-debug.xml" '
+                      '"$env:GITHUB_WORKSPACE/build-win/ctest-results-relwithdebinfo.xml" --minimum 31', jobs["windows"])
         cmake = (ROOT / "CMakeLists.txt").read_text()
         self.assertIn("foreach(shard RANGE 1 3)", cmake)
         self.assertNotIn("DISABLED TRUE", cmake)
