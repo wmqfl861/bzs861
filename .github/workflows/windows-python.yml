@@ -17,7 +17,7 @@ jobs:
         run: |
           python -m venv .venv-win
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & ./.venv-win/Scripts/python.exe -m pip install -r tools/requirements-s1-lock.txt
+          & ./.venv-win/Scripts/python.exe -m pip install --require-hashes -r tools/requirements-s1-lock.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & ./.venv-win/Scripts/python.exe -m pip install --no-deps --no-build-isolation -e "python[test]"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
