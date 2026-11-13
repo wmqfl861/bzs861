@@ -269,7 +269,7 @@ MCP `search_local` 使用 `search.once`，返回 `returned_count` 与 `result_mo
 | `document.range` / `find` | UTF-8 字节窗口续读、精确查找和上下文 |
 | `evidence.create` / `evidence.read` | 快照、权限与字节区间复核；`semantic_support=not_evaluated` |
 | `capabilities` / `stats` | 当前运行能力与用量，不发布尚未实现能力 |
-| `fixtures.*` / `fixture.ingest` / `backup.create` | 保留离线 fixture 和任务路径；备份强制隔离，没有安全恢复发布流程 |
+| `fixtures.*` / `fixture.ingest` / `backup.create` | 保留离线 fixture 和任务路径；备份强制隔离，没有安全恢复发布流程。备份分页复制、页间释放库锁（`StoreOptions` 的 `backup_step_pages`/`backup_deadline_ms` 可配置）；进行中的第二个备份返回 E_BACKUP_IN_PROGRESS，超过期限返回 E_BACKUP_TIMEOUT 并丢弃暂存副本，绝不发布部分备份 |
 
 核心先校验搜索参数再创建会话；非法请求不能污染未过期会话额度。原引号指令、ASCII/Unicode 边界和精确字面回归继续执行。中文索引/BM25 与原文片段为既有能力，本轮保留回归；实际召回路径及不完整结果必须明确标注。
 

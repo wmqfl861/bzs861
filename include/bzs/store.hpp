@@ -39,6 +39,13 @@ namespace bzs {
     std::int64_t max_revisions_per_document=5;
     // Independent logical-token budget; does not relabel snapshot bytes as disk.
     std::int64_t max_substring_bytes_per_owner=8LL*1024*1024*1024;
+    // Backup paging and total-duration bound. Pages are copied per Store lock
+    // acquisition, with the lock released between batches so unrelated reads,
+    // searches and control calls keep their own deadlines. A backup still
+    // running at the deadline fails honestly: the staging copy is discarded
+    // and no destination file is ever published from a partial database.
+    std::int64_t backup_step_pages=64;
+    std::int64_t backup_deadline_ms=300000;
   };
   struct ReadManyOptions {
     std::int64_t timeout_ms=600000, per_page_timeout_ms=20000;
@@ -68,6 +75,14 @@ namespace bzs {
     // Copied while locked, called only with no Store lock or SQL transaction.
     friend struct StoreSearchTestAccess;
     std::function<void()> search_unlocked_for_test_;
+    // True from the first page batch of a backup until its report or failure.
+    // One backup at a time: with the Store lock released between batches, a
+    // second concurrent backup is rejected instead of interleaving batches.
+    bool backup_active_=false;
+    // Deterministic native-test barrier; no public setter or protocol surface.
+    // Copied while locked, called only with no Store lock, between backup
+    // page batches.
+    std::function<void()> backup_page_hook_for_test_;
     struct SitePublicationRule {
       std::string origin,path;
       int mode=0;
