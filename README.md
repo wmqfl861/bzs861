@@ -1,8 +1,8 @@
 # 不周山搜索工具 · bzs861
 
-**状态：直接读取取消已增加固定的 HTTP 保留执行槽；版本仍为0.1.10，数据库schema15。** 普通业务池占满时，符合严格结构且正文不超过4096字节的 `web.read.cancel` 可使用独立的1个控制槽；两池各自背压，不能互借。既有prepare/read/cancel、独立Worker控制、固定付款和逐成员交付合同保持。详情见[HTTP执行](docs/HTTP_EXECUTION.md)、[直接成员取消](docs/DIRECT_READ_CANCELLATION.md)和[本批验证](validation/http_cancel_admission_20261025/README.md)。S0、S1、S2及完整B-24仍未签收。
+**状态：2026-11-13 起 [docs/CURRENT.md](docs/CURRENT.md) 是唯一的活动入口。** 版本 0.1.10 / schema15；S0、S1、S2 及完整 B-24 未签收；集成与批次状态见 CURRENT.md，历史批次说明移至 [docs/history/](docs/history/)。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始。本批基线为已发布的 `bedb45c89d293ab25a8a481df6c8300558225b0c`，其[CI 40180737461](https://github.com/wmqfl861/bzs861/actions/runs/40180737461)只证明上一批输入。用户允许推送 main 的授权保持；本批包含提交和该提交自己的 CI 以实际发布记录为准，不预写新 CI 成功或新 tag。本增量没有数据库迁移；需要升级数据库时仍须停止旧 Core，新旧格式进程不能混用。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[交接说明](HANDOFF_START_HERE.md)与[docs/CURRENT.md](docs/CURRENT.md)开始。
 
 项目自己实现搜索、读取、索引、权限与证据业务，使用基础库处理网络、协议和解析；不安装或调用 SearXNG、Scrapling、Firecrawl、Exa 成品后端。非模型外部服务仅接入经过审核的免费入口，不设付费回退。
 
@@ -162,7 +162,7 @@ ctest --preset dev
 
 上一轮 0.1.10 生产实现的历史 `final-v2` 本地验证为27/27套CTest、15/15套ASan/UBSan及Python 1,049项，真实schema12→13升级保留39张旧表内容。随后修正Windows测试连接清理，以及整体期限超时的分类与原子终态结算；原一秒E2E保持不变。[截止时间后续报告](validation/s2_takeover/deadline-followup-report.json)绑定该生产库的完整本地验证，其发布提交fcb58e46的实际Linux CI通过，Windows为16/17，crawl触及45秒进程watchdog。该次 watchdog 修正只调整 Windows 三个测试进程上限并增加 crawl 逐例即时进度，生产源码及二进制保持；其聚焦验证与原失败见[历史报告](validation/s2_takeover/windows-watchdog-report.json)，这些成绩不代替本批改动的验证。
 
-目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[当前开发入口](HANDOFF_START_HERE.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
+目标：[wmqfl861/bzs861](https://github.com/wmqfl861/bzs861)。从[交接说明](HANDOFF_START_HERE.md)与[docs/CURRENT.md](docs/CURRENT.md)开始；[本批验证记录](validation/claude_followup_20261024/)区分作者、独立反例、真实升级和最终整合输入；[上一轮说明](validation/s2_takeover/README.md)保留为历史，远端CI须核对最终提交自己的[Actions](https://github.com/wmqfl861/bzs861/actions)。[0.1.9报告](validation/s2_next_five/json-race-report.json)及其条件重验证/JSON并发修复证据按原字节保留。
 
 以下为 0.1.9 验证范围的原说明，“本轮 / 本次”只指其链接报告：
 
