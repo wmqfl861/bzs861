@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import traceback
 import unittest
 from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
@@ -77,6 +78,226 @@ class Lifecycle(unittest.TestCase):
     def command(self, before="", ready=None, after=""):
         ready = ready or {"event":"ready", "component":"bzs-worker", "host":"127.0.0.1", "port":12345, "version":__version__}
         return [sys.executable, "-c", "import os,time,json,signal;" + before + f"print({json.dumps(ready)!r},flush=True);" + after + "time.sleep(60)"]
+
+    # ---- CL-25 signature-3 forensics (instrumentation only) -----------------
+    # Everything below is gated on BZS_TEST_LIFECYCLE_DUMP=<dir>. Gate off:
+    # zero effect on timing, output or pass/fail. Gate on: the signature-3
+    # test caches test-side samples; when (and only when) it FAILS, an
+    # observation-only window (<=20 s ceiling, no rescue kills, no green-
+    # saving retries; the 5 s failure verdict stays unchanged) precedes one
+    # JSON dump of the pre-cached cleanup events plus the fields below.
+
+    _FORENSICS_ENV = "BZS_TEST_LIFECYCLE_DUMP"
+
+    @classmethod
+    def _forensics_on(cls) -> bool:
+        return bool(os.environ.get(cls._FORENSICS_ENV))
+
+    @classmethod
+    def _forensics_exception_kind(cls, spawn_exc, events):
+        text = f"{type(spawn_exc).__name__}: {spawn_exc}" if spawn_exc is not None else ""
+        if not text:
+            for event in reversed(events):
+                if event.get("kind") == "spawn_abort":
+                    text = f"{event.get('exc_type')}: {event.get('exc_str')}"
+                    break
+        if "readiness deadline exceeded" in text:
+            return "readiness-deadline"
+        if "child cleanup incomplete" in text or "stop not confirmed" in text:
+            return "cleanup-deadline/incomplete"
+        if "exited before readiness" in text or "exited during readiness" in text:
+            return "early-exit"
+        if "invalid readiness identity" in text or "port mismatch" in text:
+            return "readiness-invalid"
+        if "oversized readiness record" in text:
+            return "readiness-oversize"
+        return "other" if text else "unknown (no spawn exception captured)"
+
+    def _forensics_image_path(self, pid):
+        import ctypes
+        from ctypes import wintypes as w
+        k = ctypes.WinDLL("kernel32", use_last_error=True)
+        k.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
+        k.OpenProcess.restype = w.HANDLE
+        k.QueryFullProcessImageNameW.argtypes = [w.HANDLE, w.DWORD, w.LPWSTR,
+                                                 ctypes.POINTER(w.DWORD)]
+        k.QueryFullProcessImageNameW.restype = w.BOOL
+        k.CloseHandle.argtypes = [w.HANDLE]
+        h = k.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return {"open_error": ctypes.get_last_error()}
+        try:
+            size = w.DWORD(32768)
+            buf = ctypes.create_unicode_buffer(size.value)
+            if not k.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(size)):
+                return {"query_error": ctypes.get_last_error()}
+            return {"path": buf.value}
+        finally:
+            k.CloseHandle(h)
+
+    def _forensics_table(self):
+        try:
+            entries, _ = pc._RealWinApi().snapshot()
+        except OSError as exc:
+            return None, f"OSError: {exc}"
+        return {pid: (parent, name) for pid, (parent, name) in entries.items()}, None
+
+    def _forensics_process_detail(self, role, pid, table):
+        info = {"role": role, "pid": pid}
+        try:
+            info["birth_now"] = pc.birth_identity(pid)
+        except OSError as exc:
+            info["birth_now"] = f"error: {exc}"
+        info["image"] = self._forensics_image_path(pid)
+        info["table_entry_now"] = ([pid, *table[pid]] if table and pid in table else None)
+        return info
+
+    def _forensics_observe(self, role_pids, ceiling_s=20.0):
+        """Observation-only window (ruling 7): sample identities, never signal."""
+        started = time.monotonic()
+        out = {"ceiling_s": ceiling_s, "started_t": round(started, 6), "samples": []}
+        pending = {pid for _, pid in role_pids}
+        roles = {pid: role for role, pid in role_pids}
+        while pending and time.monotonic() - started < ceiling_s:
+            for pid in sorted(pending):
+                try:
+                    value = pc.birth_identity(pid)
+                except OSError as exc:
+                    value = f"error: {exc}"
+                out["samples"].append({"t": round(time.monotonic(), 6), "pid": pid,
+                                       "role": roles.get(pid, "?"), "birth": value})
+                if value is None:
+                    pending.discard(pid)
+            if pending:
+                time.sleep(0.25)
+        out["duration_s"] = round(time.monotonic() - started, 6)
+        out["still_live_at_end"] = sorted(pending)
+        return out
+
+    def _forensics_load(self):
+        import ctypes
+        from ctypes import wintypes as w
+        k = ctypes.WinDLL("kernel32")
+
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_ = [("dwLength", w.DWORD), ("dwMemoryLoad", w.DWORD),
+                        ("ullTotalPhys", ctypes.c_ulonglong),
+                        ("ullAvailPhys", ctypes.c_ulonglong),
+                        ("ullTotalPageFile", ctypes.c_ulonglong),
+                        ("ullAvailPageFile", ctypes.c_ulonglong),
+                        ("ullTotalVirtual", ctypes.c_ulonglong),
+                        ("ullAvailVirtual", ctypes.c_ulonglong),
+                        ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+        mem = MEMORYSTATUSEX()
+        mem.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+        k.GlobalMemoryStatusEx(ctypes.byref(mem))
+
+        def cpu_times():
+            idle, kern, user = w.FILETIME(), w.FILETIME(), w.FILETIME()
+            if not k.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kern), ctypes.byref(user)):
+                raise OSError("GetSystemTimes failed")
+            def ft(x):
+                return (x.dwHighDateTime << 32) | x.dwLowDateTime
+            return ft(idle), ft(kern), ft(user)
+        idle1, kern1, user1 = cpu_times()
+        time.sleep(0.2)
+        idle2, kern2, user2 = cpu_times()
+        d_idle, d_kern, d_user = idle2 - idle1, kern2 - kern1, user2 - user1
+        total = d_kern + d_user  # kernel time already includes idle
+        load = {"memory_load_pct": mem.dwMemoryLoad,
+                "avail_phys_mb": round(mem.ullAvailPhys / 2**20, 1),
+                "total_phys_mb": round(mem.ullTotalPhys / 2**20, 1),
+                "cpu_idle_delta": d_idle, "cpu_kernel_delta": d_kern,
+                "cpu_user_delta": d_user,
+                "cpu_busy_fraction_sample": (round(max(0, total - d_idle) / total, 4)
+                                             if total else None)}
+        table, table_error = self._forensics_table()
+        if table_error:
+            load["table_error"] = table_error
+        else:
+            names = [name for _, (_, name) in table.items()]
+            load["total_processes"] = len(names)
+            load["python_processes"] = sum(1 for n in names if "python" in n.lower())
+        return load
+
+    def _forensics_capture_signature3(self, failure, spawn_exc, file_seen, samples, pid_paths):
+        """Dump pre-failure cleanup events plus test-side evidence.
+
+        Observation-only first (no signals, no retries), then one JSON file in
+        the gate directory. A bug here must never mask the real failure.
+        """
+        try:
+            all_events = pc._forensics_events()
+            mark_index = max((i for i, e in enumerate(all_events)
+                              if e.get("kind") == "mark" and e.get("label") == self.id()),
+                             default=0)
+            events = all_events[mark_index:]
+            roles = {}
+            stub_pid = None
+            for event in events:
+                if event.get("kind") == "spawn_start" and stub_pid is None:
+                    stub_pid = event.get("pid")
+            if stub_pid:
+                roles["stub"] = stub_pid
+            for role in ("real", "leaf"):
+                try:
+                    if pid_paths[role].exists():
+                        roles[role] = int(pid_paths[role].read_text())
+                except (OSError, ValueError):
+                    pass
+            observation = self._forensics_observe(sorted(roles.items()))
+            table, table_error = self._forensics_table()
+            processes = [self._forensics_process_detail(role, pid, table)
+                         for role, pid in sorted(roles.items())]
+            record_info = {"checked_t": round(time.monotonic(), 6)}
+            try:
+                record_info["exists"] = pc.record_path("worker").exists()
+                if record_info["exists"]:
+                    record_info["content"] = pc.record_path("worker").read_text()[:500]
+            except OSError as exc:
+                record_info["error"] = f"OSError: {exc}"
+            dump = {
+                "meta": {
+                    "test": self.id(),
+                    "run": os.environ.get("BZS_TEST_LIFECYCLE_RUN"),
+                    "commit": os.environ.get("BZS_TEST_LIFECYCLE_COMMIT"),
+                    "gate_env": self._FORENSICS_ENV,
+                    "dump_dir": os.environ.get(self._FORENSICS_ENV),
+                    "python_pid": os.getpid(),
+                    "python_executable": sys.executable,
+                    "python_base_executable": getattr(sys, "_base_executable", None),
+                    "python_version": sys.version,
+                    "bzs_module": getattr(pc, "__file__", None),
+                    "generated_wall": time.time(),
+                    "event_count": len(events),
+                },
+                "failure": {"type": type(failure).__name__, "str": str(failure),
+                            "traceback_tail": traceback.format_exception(failure)[-8:]},
+                "spawn_exception": ({"type": type(spawn_exc).__name__, "str": str(spawn_exc),
+                                     "chain": pc._forensics_chain(spawn_exc)}
+                                    if spawn_exc is not None else None),
+                "exception_kind": self._forensics_exception_kind(spawn_exc, events),
+                "pid_file_first_seen": dict(file_seen),
+                "test_death_check_samples": list(samples),
+                "failing_sample": (samples[-1] if samples else None),
+                "observation": observation,
+                "processes": processes,
+                "table_error": table_error,
+                "record_state": record_info,
+                "load": self._forensics_load(),
+                "events": events,
+            }
+            target = Path(os.environ.get(self._FORENSICS_ENV))
+            target.mkdir(parents=True, exist_ok=True)
+            name = (f"sig3-run{os.environ.get('BZS_TEST_LIFECYCLE_RUN', 'na')}-"
+                    f"{int(time.time())}.json")
+            (target / name).write_text(json.dumps(dump, indent=1, default=str),
+                                       encoding="utf-8")
+            print(f"[lifecycle-forensics] dump written: {target / name}", file=sys.stderr)
+        except Exception as dump_error:  # diagnostics must not mask the failure
+            print(f"[lifecycle-forensics] dump failed: {type(dump_error).__name__}: "
+                  f"{dump_error}", file=sys.stderr)
+
 
     def test_invalid_pids_never_probe_os(self):
         for pid in (0,1,-1,2**31,2**80,True,None,"123"):
@@ -149,22 +370,54 @@ class Lifecycle(unittest.TestCase):
                  f"\"import os,time;open({str(leaf)!r},'w').write(str(os.getpid()));time.sleep(60)\"]);"
                  f"time.sleep(60)")
         cmd = [sys.executable, "-c", inner]
-        with self.assertRaisesRegex(RuntimeError, "deadline"):
-            pc.spawn("worker", cmd, timeout=0.5)
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline and not (real.exists() and leaf.exists()):
-            time.sleep(0.05)
-        pids = []
-        for path in (real, leaf):
-            if path.exists():
-                pids.append(int(path.read_text()))
-        for pid in pids:
-            while time.monotonic() < deadline:
-                if pc.birth_identity(pid) is None:
-                    break
-                time.sleep(0.1)
-            self.assertIsNone(pc.birth_identity(pid))
-        self.assertFalse(pc.record_path("worker").exists())
+        # CL-25 signature-3 forensics: everything in `if forensics:` blocks is
+        # recording only; the 5 s deadline, the loop structure and every
+        # assertion (the failure verdict) are unchanged. Gate off: identical
+        # behavior to the uninstrumented test.
+        forensics = self._forensics_on()
+        spawn_exc = None
+        file_seen = {}
+        samples = []
+        if forensics:
+            pc._forensics_mark(self.id())
+        try:
+            with self.assertRaisesRegex(RuntimeError, "deadline") as raised:
+                pc.spawn("worker", cmd, timeout=0.5)
+            spawn_exc = raised.exception
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline and not (real.exists() and leaf.exists()):
+                if forensics:
+                    for role, path in (("real", real), ("leaf", leaf)):
+                        if role not in file_seen and path.exists():
+                            file_seen[role] = round(time.monotonic(), 6)
+                time.sleep(0.05)
+            if forensics:
+                for role, path in (("real", real), ("leaf", leaf)):
+                    if role not in file_seen and path.exists():
+                        file_seen[role] = round(time.monotonic(), 6)
+            pids = []
+            for path in (real, leaf):
+                if path.exists():
+                    pids.append(int(path.read_text()))
+            for pid in pids:
+                while time.monotonic() < deadline:
+                    if pc.birth_identity(pid) is None:
+                        break
+                    time.sleep(0.1)
+                value = pc.birth_identity(pid)
+                if forensics:
+                    samples.append({"pid": pid, "t": round(time.monotonic(), 6),
+                                    "budget_left_s": round(deadline - time.monotonic(), 6),
+                                    "birth": value})
+                self.assertIsNone(value)
+            self.assertFalse(pc.record_path("worker").exists())
+        except AssertionError as failure:
+            # Observation-only forensics (ruling 7): <=20 s ceiling after the
+            # unchanged 5 s verdict, no rescue kills, no retries; then dump.
+            if forensics:
+                self._forensics_capture_signature3(failure, spawn_exc, file_seen,
+                                                   samples, {"real": real, "leaf": leaf})
+            raise
 
     def test_bad_readiness_and_oversize_are_cleaned(self):
         for body in ("not json", "x"*4097, json.dumps({"event":"ready", "port":True}),
