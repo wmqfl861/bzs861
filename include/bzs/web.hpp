@@ -11,6 +11,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -39,6 +40,10 @@ namespace bzs {
     std::string id, provider, family, capability, kind, status;
     std::string budget_key;
     Json contract;
+    // Condition kinds (site/filetype/intitle/inbody) the stored manifest contract
+    // declares natively executable upstream. Empty means every condition is
+    // emulated locally or unsupported (strict) for this source.
+    std::set<std::string> native_filters;
     bool enabled=false, by_default=false;
     std::int64_t weight=100, min_interval_ms=0, daily_cap=0;
     std::int64_t cooldown_blocked_ms=30*60*1000, cooldown_rate_ms=10*60*1000, cooldown_error_ms=5*60*1000;
@@ -102,8 +107,12 @@ namespace bzs {
       std::size_t members=1;
       std::size_t active_members=0;
       bool finished=false, rpc_finished=false, controlled=false, cancel_requested=false;
+      // A no-store response is never ingested; admitted members still receive
+      // its one physical body through these independently encoded fields.
+      bool transient=false;
       std::string key, attempt_id, physical_usage_json;
       std::map<std::string,std::string> snapshot_fields;
+      std::map<std::string,std::string> transient_fields;
       std::exception_ptr error;
     };
     std::mutex direct_reads_mutex_;
@@ -126,18 +135,22 @@ namespace bzs {
       SourceDocument document;
       ParsedDocument parsed;
       Json meta;
+      // Storage policy forbids persistence (no-store or an unpersistable prefix);
+      // delivery is transient and carries no snapshot or reuse identity.
+      bool transient=false;
     };
     Json decode_publication(const Json& policy,const std::string& url,const std::string& final_url,const Json& redirects);
     std::optional<Json> decode_observation(const std::string& url,const Json& response);
     Json decode_redirect_observations(const std::string& url,const Json& response);
-    ReadArtifact decode_read(const std::string& url, const Json& response,bool allow_empty=false);
+    ReadArtifact decode_read(const std::string& url, const Json& response,bool allow_empty=false,bool allow_transient=false);
     ReadArtifact decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base);
     Json window(const std::string& owner, const Json& snapshot, std::int64_t start, std::int64_t max_bytes, bool from_cache, std::int64_t fetched_at,const Json& http_guard=Json());
+    Json transient_window(const std::string& owner, const Json& fields, const Json& fence, std::int64_t start, std::int64_t max_bytes);
     public: WebService(Store& store, WorkerPort& worker, SourceRegistry registry,SiteRegistry sites={});
     Json search(const std::string& owner, const Json& args, bool retain_publication_urls=false,
                 std::optional<std::chrono::steady_clock::time_point> internal_deadline=std::nullopt);
     Json submit_search(const std::string& owner,const Json& args);
-    std::optional<SearchLease> lease_search();
+    std::optional<SearchLease> lease_search(std::stop_token stop={});
     void execute_search(const SearchLease& lease);
     Json read(const std::string& owner, const Json& args);
     Json prepare_read(const std::string& owner,const Json& args);
@@ -150,7 +163,7 @@ namespace bzs {
     Json submit_map(const std::string& owner,const Json& args);
     Json submit_crawl(const std::string& owner,const Json& args);
     Json sites();
-    std::optional<MapLease> lease_map();
+    std::optional<MapLease> lease_map(std::stop_token stop={});
     void execute_map(const MapLease& lease);
     Json sources();
     std::size_t enabled_sources() const;

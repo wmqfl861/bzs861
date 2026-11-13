@@ -407,6 +407,61 @@ def test_api_response_shape_failures_are_not_empty_results(adapter, body):
     assert exc.value.status == "parse_error"
 
 
+def test_native_site_translation_appends_only_missing_terms():
+    from bzs.worker.sources.engines import with_native_site_terms
+    conditions = [{"kind": "site", "value": "example.com"}]
+    assert with_native_site_terms("guide", conditions) == "guide site:example.com"
+    # The raw query already carries the directive: no duplication.
+    assert with_native_site_terms("guide site:example.com", conditions) == "guide site:example.com"
+    # Only site-class conditions translate; anything else is ignored here.
+    assert with_native_site_terms("guide", [{"kind": "inbody", "value": "needle"}]) == "guide"
+    assert with_native_site_terms("guide", None) == "guide"
+    assert with_native_site_terms("guide site:a.example", [{"kind": "site", "value": "b.example"}]) == \
+        "guide site:a.example site:b.example"
+
+
+async def test_run_one_translates_and_reports_native_conditions(monkeypatch):
+    spec = fakeweb.manifest(1)["sources"][0]
+    sources = SourceSet([spec], None)
+    adapter = sources.adapters[spec["id"]]
+    seen = []
+
+    async def recording_search(query, limit, language, timeout_s, conditions=None):
+        seen.append(conditions)
+        return [], res("")
+
+    monkeypatch.setattr(adapter, "search", recording_search)
+    conditions = [{"kind": "site", "value": "example.com"}, {"kind": "inbody", "value": "needle"}]
+    out = await sources.run_one(spec["id"], "fixture", 5, None, 1, conditions)
+    # Only the site condition reaches the engine (DDG-style native kinds); the
+    # adapter call itself stays a no-op for conditions it does not translate.
+    assert seen == [[{"kind": "site", "value": "example.com"}]]
+    assert out["conditions"] == [{"kind": "site", "value": "example.com", "execution": "native"},
+                                 {"kind": "inbody", "value": "needle", "execution": "unsupported"}]
+    # Without conditions the response carries no report at all: the core reads
+    # that absence as "not executed" for every condition.
+    plain = await sources.run_one(spec["id"], "fixture", 5, None, 1)
+    assert "conditions" not in plain and seen[-1] is None
+
+
+async def test_run_one_reports_conditions_even_when_the_source_fails(monkeypatch):
+    spec = fakeweb.manifest(1)["sources"][0]
+    sources = SourceSet([spec], None)
+    adapter = sources.adapters[spec["id"]]
+
+    async def failing_search(query, limit, language, timeout_s, conditions=None):
+        raise SourceError("blocked", "fixture CAPTCHA", 403)
+
+    monkeypatch.setattr(adapter, "search", failing_search)
+    conditions = [{"kind": "site", "value": "example.com"}, {"kind": "inbody", "value": "needle"}]
+    out = await sources.run_one(spec["id"], "fixture", 5, None, 1, conditions)
+    assert out["status"] == "blocked"
+    # The report still says exactly what the request carried; a failed source
+    # never masquerades as satisfying anything (the core needs no status here).
+    assert out["conditions"] == [{"kind": "site", "value": "example.com", "execution": "native"},
+                                 {"kind": "inbody", "value": "needle", "execution": "unsupported"}]
+
+
 @pytest.mark.parametrize("body", [
     '{"results":[],"results":[]}', '{"results":[],"score":NaN}',
     '{"results":[],"score":Infinity}',
@@ -447,3 +502,24 @@ def test_a_truncated_response_is_not_parsed_as_a_complete_search():
     with pytest.raises(SourceError) as exc:
         adapter.check(response)
     assert exc.value.status == "too_large"
+
+
+async def test_run_one_reports_not_executed_when_cooldown_blocks_dispatch(monkeypatch):
+    # A planned native condition whose adapter call never started (cooldown,
+    # review refusal, pre-dispatch timeout) is reported not_executed: the core
+    # must never map it to native execution.
+    spec = json.loads(json.dumps(fakeweb.manifest(1)["sources"][0]))
+    sources = SourceSet([spec], None)
+    adapter = sources.adapters[spec["id"]]
+    adapter.native_filter_kinds = ("site",)
+
+    async def never(query, limit, language, timeout_s, conditions=None):
+        raise AssertionError("cooldown must prevent dispatch")
+
+    adapter.search = never
+    key = spec["contract"]["limits"]["shared_budget_key"]
+    sources.cooldown_until[key] = time.monotonic() + 60
+    out = await sources.run_one(spec["id"], "fixture", 5, None, 5,
+                                [{"kind": "site", "value": "example.com"}])
+    assert out["status"] == "skipped"
+    assert out["conditions"] == [{"kind": "site", "value": "example.com", "execution": "not_executed"}]

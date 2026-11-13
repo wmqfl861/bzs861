@@ -1,0 +1,11 @@
+{
+  "verification_scope": "Integrated Release recovery candidate, targeted CTest 10/10 passed; no remote CI result claimed",
+  "business_schema": 15,
+  "prior_five_node_candidate_recovered": false,
+  "change": "Collect at most 512 unkeyed, zero-usage completed orphan receipts per settlement; keyed/charged/active records remain",
+  "tests": [
+    "receipt_retention",
+    "sessions: unkeyed_local_receipts_expire_without_changing_keyed_replay_identity (10001 local sessions, 90000 keyed receipts)"
+  ],
+  "test_oracle_correction": "First new test incorrectly assumed search() calls settlement once; search uses two phases. Probe one successful session_get() per cleanup instead. Original failing log retained."
+}

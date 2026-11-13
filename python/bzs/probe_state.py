@@ -20,6 +20,7 @@ MAX_REPORT_BYTES = 64 * 1024 * 1024
 REPORT_NAME = "probe_report.json"
 _LOCK_NAME = "probe.lock"
 MAX_JSON_DEPTH = 64
+MAX_JSON_NODES = 1_000_000
 
 
 def _regular_path(out: Path, name: str) -> Path:
@@ -100,10 +101,61 @@ def atomic_write(path: Path, data: bytes) -> None:
         Path(temporary).unlink(missing_ok=True)
 
 
+def _level(children, depth):
+    # A real function freezes depth per level; a generator expression would
+    # read the loop variable late and inflate the depth of every sibling.
+    for child in children:
+        yield child, depth
+
+
+def _validate_structure(root: object) -> None:
+    """Bound the report's JSON structure: total nodes (containers, scalars and
+    object keys) and container nesting.
+
+    Depth applies to containers only, matching the baseline semantics: a
+    scalar leaf inside the deepest legal container stays legal. The walk keeps
+    one lazy child iterator per open level, so a wide report is rejected by
+    the node budget without ever materializing the frontier as tuples.
+    """
+    count = 0
+    stack = [iter(((root, 1),))]
+    while stack:
+        try:
+            value, depth = next(stack[-1])
+        except StopIteration:
+            stack.pop()
+            continue
+        count += 1
+        if count > MAX_JSON_NODES:
+            raise ValueError("probe report JSON node count exceeds its limit")
+        if not isinstance(value, (dict, list, tuple)):
+            continue
+        if depth > MAX_JSON_DEPTH:
+            raise ValueError("probe report JSON nesting exceeds its limit")
+        if isinstance(value, dict):
+            # Keys are JSON nodes too; count them so a wide object cannot
+            # evade the structural bound by keeping every value scalar.
+            count += len(value)
+            if count > MAX_JSON_NODES:
+                raise ValueError("probe report JSON node count exceeds its limit")
+            children = value.values()
+        else:
+            # tuple serializes as a JSON array; it must carry array semantics
+            # here too or a writer could emit an unreadable checkpoint.
+            children = value
+        stack.append(_level(children, depth + 1))
+
+
 def write_report(out: Path, report: dict) -> None:
     data = json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False).encode("utf-8") + b"\n"
     if len(data) > MAX_REPORT_BYTES:
         raise ValueError("probe report exceeds the 64 MiB checkpoint limit")
+    # The same structural limits the reader enforces: a report that could be
+    # written but not resumed would strand already-charged reservations. The
+    # previous checkpoint stays untouched when validation rejects this one.
+    if not isinstance(report, dict):
+        raise ValueError("probe report must be an object")
+    _validate_structure(report)
     atomic_write(out / REPORT_NAME, data)
 
 
@@ -137,15 +189,7 @@ def read_report_with_digest(out: Path) -> tuple[dict, str]:
         raise ValueError("probe report must be bounded UTF-8 JSON") from exc
     if not isinstance(report, dict):
         raise ValueError("probe report must be an object")
-    stack = [(report, 1)]
-    while stack:
-        value, depth = stack.pop()
-        if depth > MAX_JSON_DEPTH:
-            raise ValueError("probe report JSON nesting exceeds its limit")
-        if isinstance(value, dict):
-            stack.extend((v, depth + 1) for v in value.values() if isinstance(v, (dict, list)))
-        elif isinstance(value, list):
-            stack.extend((v, depth + 1) for v in value if isinstance(v, (dict, list)))
+    _validate_structure(report)
     return report, hashlib.sha256(raw).hexdigest()
 
 

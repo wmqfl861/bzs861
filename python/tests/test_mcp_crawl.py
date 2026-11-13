@@ -31,6 +31,16 @@ async def test_crawl_adapter_preserves_explicit_limits_for_core_validation(serve
         "max_depth": 0, "timeout_ms": 0, "per_request_timeout_ms": 0, "max_requests": 0, "max_bytes": 0})]
 
 
+async def test_crawl_seeds_accept_json_array_string(server):
+    # CL-04r: a JSON array sent as a string decodes to exactly the caller's
+    # seed list and is forwarded as a list; malformed strings stay refused.
+    instance, calls = server
+    result = await instance.call_tool("crawl_site", {"site_id": "fixture", "seeds": '["https://example.com/docs/"]',
+                                                    "idempotency_key": "encoded-seeds"})
+    assert not result.is_error
+    assert calls[-1][1]["seeds"] == ["https://example.com/docs/"]
+
+
 async def test_crawl_adapter_omits_defaults_and_cannot_inject_site_approval(server):
     instance, calls = server
     parameters = {"site_id": "fixture", "seeds": ["https://example.com/docs/"],
@@ -46,7 +56,7 @@ async def test_crawl_adapter_omits_defaults_and_cannot_inject_site_approval(serv
 
 @pytest.mark.parametrize("override", [
     {"max_pages": value} for value in (None, True, False, 2.0, "2", "null", "true")
-] + [{"seeds": value} for value in ('["https://example.com/"]', [1], [None])]
+] + [{"seeds": value} for value in ([1], [None])]
   + [{"scope_path": value} for value in ("null", "true", '"/docs/"', "docs/", "")]
   + [{"approved": True}, {"robots": {}}, {"sites_manifest_sha256": "anything"}, {"max_attempts": 2}])
 async def test_crawl_rejects_raw_types_and_unknown_fields_before_sdk_coercion(server, override):

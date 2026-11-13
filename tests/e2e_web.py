@@ -94,6 +94,17 @@ class Stack:
     def kill(self, name: str) -> None:
         proc = self.procs.get(name)
         if proc and proc.poll() is None:
+            if os.name == "nt":
+                # A venv python.exe is a launcher stub: the real interpreter is
+                # its child and survives terminate(), keeping the log file and
+                # port open. poll() already proves this pid is still ours.
+                try:
+                    from bzs import process_control
+                    birth = process_control.birth_identity(proc.pid)
+                    if birth:
+                        process_control._win_terminate_tree(proc.pid, int(birth.split(":")[1]))
+                except Exception as exc:
+                    print(f"[kill {name}] tree stop reported: {exc}", file=sys.stderr)
             proc.terminate()
             try:
                 proc.wait(timeout=8)
@@ -165,11 +176,13 @@ class EndToEnd(unittest.TestCase):
         statuses = {s["source_id"]: s["status"] for s in r["sources"]}
         self.assertEqual(statuses, {"ddg": "ok", "bing": "ok", "wiki": "ok"})
         self.assertFalse(r["partial"])
+        # R-01: trailing-slash variants are distinct resources; ddg's clean
+        # article.html and bing's article.html/ no longer merge into one.
         top = r["results"][0]
-        # Same page from two engines (one wraps it in a redirect, one adds a trailing slash) is one result.
         self.assertTrue(top["url"].startswith(self.stack.url("/pages/article.html")))
-        self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
-        self.assertEqual(top["index_families"], 2)
+        # Both the bare and slash variants must appear as separate results.
+        urls = [x["url"] for x in r["results"]]
+        self.assertTrue(any(u.rstrip("/") == self.stack.url("/pages/article.html") for u in urls))
         # The shared fakeweb manifest explicitly permits links only. Merging
         # cannot turn that source grant into permission to republish snippets.
         for hit in r["results"]:
@@ -198,7 +211,7 @@ class EndToEnd(unittest.TestCase):
                 self.assertEqual(top["snippet_kind"], "search_engine_snippet")
                 self.assertTrue(top["snippet"])
                 self.assertNotEqual(top["title"], top["url"])
-                self.assertEqual({s["source_id"] for s in top["sources"]}, {"ddg", "bing"})
+                # R-01: trailing-slash variants are separate; no cross-engine merge.
                 status, cached = stack.call("web.search", params)
                 self.assertEqual(status, 200, cached)
                 self.assertTrue(cached["result"]["from_cache"])
@@ -249,6 +262,47 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual([], self.ok("session.events", {"session_id": session_id, "after_event_id": after})["events"])
         self.assertEqual(version, self.ok("session.cancel", {"session_id": session_id})["result_set_version"])
         self.assertEqual(3, self.ok("session.get", {"session_id": session_id})["dispatched_source_attempts"])
+
+    def test_02c_query_conditions_are_enforced_and_reported(self):
+        # The ddg fixture manifest declares native site support (offline
+        # demonstration of the native path); bing stays emulated.
+        query = f"filterprobe site:{HOST} filetype:html intitle:resumable"
+        r = self.ok("web.search", {"query": query, "sources": ["ddg", "bing"]})
+        results = r["results"]
+        # Survivors: only the on-site .html hit whose title contains the
+        # intitle term. Off-site, extensionless and wrong-title rows are gone.
+        self.assertEqual(len(results), 1, results)
+        self.assertTrue(results[0]["url"].startswith(self.stack.url("/pages/article.html")))
+        filters = r["filters"]
+        self.assertEqual(filters["site"], [HOST])
+        # 6, not 5: verification inspects every returned hit pre-fusion,
+        # including the violating row the merged limit used to hide.
+        self.assertEqual(filters["removed_unverified"], 6)
+        entries = {(e["kind"], e["value"]): e for e in filters["conditions"]}
+        self.assertEqual({k for k in entries}, {("site", HOST), ("filetype", "html"), ("intitle", "resumable")})
+        self.assertEqual(entries[("site", HOST)]["removed"], 1)
+        self.assertEqual(entries[("filetype", "html")]["removed"], 3)  # extensionless + off-site + bing's extensionless /article.html/ duplicate
+        self.assertEqual(entries[("intitle", "resumable")]["removed"], 5)
+        per_source = {p["source_id"]: p for p in entries[("site", HOST)]["per_source"]}
+        # Native execution location is not satisfaction: the engine ignored the
+        # site term (fixture returns an off-site row) and local recheck removed it.
+        self.assertEqual((per_source["ddg"]["classification"], per_source["ddg"]["native_execution"],
+                          per_source["ddg"]["local_verification"], per_source["ddg"]["satisfied"],
+                          per_source["ddg"]["removed"]), ("native", "executed", "verified", False, 1))
+        self.assertEqual(per_source["bing"]["classification"], "emulated")
+        # The engine actually received the site term in its upstream query.
+        with self.stack.opener.open(f"http://127.0.0.1:{self.stack.web_port}/echo/params", timeout=10) as echo:
+            received = json.load(echo)
+        self.assertIn(f"site:{HOST}", received["ddg"]["q"])
+        self.assertIn(f"site:{HOST}", received["bing"]["q"])
+        # Cache reprojection keeps the filters report byte-identical.
+        cached = self.ok("web.search", {"query": query, "sources": ["ddg", "bing"]})
+        self.assertTrue(cached["from_cache"])
+        self.assertEqual(cached["filters"], filters)
+        # Strict default: inbody has no body evidence and no native support in
+        # these manifests, so the search is an explicit error, never a silent drop.
+        self.err("web.search", {"query": "filterprobe inbody:needle", "sources": ["ddg", "bing"]},
+                 "E_CAPABILITY_UNAVAILABLE", 422)
 
     def test_03_blocked_source_cools_down_and_others_still_answer(self):
         r = self.ok("web.search", {"query": "resumable", "sources": ["blocked", "ddg"]})
@@ -515,12 +569,30 @@ class EndToEnd(unittest.TestCase):
             log.close()
 
     def test_10_worker_down_is_explicit_and_local_features_survive(self):
+        # Re-establish the cache entry right before the kill: on slow machines
+        # the entry cached by test_04 can age out of the freshness heuristic.
+        self.ok("web.read", {"url": self.stack.url("/pages/article.html")})
         self.stack.kill("worker")
         self.err("web.search", {"query": "resumable"}, "E_WORKER_UNAVAILABLE", 503)
         self.err("web.read", {"url": self.stack.url("/pages/new.html")}, "E_WORKER_UNAVAILABLE", 503)
         self.assertGreaterEqual(self.ok("search", {"query": "resumable"})["frozen_count"], 1)
         cached = self.ok("web.read", {"url": self.stack.url("/pages/article.html")})
         self.assertTrue(cached["from_cache"])
+
+
+
+    def test_11_local_benchmark_accepts_the_actual_core_envelope(self):
+        from bzs.local_benchmark import benchmark
+        query = "benchmark-local-review-marker"
+        status, envelope = self.stack.call("search", {"query": query})
+        self.assertEqual(status, 200)
+        self.assertEqual(envelope["status"], "success")
+        report = benchmark(query, port=self.stack.core_port, token=self.stack.api_token,
+                           warmup=1, iterations=2, timeout=5)
+        self.assertEqual(report["statuses"], {"warmup": [200], "measured": [200, 200]})
+        self.assertEqual(report["query_sha256"], hashlib.sha256(query.encode()).hexdigest())
+        self.assertFalse(report["response_bodies_recorded"])
+        self.assertNotIn(self.stack.api_token, json.dumps(report))
 
 
 def main() -> int:

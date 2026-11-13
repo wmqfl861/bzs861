@@ -434,3 +434,155 @@ def test_parser_identity_binds_the_actual_adapter_registry(tmp_path, monkeypatch
     assert before["files"][registry] != after["files"][registry]
     assert before["code_sha256"] != after["code_sha256"]
     assert before["dependencies"] == after["dependencies"]
+
+
+
+@pytest.mark.parametrize("error_kind", ["adapter", "source"])
+async def test_probe_persists_error_class_not_secret_exception_text(tmp_path, scripted, error_kind):
+    manifest, golden, out = inputs(tmp_path)
+    secret = "SENSITIVE_TOKEN_9f7a?api_key=PRIVATE_VALUE"
+
+    async def handler(source, query, limit):
+        if error_kind == "source":
+            raise SourceError("rate_limited", "upstream failed with " + secret, 429, 1000)
+        raise RuntimeError("request failed Authorization: Bearer " + secret)
+
+    scripted.handler = handler
+    report = await run_probe(manifest, golden, out)
+    raw_json = (out / "probe_report.json").read_text(encoding="utf-8")
+    raw_md = (out / "probe_report.md").read_text(encoding="utf-8")
+    assert secret not in raw_json and secret not in raw_md
+    assert "PRIVATE_VALUE" not in raw_json + raw_md
+    first = report["rows"][0]
+    assert first["error"] == ("source_error:rate_limited" if error_kind == "source"
+                              else "adapter_error:RuntimeError")
+    assert first["status"] == ("rate_limited" if error_kind == "source" else "error")
+
+
+
+@pytest.mark.parametrize("raw", [
+    b'{"schema_version":2,"schema_version":2}',
+    b'{"value":NaN}',
+    b'{"value":' + b'[' * 70 + b'0' + b']' * 70 + b'}',
+])
+def test_probe_checkpoint_rejects_ambiguous_nonfinite_or_deep_json(tmp_path, raw):
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / REPORT_NAME).write_bytes(raw)
+    with pytest.raises(ValueError):
+        read_report(tmp_path)
+
+
+
+def test_probe_checkpoint_rejects_excessive_total_json_nodes(tmp_path):
+    from bzs.probe_state import MAX_JSON_NODES, REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"items":[' + b"0," * MAX_JSON_NODES + b"0]}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
+
+
+def test_probe_checkpoint_wide_array_is_rejected_without_materializing_the_frontier(tmp_path):
+    # A ~4 MB report of two million scalars is inside the byte budget; the
+    # node budget must reject it while the walk still holds one lazy iterator
+    # per level (the eager-tuple frontier peaked at ~143 MiB in review).
+    import tracemalloc
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"items":[' + b"0," * 2_000_000 + b"0]}")
+    tracemalloc.start()
+    try:
+        with pytest.raises(ValueError, match="node count"):
+            read_report(tmp_path)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert peak < 80 * 1024 * 1024
+
+
+def test_probe_checkpoint_wide_object_keys_are_counted_before_descending(tmp_path):
+    from bzs.probe_state import MAX_JSON_NODES, REPORT_NAME, read_report
+
+    keys = ",".join(f'"k{i}":0' for i in range(MAX_JSON_NODES + 1))
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b"{" + keys.encode() + b"}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
+
+
+def test_write_report_rejects_over_limit_reports_and_keeps_the_previous_checkpoint(tmp_path):
+    # Reader and writer share one structural contract: a report that could be
+    # written but not resumed would strand already-charged reservations.
+    from bzs.probe_state import MAX_JSON_NODES, read_report, write_report
+
+    write_report(tmp_path, {"schema_version": 2, "rows": []})
+    with pytest.raises(ValueError, match="node count"):
+        write_report(tmp_path, {"items": [0] * (MAX_JSON_NODES + 1)})
+    assert read_report(tmp_path) == {"schema_version": 2, "rows": []}
+
+
+@pytest.mark.parametrize("depth,accepted", [(63, True), (64, False)])
+def test_probe_checkpoint_depth_bounds_containers_like_the_baseline(tmp_path, depth, accepted):
+    # Root object is depth 1; N nested lists put the innermost container at
+    # depth N+1. Baseline semantics: a scalar leaf inside the deepest legal
+    # container (64) stays legal, a 65th container level is rejected.
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b'{"x":' + b"[" * depth + b"0" + b"]" * depth + b"}")
+    if accepted:
+        assert isinstance(read_report(tmp_path), dict)
+    else:
+        with pytest.raises(ValueError, match="nesting"):
+            read_report(tmp_path)
+
+
+def test_write_report_validates_tuples_as_json_arrays_and_keeps_the_previous_checkpoint(tmp_path):
+    # json.dumps serializes a tuple as an array; the structural validator
+    # must count it that way too, or a wide/deep tuple could overwrite a good
+    # checkpoint with a report the reader refuses.
+    from bzs.probe_state import MAX_JSON_NODES, MAX_JSON_DEPTH, read_report, read_report_with_digest, write_report
+
+    write_report(tmp_path, {"schema_version": 2, "rows": []})
+    before = read_report_with_digest(tmp_path)[1]
+    with pytest.raises(ValueError, match="node count"):
+        write_report(tmp_path, {"items": (0,) * MAX_JSON_NODES})
+    deep = (0,)
+    for _ in range(MAX_JSON_DEPTH + 1):
+        deep = (deep,)
+    with pytest.raises(ValueError, match="nesting"):
+        write_report(tmp_path, {"items": deep})
+    assert read_report_with_digest(tmp_path)[1] == before
+    assert read_report(tmp_path) == {"schema_version": 2, "rows": []}
+    # A tuple just under the budget round-trips through both sides.
+    write_report(tmp_path, {"items": (0,) * (MAX_JSON_NODES - 3)})
+    assert read_report(tmp_path)["items"] == [0] * (MAX_JSON_NODES - 3)
+
+
+def test_probe_checkpoint_counts_object_keys_not_only_values(tmp_path):
+    # 500k scalar pairs: the values alone stay inside the budget, so only the
+    # key accounting pushes the total past it (1 root + 500k keys + 500k
+    # values = 1,000,001 nodes).
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    pairs = ",".join(f'"k{i}":0' for i in range(500_000))
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(b"{" + pairs.encode() + b"}")
+    with pytest.raises(ValueError, match="node count"):
+        read_report(tmp_path)
+
+
+def test_probe_checkpoint_sibling_depth_is_stable_after_a_deep_branch(tmp_path):
+    # A deep branch followed by a sibling container pins per-level depth: a
+    # late-bound level generator would inflate the sibling's depth and reject
+    # this legal report.
+    from bzs.probe_state import REPORT_NAME, read_report
+
+    raw = b'{"a":' + b"[" * 63 + b"0" + b"]" * 63 + b',"b":{"c":[1,2,3]}}'
+    path = tmp_path / REPORT_NAME
+    path.write_bytes(raw)
+    report = read_report(tmp_path)
+    assert report["b"] == {"c": [1, 2, 3]}

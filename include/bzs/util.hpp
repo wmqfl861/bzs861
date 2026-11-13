@@ -11,6 +11,10 @@ namespace bzs {
   std::string random_id();
   std::int64_t now_ms();
   std::string read_file(const std::filesystem::path& p, std::size_t max=1024*1024);
+  // SQLite open functions take narrow filenames in UTF-8 on Windows; the
+  // native narrow encoding there is the ANSI code page, so u8string() must be
+  // used for non-ASCII paths. POSIX narrow paths already are bytes.
+  std::string utf8_path(const std::filesystem::path& p);
   std::string metadata_host(std::string_view url);
   // A deletion comparison key, not a fetch URL, publication key or admission rule.
   // Invalid legacy metadata URLs retain their exact identity.

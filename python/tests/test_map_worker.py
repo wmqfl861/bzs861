@@ -1,6 +1,7 @@
 """Automatic discovery admission tested against local, in-process HTTP only."""
 import asyncio
 import copy
+import gzip
 import hashlib
 import json
 import secrets
@@ -39,6 +40,23 @@ async def map_site():
     async def handle(request):
         calls.append({"path": request.path, "raw_path": request.raw_path, "ua": request.headers.get("User-Agent"),
                       "time": time.monotonic()})
+        if request.path == "/page.gz":
+            origin = f"http://{request.host}"
+            page = (f'<html><body><a href="{origin}/gz/one">link</a></body></html>').encode()
+            return web.Response(body=gzip.compress(page), content_type="application/gzip")
+        if request.path == "/sitemap.xml.gz":
+            origin = f"http://{request.host}"
+            xml = (f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<url><loc>{origin}/gz/one</loc></url>'
+                   f'<url><loc>{origin}/gz/two</loc></url></urlset>').encode()
+            return web.Response(body=gzip.compress(xml), content_type="application/gzip")
+        if request.path == "/sitemap-huge.xml.gz":
+            origin = f"http://{request.host}"
+            xml = (f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<url><loc>{origin}/gz/one</loc></url></urlset>').encode() + b" " * (600 * 1024)
+            return web.Response(body=gzip.compress(xml), content_type="application/gzip")
+        if request.path == "/sitemap-bad.xml.gz":
+            return web.Response(body=gzip.compress(b"<urlset") + b"garbage", content_type="application/gzip")
         if request.path == "/robots.txt":
             return web.Response(status=state["robots_status"], body=state["robots_body"], headers=state["robots_headers"])
         if request.path == "/jump":
@@ -383,10 +401,25 @@ async def test_expired_record_after_host_queue_wait_is_rechecked_before_dispatch
 async def test_site_lane_enforces_actual_start_interval_and_new_429_blocks_queued_hop(map_worker):
     worker, server, calls, *_ = map_worker
     worker.sites.sites["fixture-site"]["limits"]["min_interval_ms"] = 60
+    # Assert the worker-side dispatch gap (what pacing actually guarantees) on
+    # one clock: server arrival gaps carry loop/network jitter on loaded hosts.
+    real_fetch = worker.fetcher.fetch
+    dispatch_times = []
+
+    async def tracing_fetch(url, **kwargs):
+        inner = kwargs.get("before_dispatch")
+        if inner is not None:
+            def traced(actual):
+                dispatch_times.append(time.monotonic())
+                return inner(actual)
+            kwargs["before_dispatch"] = traced
+        return await real_fetch(url, **kwargs)
+    worker.fetcher.fetch = tracing_fetch
     first, second = await asyncio.gather(worker.map_fetch(grant(worker, server, "/map")),
                                          worker.map_fetch(grant(worker, server, "/map/again")))
+    worker.fetcher.fetch = real_fetch
     assert first["status"] == second["status"] == "ok"
-    assert calls[1]["time"] - calls[0]["time"] >= 0.05
+    assert dispatch_times[1] - dispatch_times[0] >= 0.055
     calls.clear()
     rate, queued = await asyncio.gather(worker.map_fetch(grant(worker, server, "/rate")),
                                         worker.map_fetch(grant(worker, server, "/map/after-rate")))
@@ -458,3 +491,92 @@ def test_encoded_url_preservation_does_not_bypass_production_netpolicy():
     for value in ("http://127。0。0。1/map/%61", "http://10.0.0.1/map", "http://user:secret@fixture.test/map"):
         with pytest.raises(PolicyError):
             canonical_map_url(value, policy)
+
+
+async def test_gzip_sitemap_archive_is_expanded_for_discovery(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap.xml.gz", kind="sitemap", record=robots["robots"]))
+    assert result["status"] == "ok"
+    origin = f"http://{server.host}:{server.port}"
+    urls = sorted(c["url"] for c in result["discovery"]["candidates"])
+    assert urls == [f"{origin}/gz/one", f"{origin}/gz/two"]
+    # The archive bytes, not the expanded XML, are what was charged.
+    assert result["usage"]["content_bytes"] < 200
+
+
+async def test_gzip_sitemap_archive_over_the_hop_budget_is_refused(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap-huge.xml.gz", kind="sitemap",
+                                          record=robots["robots"], max_content_bytes=512 * 1024))
+    assert result["status"] == "error" and result["error_code"] == "E_CONTENT_TOO_LARGE"
+
+
+async def test_gzip_sitemap_archive_with_trailing_garbage_is_refused(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/sitemap-bad.xml.gz", kind="sitemap",
+                                          record=robots["robots"]))
+    assert result["status"] == "error" and result["error_code"] == "E_DISCOVERY_PARSE"
+
+
+async def test_gzip_body_is_not_expanded_for_page_hops(map_worker):
+    # Archive expansion is scoped to sitemap/auto discovery hops: a gzip body
+    # on a page hop must fail extraction, never silently decode to links.
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    result = await worker.map_fetch(grant(worker, server, "/page.gz", kind="page", record=robots["robots"]))
+    assert result["status"] == "error" or result.get("page", {}).get("status") != "ok"
+    assert not result.get("discovery", {}).get("candidates")
+
+
+
+async def test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = await worker.map_fetch(grant(worker, server, "/robots.txt", kind="robots"))
+    assert robots["status"] == "ok"
+
+    completed = 0
+    cancelled = 0
+    for index in range(48):
+        attempt = secrets.token_hex(24)
+        params = grant(worker, server, f"/map?soak={index}", record=robots["robots"], attempt=attempt)
+        if index % 8 == 0:
+            await worker.fetch_cancel({"attempt_id": attempt})
+            result = await worker.map_fetch(params)
+            assert result["error_code"] == "E_CANCELLED"
+            assert result["usage"] == {"external_requests": 0, "content_bytes": 0}
+            assert "discovery" not in result
+            cancelled += 1
+        else:
+            result = await worker.map_fetch(params)
+            assert result["status"] == "ok"
+            assert len(result["discovery"]["candidates"]) == 2
+            assert result["usage"]["external_requests"] == 1
+            completed += 1
+
+    stats = worker.fetcher.admission_stats()
+    assert completed == 42 and cancelled == 6
+    assert len(calls) == 1 + completed  # robots + actual dispatches; cancelled IDs never hit the wire
+    assert stats["entries"] == 1 and stats["holders"] == stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 49
+
+
+
+async def test_map_parallel_same_origin_requests_release_all_host_admission_slots(map_worker):
+    worker, server, calls, *_ = map_worker
+    robots = cached_rules(worker)
+    attempts = [secrets.token_hex(24) for _ in range(24)]
+    results = await asyncio.gather(*[
+        worker.map_fetch(grant(worker, server, f"/parallel?i={index}", record=robots, attempt=attempt))
+        for index, attempt in enumerate(attempts)
+    ])
+    assert all(result["status"] == "ok" for result in results)
+    assert all(len(result["discovery"]["candidates"]) == 2 for result in results)
+    assert all(result["usage"]["external_requests"] == 1 for result in results)
+    assert len(calls) == 24
+    stats = worker.fetcher.admission_stats()
+    assert stats["entries"] == 1
+    assert stats["holders"] == 0 and stats["waiters"] == 0
+    assert len(worker._retired_attempts) == 24

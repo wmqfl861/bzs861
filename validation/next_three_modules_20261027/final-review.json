@@ -1,0 +1,162 @@
+{
+  "status": "review_candidate_full_local_ctest_has_timeouts_not_merge_ready",
+  "base_commit": "d29223551041f5d0f39fa4ca4c6ce936af5a89d9",
+  "reviewer": "Implementing assistant source and counterexample review, not independent external signoff",
+  "modules": [
+    "guarded offline conversion of existing current schema15 stores",
+    "bounded launcher lifecycle and persistent process birth identity",
+    "strict bounded authenticated Worker RPC"
+  ],
+  "execution": {
+    "debug_build": {
+      "exit_code": 0,
+      "all_targets": true,
+      "seconds": 797.9
+    },
+    "debug_ctest": {
+      "passed": 37,
+      "failed": 5,
+      "skipped": 0,
+      "exit_code": 8,
+      "seconds": 1464.51,
+      "failures": [
+        {
+          "name": "core",
+          "seconds": 45.0711,
+          "kind": "Timeout"
+        },
+        {
+          "name": "batch",
+          "seconds": 51.7794,
+          "kind": "Timeout"
+        },
+        {
+          "name": "site_publication",
+          "seconds": 62.0586,
+          "kind": "Timeout"
+        },
+        {
+          "name": "retention",
+          "seconds": 61.652,
+          "kind": "Timeout"
+        },
+        {
+          "name": "sessions",
+          "seconds": 60.0068,
+          "kind": "Timeout"
+        }
+      ]
+    },
+    "same_binary_diagnostic_followups": [
+      {
+        "suite": "core",
+        "exit_code": 0,
+        "seconds": 35.576,
+        "outer_watchdog_seconds": 240
+      },
+      {
+        "suite": "batch",
+        "exit_code": 0,
+        "seconds": 16.544,
+        "outer_watchdog_seconds": 240
+      },
+      {
+        "suite": "site_publication",
+        "exit_code": 0,
+        "seconds": 21.747,
+        "outer_watchdog_seconds": 240
+      },
+      {
+        "suite": "retention",
+        "exit_code": 0,
+        "seconds": 10.723,
+        "outer_watchdog_seconds": 240
+      },
+      {
+        "suite": "sessions",
+        "exit_code": 0,
+        "seconds": 90.12,
+        "outer_watchdog_seconds": 240
+      }
+    ],
+    "diagnostic_interpretation": "All five timed-out executables completed with original assertions; CTest remains37/42, not relabeled green. No repository deadline changed; sessions diagnostic still exceeds its60s process watchdog. Root cause not conclusively attributed to load.",
+    "python_in_ctest": {
+      "passed": 1497,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 91.5
+    },
+    "maintenance_release_debug": {
+      "groups": 5,
+      "assertions": 121,
+      "failed": 0
+    },
+    "targeted_sanitizer": {
+      "new_maintenance_cpp_and_test_instrumented": true,
+      "linked_existing_release_core_instrumented": false,
+      "groups": 5,
+      "assertions": 121,
+      "exit_code": 0,
+      "full_sanitizer_suite": false
+    },
+    "stdlib_launcher_lifecycle": {
+      "passed": 11,
+      "actual_linux_children": true,
+      "final_ctest_passed": true,
+      "post_review_test_mock_followup_passed": 11
+    },
+    "launcher_pytest": 13,
+    "rpc_loopback": 42,
+    "storage_cli_adapter": 1,
+    "real_worker_core_lifecycle_smoke": {
+      "passed": true,
+      "repeat_start_same_identity": true,
+      "stop_confirmed": true
+    },
+    "original_design_contracts": 34,
+    "plan_guard": 13,
+    "plan_structure_exit_code": 0,
+    "counts_overlap": true
+  },
+  "post_run_review_change": {
+    "path": "tests/launcher_lifecycle.py",
+    "production_changed": false,
+    "scope": "Windows failure injection isolates termination handle instead of accidentally failing the initial identity probe; record preservation/live process and exact RuntimeError checks retained. Linux11 cases re-executed; Windows actual branch awaits CI."
+  },
+  "preservation": {
+    "baseline": "d29223551041f5d0f39fa4ca4c6ce936af5a89d9",
+    "protected_paths": 4523,
+    "historical_validation_paths": 4518,
+    "mismatches": []
+  },
+  "full_ctest_code_manifest_sha256": "5971cffe6019753a47278a574b88d427273dbed358b0dcf3a28ddafe7a3b96ed",
+  "published_code_manifest_sha256": "d145775a359ebd3f219866d0a4334662d4914c857c40591b89f96c8a6bf6712b",
+  "retained_failed_attempts": [
+    "Initial RPC baseline29fail/9pass",
+    "First green handler-mock integration5fail/117pass; corrected mock read method, not assertions",
+    "Earlier Python all3fail/1482pass and quiet2fail/1483pass; final integrated1497pass",
+    "Experimental10-second Worker cold start failed; explicit startup-only30s default/1..120 config now smoke-tested",
+    "Full42-suite Debug CTest five original watchdog timeouts, retained separately from direct followups",
+    "Initial baseline and whole Release build interrupted; neither called complete or passed"
+  ],
+  "not_executed_or_accepted": [
+    "New exact-commit Linux/Windows CI",
+    "Complete current Release build/CTest",
+    "Complete current ASan/UBSan suite",
+    "Native local Windows execution",
+    "Target cloud-device deployment",
+    "Real-user database conversion, physical disk-full/power-loss fault injection",
+    "Approved sources/human qrels/trusted backup restore",
+    "Full P2-A/work-package/product acceptance"
+  ],
+  "policy": {
+    "version": "0.1.10",
+    "business_schema": 15,
+    "enabled_sources_changed": false,
+    "pending_decisions": "D1-D7 unchanged",
+    "b24_expansion": false,
+    "keyed_identity_retention_changed": false,
+    "quarantine_clearance": false
+  },
+  "publication": "Publish draft review candidate on new branch, not main; exact new CI and unresolved timing gates must be inspected before merge. Raw logs outside Git validation."
+}

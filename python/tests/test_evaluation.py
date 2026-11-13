@@ -10,7 +10,7 @@ import sys
 
 import pytest
 
-from bzs import cli, evaluation
+from bzs import artifact_output, cli, evaluation
 from bzs.evaluation_format import METHOD, file_bytes, golden_projection_identity, hash_json, load_package, read_json
 from bzs.golden import load_golden
 
@@ -622,3 +622,27 @@ def test_cli_real_process_prepare_freeze_and_unjudged_run(tmp_path):
     report, _ = read_json(tmp_path / "report" / "evaluation_report.json")
     assert report["status"] == "blocked" and report["network_requests"] == 0 and report["model_calls"] == 0
     assert report["golden_verification"]["status"] == "verified"
+
+
+
+def test_prepare_output_failure_never_publishes_a_partial_package(tmp_path, monkeypatch):
+    queries, candidates, _ = inputs(tmp_path)
+    out = tmp_path / "interrupted-package"
+    original = artifact_output.atomic_write
+    calls = 0
+
+    def fail_second_write(path, data):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("synthetic disk-full during package write")
+        return original(path, data)
+
+    monkeypatch.setattr(artifact_output, "atomic_write", fail_second_write)
+    with pytest.raises(OSError, match="disk-full"):
+        evaluation.prepare(str(queries), str(out), candidates_path=str(candidates))
+    assert not out.exists()
+    assert not list(tmp_path.glob(".interrupted-package.stage-*"))
+    monkeypatch.setattr(artifact_output, "atomic_write", original)
+    evaluation.prepare(str(queries), str(out), candidates_path=str(candidates))
+    assert (out / "package.json").is_file() and (out / "pool.json").is_file()

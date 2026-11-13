@@ -52,15 +52,17 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 
 搜索来源的新 `Retry-After` / API `backoff` 等待最多 24 小时，Core 与 Worker 都执行边界并在截断时返回诊断；配置冷却与合法已有期限继续生效。新报告中的 parse-error 退避最长 72 小时；已有可信绝对期限不因后来成功、限流或时钟回拨缩短，回拨后剩余时间可以超过 72 小时。无证明历史值仅按一年极端异常启发式保守修复，一年内或事件时间有歧义的旧值可能保留；准确条件及诊断字段以[来源退避合同](SOURCE_BACKOFF.md)为准。遇限流不自动重试或启用来源；站点/robots 的等待合同不因该搜索来源上限而改变。
 
-`results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
+`results[]` 包含排名、URL、标题、来源摘要、来源归属和索引族。同一资源（仅主机名大小写、默认端口等安全等价变体）合并为一组：展示的 URL/标题/摘要总是整体来自同一命中，胜者按（rank, URL, source_id, title, snippet）全序取最小值（rank 数值升序，字符串按字典序），与来源及来源内命中的到达顺序无关；字段为空保持为空，不跨命中借用；来源归属按（rank, source_id）排序，组间同分名次按去重键定序。仅在贡献来源的当前发布策略允许摘要时，返回 `snippet_kind=search_engine_snippet`；该摘要不能作为已读正文。任一贡献来源仅允许链接时，合并结果返回 `snippet_kind=publication_suppressed`、空摘要和以 URL 代替的标题；缓存与冻结结果同样受此限制，具体规则见 [来源发布策略](SOURCE_PUBLICATION.md)。每个来源返回正常、空结果、跳过、冷却/配额、封禁、限流、解析失败或网络错误等状态，部分失败不能伪装成全量成功。
 
-索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。已支持的 site 条件在结果中复核；其余未支持条件不能静默丢弃。
+索引族独立性未知时保守控制贡献；当前 DuckDuckGo 与 Bing 共用索引族，不能因不同服务名重复计票。
+
+**查询条件执行（FT-011 有意行为变更，strict 默认）**：`site:`、`filetype:`、`intitle:`、`inbody:` 等查询语法条件现在按来源分类执行并在 `filters` 报告中逐条件披露，取代旧运行时。**旧行为（已废弃）**：只有 `site:` 有本地复核，`filetype:`/`intitle:`/`inbody:` 及解析失败的过滤语法静默透传引擎、结果未核验即返回。**新行为**：本地可计算条件（`site:`→结果 host、`intitle:`→结果标题、`filetype:`→仅 URL 扩展名证据；无扩展名 URL 计为未核验并剔除）无论是否声明 native 一律保留本地事后复核；按来源清单 `native_filters` 声明分类 native/emulated/unsupported；strict 默认下 unsupported 条件（如无来源声明 native 的 `inbody:`）显式返回 `E_CAPABILITY_UNAVAILABLE`（422）或显式剔除该来源（sources 报告保留 `status=skipped`、`reason=condition_unsupported` 与 filter 明细，用量不含未派发来源），绝不静默。`filters.conditions[]` 逐条件给出每来源 `classification`/`native_execution`/`local_verification`/`satisfied`：worker 未返回某条件执行报告一律按未执行处理，native 执行位置不冒充结果满足。无法本地核验且无人执行的条件命中按未核验剔除。查询过滤语法无法解析时同样显式报错，不再静默透传。durable 路径 `web.search.start` 走同一执行：strict 失败经既有 fail_search 进入来源级 unknown/partial；`filters` 报告随来源 payload_json 持久化，但 session_page/stream 投影本轮不透出该报告（已知边界）。
 
 原同步 web.search 保持兼容；需要联网冻结版本、分页、断线重取和取消时使用 web.search.start。完整 SESSION-01/02 工作包仍未签收。
 
 ### 读取结果与缓存
 
-读取结果包括文档/快照 ID、来源与最终 URL、标题、版本、抓取时间、缓存状态、索引状态、文本窗口、元数据、抓取/解析状态和 `content_trust=untrusted_web_content`。文本窗口的起止是原文 UTF-8 字节边界。
+读取结果包括文档/快照 ID、来源与最终 URL、标题、版本、抓取时间、缓存状态、索引状态、文本窗口、元数据、抓取/解析状态和 `content_trust=untrusted_web_content`。文本窗口的起止是原文 UTF-8 字节边界。no-store 的 200 全量响应返回瞬时变体：`transient="no_store"`，无文档/快照 ID、版本与 `cache` 对象，其余字段（URL、标题、窗口、元数据、抓取状态、`content_trust`、`usage`/`shared_read`）照常；该正文一次性交付，不落盘、不可复用。
 
 普通 `web.read.max_bytes` 控制返回的 canonical 文本窗口，默认 20000、上限 262144 字节，不是 Worker 下载预算；`read_many`、map 和 crawl 的同名任务参数则限制累计下载的解压后响应体字节。
 
@@ -161,7 +163,7 @@ S0 候选探测属于显式工具路径：必须指定 `--include-candidates` �
 | `job.results` | `job_id`；可选 `offset=0`、`limit=20` | 依输入顺序返回条目；`offset` 为 0–20，`limit` 为 1–20；用 `next_offset` / `has_more` 继续读取 |
 | `job.control` | `job_id`、`action` | `pause`、`resume`、`cancel`；批量任务另外支持显式 `retry_failed` |
 
-成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。
+成功条目的 `receipt` 包含 `snapshot_id`、`document_id` 等快照收据；正文通过 `document.range` 读取。删除后 `available=false`，不再发布旧收据。no-store 条目以 `state=succeeded` 终结但不建快照：`available=false`，`receipt` 仅携带 `transient="no_store"` 标记（无快照身份），用量照记且 `retry_failed` 不重跑。失败条目有独立错误码和用量，其余尚未开始的输入可继续执行。状态页保留历史执行记录，不把失败项或未知结果算作成功。`used_pages` 按成功条目计数，交付瞬时的成功条目同样计入；瞬时正文无快照可读，该计数不等于可读正文的数量。
 
 兼容任务可在派发事务中共享一次物理读取；新 `read_many.submit` 任务的首项也可在创建事务内加入尚开放、未结算的原尝试。迟到加入要求同 owner、权限代际、任务创建删除序号、精确 URL 和目标删除代际相同，预算覆盖原预留、期限覆盖原租约、有效超时兼容，且当前快照与当前全局页面发布序号（`publication_sequence`）严格等于原捕获。每次物理尝试最多累计 32 个成员，取消不释放槽位；幂等重提、其他既存 pending 项、暂停项和显式重试不通过提交入口迟到加入。不能加入的新任务按原调度继续排队，普通 `web.read`、map/crawl 和来源搜索不参与。完整合同见[共享读取](SHARED_READS.md)。
 
@@ -313,7 +315,7 @@ robots过期记录仅可作为绑定旧表示重新验证，不能直接放行�
 
 同 owner 兼容 `read_many` 在派发事务中可共享一次实际请求，schema15 进一步允许兼容新任务首项迟到加入。各订阅者保持独立任务身份/回执与取消，原付款者承担实际或未知用量，付款者取消但仍有其他有效成员时归属不变、原尝试仍可接纳兼容成员。订阅者 `associated_*` 仅表示关联，不是可相加的消耗；压缩后归属仍保留。每次物理尝试最多累计 32 个成员，详见[共享读取](SHARED_READS.md)。
 
-原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；no-store因本接口总返回持久快照而报`E_CACHE_POLICY`，不会先落盘再删除。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
+原始HTTP缓存字段与ETag/Last-Modified分别传递。所有响应路径的no-store/收紧都不能留下较宽旧缓存资格；`web.read`与`read_many`对no-store的200全量响应交付一次性瞬时正文（`transient="no_store"`，无快照/复用元数据），不会先落盘再删除；crawl/map与304重验证仍报`E_CACHE_POLICY`。截断正文的既有取证路径保留，但不获得新鲜缓存资格。失败不隐式陈旧回退。`cache`解释年龄、期限和原因，瞬时结果无`cache`对象，详见[HTTP新鲜度](HTTP_FRESHNESS.md)。
 
 schema13在12基础上组合来源发布规则、主体撤权和共享读取结构，保留原数据与账本。来源清单显式激活持久政策，旧缓存/冻结会话与在途来源回复每次重查；后续放宽不复活旧摘要。真实旧库升级、旧HTTP字段默认不新鲜、备份继续隔离的实际证据见当前报告；版本号不等于所有历史路径或安全恢复已经验收。
 
@@ -332,3 +334,29 @@ schema13在12基础上组合来源发布规则、主体撤权和共享读取结�
 迟到成员继承原发布捕获和租约，不新增物理请求或改变付款人。部分索引只包含 running/open/正请求预留的付款项；每次最多评估 32 个返回候选，不承诺 SQL 只扫描 32 行。加入与关闭在 `BEGIN IMMEDIATE` 事务中协调，关闭对同一尝试不可逆，时钟回拨不会重新开放。持久租约不证明原执行进程存活；执行丢失仍按原租约到期记录未知，不自动重发。
 
 升级前停止旧 Core，旧二进制打开 schema15 返回 `E_SCHEMA_VERSION`，不支持新旧进程混用；备份隔离和永久幂等身份保持。完整规则见[共享读取](SHARED_READS.md)，实际升级与回归范围见[本批验证记录](../validation/shared_read_late_20261024/README.md)，不由版本号推导验证成功。
+
+### 2026-10-27 storage maintenance recovery
+
+Local frozen searches have no idempotency key. Their receipt exists while the
+session/stream payload is retained; after expiry, bounded lazy settlement can
+remove zero-usage orphan receipts. A collected local session returns 404.
+Keyed web search receipts and job identities retain their original permanent
+replay contract. Each settlement removes at most 512 old local receipts;
+a frozen search has two settlement phases. Charged/unknown work is not collected.
+
+`stats` now exposes `archive_bytes`, `payload_bytes`, `quota_payload_bytes` and
+`payload_over_quota`. Snapshot payload and archive JSON share the existing
+owner byte quota; substring tokens still have their independent quota.
+`content_bytes` remains snapshot-only. None of these logical counters is the
+physical SQLite file size. Archive bytes are calculated over retained owner
+rows, not maintained in a second mutable business ledger.
+
+`jobs.compact` returns `archive_quota_blocked_jobs`; if a summary cannot fit,
+its detail rows and permanent key are preserved. Operators must resolve capacity,
+not treat the blocked record as compacted. After a public compaction commits,
+incremental stores attempt at most 128 free pages of physical reclamation and
+report `storage_reclamation` (`completed` or `deferred`). Live WAL readers can
+delay file shrink. Existing NONE/FULL databases return
+`requires_offline_conversion`: this batch does not implement a legacy full
+conversion tool and never runs a full VACUUM during startup. Backup quarantine
+and the business schema15 remain unchanged.

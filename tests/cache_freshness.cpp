@@ -95,13 +95,21 @@ TEST(no_validator_page_uses_origin_max_age_and_never_implicit_stale_fallback) {
 TEST(no_cache_and_zero_age_force_fresh_authorized_fetch) {
   for(const auto* control:{"no-cache","max-age=0"}){Temp t;Worker w;w.headers=policy(control);Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});web.read("a",args());web.read("a",args());CHECK(w.requests==2);rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");CHECK(w.requests==2);}
 }
-TEST(no_store_never_persists_new_body_and_fences_old_http_reuse) {
+TEST(no_store_delivers_transient_body_and_fences_old_http_reuse) {
   Temp t;Worker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
   const auto old=web.read("a",args());w.headers=policy("no-store");
-  rejects([&]{web.read("a",args("refresh"));},"E_CACHE_POLICY");CHECK(s.stats("a").at("snapshots").num()==1);
+  const auto transient=web.read("a",args("refresh"));
+  CHECK(transient.at("transient").str()=="no_store");CHECK(!transient.has("snapshot_id"));CHECK(!transient.has("document_id"));
+  CHECK(!transient.has("cache"));CHECK(transient.at("content_trust").str()=="untrusted_web_content");
+  CHECK(transient.at("content").at("text").str()=="cache fixture body");CHECK(transient.at("fetch").at("http_status").num()==200);
+  CHECK(transient.at("usage").at("external_requests").num()==1);CHECK(w.requests==2);
+  CHECK(s.stats("a").at("snapshots").num()==1);
   CHECK(s.snapshot("a",old.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
   rejects([&]{web.read("a",args("cache_only"));},"E_CACHE_STALE");
-  rejects([&]{web.read("b",args());},"E_CACHE_POLICY");CHECK(!s.cached("b",url));
+  const auto fresh=web.read("b",args());
+  CHECK(fresh.at("transient").str()=="no_store");CHECK(!fresh.has("snapshot_id"));CHECK(!s.cached("b",url));
+  CHECK(s.stats("b").at("snapshots").num()==0);
+  CHECK(s.search("b",parse_query(Json::string("cache"))).at("frozen_count").num()==0);
 }
 TEST(old_worker_metadata_requires_refresh_and_no_cache_only_network) {
   Temp t;Worker w;w.omit=true;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
@@ -209,12 +217,20 @@ TEST(http_redirect_each_hop_requires_explicit_cacheable_lifetime) {
     rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
   }
 }
-TEST(http_redirect_no_store_creates_no_new_body_and_invalidates_bound_old_reuse) {
+TEST(http_redirect_no_store_delivers_transient_and_invalidates_bound_old_reuse) {
   Temp t;RedirectWorker w;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());w.prefix_control="no-store";
-  rejects([&]{web.read("a",redirect_args("refresh"));},"E_CACHE_POLICY");CHECK(s.stats("a").at("snapshots").num()==1);
+  // A 304 revalidation keeps its strict persistence rejection.
+  rejects([&]{web.read("a",redirect_args("refresh"));},"E_CACHE_POLICY");
+  // Without a retained route grant the next refresh performs a full 200,
+  // whose unpersistable prefix delivers transiently instead of rejecting.
+  const auto transient=web.read("a",redirect_args("refresh"));
+  CHECK(transient.at("transient").str()=="no_store");CHECK(!transient.has("snapshot_id"));CHECK(!transient.has("cache"));
+  CHECK(transient.at("content").at("text").str()=="cache fixture body");CHECK(transient.at("fetch").at("http_status").num()==200);
+  CHECK(s.stats("a").at("snapshots").num()==1);
   CHECK(s.snapshot("a",first.at("snapshot_id").str()).at("canonical_text").str()=="cache fixture body");
   CHECK(!s.cached("a",redirect_original)->at("meta").has("http_redirect_chain"));rejects([&]{web.read("a",redirect_args("cache_only"));},"E_CACHE_STALE");
-  rejects([&]{web.read("b",redirect_args());},"E_CACHE_POLICY");CHECK(s.stats("b").at("snapshots").num()==0);
+  const auto fresh=web.read("b",redirect_args());
+  CHECK(fresh.at("transient").str()=="no_store");CHECK(!fresh.has("snapshot_id"));CHECK(s.stats("b").at("snapshots").num()==0);
 }
 TEST(http_redirect_304_batch_accounts_for_every_request_and_redirect_body) {
   Temp t;RedirectWorker w;w.hops=2;Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});auto first=web.read("a",redirect_args());
@@ -292,6 +308,51 @@ Json redirect_allowing_publication() {
 }
 Json redirect_noindex() {
   return Json::parse(R"({"version":"bzs-publication-1","index_allowed":false,"snippet_allowed":false,"follow_allowed":true,"snippet_text":"","snippet_title":"","directives":["noindex"],"diagnostics":[]})");
+}
+TEST(no_store_transient_delivery_records_restrictive_publication_observations) {
+  struct DenyingWorker:Worker {
+    bool deny=false;
+    Json call(const std::string& method,const Json& params,int timeout)override {
+      auto out=Worker::call(method,params,timeout);
+      if(deny&&method=="fetch.extract"&&out.at("status").str()=="ok") {
+        out.set("index_allowed",false);
+        out.set("publication",Json::parse(R"({"version":"bzs-publication-1","index_allowed":false,"snippet_allowed":false,"follow_allowed":false,"snippet_text":"","snippet_title":"","directives":["noindex","nosnippet"],"diagnostics":[]})"));
+      }
+      return out;
+    }
+  };
+  Temp t;DenyingWorker w;w.deny=true;w.headers=policy("no-store");Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  const auto denied=web.read("a",args());
+  CHECK(denied.at("transient").str()=="no_store");CHECK(!denied.at("indexed").flag());
+  CHECK(denied.at("content").at("text").str()=="cache fixture body");CHECK(s.stats("a").at("snapshots").num()==0);
+  // The restriction is durably recorded before delivery: an allowing read
+  // whose authorization predates the no-store observation is still fenced.
+  w.deny=false;w.headers=policy();
+  bool observed=false;
+  w.during=[&] {
+    if(observed)return;observed=true;
+    Store writer(t.path/"db",[&]{return w.now;});
+    DenyingWorker nested;nested.deny=true;nested.headers=policy("no-store");
+    WebService transient_web(writer,nested,{});
+    const auto body=transient_web.read("a",args());
+    CHECK(body.at("transient").str()=="no_store");CHECK(!body.at("indexed").flag());
+  };
+  const auto later=web.read("a",args());
+  CHECK(observed);CHECK(later.has("snapshot_id"));CHECK(!later.at("indexed").flag());
+  CHECK(s.search("a",parse_query(Json::string("cache"))).at("frozen_count").num()==0);
+  CHECK(s.stats("a").at("snapshots").num()==1);
+}
+TEST(no_store_transient_window_keeps_byte_window_semantics) {
+  Temp t;Worker w;w.headers=policy("no-store");Store s(t.path/"db",[&]{return w.now;});WebService web(s,w,{});
+  auto first=args("refresh");first.set("start_byte",std::int64_t{6});first.set("max_bytes",std::int64_t{5});
+  const auto windowed=web.read("a",first);
+  CHECK(windowed.at("transient").str()=="no_store");
+  CHECK(windowed.at("content").at("text").str()=="fixtu");
+  CHECK(windowed.at("content").at("start_byte").num()==6);CHECK(windowed.at("content").at("end_byte").num()==11);
+  CHECK(windowed.at("content").at("total_bytes").num()==18);CHECK(windowed.at("content").at("truncated").flag());
+  CHECK(windowed.at("content").at("next_start_byte").num()==11);
+  auto beyond=args("refresh");beyond.set("start_byte",std::int64_t{1000});
+  rejects([&]{web.read("a",beyond);},"E_EVIDENCE_RANGE");CHECK(s.stats("a").at("snapshots").num()==0);
 }
 TEST(http_redirect_intermediate_policy_never_becomes_independent_final_policy) {
   for(const auto* timing:{"response","before_dispatch","inflight"}) {

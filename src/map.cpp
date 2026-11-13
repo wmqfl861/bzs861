@@ -294,11 +294,14 @@ void Store::settle_map_jobs_locked() {
   }
 }
 
-std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
-  std::lock_guard lock(mutex_);Tx tx(db_);settle_map_jobs_locked();
+std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites,std::stop_token stopping) {
+  std::lock_guard lock(mutex_);Tx tx(db_);
+  if(stopping.stop_requested())return std::nullopt;
+  settle_map_jobs_locked();
   Sql pending(db_,"SELECT j.id FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.kind IN ('web.map','web.crawl') AND j.state='queued' ORDER BY m.last_dispatch_sequence,j.created_at,j.id");
   std::vector<std::string> ids;while(pending.step())ids.push_back(pending.text(0));
   for(const auto& id:ids)for(;;) {
+    if(stopping.stop_requested())return std::nullopt;
     Sql job(db_,"SELECT j.owner,j.epoch,j.deadline,j.auth_epoch,j.created_delete_sequence,m.site_id,m.manifest_sha256,m.origin,m.scope_path,m.max_requests-m.charged_requests,m.max_bytes-m.charged_bytes,m.per_request_timeout_ms,m.max_pages,m.used_pages,j.kind FROM jobs j JOIN map_jobs m ON m.job_id=j.id WHERE j.id=? AND j.state='queued'");
     job.bind(1,id);if(!job.step())break;
     const auto owner=job.text(0),origin=job.text(7);const auto now=clock_();const auto* site=sites.find(job.text(5));
@@ -371,6 +374,7 @@ std::optional<MapLease> Store::lease_next_map(const SiteRegistry& sites) {
       Sql denied(db_,"UPDATE map_resources SET state='failed',error_code=? WHERE job_id=? AND state='pending'");denied.bind(1,stop);denied.bind(2,id);denied.step();
       map_partial_locked(id,stop);settle_map_job_locked(id);break;
     }
+    if(stopping.stop_requested())return std::nullopt;
     Sql ensure(db_,"INSERT OR IGNORE INTO site_request_state(origin,window_started)VALUES(?,?)");ensure.bind(1,origin);ensure.bind(2,now);ensure.step();
     Sql lane(db_,"SELECT window_started,requests,next_start,cooldown_until,active_until FROM site_request_state WHERE origin=?");lane.bind(1,origin);lane.step();
     // Never transfer an unknown old request into a fresh quota window before its

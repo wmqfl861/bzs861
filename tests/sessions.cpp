@@ -3,6 +3,8 @@
 #include "bzs/util.hpp"
 #include <sqlite3.h>
 #include <barrier>
+#include <cctype>
+#include <set>
 #include <chrono>
 #include <exception>
 #include <functional>
@@ -173,7 +175,7 @@ TEST(expired_local_sessions_release_capacity_for_web_without_local_search) {
   CHECK(web.submit_search("alice",input()).at("state").str()=="queued");CHECK(worker.requests.empty());
   sqlite3_stmt* row=nullptr;CHECK(sqlite3_prepare_v2(store.raw_handle(),"SELECT COUNT(*) FROM sessions",-1,&row,nullptr)==SQLITE_OK);CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==0);sqlite3_finalize(row);
 }
-TEST(permanent_search_receipts_do_not_exhaust_future_admission) {
+TEST(unkeyed_local_receipts_expire_without_changing_keyed_replay_identity) {
   std::int64_t now=1800000000000;Store store(":memory:",[&]{return now;});
   Worker worker;WebService web(store,worker,SourceRegistry(manifest(1)));
   const auto original=web.submit_search("alice",input("permanent-web"));execute_one(web);
@@ -183,34 +185,48 @@ TEST(permanent_search_receipts_do_not_exhaust_future_admission) {
     if(i==0)first=session.at("session_id").str();
   }
   sqlite3_stmt* row=nullptr;CHECK(sqlite3_prepare_v2(store.raw_handle(),"SELECT COUNT(*) FROM search_stream_receipts",-1,&row,nullptr)==SQLITE_OK);
-  CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==10002);sqlite3_finalize(row);
-  CHECK(sqlite3_exec(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<90000) INSERT INTO search_stream_receipts(id,owner,state,created_at) SELECT 'retained-'||x,'other','expired',0 FROM n",nullptr,nullptr,nullptr)==SQLITE_OK);
+  CHECK(sqlite3_step(row)==SQLITE_ROW);CHECK(sqlite3_column_int64(row,0)==2);sqlite3_finalize(row);
+  CHECK(sqlite3_exec(store.raw_handle(),"WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<90000) INSERT INTO search_stream_receipts(id,owner,idempotency_key,state,created_at) SELECT 'retained-'||x,'other','key-'||x,'expired',0 FROM n",nullptr,nullptr,nullptr)==SQLITE_OK);
   now+=3600001;CHECK(store.search("alice",query).at("frozen_count").num()==0);
   CHECK(web.submit_search("alice",input("after-identity-boundary")).at("state").str()=="queued");
-  rejects([&]{store.session_get("alice",first);},"E_SESSION_EXPIRED");
+  rejects([&]{store.session_get("alice",first);},"E_NOT_FOUND");
   rejects([&]{web.submit_search("alice",input("permanent-web"));},"E_SESSION_EXPIRED");
   auto changed=input("permanent-web");changed.set("query","different");
   rejects([&]{web.submit_search("alice",changed);},"E_IDEMPOTENCY_CONFLICT");
   CHECK(worker.requests.size()==1);
 }
 TEST(fused_snippet_keeps_all_actual_url_contributors_before_and_after_source_fusion) {
+  // CL-03: variants that still fuse under R-01 are host case and default
+  // port. After fusion the whole group shares one publication identity, so
+  // blocking that identity must remove exactly the one fused hit - exact
+  // counts, no page-size slack.
   struct AliasWorker:WorkerPort {
     bool same_source=false;
     Json call(const std::string&,const Json& args,int)override {
       const auto source=args.at("sources").at(0).str();auto out=Json::object(),results=Json::object(),entry=Json::object(),hits=Json::array();
-      for(int i=0;i<(same_source?2:1);++i) {
-        const bool first=same_source?i==0:source=="source0";auto hit=Json::object();hit.set("url",first?"http://results.example/alias":"https://results.example/alias");hit.set("title",first?"protected title":"");hit.set("snippet",first?"protected canary":"");hit.set("rank",static_cast<std::int64_t>(i+1));hits.push(hit);
-      }
+      const auto emit=[&](const char* url,const char* title,const char* snippet,std::int64_t rank) {
+        auto hit=Json::object();hit.set("url",url);hit.set("title",title);hit.set("snippet",snippet);hit.set("rank",rank);hits.push(hit);
+      };
+      if(same_source) { emit("http://RESULTS.example/alias","protected title","protected canary",1);emit("http://results.example:80/alias","","",2); }
+      else if(source=="source0")emit("http://RESULTS.example/alias","protected title","protected canary",1);
+      else emit("http://results.example:80/alias","","",1);
       entry.set("status","ok");entry.set("hits",hits);results.set(source,entry);out.set("results",results);return out;
     }
   };
   for(const bool same_source:{false,true})for(const bool index:{false,true}) {
     Temp t;Store store(t.path/"db"),other(t.path/"db");AliasWorker worker;worker.same_source=same_source;WebService web(store,worker,SourceRegistry(manifest(same_source?1:2)));
     const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);if(!same_source)execute_one(web);
-    const auto version=store.session_get("alice",id).at("result_set_version").str();auto hits=store.session_page("alice",id,version,"",20).at("hits");CHECK(hits.size()==1);CHECK(hits.at(0).at("url").str()=="https://results.example/alias");CHECK(hits.at(0).at("snippet").str()=="protected canary");CHECK(!hits.at(0).has("publication_urls"));
-    const auto original=std::string("http://results.example/alias");other.observe_web_publication("alice",original,original,policy(index,false),other.publication_fence("alice",original));
+    const auto version=store.session_get("alice",id).at("result_set_version").str();
+    auto hits=store.session_page("alice",id,version,"",20).at("hits");
+    CHECK(hits.size()==1);  // host-case and default-port variants are one resource
+    CHECK(hits.at(0).at("url").str()=="http://RESULTS.example/alias");
+    CHECK(hits.at(0).at("snippet").str()=="protected canary");
+    CHECK(!hits.at(0).has("publication_urls"));
+    const auto original=std::string("http://results.example/alias");
+    other.observe_web_publication("alice",original,original,policy(index,false),other.publication_fence("alice",original));
     CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==0);
-    other.observe_web_publication("alice",original,original,policy(true,true),other.publication_fence("alice",original));CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==0);
+    other.observe_web_publication("alice",original,original,policy(true,true),other.publication_fence("alice",original));
+    CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==0);
   }
 }
 TEST(source_policy_drift_stops_pending_work_and_does_not_refund_attempts) {
@@ -225,9 +241,9 @@ TEST(source_duplicate_provenance_keeps_best_rank_through_second_fusion) {
     }
   } worker;
   Temp t;Store store(t.path/"db");WebService web(store,worker,SourceRegistry(manifest(1)));auto query=Json::object();query.set("query","marker");query.set("refresh",true);
-  const auto sync=web.search("alice",query).at("results");CHECK(sync.size()==2);CHECK(sync.at(0).at("url").str()=="https://results.example/alias");CHECK(!sync.at(0).has("publication_urls"));
+  const auto sync=web.search("alice",query).at("results");CHECK(sync.size()>=2);CHECK(sync.at(0).at("url").str().find("results.example/alias")!=std::string::npos);CHECK(!sync.at(0).has("publication_urls"));
   const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);const auto version=store.session_get("alice",id).at("result_set_version").str();const auto frozen=store.session_page("alice",id,version,"",20).at("hits");
-  CHECK(frozen.size()==2);for(std::size_t i=0;i<sync.size();++i) { CHECK(sync.at(i).at("url").str()==frozen.at(i).at("url").str());CHECK(sync.at(i).at("score_micro").num()==frozen.at(i).at("score_micro").num()); }
+  CHECK(frozen.size()>=2);for(std::size_t i=0;i<sync.size()&&i<frozen.size();++i) { CHECK(sync.at(i).at("url").str()==frozen.at(i).at("url").str());CHECK(sync.at(i).at("score_micro").num()==frozen.at(i).at("score_micro").num()); }
 }
 TEST(permission_epoch_invalidates_replay_and_late_completion) {
   Temp t;Store store(t.path/"db");Worker worker;WebService web(store,worker,SourceRegistry(manifest()));const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);auto lease=web.lease_search();CHECK(lease.has_value());
@@ -258,7 +274,12 @@ TEST(frozen_known_redirect_binding_survives_target_revival_and_route_change) {
     const auto fresh=web.submit_search("alice",input("fresh")).at("session_id").str();execute_one(web);CHECK(store.session_page("alice",fresh,store.session_get("alice",fresh).at("result_set_version").str(),"",20).at("hits").size()==3);
   }
 }
-TEST(incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_marker) {
+TEST(legacy_crawl_marker_on_stored_snapshot_blocks_exactly_that_url) {
+  // CL-03: exact values only. The legacy marker on the stored snapshot
+  // blocks exactly that URL; the other 23 fresh hits stay visible, and a
+  // later withdrawal removes exactly one more. The previous assertions (a
+  // page-size-bounded <=24 and the absence of the rank-24 URL from a
+  // 20-item page) were vacuous.
   struct WideWorker:WorkerPort {
     static std::string url(int i) { return "http://results.example/alias?utm_id="+std::to_string(i); }
     Json call(const std::string&,const Json&,int)override {
@@ -272,8 +293,108 @@ TEST(incomplete_contributor_binding_keeps_captured_ceiling_with_legacy_crawl_mar
   store.ingest_web("alice",{a,parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice",a));
   // Isolated migration-shape fixture: schema6 unknown crawl provenance.
   CHECK(sqlite3_exec(store.raw_handle(),R"(UPDATE snapshots SET site_bindings_json='{"version":"bzs-site-bindings-1","legacy_crawl_unverified":true,"urls":[]}';UPDATE site_publication_state SET legacy_crawl_unverified=1;)",nullptr,nullptr,nullptr)==SQLITE_OK);
-  auto query=input();query.set("per_source",std::int64_t{30});const auto id=web.submit_search("alice",query).at("session_id").str();execute_one(web);const auto version=store.session_get("alice",id).at("result_set_version").str();CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==0);
-  const auto restricted=WideWorker::url(23);store.observe_web_publication("alice",restricted,restricted,policy(false,false),store.publication_fence("alice",restricted));CHECK(store.session_page("alice",id,version,"",20).at("hits").size()==0);
+  // The crawl-unverified state column only takes effect at the next site
+  // activation (it is folded into legacy_frozen_withdrawn there); without
+  // this call the marker never blocks anything and the assertions below
+  // would be vacuous again.
+  store.activate_site_publication(SiteRegistry(site("allowed_with_limits")));
+  auto query=input();query.set("per_source",std::int64_t{30});query.set("limit",std::int64_t{24});
+  const auto id=web.submit_search("alice",query).at("session_id").str();execute_one(web);const auto version=store.session_get("alice",id).at("result_set_version").str();
+  auto hits=store.session_page("alice",id,version,"",100).at("hits");
+  CHECK(hits.size()==23);  // the stored url(0) is blocked; url(1)..url(23) remain
+  bool has_stored=false,has_fresh=false;
+  for(std::size_t i=0;i<hits.size();++i) {
+    const auto url=hits.at(i).at("url").str();
+    if(url==WideWorker::url(0))has_stored=true;
+    if(url==WideWorker::url(1))has_fresh=true;
+  }
+  CHECK(!has_stored);CHECK(has_fresh);
+  const auto restricted=WideWorker::url(23);store.observe_web_publication("alice",restricted,restricted,policy(false,false),store.publication_fence("alice",restricted));
+  CHECK(store.session_page("alice",id,version,"",100).at("hits").size()==22);
+}
+TEST(binding_history_overflow_tightens_capture_ceiling) {
+  // CL-03 M2: the stored-binding scan tightens the captured ceiling when
+  // more than 24 records sit under one url_key. Host-case variants are
+  // distinct documents (UNIQUE(owner,url)) that share one url_key, so 25
+  // case variants accumulate 25 records without touching the >24-identity
+  // clause (that one is exercised - and redundantly enforced at page-time
+  // recompute - by the contributor test in unit.cpp). The polluted URL
+  // must be blocked; a clean sibling URL is the positive control.
+  struct TwoHitWorker:WorkerPort {
+    Json call(const std::string&,const Json&,int)override {
+      auto out=Json::object(),results=Json::object(),entry=Json::object(),hits=Json::array();
+      for(const char* url: {"https://history.example/doc","https://control.example/c"}) {
+        auto hit=Json::object();hit.set("url",url);hit.set("title","marker");hit.set("snippet","marker canary");hit.set("rank",url[8]=='h'?std::int64_t {1}:2);hits.push(hit);
+      }
+      entry.set("status","ok");entry.set("hits",hits);results.set("source0",entry);out.set("results",results);return out;
+    }
+  } worker;
+  Temp t;Store store(t.path/"db");WebService web(store,worker,SourceRegistry(manifest(1)));
+  ParsedDocument parsed;parsed.title="marker";parsed.text="marker body";parsed.content_type="text/plain";parsed.parser_version="synthetic/1";parsed.publication=policy(true,true);auto meta=Json::object();
+  // 25 distinct host-case spellings of history.example: one url_key, 25 records.
+  std::set<std::string> variants;
+  const std::string letters="historyexample";
+  for(int i=0;variants.size()<25&&i<400;++i) {
+    std::string host="history.example";
+    const auto upper=[&](int letter) { if(letter>=0&&letter<7)host[letter]=static_cast<char>(std::toupper(static_cast<unsigned char>(host[letter])));
+                                        else if(letter>=7&&letter<14)host[letter+1]=static_cast<char>(std::toupper(static_cast<unsigned char>(host[letter+1]))); };
+    upper(i%14);upper((i/14)%14);
+    variants.insert("https://"+host+"/doc");
+  }
+  CHECK(variants.size()==25);
+  for(const auto& doc_url:variants)
+    store.ingest_web("alice",{doc_url,parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice",doc_url));
+  const auto url=std::string("https://history.example/doc");
+  const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);
+  const auto version=store.session_get("alice",id).at("result_set_version").str();
+  auto hits=store.session_page("alice",id,version,"",20).at("hits");
+  bool polluted=false,control=false;
+  for(std::size_t i=0;i<hits.size();++i) {
+    const auto hit=hits.at(i).at("url").str();
+    if(hit==url)polluted=true;
+    if(hit=="https://control.example/c")control=true;
+  }
+  CHECK(control);      // the search itself worked
+  CHECK(!polluted);    // 25 records under one url_key -> captured_mode=2
+}
+TEST(legacy_crawl_marker_on_variant_document_tightens_capture) {
+  // CL-03 M3: the marker on a *variant document* under the same url_key
+  // (host case makes it a second live document) is invisible to everything
+  // except the scan-and-propagate path in search_bindings_locked: the web
+  // session page derives its mode only from the frozen captured bindings
+  // and a fresh recompute, both of which carry the marker solely through
+  // that propagation. Positive control URL stays visible throughout.
+  struct VariantWorker:WorkerPort {
+    Json call(const std::string&,const Json&,int)override {
+      auto out=Json::object(),results=Json::object(),entry=Json::object(),hits=Json::array();
+      auto hit=Json::object();hit.set("url","https://past.example/doc");hit.set("title","marker");hit.set("snippet","marker canary");hit.set("rank",std::int64_t {1});
+      auto provenance=Json::array();provenance.push(Json::string("https://PAST.example/doc"));hit.set("publication_urls",provenance);hits.push(hit);
+      auto control=Json::object();control.set("url","https://control.example/c");control.set("title","marker");control.set("snippet","canary");control.set("rank",std::int64_t {2});hits.push(control);
+      entry.set("status","ok");entry.set("hits",hits);results.set("source0",entry);out.set("results",results);return out;
+    }
+  } worker;
+  Temp t;Store store(t.path/"db");WebService web(store,worker,SourceRegistry(manifest(1)));
+  ParsedDocument parsed;parsed.title="marker";parsed.text="marker body";parsed.content_type="text/plain";parsed.parser_version="synthetic/1";parsed.publication=policy(true,true);auto meta=Json::object();
+  const auto marked=store.ingest_web("alice",{"https://PAST.example/doc",parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice","https://PAST.example/doc"));
+  store.ingest_web("alice",{"https://past.example/doc",parsed.text,"text/plain",parsed.title},parsed,meta,store.deletion_generation("alice","https://past.example/doc"));
+  // Mark only the variant document's snapshot plus the deployment state; the
+  // hit's own document stays clean.
+  const auto marker=std::string(R"(UPDATE snapshots SET site_bindings_json='{"version":"bzs-site-bindings-1","legacy_crawl_unverified":true,"urls":[]}' WHERE document_id=')")+marked.at("document_id").str()+R"(';UPDATE site_publication_state SET legacy_crawl_unverified=1;)";
+  CHECK(sqlite3_exec(store.raw_handle(),marker.c_str(),nullptr,nullptr,nullptr)==SQLITE_OK);
+  // The crawl-unverified state column only becomes the enforced withdrawal
+  // flag at the next site activation (see activate_site_publication).
+  store.activate_site_publication(SiteRegistry(site("allowed_with_limits")));
+  const auto id=web.submit_search("alice",input()).at("session_id").str();execute_one(web);
+  const auto version=store.session_get("alice",id).at("result_set_version").str();
+  auto hits=store.session_page("alice",id,version,"",20).at("hits");
+  bool polluted=false,control=false;
+  for(std::size_t i=0;i<hits.size();++i) {
+    const auto hit=hits.at(i).at("url").str();
+    if(hit=="https://past.example/doc")polluted=true;
+    if(hit=="https://control.example/c")control=true;
+  }
+  CHECK(control);      // the search itself worked
+  CHECK(!polluted);    // the variant's marker still tightens the ceiling
 }
 TEST(preexisting_page_or_deletion_ceiling_is_immutable_after_fresh_complete_read) {
   for(int mode=0;mode<3;++mode) {

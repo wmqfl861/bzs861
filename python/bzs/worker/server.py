@@ -11,6 +11,7 @@ import argparse
 import asyncio
 import hmac
 import json
+import logging
 import re
 import sys
 import time
@@ -23,7 +24,7 @@ from .. import __version__
 from .extract import EXTRACTOR, extract_html, extract_text, looks_like_challenge
 from .freshness import VERSION as FRESHNESS_VERSION, response_freshness
 from .fetch import (DEFAULT_UA, DirectReadControl, FetchAdmissionDenied, FetchBudget,
-                    FetchStopped, Fetcher, decode_body, host_of)
+                    FetchStopped, Fetcher, decode_body, gunzip_archive, host_of)
 from .netguard import NetPolicy, PolicyError
 from .publication import (PUBLICATION_VERSION, apply_redistribution, empty_extraction_observation,
                           extraction_restriction_observation, incomplete_publication,
@@ -81,7 +82,8 @@ class Worker:
                 "adapters": sorted(self.sources.adapters) if self.sources else [],
                 "robots_policy": POLICY_VERSION, "publication_policy": PUBLICATION_VERSION,
                 "http_revalidation": REVALIDATION_VERSION, "http_freshness": FRESHNESS_VERSION,
-                "sites_manifest_sha256": self.sites.digest}
+                "sites_manifest_sha256": self.sites.digest,
+                "host_admission": self.fetcher.admission_stats()}
 
     async def fetch_profile(self, params: dict) -> dict:
         if not isinstance(params, dict) or params:
@@ -106,7 +108,19 @@ class Worker:
         timeout_s = timeout_ms / 1000.0
         if not query or not ids:
             raise ValueError("query and sources are required")
-        return {"results": await self.sources.run_many(ids, query, limit, params.get("language"), timeout_s)}
+        conditions = params.get("conditions")
+        if conditions is not None:
+            # Structured query-grammar conditions the core classifies per source.
+            # Anything malformed is rejected, never silently dropped.
+            if not isinstance(conditions, list) or len(conditions) > 16:
+                raise ValueError("invalid search.multi conditions")
+            for condition in conditions:
+                if (not isinstance(condition, dict) or set(condition) != {"kind", "value"}
+                        or condition["kind"] not in ("site", "filetype", "intitle", "inbody")
+                        or not isinstance(condition["value"], str) or not 1 <= len(condition["value"]) <= 256):
+                    raise ValueError("invalid search.multi conditions entry")
+        return {"results": await self.sources.run_many(ids, query, limit, params.get("language"),
+                                                       timeout_s, conditions)}
 
     async def fetch_extract(self, params: dict, *, _direct_control: DirectReadControl | None = None) -> dict:
         if not isinstance(params, dict):
@@ -600,8 +614,20 @@ class Worker:
                 if page["status"] == "ok" and response.http_status == 200:
                     out.update(self._cache_metadata(response))
                 return out
-            parsed = await asyncio.wait_for(asyncio.to_thread(discover, response.body, out["final_url"],
-                                                              content_type=response.headers.get("content-type", response.content_type), kind=params["kind"],
+            body = response.body
+            content_type = response.headers.get("content-type", response.content_type)
+            if params["kind"] in ("auto", "sitemap") and body[:2] == b"\x1f\x8b":
+                # A .xml.gz sitemap arrives as a gzip archive entity (transport
+                # Content-Encoding is already removed by the HTTP client).
+                try:
+                    body = await asyncio.wait_for(asyncio.to_thread(
+                        gunzip_archive, body, params["max_content_bytes"]), remaining())
+                except ValueError as exc:
+                    out["error_code"] = "E_CONTENT_TOO_LARGE" if "too large" in str(exc) else "E_DISCOVERY_PARSE"
+                    return out
+                content_type = "application/xml"
+            parsed = await asyncio.wait_for(asyncio.to_thread(discover, body, out["final_url"],
+                                                              content_type=content_type, kind=params["kind"],
                                                               depth=params.get("depth", 0), max_entries=params.get("max_entries", 1000),
                                                               max_input_bytes=params["max_content_bytes"]), remaining())
             remaining()
@@ -884,6 +910,25 @@ class Worker:
         return None
 
 
+from .rpc import InvalidEnvelope, MAX_BODY, decode_envelope
+from .diagnostics import log_failure
+
+_log = logging.getLogger("bzs.worker")
+
+
+def configure_stderr_logging() -> None:
+    """Terse diagnostics on stderr; stdout stays reserved for the ready line.
+
+    The launcher pipes worker stderr to logs/worker.log, so internal failures
+    become diagnosable without echoing anything into RPC responses. No token,
+    header or request body is logged; only method/category and value-free locations.
+    """
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+    _log.addHandler(handler)
+    _log.setLevel(logging.INFO)
+
+
 def make_app(worker: Worker, token: str) -> web.Application:
     methods = {"health": worker.health, "search.multi": worker.search_multi, "fetch.extract": worker.fetch_extract,
                "fetch.cancel": worker.fetch_cancel, "map.fetch": worker.map_fetch, "fetch.profile": worker.fetch_profile,
@@ -895,21 +940,31 @@ def make_app(worker: Worker, token: str) -> web.Application:
             return web.json_response({"error": {"code": "E_AUTH", "message": "invalid worker token"}}, status=401)
         if request.headers.get("Origin"):
             return web.json_response({"error": {"code": "E_ORIGIN", "message": "browser origins are refused"}}, status=403)
+        method_name: str | None = None
         try:
-            payload = await request.json()
-            method = methods[payload["method"]]
-            result = await method(payload.get("params") or {})
-            return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False))
-        except KeyError:
-            return web.json_response({"error": {"code": "E_METHOD", "message": "unknown method"}})
+            method_name, params = decode_envelope(await request.read())
+            method = methods.get(method_name)
+            if method is None:
+                return web.json_response({"error": {"code": "E_METHOD", "message": "unknown method"}})
+            result = await method(params)
+            try:
+                return web.json_response({"result": result}, dumps=lambda o: json.dumps(o, ensure_ascii=False, allow_nan=False))
+            except (ValueError, TypeError, UnicodeError) as exc:
+                log_failure(_log, method_name, exc, result=True)
+                return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker result is not valid JSON"}})
+        except web.HTTPRequestEntityTooLarge:
+            return web.json_response({"error": {"code": "E_REQUEST_TOO_LARGE", "message": "worker request exceeds body limit"}}, status=413)
+        except InvalidEnvelope as exc:
+            return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)}}, status=400)
         except ManifestMismatch as exc:
             return web.json_response({"error": {"code": "E_MANIFEST_MISMATCH", "message": str(exc)}}, status=400)
         except (ValueError, TypeError) as exc:
             return web.json_response({"error": {"code": "E_PARAMS", "message": str(exc)[:300]}})
-        except Exception as exc:  # report, never crash the worker
-            return web.json_response({"error": {"code": "E_INTERNAL", "message": f"{type(exc).__name__}: {exc}"[:300]}})
+        except Exception as exc:  # report without serializing exception values
+            log_failure(_log, method_name, exc)
+            return web.json_response({"error": {"code": "E_INTERNAL", "message": "worker operation failed"}})
 
-    app = web.Application(client_max_size=1024 * 1024)
+    app = web.Application(client_max_size=MAX_BODY)
     app.router.add_post("/rpc", rpc)
 
     async def on_start(_app):
@@ -955,6 +1010,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"E_CONFIG: {exc}", file=sys.stderr)
         return 2
     app = make_app(worker, token)
+    configure_stderr_logging()
+    _log.info("worker starting on 127.0.0.1:%d (sources manifest %s)", args.port, args.sources)
 
     async def run() -> None:
         runner = web.AppRunner(app, access_log=None)

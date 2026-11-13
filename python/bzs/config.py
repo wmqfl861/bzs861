@@ -23,6 +23,7 @@ class Config:
     core_port: int = 8610
     worker_port: int = 8611
     threads: int = 8
+    startup_timeout_s: float = 30.0
     searchd: str = ""
     sources: str = ""
     sites: str = ""

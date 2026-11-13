@@ -226,7 +226,7 @@ namespace bzs {
     require(options_.max_snapshots_per_owner>=1&&options_.max_bytes_per_owner>=1&&options_.max_revisions_per_document>=1&&options_.max_substring_bytes_per_owner>=1,
             "E_SCHEMA","Invalid store quotas");
     if(path!=":memory:"&&!path.parent_path().empty())std::filesystem::create_directories(path.parent_path());
-    auto filename=path.string();
+    const auto filename=path==":memory:"?path.string():utf8_path(path);
     auto rc=sqlite3_open_v2(filename.c_str(), &db_, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_FULLMUTEX, nullptr);
     if(rc!=SQLITE_OK) {
       if(db_)sqlite3_close(db_);
@@ -240,6 +240,10 @@ namespace bzs {
       sqlite3_limit(db_, SQLITE_LIMIT_SQL_LENGTH, 65536);
       sqlite3_limit(db_, SQLITE_LIMIT_EXPR_DEPTH, 64);
       register_fts_tokenizer(db_);
+      // Only an empty new database can select this mode without a full rewrite.
+      // Existing NONE/FULL databases remain untouched; never VACUUM at startup.
+      if(scalar(db_,"PRAGMA user_version")==0&&scalar(db_,"SELECT COUNT(*) FROM sqlite_master")==0)
+        exec(db_,"PRAGMA auto_vacuum=INCREMENTAL;");
       exec(db_, "PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;");
       migrate();
       checked(sqlite3_create_function_v2(db_,"bzs_site_publication",6,SQLITE_UTF8,this,&Store::site_publication_sql,nullptr,nullptr,nullptr),db_);
@@ -448,6 +452,7 @@ namespace bzs {
       Stmt docs(db_,"SELECT id,url FROM documents WHERE url_key=''");
       std::vector<std::pair<std::string,std::string>> keys;
       while(docs.step()) {
+        // Intentional fallback: an unnormalisable URL keeps its raw form as key.
         auto url=docs.text(1);try { url=map_url(url); } catch(const Error&) {}
         keys.emplace_back(docs.text(0),std::move(url));
       }
@@ -456,6 +461,7 @@ namespace bzs {
       keys.clear();
       while(representations.step()) {
         auto key=representations.text(1);
+        // Intentional fallback: malformed meta/URL keeps the raw key material.
         if(representations.text(3)=="web")try { const auto meta=Json::parse(representations.text(2),8*1024*1024);if(meta.has("final_url")) { key=meta.at("final_url").str();try { key=map_url(key); } catch(const Error&) {} } } catch(const Error&) {}
         keys.emplace_back(representations.text(0),std::move(key));
       }
@@ -819,7 +825,7 @@ namespace bzs {
           Stmt accounting(db_,"SELECT s.http_cache_bytes,u.bytes FROM snapshots s JOIN usage u ON u.owner=? WHERE s.id=?");
           accounting.bind(1,owner);accounting.bind(2,latest);require(accounting.step(),"E_STORAGE","Missing snapshot accounting",500);
           const auto delta=http_bytes-accounting.num(0);
-          require(delta<=0||accounting.num(1)<=options_.max_bytes_per_owner-delta,"E_QUOTA","Owner snapshot quota exceeded",507);
+          require(payload_quota_fits_locked(owner,delta),"E_QUOTA","Owner snapshot and archive quota exceeded",507);
           Stmt touch(db_, "UPDATE snapshots SET meta_json=?,http_cache_bytes=? WHERE id=?");
           touch.bind(1, meta_json);
           touch.bind(2, http_bytes);touch.bind(3,latest);
@@ -843,12 +849,11 @@ namespace bzs {
     {
       Stmt used(db_, "SELECT bytes,snapshots FROM usage WHERE owner=?");
       used.bind(1, owner);
-      std::int64_t b=0, n=0;
+      std::int64_t n=0;
       if(used.step()) {
-        b=used.num(0);
         n=used.num(1);
       }
-      require(b+bytes<=options_.max_bytes_per_owner&&n+1<=options_.max_snapshots_per_owner, "E_QUOTA", "Owner snapshot quota exceeded", 507);
+      require(payload_quota_fits_locked(owner,bytes)&&n+1<=options_.max_snapshots_per_owner, "E_QUOTA", "Owner snapshot and archive quota exceeded", 507);
     }
     const bool new_document=did.empty();
     if(new_document) {
@@ -993,6 +998,65 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     Tx tx(db_);
     auto out=ingest_web_locked(owner,input,std::move(parsed),meta,expected_deletion_generation);
+    tx.commit();
+    return out;
+  }
+  Json Store::project_transient_web_locked(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
+    // Same fence, history and observation discipline as an ingest, without the
+    // snapshot: a persisted success would publish this artifact's policy, so a
+    // transient one retains a restrictive policy as an observation instead.
+    require_principal_active_locked(owner);
+    refresh_site_publication_locked(false);
+    auto m=Json::parse(meta.dump());
+    prepare_web_publication_locked(owner,url,parsed,m);
+    if(parsed.publication.has("version")&&restrictive_publication(parsed.publication))
+      observe_policy_locked(owner,url,m.has("final_url")?m.at("final_url").str():url,parsed.publication);
+    const auto generation=m.has("site_publication_generation")?m.at("site_publication_generation").num():site_publication_bound_generation_;
+    require(generation>=0&&generation<=site_publication_cached_generation_,"E_SITE_POLICY_STALE","Read publication generation is not active in this store",409);
+    const auto mode=site_publication_mode_locked("web",site_bindings_locked(url,m).canonical(),generation,url,m.dump());
+    auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");
+    deployment.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");
+    deployment.set("generation",site_publication_cached_generation_);deployment.set("artifact_generation",generation);
+    Json out=Json::object();
+    out.set("indexed",parsed.publication.at("index_allowed").flag()&&mode<2);
+    out.set("site_publication",deployment);out.set("publication",parsed.publication);
+    return out;
+  }
+  Json Store::project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta) {
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    auto out=project_transient_web_locked(owner,url,std::move(parsed),meta);
+    tx.commit();
+    return out;
+  }
+  Json Store::transient_delivery_projection(const std::string& owner, const std::string& url, const std::string& final_url,
+                                            const Json& redirects, const Json& fence, const Json& publication,
+                                            const Json& site_publication) {
+    // Delivery-time recheck mirroring the stored-result window guard: the body
+    // itself is shared, permission to publish it to this member is not.
+    std::lock_guard lock(mutex_);
+    Tx tx(db_);
+    require_principal_active_locked(owner);
+    require(epoch_locked(owner)==fence.at("epoch").num(),"E_POLICY_CHANGED","Permissions changed during this read",409);
+    require(deletion_generation_locked(owner,url)==fence.at("generation").num(),
+            "E_TARGET_DELETED","Document was deleted after this read started",409);
+    const auto sequence=fence.at("sequence").num();
+    (void)alias_fences_locked(owner,url,final_url,sequence);
+    for(std::size_t i=0;i<redirects.size();++i)
+      (void)alias_fences_locked(owner,url,redirects.at(i).str(),sequence);
+    refresh_site_publication_locked(false);
+    auto policy=current_publication_ceiling_locked(owner,url,publication);
+    policy=current_publication_ceiling_locked(owner,final_url,policy);
+    for(std::size_t i=0;i<redirects.size();++i)policy=current_publication_ceiling_locked(owner,redirects.at(i).str(),policy);
+    auto bindings_meta=Json::object();bindings_meta.set("final_url",final_url);bindings_meta.set("redirects",redirects);
+    const auto generation=site_publication.at("artifact_generation").num();
+    const auto mode=site_publication_mode_locked("web",site_bindings_locked(url,bindings_meta).canonical(),generation,url,bindings_meta.dump());
+    auto current=Json::object();current.set("version","bzs-site-publication-1");
+    current.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");
+    current.set("generation",site_publication_cached_generation_);current.set("artifact_generation",generation);
+    Json out=Json::object();
+    out.set("indexed",publication.at("index_allowed").flag()&&policy.at("index_allowed").flag()&&mode<2);
+    out.set("site_publication",current);
     tx.commit();
     return out;
   }
@@ -1219,32 +1283,44 @@ namespace bzs {
   }
   Json Store::search_impl(const std::string& owner,const Query& q,std::int64_t max_candidates,std::int64_t limit,bool freeze) {
     require(max_candidates>=1&&max_candidates<=2000&&limit>=1&&limit<=500, "E_SCHEMA", "Search budget out of range");
+
+    // CL-02: q.hosts is pushed into every candidate SQL (exact match or
+    // dotted suffix, AND across conditions, mirroring matches()), so
+    // foreign-host rows never consume the candidate window and the
+    // one-extra-row partial check below stays truthful. matches() in the
+    // final loop remains the authoritative filter.
+    std::string host_filter;
+    for(std::size_t i=0;i<q.hosts.size();++i)
+      host_filter+=" AND (d.host=? OR (length(d.host)>length(?) AND substr(d.host,-length(?)-1)='.'||?))";
     auto fts=fts_candidates(q);
     const auto substrings=substring_candidates(q);
     const auto priority=priority_fts_candidates(q);
     std::string sql,word_sql;
     if(fts||priority) {
       // Candidates in BM25 order (title weighted 4x); exact semantics verified below (B4/B5).
-      sql=R"SQL(SELECT d.id,s.id,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+      sql=R"SQL(SELECT d.id,s.id,d.url,d.host,bm25(content_fts,0.0,0.0,4.0,1.0) AS r,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM content_fts JOIN documents d ON d.id=content_fts.document_id JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE content_fts MATCH ? AND content_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY r LIMIT ?)SQL";
       if(substrings)sql.insert(sql.find(" ORDER BY r LIMIT ?"),
         " AND d.rowid IN (SELECT rowid FROM substring_fts WHERE substring_fts MATCH ? AND owner=?)\n");
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
       word_sql=sql;
     }
     if(!fts&&substrings) {
-      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+      sql=R"SQL(SELECT d.id,s.id,d.url,d.host,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM substring_fts JOIN documents d ON d.rowid=substring_fts.rowid JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key
  WHERE substring_fts MATCH ? AND substring_fts.owner=? AND d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
     } else if(!fts) {
-      sql=R"SQL(SELECT d.id,s.id,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
+      sql=R"SQL(SELECT d.id,s.id,d.url,d.host,0.0,MAX(COALESCE(p.restriction_generation,0),COALESCE(rp.restriction_generation,0)),d.representation_key,d.delete_generation
  FROM documents d JOIN snapshots s ON s.id=d.current_snapshot LEFT JOIN document_publication p ON p.owner=d.owner AND p.url_key=d.url_key LEFT JOIN document_publication rp ON rp.owner=d.owner AND rp.url_key=d.representation_key WHERE d.owner=? AND d.deleted=0 AND s.index_allowed=1 AND COALESCE(p.index_allowed,1)=1 AND COALESCE(rp.index_allowed,1)=1
  AND bzs_site_publication(s.source_kind,s.site_bindings_json,s.site_publication_generation,d.url,s.meta_json,'')<2
  ORDER BY s.created_at DESC,d.id LIMIT ?)SQL";
+      if(!host_filter.empty())sql.insert(sql.find(" ORDER BY"),host_filter);
     }
     struct Hit {
       std::string doc,snap;
@@ -1282,6 +1358,7 @@ namespace bzs {
         if(words||substrings) { rows.bind(bind++,words?*words:*substrings);rows.bind(bind++,owner); }
         rows.bind(bind++,owner);
         if(words&&substrings) { rows.bind(bind++,*substrings);rows.bind(bind++,owner); }
+        for(const auto& h:q.hosts) { rows.bind(bind++,h);rows.bind(bind++,h);rows.bind(bind++,h);rows.bind(bind++,h); }
         // Even with zero remaining slots, inspect one additional unique row
         // so partial is truthful. At most max_candidates duplicates can exist.
         rows.bind(bind,max_candidates+1);
@@ -1289,8 +1366,8 @@ namespace bzs {
           const auto id=rows.text(0);
           if(!seen.insert(id).second)continue;
           if(candidates.size()==static_cast<std::size_t>(max_candidates)) { partial=true;break; }
-          candidates.push_back({id,rows.text(1),words?static_cast<std::int64_t>(-rows.real(2)*1000.0):0,
-                                rows.num(3),rows.text(4),rows.num(5),false});
+          candidates.push_back({id,rows.text(1),words?static_cast<std::int64_t>(-rows.real(4)*1000.0):0,
+                                rows.num(5),rows.text(6),rows.num(7),false});
         }
       };
       if(priority)gather(word_sql,priority);
@@ -1583,9 +1660,15 @@ namespace bzs {
     out.set("quota_substring_bytes",options_.max_substring_bytes_per_owner);
     require(bytes>=0&&index_bytes>=0&&bytes<=std::numeric_limits<std::int64_t>::max()-index_bytes,
             "E_STORAGE","Invalid storage byte accounting",500);
-    out.set("accounted_storage_bytes",bytes+index_bytes);
+    const auto archive_bytes=archive_bytes_locked(owner);
+    require(archive_bytes<=std::numeric_limits<std::int64_t>::max()-bytes-index_bytes,"E_STORAGE","Invalid archive accounting",500);
+    out.set("archive_bytes",archive_bytes);
+    out.set("quota_payload_bytes",options_.max_bytes_per_owner);
+    out.set("payload_bytes",bytes+archive_bytes);
+    out.set("payload_over_quota",bytes>options_.max_bytes_per_owner||archive_bytes>options_.max_bytes_per_owner-bytes);
+    out.set("accounted_storage_bytes",bytes+index_bytes+archive_bytes);
     out.set("substring_index_over_quota",index_bytes>options_.max_substring_bytes_per_owner);
-    out.set("storage_accounting_scope","snapshot_payloads_and_serialized_substring_tokens_not_physical_sqlite_size");
+    out.set("storage_accounting_scope","snapshot_payloads_archive_summaries_and_serialized_substring_tokens_not_physical_sqlite_size");
     out.set("sqlite_version", sqlite3_libversion());
     return out;
   }
@@ -1713,10 +1796,11 @@ namespace bzs {
     settle_map_jobs_locked();
     tx.commit();
   }
-  std::optional<Lease> Store::lease_next(std::int64_t lease_ms) {
+  std::optional<Lease> Store::lease_next(std::int64_t lease_ms,std::stop_token stopping) {
     require(lease_ms>=1&&lease_ms<=60000, "E_SCHEMA", "Invalid lease duration");
     std::lock_guard lock(mutex_);
     Tx tx(db_);
+    if(stopping.stop_requested())return std::nullopt;
     auto now=clock_();
     settle_interruptions_locked();
     // auth_epoch only moves on real permission changes; document deletes use per-document tombstones.
@@ -1731,6 +1815,7 @@ namespace bzs {
       tx.commit();
       return std::nullopt;
     }
+    if(stopping.stop_requested())return std::nullopt;
     Lease l {
       s.text(0), s.text(1), s.text(2), s.num(3)+1
     };
@@ -1894,18 +1979,21 @@ namespace bzs {
     std::lock_guard lock(mutex_);
     require(!std::filesystem::exists(dst), "E_BACKUP_EXISTS", "Backup destination already exists", 409);
     if(!dst.parent_path().empty())std::filesystem::create_directories(dst.parent_path());
-    const auto stage=dst.parent_path()/(dst.filename().string()+".partial-"+random_id());
+    // The staging name stays ASCII: deriving it from a non-ASCII destination
+    // filename would round-trip through the ANSI code page and can corrupt it.
+    const auto stage=dst.parent_path()/("bzs-backup-"+random_id()+".partial");
     struct Cleanup {
       std::filesystem::path path;
       ~Cleanup() {
         for(const auto& suffix : {"", "-wal", "-shm", "-journal"}) {
           std::error_code ignored;
-          std::filesystem::remove(path.string()+suffix, ignored);
+          std::filesystem::path victim=path; victim+=suffix;
+          std::filesystem::remove(victim, ignored);
         }
       }
     } cleanup{stage};
     sqlite3*raw=nullptr;
-    const auto open_rc=sqlite3_open_v2(stage.string().c_str(), &raw, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, nullptr);
+    const auto open_rc=sqlite3_open_v2(utf8_path(stage).c_str(), &raw, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, nullptr);
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> target(raw, sqlite3_close);
     checked(open_rc, raw);
 #ifndef _WIN32
@@ -1930,7 +2018,7 @@ namespace bzs {
       throw Error("E_BACKUP", "Cannot publish backup safely on this filesystem", 500);
     }
     Json report=Json::object();
-    report.set("backup_id", dst.stem().string());
+    report.set("backup_id", utf8_path(dst.stem()));
     report.set("pages", pages);
     report.set("restore_state", "quarantined");
     report.set("includes_credentials", false);

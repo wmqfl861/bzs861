@@ -13,13 +13,7 @@
 #include <tuple>
 namespace bzs {
   namespace {
-    bool tracking_param(std::string_view k) {
-      static const std::set<std::string, std::less<>> exact= {
-        "gclid", "dclid", "fbclid", "msclkid", "yclid", "igshid", "mc_cid", "mc_eid", "_hsenc", "_hsmi", "spm", "ved", "ei", "usg"
-      };
-      return k.starts_with("utm_")||exact.contains(k);
-    }
-    // Identity comparison for the existing ordinary HTTP client. This is not
+        // Identity comparison for the existing ordinary HTTP client. This is not
     // automatic-site admission: escaped separators remain distinct, while URI
     // requoting and dot resolution can identify its actual response URL.
     std::string read_identity(std::string_view input) {
@@ -154,36 +148,30 @@ namespace bzs {
     }
   }
   std::string publication_url_identity(std::string_view url) { return read_identity(url); }
-  std::string dedup_key(std::string_view url) {
-    std::size_t p=0;
-    if(url.starts_with("https://"))p=8;
-    else if(url.starts_with("http://"))p=7;
-    else return {};
-    auto end=url.find_first_of("/?#", p);
-    auto authority=ascii_lower(url.substr(p, end==std::string_view::npos?url.size()-p:end-p));
-    if(authority.empty()||authority.find('@')!=std::string::npos)return {};
-    if(p==7&&authority.ends_with(":80"))authority.resize(authority.size()-3);
-    else if(p==8&&authority.ends_with(":443"))authority.resize(authority.size()-4);
-    if(authority.starts_with("www."))authority.erase(0, 4);
-    std::string rest=end==std::string_view::npos?"":std::string(url.substr(end));
-    if(auto hash=rest.find('#'); hash!=std::string::npos)rest.resize(hash);
-    std::string path=rest, query;
-    if(auto q=rest.find('?'); q!=std::string::npos) {
-      path=rest.substr(0, q);
-      query=rest.substr(q+1);
+  // R-01 conservative search-dedup identity. Only safe, normative
+    // equivalences merge; resource-distinct variations stay distinct.
+    // Preserves: scheme differences, www vs bare host, trailing slash on
+    // non-root paths, fragment/SPA-route differences, query order and
+    // duplicate keys, all parameter values (no tracking-param stripping).
+    // Normalizes only: scheme/host case, default ports (:80/:443).
+    // SEARCH_DEDUP_VERSION enters the search cache key; bump on algorithm
+    // change so old cached results silently expire instead of mixing.
+    constexpr const char* SEARCH_DEDUP_VERSION="2";
+    std::string dedup_key(std::string_view url) {
+        std::size_t p=0;
+        std::string scheme;
+        if(url.starts_with("https://")) {p=8;scheme="https";}
+        else if(url.starts_with("http://")) {p=7;scheme="http";}
+        else return {};
+        auto end=url.find_first_of("/?#", p);
+        auto authority=ascii_lower(url.substr(p, end==std::string_view::npos?url.size()-p:end-p));
+        if(authority.empty()||authority.find('@')!=std::string_view::npos)return {};
+        if(scheme=="http"&&authority.ends_with(":80"))authority.resize(authority.size()-3);
+        else if(scheme=="https"&&authority.ends_with(":443"))authority.resize(authority.size()-4);
+        // Keep the rest verbatim: path, query (order + duplicates), fragment.
+        std::string rest=end==std::string_view::npos?"":std::string(url.substr(end));
+        return scheme+"://"+authority+rest;
     }
-    while(path.size()>1&&path.back()=='/')path.pop_back();
-    if(path=="/")path.clear();
-    std::vector<std::string> kept;
-    for(auto& kv:split(query, '&')) {
-      auto key=kv.substr(0, kv.find('='));
-      if(!tracking_param(ascii_lower(key)))kept.push_back(kv);
-    }
-    std::sort(kept.begin(), kept.end());
-    std::string out=authority+path;
-    for(std::size_t i=0; i<kept.size(); ++i)out+=(i?"&":"?")+kept[i];
-    return out;
-  }
   std::string normalize_iri(std::string_view url) {
     require(url.size()<=4096&&valid_utf8(url)&&url.find('\0')==std::string_view::npos, "E_URL", "Invalid URL");
     auto scheme_end=url.find("://");
@@ -295,6 +283,13 @@ namespace bzs {
               limits.at("quota_window_seconds").num()==86400,"E_SOURCE_CONFIG","S1 quota differs from its source contract",500);
       s.budget_key=limits.at("shared_budget_key").str();
       require_identifier(s.budget_key);
+      if(c.has("native_filters")&&c.at("native_filters").is_array()) {
+        // Contract validation (strings, unique) already ran above; unknown kinds
+        // stay inert declarations that no query condition ever matches.
+        auto declared=c.at("native_filters");
+        for(std::size_t n=0; n<declared.size(); ++n)
+          if(declared.at(n).is_string())s.native_filters.insert(declared.at(n).str());
+      }
       auto shape=std::make_tuple(limits.at("max_concurrency").num(),s.min_interval_ms,s.daily_cap);
       require(!budgets.contains(s.budget_key)||budgets.at(s.budget_key)==shape,"E_SOURCE_CONFIG","Shared budget limits differ",500);
       budgets[s.budget_key]=shape;
@@ -318,15 +313,13 @@ namespace bzs {
   Json fuse(const std::vector<SourceHits>& results, const SourceRegistry& registry, std::size_t limit, std::int64_t k, bool retain_publication_urls) {
     require(k>=1&&k<=1000000,"E_SCHEMA","RRF k must be in 1..1000000");
     struct Agg {
-      std::string url, title, snippet;
+      std::string url, title, snippet, key, donor_source_id;
       std::int64_t best_rank=1<<30;
-      std::size_t first_seen=0;
       std::map<std::string, std::pair<std::int64_t, std::int64_t>> family;  // family -> (best rank, weight)
       std::vector<std::pair<std::string, std::int64_t>> sources;
       std::set<std::string> publication_urls;
     };
     std::map<std::string, Agg> groups;
-    std::size_t order=0;
     for(const auto& r:results) {
       const auto* spec=registry.find(r.source_id);
       if(!spec)continue;
@@ -339,14 +332,19 @@ namespace bzs {
         auto [it, fresh]=groups.try_emplace(key);
         auto& g=it->second;
         if(retain_publication_urls)g.publication_urls.insert(h.url);
-        if(fresh)g.first_seen=order++;
-        bool better=h.rank<g.best_rank;
-        bool upgrade=g.url.starts_with("http://")&&h.url.starts_with("https://");
-        if(better||g.url.empty()||upgrade)g.url=h.url;
-        if(better||g.title.empty()) {
-          if(!h.title.empty())g.title=h.title;
+        if(fresh)g.key=key;
+        // Strict donor consistency (R-01, CL-12r): url, title and snippet are
+        // replaced as a whole, including empty fields. The full donor order
+        // (rank, url, source_id, title, snippet) also resolves exact rank/URL
+        // ties, independent of source arrival and repeated-hit order.
+        const bool better=std::tie(h.rank,h.url,r.source_id,h.title,h.snippet)<
+                          std::tie(g.best_rank,g.url,g.donor_source_id,g.title,g.snippet);
+        if(better||g.url.empty()) {
+          g.url=h.url;
+          g.title=h.title;
+          g.snippet=h.snippet;
+          g.donor_source_id=r.source_id;
         }
-        if((better&&!h.snippet.empty())||g.snippet.empty())g.snippet=h.snippet.empty()?g.snippet:h.snippet;
         g.best_rank=std::min(g.best_rank, h.rank);
         auto& f=g.family[fam];
         if(f.first==0||h.rank<f.first)f.first=h.rank;
@@ -369,7 +367,9 @@ namespace bzs {
     std::sort(ranked.begin(), ranked.end(), [](const Scored& a, const Scored& b) {
       if(a.score!=b.score)return a.score>b.score;
       if(a.g->best_rank!=b.g->best_rank)return a.g->best_rank<b.g->best_rank;
-      return a.g->first_seen<b.g->first_seen;
+      // Deterministic final tie-break on the dedup key, not arrival order:
+      // permuting the sources must not change the output (CL-12).
+      return a.g->key<b.g->key;
     });
     Json out=Json::array();
     for(std::size_t i=0; i<ranked.size()&&i<limit; ++i) {
@@ -387,7 +387,8 @@ namespace bzs {
       Json src=Json::array();
       auto sorted=g.sources;
       std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) {
-        return a.second<b.second;
+        if(a.second!=b.second)return a.second<b.second;
+        return a.first<b.first;  // rank ties resolve by source id, not arrival
       });
       for(const auto& [id, rank]:sorted) {
         Json s=Json::object();
@@ -409,6 +410,66 @@ namespace bzs {
   namespace {
     constexpr std::int64_t search_cache_ttl_ms=10*60*1000, partial_cache_ttl_ms=2*60*1000;
     constexpr std::size_t search_cache_entries=256, search_cache_bytes=16*1024*1024, search_cache_entry_bytes=512*1024;
+    // FT-011: one query-grammar directive becomes one hard condition with a
+    // per-source execution plan. Values double as the worker conditions payload.
+    struct SearchCondition {
+      std::string kind, value;         // site|filetype|intitle|inbody
+      const QueryNode* node=nullptr;   // intitle leaf, for boundary-aware title rechecks
+      bool locally_verifiable() const { return kind=="site"||kind=="filetype"||kind=="intitle"; }
+      std::string label() const { return kind+":"+value; }
+    };
+    std::vector<SearchCondition> collect_conditions(const Query& parsed) {
+      std::vector<SearchCondition> out;
+      for(const auto& host:parsed.hosts)out.push_back( {"site",host,nullptr});
+      for(const auto& type:parsed.types)out.push_back( {"filetype",type=="text/html"?"html":"txt",nullptr});
+      for(const auto* leaf:positive_leaves(parsed.root)) {
+        if(leaf->field=="title")out.push_back( {"intitle",leaf->value,leaf});
+        else if(leaf->field=="body")out.push_back( {"inbody",leaf->value,leaf});
+      }
+      return out;
+    }
+    // Engine filter operators this grammar does not model. Refusing them
+    // beats forwarding them upstream as ordinary literals (FT-011: never
+    // silently drop a condition); quoting such text keeps it a literal search.
+    bool refuse_unmodelled_operator(const QueryNode& n) {
+      if(n.field!="any"||(n.op!="term"&&n.op!="literal"))return false;
+      const auto colon=n.value.find(':');
+      if(colon==std::string::npos||colon<1||colon>16)return false;
+      const auto prefix=ascii_lower(n.value.substr(0,colon));
+      return is_refused_filter_operator_name(prefix);
+    }
+    // Field conditions must sit in a top-level positive conjunction: under NOT
+    // the required-every semantics would silently invert, under OR one branch
+    // cannot express it; unmodelled operators are refused instead of forwarded.
+    void require_condition_shape(const QueryNode& n,bool under_not,bool under_or) {
+      if(refuse_unmodelled_operator(n))
+        throw Error("E_QUERY_SYNTAX","unmodelled filter operator in query is refused for web search (modelled: site:, filetype:, intitle:, inbody:)",400);
+      if(n.op=="not") {
+        for(const auto& c:n.children)require_condition_shape(c,true,under_or);
+        return;
+      }
+      if(n.op=="and"||n.op=="or") {
+        for(const auto& c:n.children)require_condition_shape(c,under_not,under_or||n.op=="or");
+        return;
+      }
+      if(!n.field.empty()&&n.field!="any"&&(under_not||under_or))
+        throw Error("E_QUERY_SYNTAX","field conditions require a top-level positive conjunction",400);
+    }
+    // Search hits carry no fetched content_type: filetype evidence is the URL
+    // extension only. Extensionless (or otherwise unevidenced) URLs are
+    // unverified and removed, never silently kept.
+    std::string url_extension_type(std::string_view url) {
+      auto path=url.substr(0,url.find('?'));
+      if(auto hash=path.find('#');hash!=std::string_view::npos)path=path.substr(0,hash);
+      auto slash=path.rfind('/');
+      auto last=slash==std::string_view::npos?path:path.substr(slash+1);
+      auto dot=last.rfind('.');
+      if(dot==std::string_view::npos||dot+1==last.size())return "";
+      auto ext=ascii_lower(last.substr(dot+1));
+      if(ext=="html"||ext=="htm")return "text/html";
+      if(ext=="txt")return "text/plain";
+      return "";
+    }
   }
   std::optional<Json> WebService::cache_get(const std::string& key) {
     std::lock_guard lock(cache_mutex_);
@@ -540,6 +601,7 @@ namespace bzs {
     for(const auto& id:selected_ids)key_sources.push(Json::string(id));
     key_parts.set("sources",key_sources);
     key_parts.set("mode",mode.name);key_parts.set("budget",effective_budget);key_parts.set("omitted_sources",omitted);
+    key_parts.set("dedup_version",SEARCH_DEDUP_VERSION);
     const auto source_generation=store_.source_publication_capture(registry_,key_sources);
     for(const auto* source:selected)source->require_review(store_.now());
     if(retain_publication_urls)key_parts.set("internal_publication_urls",true);
@@ -549,12 +611,55 @@ namespace bzs {
       require(remaining()>0,"E_DEADLINE","Search deadline exhausted before cached response publication",408);
       return *hit;
     }
+    // FT-011 condition plan. Parse errors surface instead of the old silent
+    // passthrough: a query whose filter syntax cannot be modelled is refused,
+    // never forwarded as if its conditions were verified. `parsed` must outlive
+    // `conditions`: intitle entries keep a pointer to their AST leaf.
+    require_no_unmodelled_filter_operators(query);
+    const auto parsed=parse_query(Json::string(query));
+    require_condition_shape(parsed.root,false,false);
+    const auto conditions=collect_conditions(parsed);
+    for(const auto& condition:conditions)
+      require(condition.value.size()<=256, "E_QUERY_LIMIT", "Condition values are limited to 256 bytes", 400);
+    auto classification=[&](const SourceSpec& s,const SearchCondition& c) {
+      return s.native_filters.contains(c.kind)?"native":(c.locally_verifiable()?"emulated":"unsupported");
+    };
     Json report=Json::array();
+    std::map<std::string,std::string> final_status;
+    // Strict default: a condition that is neither declared native in the source
+    // manifest nor locally computable removes that source explicitly; a query no
+    // remaining source can execute is an explicit error, never a silent drop.
+    std::vector<const SourceSpec*> dispatchable;
+    for(const auto* s:selected) {
+      bool unsupported=false;
+      for(const auto& condition:conditions)
+        if(!s->native_filters.contains(condition.kind)&&!condition.locally_verifiable())unsupported=true;
+      if(unsupported) {
+        Json r=Json::object();
+        r.set("source_id", s->id);
+        r.set("status", "skipped");
+        r.set("reason", "condition_unsupported");
+        Json dropped=Json::array();
+        for(const auto& condition:conditions)if(std::string(classification(*s,condition))=="unsupported") {
+          Json d=Json::object();
+          d.set("kind",condition.kind);
+          d.set("value",condition.value);
+          dropped.push(d);
+        }
+        r.set("filter", dropped);
+        r.set("hits", static_cast<std::int64_t>(0));
+        final_status[s->id]="skipped";
+        report.push(r);
+      } else dispatchable.push_back(s);
+    }
+    if(!conditions.empty()&&dispatchable.empty())
+      throw Error("E_CAPABILITY_UNAVAILABLE",
+                  "No selected source supports query condition: "+conditions.front().label(),422);
     Json ids=Json::array();
     std::vector<const SourceSpec*> admitted;
     std::vector<std::pair<const SourceSpec*, std::string>> decisions;
     std::int64_t wait=0;
-    for(const auto* s:selected) {
+    for(const auto* s:dispatchable) {
       auto reason=store_.source_admit(s->budget_key, s->min_interval_ms, s->daily_cap);
       if(reason=="min_interval"&&s->min_interval_ms<=3000)wait=std::max(wait, s->min_interval_ms);
       decisions.emplace_back(s, reason);
@@ -577,10 +682,14 @@ namespace bzs {
       r.set("status", "skipped");
       r.set("reason", reason);
       r.set("hits", static_cast<std::int64_t>(0));
+      final_status[s->id]="skipped";
       report.push(r);
     }
     std::vector<SourceHits> collected;
     bool partial=report.size()>0;
+    // Worker-reported native executions feed the per-source condition report.
+    // A source absent from native_reported did not execute.
+    std::map<std::string,std::set<std::pair<std::string,std::string>>> native_reported;
     if(!admitted.empty()) {
       Json params=Json::object();
       params.set("query", query);
@@ -590,6 +699,16 @@ namespace bzs {
       if(!language.empty())params.set("language", language);
       params.set("sources", ids);
       params.set("manifest_sha256",registry_.manifest_digest());
+      if(!conditions.empty()) {
+        Json payload=Json::array();
+        for(const auto& condition:conditions) {
+          Json c=Json::object();
+          c.set("kind",condition.kind);
+          c.set("value",condition.value);
+          payload.push(c);
+        }
+        params.set("conditions",payload);
+      }
       const auto rpc_timeout=std::min<std::int64_t>(left,timeout+4000);
       auto resp=[&] {
         try { return worker_.call("search.multi",params,static_cast<int>(rpc_timeout)); }
@@ -613,11 +732,24 @@ namespace bzs {
           r.set("error", "worker returned no result");
           r.set("hits", static_cast<std::int64_t>(0));
           store_.source_report(s->budget_key, "error", "missing", 0);
+          final_status[s->id]="error";
           partial=true;
           report.push(r);
           continue;
         }
         auto x=results.at(s->id);
+        // RPC anti-silence: a condition this source did not explicitly report as
+        // natively executed is treated as not executed (mirrors the missing-result
+        // discipline above); old workers cannot silently swallow conditions.
+        if(x.has("conditions")&&x.at("conditions").is_array()) {
+          auto reported=x.at("conditions");
+          for(std::size_t i=0; i<reported.size(); ++i) {
+            auto entry=reported.at(i);
+            auto kind=opt_string(entry,"kind"),value=opt_string(entry,"value");
+            if(!kind.empty()&&!value.empty()&&opt_string(entry,"execution")=="native")
+              native_reported[s->id].insert({kind,value});
+          }
+        }
         auto status=opt_string(x, "status");
         auto error=opt_string(x, "error");
         if(status.empty())status="error";
@@ -663,6 +795,7 @@ namespace bzs {
         store_.source_report(s->budget_key, status.empty()?"error":status, error, cooldown);
         if(status!="ok"&&status!="empty")partial=true;
         r.set("status", status.empty()?"error":status);
+        final_status[s->id]=status.empty()?"error":status;
         r.set("hits", static_cast<std::int64_t>(sh.hits.size()));
         r.set("elapsed_ms", opt_int(x, "elapsed_ms", 0));
         if(x.has("http_status")&&x.at("http_status").is_integer())r.set("http_status", x.at("http_status").num());
@@ -671,38 +804,109 @@ namespace bzs {
         collected.push_back(std::move(sh));
       }
     }
-    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
     Json filters=Json::object();
-    try {
-      // Verify site: constraints on result hosts instead of trusting upstream (QRY-04 lite).
-      auto parsed=parse_query(Json::string(query));
-      if(!parsed.hosts.empty()) {
-        Json kept=Json::array();
-        std::int64_t removed=0;
-        for(std::size_t i=0; i<merged.size(); ++i) {
-          auto r=merged.at(i);
+    // Local post-hoc verification runs per source BEFORE fusion and the global
+    // limit, so every hit a source returned is inspected: a source cut by the
+    // merged limit, or one that contributed no hit, makes no verification
+    // claim (B-04: satisfied requires evidence actually checked). Native is
+    // an execution location, never a satisfaction.
+    std::vector<std::int64_t> condition_removed(conditions.size(),0);
+    std::map<std::pair<std::string,std::string>,std::int64_t> source_condition_removed;
+    std::map<std::string,std::int64_t> source_inspected;
+    std::int64_t removed_total=0;
+    if(!conditions.empty()) {
+      for(auto& sh:collected) {
+        source_inspected[sh.source_id]=static_cast<std::int64_t>(sh.hits.size());
+        std::vector<SourceHit> kept;
+        for(auto& hit:sh.hits) {
           std::string host;
-          try {
-            host=metadata_host(r.at("url").str());
-          }catch(const Error&) {
+          try { host=metadata_host(hit.url); }catch(const Error&) {}
+          std::vector<std::size_t> violated;
+          for(std::size_t c=0; c<conditions.size(); ++c) {
+            const auto& condition=conditions[c];
+            if(condition.kind=="site") {
+              // R-02: each site condition is an independent conjunct (AND).
+              // The old any-of group let a hit matching any one site pass
+              // all site conditions, reporting satisfied for domains the
+              // hit did not match. Now each condition is verified against
+              // this hit's host individually.
+              bool ok=(host==condition.value||
+                       (host.size()>condition.value.size()&&host.ends_with("."+condition.value)));
+              if(!ok)violated.push_back(c);
+            } else if(condition.kind=="filetype") {
+              if(url_extension_type(hit.url)!=(condition.value=="html"?"text/html":"text/plain"))violated.push_back(c);
+            } else if(condition.kind=="intitle") {
+              if(condition.node&&leaf_matches(ascii_lower(hit.title),*condition.node,1).empty())violated.push_back(c);
+            } else {
+              // inbody: hits expose no body text; only this source's own
+              // worker-reported native execution can verify its hits.
+              const bool verified=native_reported.count(sh.source_id)&&
+                native_reported.at(sh.source_id).count({condition.kind,condition.value});
+              if(!verified)violated.push_back(c);
+            }
           }
-          bool ok=std::any_of(parsed.hosts.begin(), parsed.hosts.end(), [&](const std::string& h) {
-            return host==h||(host.size()>h.size()&&host.ends_with("."+h));
-          });
-          if(ok) {
-            r.set("rank", static_cast<std::int64_t>(kept.size()+1));
-            kept.push(r);
-          } else ++removed;
+          if(violated.empty()) { kept.push_back(std::move(hit)); continue; }
+          ++removed_total;
+          for(auto c:violated)++condition_removed[c];
+          for(auto c:violated)++source_condition_removed[{sh.source_id,conditions[c].label()}];
         }
-        merged=kept;
-        Json sites=Json::array();
-        for(const auto& h:parsed.hosts)sites.push(Json::string(h));
-        filters.set("site", sites);
-        filters.set("removed_unverified", removed);
+        sh.hits=std::move(kept);
       }
-    }catch(const Error&) {
-      // Engine syntax our parser does not model; results are passed through unverified.
     }
+    auto merged=fuse(collected, registry_, static_cast<std::size_t>(limit),60,retain_publication_urls);
+     Json sites=Json::array();
+      bool has_site=false;
+      for(const auto& condition:conditions)if(condition.kind=="site") {
+        sites.push(Json::string(condition.value));
+        has_site=true;
+      }
+      if(has_site)filters.set("site", sites);
+      filters.set("removed_unverified", removed_total);
+      // B-04: per-condition execution status. native != satisfied: an entry only
+      // claims satisfied when local verification actually ran and found nothing.
+      Json entries=Json::array();
+      for(std::size_t c=0; c<conditions.size(); ++c) {
+        const auto& condition=conditions[c];
+        Json entry=Json::object();
+        entry.set("kind",condition.kind);
+        entry.set("value",condition.value);
+        entry.set("removed",condition_removed[c]);
+        Json per_source_report=Json::array();
+        for(const auto* s:selected) {
+          Json p=Json::object();
+          p.set("source_id",s->id);
+          auto cls=classification(*s,condition);
+          p.set("classification",cls);
+          const auto& sent=condition.value;
+          p.set("native_execution",
+                native_reported.count(s->id)&&native_reported.at(s->id).count({condition.kind,sent})?
+                "executed":"not_executed");
+          const auto status=final_status.count(s->id)?final_status.at(s->id):"skipped";
+          // Sources that returned no answer make no verification claim at all;
+          // an answering source that contributed no hit was never checked.
+          if(status!="ok"&&status!="empty") {
+            per_source_report.push(p);
+            continue;
+          }
+          const auto inspected=source_inspected.count(s->id)?source_inspected.at(s->id):0;
+          if(inspected==0) {
+            p.set("local_verification","not_checked");
+            per_source_report.push(p);
+            continue;
+          }
+          p.set("local_verification",condition.locally_verifiable()?"verified":"unverifiable");
+          if(condition.locally_verifiable()) {
+            auto key=std::make_pair(s->id,condition.label());
+            auto removed=source_condition_removed.count(key)?source_condition_removed.at(key):0;
+            p.set("removed",removed);
+            p.set("satisfied",removed==0);
+          }
+          per_source_report.push(p);
+        }
+        entry.set("per_source",per_source_report);
+        entries.push(entry);
+      }
+      filters.set("conditions",entries);
     Json usage=Json::object();
     usage.set("external_requests", static_cast<std::int64_t>(admitted.size()));
     usage.set("model_calls", static_cast<std::int64_t>(0));
@@ -756,6 +960,42 @@ namespace bzs {
     })if(meta.has(k))fetch.set(k, meta.at(k));
     out.set("fetch", fetch);
     out.set("content_trust", "untrusted_web_content");
+    return out;
+  }
+  Json WebService::transient_window(const std::string& owner,const Json& fields,const Json& fence,std::int64_t start,std::int64_t max_bytes) {
+    // In-memory windowing for a no-store body: identical start_byte/max_bytes
+    // and content_trust semantics, no snapshot identity and no reuse metadata.
+    const auto text=fields.at("text").str();
+    const auto total=static_cast<std::int64_t>(text.size());
+    require(start<=total, "E_EVIDENCE_RANGE", "start_byte beyond end of text");
+    require(utf8_boundary(text, static_cast<std::size_t>(start)), "E_EVIDENCE_RANGE", "start_byte splits a UTF-8 character");
+    auto end=std::min(total, start+max_bytes);
+    while(end>start&&!utf8_boundary(text, static_cast<std::size_t>(end)))--end;
+    require(start==total||end>start,"E_EVIDENCE_RANGE","max_bytes cannot hold the next UTF-8 character");
+    const auto& url=fields.at("url").str();
+    auto projection=store_.transient_delivery_projection(owner,url,fields.at("final_url").str(),fields.at("redirects"),
+                                                         fence,fields.at("publication"),fields.at("site_publication"));
+    auto content=Json::object();
+    content.set("text", text.substr(static_cast<std::size_t>(start), static_cast<std::size_t>(end-start)));
+    content.set("start_byte", start);
+    content.set("end_byte", end);
+    content.set("total_bytes", total);
+    content.set("truncated", end<total);
+    content.set("next_start_byte", end<total?Json::integer(end):Json());
+    Json out=Json::object();
+    out.set("url", fields.at("url"));
+    out.set("final_url", fields.at("final_url"));
+    out.set("title", fields.at("title"));
+    out.set("fetched_at_ms", fields.at("fetched_at_ms").num());
+    out.set("from_cache", false);
+    out.set("indexed", projection.at("indexed"));
+    out.set("site_publication", projection.at("site_publication"));
+    out.set("content", content);
+    out.set("links_count", fields.at("links_count").num());
+    out.set("metadata", fields.at("metadata"));
+    out.set("fetch", fields.at("fetch"));
+    out.set("content_trust", "untrusted_web_content");
+    out.set("transient", "no_store");
     return out;
   }
   void WebService::prune_direct_members_locked() {
@@ -913,7 +1153,10 @@ namespace bzs {
         require(current.size()==64&&std::all_of(current.begin(),current.end(),[](char c){return (c>='0'&&c<='9')||(c>='a'&&c<='f');}),"E_WORKER_PROTOCOL","Invalid current request profile",502);
         std::lock_guard lock(cache_mutex_);last_read_profile_=current;
       } catch(const Error& error) {
-        if(error.code!="E_WORKER_UNAVAILABLE")throw;
+        // This probe is local and side-effect free: a worker that is not
+        // answering now (refused, or connect dropped until the deadline on
+        // some Windows hosts) carries the same information as unavailable.
+        if(error.code!="E_WORKER_UNAVAILABLE"&&error.code!="E_WORKER_TIMEOUT")throw;
         std::lock_guard lock(cache_mutex_);current=last_read_profile_;
         if(current.empty())throw;
       }
@@ -1043,7 +1286,7 @@ namespace bzs {
         ReadArtifact artifact;
         try {
           observation=decode_observation(url,r);
-          artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r);
+          artifact=opt_string(r,"status")=="not_modified"?decode_not_modified(url,r,base):decode_read(url,r,false,true);
           if(receipt_error)std::rethrow_exception(receipt_error);
           // Single-member reads retain legacy-worker behavior. Once shared,
           // every returned representation must prove the admitted profile.
@@ -1084,12 +1327,43 @@ namespace bzs {
             if(restrictive_publication(representation_policy))store_.observe_web_publication(owner,url,artifact.meta.at("final_url").str(),representation_policy,publication_fence);
             throw Error("E_CANCELLED","No active direct read members remain",409);
           }
-          const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
-          // Keep only the fields consumed by window, independently encoded.
-          // Store already bounds each field; aggregating body and publication
-          // copies would introduce new JSON byte/node limits after commit.
-          for(const auto* field:{"snapshot_id","document_id","url","title","revision","indexed","site_publication","meta","links"})
-            flight->snapshot_fields.emplace(field,snap.at(field).dump());
+          if(artifact.transient) {
+            // No snapshot exists to share: publication preparation, fences and
+            // restrictive observations run once here, then every admitted
+            // member windows the same physical body in memory.
+            auto projection=store_.project_transient_web(owner,url,artifact.parsed,artifact.meta);
+            auto& parsed=artifact.parsed;
+            parsed.title=utf8_prefix(parsed.title.empty()?std::string("Untitled"):parsed.title,1024);
+            if(parsed.text.size()>1024*1024) {
+              parsed.text=utf8_prefix(parsed.text,1024*1024);
+              artifact.meta.set("text_truncated",true);
+            }
+            Json fetch=Json::object();
+            for(const auto* k: {
+              "http_status", "content_type", "charset", "extractor", "extract_status", "warnings", "redirects", "text_truncated", "revalidated"
+            })if(artifact.meta.has(k))fetch.set(k, artifact.meta.at(k));
+            auto& fields=flight->transient_fields;
+            fields.emplace("url",Json::string(url).dump());
+            fields.emplace("title",Json::string(parsed.title).dump());
+            fields.emplace("text",Json::string(parsed.text).dump());
+            fields.emplace("final_url",Json::string(artifact.meta.at("final_url").str()).dump());
+            fields.emplace("redirects",artifact.meta.at("redirects").dump());
+            fields.emplace("metadata",(artifact.meta.has("metadata")?artifact.meta.at("metadata"):Json::object()).dump());
+            fields.emplace("fetched_at_ms",Json::integer(artifact.meta.at("fetched_at_ms").num()).dump());
+            fields.emplace("links_count",Json::integer(static_cast<std::int64_t>(parsed.links.size())).dump());
+            fields.emplace("fetch",fetch.dump());
+            fields.emplace("publication",projection.at("publication").dump());
+            fields.emplace("indexed",Json::boolean(projection.at("indexed").flag()).dump());
+            fields.emplace("site_publication",projection.at("site_publication").dump());
+            flight->transient=true;
+          } else {
+            const auto snap=store_.ingest_web(owner,artifact.document,std::move(artifact.parsed),artifact.meta,deletion_generation);
+            // Keep only the fields consumed by window, independently encoded.
+            // Store already bounds each field; aggregating body and publication
+            // copies would introduce new JSON byte/node limits after commit.
+            for(const auto* field:{"snapshot_id","document_id","url","title","revision","indexed","site_publication","meta","links"})
+              flight->snapshot_fields.emplace(field,snap.at(field).dump());
+          }
         } catch(const Error& error) {
           if(error.code=="E_QUOTA"||error.code=="E_REVALIDATION_STALE") {
             apply_observations();
@@ -1120,16 +1394,23 @@ namespace bzs {
     const auto details=receipt(Json::parse(flight->physical_usage_json));
     try {
       if(flight->error)std::rethrow_exception(flight->error);
-      auto snap=Json::object();
-      for(const auto& [field,encoded]:flight->snapshot_fields)snap.set(field,Json::parse(encoded,encoded.size()));
-      const auto meta=snap.at("meta");
       std::function<void(const std::string&)> before_window;
       { std::lock_guard lock(direct_reads_mutex_);before_window=direct_read_window_for_test_; }
       if(before_window)before_window(payer?"payer":"subscriber");
-      auto guard=Json::object();guard.set("version","bzs-http-read-result-1");guard.set("url",url);
-      guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("publication_fence",publication_fence);
-      auto out=window(owner,snap,start,max_bytes,false,meta.at("fetched_at_ms").num(),guard);
-      out.set("cache",http_read_freshness(meta,url,store_.now(),max_age));
+      Json out;
+      if(flight->transient) {
+        auto fields=Json::object();
+        for(const auto& [field,encoded]:flight->transient_fields)fields.set(field,Json::parse(encoded,encoded.size()));
+        out=transient_window(owner,fields,publication_fence,start,max_bytes);
+      } else {
+        auto snap=Json::object();
+        for(const auto& [field,encoded]:flight->snapshot_fields)snap.set(field,Json::parse(encoded,encoded.size()));
+        const auto meta=snap.at("meta");
+        auto guard=Json::object();guard.set("version","bzs-http-read-result-1");guard.set("url",url);
+        guard.set("metadata_sha256",sha256(meta.canonical()));guard.set("publication_fence",publication_fence);
+        out=window(owner,snap,start,max_bytes,false,meta.at("fetched_at_ms").num(),guard);
+        out.set("cache",http_read_freshness(meta,url,store_.now(),max_age));
+      }
       for(const auto* field:{"usage","shared_read"})out.set(field,details.at(field));
       return out;
     } catch(const Error& error) {
@@ -1210,7 +1491,7 @@ namespace bzs {
     }
     return out;
   }
-  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty) {
+  WebService::ReadArtifact WebService::decode_read(const std::string& url, const Json& r,bool allow_empty,bool allow_transient) {
     require(r.is_object(),"E_WORKER_PROTOCOL","Worker read response must be an object",502);
     auto status=opt_string(r, "status");
     if(r.has("representation_publication"))
@@ -1224,7 +1505,13 @@ namespace bzs {
       }
       throw Error(status_code(status), "Fetch "+(status.empty()?std::string("failed"):status)+(detail.empty()?"":": "+utf8_prefix(detail, 300)), status_http(status));
     }
-    require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
+    // Direct reads branch to a transient delivery before rejecting an
+    // unpersistable prefix; crawl/map keep the strict persistence contract.
+    bool transient=false;
+    if(allow_transient) {
+      if(!http_redirect_storage_allowed(r,url,store_.now()))transient=true;
+    } else
+      require(http_redirect_storage_allowed(r,url,store_.now()),"E_CACHE_POLICY","An HTTP redirect policy forbids persistent snapshots",409);
     for(const auto* key:{"html","text","content_type","title","extractor","final_url"})
       require(r.has(key)&&r.at(key).is_string()&&valid_utf8(r.at(key).str())&&r.at(key).str().find('\0')==std::string::npos,"E_WORKER_PROTOCOL",std::string("Invalid worker field: ")+key,502);
     require(r.has("index_allowed")&&r.at("index_allowed").is_bool(),"E_WORKER_PROTOCOL","Worker must explicitly report index_allowed",502);
@@ -1311,30 +1598,38 @@ namespace bzs {
     meta.set("content_type", doc.content_type);
     if(r.has("http_freshness")) {
       const auto record=validate_http_freshness(r.at("http_freshness"),final_url);
-      require(http_freshness(record,store_.now(),7*86400).at("store_allowed").flag(),"E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
-      if(!incomplete)meta.set("http_freshness",record);
+      const bool storable=http_freshness(record,store_.now(),7*86400).at("store_allowed").flag();
+      if(!storable) {
+        // Unadmitted callers keep the strict rejection; admitted direct reads
+        // mark the artifact transient and attach no reuse metadata.
+        require(allow_transient,"E_CACHE_POLICY","Response cache policy forbids persistent snapshots",409);
+        transient=true;
+      }
+      if(storable&&!incomplete)meta.set("http_freshness",record);
     }
-    if(r.has("http_cache")) {
+    if(r.has("http_cache")&&!transient) {
       require(!incomplete&&r.has("http_status")&&r.at("http_status").num()==200,"E_WORKER_PROTOCOL","Only a complete 200 may establish validators",502);
       meta.set("http_cache",validate_http_cache(r.at("http_cache"),final_url));
     }
     if(r.has("http_redirect_chain")) {
       require(!incomplete,"E_WORKER_PROTOCOL","A truncated response cannot prove a reusable redirect representation",502);
       const auto chain=validate_http_redirect_receipt(r,url);
-      if(status=="ok"&&r.at("http_status").num()==200) {
-        // Core-only, transient scope grant, including equal policies whose
-        // optional wrapper was omitted. Store consumes it before persistence.
-        auto scope=Json::object();scope.set("version","bzs-final-publication-scope-1");scope.set("url",final_url);
-        meta.set("validated_final_publication_scope",scope);
-      }
-      if(http_redirect_chain_cacheable(chain)) {
-        auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
-        // The optional proof must fit the existing aggregate metadata allowance.
-        // Its policy observations were already enforced before this omission.
-        if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
+      if(!transient) {
+        if(status=="ok"&&r.at("http_status").num()==200) {
+          // Core-only, transient scope grant, including equal policies whose
+          // optional wrapper was omitted. Store consumes it before persistence.
+          auto scope=Json::object();scope.set("version","bzs-final-publication-scope-1");scope.set("url",final_url);
+          meta.set("validated_final_publication_scope",scope);
+        }
+        if(http_redirect_chain_cacheable(chain)) {
+          auto accounted=Json::object();for(const auto* key:{"http_cache","http_freshness"})if(meta.has(key))accounted.set(key,meta.at(key));accounted.set("http_redirect_chain",chain);
+          // The optional proof must fit the existing aggregate metadata allowance.
+          // Its policy observations were already enforced before this omission.
+          if(accounted.canonical().size()<=16384)meta.set("http_redirect_chain",chain);
+        }
       }
     }
-    return {std::move(doc),std::move(parsed),std::move(meta)};
+    return {std::move(doc),std::move(parsed),std::move(meta),transient};
   }
   WebService::ReadArtifact WebService::decode_not_modified(const std::string& url,const Json& response,const std::optional<RevalidationBase>& base) {
     require(base.has_value(),"E_WORKER_PROTOCOL","Unsolicited 304 has no retained representation",502);
@@ -1461,11 +1756,17 @@ namespace bzs {
         store_.fail_read(lease,code,requests,bytes,observation?&*observation:nullptr,observed_url,&redirect_observations);
         return;
       }
-      auto artifact=status=="not_modified"?decode_not_modified(lease.url,response,base):decode_read(lease.url,response);
+      auto artifact=status=="not_modified"?decode_not_modified(lease.url,response,base):decode_read(lease.url,response,false,true);
       const auto& final_policy=artifact.parsed.representation_publication.has("version")?artifact.parsed.representation_publication:artifact.parsed.publication;
       if(restrictive_publication(final_policy)) { observation=final_policy;observed_url=artifact.meta.at("final_url").str(); }
       if(artifact.parsed.representation_publication.has("version")&&restrictive_publication(artifact.parsed.publication)) {
         auto logical=Json::object();logical.set("url",lease.url);logical.set("publication",artifact.parsed.publication);redirect_observations.push(logical);
+      }
+      if(artifact.transient) {
+        // A no-store batch item settles delivered-transient: usage charged,
+        // restrictive observations retained, no snapshot and no rerun.
+        (void)store_.complete_read_transient(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
+        return;
       }
       (void)store_.complete_read(lease,artifact.document,std::move(artifact.parsed),artifact.meta,requests,bytes);
     } catch(const Error& error) {

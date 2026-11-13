@@ -252,16 +252,19 @@ bool Store::shared_read_live_locked(const ReadLease& payer) {
 }
 
 void Store::settle_shared_read_locked(const ReadLease& payer,const std::string& error,
-                                    std::int64_t requests,std::int64_t bytes,const Json* snapshot) {
+                                    std::int64_t requests,std::int64_t bytes,const Json* snapshot,
+                                    const Json* transient_receipt) {
+  require(!(snapshot&&transient_receipt),"E_INTERNAL","Read settlement cannot publish two representations",500);
+  const bool success=snapshot||transient_receipt;
   auto members=shared_read_members_locked(payer);
   if(members.empty())return;
   std::vector<bool> publish;bool any=false;
   for(const auto& member:members) {
-    const bool live=snapshot&&live_read_lease_locked(member)&&
+    const bool live=success&&live_read_lease_locked(member)&&
       deletion_generation_locked(member.owner,member.url)==member.deletion_generation;
     publish.push_back(live);any=any||live;
   }
-  require(!snapshot||any,"E_LEASE_EXPIRED","Shared read has no live subscriber at commit",409);
+  require(!success||any,"E_LEASE_EXPIRED","Shared read has no live subscriber at commit",409);
   // The original payer remains responsible even after its own subscription is
   // cancelled. No grant is moved, refunded twice or charged to every member.
   reconcile_read_usage_locked(payer,requests,bytes);
@@ -272,7 +275,11 @@ void Store::settle_shared_read_locked(const ReadLease& payer,const std::string& 
     done.bind(1,std::string(publish[index]?"succeeded":"failed"));
     // NULL avoids creating an invalid foreign key for a cancelled subscriber.
     if(publish[index]) {
-      done.bind(2,snapshot->at("snapshot_id").str());done.bind(3,receipt(*snapshot).dump());
+      if(snapshot) {
+        done.bind(2,snapshot->at("snapshot_id").str());done.bind(3,receipt(*snapshot).dump());
+      } else {
+        done.null(2);done.bind(3,transient_receipt->dump());
+      }
     } else {
       done.null(2);done.null(3);
     }
@@ -463,9 +470,12 @@ void Store::settle_read_jobs_locked() {
   }
 }
 
-std::optional<ReadLease> Store::lease_next_read() {
-  std::lock_guard lock(mutex_);Transaction tx(db_);settle_read_jobs_locked();
+std::optional<ReadLease> Store::lease_next_read(std::stop_token stopping) {
+  std::lock_guard lock(mutex_);Transaction tx(db_);
+  if(stopping.stop_requested())return std::nullopt;
+  settle_read_jobs_locked();
   for(;;) {
+    if(stopping.stop_requested())return std::nullopt;
     Sql job(db_,"SELECT j.id,j.owner,j.epoch,j.deadline,j.auth_epoch,j.max_attempts,b.max_requests-b.charged_requests,b.max_bytes-b.charged_bytes,b.per_page_timeout_ms FROM jobs j JOIN read_job_budgets b ON b.job_id=j.id WHERE j.kind='web.read_many' AND j.state='queued' ORDER BY b.last_dispatch_sequence,j.created_at,j.id LIMIT 1");
     if(!job.step()){tx.commit();return std::nullopt;}
     const auto id=job.text(0),owner=job.text(1);const auto now=clock_();
@@ -490,6 +500,7 @@ std::optional<ReadLease> Store::lease_next_read() {
     const auto timeout=std::min(job.num(8),job.num(3)-now);
     ReadLease lease{id,owner,item.text(1),random_id(),job.num(2)+1,item.num(0),item.num(2),
                     std::min(per_item_requests,job.num(6)),std::min(per_item_bytes,job.num(7)),timeout,job.num(3),publication_sequence_locked()};
+    if(stopping.stop_requested())return std::nullopt;
     Sql reserve(db_,"UPDATE read_job_budgets SET charged_requests=charged_requests+?,charged_bytes=charged_bytes+?,last_dispatch_sequence=? WHERE job_id=?");
     reserve.bind(1,lease.request_grant);reserve.bind(2,lease.byte_grant);reserve.bind(3,next_queue_sequence(db_));reserve.bind(4,id);reserve.step();
     Sql current(db_,"SELECT current_snapshot FROM documents WHERE owner=? AND url=?");current.bind(1,owner);current.bind(2,lease.url);const auto snapshot=current.step()?current.text(0):"";
@@ -542,6 +553,51 @@ bool Store::complete_read(const ReadLease& lease,const SourceDocument& input,Par
   Sql done(db_,"UPDATE read_job_items SET state='succeeded',snapshot_id=?,receipt_json=?,error_code=NULL WHERE job_id=? AND position=?");
   done.bind(1,snapshot.at("snapshot_id").str());done.bind(2,receipt(snapshot).dump());done.bind(3,lease.job_id);done.bind(4,lease.input_index);done.step();
   settle_read_job_locked(lease.job_id);tx.commit();return true;
+}
+
+bool Store::complete_read_transient(const ReadLease& lease,const SourceDocument& input,ParsedDocument parsed,
+                                    const Json& meta,std::int64_t requests,std::int64_t bytes) {
+  // No snapshot/body retention. Publication fences and per-member control are
+  // nevertheless identical to a persistent completion; the payer is fixed.
+  std::lock_guard lock(mutex_);Transaction tx(db_);
+  if(!owns_read_lease_locked(lease)){tx.commit();return false;}
+  const auto members=shared_read_members_locked(lease);
+  const ReadLease* publisher=nullptr;
+  if(members.empty()) {
+    if(live_read_lease_locked(lease))publisher=&lease;
+  } else {
+    for(const auto& member:members)if(live_read_lease_locked(member)&&
+        deletion_generation_locked(member.owner,member.url)==member.deletion_generation) { publisher=&member;break; }
+  }
+  if(!publisher) {
+    if(!members.empty())settle_shared_read_locked(lease,"E_LEASE_EXPIRED",requests,bytes);
+    else {
+      reconcile_read_usage_locked(lease,requests,bytes);
+      Sql reject(db_,"UPDATE read_job_items SET state='failed',error_code='E_LEASE_EXPIRED' WHERE job_id=? AND position=?");
+      reject.bind(1,lease.job_id);reject.bind(2,lease.input_index);reject.step();settle_read_job_locked(lease.job_id);
+    }
+    tx.commit();return false;
+  }
+  require(input.url==lease.url,"E_WORKER_PROTOCOL","Read result identity differs from its lease",502);
+  Sql captured(db_,"SELECT j.created_delete_sequence,j.auth_epoch,i.publication_sequence,i.publication_snapshot_id FROM jobs j JOIN read_job_items i ON i.job_id=j.id WHERE j.id=? AND i.position=?");
+  captured.bind(1,publisher->job_id);captured.bind(2,publisher->input_index);captured.step();
+  auto read_meta=Json::parse(meta.dump()),fence=Json::object();fence.set("epoch",captured.num(1));
+  fence.set("sequence",captured.num(0));fence.set("generation",publisher->deletion_generation);
+  if(captured.text(3)!="@legacy")fence.set("snapshot_id",captured.text(3));
+  read_meta.set("publication_fence",fence);read_meta.set("page_publication_sequence",captured.num(2));
+  // Includes every redirect alias and restrictive observation, under the same
+  // transaction as usage/receipts. Failed fences cannot leave success markers.
+  (void)project_transient_web_locked(publisher->owner,input.url,std::move(parsed),read_meta);
+  auto marker=Json::object();marker.set("transient","no_store");
+  if(!members.empty())settle_shared_read_locked(lease,"",requests,bytes,nullptr,&marker);
+  else {
+    require(live_read_lease_locked(lease),"E_LEASE_EXPIRED","Lease/deadline expired before commit",409);
+    reconcile_read_usage_locked(lease,requests,bytes);
+    Sql done(db_,"UPDATE read_job_items SET state='succeeded',snapshot_id=NULL,receipt_json=?,error_code=NULL WHERE job_id=? AND position=?");
+    done.bind(1,marker.dump());done.bind(2,lease.job_id);done.bind(3,lease.input_index);done.step();
+    settle_read_job_locked(lease.job_id);
+  }
+  tx.commit();return true;
 }
 
 void Store::fail_read(const ReadLease& lease,const std::string& error,std::int64_t requests,std::int64_t bytes,const Json* publication,const std::string& final_url,const Json* redirect_observations) {
@@ -646,6 +702,14 @@ Json Store::job_results(const std::string& owner,const std::string& id,std::int6
         receipt.set("indexed",receipt.at("indexed").flag()&&visible.num(0)!=0&&mode<2);
         auto deployment=Json::object();deployment.set("version","bzs-site-publication-1");deployment.set("mode",mode==2?"withdrawn":mode==1?"links_only":"allowed");deployment.set("generation",site_publication_cached_generation_);
         receipt.set("site_publication",deployment);item.set("receipt",receipt);
+      } else if(!available&&rows.text(9).empty()&&!rows.text(10).empty()) {
+        // Succeeded with a NULL snapshot: a delivered-transient receipt is the
+        // only observable marker and never names a snapshot identity. A
+        // receipt whose snapshot was removed by retention keeps its non-empty
+        // snapshot_id and stays hidden.
+        auto receipt=Json::parse(rows.text(10));
+        if(receipt.is_object()&&receipt.has("transient")&&receipt.at("transient").str()=="no_store")
+          item.set("receipt",receipt);
       }
     }
     items.push(item);next=rows.num(0)+1;

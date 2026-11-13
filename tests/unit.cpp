@@ -1,9 +1,11 @@
 #include "bzs/service.hpp"
+#include "bzs/diagnostics.hpp"
 #include "bzs/highlight.hpp"
 #include "bzs/tokenizer.hpp"
 #include "bzs/error.hpp"
 #include "bzs/util.hpp"
 #include <sqlite3.h>
+#include <algorithm>
 #include <atomic>
 #include <barrier>
 #include <chrono>
@@ -21,6 +23,13 @@ namespace bzs {
   struct StoreSearchTestAccess {
     static void set(Store& store,std::function<void()> callback) {
       std::lock_guard lock(store.mutex_);store.search_unlocked_for_test_=std::move(callback);
+    }
+    // CL-03 M1: the >600 raw contributing-URL ceiling is unreachable through
+    // public surfaces (see the comment in Store::search_bindings_locked), so
+    // the capture path is driven directly with a synthetic contributor list.
+    static Json search_bindings(Store& store,const std::string& owner,const std::string& url,const Json& contributing) {
+      std::lock_guard lock(store.mutex_);
+      return store.search_bindings_locked(owner,url,contributing);
     }
   };
 }
@@ -542,6 +551,71 @@ namespace {
     rejects([&]{store.search_once("alice",query,2000,101);},"E_SCHEMA");
     rejects([&]{store.search_once("alice",query,0,1);},"E_SCHEMA");
   }
+  TEST(site_queries_push_host_predicate_into_candidate_windows) {
+    // CL-02 regression (R-03 follow-up): a site: query must find targets
+    // that rank below other hosts' documents on every candidate path (FTS
+    // BM25, priority+substring, substring-only), and partial must stay
+    // truthful: false while every matching candidate fits the budget, true
+    // once matching candidates on the target host itself exceed it.
+    Temp t;std::int64_t now=1800000000000;
+    Store store(t.path/"db",[&]{return now;});
+    std::string long_body="alpha";
+    for(int i=0;i<400;++i)long_body+=" filler"+std::to_string(i);
+    store.ingest("alice",text("https://target.example/doc",long_body,"target page"));
+    for(int i=0;i<30;++i) {
+      ++now;
+      store.ingest("alice",text("https://other.example/p"+std::to_string(i),
+                                "alpha alpha alpha alpha filler0 tail","alpha "+std::to_string(i)));
+    }
+    store.ingest("alice",text("https://notexample.com/x","alpha alpha alpha alpha filler0 tail","decoy"));
+    const auto hit_urls=[&](const Json& r) {
+      std::vector<std::string> urls;
+      for(std::size_t i=0;i<r.at("hits").size();++i)urls.push_back(r.at("hits").at(i).at("url").str());
+      return urls;
+    };
+    const auto contains=[](const std::vector<std::string>& urls,const char* needle) {
+      for(const auto& u:urls)if(u==needle)return true;
+      return false;
+    };
+    // The target ranks 31st overall (long body, oldest ingest) yet must be
+    // found with a one-row budget on all three candidate paths, because the
+    // host predicate now runs inside the candidate SQL.
+    for(const char* expression: {"alpha site:target.example","\"alpha\" site:target.example",
+                                 "\"alpha filler0\" site:target.example"}) {
+      for(const std::int64_t budget: {1,2}) {
+        const auto r=store.search_once("alice",q(expression),budget,10);
+        CHECK(contains(hit_urls(r),"https://target.example/doc"));
+        CHECK(!r.at("partial").flag());
+      }
+    }
+    // Matching candidates on the target host itself exceed the budget.
+    for(int i=0;i<3;++i) {
+      ++now;
+      store.ingest("alice",text("https://target.example/short"+std::to_string(i),
+                                "alpha alpha alpha alpha filler0 tail","short "+std::to_string(i)));
+    }
+    const auto tight=store.search_once("alice",q("alpha site:target.example"),1,10);
+    CHECK(tight.at("returned_count").num()==1);CHECK(tight.at("partial").flag());
+    // Conjunction stays AND inside the SQL: no document is on both hosts.
+    const auto none=store.search_once("alice",q("alpha site:target.example site:other.example"),10,10);
+    CHECK(none.at("returned_count").num()==0);CHECK(!none.at("partial").flag());
+    // Parent domain matches subdomains with a dot boundary only: the decoy
+    // host notarget.example must never be returned for site:target.example.
+    store.ingest("alice",text("https://sub.target.example/deep","alpha alpha alpha alpha filler0 tail","deep"));
+    store.ingest("alice",text("https://notarget.example/decoy","alpha alpha alpha alpha filler0 tail","decoy"));
+    // Five matching candidates on target.example and its subdomain; budget 4
+    // reports partial=true, budget 5 finds every match and stays complete.
+    const auto narrow=store.search_once("alice",q("alpha site:target.example"),4,100);
+    CHECK(narrow.at("returned_count").num()==4);CHECK(narrow.at("partial").flag());
+    CHECK(!contains(hit_urls(narrow),"https://notarget.example/decoy"));
+    const auto full=store.search_once("alice",q("alpha site:target.example"),5,100);
+    CHECK(full.at("returned_count").num()==5);CHECK(!full.at("partial").flag());
+    CHECK(contains(hit_urls(full),"https://sub.target.example/deep"));
+    // site: currently requires a top-level positive conjunction, so the
+    // bounded-scan path (pure NOT expressions) cannot combine with it at
+    // all; lock that grammar boundary alongside the window behaviour.
+    rejects([&]{store.search_once("alice",q("site:target.example NOT absent"),10,10);},"E_QUERY_SYNTAX");
+  }
   TEST(store_candidate_predicate_agreement) {
     Temp t;
     Store s(t.path/"db");
@@ -1030,6 +1104,66 @@ namespace {
     CHECK(svc.capabilities().at("live_web_sources").num()==0);
     CHECK(!svc.capabilities().at("production_ready").flag());
   }
+  TEST(contributor_overflow_tightens_capture_ceiling) {
+    // CL-03 M1: more than 600 raw contributing URLs (or more than 24 distinct
+    // identities) must tighten the captured ceiling to captured_mode=2 even
+    // though every URL is the same clean resource - the raw-count ceiling is
+    // unreachable through public surfaces, so this drives the capture path
+    // through the test hook.
+    Temp t;
+    Store store(t.path/"db");
+    const auto identities=[&](std::int64_t count) {
+      auto list=Json::array();
+      for(std::int64_t i=0;i<count;++i)list.push(Json::string("https://clean.example/doc"));
+      return list;
+    };
+    const auto at_ceiling=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(600));
+    CHECK(!at_ceiling.has("captured_mode"));
+    CHECK(at_ceiling.at("urls").size()==1);
+    const auto overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",identities(601));
+    CHECK(overflow.at("captured_mode").num()==2);
+    auto distinct=Json::array();
+    for(std::int64_t i=0;i<25;++i)distinct.push(Json::string("https://clean.example/variant"+std::to_string(i)));
+    const auto identities_overflow=StoreSearchTestAccess::search_bindings(store,"alice","https://clean.example/doc",distinct);
+    CHECK(identities_overflow.at("captured_mode").num()==2);
+  }
+  TEST(internal_error_diagnostics_are_structured_and_counted) {
+    // CL-14: every swallowed internal error leaves one structured JSON event
+    // on stderr with the site, exception type and a truncated message - no
+    // URL, query, body or token material - and the counter surfaced through
+    // the stats operation increases by exactly that count.
+    std::ostringstream captured;
+    auto* previous=std::clog.rdbuf(captured.rdbuf());
+    const auto before=internal_error_count();
+    try {
+      throw std::runtime_error("boom");
+    }catch(const std::exception& e) {
+      log_internal("test.site",&e);
+    }
+    log_internal("test.site2",nullptr);
+    std::clog.rdbuf(previous);
+    CHECK(internal_error_count()==before+2);
+    const auto text=captured.str();
+    const auto first_line=text.substr(0,text.find('\n'));
+    auto second_line=text.substr(text.find('\n')+1);
+    second_line.pop_back();  // trailing newline
+    const auto first=Json::parse(first_line);
+    CHECK(first.at("event").str()=="internal_error");
+    CHECK(first.at("where").str()=="test.site");
+    CHECK(first.at("message").str()=="boom");
+    CHECK(first.at("type").str().find("runtime_error")!=std::string::npos);
+    const auto second=Json::parse(second_line);
+    CHECK(second.at("where").str()=="test.site2");
+    CHECK(second.at("type").str()=="unknown");
+    Temp t;
+    Store s(t.path/"db");
+    FixtureCatalog f(BZS_FIXTURE_DIR);
+    Service svc(s, f, t.path/"backup");
+    const auto stats=svc.dispatch( {
+      "a", false
+    }, req("stats", Json::object()));
+    CHECK(stats.at("internal_errors").num()==internal_error_count());
+  }
   TEST(admin_backup) {
     Temp t;
     Store s(t.path/"db");
@@ -1261,7 +1395,18 @@ namespace {
     CHECK(s.snapshot("a", "s1").at("source_kind").str()=="import");
   }
   TEST(dedup_and_rrf_fusion) {
-    CHECK(dedup_key("https://www.Example.com/a/?utm_source=x&b=2&a=1#frag")==dedup_key("http://example.com:80/a?a=1&b=2"));
+    // R-01 conservative identity: only scheme/host case and default ports
+    // normalize. www, query order, fragments, trailing slashes, tracking
+    // params, and scheme differences are all resource-distinct now.
+    CHECK(dedup_key("https://EXAMPLE.com/a")==dedup_key("https://example.com/a"));
+    CHECK(dedup_key("http://example.com:80/a")==dedup_key("http://example.com/a"));
+    CHECK(dedup_key("https://example.com:443/a")==dedup_key("https://example.com/a"));
+    CHECK(dedup_key("https://example.com/a")!=dedup_key("http://example.com/a"));
+    CHECK(dedup_key("https://www.example.com/a")!=dedup_key("https://example.com/a"));
+    CHECK(dedup_key("https://example.com/a")!=dedup_key("https://example.com/a/"));
+    CHECK(dedup_key("https://example.com/a?id=1&id=2")!=dedup_key("https://example.com/a?id=2&id=1"));
+    CHECK(dedup_key("https://example.com/#/a")!=dedup_key("https://example.com/#/b"));
+    CHECK(dedup_key("https://example.com/a?utm_source=x")!=dedup_key("https://example.com/a"));
     CHECK(dedup_key("https://example.com/a")!=dedup_key("https://example.com/b"));
     CHECK(dedup_key("ftp://example.com/").empty());
     auto manifest=Json::parse(R"({"version":1,"sources":[
@@ -1274,13 +1419,138 @@ namespace {
       {"yahoo", {{"http://a.example", "A", "", 1}, {"https://b.example/", "B", "", 1}}},
       {"ddg", {{"https://b.example/", "B", "from ddg", 5}, {"https://c.example/", "C", "", 1}}}};
     auto out=fuse(in, reg, 10);
-    CHECK(out.size()==3);
-    // b.example appears in two families (bing family counted once, ddg) and wins.
+    // http://a.example and https://a.example/ are now distinct resources
+    // (R-01), so 4 groups. b.example wins across two families.
+    CHECK(out.size()==4);
     CHECK(out.at(0).at("url").str()=="https://b.example/");
     CHECK(out.at(0).at("index_families").num()==2);
-    CHECK(out.at(0).at("snippet").str()=="from ddg");
-    CHECK(out.at(1).at("url").str()=="https://a.example/");
-    CHECK(out.at(1).at("sources").size()==2);
+    // R-01 donor consistency: the best-ranked donor (bing, rank 2) owns
+    // url/title/snippet. Its snippet is empty, so "" is correct; the
+    // ddg rank-5 snippet is NOT borrowed across donors anymore.
+    CHECK(out.at(0).at("snippet").str()=="");
+    // Both a.example variants exist as separate results.
+    bool has_http_a=false, has_https_a=false;
+    for(std::size_t i=0;i<out.size();++i) {
+      auto u=out.at(i).at("url").str();
+      if(u=="http://a.example")has_http_a=true;
+      if(u=="https://a.example/")has_https_a=true;
+    }
+    CHECK(has_http_a);CHECK(has_https_a);
+  }
+  TEST(fuse_output_is_independent_of_source_order) {
+    // CL-12r: identical inputs must fuse identically in any source (and hit)
+    // order. The donor order is (rank, url, source_id, title, snippet);
+    // url/title/snippet move as a whole, including empty fields. Group ties
+    // break on the dedup key and source ties by id, never arrival order.
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true},
+      {"id":"srcy","provider":"y","index_family":"famy","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    std::vector<SourceHits> base= {
+      {"srcx", {{"http://SHARED.example/a", "upper title", "upper snippet", 1},
+                {"http://only-x.example/b", "x only", "", 1},
+                {"http://tied.example/d", "z title from x", "z snippet from x", 1}}},
+      {"srcy", {{"http://shared.example/a", "", "", 1},
+                {"http://shared.example:80/a", "late title", "late snippet", 2},
+                {"http://only-y.example/c", "y only", "", 1},
+                {"http://tied.example/d", "a title from y", "a snippet from y", 1}}}};
+    const auto run=[&](const std::vector<SourceHits>& inputs) { return fuse(inputs, reg, 10, 60, true); };
+    const auto reference=run(base);
+    const auto canonical=reference.canonical();
+    for(const bool y_first:{false,true}) {
+      for(const bool reverse_x:{false,true})for(const bool reverse_y:{false,true}) {
+        auto candidate=base;
+        if(reverse_x)std::reverse(candidate[0].hits.begin(),candidate[0].hits.end());
+        if(reverse_y)std::reverse(candidate[1].hits.begin(),candidate[1].hits.end());
+        if(y_first)std::reverse(candidate.begin(),candidate.end());
+        CHECK(run(candidate).canonical()==canonical);
+      }
+    }
+    CHECK(reference.size()==4);
+    // Equal-rank tie resolves by url: the uppercase variant sorts first and
+    // the whole donor moves as one (its title, not the rank-2 late title).
+    CHECK(reference.at(0).at("url").str()=="http://SHARED.example/a");
+    CHECK(reference.at(0).at("title").str()=="upper title");
+    CHECK(reference.at(0).at("snippet").str()=="upper snippet");
+    // All actual contributing variants stay recorded for publication checks.
+    CHECK(reference.at(0).at("publication_urls").size()==3);
+    // sources list orders by (rank, source_id): the equal ranks resolve by id.
+    const auto sources=reference.at(0).at("sources");
+    CHECK(sources.size()==3);
+    CHECK(sources.at(0).at("source_id").str()=="srcx");CHECK(sources.at(0).at("rank").num()==1);
+    CHECK(sources.at(1).at("source_id").str()=="srcy");CHECK(sources.at(1).at("rank").num()==1);
+    CHECK(sources.at(2).at("source_id").str()=="srcy");CHECK(sources.at(2).at("rank").num()==2);
+    // An exact rank/URL tie resolves by source id before title or snippet,
+    // even though srcy's title and snippet are lexicographically smaller.
+    const auto tied=reference.at(1);
+    CHECK(tied.at("rank").num()==2);
+    CHECK(tied.at("url").str()=="http://tied.example/d");
+    CHECK(tied.at("title").str()=="z title from x");
+    CHECK(tied.at("snippet").str()=="z snippet from x");
+    CHECK(tied.at("snippet_kind").str()=="search_engine_snippet");
+    CHECK(tied.at("index_families").num()==2);
+    CHECK(tied.at("score_micro").num()==32786);
+    // Keep JSON escape literals outside CHECK's MSVC stringification.
+    const std::string expected_urls=R"(["http:\/\/tied.example\/d"])";
+    CHECK(tied.at("publication_urls").canonical()==expected_urls);
+    CHECK(tied.at("sources").canonical()==R"([{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcy"}])");
+    CHECK(reference.at(2).at("url").str()=="http://only-x.example/b");
+    CHECK(reference.at(3).at("url").str()=="http://only-y.example/c");
+  }
+  TEST(fuse_same_source_ties_use_title_before_snippet) {
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    const SourceHits source={"srcx", {
+      {"https://tie.example/same", "z title", "", 1},
+      {"https://tie.example/same", "", "z snippet", 1},
+      {"https://tie.example/same", "a title", "a snippet", 1}}};
+    const auto reference=fuse({source},reg,10,60,true);
+    const auto canonical=reference.canonical();
+    std::vector<std::size_t> order={0,1,2};
+    do {
+      SourceHits candidate{source.source_id,{}};
+      for(const auto i:order)candidate.hits.push_back(source.hits[i]);
+      CHECK(fuse({candidate},reg,10,60,true).canonical()==canonical);
+    } while(std::next_permutation(order.begin(),order.end()));
+    CHECK(reference.size()==1);
+    const auto hit=reference.at(0);
+    CHECK(hit.at("url").str()=="https://tie.example/same");
+    // Title is compared before snippet. The empty title and the nonempty
+    // snippet belong to the same donor; neither comes from another hit.
+    CHECK(hit.at("title").str()=="");
+    CHECK(hit.at("snippet").str()=="z snippet");
+    CHECK(hit.at("index_families").num()==1);
+    CHECK(hit.at("score_micro").num()==16393);
+    const std::string expected_urls=R"(["https:\/\/tie.example\/same"])";
+    CHECK(hit.at("publication_urls").canonical()==expected_urls);
+    CHECK(hit.at("sources").canonical()==R"([{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcx"},{"rank":1,"source_id":"srcx"}])");
+  }
+  TEST(fuse_same_source_and_title_ties_use_snippet) {
+    auto manifest=Json::parse(R"({"version":1,"sources":[
+      {"id":"srcx","provider":"x","index_family":"famx","capability":"web","kind":"api","enabled":true}]})");
+    SourceRegistry reg(reviewed_sources(manifest));
+    const SourceHits source={"srcx", {
+      {"https://tie.example/same", "same title", "z snippet", 1},
+      {"https://tie.example/same", "same title", "", 1},
+      {"https://tie.example/same", "same title", "a snippet", 1}}};
+    const auto reference=fuse({source},reg,10,60,true);
+    const auto canonical=reference.canonical();
+    std::vector<std::size_t> order={0,1,2};
+    do {
+      SourceHits candidate{source.source_id,{}};
+      for(const auto i:order)candidate.hits.push_back(source.hits[i]);
+      CHECK(fuse({candidate},reg,10,60,true).canonical()==canonical);
+    } while(std::next_permutation(order.begin(),order.end()));
+    CHECK(reference.size()==1);
+    const auto hit=reference.at(0);
+    CHECK(hit.at("url").str()=="https://tie.example/same");
+    CHECK(hit.at("title").str()=="same title");
+    // The final tuple field breaks the tie; an empty winning snippet stays empty.
+    CHECK(hit.at("snippet").str()=="");
+    CHECK(hit.at("sources").size()==3);
+    const std::string expected_urls=R"(["https:\/\/tie.example\/same"])";
+    CHECK(hit.at("publication_urls").canonical()==expected_urls);
   }
   TEST(public_url_policy) {
     for(auto u: {"http://localhost/", "http://127.0.0.1/", "http://10.1.2.3/", "http://169.254.169.254/latest/meta-data",
@@ -1323,6 +1593,31 @@ namespace {
       {"id":"arxiv","provider":"arxiv","index_family":"arxiv","capability":"papers","kind":"api","enabled":true,"min_interval_ms":0},
       {"id":"off","provider":"x","index_family":"x","capability":"web","kind":"api","enabled":false}]})")));
   }
+  // Offline fixture for the native condition path: one source's stored contract
+  // declares native_filters (config/sources.json has none populated).
+  SourceRegistry native_registry(const std::string& native_id, std::initializer_list<const char*> kinds) {
+    auto manifest=reviewed_sources(obj(R"({"version":1,"sources":[
+      {"id":"bing","provider":"microsoft","index_family":"bing","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"ddg","provider":"duckduckgo","index_family":"ddg","capability":"web","kind":"scrape","enabled":true,"default":true,"min_interval_ms":0},
+      {"id":"arxiv","provider":"arxiv","index_family":"arxiv","capability":"papers","kind":"api","enabled":true,"min_interval_ms":0}]})"));
+    Json native=Json::array();
+    for(const auto* kind:kinds)native.push(Json::string(kind));
+    for(std::size_t i=0; i<manifest.at("sources").size(); ++i)
+      if(manifest.at("sources").at(i).at("id").str()==native_id)
+        manifest.at("sources").at(i).at("contract").set("native_filters",native);
+    return SourceRegistry(manifest);
+  }
+  Json condition_entry(const Json& filters, const std::string& kind, const std::string& value) {
+    const auto& list=filters.at("conditions");
+    for(std::size_t i=0; i<list.size(); ++i)
+      if(list.at(i).at("kind").str()==kind&&list.at(i).at("value").str()==value)return list.at(i);
+    throw Error("E_INTERNAL","missing condition entry: "+kind+":"+value,500);
+  }
+  Json condition_source(const Json& entry, const std::string& id) {
+    const auto& list=entry.at("per_source");
+    for(std::size_t i=0; i<list.size(); ++i)if(list.at(i).at("source_id").str()==id)return list.at(i);
+    throw Error("E_INTERNAL","missing per-source condition entry: "+id,500);
+  }
   TEST(web_search_merges_and_cools_down) {
     Temp t;
     Store s(t.path/"db");
@@ -1363,6 +1658,281 @@ namespace {
       return obj(R"({"results":{"arxiv":{"status":"ok","hits":[{"url":"https://arxiv.org/abs/1","title":"Paper","snippet":"s","rank":1}]}}})");
     };
     CHECK(web.search("a", obj(R"({"query":"attention","category":"papers"})")).at("result_count").num()==1);
+  }
+  TEST(web_search_native_condition_engine_ignores_removes_hits_and_reports_not_satisfied) {
+    // (a) The manifest declares site native and the worker reports native
+    // execution, but the engine ignored it: violating hits are removed and the
+    // report says native-executed-not-satisfied (native is a location, not a
+    // verification).
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string& m, const Json& p) {
+      CHECK(m=="search.multi");
+      CHECK(p.has("conditions")&&p.at("conditions").size()==1);
+      CHECK(p.at("conditions").at(0).at("kind").str()=="site"&&p.at("conditions").at(0).at("value").str()=="example.com");
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    CHECK(!r.at("partial").flag());
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(e.at("removed").num()==1);
+    auto p=condition_source(e,"bing");
+    CHECK(p.at("classification").str()=="native");
+    CHECK(p.at("native_execution").str()=="executed");
+    CHECK(p.at("local_verification").str()=="verified");
+    CHECK(p.at("satisfied").flag()==false);
+    CHECK(p.at("removed").num()==1);
+    CHECK(r.at("filters").at("removed_unverified").num()==1);
+  }
+  TEST(web_search_missing_worker_condition_report_is_unexecuted_never_satisfied) {
+    // (b) A stub worker swallows the conditions object: no report means not
+    // executed, and an unverifiable condition can never claim satisfaction.
+    // Its unverified hits are removed, not silently kept.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json& p) {
+      CHECK(p.has("conditions")&&p.at("conditions").at(0).at("kind").str()=="inbody");
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X needle","snippet":"x","rank":1}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"inbody"}));
+    auto r=web.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==0);
+    CHECK(r.at("filters").at("removed_unverified").num()==1);
+    CHECK(r.at("sources").at(0).at("status").str()=="ok");
+    auto e=condition_entry(r.at("filters"),"inbody","marker");
+    auto p=condition_source(e,"bing");
+    CHECK(p.at("classification").str()=="native");
+    CHECK(p.at("native_execution").str()=="not_executed");
+    CHECK(p.at("local_verification").str()=="unverifiable");
+    CHECK(!p.has("satisfied"));
+  }
+  TEST(web_search_strict_unsupported_condition_errors_or_removes_sources_explicitly) {
+    // (c) No native_filters anywhere: an unverifiable condition is an explicit
+    // error. When one source declares it native, the others are removed before
+    // dispatch with a filter status in the sources report (usage does not diverge).
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X needle","snippet":"x","rank":1}],
+        "conditions":[{"kind":"inbody","value":"marker","execution":"native"}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    rejects([&] {
+      web.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing","ddg"]})"));
+    }, "E_CAPABILITY_UNAVAILABLE");
+    WebService native(s, w, native_registry("bing", {"inbody"}));
+    auto r=native.search("a", obj(R"({"query":"needle inbody:marker","sources":["bing","ddg"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("usage").at("external_requests").num()==1);
+    CHECK(r.at("partial").flag());
+    auto removed=false;
+    for(std::size_t i=0; i<r.at("sources").size(); ++i) {
+      auto x=r.at("sources").at(i);
+      if(x.at("source_id").str()=="ddg")
+        removed=x.at("status").str()=="skipped"&&x.at("reason").str()=="condition_unsupported"&&
+                x.at("filter").at(0).at("kind").str()=="inbody"&&x.at("hits").num()==0;
+    }
+    CHECK(removed);
+    auto e=condition_entry(r.at("filters"),"inbody","marker");
+    auto pb=condition_source(e,"bing");
+    CHECK(pb.at("classification").str()=="native");
+    CHECK(pb.at("native_execution").str()=="executed");
+    CHECK(!pb.has("satisfied"));  // native execution still does not claim satisfaction
+    auto pd=condition_source(e,"ddg");
+    CHECK(pd.at("classification").str()=="unsupported");
+    CHECK(pd.at("native_execution").str()=="not_executed");
+    CHECK(!pd.has("local_verification"));
+  }
+  TEST(web_search_condition_shapes_and_unmodelled_operators_are_refused) {
+    // FT-011 review: field conditions under NOT/OR cannot express the
+    // required-every semantics, and unmodelled engine operators must not be
+    // forwarded upstream as ordinary literals.
+    Temp t;Store s(t.path/"db");FakeWorker w;bool dispatched=false;
+    w.handler=[&](const std::string&, const Json&){dispatched=true;return obj(R"({"results":{}})");};
+    WebService web(s, w, native_registry("bing", {"site","inbody"}));
+    rejects([&]{web.search("a", obj(R"({"query":"copper -intitle:forbidden"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"intitle:copper OR intitle:tin"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"-inbody:hidden"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper after:2026-01-01"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"inurl:docs copper"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper after:\"2026-01-01\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper inurl:\"docs\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper allinurl:docs"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper allintext:docs"})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper -after:\"2026-01-01\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"copper -inurl:\"docs\""})"));},"E_QUERY_SYNTAX");
+    rejects([&]{web.search("a", obj(R"({"query":"(-lang:\"en\") copper"})"));},"E_QUERY_SYNTAX");
+    CHECK(!dispatched);  // refusals happen before any worker call
+    // Multi-word and modeled-phrase literals inside quotes stay dispatchable.
+    bool literal_dispatched=false;
+    w.handler=[&](const std::string&, const Json&){literal_dispatched=true;return obj(R"({"results":{}})");};
+    web.search("a", obj(R"({"query":"copper \"guide after:2026-01-01\""})"));
+    web.search("a", obj(R"({"query":"copper \"(after:2026-01-01)\""})"));
+    web.search("a", obj(R"({"query":"intitle:\"guide after:2026\" copper"})"));
+    CHECK(literal_dispatched);
+    // A fully quoted token is a literal search, not an operator invocation.
+    bool quoted_dispatched=false;
+    w.handler=[&](const std::string&, const Json&){quoted_dispatched=true;return obj(R"({"results":{}})");};
+    web.search("a", obj(R"({"query":"copper \"after:2026-01-01\""})"));
+    CHECK(quoted_dispatched);
+  }
+  TEST(web_search_refuses_oversize_condition_values_without_truncation) {
+    Temp t;Store s(t.path/"db");FakeWorker w;bool dispatched=false;
+    w.handler=[&](const std::string&, const Json&){dispatched=true;return obj(R"({"results":{}})");};
+    WebService web(s, w, native_registry("bing", {"inbody"}));
+    std::string huge(257,'a');
+    rejects([&]{web.search("a", obj(std::string(R"({"query":"inbody:)")+huge+R"("})"));},"E_QUERY_LIMIT");
+    CHECK(!dispatched);
+    // 256 bytes is accepted and transported verbatim.
+    std::string exact(256,'b');bool seen=false;
+    w.handler=[&](const std::string&, const Json& p){
+      seen=p.at("conditions").at(0).at("value").str()==exact;
+      return obj(R"({"results":{"bing":{"status":"empty","hits":[]}}})");
+    };
+    web.search("a", obj(std::string(R"({"query":"inbody:)")+exact+R"("})"));
+    CHECK(seen);
+  }
+  TEST(web_search_per_source_satisfaction_requires_inspected_evidence) {
+    // Review repro: with per_source cutting hits after fusion, a source whose
+    // only hit was off-site used to report verified/satisfied without any of
+    // its rows being inspected. Verification now runs pre-fusion on every
+    // returned hit; a source that contributed no inspected hit reports
+    // not_checked and never claims satisfaction.
+    Temp t;Store s(t.path/"db");FakeWorker w;
+    w.handler=[](const std::string&, const Json& p) {
+      // bing returns the on-site rank-1 hit; ddg only an off-site rank-2 hit.
+      (void)p;
+      return obj(R"({"results":{
+        "bing":{"status":"ok","hits":[
+          {"url":"https://docs.example.com/a","title":"Copper guide","snippet":"","rank":1}]},
+        "ddg":{"status":"ok","hits":[
+          {"url":"https://other.example/b","title":"Off-site","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"copper site:example.com","limit":1})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/a");
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(e.at("removed").num()==1);  // ddg's off-site hit was inspected and removed
+    auto bing=condition_source(e,"bing");
+    CHECK(bing.at("local_verification").str()=="verified");
+    CHECK(bing.at("satisfied").flag()==true);
+    auto ddg=condition_source(e,"ddg");
+    CHECK(ddg.at("local_verification").str()=="verified");
+    CHECK(ddg.at("satisfied").flag()==false);
+    CHECK(ddg.at("removed").num()==1);
+    // An answering source with zero hits makes no verification claim.
+    w.handler=[](const std::string&, const Json&){
+      return obj(R"({"results":{
+        "bing":{"status":"ok","hits":[
+          {"url":"https://docs.example.com/a","title":"Copper","snippet":"","rank":1}]},
+        "ddg":{"status":"empty","hits":[]}}})");
+    };
+    auto r2=web.search("a", obj(R"({"query":"copper site:example.com"})"));
+    auto e2=condition_entry(r2.at("filters"),"site","example.com");
+    auto ddg2=condition_source(e2,"ddg");
+    CHECK(ddg2.at("local_verification").str()=="not_checked");
+    CHECK(!ddg2.has("satisfied"));
+  }
+  TEST(durable_web_search_uses_the_same_condition_plan) {
+    // (d) web.search.start runs the same search(): strict failures settle
+    // through the existing fail_search semantics (source-level unknown), and a
+    // locally verified condition filters the frozen result version.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto strict=web.submit_search("a", obj(R"({"query":"needle inbody:marker","sources":["bing"],"idempotency_key":"strict-1"})"));
+    while(auto lease=web.lease_search())web.execute_search(*lease);
+    auto failed=s.session_get("a", strict.at("session_id").str());
+    CHECK(failed.at("state").str()=="completed");
+    CHECK(failed.at("unknown_source_attempts").num()==1);
+    CHECK(failed.at("error_code").str()=="E_CAPABILITY_UNAVAILABLE");
+    auto verified=web.submit_search("a", obj(R"({"query":"guide site:example.com","sources":["bing"],"idempotency_key":"site-1"})"));
+    while(auto lease=web.lease_search())web.execute_search(*lease);
+    auto done=s.session_get("a", verified.at("session_id").str());
+    CHECK(done.at("state").str()=="completed");
+    auto page=s.session_page("a", verified.at("session_id").str(), done.at("result_set_version").str(), "", 10);
+    CHECK(page.at("hits").size()==1);
+    CHECK(page.at("hits").at(0).at("url").str()=="https://docs.example.com/x");
+  }
+  TEST(web_search_site_condition_keeps_local_recheck_when_native) {
+    // (e) Native classification never weakens the QRY-04 lite local recheck:
+    // violating hosts are removed under a native declaration, and compliant
+    // results report satisfied only because local verification ran.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    WebService web(s, w, native_registry("bing", {"site"}));
+    auto r=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(r.at("result_count").num()==1);
+    CHECK(r.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    CHECK(r.at("results").at(0).at("rank").num()==1);
+    CHECK(r.at("filters").at("site").at(0).str()=="example.com");
+    auto e=condition_entry(r.at("filters"),"site","example.com");
+    CHECK(condition_source(e,"bing").at("local_verification").str()=="verified");
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://docs.example.com/no-title-term","title":"No term here","snippet":"","rank":2}],
+        "conditions":[{"kind":"site","value":"example.com","execution":"native"}]}}})");
+    };
+    auto ok=web.search("a", obj(R"({"query":"compliant site:example.com intitle:guide","sources":["bing"]})"));
+    CHECK(ok.at("result_count").num()==1);
+    CHECK(ok.at("results").at(0).at("url").str()=="https://docs.example.com/x");
+    auto ti=condition_entry(ok.at("filters"),"intitle","guide");
+    CHECK(ti.at("removed").num()==1);
+    CHECK(condition_source(ti,"bing").at("local_verification").str()=="verified");
+    CHECK(condition_source(ti,"bing").at("satisfied").flag()==false);
+    auto e2=condition_entry(ok.at("filters"),"site","example.com");
+    CHECK(e2.at("removed").num()==0);
+    auto p2=condition_source(e2,"bing");
+    CHECK(p2.at("local_verification").str()=="verified");
+    CHECK(p2.at("satisfied").flag());
+  }
+  TEST(web_search_cache_reprojection_preserves_the_filters_report) {
+    // (f) A cache hit must answer with the same per-condition execution report
+    // the original search produced.
+    Temp t;
+    Store s(t.path/"db");
+    FakeWorker w;
+    w.handler=[](const std::string&, const Json&) {
+      return obj(R"({"results":{"bing":{"status":"ok","hits":[
+        {"url":"https://docs.example.com/x","title":"X guide","snippet":"x doc","rank":1},
+        {"url":"https://other.example/y","title":"Y","snippet":"","rank":2}]}}})");
+    };
+    WebService web(s, w, test_registry());
+    auto first=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(first.at("result_count").num()==1);
+    CHECK(first.at("filters").at("removed_unverified").num()==1);
+    CHECK(first.at("filters").has("conditions"));
+    auto second=web.search("a", obj(R"({"query":"guide site:example.com","sources":["bing"]})"));
+    CHECK(second.at("from_cache").flag());
+    CHECK(second.at("filters").canonical()==first.at("filters").canonical());
+    CHECK(second.at("results").canonical()==first.at("results").canonical());
+    CHECK(w.calls.size()==1);
   }
   TEST(web_search_cache_spares_sources) {
     Temp t;

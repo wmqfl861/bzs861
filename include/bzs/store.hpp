@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <stop_token>
 #include <vector>
 struct sqlite3;
 struct sqlite3_context;
@@ -114,6 +115,7 @@ namespace bzs {
     Json seal_publication_locked(const Json& policy,const Json& history);
     Json current_publication_ceiling_locked(const std::string& owner,const std::string& url,const Json& policy);
     void prepare_web_publication_locked(const std::string& owner,const std::string& url,ParsedDocument& parsed,Json& meta);
+    Json project_transient_web_locked(const std::string& owner,const std::string& url,ParsedDocument parsed,const Json& meta);
     void seal_frozen_publication_locked(const std::string& owner,const std::string& document_id,const Json& history);
     Json alias_fences_locked(const std::string& owner,const std::string& logical,const std::string& target,std::int64_t created_sequence);
     bool alias_fences_live_locked(const Json& fences);
@@ -132,6 +134,8 @@ namespace bzs {
     Json compact_jobs_locked(const std::string& owner,std::int64_t limit,bool all_owners=false);
     std::int64_t compact_robots_locked(const std::string& owner,std::int64_t limit);
     void job_capacity_locked(const std::string& owner);
+    std::int64_t archive_bytes_locked(const std::string& owner);
+    bool payload_quota_fits_locked(const std::string& owner,std::int64_t extra);
     Json read_job_locked(const std::string& owner, const std::string& id);
     Json control_read_locked(const std::string& owner, const std::string& id, const std::string& action);
     void migrate_shared_reads_locked();
@@ -141,7 +145,8 @@ namespace bzs {
     std::vector<ReadLease> shared_read_members_locked(const ReadLease& payer);
     bool shared_read_live_locked(const ReadLease& payer);
     void settle_shared_read_locked(const ReadLease& payer,const std::string& error,
-                                   std::int64_t requests,std::int64_t bytes,const Json* snapshot=nullptr);
+                                   std::int64_t requests,std::int64_t bytes,const Json* snapshot=nullptr,
+                                   const Json* transient_receipt=nullptr);
     void settle_read_jobs_locked();
     void settle_read_job_locked(const std::string& id);
     bool owns_read_lease_locked(const ReadLease& lease);
@@ -197,6 +202,15 @@ namespace bzs {
     // comparison and snapshot/index writes share one transaction.
     Json ingest_web(const std::string& owner, const SourceDocument& input, ParsedDocument parsed, const Json& meta,
                     std::int64_t expected_deletion_generation);
+    // Transient no-store delivery: run the same publication preparation and
+    // fences as an ingest, but retain no body or snapshot. Returns the projection a
+    // windowed result needs (indexed, current site deployment, sealed policy).
+    Json project_transient_web(const std::string& owner, const std::string& url, ParsedDocument parsed, const Json& meta);
+    // Per-member delivery fence for a transient body: recheck revocation,
+    // deletion and alias fences, then project current publication ceilings.
+    Json transient_delivery_projection(const std::string& owner, const std::string& url, const std::string& final_url,
+                                       const Json& redirects, const Json& fence, const Json& publication,
+                                       const Json& site_publication);
     // Current snapshot summary for (owner,url), if any; used for read caching.
     std::optional<Json> cached(const std::string& owner, const std::string& url);
     // Fence a previously cached representation after a non-storable response.
@@ -218,7 +232,7 @@ namespace bzs {
     Json session_events(const std::string& owner,const std::string& id,std::int64_t after_id=0,std::int64_t limit=20);
     Json session_cancel(const std::string& owner,const std::string& id);
     Json session_page(const std::string& owner,const std::string& id,const std::string& version,const std::string& cursor,std::int64_t page_size=20);
-    std::optional<SearchLease> lease_next_search(const SourceRegistry& registry);
+    std::optional<SearchLease> lease_next_search(const SourceRegistry& registry,std::stop_token stop={});
     bool search_lease_live(const SearchLease& lease);
     bool complete_search(const SearchLease& lease,const Json& result,const SourceRegistry& registry);
     void fail_search(const SearchLease& lease,const std::string& error);
@@ -237,10 +251,14 @@ namespace bzs {
     Json job_results(const std::string& owner, const std::string& job_id,
                      std::int64_t offset=0, std::int64_t limit=20);
     std::string active_read_attempt(const std::string& owner, const std::string& job_id);
-    std::optional<ReadLease> lease_next_read();
+    std::optional<ReadLease> lease_next_read(std::stop_token stop={});
     bool read_lease_live(const ReadLease& lease);
     bool complete_read(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
                        const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
+    // Settle a no-store response without a snapshot: live members end
+    // 'succeeded' with a NULL snapshot and a delivered-transient receipt.
+    bool complete_read_transient(const ReadLease& lease, const SourceDocument& input, ParsedDocument parsed,
+                                 const Json& meta, std::int64_t external_requests, std::int64_t content_bytes);
     // Negative usage means an unknown outcome. Its entire durable grant stays charged.
     void fail_read(const ReadLease& lease, const std::string& error_code,
                    std::int64_t external_requests=-1, std::int64_t content_bytes=-1,
@@ -248,7 +266,7 @@ namespace bzs {
     Json map_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
     Json crawl_submit(const std::string& owner,const Json& args,const SiteRegistry& sites);
     Json crawl_edges(const std::string& owner,const std::string& id,std::int64_t offset=0,std::int64_t limit=20);
-    std::optional<MapLease> lease_next_map(const SiteRegistry& sites);
+    std::optional<MapLease> lease_next_map(const SiteRegistry& sites,std::stop_token stop={});
     bool map_lease_live(const MapLease& lease);
     bool complete_map(const MapLease& lease,const Json& response,const SiteRegistry& sites,
                       std::int64_t external_requests,std::int64_t content_bytes,
@@ -256,7 +274,7 @@ namespace bzs {
     void fail_map(const MapLease& lease,const std::string& error_code,
                   std::int64_t external_requests=-1,std::int64_t content_bytes=-1,const Json* observation=nullptr);
     std::string active_map_attempt(const std::string& owner,const std::string& job_id);
-    std::optional<Lease> lease_next(std::int64_t lease_ms=10000);
+    std::optional<Lease> lease_next(std::int64_t lease_ms=10000,std::stop_token stop={});
     bool complete(const Lease& lease, const SourceDocument& input, const ParsedDocument& parsed);
     void fail(const Lease& lease, const std::string& error_code);
     void settle_interruptions();

@@ -1,0 +1,47 @@
+{
+  "revision": "2026-10-29 three major modules",
+  "base": "a4ed7265a625097fadb9999f6bd9a7719f0c907a",
+  "modules": [
+    {
+      "id": "A",
+      "name": "offline evidence artifact safety",
+      "status": "implemented with tests"
+    },
+    {
+      "id": "B",
+      "name": "crawl/map sustained bounded interaction",
+      "status": "deterministic loopback soak tests added",
+      "limitations": "short soak only, no real source"
+    },
+    {
+      "id": "C",
+      "name": "local search benchmark harness",
+      "status": "added; measurement pending on target environment",
+      "entrypoint": "python -m bzs.local_benchmark",
+      "network_scope": "127.0.0.1 only"
+    }
+  ],
+  "tests": [
+    "test_map_sustained_same_origin_hops_keep_admission_bounded_and_cancel_replay_free",
+    "test_crawl_sustained_page_hops_keep_usage_and_cancelled_attempts_separate",
+    "test_benchmark_is_loopback_only_and_never_records_credentials_or_body",
+    "test_benchmark_rejects_invalid_or_unbounded_arguments",
+    "test_benchmark_rejects_invalid_token"
+  ],
+  "verification": {
+    "local_execution": "not available in this environment",
+    "exact_sha_ci": "pending"
+  },
+  "constraints": {
+    "sources_enabled": false,
+    "external_search": false,
+    "model_calls": 0,
+    "holdout_enabled": false,
+    "schema": 15,
+    "D1_D7": "pending",
+    "packages": 83,
+    "acceptance_ids": 161,
+    "slices": 10,
+    "fully_accepted": 0
+  }
+}

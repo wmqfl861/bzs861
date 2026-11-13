@@ -36,12 +36,31 @@ def _heading_fallback(doc, base: str, own_hosts: tuple[str, ...], limit: int) ->
     return hits
 
 
+def with_native_site_terms(query: str, conditions: list[dict] | None) -> str:
+    """Express site: conditions in the engine's own query syntax.
+
+    Both HTML endpoints execute ``site:host`` inside their q parameter. A term
+    the raw query already carries is not duplicated; execution is still only a
+    claim — the core re-verifies result hosts locally regardless.
+    """
+    out = query
+    for condition in conditions or []:
+        if condition.get("kind") != "site":
+            continue
+        term = "site:" + condition["value"]
+        if term not in out:
+            out += (" " if out else "") + term
+    return out
+
+
 class DuckDuckGoHtml(Adapter):
     default_base = "https://html.duckduckgo.com/html/"
+    native_filter_kinds = ("site",)
 
-    async def request(self, query, limit, language, timeout_s):
+    async def request(self, query, limit, language, timeout_s, conditions=None):
         region = self.params.get("region") or ("cn-zh" if (language or "").startswith("zh") or is_cjk_query(query) else "wt-wt")
-        return await self.fetcher.fetch(self.base_url, method="POST", data={"q": query, "kl": region, "b": ""},
+        return await self.fetcher.fetch(self.base_url, method="POST",
+                                        data={"q": with_native_site_terms(query, conditions), "kl": region, "b": ""},
                                         timeout_s=timeout_s, headers={"Referer": "https://html.duckduckgo.com/"})
 
     def blocked(self, res, body):
@@ -72,10 +91,11 @@ class DuckDuckGoHtml(Adapter):
 
 class BingHtml(Adapter):
     default_base = "https://www.bing.com/search"
+    native_filter_kinds = ("site",)
 
-    async def request(self, query, limit, language, timeout_s):
+    async def request(self, query, limit, language, timeout_s, conditions=None):
         zh = (language or "").startswith("zh") or is_cjk_query(query)
-        params = {"q": query, "count": str(min(limit, 30)), "form": "QBLH"}
+        params = {"q": with_native_site_terms(query, conditions), "count": str(min(limit, 30)), "form": "QBLH"}
         params.update({"setlang": "zh-Hans", "mkt": "zh-CN"} if zh else {"setlang": "en", "mkt": "en-US"})
         return await self.fetcher.fetch(self.base_url, params=params, timeout_s=timeout_s)
 

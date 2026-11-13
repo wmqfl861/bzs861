@@ -37,9 +37,15 @@ class Stack(e2e_crawl.Stack):
 
     def rows(self, query, values=()):
         path = self.root / "state" / "metadata.sqlite"
-        with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=3) as connection:
+        # sqlite3's context manager commits but does not close; an open
+        # handle keeps metadata.sqlite locked on Windows and breaks the
+        # TemporaryDirectory cleanup while a traceback still holds the frame.
+        connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=3)
+        try:
             connection.row_factory = sqlite3.Row
             return [dict(row) for row in connection.execute(query, values)]
+        finally:
+            connection.close()
 
 
 class RevocationEndToEnd(unittest.TestCase):

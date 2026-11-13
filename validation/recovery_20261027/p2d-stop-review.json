@@ -1,0 +1,25 @@
+{
+  "scope": "Audit followup to P2-D, no API wire/schema change",
+  "failure_observed": [
+    "asan-all: original injection after gate wake-up could fail a different concurrently held request",
+    "asan-fairness-fixed: idle claimer waiting on Store could reserve a post-stop job"
+  ],
+  "fix": [
+    "bind failure injection at first admission, preserving original error/usage assertions",
+    "pass stop_token to internal fixture/read/map/search lease methods; recheck under Store lock and transaction before reserving"
+  ],
+  "tests": {
+    "asan_fairness_repeated": 3,
+    "groups_per_run": 20,
+    "assertions_per_run": 483,
+    "failures": 0,
+    "new_tests": [
+      "pre_stopped_claimers_do_not_reserve_or_dispatch",
+      "stop_requested_inside_lease_transaction_does_not_reserve_or_dispatch"
+    ]
+  },
+  "limits": [
+    "Work admitted before a stop race still settles under existing shutdown rules. This is not cancellation/refund of already-dispatched RPCs.",
+    "Full integrated regression rerun follows; original failures retained outside Git."
+  ]
+}

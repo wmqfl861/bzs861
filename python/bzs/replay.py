@@ -8,7 +8,8 @@ import re
 from typing import Any
 
 from .probe_format import MAX_HITS, SCHEMA_VERSION, parser_identity
-from .probe_state import atomic_write, read_body, read_report_with_digest
+from .artifact_output import write_new_directory
+from .probe_state import read_body, read_report_with_digest
 from .worker.fetch import FetchResult
 from .worker.sources import ADAPTERS
 from .worker.sources.base import SourceError
@@ -94,32 +95,20 @@ def _response(out: Path, value: Any, row: dict) -> FetchResult:
 
 
 def _write_output(out: Path, report: dict) -> None:
-    if out.exists() and (not out.is_dir() or any(out.iterdir())):
-        raise ValueError("replay output is not empty; choose a new --out")
-    out.mkdir(parents=True, exist_ok=True)
-    lock = out / "replay.lock"
-    try:
-        with lock.open("x", encoding="utf-8"):
-            if any(path != lock for path in out.iterdir()):
-                raise ValueError("replay output became nonempty; choose a new --out")
-            raw = json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False).encode("utf-8") + b"\n"
-            summary = report["summary"]
-            markdown = (
-                "# Offline probe parser replay\n\n"
-                f"Status: **{report['status']}**. Network requests: **0**.\n\n"
-                f"Probe report SHA-256: `{report['source_report_sha256']}`.\n\n"
-                f"Parser identity matches recording: `{str(report['identity_match']).lower()}`.\n\n"
-                "| Replayed | Matched | Mismatches | Skipped |\n|---:|---:|---:|---:|\n"
-                f"| {summary['replayed']} | {summary['matched']} | {summary['mismatches']} | {summary['skipped']} |\n\n"
-                "Detailed differences are in `replay_report.json`. Skipped rows are not successful parser checks. "
-                "A matching replay proves reproducible parsing of these saved responses; it does not establish "
-                "current source availability, relevance, source approval or authenticity of the recording.\n"
-            )
-            atomic_write(out / "replay_report.json", raw)
-            atomic_write(out / "replay_report.md", markdown.encode("utf-8"))
-    except FileExistsError as exc:
-        raise ValueError("another replay owns this output directory") from exc
-
+    raw = json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False).encode("utf-8") + b"\n"
+    summary = report["summary"]
+    markdown = (
+        "# Offline probe parser replay\n\n"
+        f"Status: **{report['status']}**. Network requests: **0**.\n\n"
+        f"Probe report SHA-256: {report['source_report_sha256']}.\n\n"
+        f"Parser identity matches recording: {str(report['identity_match']).lower()}.\n\n"
+        "| Replayed | Matched | Mismatches | Skipped |\n|---:|---:|---:|---:|\n"
+        f"| {summary['replayed']} | {summary['matched']} | {summary['mismatches']} | {summary['skipped']} |\n\n"
+        "Detailed differences are in replay_report.json. Skipped rows are not successful parser checks. "
+        "A matching replay proves reproducible parsing of these saved responses; it does not establish "
+        "current source availability, relevance, source approval or authenticity of the recording.\n"
+    )
+    write_new_directory(out, {"replay_report.json": raw, "replay_report.md": markdown.encode("utf-8")}, label="replay")
 
 def replay(report_path: str, out_dir: str, *, allow_parser_change: bool = False) -> dict:
     """Compare every completed recorded response with the current source parser.

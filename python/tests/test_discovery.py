@@ -366,10 +366,12 @@ def test_exact_entry_and_input_limits_are_not_falsely_reported_as_truncated():
 
 
 @pytest.mark.parametrize("kind,body,code", [
-    ("sitemap", "<urlset>" + "<x>" * MAX_TREE_DEPTH + "</x>" * MAX_TREE_DEPTH + "</urlset>", "xml_depth_limit"),
-    ("html", "<html><body>" + "<div>" * MAX_TREE_DEPTH + "</div>" * MAX_TREE_DEPTH + "</body></html>", "html_depth_limit"),
-    ("sitemap", "<urlset>" + "<x/>" * MAX_TREE_NODES + "</urlset>", "xml_node_limit"),
-    ("html", "<html><body>" + "<br>" * MAX_TREE_NODES + "</body></html>", "html_node_limit"),
+    # Explicit ids keep PYTEST_CURRENT_TEST short: Windows caps one environment
+    # variable at 32767 characters and pytest stores the full id there.
+    pytest.param("sitemap", "<urlset>" + "<x>" * MAX_TREE_DEPTH + "</x>" * MAX_TREE_DEPTH + "</urlset>", "xml_depth_limit", id="sitemap-depth"),
+    pytest.param("html", "<html><body>" + "<div>" * MAX_TREE_DEPTH + "</div>" * MAX_TREE_DEPTH + "</body></html>", "html_depth_limit", id="html-depth"),
+    pytest.param("sitemap", "<urlset>" + "<x/>" * MAX_TREE_NODES + "</urlset>", "xml_node_limit", id="sitemap-nodes"),
+    pytest.param("html", "<html><body>" + "<br>" * MAX_TREE_NODES + "</body></html>", "html_node_limit", id="html-nodes"),
 ])
 def test_tree_resource_limits_are_not_bypassable_with_non_candidate_nodes(kind, body, code):
     result = parse(body, kind=kind)

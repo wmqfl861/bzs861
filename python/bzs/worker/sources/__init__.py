@@ -93,11 +93,18 @@ class SourceSet:
         if include_candidates and any(i not in self.adapters for i in candidate_ids):
             raise ValueError("candidate list contains an unknown or unimplemented source")
 
-    async def run_one(self, source_id: str, query: str, limit: int, language: str | None, timeout_s: float) -> dict[str, Any]:
+    async def run_one(self, source_id: str, query: str, limit: int, language: str | None, timeout_s: float,
+                      conditions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         started = time.monotonic()
         adapter = self.adapters.get(source_id)
         if adapter is None:
             return {"status": "error", "error": "no adapter for source", "hits": [], "elapsed_ms": 0}
+        # Only condition kinds this adapter truly translates upstream are passed
+        # on; adapters without native support keep their unchanged request path.
+        native_kinds = getattr(adapter, "native_filter_kinds", ())
+        applied = [dict(condition) for condition in (conditions or []) if condition.get("kind") in native_kinds]
+        applied = applied or None
+        dispatched = False
         try:
             # Review validity is checked for every call, including after the lane wait.
             spec = self.specs[source_id]
@@ -105,6 +112,7 @@ class SourceSet:
             key = spec["contract"]["limits"]["shared_budget_key"]
             semaphore = self.semaphores[key]
             async def execute():
+                nonlocal dispatched
                 async with semaphore:
                     async with self.start_locks[key]:
                         if self.cooldown_until.get(key, 0) > time.monotonic():
@@ -120,8 +128,12 @@ class SourceSet:
                         if remaining <= 0:
                             raise asyncio.TimeoutError()
                         self.last_start[key] = time.monotonic()
+                    dispatched = True
                     try:
-                        return await adapter.search(query, limit, language, remaining)
+                        if applied is None:
+                            # Unchanged adapters keep their exact old call shape.
+                            return await adapter.search(query, limit, language, remaining)
+                        return await adapter.search(query, limit, language, remaining, conditions=applied)
                     except SourceError as exc:
                         if exc.status in ("blocked", "challenge"):
                             cooldown = spec.get("cooldown_blocked_ms", 30 * 60 * 1000)
@@ -151,9 +163,25 @@ class SourceSet:
             out = {"status": "timeout", "error": "source timed out", "hits": []}
         except Exception as exc:  # adapter bugs must not take the worker down
             out = {"status": "error", "error": f"{type(exc).__name__}: {exc}"[:300], "hits": []}
+        if conditions is not None:
+            # Per-condition execution report. The core treats any condition this
+            # report does not explicitly mark "native" as not executed.
+            translated = {(condition["kind"], condition["value"]) for condition in (applied or [])}
+            # Native execution is claimed only when the adapter call actually
+            # started: cooldown, review refusal or a pre-dispatch timeout leave
+            # the condition unexecuted, never natively satisfied.
+            def execution_of(condition):
+                if (condition["kind"], condition["value"]) not in translated:
+                    return "unsupported"
+                return "native" if dispatched else "not_executed"
+            out["conditions"] = [{"kind": condition["kind"], "value": condition["value"],
+                                  "execution": execution_of(condition)}
+                                 for condition in conditions]
         out["elapsed_ms"] = int((time.monotonic() - started) * 1000)
         return out
 
-    async def run_many(self, ids: list[str], query: str, limit: int, language: str | None, timeout_s: float) -> dict[str, Any]:
-        results = await asyncio.gather(*(self.run_one(i, query, limit, language, timeout_s) for i in ids))
+    async def run_many(self, ids: list[str], query: str, limit: int, language: str | None, timeout_s: float,
+                       conditions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        results = await asyncio.gather(*(self.run_one(i, query, limit, language, timeout_s, conditions)
+                                         for i in ids))
         return dict(zip(ids, results))

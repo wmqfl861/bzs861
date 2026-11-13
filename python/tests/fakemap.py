@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 from collections import Counter
 import json
+import gzip
 import sys
 from urllib.parse import urlsplit
 
@@ -123,6 +124,28 @@ def make_app(port_ref: dict) -> web.Application:
             + str(port_ref["port"]) + '/_test/entity-target">]>'
             '<urlset><url><loc>&xxe;</loc></url></urlset>'), content_type="application/xml")
 
+    async def compressed(request):
+        b = origin(request)
+        name = request.match_info["name"]
+        if name == "index":
+            xml = (f'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<sitemap><loc>{b}/map/gzip/leaf.xml.gz</loc></sitemap>'
+                   f'<sitemap><loc>{b}/map/gzip/leaf.xml.gz</loc></sitemap>'
+                   f'<sitemap><loc>{b}/map/gzip/index.xml.gz</loc></sitemap>'
+                   f'<sitemap><loc>{b}/outside/never.xml.gz</loc></sitemap></sitemapindex>')
+        else:
+            xml = (f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                   f'<url><loc>{b}/map/gzip/candidate-one</loc></url>'
+                   f'<url><loc>{b}/map/gzip/candidate-one#duplicate</loc></url>'
+                   f'<url><loc>{b}/map/private/never</loc></url></urlset>')
+        body = gzip.compress(xml.encode("utf-8"), mtime=0)
+        if name == "multimember":
+            body += gzip.compress(b"<urlset/>", mtime=0)
+        if name == "truncated":
+            body = body[:-4]
+        return web.Response(body=body, content_type="application/gzip")
+
+    app.router.add_get("/map/gzip/{name}.xml.gz", compressed)
     app.router.add_get("/_test/stats", stats)
     app.router.add_get("/robots.txt", robots)
     for path, handler in (("/map/index.xml", index), ("/map/nested.xml", nested), ("/map/child.xml", child),

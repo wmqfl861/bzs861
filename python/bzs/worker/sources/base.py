@@ -115,10 +115,17 @@ def decode_ddg_url(href: str) -> str:
 
 
 class Adapter:
-    """One upstream search endpoint. Subclasses implement ``request`` and ``parse``."""
+    """One upstream search endpoint. Subclasses implement ``request`` and ``parse``.
+
+    ``native_filter_kinds`` lists the query-grammar condition kinds this adapter
+    translates into true upstream parameters. Adapters that declare none keep
+    their existing request path: conditions default to a no-op here, and the
+    worker reports those conditions as unsupported (never silently satisfied).
+    """
 
     kind = "scrape"
     default_base = ""
+    native_filter_kinds: tuple[str, ...] = ()
 
     def __init__(self, spec: dict[str, Any], fetcher: Fetcher):
         self.spec = spec
@@ -127,8 +134,12 @@ class Adapter:
         self.base_url = self.params.get("base_url", self.default_base)
         self.fetcher = fetcher
 
-    async def search(self, query: str, limit: int, language: str | None, timeout_s: float) -> tuple[list[Hit], FetchResult]:
-        res = await self.request(query, limit, language, timeout_s)
+    async def search(self, query: str, limit: int, language: str | None, timeout_s: float,
+                     conditions: list[dict[str, Any]] | None = None) -> tuple[list[Hit], FetchResult]:
+        if conditions:
+            res = await self.request(query, limit, language, timeout_s, conditions=conditions)
+        else:
+            res = await self.request(query, limit, language, timeout_s)
         try:
             self.check(res)
             hits = await asyncio.to_thread(self.parse, res, query, limit)  # lxml parsing off the event loop

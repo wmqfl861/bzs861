@@ -1,0 +1,30 @@
+{
+  "input": "07ef405189862db772ef5cdde1220376da5ce967",
+  "scope": "native Windows dead-root disposition contract tests; no production code change",
+  "first_failed_gate": {
+    "run": 40733581522,
+    "passed": 1572,
+    "failed": 4,
+    "skipped": 0,
+    "artifact": 12836051874
+  },
+  "second_failed_gate": {
+    "run": 40735654661,
+    "passed": 1576,
+    "failed": 2,
+    "skipped": 0,
+    "artifact": 12837650473,
+    "sha256": "8df4b411290587f04c1eaef393e4c369eb5575a31317ccb5d4cb1a1f20129604"
+  },
+  "resolution": "Two old tests expected silent record deletion after root exit. Preserve both actual waited/unwaited exit scenarios but require nonzero unconfirmed stop, no termination calls and unchanged record. Pin identity with a verified handle; coordinate exit instead of fixed sleep or PID-reuse skips. Both tests are required by the Windows JUnit gate.",
+  "compatibility": "Abnormal Windows root exit now requires operator review, including no visible descendants. This is explicit fail-closed hardening, not transparent behavior compatibility.",
+  "local_focused": {
+    "passed": 56,
+    "skipped": 5,
+    "skip_reason": "Windows-only cases on Linux"
+  },
+  "full_final_and_remote_results": "See exact final SHA CI and publication report; pending at commit creation.",
+  "original_failures_preserved": true,
+  "test_cases_removed": 0,
+  "production_changed": false
+}

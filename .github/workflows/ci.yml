@@ -11,6 +11,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
         with:
           persist-credentials: false
+      - name: Reject CRLF in the index (CL-21)
+        run: |
+          bad=$(git ls-files --eol | awk '($1=="i/crlf"||$1=="i/mixed") && $3!="attr/-text"')
+          if [ -n "$bad" ]; then
+            echo "files stored with CRLF in the index:"; echo "$bad"; exit 1
+          fi
       - name: Install build dependencies
         run: |
           sudo apt-get update
@@ -25,7 +31,20 @@ jobs:
         run: |
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
           cmake --build --preset dev -j 2
-          ctest --preset dev --output-junit build/ctest-results.xml
+          ctest --preset dev --output-junit "$PWD/build/ctest-results.xml"
+          .venv/bin/python tools/verify_ctest_junit.py "$PWD/build/ctest-results.xml" --minimum 42
+      - name: Verify capture mutations (CL-03r)
+        timeout-minutes: 30
+        env:
+          MUTATION_OUTPUT_DIR: ${{ github.workspace }}/mutation-logs
+          MUTATION_SUITE_TIMEOUT: "600"
+        run: |
+          set -o pipefail
+          mkdir -p "$MUTATION_OUTPUT_DIR"
+          .venv/bin/python tools/test_mutation_check.py 2>&1 | tee "$MUTATION_OUTPUT_DIR/harness-tests.log"
+          # Reuse the tested dev build. The script restores source and rebuilds
+          # the affected targets on exit, before any later normal test consumer.
+          bash tools/mutation_check.sh "$PWD" "$PWD/build" cmake Debug 2>&1 | tee "$MUTATION_OUTPUT_DIR/summary.log"
       - name: Address and undefined-behavior checks
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
@@ -33,6 +52,11 @@ jobs:
         run: |
           cmake --preset asan -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
           cmake --build --preset asan-core -j 2
+          ./build-asan/bzs_storage_maintenance_tests
+          ./build-asan/bzs_background_pool_tests
+          ./build-asan/bzs_receipt_retention_tests
+          ./build-asan/bzs_archive_quota_tests
+          ./build-asan/bzs_incremental_storage_tests
           ./build-asan/bzs_tests
           ./build-asan/bzs_batch_tests
           ./build-asan/bzs_map_tests
@@ -64,6 +88,7 @@ jobs:
           path: |
             build/ctest-results.xml
             build/Testing/Temporary/*.log
+            mutation-logs/*.log
           retention-days: 14
           if-no-files-found: warn
   windows:
@@ -100,7 +125,12 @@ jobs:
         shell: pwsh
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/debug/bin;$env:GITHUB_WORKSPACE/.build-tools/vcpkg/installed/x64-windows/bin;$env:PATH"
-          ctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|source_publication|search_modes|cache_freshness|revalidation|direct_shared|revocation|capacity_cycles|http_cli|http_revocation|request_executor|long_document_recall|gram_index)$" --verbose --output-on-failure --output-junit build-win/ctest-results.xml
+          ctest --test-dir build-win -C Debug -R "^(core|batch|map|crawl|site_publication|contracts|retention|fairness|sessions|source_publication|search_modes|cache_freshness_[123]|revalidation|direct_shared|revocation|capacity_cycles|http_cli|http_revocation|request_executor|long_document_recall|gram_index|background_pool|receipt_retention|archive_quota|incremental_storage|storage_maintenance|launcher_lifecycle|cache_shard_contract|ci_reporting)$" --verbose --output-on-failure --output-junit "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify collected Windows JUnit
+        shell: pwsh
+        run: |
+          python tools/verify_ctest_junit.py "$env:GITHUB_WORKSPACE/build-win/ctest-results.xml" --minimum 31
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Retain test logs
         if: always()

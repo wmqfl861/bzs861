@@ -22,6 +22,17 @@ from .worker.sources import SourceSet, load_manifest
 from .worker.sources.review import SourceReviewError, require_review
 from .worker.sources.base import SourceError, SOURCE_RETRY_AFTER_LIMIT_MS
 
+_SAFE_ERROR_LABEL = re.compile(r"[a-z_]{1,40}")
+
+
+def _safe_error_label(exc: Exception) -> str:
+    """Persist stable error classes, never exception text that may contain secrets."""
+    if isinstance(exc, SourceError):
+        status = exc.status if isinstance(exc.status, str) and _SAFE_ERROR_LABEL.fullmatch(exc.status) else "source_error"
+        return f"source_error:{status}"
+    name = type(exc).__name__
+    return f"adapter_error:{name}" if _SAFE_ERROR_LABEL.fullmatch(name.lower()) else "adapter_error:Exception"
+
 
 def _utc_now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -290,7 +301,8 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
                                    top=[{"title": hit["title"], "url": hit["url"]} for hit in results[:3]])
                     except SourceError as exc:
                         response, retry_ms = exc.result, exc.retry_after_ms
-                        row.update(status=exc.status, error=str(exc)[:300], retry_after_ms=retry_ms)
+                        safe_status = exc.status if isinstance(exc.status, str) and _SAFE_ERROR_LABEL.fullmatch(exc.status) else "source_error"
+                        row.update(status=safe_status, error=_safe_error_label(exc), retry_after_ms=retry_ms)
                         if exc.retry_after_clamped:
                             row.update(retry_after_clamped=True, retry_after_limit_ms=SOURCE_RETRY_AFTER_LIMIT_MS)
                     except asyncio.TimeoutError:
@@ -300,7 +312,7 @@ async def probe(sources_path: str, out_dir: str, queries_path: str, only: list[s
                         _checkpoint(out, report)
                         raise
                     except Exception as exc:
-                        row.update(status="error", error=f"{type(exc).__name__}: {exc}"[:300])
+                        row.update(status="error", error=_safe_error_label(exc))
                     row["elapsed_ms"] = int((time.monotonic() - started) * 1000)
                     if response is not None:
                         metadata = safe_response_metadata(response)

@@ -131,17 +131,28 @@ class CacheFreshness(unittest.TestCase):
             self.error("E_CACHE_STALE", "cache_only")
             self.assertEqual(len(self.origin.requests), before + 2)
 
-    def test_no_store_denies_new_snapshot_and_invalidates_old_reuse(self):
+    def test_no_store_delivers_transient_and_invalidates_old_reuse(self):
         self.origin.control = "no-store"
-        self.error("E_CACHE_POLICY")
+        transient = self.read()
+        self.assertEqual(transient["transient"], "no_store")
+        self.assertNotIn("snapshot_id", transient)
+        self.assertNotIn("document_id", transient)
+        self.assertNotIn("cache", transient)
+        self.assertIn("freshnessneedle", transient["content"]["text"])
+        self.assertEqual(transient["content_trust"], "untrusted_web_content")
         self.assertEqual(self.ok("stats")["snapshots"], 0)
+        self.assertEqual(self.ok("search", {"query": "freshnessneedle"})["frozen_count"], 0)
         self.origin.control = "max-age=60"
         first = self.read()
         self.origin.control = "no-store"
-        self.error("E_CACHE_POLICY", "refresh")
+        again = self.read("refresh")
+        self.assertEqual(again["transient"], "no_store")
+        self.assertNotIn("snapshot_id", again)
+        self.assertNotIn("cache", again)
         self.error("E_CACHE_STALE", "cache_only")
         self.assertEqual(self.ok("stats")["snapshots"], 1)
         self.assertIn("freshnessneedle", self.ok("document.read", {"snapshot_id": first["snapshot_id"]})["canonical_text"])
+        self.assertEqual(len(self.origin.requests), 3)
 
     def test_304_no_store_cannot_leave_old_fresh_cache_usable(self):
         self.origin.tag = True
@@ -161,15 +172,29 @@ class CacheFreshness(unittest.TestCase):
         self.assertEqual(len(self.origin.requests), 2)
         self.assertEqual(self.ok("document.read", {"snapshot_id": first["snapshot_id"]})["snapshot_id"], first["snapshot_id"])
 
-    def test_no_store_batch_and_crawl_charge_requests_without_receipts(self):
+    def test_no_store_batch_delivers_transient_and_crawl_still_rejects(self):
         self.origin.control = "no-store"
         read = self.ok("read_many.submit", {"urls": [self.stack.url("/docs/page")], "idempotency_key": "cache-batch", "max_requests": 1})
         read_job = self.wait(read["job_id"])
+        self.assertEqual(read_job["state"], "succeeded", read_job)
         self.assertEqual(read_job["usage"]["external_requests"], 1)
+        self.assertEqual(read_job["used_pages"], 1)
+        results = self.ok("job.results", {"job_id": read["job_id"]})
+        item = results["items"][0]
+        self.assertEqual(item["state"], "succeeded")
+        self.assertFalse(item["available"])
+        self.assertEqual(item["receipt"]["transient"], "no_store")
+        self.assertNotIn("snapshot_id", item["receipt"])
+        self.assertEqual(item["external_requests"], 1)
         self.assertEqual(self.ok("stats")["snapshots"], 0)
         crawl = self.ok("crawl.submit", {"site_id": "conditional-fixture", "seeds": [self.stack.url("/docs/page")], "idempotency_key": "cache-crawl", "max_requests": 3})
         crawl_job = self.wait(crawl["job_id"])
         self.assertEqual(crawl_job["usage"]["external_requests"], 2)
+        crawl_results = self.ok("job.results", {"job_id": crawl["job_id"]})
+        page = crawl_results["items"][0]
+        self.assertEqual(page["state"], "failed")
+        self.assertEqual(page["error_code"], "E_CACHE_POLICY")
+        self.assertFalse(page["available"])
         self.assertEqual(self.ok("stats")["snapshots"], 0)
 
     def http_chain(self):

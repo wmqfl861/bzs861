@@ -1,0 +1,59 @@
+{
+  "review": "whole-code follow-up audit",
+  "base": "b12634494f13abc5ae2a2b0dd4097ac9f2a1b4ff",
+  "scope": [
+    "offline database maintenance",
+    "cross-platform process lifecycle and CLI error behavior",
+    "Worker RPC input validation and test wiring",
+    "CMake/CTest, CI evidence, documentation and release boundary"
+  ],
+  "findings_fixed": [
+    {
+      "id": "AUDIT-01",
+      "severity": "medium",
+      "finding": "Already-incremental storage conversion returned success after SQLite integrity checks without invoking the explicit FTS5 integrity check used by actual conversion.",
+      "fix": "Run FTS5 integrity checks before returning already_incremental.",
+      "test": "already_incremental_still_checks_fts_integrity",
+      "result": "6 groups / 133 assertions passed"
+    },
+    {
+      "id": "AUDIT-02",
+      "severity": "low",
+      "finding": "Expected local lifecycle/file errors could escape bzs CLI as a traceback.",
+      "fix": "Convert OSError, RuntimeError and ValueError from command execution into concise E_CLI output and exit code 2.",
+      "test": "test_cli_reports_lifecycle_errors_without_traceback",
+      "result": "Included in 14 passing focused pytest cases"
+    }
+  ],
+  "validation": {
+    "storage_native": {
+      "groups": 6,
+      "assertions": 133,
+      "failures": 0
+    },
+    "focused_pytest": {
+      "passed": 14,
+      "deselected": 1,
+      "failures": 0
+    },
+    "python_compile": "passed",
+    "git_diff_check": "passed",
+    "full_python_local": "not run: environment lacks locked trafilatura and mcp dependencies; network package installation unavailable",
+    "previous_exact_head_ci": {
+      "run": 40540039885,
+      "linux": "success",
+      "windows": "success",
+      "applies_to": "b12634494f13abc5ae2a2b0dd4097ac9f2a1b4ff",
+      "does_not_validate_this_follow_up": true
+    }
+  },
+  "policy": {
+    "business_schema": 15,
+    "sources_enabled": false,
+    "D1_D7": "pending",
+    "B24_expansion": false,
+    "keyed_identity_retention_changed": false,
+    "quarantine_clearance": false
+  },
+  "merge_status": "Do not merge until exact follow-up SHA Linux/Windows CI passes."
+}

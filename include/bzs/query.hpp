@@ -40,4 +40,10 @@ namespace bzs {
   std::vector<std::pair<std::size_t, std::size_t>> leaf_matches(std::string_view hay_lower, const QueryNode& leaf, std::size_t limit);
   // Leaves that must or may match (excludes everything below NOT).
   std::vector<const QueryNode*> positive_leaves(const QueryNode& root);
+  // True for engine filter operator names this grammar refuses to forward.
+  bool is_refused_filter_operator_name(const std::string& name);
+  // Throws E_QUERY_SYNTAX when the query uses a refused operator with an
+  // unquoted prefix (bare, grouped, or with a quoted operand); fully
+  // quoted tokens stay literal searches. Shares the lexer's tokenization.
+  void require_no_unmodelled_filter_operators(const std::string& query);
 }

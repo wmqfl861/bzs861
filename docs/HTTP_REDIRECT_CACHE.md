@@ -33,7 +33,7 @@ Worker 另行返回有界的 `http_redirect_observations`（最多 20 条，规�
 
 私有协议的编码大小按 Core `Json::canonical` 的 UTF-8 字节计数，包括字符串键和值中的斜杠转义；Worker 的大小预检采用同一口径，不改变实际 JSON 传输或全局序列化器。证明超过 8 KiB 或无法覆盖整个请求时，Worker 省略可选证明，仍返回本次完整读取结果与限制观察。Core 也只有在证明与既有 HTTP 元数据合计不超过 16 KiB 时才保存这个可选证明；不会因省略证明而省略 no-store 检查。证明计入原有 `http_cache_bytes` 和 owner 配额，更新、失效、回收、删除沿用现有事务记账。跳转证明本身不新增表或 schema 迁移；独立的删除身份索引使用前述 schema14 升级。
 
-任何实际中间响应的 no-store、非法 Cache-Control 或 Worker 标记 invalid 的原始字段，都会阻止本次原始 URL 读取产生新的持久正文，返回 `E_CACHE_POLICY`。这是本项目当前没有瞬时正文通道时的保守规则；并不声称 HTTP 标准禁止对另一个独立授权资源单独缓存。此前合法取得的正文仍可作为历史证据读取，其 HTTP 复用资格则按旧 snapshot ID + metadata hash 失效。失败的迟到回执不能删除后来成功刷新建立的新缓存身份。
+任何实际中间响应的 no-store、非法 Cache-Control 或 Worker 标记 invalid 的原始字段，都会阻止本次原始 URL 读取产生新的持久正文。直接读取路径（`web.read` 与 `read_many`）在该持久化检查之前分支到[瞬时交付](HTTP_FRESHNESS.md)：完整 200 响应以 `transient="no_store"` 一次性交付，不产生快照或跳转证明；crawl/map 页面与 304 重验证仍返回 `E_CACHE_POLICY`。这并不声称 HTTP 标准禁止对另一个独立授权资源单独缓存。此前合法取得的正文仍可作为历史证据读取，其 HTTP 复用资格则按旧 snapshot ID + metadata hash 失效。失败的迟到回执不能删除后来成功刷新建立的新缓存身份。
 
 ## Core → Worker 刷新授权
 

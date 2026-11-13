@@ -1,0 +1,101 @@
+{
+  "revision": "offline evaluation/probe/replay follow-up",
+  "base": "83c1cfe93389c7c75794c63ed9ef4e024b1fad0c",
+  "scope": [
+    "offline evaluation package output",
+    "offline replay output",
+    "failure recovery and output immutability"
+  ],
+  "finding": {
+    "id": "EVAL-OUTPUT-ATOMICITY",
+    "severity": "medium",
+    "before": "Evaluation package and replay reports created final output directory before writing all files; a mid-write failure could leave an incomplete directory that subsequent runs refused to overwrite.",
+    "fix": "Use sibling staging directories, a persistent SQLite publication lock, and final directory rename only after all output files are complete.",
+    "tests": [
+      "test_prepare_output_failure_never_publishes_a_partial_package",
+      "test_replay_output_failure_never_publishes_partial_report_directory"
+    ]
+  },
+  "verification": {
+    "source_review": "updated by inspection",
+    "new_tests": "added; exact SHA CI pending",
+    "full_pytest": "pending CI",
+    "ctest": "pending CI",
+    "linux_asan_ubsan": "pending exact SHA CI"
+  },
+  "policy": {
+    "network_requests": 0,
+    "model_calls": 0,
+    "holdout_enabled": false,
+    "source_activation": false,
+    "business_schema": 15,
+    "D1_D7": "pending",
+    "acceptance_packages": 83,
+    "acceptance_ids": 161,
+    "slices": 10,
+    "fully_accepted_packages": 0
+  },
+  "five_node_increment": {
+    "revision": "2026-10-29",
+    "base": "df97acf9f063bd7b7dd6191b7a09bb36690e9c62",
+    "nodes": [
+      {
+        "id": "OFFLINE-01",
+        "name": "probe exception redaction",
+        "tests": [
+          "test_probe_persists_error_class_not_secret_exception_text"
+        ]
+      },
+      {
+        "id": "OFFLINE-02",
+        "name": "cross-platform artifact path validation",
+        "tests": [
+          "test_artifact_output_rejects_cross_platform_unsafe_names",
+          "test_artifact_output_rejects_device_directory_name"
+        ]
+      },
+      {
+        "id": "OFFLINE-03",
+        "name": "concurrent artifact publication",
+        "tests": [
+          "test_concurrent_publishers_produce_exactly_one_complete_output"
+        ]
+      },
+      {
+        "id": "OFFLINE-04",
+        "name": "fail-closed publication lock",
+        "tests": [
+          "test_artifact_output_rejects_nonregular_publication_lock"
+        ]
+      },
+      {
+        "id": "OFFLINE-05",
+        "name": "directory-entry durability reporting",
+        "tests": [
+          "test_parent_directory_flush_failure_reports_published_state"
+        ]
+      }
+    ],
+    "additional_tests": [
+      "test_prepare_output_failure_never_publishes_a_partial_package",
+      "test_replay_output_failure_never_publishes_partial_report_directory",
+      "test_offline_probe_replay_evaluation_chain_never_promotes_synthetic_evidence"
+    ],
+    "verification": {
+      "local_execution": "not performed in this tool environment; exact SHA CI is the gate",
+      "ci": "pending"
+    },
+    "constraints": {
+      "network_requests": 0,
+      "model_calls": 0,
+      "source_activation": false,
+      "holdout_enabled": false,
+      "business_schema": 15,
+      "D1_D7": "pending",
+      "acceptance_packages": 83,
+      "acceptance_ids": 161,
+      "slices": 10,
+      "fully_accepted_packages": 0
+    }
+  }
+}

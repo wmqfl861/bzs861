@@ -285,3 +285,37 @@ async def test_waiting_for_host_capacity_consumes_the_same_request_deadline():
 def test_unbound_proxy_modes_are_rejected_before_any_connection(options):
     with pytest.raises(ValueError, match="disabled"):
         Fetcher(NetPolicy(), **options)
+
+
+def test_gunzip_archive_round_trip_bounds_and_refusals():
+    import gzip
+    from bzs.worker.fetch import gunzip_archive
+    payload = b"<urlset>" + b"<url><loc>https://x.test/a</loc></url>" * 8 + b"</urlset>"
+    packed = gzip.compress(payload)
+    assert gunzip_archive(packed, len(payload)) == payload
+    assert gunzip_archive(packed + b"\x00" * 4, len(payload)) == payload  # NUL padding tolerated
+    with pytest.raises(ValueError, match="too large"):
+        gunzip_archive(packed, len(payload) - 1)
+    with pytest.raises(ValueError, match="not a gzip"):
+        gunzip_archive(b"<xml/>", 1024)
+    with pytest.raises(ValueError, match="damaged"):
+        gunzip_archive(packed[:-4], len(payload))  # truncated CRC/size trailer
+    with pytest.raises(ValueError, match="trailing"):
+        gunzip_archive(packed + b"zz", len(payload))
+    with pytest.raises(ValueError, match="trailing"):
+        gunzip_archive(packed + gzip.compress(b"<urlset/>"), len(payload))  # second member
+
+
+async def test_host_lock_registry_is_bounded_and_keeps_busy_entries():
+    from bzs.worker.fetch import MAX_HOST_LOCKS, Fetcher
+    fetcher = Fetcher(NetPolicy(), per_host=2)
+    for i in range(MAX_HOST_LOCKS + 64):
+        fetcher._sem(f"host{i}.example")
+    assert len(fetcher._host_locks) <= MAX_HOST_LOCKS
+    busy = fetcher._sem("busy.example")
+    await busy.acquire()
+    await busy.acquire()
+    assert busy.locked()
+    for i in range(256):
+        fetcher._sem(f"other{i}.example")
+    assert "busy.example" in fetcher._host_locks  # busy entries are never retired

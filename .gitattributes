@@ -1,0 +1,14 @@
+# CL-21: one line-ending policy for every platform. Text files are LF in
+# the working tree and in the index; CI rejects i/crlf (renormalising the
+# archived validation logs is a normal commit, not a history rewrite).
+* text=auto eol=lf
+*.xlsx binary
+*.png binary
+*.jpg binary
+*.gz binary
+# CL-09: validation/ holds archived run evidence, not working source; keep it
+# out of code search tools and GitHub language statistics.
+validation/** linguist-generated=true
+# CL-23: archived evidence is byte-preserved (cited SHA-256 digests cover
+# the original CRLF bytes); never convert line endings under validation/.
+validation/** -text

@@ -48,7 +48,7 @@ async def test_mcp_omits_absent_mode_and_budget_for_core_legacy_defaults(mcp):
 @pytest.mark.parametrize("change", [{"mode": None}, {"mode": True}, {"mode": "null"},
                                      {"max_sources": True}, {"max_sources": "2"}, {"max_sources": 2.0},
                                      {"deadline_ms": None}, {"per_source": False}, {"timeout_ms": "1000"},
-                                     {"limit": 1.0}, {"sources": "[]"}, {"sources": [1]}, {"extra": 1}])
+                                     {"limit": 1.0}, {"sources": "[1]"}, {"sources": [1]}, {"extra": 1}])
 async def test_mcp_rejects_raw_coercion_before_core(mcp, tool, change):
     instance, calls, _ = mcp
     request = {"query": "fixture", **change}
@@ -160,7 +160,30 @@ async def test_worker_preserves_subsecond_remaining_deadline_without_rounding(wo
     instance, calls = worker
     await instance.search_multi({"query": "fixture", "sources": ["first"], "timeout_ms": 37,
                                  "manifest_sha256": instance.sources.manifest_digest})
-    assert calls == [(["first"], "fixture", 10, None, 0.037)]
+    assert calls == [(["first"], "fixture", 10, None, 0.037, None)]
+
+
+async def test_worker_carries_structured_conditions_to_every_source(worker):
+    instance, calls = worker
+    conditions = [{"kind": "site", "value": "example.com"}, {"kind": "inbody", "value": "needle"}]
+    await instance.search_multi({"query": "fixture site:example.com inbody:needle", "sources": ["first"],
+                                 "timeout_ms": 37, "manifest_sha256": instance.sources.manifest_digest,
+                                 "conditions": conditions})
+    assert calls[-1] == (["first"], "fixture site:example.com inbody:needle", 10, None, 0.037, conditions)
+
+
+@pytest.mark.parametrize("conditions", ["site:x", [{}], [[]], [{"kind": "date", "value": "2026"}],
+                                         [{"kind": "site"}], [{"kind": "site", "value": ""}],
+                                         [{"kind": "site", "value": "x" * 257}], [{"kind": "site", "value": 1}],
+                                         [{"kind": "site", "value": "x", "extra": 1}],
+                                         [{"kind": "site", "value": "x"}] * 17])
+async def test_worker_rejects_malformed_conditions_without_dispatch(worker, conditions):
+    instance, calls = worker
+    with pytest.raises(ValueError, match="conditions"):
+        await instance.search_multi({"query": "fixture", "sources": ["first"], "timeout_ms": 37,
+                                     "manifest_sha256": instance.sources.manifest_digest,
+                                     "conditions": conditions})
+    assert calls == []
 
 
 @pytest.mark.parametrize("timeout", [0, -1, 30001, True, "37", 37.0, None])

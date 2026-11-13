@@ -1,0 +1,102 @@
+{
+  "base": "0c47a5f5539b47cbb5f53398ed6e41de5ba9eb69",
+  "base_tree": "1e0d015aad87933c362d1787880a16e69e13c54b",
+  "review": "implementing assistant source/counterexample audit; not external signoff",
+  "status": "local_release_passed_remote_ci_pending",
+  "new_counterexamples_on_baseline": {
+    "failed": 10,
+    "passed": 0
+  },
+  "execution": {
+    "baseline_python": {
+      "passed": 1528,
+      "skipped": 5
+    },
+    "release_ctest": {
+      "passed": 42,
+      "failed": 0,
+      "skipped_suites": 0,
+      "seconds": 234.27
+    },
+    "python_inside_ctest": {
+      "passed": 1573,
+      "skipped": 5,
+      "skip_scope": "Windows-only tests on Linux"
+    },
+    "new_tests": 45,
+    "gzip_core_mcp_e2e": {
+      "passed": 11,
+      "fakeweb_only": true
+    },
+    "mutation_checks": {
+      "detected": 4,
+      "isolated_copies": true
+    },
+    "counts_overlap": true,
+    "ci_followup_focus": {
+      "passed": 95,
+      "skipped": 3,
+      "scope": "process tree and golden dataset tests on Linux"
+    },
+    "original_contracts": 34,
+    "plan_guard": 13
+  },
+  "fixes": [
+    "pin process handles before second membership snapshot; preserve unknown roots/residuals",
+    "host holders/waiters/preacquire references prevent unsafe eviction; hard cap before dispatch",
+    "bounded value-free internal diagnostics",
+    "bounded strict unique auth registry and failure-closed verification"
+  ],
+  "continued_nodes": [
+    "OPS-00/SEC-01 host_admission aggregate health diagnostics and bounded churn",
+    "AUTH-01/OPS-00 readonly mcp-token check and concurrent revoke/add",
+    "MAP-01/API-00 gzip nested discovery through real Worker/Core/stdio MCP"
+  ],
+  "added_gate": "Full Windows pytest incl real process trees; existing native gates untouched",
+  "retained_failures": [
+    "10 baseline counterexamples",
+    "intermediate duplicated unconfirmed diagnostic counts in old test",
+    "gzip test oracle omitted allowed metadata candidate; production unchanged",
+    "First full Windows pytest gate:1572 passed/4 failed/0 skipped; three old test encoding/CRLF assumptions and one new already-exited-root regression. Fixed without skipping cases, changing code pages or weakening golden hashes; native retry pending at report time."
+  ],
+  "preservation": {
+    "paths": 4530,
+    "historical_validation_files": 4527,
+    "mismatches": []
+  },
+  "not_executed": [
+    "local Windows11 or target deployment",
+    "current local complete Debug and ASan/UBSan",
+    "real sources/human qrels/restore acceptance",
+    "new exact published commit CI at report time"
+  ],
+  "limits": [
+    "not zero-orphan supervisor; unknown dead-root ancestry requires operator review",
+    "host limits per Worker not distributed global capacity",
+    "reviewed recent Python/control/map paths; not whole historical code exhaustive proof"
+  ],
+  "policy": {
+    "business_schema": 15,
+    "sources_enabled": 0,
+    "D1_D7": "pending unchanged",
+    "b24_expansion": false,
+    "keyed_retention_changed": false,
+    "package_acceptance": "37partial/46not_started/0accepted"
+  },
+  "raw_logs": "external delivery evidence and CI artifacts; not committed",
+  "publication_readback": {
+    "initial_descriptor_equivalence": "Adopted same open fd spelling after exact native blob readback and reran the complete suite.",
+    "final_code_tree": "16527ce83e724f5abca3dc96778d59d7595ea815",
+    "final_manifest_sha256": "b1cb7a41d056e168128c0ecff6a27e12f280005f43de7f19640195b24094214f"
+  },
+  "first_windows_gate": {
+    "run": 40733581522,
+    "head": "9491c6609375c3088ad4b6c756689f4545a3e747",
+    "passed": 1572,
+    "failed": 4,
+    "skipped": 0,
+    "artifact": 12836051874,
+    "zip_sha256": "87bd157a6f3a61cc70fbfe850e76adc86b12ce58a61fad1f7b80603fa106ff31",
+    "preserved": true
+  }
+}
