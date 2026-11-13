@@ -621,16 +621,16 @@
       "min_interval_ms": 1000,
       "daily_cap": 500,
       "params": {
-        "base_url": "https://mwmbl.org/",
-        "adapter": "mwmbl_planned"
+        "base_url": "https://api.mwmbl.org/api/v2/search/",
+        "adapter": "mwmbl_api"
       },
       "contract": {
         "id": "mwmbl",
         "provider_id": "mwmbl",
         "index_family": "mwmbl",
         "capability": "web",
-        "endpoint": "https://mwmbl.org/",
-        "adapter_id": "mwmbl_planned",
+        "endpoint": "https://api.mwmbl.org/api/v2/search/",
+        "adapter_id": "mwmbl_api",
         "enabled": false,
         "logical_service_id": "mwmbl",
         "review": {
