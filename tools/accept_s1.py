@@ -50,9 +50,15 @@ ARTIFACT_SCHEMA_VERSION = 1
 STATUS_PASS, STATUS_FAIL, STATUS_BLOCKED = "PASS", "FAIL", "BLOCKED"
 _STATUS_ORDER = {STATUS_FAIL: 2, STATUS_BLOCKED: 1, STATUS_PASS: 0}
 CI_STEP_NAME = "Address and undefined-behavior checks"
+# Blueprint L71 binds criterion 5's defect-fix-merge question to this handoff
+# review (path relative to docs/planning/); the original package's B1–B7 labels
+# cannot substitute this round's verification.
+CLAUDE_S1_REVIEW_REL = "../handoff/CLAUDE_S1_REVIEW_20261018.md"
+CLAUDE_S1_REVIEW_TREE_PATH = "docs/handoff/CLAUDE_S1_REVIEW_20261018.md"
 
-# One entry per blueprint criterion; `quote` must appear verbatim in the
-# blueprint so the enumeration cannot drift from the authored criteria.
+# One entry per blueprint criterion; `quote` must equal the cited blueprint
+# line byte-exactly (a full line, not a substring) so the enumeration cannot
+# drift from the authored criteria — truncation loses requirements.
 CRITERIA: list[dict[str, Any]] = [
     {"id": "c1", "title": "web_search 来源审核/启用/S0 实测与合并隔离", "blueprint_line": 67,
      "quote": "1. `web_search`：至少 2 个经过有效审核、显式启用并经 S0 真实实测可用的来源，含至少 1 个通用网页源；合并去重、每源状态和单源失败隔离通过。假网站和候选 usable 不能代替审核或真实通用网页证据。"},
@@ -63,7 +69,7 @@ CRITERIA: list[dict[str, Any]] = [
     {"id": "c4", "title": "find_in_page 与 read_range 可用", "blueprint_line": 70,
      "quote": "4. `find_in_page`、`read_range` 可用。"},
     {"id": "c5", "title": "缺陷合并修复与 ASan/UBSan 证据绑定", "blueprint_line": 71,
-     "quote": "5. 当前主分支与 S1 增量缺陷合并修复，保留原生合同和历史回归；本轮实际自动化与 ASan/UBSan 覆盖有源码/命令/日志绑定。"},
+     "quote": "5. 当前主分支与 S1 增量缺陷合并修复，保留原生合同和历史回归；本轮实际自动化与 ASan/UBSan 覆盖有源码/命令/日志绑定。问题对应 `../handoff/CLAUDE_S1_REVIEW_20261018.md`，不能用原包 B1–B7 标签替代本轮核验。"},
     {"id": "c6", "title": "bzs start / stdio MCP 可复现启动与 HTTP 鉴权", "blueprint_line": 72,
      "quote": "6. `bzs start` 与 stdio MCP 配置可复现启动；本机 HTTP 必须鉴权。"},
     {"id": "c7", "title": "C++ 配置合同与双重准入保留", "blueprint_line": 73,
@@ -423,6 +429,30 @@ def _phase_static(grades: Grades, specs: list[dict[str, Any]], manifest_sha: str
     return analysis
 
 
+def _check_mcp_config(grades: Grades, cli: Any = None) -> None:
+    """c6 sub-check: `bzs mcp-config` must emit a stdio MCP client config bound
+    to this BZS_HOME. `cli` is injectable so the regression tests can replay a
+    stdout buffer captured from the real command."""
+    try:
+        if cli is None:
+            from bzs import cli as bzs_cli
+            cli = bzs_cli
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            cli.main(["mcp-config"])
+        # cmd_mcp_config prints json.dumps(..., indent=2) on stdout (the client
+        # guidance goes to stderr), so the WHOLE buffer is one JSON document
+        # whose first line is just `{` — parse it whole, never line by line.
+        mcp_config = json.loads(buffer.getvalue())
+        ok = "bzs861" in mcp_config.get("mcpServers", {})
+        grades.add("c6", STATUS_PASS if ok else STATUS_FAIL,
+                   "`bzs mcp-config` emits a stdio MCP client config bound to this BZS_HOME"
+                   if ok else "`bzs mcp-config` output did not contain the bzs861 server entry")
+        grades.note("c6", "mcp-config: " + json.dumps(mcp_config, ensure_ascii=False)[:200])
+    except Exception as exc:
+        grades.add("c6", STATUS_BLOCKED, f"mcp-config could not be produced: {type(exc).__name__}: {exc}"[:300])
+
+
 def _phase_service(grades: Grades, service: IsolatedService, args: argparse.Namespace, meta: dict[str, Any]) -> None:
     if not service.started:
         grades.block_all(CRITERIA_IDS[1:], f"service did not start in the isolated home: {service.error}")
@@ -527,19 +557,7 @@ def _phase_service(grades: Grades, service: IsolatedService, args: argparse.Name
                                   f"(ensure_running) in isolated BZS_HOME {service.home} on ports "
                                   f"{service.worker_port}/{service.core_port}")
     grades.note("c6", "launcher commands: " + " | ".join(" ".join(cmd) for cmd in service.commands)[:400])
-    try:
-        from bzs import cli as bzs_cli
-        buffer = io.StringIO()
-        with contextlib.redirect_stdout(buffer):
-            bzs_cli.main(["mcp-config"])
-        mcp_config = json.loads(buffer.getvalue().splitlines()[0])
-        ok = "bzs861" in mcp_config.get("mcpServers", {})
-        grades.add("c6", STATUS_PASS if ok else STATUS_FAIL,
-                   "`bzs mcp-config` emits a stdio MCP client config bound to this BZS_HOME"
-                   if ok else "`bzs mcp-config` output did not contain the bzs861 server entry")
-        grades.note("c6", "mcp-config: " + json.dumps(mcp_config, ensure_ascii=False)[:200])
-    except Exception as exc:
-        grades.add("c6", STATUS_BLOCKED, f"mcp-config could not be produced: {type(exc).__name__}: {exc}"[:300])
+    _check_mcp_config(grades)
     try:
         import asyncio
         from bzs.mcp_server import build_server
@@ -614,15 +632,23 @@ def _phase_ci(grades: Grades, ci_run_url: str | None, git_meta: Mapping[str, Any
     needed = ("supply --ci-run-url with a completed CI run of HEAD commit "
               f"{git_meta.get('commit') or '<unknown>'} whose Linux job includes the '{CI_STEP_NAME}' "
               "(ASan+UBSan) step plus the full CTest/pytest matrix")
-    # c5: automation + sanitizer coverage bound to this round's code
+    # c5: automation + sanitizer coverage bound to this round's code; the
+    # blueprint (L71) also binds this criterion's defect-fix-merge question to
+    # the CLAUDE_S1_REVIEW handoff, which must surface in the evidence.
+    handoff = REPO_ROOT / CLAUDE_S1_REVIEW_TREE_PATH
+    handoff_binding = (f"criterion 5 defect-fix-merge is bound to {CLAUDE_S1_REVIEW_REL} "
+                       f"({CLAUDE_S1_REVIEW_TREE_PATH}, present in this tree: {handoff.exists()}); the original "
+                       "package's B1–B7 labels cannot substitute this round's verification")
     grades.note("c5", f"HEAD {git_meta.get('commit')} dirty={git_meta.get('dirty')}; sanitizer step declared in "
                       ".github/workflows/ci.yml: " + str(sanitizer_declared))
+    grades.note("c5", handoff_binding)
     if ci_run_url and sanitizer_declared:
-        grades.add("c5", STATUS_PASS, f"CI run bound to this commit includes the {CI_STEP_NAME} step: {ci_run_url}")
-        grades.note("c5", "source/command/log binding: .github/workflows/ci.yml (asan preset, UBSAN_OPTIONS) + the "
-                          "CI run logs at " + ci_run_url)
+        grades.add("c5", STATUS_PASS, f"supplied CI run attests the {CI_STEP_NAME} step for this commit: {ci_run_url}")
+        grades.note("c5", "supplied-run attestation (not verified from this machine): source/command/log binding "
+                          "per .github/workflows/ci.yml (asan preset, UBSAN_OPTIONS) and the run logs at " + ci_run_url)
     else:
-        grades.add("c5", STATUS_BLOCKED, f"ASan/UBSan evidence for this exact commit not supplied; {needed}")
+        grades.add("c5", STATUS_BLOCKED, f"ASan/UBSan evidence for this exact commit not supplied; defect-fix-merge "
+                                         f"binding to {CLAUDE_S1_REVIEW_TREE_PATH} applies; {needed}")
     # c7/c8/c9 C++-side evidence
     for cid, suites in (("c7", "bzs_contract_tests over docs/planning/validation/contract_cases.json "
                                "(three C++ config contracts, pure validation API/CLI, clock/hard-cap immutability)"),
@@ -630,7 +656,7 @@ def _phase_ci(grades: Grades, ci_run_url: str | None, git_meta: Mapping[str, Any
                                "both historical schema-2 layouts; old backups still refuse to boot as a service)"),
                         ("c9", "boundary regressions: test_netguard.py, tests/e2e_*.py, http_admission.py")):
         if ci_run_url:
-            grades.add(cid, STATUS_PASS, f"{suites} are green in the CI run bound to this commit: {ci_run_url}")
+            grades.add(cid, STATUS_PASS, f"{suites} are green per the supplied CI run attestation: {ci_run_url}")
         else:
             grades.add(cid, STATUS_BLOCKED, f"{suites} are not bound to this commit locally; {needed}")
         grades.note(cid, suites)
