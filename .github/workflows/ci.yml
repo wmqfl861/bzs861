@@ -11,6 +11,9 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
         with:
           persist-credentials: false
+          # Full history: the changed-line format gate below needs the
+          # merge-base with origin/main (CL-11 item 4).
+          fetch-depth: 0
       - name: Reject CRLF in the index (CL-21)
         run: |
           bad=$(git ls-files --eol | awk '($1=="i/crlf"||$1=="i/mixed") && $3!="attr/-text"')
@@ -40,6 +43,17 @@ jobs:
             > "$RUNNER_TEMP/ruff-pin.txt"
           .venv/bin/python -m pip install --require-hashes -r "$RUNNER_TEMP/ruff-pin.txt"
           .venv/bin/python -m ruff check --select E9,F,B python/bzs
+      - name: Changed-line clang-format check (CL-11)
+        # CL-11 item 4: check ONLY the lines changed relative to
+        # origin/main. There is deliberately no full-tree reformat gate:
+        # a full reformat would invalidate the file:line references in
+        # docs/ and validation/ and conflict with in-flight branches. If
+        # a one-shot full reformat is ever wanted, it must be a separate
+        # commit after the CL-01 merge with .git-blame-ignore-revs.
+        run: |
+          sudo apt-get install -y --no-install-suggests clang-format
+          clang-format --version
+          .venv/bin/python tools/check_changed_format.py --base origin/main
       - name: Build and test core, contracts, HTTP, worker and MCP
         run: |
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
