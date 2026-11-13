@@ -1268,6 +1268,44 @@ namespace {
     }, req("stats", Json::object()));
     CHECK(stats.at("internal_errors").num()==internal_error_count());
   }
+  TEST(internal_error_message_truncation_keeps_utf8_boundary) {
+    // CL-14: the structured log cuts what() at 200 bytes; a hard byte cut can
+    // split a multi-byte UTF-8 character, so the tail must be trimmed back to
+    // a character boundary. 198 'x' bytes place the 200-byte cut two bytes
+    // into 故 (3 bytes per character): the message field must still decode as
+    // valid UTF-8 and end on the last whole character, slightly under 200.
+    const auto valid_utf8=[](const std::string& text) {
+      std::size_t i=0;
+      while(i<text.size()) {
+        const auto byte=static_cast<unsigned char>(text[i]);
+        std::size_t width=1;
+        if(byte>=0xC2&&byte<=0xDF)width=2;
+        else if(byte>=0xE0&&byte<=0xEF)width=3;
+        else if(byte>=0xF0&&byte<=0xF4)width=4;
+        else if(byte>=0x80)return false;
+        if(i+width>text.size())return false;
+        for(std::size_t k=1;k<width;++k)
+          if((static_cast<unsigned char>(text[i+k])&0xC0)!=0x80)return false;
+        i+=width;
+      }
+      return true;
+    };
+    std::ostringstream captured;
+    auto* previous=std::clog.rdbuf(captured.rdbuf());
+    try {
+      throw std::runtime_error(std::string(198,'x')+"故障故障故障");
+    }catch(const std::exception& e) {
+      log_internal("utf8.site",&e);
+    }
+    std::clog.rdbuf(previous);
+    const auto text=captured.str();
+    const auto line=text.substr(0,text.find('\n'));
+    const auto event=Json::parse(line);
+    const auto message=event.at("message").str();
+    CHECK(valid_utf8(message));
+    CHECK(message.size()==198);
+    CHECK(message==std::string(198,'x'));
+  }
   TEST(admin_backup) {
     Temp t;
     Store s(t.path/"db");
