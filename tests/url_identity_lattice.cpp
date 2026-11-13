@@ -8,13 +8,17 @@
 //                            publication-binding and HTTP cache route identity)
 //   deletion_url_key        (src/util.cpp, deletion barrier aliases)
 //
-// Contract under test (R-01 and later): on the domain all three functions accept,
-// the equivalence relations refine each other:
-//   dedup_key(a)==dedup_key(b)  =>  map_url(a)==map_url(b)
-//   map_url(a)==map_url(b)      =>  publication_url_identity(a)==publication_url_identity(b)
-// so any two URLs fused into one search group always share one publication-check
-// identity. dedup_key returns "" as a "no fusion identity" sentinel (the fusion
-// path skips such URLs); pairs with an empty key are outside the implication.
+// Contract under test (R-01 and later): identity equality is checked on each
+// implication's admitted domain:
+//   dedup_key(a)==dedup_key(b) => map_url(a)==map_url(b), when both map_url calls succeed
+//   map_url(a)==map_url(b) => publication_url_identity(a)==publication_url_identity(b),
+//                            when both map_url and both publication calls succeed
+//   dedup_key(a)==dedup_key(b) => publication_url_identity(a)==publication_url_identity(b),
+//                               when both publication calls succeed, even if map_url rejects
+// Only search-entry-admitted members participate in fusion and share one
+// publication-check identity; equal raw dedup keys do not imply equal admission.
+// dedup_key returns "" as a "no fusion identity" sentinel (the fusion path skips
+// such URLs); pairs with an empty key are outside the dedup implications.
 // The random corpus below is deterministic (fixed splitmix64 seed); it mixes
 // sibling mutations (host case, default ports, fragments, trailing slash, query
 // order, percent-escape case, scheme case/scheme, empty path) with independent
@@ -163,6 +167,72 @@ namespace {
       "\n  url_key(a) = "+(ka.url_ok?ka.url:"<rejected>")+"\n  url_key(b) = "+(kb.url_ok?kb.url:"<rejected>")+
       "\n  read_identity(a) = "+(ka.read_ok?ka.read:"<rejected>")+"\n  read_identity(b) = "+(kb.read_ok?kb.read:"<rejected>"));
   }
+  struct LatticeCounts {
+    std::size_t dedup_equal=0,chain_dedup_url=0,chain_url_read=0,direct_dedup_read=0;
+    std::size_t url_equal_dedup_distinct=0,read_equal_url_distinct=0;
+    std::size_t both_dedup_nonempty=0,both_url_ok=0,both_read_ok=0;
+  };
+  void check_lattice_pair(const std::string& a,const std::string& b,LatticeCounts& counts) {
+    auto& [dedup_equal,chain_dedup_url,chain_url_read,direct_dedup_read,
+           url_equal_dedup_distinct,read_equal_url_distinct,
+           both_dedup_nonempty,both_url_ok,both_read_ok]=counts;
+    const auto ka=evaluate(a),kb=evaluate(b);
+    if(!ka.dedup.empty())++both_dedup_nonempty;  // counts a-side; b tracked below
+    const bool dedup_nonempty=!ka.dedup.empty()&&!kb.dedup.empty();
+    const bool dedup_same=dedup_nonempty&&ka.dedup==kb.dedup;
+    // Equal nonempty raw dedup keys need not have equal admission (see the
+    // length-boundary regression). Check each implication on its own domain.
+    if(dedup_same) {
+      ++dedup_equal;
+      if(ka.url_ok&&kb.url_ok) {
+        ++chain_dedup_url;
+        if(ka.url!=kb.url)violation("dedup=>url_key",a,b,ka,kb);
+      }
+      // Independent of map_url admission: read also admits dot-segment paths.
+      if(ka.read_ok&&kb.read_ok) {
+        ++direct_dedup_read;
+        if(ka.read!=kb.read)violation("dedup=>read_identity",a,b,ka,kb);
+      }
+    }
+    if(ka.url_ok&&kb.url_ok)++both_url_ok;
+    if(ka.read_ok&&kb.read_ok)++both_read_ok;
+    if(ka.url_ok&&kb.url_ok&&ka.url==kb.url) {
+      // Preserve read-admission symmetry for equal map_url-admitted keys only;
+      // the raw length-boundary pair is outside this both-url-admitted domain.
+      if(ka.read_ok!=kb.read_ok)violation("url_key=>read_identity admission",a,b,ka,kb);
+      if(ka.read_ok&&kb.read_ok) {
+        ++chain_url_read;
+        if(ka.read!=kb.read)violation("url_key=>read_identity",a,b,ka,kb);
+        if(ka.dedup!=kb.dedup)++url_equal_dedup_distinct;
+      }
+    }
+    if(ka.url_ok&&kb.url_ok&&ka.read_ok&&kb.read_ok&&ka.read==kb.read&&ka.url!=kb.url)
+      ++read_equal_url_distinct;
+  }
+  TEST(url_identity_lattice_raw_length_boundary) {
+    const auto p=std::string(4076,'a');
+    const auto a="https://example.com/"+p;
+    const auto b="https://example.com:443/"+p;
+    CHECK(a.size()==4096);
+    CHECK(b.size()==4100);
+    const auto da=dedup_key(a),db=dedup_key(b);
+    CHECK(!da.empty()&&!db.empty());
+    CHECK(da==a);
+    CHECK(db==a);
+    CHECK(map_url(a)==a);
+    CHECK(publication_url_identity(a)==a);
+    rejects([&]{map_url(b);},"E_URL");
+    rejects([&]{publication_url_identity(b);},"E_URL");
+    // Characterize pre-fusion search-entry admission, not the end-to-end fuse
+    // path or its contribution set: only search-entry-admitted members fuse.
+    CHECK(normalize_iri(a)==a);
+    check_public_url(a);
+    rejects([&]{normalize_iri(b);},"E_URL");
+    // Exercise the same predicate as the random corpus without adding this
+    // directed boundary pair to its counts or admission floors.
+    LatticeCounts boundary_counts;
+    check_lattice_pair(a,b,boundary_counts);
+  }
   TEST(url_identity_lattice_chain_targeted_pairs) {
     // Same fusion group (host case and default ports only) shares every identity.
     for(const auto& [a,b] : std::vector<std::pair<std::string,std::string>> {
@@ -247,45 +317,15 @@ namespace {
     Rng rng{0xC0FFEE18C0DE2026ULL};
     constexpr std::size_t pairs=12000;
     static_assert(pairs>=10000,"CL-18 requires at least 10000 random pairs");
-    std::size_t dedup_equal=0,chain_dedup_url=0,chain_url_read=0,direct_dedup_read=0;
-    std::size_t url_equal_dedup_distinct=0,read_equal_url_distinct=0;
-    std::size_t both_dedup_nonempty=0,both_url_ok=0,both_read_ok=0;
+    LatticeCounts counts;
+    auto& [dedup_equal,chain_dedup_url,chain_url_read,direct_dedup_read,
+           url_equal_dedup_distinct,read_equal_url_distinct,
+           both_dedup_nonempty,both_url_ok,both_read_ok]=counts;
     for(std::size_t i=0;i<pairs;++i) {
       const auto first=random_url(rng);
       const auto second=mutate(first,rng,rng.pick(15));  // 0..14; 14 = independent
       const auto a=first.str(),b=second.str();
-      const auto ka=evaluate(a),kb=evaluate(b);
-      if(!ka.dedup.empty())++both_dedup_nonempty;  // counts a-side; b tracked below
-      const bool dedup_nonempty=!ka.dedup.empty()&&!kb.dedup.empty();
-      const bool dedup_same=dedup_nonempty&&ka.dedup==kb.dedup;
-      // Admission symmetry: URLs with the same fusion key must be accepted or
-      // rejected together by the stricter identities; a split here would already
-      // break "same fusion group = same publication-check identity".
-      if(dedup_same) {
-        ++dedup_equal;
-        if(ka.url_ok!=kb.url_ok)violation("dedup=>url_key admission",a,b,ka,kb);
-        if(ka.read_ok!=kb.read_ok)violation("dedup=>read_identity admission",a,b,ka,kb);
-        if(ka.url_ok&&kb.url_ok) {
-          ++chain_dedup_url;
-          if(ka.url!=kb.url)violation("dedup=>url_key",a,b,ka,kb);
-        }
-        if(ka.read_ok&&kb.read_ok) {
-          ++direct_dedup_read;
-          if(ka.read!=kb.read)violation("dedup=>read_identity",a,b,ka,kb);
-        }
-      }
-      if(ka.url_ok&&kb.url_ok)++both_url_ok;
-      if(ka.read_ok&&kb.read_ok)++both_read_ok;
-      if(ka.url_ok&&kb.url_ok&&ka.url==kb.url) {
-        if(ka.read_ok!=kb.read_ok)violation("url_key=>read_identity admission",a,b,ka,kb);
-        if(ka.read_ok&&kb.read_ok) {
-          ++chain_url_read;
-          if(ka.read!=kb.read)violation("url_key=>read_identity",a,b,ka,kb);
-          if(ka.dedup!=kb.dedup)++url_equal_dedup_distinct;
-        }
-      }
-      if(ka.url_ok&&kb.url_ok&&ka.read_ok&&kb.read_ok&&ka.read==kb.read&&ka.url!=kb.url)
-        ++read_equal_url_distinct;
+      check_lattice_pair(a,b,counts);
     }
     std::cout<<"url_identity_lattice corpus: "<<pairs<<" pairs, "
              <<both_dedup_nonempty<<" non-empty dedup keys (a side), "

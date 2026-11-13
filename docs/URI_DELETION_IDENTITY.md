@@ -25,7 +25,7 @@ dedup_key ⊆ url_key ⊆ read_identity
     map_url(a)==map_url(b)      =>  publication_url_identity(a)==publication_url_identity(b)
 ```
 
-因此"同一融合组 ⇒ 发布检查同一身份"永远成立：R-01 之后同一融合组里的 URL 只差主机名 ASCII 大小写和默认端口，而这两个维度在 `url_key` 和 `read_identity` 里同样折叠。各函数的归一化对比：
+因此，对已通过搜索入口准入、实际参与融合的成员，"同一融合组 ⇒ 发布检查同一身份"成立：R-01 之后同一融合组里的 URL 只差主机名 ASCII 大小写和默认端口，而这两个维度在 `url_key` 和 `read_identity` 里同样折叠；这不表示原始同键输入的准入结果必然相同。各函数的归一化对比：
 
 | 维度 | dedup_key | url_key（map_url） | read_identity | deletion_url_key |
 | --- | --- | --- | --- | --- |
@@ -41,11 +41,11 @@ dedup_key ⊆ url_key ⊆ read_identity
 
 **deletion_key 的位置。** `deletion_url_key` 不在这条链的任何一端：它与 `read_identity` 使用相同的 unreserved 解码和默认端口折叠，但不做点段消解，所以在点段维度上比 `read_identity` 更细；它又比 `url_key` 粗，因为 `%2f` 与 `%2F`、`%41` 与 `A` 在删除身份下相同而 `url_key` 保留区别。URL 不满足元数据语法（如带下划线的主机、大写 scheme、IPv6 字面量、userinfo）时它整体退回精确原串，此时它比所有函数都细，也与 `dedup_key` 不可比——`dedup_key` 相同的一对（仅主机大小写不同）可以带有不同的删除键。"dedup 相同 ⇒ 删除键相同"只在元数据语法之内成立；删除比较本身完全发生在这个键上，不影响上面的链条。
 
-**定义域与空哨兵。** `dedup_key` 从不抛出：非 http/https、大写 scheme、userinfo（`@`）、空主机都返回空串，这是"无融合身份"哨兵，融合路径对空键直接跳过。`url_key` 与 `read_identity` 会按各自准入规则抛出（`normalize_iri`、`check_public_url`、`safe_path` 等）；在部署的融合路径里，准入（`normalize_iri`、`check_public_url`）先于 `dedup_key` 运行（`src/web.cpp`），所以同一融合键的成员只会被同时接受或同时拒绝，不存在"同组一半可准入、一半不可"的分裂；这是部署顺序的性质而非裸函数定理——`dedup_key` 不限长度而 `normalize_iri`/`metadata_host` 要求 ≤4096 字节，理论上存在 4096 边界处的同键反例，性质测试生成器（URL 最长约 60 字符）不覆盖该边界。链条断言在三者都接受的公共定义域上；对含点段的路径 `url_key` 拒绝而 `read_identity` 接受时，`dedup_key` 相同 ⇒ `read_identity` 相同仍直接成立（发布检查身份不依赖 `url_key` 准入）。
+**定义域与空哨兵。** `dedup_key` 从不抛出：非 http/https、大写 scheme、userinfo（`@`）、空主机都返回空串，这是"无融合身份"哨兵，融合路径对空键直接跳过。`url_key` 与 `read_identity` 会按各自准入规则抛出（`normalize_iri`、`check_public_url`、`safe_path` 等）；搜索入口先运行 `normalize_iri`、`check_public_url`，拒绝时 `continue`，然后才检查 `dedup_key` 并收集命中（`src/web.cpp`），所以只有已通过搜索入口准入的成员参与融合，不能从原始输入同键推出准入对称。明确的边界回归见 `tests/url_identity_lattice.cpp` 的 `url_identity_lattice_raw_length_boundary`：令 `p=std::string(4076,'a')`，`a="https://example.com/"+p` 长 4096 字节，`b="https://example.com:443/"+p` 长 4100 字节；两者非空 `dedup_key` 都等于 `a`，但 `map_url(a)`、`publication_url_identity(a)`、`normalize_iri(a)` 都等于 `a`，且 `check_public_url(a)` 成功，对原始 `b` 调用前述三个身份/归一化函数则各自抛出 `E_URL`。这是融合前准入刻画，并非真实搜索入口贡献集合的端到端融合测试；按上述入口顺序，`b` 在收集命中前被拒绝。每项相等蕴含分别限定定义域：非空 dedup 同键 ⇒ url 同键要求双方 `url_ok`，url 同键 ⇒ read 同键要求双方 `url_ok/read_ok`，非空 dedup 同键 ⇒ read 同键只要求双方 `read_ok`；即使含点段路径被 `map_url` 拒绝，直接 `dedup ⇒ read` 检查也不能跳过。
 
 **R-01 语义说明。** 四个函数都区分 http 与 https：发布和删除的数据模型本来就把它们当成两个资源。R-01 之前较宽的融合让"一个变体上的限制挡住另一个变体"成为可能——例如旧爬取标记（legacy crawl marker）或封锁的发布身份能挡住另一 scheme 变体的命中——那只是因为两条结果被融合进了同一组。R-01 收紧融合后，组内所有成员共享同一个 `read_identity`：发布限制要么覆盖全组、要么全组不受影响，贡献者身份数也无法再靠组内变体凑出（见 `src/sessions.cpp` 中 captured_mode 上限的可达性注释）。所以 R-01 没有造成发布绕过，它让搜索行为与发布/删除的身份模型一致。任何改动这四个函数、使上述包含关系不再成立的提交都是规格回退。
 
-**性质测试。** `tests/url_identity_lattice.cpp`（CTest 名 `url_identity_lattice`）用固定种子的确定性生成器覆盖 scheme/主机大小写/端口/路径/查询/片段/percent 转义/punycode 与 UTF-8 主机/尾斜杠/默认端口/大写 scheme，每个提交运行 12000 对随机 URL（含姊妹变异对与定向对），断言 `dedup_key(a)==dedup_key(b)` ⇒ `url_key(a)==url_key(b)` ⇒ `read_identity(a)==read_identity(b)`（含 `dedup ⇒ read` 直接断言与准入对称性）。本文件描述的两层包含是严格的：存在 dedup 不同而 url_key 相同的对（空路径与 `/`、片段、末尾 `?`、`:080`），也存在 url_key 不同而 read_identity 相同的对（查询中转义十六进制大小写、unreserved 转义）。
+**性质测试。** `tests/url_identity_lattice.cpp`（CTest 名 `url_identity_lattice`）用固定种子的确定性生成器覆盖 scheme/主机大小写/端口/路径/查询/片段/percent 转义/punycode 与 UTF-8 主机/尾斜杠/默认端口/大写 scheme，每次运行 12000 对随机 URL（姊妹变异与独立对），按上述各自定义域检查三项相等蕴含（含 `dedup ⇒ read` 直接断言）。另保留双方 `url_ok` 且 `url_key` 相等时的 read 准入对称性检查；它仅适用于双方已获 `map_url` 准入的同键对，不受上述原始长度边界反例影响，不是全局 raw dedup 同键准入定理。定向、空哨兵、删除键和长度边界测试单列，边界对不计入随机覆盖门槛；随机样本保留非零 dedup 同键数、三项蕴含检查数及两项严格包含见证数，并要求双方 url 准入至少 1500 对、双方 read 准入至少 2500 对。本文件描述的两层包含是严格的：存在 dedup 不同而 url_key 相同的对（空路径与 `/`、片段、末尾 `?`、`:080`），也存在 url_key 不同而 read_identity 相同的对（查询中转义十六进制大小写、unreserved 转义）。
 
 ## 等价范围
 
