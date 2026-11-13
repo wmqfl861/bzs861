@@ -22,32 +22,42 @@ from bzs import process_control as pc
 
 
 class FakeProc:
-    def __init__(self, pid, ppid, creation, *, alive=True, denies_access=False):
+    def __init__(self, pid, ppid, creation, *, alive=True, denies_access=False,
+                 denies_terminate_access=False, name="stub.exe"):
         self.pid, self.ppid, self.creation = pid, ppid, creation
         self.alive, self.denies_access = alive, denies_access
+        self.denies_terminate_access = denies_terminate_access
+        self.name = name
         self.reaped = False
         self.terminate_requested = False
-        self.handle = object()
+        self.query_handle = object()
+        self.terminate_handle = object()
 
 
 class FakeWinApi:
     """Deterministic Windows process API with a scriptable table and clock.
 
     Mirrors the real semantics: TerminateProcess only *requests* termination;
-    only a successful wait observes the exit.
+    only a successful wait observes the exit. The two-step open is mirrored
+    too: `open` grants query+synchronize, `open_terminate` grants terminate
+    and may be denied independently.
     """
 
     def __init__(self, table, *, now_ft=10_000, fails_snapshot=False,
-                 fails_enum=False, wait_outcome="signaled", terminate_fail_pids=()):
+                 fails_enum=False, fails_handleless=False, wait_outcome="signaled",
+                 terminate_fail_pids=()):
         self.table = {p.pid: p for p in table}      # pid -> FakeProc
         self.now_ft = now_ft
         self.fails_snapshot = fails_snapshot
         self.fails_enum = fails_enum
+        self.fails_handleless = fails_handleless
         self.wait_outcome = wait_outcome            # "signaled"|"timeout"
         self.terminate_fail_pids = set(terminate_fail_pids)
         self.snapshots = 0
         self.closed = []
+        self.closed_handles = []
         self.terminate_order = []
+        self.handleless_queries = []
 
     def snapshot(self):
         self.snapshots += 1
@@ -55,7 +65,7 @@ class FakeWinApi:
             raise OSError("snapshot failed")
         if self.fails_enum:
             raise OSError("enumeration failed mid-table")
-        return {pid: p.ppid for pid, p in self.table.items()}, self.now_ft
+        return {pid: (p.ppid, p.name) for pid, p in self.table.items()}, self.now_ft
 
     def open(self, pid):
         p = self.table.get(pid)
@@ -63,11 +73,26 @@ class FakeWinApi:
             raise pc._ProcessGone(pid)
         if p.denies_access:
             raise pc._ProcessDenied(pid)
-        return p.handle
+        return p.query_handle
+
+    def open_terminate(self, pid):
+        p = self.table.get(pid)
+        if p is None or p.reaped:
+            raise pc._ProcessGone(pid)
+        if p.denies_terminate_access:
+            raise pc._ProcessDenied(pid)
+        return p.terminate_handle
+
+    def creation_without_handle(self, pid):
+        self.handleless_queries.append(pid)
+        if self.fails_handleless:
+            return None
+        p = self.table.get(pid)
+        return p.creation if p is not None else None
 
     def _by_handle(self, handle):
         for p in self.table.values():
-            if p.handle is handle:
+            if p.query_handle is handle or p.terminate_handle is handle:
                 return p
         raise AssertionError("unknown handle")
 
@@ -95,6 +120,7 @@ class FakeWinApi:
         return "timeout"
 
     def close(self, handle):
+        self.closed_handles.append(handle)
         self.closed.append(self._by_handle(handle).pid)
 
 
@@ -250,6 +276,135 @@ class TestFailureReporting:
         assert set(api2.closed) == {ROOT}
 
 
+# --------------------------------------- stale-parent exclusion (CL-25)
+
+
+class TestStaleParentExclusion:
+    """A snapshot entry whose ppid names an already-dead process is often a
+    stranger reusing the pid: Windows never updates a child's recorded ppid.
+    Entries created strictly before their nominal parent cannot be members;
+    they are excluded outright instead of failing the stop as unconfirmed."""
+
+    def test_a_stale_parent_reused_pid_open_denied_is_excluded_and_never_terminated(self):
+        # (a) old orphan, ppid == root, query open denied (e.g. a SYSTEM
+        # process): the handle-less creation lookup proves it predates the
+        # root, so it is excluded, never signalled, and the stop is confirmed.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 500, denies_access=True),
+        ])
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert unconfirmed == []
+        assert api.handleless_queries == [200]
+        assert 200 not in api.terminate_order
+        assert api.table[200].alive
+        assert api.terminate_order == [ROOT]
+
+    def test_b_stale_parent_reused_pid_openable_is_excluded(self):
+        # (b) same old stranger, openable: its own creation time predates the
+        # root, so it is excluded without the handle-less lookup and the stop
+        # is confirmed while the genuine child is still terminated.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 500),
+            FakeProc(300, ROOT, 2_000),             # genuine child
+        ])
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert unconfirmed == []
+        assert api.table[200].alive and 200 not in api.terminate_order
+        assert api.terminate_order == [300, ROOT]
+
+    def test_c_later_child_query_denied_stays_unconfirmed(self):
+        # (c) a real child (created after the root) that denies the query open:
+        # the handle-less creation is NOT older than the root, so it stays
+        # unconfirmed - handle-less information never authorizes termination -
+        # and the record carries image name and both creation times.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 2_000, denies_access=True, name="child.exe"),
+        ])
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert len(unconfirmed) == 1
+        assert "pid 200 (child.exe)" in unconfirmed[0]
+        assert "_ProcessDenied" in unconfirmed[0]
+        assert "created 2000" in unconfirmed[0]
+        assert "nominal parent 100 created 1000" in unconfirmed[0]
+        assert 200 not in api.terminate_order and api.table[200].alive
+        assert api.terminate_order == [ROOT]
+
+    def test_d_later_child_terminate_denied_stays_unconfirmed(self):
+        # (d) a real child, openable, but termination is refused: membership
+        # was verified, yet an unterminatable member keeps the stop unconfirmed.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 2_000),
+        ])
+        api.terminate_fail_pids = {200}
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert any("pid 200 (stub.exe) created 2000" in u and "terminate refused" in u
+                   for u in unconfirmed)
+        assert api.table[200].alive
+        assert api.terminate_order == [200, ROOT]
+
+    def test_handleless_query_failure_keeps_stranger_unconfirmed(self):
+        # Fail-closed: when even the handle-less table cannot answer, the stop
+        # stays unconfirmed; exclusion requires proof of age, not absence.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 500, denies_access=True),
+        ])
+        api.fails_handleless = True
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert len(unconfirmed) == 1 and "200" in unconfirmed[0]
+        assert "creation unknown" in unconfirmed[0]
+        assert api.terminate_order == [ROOT]
+
+    def test_equal_creation_times_keep_current_unconfirmed_handling(self):
+        # A candidate created at exactly the parent's creation time keeps the
+        # historical handling: never signalled, reported with both times.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, ROOT_CREATION),
+        ])
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert len(unconfirmed) == 1
+        assert "creation 1000 does not bind to parent 100 created 1000" in unconfirmed[0]
+        assert 200 not in api.terminate_order and api.table[200].alive
+        assert api.terminate_order == [ROOT]
+
+    def test_permission_split_query_ok_terminate_denied_stays_unconfirmed(self):
+        # Two-step open: membership verified with the query handle, but the
+        # terminate open is denied: unconfirmed, never signalled.
+        api = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 2_000, denies_terminate_access=True),
+        ])
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert any("termination handle unavailable (_ProcessDenied)" in u and "pid 200" in u
+                   for u in unconfirmed)
+        assert 200 not in api.terminate_order and api.table[200].alive
+        assert api.terminate_order == [ROOT]
+
+    def test_both_query_and_terminate_handles_are_released(self):
+        # Dual-handle bookkeeping: every signalled member holds one query and
+        # one terminate handle during the stop, and both are closed.
+        api = api_with_stub_chain()
+        unconfirmed = tree(ROOT, ROOT_CREATION, api)
+        assert unconfirmed == []
+        for pid in (ROOT, 200, 300):
+            assert api.table[pid].query_handle in api.closed_handles
+            assert api.table[pid].terminate_handle in api.closed_handles
+        assert len(api.closed_handles) == 6
+        # A denied query open releases nothing it never took.
+        api2 = FakeWinApi([
+            FakeProc(ROOT, 1, ROOT_CREATION),
+            FakeProc(200, ROOT, 2_000, denies_access=True),
+        ])
+        tree(ROOT, ROOT_CREATION, api2)
+        assert set(api2.closed_handles) == {api2.table[ROOT].query_handle,
+                                            api2.table[ROOT].terminate_handle}
+
+
 # ------------------------------------------------------- record hygiene (C)
 
 
@@ -337,6 +492,45 @@ class TestRealWindowsProcesses:
             time.sleep(0.1)
         assert self._gone(real_pid) and self._gone(leaf_pid)
         assert not pc.record_path("worker").exists()
+
+    def test_handleless_creation_matches_handle_query_on_real_processes(self, tmp_path):
+        # Real-Windows evidence for the exclusion rule's clock: the creation
+        # FILETIME read without any handle (NtQuerySystemInformation) equals
+        # the one read through a query handle (GetProcessTimes), and a real
+        # child spawned by a running parent compares strictly later on both.
+        api = pc._RealWinApi()
+        child_pid_file = str(Path(tmp_path) / "child.pid").replace("\\", "/")
+        parent = subprocess.Popen(
+            [sys._base_executable, "-c",
+             f"import os,subprocess,sys,time;"
+             f"p=subprocess.Popen([sys._base_executable,'-c',"
+             f"'import time;time.sleep(60)']);"
+             f"open({child_pid_file!r},'w').write(str(p.pid));time.sleep(60)"],
+            stdout=subprocess.DEVNULL)
+        child_pid = None
+        try:
+            ph = api.open(parent.pid)
+            try:
+                parent_handle_creation = api.creation(ph)
+            finally:
+                api.close(ph)
+            child_pid = _read_pid(child_pid_file)
+            ch = api.open(child_pid)
+            try:
+                child_handle_creation = api.creation(ch)
+            finally:
+                api.close(ch)
+            parent_free = api.creation_without_handle(parent.pid)
+            child_free = api.creation_without_handle(child_pid)
+            assert parent_free == parent_handle_creation
+            assert child_free == child_handle_creation
+            assert child_free > parent_free      # a true descendant is created later
+        finally:
+            parent.kill()
+            parent.wait(timeout=5)
+            child_birth = pc.birth_identity(child_pid) if child_pid else None
+            if child_birth is not None:
+                pc._win_terminate_tree(child_pid, int(child_birth.split(":")[1]), deadline_s=10)
 
     def test_unrelated_process_survives_a_tree_stop(self, tmp_path, monkeypatch):
         monkeypatch.setenv("BZS_HOME", str(tmp_path))

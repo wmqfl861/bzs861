@@ -74,8 +74,12 @@ class _ProcessDenied(Exception):
 class _RealWinApi:
     """ctypes-backed process operations; the tree stopper's only Windows surface."""
 
-    # query limited + synchronize + terminate
-    _OPEN_MASK = 0x1000 | 0x100000 | 1
+    # step 1 (identity): query limited + synchronize
+    _QUERY_MASK = 0x1000 | 0x100000
+    # step 2 (signalling): terminate, opened by PID while the query handle is held
+    _TERMINATE_MASK = 1
+    _SYSTEM_PROCESS_INFORMATION = 5  # NtQuerySystemInformation class
+    _STATUS_INFO_LENGTH_MISMATCH = 0xC0000004
 
     def __init__(self, kernel=None):
         import ctypes
@@ -90,9 +94,13 @@ class _RealWinApi:
         k.Process32Next.argtypes = [w.HANDLE, ctypes.c_void_p]
         k.Process32Next.restype = w.BOOL
         k.GetSystemTimeAsFileTime.argtypes = [ctypes.POINTER(w.FILETIME)]
+        self._ntdll = ctypes.WinDLL("ntdll")
+        self._ntdll.NtQuerySystemInformation.argtypes = [w.UINT, w.LPVOID, w.ULONG,
+                                                         ctypes.POINTER(w.ULONG)]
+        self._ntdll.NtQuerySystemInformation.restype = w.LONG  # NTSTATUS
 
     def snapshot(self):
-        """Return (pid -> parent pid, completion FILETIME) or raise OSError.
+        """Return (pid -> (parent pid, image name), completion FILETIME) or raise OSError.
 
         INVALID_HANDLE_VALUE and mid-table enumeration errors are failures:
         a silently partial table must never be treated as the whole truth.
@@ -102,7 +110,7 @@ class _RealWinApi:
         snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
         if not snap or snap == invalid:
             raise OSError("cannot snapshot the process table")
-        parents = {}
+        entries = {}
 
         class Entry(ctypes.Structure):
             _fields_ = [("size", self._w.DWORD), ("usage", self._w.DWORD), ("pid", self._w.DWORD),
@@ -116,7 +124,7 @@ class _RealWinApi:
             if not more and ctypes.get_last_error() != 18:  # ERROR_NO_MORE_FILES
                 raise OSError("process enumeration failed")
             while more:
-                parents[e.pid] = e.ppid
+                entries[e.pid] = (e.ppid, e.name.split(b"\0", 1)[0].decode("mbcs", "replace"))
                 more = k.Process32Next(snap, ctypes.byref(e))
                 if not more and ctypes.get_last_error() != 18:
                     raise OSError("process enumeration failed mid-table")
@@ -124,11 +132,11 @@ class _RealWinApi:
             k.CloseHandle(snap)
         ft = self._w.FILETIME()
         k.GetSystemTimeAsFileTime(ctypes.byref(ft))
-        return parents, (ft.dwHighDateTime << 32) | ft.dwLowDateTime
+        return entries, (ft.dwHighDateTime << 32) | ft.dwLowDateTime
 
-    def open(self, pid):
+    def _open(self, pid, mask):
         ctypes = self._ctypes
-        h = self._k.OpenProcess(self._OPEN_MASK, False, pid)
+        h = self._k.OpenProcess(mask, False, pid)
         if h:
             return h
         error = ctypes.get_last_error()
@@ -137,6 +145,63 @@ class _RealWinApi:
         if error == 5:
             raise _ProcessDenied(pid)
         raise OSError(f"cannot open pid {pid} (error {error})")
+
+    def open(self, pid):
+        """Query+synchronize handle: enough to read identity, never to signal."""
+        return self._open(pid, self._QUERY_MASK)
+
+    def open_terminate(self, pid):
+        """Terminate handle, requested by PID only after membership is verified."""
+        return self._open(pid, self._TERMINATE_MASK)
+
+    def creation_without_handle(self, pid):
+        """Creation FILETIME for a pid this launcher cannot open, read from the
+        system process-information table without opening anything.
+
+        Returns None whenever the table cannot answer. The caller may use the
+        value ONLY to exclude a process as obviously older than its nominal
+        parent; this information never authorizes signalling.
+        """
+        ctypes, w = self._ctypes, self._w
+
+        class UnicodeString(ctypes.Structure):
+            _fields_ = [("length", w.USHORT), ("max_length", w.USHORT),
+                        ("buffer", ctypes.c_void_p)]
+
+        class SystemProcessInformation(ctypes.Structure):
+            # winternl.h SYSTEM_PROCESS_INFORMATION through the parent pid.
+            # HANDLE fields use c_void_p so the layout tracks pointer width.
+            _fields_ = [("next_offset", w.ULONG), ("thread_count", w.ULONG),
+                        ("working_set_private", ctypes.c_ulonglong),
+                        ("hard_fault_count", w.ULONG), ("thread_count_high_water", w.ULONG),
+                        ("cycle_time", ctypes.c_ulonglong), ("creation_time", ctypes.c_ulonglong),
+                        ("user_time", ctypes.c_ulonglong), ("kernel_time", ctypes.c_ulonglong),
+                        ("image_name", UnicodeString), ("base_priority", w.LONG),
+                        ("pid", ctypes.c_void_p), ("parent_pid", ctypes.c_void_p)]
+
+        if not valid_pid(pid):
+            return None
+        ntdll, size = self._ntdll, 1 << 16
+        for _ in range(8):  # bounded buffer-growth retries
+            buffer = ctypes.create_string_buffer(size)
+            status = ntdll.NtQuerySystemInformation(self._SYSTEM_PROCESS_INFORMATION,
+                                                    buffer, size, None)
+            if status == 0:
+                offset = 0
+                while True:
+                    entry = ctypes.cast(ctypes.byref(buffer, offset),
+                                        ctypes.POINTER(SystemProcessInformation)).contents
+                    # A zeroed/hidden creation time (protected processes) is
+                    # not evidence of age: treat it as unavailable.
+                    if entry.pid == pid:
+                        return int(entry.creation_time) if entry.creation_time > 0 else None
+                    if not entry.next_offset:
+                        return None
+                    offset += entry.next_offset
+            if status & 0xFFFFFFFF != self._STATUS_INFO_LENGTH_MISMATCH:
+                return None
+            size *= 2
+        return None
 
     def creation(self, handle):
         import ctypes
@@ -175,10 +240,20 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
     Pin the trusted root first, open candidate handles, then take a fresh table
     while those handles remain open. Every ancestry edge must still exist in
     that table and each child's creation must follow its verified parent's.
-    Windows retains process IDs while handles exist; signals use those same
-    handles. A snapshot completion timestamp alone cannot exclude reuse DURING
+    Windows retains process IDs while handles exist; signals use handles opened
+    by PID while the query handle is held, so reuse cannot redirect them. A
+    snapshot completion timestamp alone cannot exclude reuse DURING
     enumeration. Parent-PID spoofing by an equally privileged process is outside
     this local operator contract; this is not a hostile-process sandbox.
+
+    A snapshot entry created strictly before its nominal parent cannot be that
+    parent's descendant (a true descendant is always created later); Windows
+    never updates a child's recorded ppid, so such entries are strangers that
+    reused a dead parent's PID and are excluded outright: not signalled and not
+    unconfirmed. When the query handle is denied, the system process table may
+    supply the creation time for this exclusion only - it never authorizes
+    signalling. Entries with creation times equal to their nominal parent keep
+    the historical fail-closed handling.
 
     Missing/denied roots and descendants are never inferred to be safely gone.
     A final table check reports children born during the stop without signalling
@@ -194,8 +269,10 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
     deadline = time.monotonic() + deadline_s
     unconfirmed: list[str] = []
     opened: list = []
-    # pid -> (parent PID, creation, depth, pinned handle)
+    # pid -> (parent PID, creation, depth, pinned query handle)
     candidates: dict[int, tuple[int, int, int, object]] = {}
+    names: dict[int, str] = {}
+    creations: dict[int, int] = {root_pid: root_creation}
 
     def expired() -> bool:
         return time.monotonic() >= deadline
@@ -213,11 +290,12 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
         except (_ProcessGone, _ProcessDenied, OSError) as exc:
             return [f"pid {root_pid}: root identity unavailable ({type(exc).__name__}); record retained"]
         try:
-            parents, _ = api.snapshot()
+            entries, _ = api.snapshot()
         except OSError:
             return ["process table unavailable; nothing signalled"]
         children: dict[int, list[int]] = {}
-        for pid, parent in parents.items():
+        for pid, (parent, name) in entries.items():
+            names[pid] = name
             if valid_pid(pid) and pid != parent:
                 children.setdefault(parent, []).append(pid)
         from collections import deque
@@ -227,23 +305,40 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
             parent, parent_creation, depth = queue.popleft()
             for pid in sorted(children.get(parent, [])):
                 if pid in seen:
-                    unconfirmed.append(f"pid {pid}: cyclic ancestry; not signalled")
+                    unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}): cyclic ancestry; not signalled")
                     continue
                 seen.add(pid)
                 if expired():
                     return [*unconfirmed, "tree verification deadline exceeded; nothing signalled"]
+                name = names.get(pid, "?")
                 try:
                     handle = api.open(pid)
                     opened.append(handle)
                     creation = api.creation(handle)
-                    if creation <= parent_creation:
-                        unconfirmed.append(f"pid {pid}: creation does not bind to parent {parent}; not signalled")
-                        continue
-                    candidates[pid] = (parent, creation, depth + 1, handle)
-                    # An exited but pinned parent can still anchor descendants.
-                    queue.append((pid, creation, depth + 1))
                 except (_ProcessGone, _ProcessDenied, OSError) as exc:
-                    unconfirmed.append(f"pid {pid}: identity unavailable ({type(exc).__name__}); not signalled")
+                    # No handle: the system process table can still answer for
+                    # pids this launcher may not open, but only to exclude an
+                    # entry as obviously older than its nominal parent.
+                    table_creation = api.creation_without_handle(pid)
+                    if table_creation is not None and table_creation < parent_creation:
+                        continue
+                    own = f"created {table_creation}" if table_creation is not None else "creation unknown"
+                    unconfirmed.append(f"pid {pid} ({name}): identity unavailable"
+                                       f" ({type(exc).__name__}); {own}; nominal parent {parent}"
+                                       f" created {parent_creation}; not signalled")
+                    continue
+                if creation < parent_creation:
+                    # Strictly older than its nominal parent: PID reuse put a
+                    # stranger in the snapshot. Not signalled, not unconfirmed.
+                    continue
+                if creation == parent_creation:
+                    unconfirmed.append(f"pid {pid} ({name}): creation {creation} does not bind"
+                                       f" to parent {parent} created {parent_creation}; not signalled")
+                    continue
+                candidates[pid] = (parent, creation, depth + 1, handle)
+                creations[pid] = creation
+                # An exited but pinned parent can still anchor descendants.
+                queue.append((pid, creation, depth + 1))
         # Revalidate membership AFTER opening every handle, not against the old
         # snapshot. PID reuse before OpenProcess cannot redirect this check.
         try:
@@ -253,39 +348,52 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
         verified = {root_pid}
         targets = [(0, root_pid, root)]
         for pid, (parent, creation, depth, handle) in candidates.items():
-            if parent not in verified or current.get(pid) != parent:
-                unconfirmed.append(f"pid {pid}: parent chain changed or disappeared; not signalled")
+            if parent not in verified or current.get(pid, (None, None))[0] != parent:
+                unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}) created {creation}:"
+                                   f" parent chain changed or disappeared; nominal parent {parent}"
+                                   f" created {creations.get(parent, '?')}; not signalled")
                 continue
             verified.add(pid)
             targets.append((depth, pid, handle))
         confirmed = set()
         for depth, pid, handle in sorted(targets, key=lambda t: -t[0]):
+            identity = f"pid {pid} ({names.get(pid, '?')}) created {creations.get(pid, '?')}"
             try:
                 if api.exited(handle):
                     confirmed.add(pid)
                     continue
                 if expired():
-                    unconfirmed.append(f"pid {pid}: tree-stop deadline exceeded")
+                    unconfirmed.append(f"{identity}: tree-stop deadline exceeded")
                     continue
-                if not api.terminate(handle):
-                    unconfirmed.append(f"pid {pid}: terminate refused")
+                try:
+                    # Termination access is requested by PID only after
+                    # membership is verified, while the query handle is still
+                    # held, so the PID cannot have been reused in between.
+                    terminate_handle = api.open_terminate(pid)
+                    opened.append(terminate_handle)
+                except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                    unconfirmed.append(f"{identity}: termination handle unavailable"
+                                       f" ({type(exc).__name__}); not signalled")
+                    continue
+                if not api.terminate(terminate_handle):
+                    unconfirmed.append(f"{identity}: terminate refused")
                     continue
                 remaining = deadline - time.monotonic()
                 if remaining <= 0 or api.wait(handle, remaining * 1000) != "signaled":
-                    unconfirmed.append(f"pid {pid}: exit not confirmed within budget")
+                    unconfirmed.append(f"{identity}: exit not confirmed within budget")
                 else:
                     confirmed.add(pid)
             except OSError:
-                unconfirmed.append(f"pid {pid}: exit verification failed")
+                unconfirmed.append(f"{identity}: exit verification failed")
         # No second signalling pass: newcomers are not part of the verified set.
         try:
             if expired():
                 unconfirmed.append("final tree check not completed within budget")
             else:
                 final, _ = api.snapshot()
-                for pid, parent in final.items():
+                for pid, (parent, name) in final.items():
                     if parent in verified and pid not in seen and pid != parent:
-                        unconfirmed.append(f"pid {pid}: residual or new descendant; record retained")
+                        unconfirmed.append(f"pid {pid} ({name}): residual or new descendant; record retained")
         except OSError:
             unconfirmed.append("final tree check unavailable; record retained")
         return unconfirmed

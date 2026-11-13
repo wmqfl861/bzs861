@@ -50,7 +50,9 @@ def test_exited_pinned_parent_still_has_its_children_checked():
                       FakeProc(200, ROOT, 2000, alive=False), FakeProc(300, 200, 3000)])
     assert pc._win_terminate_tree(ROOT, ROOT_CREATION, api=api) == []
     assert api.terminate_order == [300, ROOT]
-    assert sorted(api.closed) == [ROOT, 200, 300]
+    # Each signalled member (300, ROOT) now closes a query and a terminate
+    # handle; the exited-but-pinned 200 was never asked for terminate access.
+    assert sorted(api.closed) == [ROOT, ROOT, 200, 300, 300]
 
 
 def test_membership_failure_never_signals_pinned_candidates():
