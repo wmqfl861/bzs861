@@ -247,13 +247,24 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
     this local operator contract; this is not a hostile-process sandbox.
 
     A snapshot entry created strictly before its nominal parent cannot be that
-    parent's descendant (a true descendant is always created later); Windows
-    never updates a child's recorded ppid, so such entries are strangers that
-    reused a dead parent's PID and are excluded outright: not signalled and not
-    unconfirmed. When the query handle is denied, the system process table may
-    supply the creation time for this exclusion only - it never authorizes
-    signalling. Entries with creation times equal to their nominal parent keep
-    the historical fail-closed handling.
+    parent's descendant (a true descendant's creation FILETIME is never earlier
+    than its parent's, but the creation clock has finite granularity, so
+    "later" can collapse into an equal tick); Windows never updates a child's
+    recorded ppid, so strictly-older entries are strangers that reused a dead
+    parent's PID and are excluded outright: not signalled and not unconfirmed.
+    When the query handle is denied, the system process table may supply the
+    creation time for this exclusion only - it never authorizes signalling.
+    Equal-tick entries are never signalled: each keeps its original query
+    handle, and only that same continuously-held handle entering the signaled
+    state after the stop resolves that one member's exit doubt - final-table
+    absence alone never does, and a resolved exit is never recorded as
+    membership confirmation. Candidate descendants of an equal-tick entry are
+    retained and recursively checked from the first snapshot the same way; any
+    surviving, unknown or failing one keeps the stop unconfirmed, and the final
+    table re-checks those parent PIDs for newcomers. A refused TerminateProcess
+    (or a terminate-handle open failure) likewise proves nothing: the member's
+    exit is confirmed only when the SAME still-held query handle is signaled;
+    timeouts, wait failures and errors keep it unconfirmed.
 
     Missing/denied roots and descendants are never inferred to be safely gone.
     A final table check reports children born during the stop without signalling
@@ -273,9 +284,31 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
     candidates: dict[int, tuple[int, int, int, object]] = {}
     names: dict[int, str] = {}
     creations: dict[int, int] = {root_pid: root_creation}
+    # Equal-tick members (creation == nominal parent's creation):
+    # pid -> (nominal parent, parent creation, own creation, retained query
+    # handle or None, scan-time message to defer when no handle was retained).
+    equal_tick: dict[int, tuple[int, int, int, object, "str | None"]] = {}
+    # Candidate descendants of equal-tick members from the FIRST snapshot:
+    # pid -> (parent PID inside the equal-tick subtree, retained handle or None).
+    equal_descendants: dict[int, tuple[int, object]] = {}
 
     def expired() -> bool:
         return time.monotonic() >= deadline
+
+    def confirmed_by_pinned_handle(handle) -> bool:
+        # 终止请求失败不代表进程仍存活；仅同一已固定身份的进程句柄进入 signaled 状态，才确认该成员退出；否则仍计入未确认。
+        # WaitForSingleObject(handle, 0) semantics are subsumed: the call
+        # returns immediately when the pinned handle is already signaled, and a
+        # refused TerminateProcess often means the member is tearing itself
+        # down (Windows fails the request on an already-terminating process
+        # before it reaches the signaled state), so the SAME handle is given
+        # the remaining budget. WAIT_TIMEOUT, WAIT_FAILED and every error are
+        # NOT an exit.
+        remaining = deadline - time.monotonic()
+        try:
+            return remaining > 0 and api.wait(handle, remaining * 1000) == "signaled"
+        except OSError:
+            return False
 
     try:
         try:
@@ -323,22 +356,54 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
                     if table_creation is not None and table_creation < parent_creation:
                         continue
                     own = f"created {table_creation}" if table_creation is not None else "creation unknown"
-                    unconfirmed.append(f"pid {pid} ({name}): identity unavailable"
-                                       f" ({type(exc).__name__}); {own}; nominal parent {parent}"
-                                       f" created {parent_creation}; not signalled")
+                    message = (f"pid {pid} ({name}): identity unavailable"
+                               f" ({type(exc).__name__}); {own}; nominal parent {parent}"
+                               f" created {parent_creation}; not signalled")
+                    if table_creation == parent_creation:
+                        # Equal tick without a handle: no pinned handle can
+                        # ever confirm this pid, so the verdict is deferred to
+                        # the post-stop recheck and can never be released.
+                        equal_tick[pid] = (parent, parent_creation, table_creation, None, message)
+                    else:
+                        unconfirmed.append(message)
                     continue
                 if creation < parent_creation:
                     # Strictly older than its nominal parent: PID reuse put a
                     # stranger in the snapshot. Not signalled, not unconfirmed.
                     continue
                 if creation == parent_creation:
-                    unconfirmed.append(f"pid {pid} ({name}): creation {creation} does not bind"
-                                       f" to parent {parent} created {parent_creation}; not signalled")
+                    # 等时间戳不授权终止；同一持续持有的查询句柄确认退出，只解除该进程的退出疑义，不证明其后代已退出。
+                    # The entry keeps its original query handle; its verdict is
+                    # deferred to the post-stop recheck below.
+                    equal_tick[pid] = (parent, parent_creation, creation, handle, None)
                     continue
                 candidates[pid] = (parent, creation, depth + 1, handle)
                 creations[pid] = creation
                 # An exited but pinned parent can still anchor descendants.
                 queue.append((pid, creation, depth + 1))
+        # Revised-B companion: retain and recursively check candidate
+        # descendants of equal-tick members, discovered from the FIRST
+        # snapshot. Nothing below an equal-tick edge ever enters the signal
+        # set; each member can only be proven gone by its own retained query
+        # handle, and the final table re-checks these parent PIDs.
+        sub_queue = deque(sorted(equal_tick))
+        while sub_queue:
+            member = sub_queue.popleft()
+            for pid in sorted(children.get(member, [])):
+                if pid in seen:
+                    unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}): cyclic ancestry"
+                                       f" below equal-tick pid {member}; not signalled")
+                    continue
+                seen.add(pid)
+                if expired():
+                    return [*unconfirmed, "tree verification deadline exceeded; nothing signalled"]
+                try:
+                    handle = api.open(pid)
+                    opened.append(handle)
+                except (_ProcessGone, _ProcessDenied, OSError):
+                    handle = None  # unknown: no pinned handle can confirm it
+                equal_descendants[pid] = (member, handle)
+                sub_queue.append(pid)
         # Revalidate membership AFTER opening every handle, not against the old
         # snapshot. PID reuse before OpenProcess cannot redirect this check.
         try:
@@ -372,10 +437,22 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
                     terminate_handle = api.open_terminate(pid)
                     opened.append(terminate_handle)
                 except (_ProcessGone, _ProcessDenied, OSError) as exc:
+                    # The request itself failed: re-verify the exit, if at all,
+                    # on the SAME still-held query handle before counting the
+                    # member as anything.
+                    if confirmed_by_pinned_handle(handle):
+                        confirmed.add(pid)
+                        continue
                     unconfirmed.append(f"{identity}: termination handle unavailable"
                                        f" ({type(exc).__name__}); not signalled")
                     continue
                 if not api.terminate(terminate_handle):
+                    # TerminateProcess FALSE: the member may have exited (or
+                    # begun exiting) on its own between the exited() check and
+                    # the request; the pinned query handle decides.
+                    if confirmed_by_pinned_handle(handle):
+                        confirmed.add(pid)
+                        continue
                     unconfirmed.append(f"{identity}: terminate refused")
                     continue
                 remaining = deadline - time.monotonic()
@@ -385,14 +462,37 @@ def _win_terminate_tree(root_pid: int, root_creation: int, *, api=None, deadline
                     confirmed.add(pid)
             except OSError:
                 unconfirmed.append(f"{identity}: exit verification failed")
+        # Post-stop recheck of the equal-tick subtree: only the SAME
+        # continuously-held query handle entering the signaled state resolves
+        # one member's exit doubt; final-table absence never does, and a
+        # resolved exit is never membership confirmation (these pids were
+        # never signalled and never join the verified set).
+        for pid in sorted(equal_tick):
+            parent, parent_creation, creation, handle, message = equal_tick[pid]
+            if handle is not None and confirmed_by_pinned_handle(handle):
+                continue
+            unconfirmed.append(message or (f"pid {pid} ({names.get(pid, '?')}): creation {creation}"
+                                           f" does not bind to parent {parent} created {parent_creation};"
+                                           f" not signalled"))
+        for pid in sorted(equal_descendants):
+            parent, handle = equal_descendants[pid]
+            if handle is not None and confirmed_by_pinned_handle(handle):
+                continue
+            reason = "exit unknown (no handle)" if handle is None else "still alive or exit unconfirmed"
+            unconfirmed.append(f"pid {pid} ({names.get(pid, '?')}): descendant of equal-tick"
+                               f" pid {parent}; {reason}; not signalled")
         # No second signalling pass: newcomers are not part of the verified set.
+        # The final table also re-checks the equal-tick subtree's parent PIDs:
+        # anything new below an equal-tick member is a residual descendant and
+        # keeps the record.
         try:
             if expired():
                 unconfirmed.append("final tree check not completed within budget")
             else:
                 final, _ = api.snapshot()
+                watched = verified | set(equal_tick) | set(equal_descendants)
                 for pid, (parent, name) in final.items():
-                    if parent in verified and pid not in seen and pid != parent:
+                    if parent in watched and pid not in seen and pid != parent:
                         unconfirmed.append(f"pid {pid} ({name}): residual or new descendant; record retained")
         except OSError:
             unconfirmed.append("final tree check unavailable; record retained")
