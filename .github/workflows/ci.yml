@@ -11,6 +11,10 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
         with:
           persist-credentials: false
+          # Full history: the changed-line format gate below compares the
+          # exact push/pull_request event SHAs and fetches any missing
+          # event object by exact SHA (CL-11 item 4).
+          fetch-depth: 0
       - name: Reject CRLF in the index (CL-21)
         run: |
           bad=$(git ls-files --eol | awk '($1=="i/crlf"||$1=="i/mixed") && $3!="attr/-text"')
@@ -24,9 +28,86 @@ jobs:
       - name: Install the Python worker and pinned test dependencies
         run: |
           python3 -m venv .venv
-          .venv/bin/python -m pip install -r tools/requirements-s1-lock.txt
+          .venv/bin/python -m pip install --require-hashes -r tools/requirements-s1-lock.txt
           .venv/bin/python -m pip install --no-deps --no-build-isolation -e "python[test]"
           .venv/bin/python -m pip check
+      - name: Python lint gate (ruff E9,F,B)
+        # CL-11 item 5. ruff is a CI-only tool, so it is not part of the
+        # hashed worker lockfile; it gets its own version+hash pin here.
+        run: |
+          {
+            printf '%s' 'ruff==0.17.5'
+            for h in \
+              d511dd302982e46a285528942fa6557d57730edc4bdb9def95e86a2603d77396 \
+              b72fbc232e328bdbb9cdddf4f1aedcd61bd1aa64d75fc012114b4add0bd7f26b \
+              6f0db748508f04a04e3fbebcc636a5c8b3bd76274f8ed28f497c44d75c2ea2d7 \
+              6f6a7b138edf9cc402ca736a59d9525e6d766e5395760b72e7e146e6251ac963 \
+              e52622ecf3a0df9d03e796fe3eed4aa085adda65520db7e0619cbd2192a97342 \
+              54c0f67d1be11b55d12c184a819fc229f5eee3ef45c16c4fcad41258e83b4882 \
+              dd0dfe7c6fe5a447fce467c58e69893be1d9a7e4378f5b9906432da33d94a97f \
+              ec4ecf40fb4d6e1265b009dbe551727920926fc0f769070c452d6d84b422a74d \
+              40ca8afaac309b41a5b2e09e4e7beb1f824826b93c25697c4d74f573324fba4e \
+              8e85601bd6d9b6c3e3b95c0e0dccdbac1d23c6bcef006d187fbcddaf8225a5df \
+              f93d2b7d449ed9545304f6923699ca20d13c675b69f258481709a08ae61076db \
+              0e5c125c5b31dc8efc948d41357496a4c4a312977565ccba740030efdff83580 \
+              50dfc3c6b3ebd0a932f11dfd579bd42234b0b7137e68940eb6abdbfdb9d69697 \
+              86bd1f3b83c25f9b8055c6e796f0685b39d3127ce947322098c3108cf82fd586 \
+              e1546609b2ad73f1d6c5c076881b788672b7b3cc3283981182cbdbb6524ed88a \
+              aa415d57c244299279901d776607fee3df7831c2a7435433fbfacde8632c6550 \
+              64a6fd668a336df959c522991de33e9e3c8be463afc0c9ac8f029f9d19ef756e \
+              625e57d80cd43352d12ea81690f3eac46cddc8c0f35026d137fb0f157f94592e; do
+              printf ' --hash=sha256:%s' "$h"
+            done
+            printf '\n'
+          } > "$RUNNER_TEMP/ruff-pin.txt"
+          .venv/bin/python -m pip install --require-hashes -r "$RUNNER_TEMP/ruff-pin.txt"
+          .venv/bin/python -m ruff check --select E9,F,B python/bzs
+      - name: Changed-line format gate regressions (CL-11 item 4)
+        # Merge gate: the changed-line checker's own regressions must run
+        # on native Linux with the real clang-format 18 BEFORE the gate.
+        # The suite builds real temporary git repositories and asserts
+        # exit codes, inspected added-line counts and that the gate never
+        # writes a repository byte (validation/ and untracked files
+        # included). The one fake formatter is labeled: the Windows wheel
+        # of clang-format 18.1.8 does not expand @response files, so the
+        # injection regression uses a response-file-emulating double;
+        # every other regression runs this real binary.
+        run: |
+          sudo apt-get install -y --no-install-suggests clang-format-18
+          clang-format-18 --version
+          .venv/bin/python tools/test_check_changed_format.py \
+            --clang-format "$(command -v clang-format-18)"
+      - name: Changed-line clang-format check (CL-11)
+        # CL-11 item 4: check ONLY the lines changed by the exact event
+        # (pull_request: merge-base(base,head)..head with the event's own
+        # SHAs; push: before..after directly, all-zero after = explicit
+        # SKIP, all-zero before on main = empty tree, on a branch =
+        # declared merge-base(main,after) fallback). Checked bytes and
+        # .clang-format come from the exact head tree, never from the
+        # merge-checkout worktree, and the formatter receives source over
+        # stdin only. There is deliberately no full-tree reformat gate: a
+        # full reformat would invalidate the file:line references in
+        # docs/ and validation/ and conflict with in-flight branches.
+        run: |
+          sudo apt-get install -y --no-install-suggests clang-format-18
+          clang-format-18 --version
+          python3 - "$GITHUB_EVENT_NAME" "$GITHUB_EVENT_PATH" "$GITHUB_REF" \
+            > "$RUNNER_TEMP/format-event.json" <<'PY'
+          import json, sys
+          name, path, ref = sys.argv[1:4]
+          gh = json.load(open(path, encoding="utf-8"))
+          if name == "pull_request":
+              pr = gh["pull_request"]
+              event = {"event": "pull_request",
+                       "base": pr["base"]["sha"], "head": pr["head"]["sha"]}
+          else:
+              event = {"event": "push", "before": gh["before"],
+                       "after": gh["after"], "ref": ref}
+          json.dump(event, sys.stdout)
+          PY
+          .venv/bin/python tools/check_changed_format.py \
+            --clang-format "$(command -v clang-format-18)" \
+            --event-file "$RUNNER_TEMP/format-event.json"
       - name: Build and test core, contracts, HTTP, worker and MCP
         run: |
           cmake --preset dev -DBZS_PYTHON="$PWD/.venv/bin/python" -DBZS_REQUIRE_PYTHON_TESTS=ON
@@ -89,6 +170,92 @@ jobs:
             build/ctest-results.xml
             build/Testing/Temporary/*.log
             mutation-logs/*.log
+          retention-days: 14
+          if-no-files-found: warn
+  linux-tsan:
+    # ThreadSanitizer over the offline native test binaries (the Python
+    # worker e2e suites are out of scope here). The request pool, the
+    # background pools, the Store lock and the json-c lock are the core
+    # concurrency surfaces; a manual run on 6410d27 was clean, this job
+    # keeps it that way (CL-11).
+    name: linux-tsan (native offline tests)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev
+      - name: Build with ThreadSanitizer
+        # No CMAKE_BUILD_TYPE: the sanitizer flags carry the recommended
+        # -O1 -g and must not be overridden by the Debug -O0 defaults.
+        run: |
+          cmake -S . -B build-tsan -GNinja -DCMAKE_CXX_FLAGS="-fsanitize=thread -O1 -g" -DBZS_BUILD_TESTS=ON
+          cmake --build build-tsan -j 2
+      - name: Run native offline test binaries under TSan
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+        run: |
+          ./build-tsan/bzs_storage_maintenance_tests
+          ./build-tsan/bzs_background_pool_tests
+          ./build-tsan/bzs_request_executor_tests
+          ./build-tsan/bzs_receipt_retention_tests
+          ./build-tsan/bzs_archive_quota_tests
+          ./build-tsan/bzs_incremental_storage_tests
+          ./build-tsan/bzs_tests
+          ./build-tsan/bzs_batch_tests
+          ./build-tsan/bzs_map_tests
+          ./build-tsan/bzs_crawl_tests
+          ./build-tsan/bzs_site_publication_tests
+          ./build-tsan/bzs_contract_tests docs/planning/validation/contract_cases.json
+          ./build-tsan/bzs_retention_tests
+          ./build-tsan/bzs_fairness_tests
+          ./build-tsan/bzs_session_tests
+          ./build-tsan/bzs_revalidation_tests
+          ./build-tsan/bzs_direct_shared_tests
+          ./build-tsan/bzs_revocation_tests
+          ./build-tsan/bzs_source_publication_tests
+          ./build-tsan/bzs_cache_freshness_tests
+          ./build-tsan/bzs_search_mode_tests
+          ./build-tsan/bzs_capacity_cycles_tests
+          ./build-tsan/bzs_gram_index_tests
+          ./build-tsan/bzs_long_document_recall_tests
+  linux-release:
+    # Release is the configuration users actually run; exercise the offline
+    # native suites and the stdlib-only integration suites against a
+    # Release build (CL-11).
+    name: linux-release (native offline tests)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, verified 2026-10-17
+        with:
+          persist-credentials: false
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libsqlite3-dev libxml2-dev libjson-c-dev libssl-dev libboost-dev
+      - name: Build Release
+        run: |
+          cmake --preset release
+          cmake --build --preset release -j 2
+      - name: Offline native and stdlib integration tests (Release)
+        run: |
+          ctest --test-dir build-release --output-on-failure \
+            -R "^(storage_maintenance|incremental_storage|archive_quota|receipt_retention|background_pool|gram_index|long_document_recall|request_executor|core|batch|map|crawl|site_publication|retention|fairness|sessions|source_publication|search_modes|revalidation|direct_shared|revocation|capacity_cycles|cache_freshness_[123]|contracts|launcher_lifecycle|cache_shard_contract|ci_reporting|http_cli|http_revocation)$" \
+            --output-junit "$PWD/build-release/ctest-results.xml"
+          python3 tools/verify_ctest_junit.py "$PWD/build-release/ctest-results.xml" --minimum 31
+      - name: Retain test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: linux-release-tests-${{ github.sha }}
+          path: |
+            build-release/ctest-results.xml
+            build-release/Testing/Temporary/*.log
           retention-days: 14
           if-no-files-found: warn
   windows:
