@@ -8,10 +8,12 @@ by this test alone; nothing outside this test is ever signalled.
 """
 from __future__ import annotations
 
+import inspect
 import os
 import subprocess
 import sys
 import time
+from contextlib import ExitStack
 from pathlib import Path
 
 import pytest
@@ -772,20 +774,30 @@ class TestRecordHygiene:
 # ------------------- anchored death checks (CL-25 signature-3 class)
 
 
+def _valid_win_birth(birth):
+    return (isinstance(birth, str) and birth.startswith("win:")
+            and birth[4:].isascii() and birth[4:].isdecimal()
+            and int(birth[4:]) > 0)
+
+
 def await_original_identity_gone(query, anchor, deadline, *, now=time.monotonic,
                                  sleep=time.sleep):
     """Identity-anchored death verdict for one tree member (CL-25 signature-3
     class, ported from launcher_lifecycle eda84e6).
 
-    The anchor is the member's ORIGINAL identity captured at first sight,
-    BEFORE the tree is stopped. A sample of None (nothing holds the pid any
-    more) OR a different valid identity (the pid was reused) confirms the
-    original identity is gone; a sample equal to the anchor keeps waiting; an
-    identity-query EXCEPTION never counts as an exit. The loop shares the
-    caller's single deadline; one sample after the deadline decides the
-    verdict. Returns (gone, last) where `last` is the deciding sample or the
-    deciding OSError.
+    The anchor comes from a creation handle or a writer-alive handshake,
+    not a postmortem PID lookup. None OR a different valid Windows identity
+    confirms that original is gone. Same, unknown and query errors do not.
+    The loop shares the caller's single deadline; one sample after the
+    deadline decides the verdict. Returns (gone, last), including a deciding
+    OSError rather than treating that error as successful cleanup.
     """
+    if not _valid_win_birth(anchor):
+        raise ValueError("original Windows identity is required")
+
+    def confirmed(sample):
+        return sample is None or (_valid_win_birth(sample) and sample != anchor)
+
     gone = False
     last = None
     while now() < deadline:
@@ -794,7 +806,7 @@ def await_original_identity_gone(query, anchor, deadline, *, now=time.monotonic,
         except OSError as exc:
             last = exc  # a query failure is not an exit; keep the window
         else:
-            if last is None or last != anchor:
+            if confirmed(last):
                 gone = True
                 break
         sleep(0.1)
@@ -803,7 +815,7 @@ def await_original_identity_gone(query, anchor, deadline, *, now=time.monotonic,
             last = query()
         except OSError as exc:
             last = exc
-        gone = last is None or (not isinstance(last, OSError) and last != anchor)
+        gone = confirmed(last)
     return gone, last
 
 
@@ -816,10 +828,15 @@ class TestAnchoredDeathCheck:
     exercise every verdict rule with no real pid churn."""
 
     @staticmethod
-    def _clock(start=100.0):
+    def _clock(start=100):
+        # Integer ticks: no 0.1 accumulation can keep the deciding query in
+        # the loop just below the deadline (100.99999999999994 < 101).
         state = {"t": start}
-        return ((lambda: state["t"]),
-                (lambda seconds: state.__setitem__("t", state["t"] + seconds)))
+
+        def sleep(seconds):
+            assert seconds == 0.1
+            state["t"] += 1
+        return lambda: state["t"], sleep
 
     @staticmethod
     def _sticky(samples):
@@ -838,34 +855,34 @@ class TestAnchoredDeathCheck:
         # Still the anchored identity at the deadline MUST fail.
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky(["win:anchor"]), "win:anchor", 105.0, now=now, sleep=sleep)
+            self._sticky(["win:1000"]), "win:1000", 105.0, now=now, sleep=sleep)
         assert gone is False
-        assert last == "win:anchor"
+        assert last == "win:1000"
 
     def test_pid_reuse_different_identity_passes(self):
         # Signature-3 class: the pid is later held by a DIFFERENT process; a
         # different valid identity confirms the original identity is gone.
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky(["win:anchor", "win:anchor", "win:reuser"]),
-            "win:anchor", 105.0, now=now, sleep=sleep)
+            self._sticky(["win:1000", "win:1000", "win:2000"]),
+            "win:1000", 105.0, now=now, sleep=sleep)
         assert gone is True
-        assert last == "win:reuser"
+        assert last == "win:2000"
 
     def test_reuse_before_first_sample_passes(self):
         # The pid got reused BEFORE the first poll: the first query already
         # reports the reuser while the anchor keeps the first-sight identity.
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky(["win:reuser"]), "win:anchor", 105.0, now=now, sleep=sleep)
+            self._sticky(["win:2000"]), "win:1000", 105.0, now=now, sleep=sleep)
         assert gone is True
-        assert last == "win:reuser"
+        assert last == "win:2000"
 
     def test_none_sample_passes(self):
         # Nothing holds the pid any more: the original identity is gone.
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky(["win:anchor", None]), "win:anchor", 105.0,
+            self._sticky(["win:1000", None]), "win:1000", 105.0,
             now=now, sleep=sleep)
         assert gone is True
         assert last is None
@@ -876,7 +893,7 @@ class TestAnchoredDeathCheck:
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
             self._sticky([OSError("probe failed"), OSError("probe failed"), None]),
-            "win:anchor", 105.0, now=now, sleep=sleep)
+            "win:1000", 105.0, now=now, sleep=sleep)
         assert gone is True
         assert last is None
 
@@ -885,22 +902,436 @@ class TestAnchoredDeathCheck:
         # gone, so the verdict must not pass.
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky([OSError("probe failed")]), "win:anchor", 105.0,
+            self._sticky([OSError("probe failed")]), "win:1000", 105.0,
             now=now, sleep=sleep)
         assert gone is False
         assert isinstance(last, OSError)
 
-    def test_exit_confirmed_only_by_the_final_sample_passes(self):
-        # The anchored identity is sampled for the whole window and the pid is
-        # released/reused only at the deciding sample AFTER the deadline: the
-        # shared deadline still yields a correct verdict from that one sample.
+    @pytest.mark.parametrize("final, expected", [
+        pytest.param(None, True, id="absent"),
+        pytest.param("win:2000", True, id="reused"),
+        pytest.param("win:1000", False, id="same"),
+        pytest.param(OSError("probe failed"), False, id="error"),
+        pytest.param("unknown", False, id="unknown"),
+        pytest.param("win:0", False, id="zero"),
+        pytest.param("win:not-a-time", False, id="malformed"),
+    ])
+    def test_deciding_sample_is_after_deadline(self, final, expected):
+        now, sleep = self._clock()
+        deadline = 103
+        samples = []
+
+        def query():
+            query_time = now()
+            value = "win:1000" if query_time < deadline else final
+            samples.append((query_time, value))
+            if isinstance(value, OSError):
+                raise value
+            return value
+
+        gone, last = await_original_identity_gone(
+            query, "win:1000", deadline, now=now, sleep=sleep)
+        # These are behavior assertions: removing the final query must fail
+        # even for a final same/error/unknown result, not just the exit cases.
+        assert samples == [(100, "win:1000"), (101, "win:1000"),
+                           (102, "win:1000"), (103, final)]
+        assert samples[-1][0] >= deadline
+        assert gone is expected
+        assert last is final
+
+    @pytest.mark.parametrize("anchor", [None, "unknown", "win:0", "win:no"])
+    def test_unknown_original_anchor_is_rejected(self, anchor):
+        queried = []
+        with pytest.raises(ValueError, match="original Windows identity"):
+            await_original_identity_gone(lambda: queried.append(True), anchor, 103)
+        assert queried == []
+
+    @pytest.mark.parametrize("unknown", ["unknown", "", "win:0", "win:no", False])
+    def test_unknown_loop_sample_does_not_confirm_exit(self, unknown):
         now, sleep = self._clock()
         gone, last = await_original_identity_gone(
-            self._sticky(["win:anchor"] * 10 + ["win:reuser"]),
-            "win:anchor", 101.0, now=now, sleep=sleep)
-        assert gone is True
-        assert last == "win:reuser"
+            self._sticky([unknown]), "win:1000", 103, now=now, sleep=sleep)
+        assert gone is False
+        assert last is unknown
 
+
+class _FakeOwnedRuntime:
+    """Drive the actual real-test setup/verdict/teardown without OS processes.
+
+    Handles keep referencing the original object even after table PID reuse.
+    Closing the writer's input models its cooperative, creation-handle cleanup;
+    the writer itself is also exercised separately below.
+    """
+
+    def __init__(self, monkeypatch, tmp_path, *, chain=False):
+        import io
+        self.originals = [FakeProc(ROOT, 1, ROOT_CREATION),
+                          FakeProc(200, ROOT, 2_000)]
+        if chain:
+            self.originals.append(FakeProc(300, 200, 3_000))
+        self.bystander = FakeProc(999, 1, 900)
+        self.api = FakeWinApi([*self.originals, self.bystander])
+        self.created = []
+        self.writer = self.originals[1] if chain else self.originals[0]
+        self.on_parent_kill = lambda: None
+        self.birth_override = {}
+        handles = {h: p for p in [*self.originals, self.bystander]
+                   for h in (p.query_handle, p.terminate_handle)}
+        by_handle = self.api._by_handle
+        self.api._by_handle = lambda h: handles[h] if h in handles else by_handle(h)
+        runtime = self
+
+        class CreationHandle:
+            def __init__(self, member):
+                self.closed = False
+                handles[self] = member
+
+            def Close(self):
+                self.closed = True
+
+        class Process:
+            def __init__(self, command, **kw):
+                is_bystander = command[-1] == "import time;time.sleep(60)"
+                self.member = runtime.bystander if is_bystander else runtime.originals[0]
+                self.pid = self.member.pid
+                self._handle = CreationHandle(self.member)
+                self.stdin = io.StringIO() if kw.get("stdin") == subprocess.PIPE else None
+                self.stdout = io.StringIO("200\n") if kw.get("stdout") == subprocess.PIPE else None
+                self.stderr = io.StringIO() if kw.get("stderr") == subprocess.PIPE else None
+                runtime.created.append(self)
+                if not is_bystander:
+                    for name, member in (("real", runtime.originals[1]),
+                                         ("child", runtime.originals[1]),
+                                         ("leaf", runtime.originals[-1])):
+                        path = tmp_path / (name + ".pid")
+                        path.with_suffix(".birth").write_text(f"win:{member.creation}")
+                        path.write_text(str(member.pid))
+
+            def poll(self):
+                return None if self.member.alive else 0
+
+            def kill(self):
+                runtime.api.terminate(self.member.terminate_handle)
+                self.member.alive = False
+                if self.pid == ROOT:
+                    runtime.on_parent_kill()
+
+            def wait(self, timeout):
+                if (self.member.alive and runtime.writer.alive
+                        and self.stdin is not None and self.stdin.closed):
+                    # The writer owns its child from Popen; EOF asks it to
+                    # release that original, never whoever now holds the pid.
+                    for member in runtime.originals[1:]:
+                        if member.alive:
+                            runtime.api.terminate(member.terminate_handle)
+                            member.alive = False
+                    self.member.alive = False
+                if self.member.alive:
+                    raise subprocess.TimeoutExpired("fake owned process", timeout)
+                return 0
+
+        def birth(pid):
+            if pid in self.birth_override:
+                value = self.birth_override[pid]
+                if isinstance(value, Exception):
+                    raise value
+                return value
+            member = self.api.table.get(pid)
+            return f"win:{member.creation}" if member and member.alive else None
+
+        monkeypatch.setattr(subprocess, "Popen", Process)
+        monkeypatch.setattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0, raising=False)
+        monkeypatch.setattr(pc, "_RealWinApi", lambda: self.api)
+        monkeypatch.setattr(pc, "birth_identity", birth)
+        # Never let the fake safety harness enter POSIX pidfd signalling.
+        def dead_stop(*args, **kw):
+            raise RuntimeError("dead root; record retained")
+        monkeypatch.setattr(pc, "stop_owned", dead_stop)
+
+    def reuse_child(self):
+        self.originals[1].alive = False
+        replacement = FakeProc(200, 555, 9_000)
+        self.api.table[200] = replacement
+        return replacement
+
+    def assert_released(self):
+        assert all(not p.alive for p in self.originals)
+        assert all(not proc.member.alive and proc._handle.closed for proc in self.created)
+        assert all(stream is None or stream.closed for proc in self.created
+                   for stream in (proc.stdin, proc.stdout, proc.stderr))
+        assert len(self.api.closed_handles) == len(set(self.api.closed_handles))
+
+
+class TestRealProcessSafetyFakes:
+    """Run the real tests' control flow, but every process/handle is fake."""
+
+    @pytest.mark.parametrize("case", ["handleless", "dead_root"])
+    def test_postmortem_pid_reuser_receives_zero_termination(self, tmp_path, monkeypatch, case):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        if case == "handleless":
+            def creation_without_handle(pid):
+                value = runtime.api.table[pid].creation
+                if pid == 200:
+                    runtime.reuse_child()
+                return value
+            monkeypatch.setattr(runtime.api, "creation_without_handle", creation_without_handle)
+            TestRealWindowsProcesses().test_handleless_creation_matches_handle_query_on_real_processes(tmp_path)
+        else:
+            def stop(*args, **kw):
+                runtime.reuse_child()
+                raise RuntimeError("dead root; record retained")
+            monkeypatch.setattr(pc, "stop_owned", stop)
+            TestRealWindowsProcesses().test_dead_root_candidates_surface_and_record_is_kept(tmp_path, monkeypatch)
+        assert runtime.api.table[200].alive
+        assert 200 not in runtime.api.terminate_order
+        assert 200 not in runtime.api.terminate_opens
+
+    def test_liveness_rejects_a_pid_reuser(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        runtime.on_parent_kill = runtime.reuse_child
+        with pytest.raises(AssertionError):
+            TestRealWindowsProcesses().test_dead_root_candidates_surface_and_record_is_kept(tmp_path, monkeypatch)
+        assert runtime.api.table[200].alive
+        assert 200 not in runtime.api.terminate_order
+
+    @pytest.mark.parametrize("stage", ["real_pid", "leaf_pid", "identity", "record"])
+    def test_partial_setup_releases_every_owned_process(self, tmp_path, monkeypatch, stage):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path, chain=True)
+        if stage.endswith("_pid"):
+            read_pid = _read_pid
+            def fail_read(path, timeout=10.0):
+                if Path(path).stem == stage[:-4]:
+                    raise OSError("injected setup failure")
+                return read_pid(path, timeout)
+            monkeypatch.setitem(globals(), "_read_pid", fail_read)
+        elif stage == "identity":
+            runtime.birth_override[200] = OSError("injected setup failure")
+            creation = runtime.api.creation
+            def fail_creation(handle):
+                if runtime.api._by_handle(handle).pid == 200:
+                    raise OSError("injected setup failure")
+                return creation(handle)
+            monkeypatch.setattr(runtime.api, "creation", fail_creation)
+        else:
+            write = Path.write_text
+            def fail_record(path, *args, **kw):
+                if path.name == "worker.pid":
+                    raise OSError("injected setup failure")
+                return write(path, *args, **kw)
+            monkeypatch.setattr(Path, "write_text", fail_record)
+        with pytest.raises(OSError, match="injected setup failure"):
+            if stage == "record":
+                TestRealWindowsProcesses().test_stop_owned_kills_the_whole_real_tree(tmp_path, monkeypatch)
+            else:
+                TestRealWindowsProcesses().test_unrelated_process_survives_a_tree_stop(tmp_path, monkeypatch)
+        runtime.assert_released()
+        if stage != "record":
+            assert not runtime.bystander.alive
+
+    @pytest.mark.parametrize("value", ["unknown", "win:0", OSError("identity denied")])
+    def test_unknown_cleanup_identity_fails_closed_and_keeps_record(self, tmp_path, monkeypatch, value):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        def stop(*args, **kw):
+            runtime.birth_override[200] = value
+            raise RuntimeError("dead root; record retained")
+        monkeypatch.setattr(pc, "stop_owned", stop)
+        with pytest.raises((RuntimeError, OSError), match="identity"):
+            TestRealWindowsProcesses().test_dead_root_candidates_surface_and_record_is_kept(tmp_path, monkeypatch)
+        assert runtime.originals[1].alive
+        assert 200 not in runtime.api.terminate_order
+        assert 200 not in runtime.api.terminate_opens
+        assert runtime.originals[1].query_handle in runtime.api.closed_handles
+        assert runtime.created[0]._handle.closed
+        assert pc.record_path("worker").exists()
+
+    def test_writer_cleanup_failure_is_not_silently_successful(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        with pytest.raises(RuntimeError, match="writer cleanup failed"):
+            with _OwnedWindowsProcesses() as owned:
+                parent, *_ = TestRealWindowsProcesses()._spawn_pair(tmp_path, owned)
+                wait = parent.wait
+                def failed_writer(timeout):
+                    wait(timeout)
+                    return 1
+                monkeypatch.setattr(parent, "wait", failed_writer)
+        runtime.assert_released()
+
+    @pytest.mark.parametrize("stage", ["spawn_identity", "child_pid", "birth_read"])
+    def test_partial_setup_before_pin_keeps_writer_ownership(self, tmp_path, monkeypatch, stage):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        if stage == "spawn_identity":
+            monkeypatch.setattr(runtime.api, "creation",
+                                lambda handle: (_ for _ in ()).throw(OSError("injected setup failure")))
+        elif stage == "child_pid":
+            monkeypatch.setitem(globals(), "_read_pid",
+                                lambda *args: (_ for _ in ()).throw(OSError("injected setup failure")))
+        else:
+            read = Path.read_text
+            def fail_read(path, *args, **kw):
+                if path.suffix == ".birth":
+                    raise OSError("injected setup failure")
+                return read(path, *args, **kw)
+            monkeypatch.setattr(Path, "read_text", fail_read)
+        with pytest.raises(OSError, match="injected setup failure"):
+            TestRealWindowsProcesses().test_handleless_creation_matches_handle_query_on_real_processes(tmp_path)
+        runtime.assert_released()
+
+    def test_cleanup_failure_does_not_skip_other_members_or_handles(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path, chain=True)
+        with pytest.raises(RuntimeError, match="cleanup exit unconfirmed"):
+            with _OwnedWindowsProcesses() as owned:
+                owned.spawn([sys._base_executable, "-c", "import time;time.sleep(60)"])
+                # Kill only the parent, leaving both pinned descendants for
+                # independent rescue, including one refused termination.
+                parent, *_ = TestRealWindowsProcesses()._spawn_chain(tmp_path, owned)
+                parent.kill()
+                runtime.api.terminate_fail_pids = {300}
+                raise AssertionError("injected verdict failure")
+        assert runtime.originals[2].alive  # refusal must NOT turn into success
+        assert not runtime.originals[1].alive
+        assert not runtime.bystander.alive
+        assert set(runtime.api.closed_handles) == {
+            p.query_handle for p in runtime.originals[1:]
+        } | {p.terminate_handle for p in runtime.originals[1:]}
+        assert all(proc._handle.closed for proc in runtime.created)
+
+    def test_cleanup_query_error_does_not_skip_other_owned_members(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path, chain=True)
+        with pytest.raises(OSError, match="identity denied"):
+            with _OwnedWindowsProcesses() as owned:
+                owned.spawn([sys._base_executable, "-c", "import time;time.sleep(60)"])
+                parent, *_ = TestRealWindowsProcesses()._spawn_chain(tmp_path, owned)
+                parent.kill()
+                runtime.birth_override[300] = OSError("identity denied")
+        assert runtime.originals[2].alive
+        assert 300 not in runtime.api.terminate_order
+        assert 300 not in runtime.api.terminate_opens
+        assert not runtime.originals[1].alive
+        assert not runtime.bystander.alive
+        assert all(p.query_handle in runtime.api.closed_handles for p in runtime.originals[1:])
+        assert all(proc._handle.closed for proc in runtime.created)
+
+    @pytest.mark.parametrize("current", [None, "win:9000"])
+    def test_current_absent_or_different_only_suppresses_cleanup(self, tmp_path, monkeypatch, current):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        with _OwnedWindowsProcesses() as owned:
+            parent, *_ = TestRealWindowsProcesses()._spawn_pair(tmp_path, owned)
+            parent.kill()
+            runtime.birth_override[200] = current
+        assert runtime.api.terminate_order == [ROOT]
+        assert runtime.api.terminate_opens == []
+        assert runtime.originals[1].query_handle in runtime.api.closed_handles
+
+    def test_rescue_cannot_turn_a_broken_stop_into_success(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path, chain=True)
+        def cascade_on_rescue():
+            for member in runtime.originals[1:]:
+                member.alive = False
+        runtime.on_parent_kill = cascade_on_rescue
+        def broken_stop(*args, **kw):
+            pc.record_path("worker").unlink()
+            return True  # lies about stopping; all members are still alive
+        monkeypatch.setattr(pc, "stop_owned", broken_stop)
+        now, sleep = TestAnchoredDeathCheck._clock()
+        check = await_original_identity_gone
+        monkeypatch.setattr(time, "monotonic", now)
+        monkeypatch.setitem(globals(), "await_original_identity_gone",
+                            lambda query, birth, deadline: check(
+                                query, birth, deadline, now=now, sleep=sleep))
+        with pytest.raises((AssertionError, pytest.fail.Exception)):
+            TestRealWindowsProcesses().test_stop_owned_kills_the_whole_real_tree(tmp_path, monkeypatch)
+        runtime.assert_released()
+
+
+class TestOwnedWriterFakes:
+    def test_descendant_does_not_inherit_cleanup_input(self, tmp_path, monkeypatch):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        monkeypatch.setattr(os, "getpid", lambda: 200)
+        monkeypatch.setattr(time, "sleep", lambda seconds: None)
+        popen = subprocess.Popen
+        inherited = []
+
+        def spawn(command, **kw):
+            # A sleeper must not inherit the writer's cleanup pipe. On
+            # Windows its stdin initialization can block behind the writer's
+            # pending EOF read, before it ever publishes its identity.
+            inherited.append(kw.get("stdin") != subprocess.DEVNULL)
+            return popen(command, **kw)
+        monkeypatch.setattr(subprocess, "Popen", spawn)
+        _owned_writer(tmp_path / "writer.pid",
+                      [sys._base_executable, "-c", "import time;time.sleep(60)"])
+        assert inherited == [False]
+        assert not runtime.bystander.alive
+
+    @pytest.mark.parametrize("stage", ["identity", "birth", "pid", "wait", "success"])
+    def test_writer_releases_spawned_child_on_every_setup_exit(self, tmp_path, monkeypatch, stage):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        monkeypatch.setattr(os, "getpid", lambda: 200)
+        if stage == "identity":
+            def fail_creation(handle):
+                raise OSError("writer setup failure")
+            monkeypatch.setattr(runtime.api, "creation", fail_creation)
+        elif stage in {"birth", "pid"}:
+            write = Path.write_text
+            def fail_write(path, *args, **kw):
+                if path == (tmp_path / ("writer.birth" if stage == "birth" else "writer.ready")):
+                    raise OSError("writer setup failure")
+                return write(path, *args, **kw)
+            monkeypatch.setattr(Path, "write_text", fail_write)
+        else:
+            def sleep(seconds):
+                assert seconds == 60
+                if stage == "wait":
+                    raise OSError("writer setup failure")
+            monkeypatch.setattr(time, "sleep", sleep)
+        command = [sys._base_executable, "-c", "import time;time.sleep(60)"]
+        if stage == "success":
+            _owned_writer(tmp_path / "writer.pid", command)
+            assert (tmp_path / "writer.pid").read_text() == "200"
+            assert (tmp_path / "writer.birth").read_text() == "win:2000"
+        else:
+            with pytest.raises(OSError, match="writer setup failure"):
+                _owned_writer(tmp_path / "writer.pid", command)
+        assert not runtime.bystander.alive
+        assert runtime.api.terminate_order == [999]
+        assert runtime.created[0]._handle.closed
+        assert runtime.originals[1].query_handle in runtime.api.closed_handles
+
+    @pytest.mark.parametrize("failure", ["kill", "wait"])
+    def test_creation_handle_cleanup_failure_still_releases_resources(self, tmp_path, monkeypatch, failure):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        proc = subprocess.Popen([sys._base_executable, "-c", "import time;time.sleep(60)"],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        def fail(*args, **kw):
+            raise OSError("injected cleanup failure")
+        monkeypatch.setattr(proc, failure, fail)
+        with pytest.raises(OSError, match="injected cleanup failure"):
+            _cleanup_spawned(proc)
+        assert proc._handle.closed and proc.stdout.closed and proc.stderr.closed
+        assert runtime.api.terminate_opens == []  # no PID-based rescue
+
+    @pytest.mark.parametrize("failure", ["unknown", "reused", "dead", "query_error"])
+    def test_writer_handshake_failure_closes_handles_without_signalling(self, tmp_path, monkeypatch, failure):
+        runtime = _FakeOwnedRuntime(monkeypatch, tmp_path)
+        (tmp_path / "child.pid").write_text("200")
+        (tmp_path / "child.birth").write_text("unknown" if failure == "unknown" else "win:2000")
+        if failure == "reused":
+            runtime.reuse_child()
+        elif failure == "dead":
+            runtime.originals[1].alive = False
+        elif failure == "query_error":
+            def fail_creation(handle):
+                raise OSError("identity unavailable")
+            monkeypatch.setattr(runtime.api, "creation", fail_creation)
+        with pytest.raises(OSError):
+            with _OwnedWindowsProcesses() as owned:
+                owned.pin_writer(tmp_path / "child.pid")
+        assert runtime.api.terminate_order == []
+        assert runtime.api.terminate_opens == []
+        if failure != "unknown":
+            assert runtime.api.table[200].query_handle in runtime.api.closed_handles
+        if failure == "reused":
+            assert runtime.api.table[200].alive
 
 # ---------------------------------------------------------- real processes
 
@@ -912,151 +1343,221 @@ def _read_pid(path, timeout=10.0):
     return int(Path(path).read_text())
 
 
+def _cleanup_spawned(proc):
+    """Only Popen's original creation handle authorizes this rescue.
+
+    A cooperative writer gets EOF so it can reclaim children even if their
+    PID/identity handshakes were never read. Ordinary sleepers are killed via
+    their creation handle. Release every stream/handle even if a wait fails.
+    """
+    with ExitStack() as release:
+        release.callback(proc._handle.Close)
+        for stream in (proc.stdin, proc.stdout, proc.stderr):
+            if stream is not None:
+                release.callback(stream.close)
+        cooperative = getattr(proc, "_bzs_cooperative", False)
+        requested_cleanup = proc.poll() is None and cooperative
+        if proc.poll() is None:
+            if cooperative:
+                proc.stdin.close()
+            else:
+                proc.kill()
+        result = proc.wait(timeout=5)
+        if requested_cleanup and result != 0:
+            raise RuntimeError(f"pid {proc.pid}: writer cleanup failed ({result})")
+
+
+def _owned_writer(pid_path, child_command=None, cooperative=False):
+    """Child-side ownership starts at Popen, before any identity/file work.
+
+    Descendants remain ordinary 60-second sleepers: killing their parent
+    cannot cooperatively clean them and falsely prove a successful tree stop.
+    Only the outer test's AFTER-verdict cleanup sends EOF to a live writer.
+    """
+    with ExitStack() as owned:
+        if child_command is not None:
+            # Do not share the writer's pending cleanup-pipe read with the
+            # descendant's Windows stdin initialization.
+            child = subprocess.Popen(child_command, stdin=subprocess.DEVNULL)
+            owned.callback(_cleanup_spawned, child)
+        api = pc._RealWinApi()
+        handle = api.open(os.getpid())
+        owned.callback(api.close, handle)
+        creation = api.creation(handle)
+        if type(creation) is not int or creation <= 0:
+            raise OSError("writer original identity unavailable")
+        path = Path(pid_path)
+        # Publish the self-sampled original birth BEFORE the atomic PID-ready
+        # marker. The writer is still alive; the reader must pin and match it.
+        path.with_suffix(".birth").write_text(f"win:{creation}", encoding="ascii")
+        ready = path.with_suffix(".ready")
+        ready.write_text(str(os.getpid()), encoding="ascii")
+        ready.replace(path)
+        if cooperative:
+            from threading import Event, Thread
+            eof = Event()
+            def read_eof():
+                try:
+                    sys.stdin.buffer.read(1)
+                finally:
+                    eof.set()
+            Thread(target=read_eof, daemon=True).start()
+            eof.wait(60)
+        else:
+            time.sleep(60)
+
+
+def _writer_command(path, child_command=None, *, cooperative=False, executable=None):
+    # Use the exact same helpers exercised by the fakes, without importing
+    # pytest in the base interpreter. Nested repr preserves Windows paths.
+    source = ("import os,subprocess,sys,time\nfrom pathlib import Path\n"
+              "from contextlib import ExitStack\nfrom bzs import process_control as pc\n"
+              + inspect.getsource(_cleanup_spawned) + "\n"
+              + inspect.getsource(_owned_writer) + "\n"
+              + f"_owned_writer({str(path)!r}, {child_command!r}, {cooperative!r})\n")
+    return [executable or sys._base_executable, "-c", source]
+
+
+class _OwnedWindowsProcesses(ExitStack):
+    """Test-only RAII: original handles/anchors, never postmortem authority."""
+
+    def __init__(self):
+        super().__init__()
+        self.api = pc._RealWinApi()
+        self.cleanup_deadline = None
+        self.members = ExitStack()
+        # Let a still-running writer reclaim untransferred children BEFORE
+        # member rescue can kill it. Pinned handles survive both phases.
+        self.callback(self.members.close)
+
+    def spawn(self, command, *, cooperative=False, **kw):
+        proc = subprocess.Popen(command, **kw)
+        self.callback(_cleanup_spawned, proc)  # before identity queries/asserts
+        proc._bzs_cooperative = cooperative
+        creation = self.api.creation(proc._handle)  # creation handle, NOT pid
+        if type(creation) is not int or creation <= 0:
+            raise OSError("spawned original identity unavailable")
+        proc._bzs_birth = f"win:{creation}"
+        return proc
+
+    def pin_writer(self, path):
+        pid = _read_pid(path)
+        birth = Path(path).with_suffix(".birth").read_text(encoding="ascii")
+        if not _valid_win_birth(birth):
+            raise OSError("writer original identity unavailable")
+        handle = self.api.open(pid)
+        self.members.callback(self.api.close, handle)  # failed handshake closes
+        creation = self.api.creation(handle)
+        if f"win:{creation}" != birth or self.api.exited(handle):
+            raise OSError("writer original identity not alive at handshake")
+        self.members.callback(self._cleanup_original, pid, birth, handle)
+        return pid, birth
+
+    def _cleanup_original(self, pid, birth, handle):
+        # The continuously-held query handle was matched to the writer's own
+        # original birth. A fresh PID query can ONLY suppress signalling.
+        if self.api.exited(handle):
+            return
+        current = pc.birth_identity(pid)
+        if current is None or (_valid_win_birth(current) and current != birth):
+            return
+        if current != birth:
+            raise RuntimeError(f"pid {pid}: cleanup identity unknown")
+        if self.cleanup_deadline is None:
+            self.cleanup_deadline = time.monotonic() + 10
+        with ExitStack() as release:
+            termination = self.api.open_terminate(pid)
+            release.callback(self.api.close, termination)
+            remaining = self.cleanup_deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError(f"pid {pid}: cleanup deadline exceeded")
+            self.api.terminate(termination)
+            if self.api.wait(handle, remaining * 1000) != "signaled":
+                raise RuntimeError(f"pid {pid}: cleanup exit unconfirmed")
+
+
+def _assert_original_gone(pid, birth, deadline):
+    gone, last = await_original_identity_gone(
+        lambda: pc.birth_identity(pid), birth, deadline)
+    assert gone, (f"pid {pid}: original identity {birth!r} not confirmed gone "
+                  f"at deadline (last sample {last!r})")
+
+
 @pytest.mark.skipif(os.name != "nt", reason="real Windows process tree")
 class TestRealWindowsProcesses:
-    def _spawn_chain(self, tmp_path):
-        # Forward slashes: the leaf code string is re-parsed as source by the
-        # grandchild, where backslash paths would become invalid escapes.
-        leaf = str(Path(tmp_path) / "leaf.pid").replace("\\", "/")
-        real = str(Path(tmp_path) / "real.pid").replace("\\", "/")
-        inner = (f"import os,subprocess,sys,time;"
-                 f"open({real!r},'w').write(str(os.getpid()));"
-                 f"subprocess.Popen([sys._base_executable,'-c',"
-                 f"\"import os,time;open({leaf!r},'w').write(str(os.getpid()));time.sleep(60)\"]);"
-                 f"time.sleep(60)")
-        proc = subprocess.Popen([sys.executable, "-c", inner],
-                                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
-        proc._bzs_birth = pc.birth_identity(proc.pid)
-        real_pid, leaf_pid = _read_pid(real), _read_pid(leaf)
-        # CL-25 signature-3 class (eda84e6 port): anchor each member's ORIGINAL
-        # identity at first sight - the writer is alive here, BEFORE any stop
-        # call - so a later churn reuser holding the pid reads as a DIFFERENT
-        # identity and still confirms the original is gone.
-        real_birth, leaf_birth = pc.birth_identity(real_pid), pc.birth_identity(leaf_pid)
-        assert real_birth is not None, "real interpreter not alive at first sight"
-        assert leaf_birth is not None, "leaf not alive at first sight"
+    def _spawn_chain(self, tmp_path, owned):
+        leaf, real = tmp_path / "leaf.pid", tmp_path / "real.pid"
+        command = _writer_command(real, _writer_command(leaf),
+                                  cooperative=True, executable=sys.executable)
+        proc = owned.spawn(command, cooperative=True, stdin=subprocess.PIPE,
+                           creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
+        real_pid, real_birth = owned.pin_writer(real)
+        leaf_pid, leaf_birth = owned.pin_writer(leaf)
         return proc, real_pid, leaf_pid, real_birth, leaf_birth
+
+    def _spawn_pair(self, tmp_path, owned):
+        child = tmp_path / "child.pid"
+        parent = owned.spawn(
+            _writer_command(tmp_path / "parent.pid", _writer_command(child), cooperative=True),
+            cooperative=True, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
+        child_pid, child_birth = owned.pin_writer(child)
+        return parent, child_pid, child_birth
 
     def test_stop_owned_kills_the_whole_real_tree(self, tmp_path, monkeypatch):
         import json
         monkeypatch.setenv("BZS_HOME", str(tmp_path))
-        proc, real_pid, leaf_pid, real_birth, leaf_birth = self._spawn_chain(tmp_path)
-        record = {"version": 1, "name": "worker", "pid": proc.pid,
-                  "birth": proc._bzs_birth, "port": 8611, "state": "ready"}
-        pc.record_path("worker").parent.mkdir(parents=True, exist_ok=True)
-        pc.record_path("worker").write_text(json.dumps(record), encoding="utf-8")
-        try:
+        with _OwnedWindowsProcesses() as owned:
+            proc, real_pid, leaf_pid, real_birth, leaf_birth = self._spawn_chain(tmp_path, owned)
+            record = {"version": 1, "name": "worker", "pid": proc.pid,
+                      "birth": proc._bzs_birth, "port": 8611, "state": "ready"}
+            pc.record_path("worker").parent.mkdir(parents=True, exist_ok=True)
+            pc.record_path("worker").write_text(json.dumps(record), encoding="utf-8")
             assert pc.stop_owned("worker", timeout=10) is True
-        finally:
-            if proc.poll() is None:
-                proc.kill()
-            proc.wait(timeout=5)
-        deadline = time.monotonic() + 8
-        for pid, birth in ((real_pid, real_birth), (leaf_pid, leaf_birth)):
-            gone, last = await_original_identity_gone(
-                lambda pid=pid: pc.birth_identity(pid), birth, deadline)
-            if not gone:
-                if isinstance(last, OSError):
-                    pytest.fail(f"pid {pid}: original identity {birth!r} not confirmed "
-                                f"gone; identity query failed at deadline: {last}")
-                pytest.fail(f"pid {pid}: original identity {birth!r} still alive at "
-                            f"deadline (last sample {last!r})")
-        assert not pc.record_path("worker").exists()
+            deadline = time.monotonic() + 8
+            for pid, birth in ((real_pid, real_birth), (leaf_pid, leaf_birth)):
+                _assert_original_gone(pid, birth, deadline)
+            assert not pc.record_path("worker").exists()
+        # Rescue is after EVERY verdict, including record retention/deletion.
 
     def test_handleless_creation_matches_handle_query_on_real_processes(self, tmp_path):
-        # Real-Windows evidence for the exclusion rule's clock: the creation
-        # FILETIME read without any handle (NtQuerySystemInformation) equals
-        # the one read through a query handle (GetProcessTimes), and a real
-        # child spawned by a running parent is never created earlier on either
-        # clock - equal ticks are possible because the creation FILETIME has
-        # finite granularity, which is exactly why equal-tick entries are
-        # never excluded and never signalled.
-        api = pc._RealWinApi()
-        child_pid_file = str(Path(tmp_path) / "child.pid").replace("\\", "/")
-        parent = subprocess.Popen(
-            [sys._base_executable, "-c",
-             f"import os,subprocess,sys,time;"
-             f"p=subprocess.Popen([sys._base_executable,'-c',"
-             f"'import time;time.sleep(60)']);"
-             f"open({child_pid_file!r},'w').write(str(p.pid));time.sleep(60)"],
-            stdout=subprocess.DEVNULL)
-        child_pid = None
-        try:
-            ph = api.open(parent.pid)
-            try:
-                parent_handle_creation = api.creation(ph)
-            finally:
-                api.close(ph)
-            child_pid = _read_pid(child_pid_file)
-            ch = api.open(child_pid)
-            try:
-                child_handle_creation = api.creation(ch)
-            finally:
-                api.close(ch)
-            parent_free = api.creation_without_handle(parent.pid)
-            child_free = api.creation_without_handle(child_pid)
-            assert parent_free == parent_handle_creation
-            assert child_free == child_handle_creation
-            assert child_free >= parent_free     # never earlier; an equal tick is possible
-        finally:
-            parent.kill()
-            parent.wait(timeout=5)
-            child_birth = pc.birth_identity(child_pid) if child_pid else None
-            if child_birth is not None:
-                pc._win_terminate_tree(child_pid, int(child_birth.split(":")[1]), deadline_s=10)
+        # NtQuerySystemInformation and GetProcessTimes agree for both original
+        # members; equal creation ticks remain possible and are not excluded.
+        with _OwnedWindowsProcesses() as owned:
+            parent, child_pid, child_birth = self._spawn_pair(tmp_path, owned)
+            parent_free = owned.api.creation_without_handle(parent.pid)
+            child_free = owned.api.creation_without_handle(child_pid)
+            assert parent_free == int(parent._bzs_birth[4:])
+            assert child_free == int(child_birth[4:])
+            assert child_free >= parent_free
 
     def test_unrelated_process_survives_a_tree_stop(self, tmp_path, monkeypatch):
         monkeypatch.setenv("BZS_HOME", str(tmp_path))
-        bystander = subprocess.Popen([sys._base_executable, "-c", "import time;time.sleep(60)"],
-                                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
-        proc, real_pid, _leaf_pid, real_birth, _leaf_birth = self._spawn_chain(tmp_path)
-        try:
-            pc._win_terminate_tree(proc.pid, int(proc._bzs_birth.split(":")[1]), deadline_s=10)
-        finally:
-            if proc.poll() is None:
-                proc.kill()
-            proc.wait(timeout=5)
-        deadline = time.monotonic() + 5
-        gone, last = await_original_identity_gone(
-            lambda: pc.birth_identity(real_pid), real_birth, deadline)
-        if not gone:
-            if isinstance(last, OSError):
-                pytest.fail(f"pid {real_pid}: original identity {real_birth!r} not "
-                            f"confirmed gone; identity query failed at deadline: {last}")
-            pytest.fail(f"pid {real_pid}: original identity {real_birth!r} still alive "
-                        f"at deadline (last sample {last!r})")
-        assert bystander.poll() is None          # never touched by the tree stop
-        bystander.kill()
-        bystander.wait(timeout=5)
+        with _OwnedWindowsProcesses() as owned:
+            bystander = owned.spawn(
+                [sys._base_executable, "-c", "import time;time.sleep(60)"],
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0))
+            proc, real_pid, leaf_pid, real_birth, leaf_birth = self._spawn_chain(tmp_path, owned)
+            assert pc._win_terminate_tree(proc.pid, int(proc._bzs_birth[4:]), deadline_s=10) == []
+            deadline = time.monotonic() + 5
+            for pid, birth in ((real_pid, real_birth), (leaf_pid, leaf_birth)):
+                _assert_original_gone(pid, birth, deadline)
+            assert pc.birth_identity(bystander.pid) == bystander._bzs_birth
+            assert bystander.poll() is None
 
     def test_dead_root_candidates_surface_and_record_is_kept(self, tmp_path, monkeypatch):
         import json
         monkeypatch.setenv("BZS_HOME", str(tmp_path))
-        # Plain parent->child pair (no venv stub): the child outlives its
-        # killed parent, so the dead root still has a live candidate child.
-        parent = subprocess.Popen(
-            [sys._base_executable, "-c",
-             "import subprocess,sys,time;"
-             "print(subprocess.Popen([sys._base_executable,'-c','import time;time.sleep(60)']).pid,flush=True);"
-             "time.sleep(60)"],
-            stdout=subprocess.PIPE, text=True)
-        parent._bzs_birth = pc.birth_identity(parent.pid)
-        child_pid = int(parent.stdout.readline().strip())
-        parent.stdout.close()
-        parent.kill()
-        parent.wait(timeout=5)
-        try:
-            assert pc.birth_identity(child_pid) is not None  # child survives
+        with _OwnedWindowsProcesses() as owned:
+            # No venv stub: keep the child's original query handle across the
+            # intentional parent death. A later PID reuser is NOT survival.
+            parent, child_pid, child_birth = self._spawn_pair(tmp_path, owned)
+            parent.kill()  # Popen's original creation handle
+            parent.wait(timeout=5)
+            assert pc.birth_identity(child_pid) == child_birth
             record = {"version": 1, "name": "worker", "pid": parent.pid,
                       "birth": parent._bzs_birth, "port": 8611, "state": "ready"}
             pc.record_path("worker").parent.mkdir(parents=True, exist_ok=True)
             pc.record_path("worker").write_text(json.dumps(record), encoding="utf-8")
-            # A completely dead root cannot bound its children's creation
-            # window; candidates must surface and the record must be kept.
             with pytest.raises(RuntimeError):
                 pc.stop_owned("worker", timeout=5)
             assert pc.record_path("worker").exists()
-        finally:
-            birth = pc.birth_identity(child_pid)
-            if birth:
-                pc._win_terminate_tree(child_pid, int(birth.split(":")[1]), deadline_s=10)
