@@ -14,6 +14,200 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from bzs import __version__, process_control as pc
 
 
+def await_original_identity_gone(query, anchor, deadline, *, now=time.monotonic,
+                                 sleep=time.sleep):
+    """Death-check verdict for one tree member pinned by an identity anchor.
+
+    CL-25 signature 3 (codex ruling, fix round): the anchor is the member's
+    ORIGINAL identity captured at write time. A sample of None (nothing holds
+    the pid any more) OR a different valid identity (the pid was reused)
+    confirms the original identity is gone; a sample equal to the anchor keeps
+    waiting; an identity-query EXCEPTION never counts as an exit. The loop
+    shares the caller's single deadline; one sample after the deadline decides
+    the verdict. Returns (gone, last) where `last` is the deciding sample or
+    the deciding OSError.
+    """
+    gone = False
+    last = None
+    while now() < deadline:
+        try:
+            last = query()
+        except OSError as exc:
+            last = exc  # a query failure is not an exit; keep the window
+        else:
+            if last is None or last != anchor:
+                gone = True
+                break
+        sleep(0.1)
+    if not gone:
+        try:
+            last = query()
+        except OSError as exc:
+            last = exc
+        gone = last is None or (not isinstance(last, OSError) and last != anchor)
+    return gone, last
+
+
+def read_identity_anchor(role, path):
+    """Read one write-time anchor file "<pid> <birth_identity>" (ruling 3).
+
+    A file that exists but lacks or corrupts its identity anchor is an ERROR;
+    an absent anchor must never fabricate success (never-appearing files are
+    skipped by the caller, keeping the existing handling).
+    """
+    try:
+        raw = path.read_text()
+    except OSError as exc:
+        raise RuntimeError(f"{role} pid file {path} exists but cannot be read: {exc}") from exc
+    fields = raw.split()
+    if len(fields) != 2 or not fields[0].isdigit() or not fields[1]:
+        raise RuntimeError(f"{role} pid file {path} exists but lacks a valid "
+                           f"identity anchor: {raw[:64]!r}")
+    pid = int(fields[0])
+    if not pc.valid_pid(pid):
+        raise RuntimeError(f"{role} pid file {path} anchors invalid pid {pid}")
+    return pid, fields[1]
+
+
+def collect_identity_anchors(paths):
+    """Merge existing anchor files into {pid: original birth identity}.
+
+    `paths` is an ordered sequence of (role, path). Missing files are skipped
+    (a member that never wrote its anchor cannot be death-checked); the same
+    pid anchored twice must carry the same original identity.
+    """
+    anchors: "dict[int, str]" = {}
+    for role, path in paths:
+        if not path.exists():
+            continue
+        pid, birth = read_identity_anchor(role, path)
+        previous = anchors.setdefault(pid, birth)
+        if previous != birth:
+            raise RuntimeError(f"conflicting identity anchors for pid {pid}: "
+                               f"{previous!r} vs {birth!r}")
+    return anchors
+
+
+class Signature3DeathCheck(unittest.TestCase):
+    """Deterministic regressions for the CL-25 signature-3 fix (ruling 5).
+
+    test_windows_cleanup_kills_the_interpreter_tree delegates its per-member
+    verdict to await_original_identity_gone with write-time anchors. These
+    regressions inject fake identity samplers (and a fake clock) so every
+    verdict rule is exercised deterministically, with no real pid churn.
+    """
+
+    @staticmethod
+    def _clock(start=100.0):
+        state = {"t": start}
+        return ((lambda: state["t"]),
+                (lambda seconds: state.__setitem__("t", state["t"] + seconds)))
+
+    @staticmethod
+    def _sticky(samples):
+        """Sampler yielding `samples` in order, then repeating the last one."""
+        state = {"i": 0}
+        def query():
+            i = min(state["i"], len(samples) - 1)
+            state["i"] += 1
+            value = samples[i]
+            if isinstance(value, Exception):
+                raise value
+            return value
+        return query
+
+    def test_original_identity_persistently_alive_fails(self):
+        # Still the anchored identity at the deadline MUST fail.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor"]), "win:anchor", 105.0, now=now, sleep=sleep)
+        self.assertFalse(gone)
+        self.assertEqual(last, "win:anchor")
+
+    def test_pid_reuse_different_identity_passes(self):
+        # run79 signature: the pid is later held by a DIFFERENT process
+        # object; a different valid identity confirms the original is gone.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor", "win:anchor", "win:reuser"]),
+            "win:anchor", 105.0, now=now, sleep=sleep)
+        self.assertTrue(gone)
+        self.assertEqual(last, "win:reuser")
+
+    def test_reuse_before_first_sample_passes(self):
+        # The pid got reused BEFORE the file was read: the first query
+        # already reports the reuser while the anchor keeps the write-time
+        # identity. This is exactly what a post-hoc anchor would miss.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:reuser"]), "win:anchor", 105.0, now=now, sleep=sleep)
+        self.assertTrue(gone)
+        self.assertEqual(last, "win:reuser")
+
+    def test_none_sample_passes(self):
+        # Nothing holds the pid any more: the original identity is gone.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky(["win:anchor", None]), "win:anchor", 105.0,
+            now=now, sleep=sleep)
+        self.assertTrue(gone)
+        self.assertIsNone(last)
+
+    def test_identity_query_error_is_not_an_exit(self):
+        # Query exceptions are neither an exit nor a failure; the verdict
+        # only lands on a later None/different-identity sample.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky([OSError("probe failed"), OSError("probe failed"), None]),
+            "win:anchor", 105.0, now=now, sleep=sleep)
+        self.assertTrue(gone)
+        self.assertIsNone(last)
+
+    def test_identity_query_error_at_deadline_does_not_pass(self):
+        # Only exceptions until the deadline: the original was never
+        # confirmed gone, so the verdict must not pass.
+        now, sleep = self._clock()
+        gone, last = await_original_identity_gone(
+            self._sticky([OSError("probe failed")]), "win:anchor", 105.0,
+            now=now, sleep=sleep)
+        self.assertFalse(gone)
+        self.assertIsInstance(last, OSError)
+
+    def test_anchor_file_without_identity_anchor_errors(self):
+        # Ruling 3: a pid file that exists but lacks/corrupts its identity
+        # anchor must ERROR; an absent anchor never fabricates success.
+        with tempfile.TemporaryDirectory(prefix="bzs-anchor-") as tmp:
+            good = Path(tmp) / "good.pid"
+            good.write_text("924 win:134390212197500154\n")
+            self.assertEqual(read_identity_anchor("real", good),
+                             (924, "win:134390212197500154"))
+            for raw in ("924", "924 ", "924 win:1 extra", "nine win:1",
+                        "0 win:1", "1 win:1", "-4 win:1", "", "win:1"):
+                path = Path(tmp) / "bad.pid"
+                path.write_text(raw)
+                with self.subTest(raw=raw[:20]), self.assertRaises(RuntimeError):
+                    read_identity_anchor("real", path)
+
+    def test_anchor_collection_skips_missing_and_refuses_conflicts(self):
+        with tempfile.TemporaryDirectory(prefix="bzs-anchor-") as tmp:
+            absent = Path(tmp) / "never-written.pid"
+            stub = Path(tmp) / "stub.pid"
+            real = Path(tmp) / "real.pid"
+            self.assertEqual(collect_identity_anchors(
+                (("stub", absent), ("real", absent))), {})
+            # Same pid, same original identity from two roles: checked once.
+            stub.write_text("924 win:same\n")
+            real.write_text("924 win:same\n")
+            self.assertEqual(collect_identity_anchors(
+                (("stub", stub), ("real", real))), {924: "win:same"})
+            real.write_text("924 win:other\n")
+            with self.assertRaisesRegex(RuntimeError, "conflicting"):
+                collect_identity_anchors((("stub", stub), ("real", real)))
+            # A missing member is skipped; present members are still checked.
+            self.assertEqual(collect_identity_anchors(
+                (("stub", stub), ("leaf", absent))), {924: "win:same"})
+
+
 class Lifecycle(unittest.TestCase):
     # CL-25: a spawned child's inherited handle on logs\worker.log can survive
     # child.wait() for a moment under heavy parallel load, making the tearDown
@@ -239,11 +433,12 @@ class Lifecycle(unittest.TestCase):
                     stub_pid = event.get("pid")
             if stub_pid:
                 roles["stub"] = stub_pid
-            for role in ("real", "leaf"):
+            for role in ("stub", "real", "leaf"):
                 try:
                     if pid_paths[role].exists():
-                        roles[role] = int(pid_paths[role].read_text())
-                except (OSError, ValueError):
+                        # Anchored pid files: "<pid> <birth_identity>".
+                        roles[role] = read_identity_anchor(role, pid_paths[role])[0]
+                except (OSError, ValueError, RuntimeError):
                     pass
             observation = self._forensics_observe(sorted(roles.items()))
             table, table_error = self._forensics_table()
@@ -364,11 +559,53 @@ class Lifecycle(unittest.TestCase):
         # must take down the whole chain, not only the launcher pid.
         real = Path(self.temp.name) / "real.pid"
         leaf = Path(self.temp.name) / "leaf.pid"
-        inner = (f"import os,subprocess,sys,time;"
-                 f"open({str(real)!r},'w').write(str(os.getpid()));"
-                 f"subprocess.Popen([sys._base_executable,'-c',"
-                 f"\"import os,time;open({str(leaf)!r},'w').write(str(os.getpid()));time.sleep(60)\"]);"
-                 f"time.sleep(60)")
+        stub = Path(self.temp.name) / "stub.pid"
+        # CL-25 signature-3 fix (codex ruling (a')): identity anchors are
+        # captured AT WRITE TIME, never reconstructed after cleanup. The
+        # real/leaf writers atomically write "<pid> <birth_identity(pid)>"
+        # into their pid files while alive, so a pid reused later by another
+        # process (the run79 false positive: a churn reuser held the dead
+        # member's pid at the death check) reads as a DIFFERENT identity and
+        # confirms the original is gone. The stub/root anchor is the ORIGINAL
+        # identity spawn() recorded in the run record at spawn time, copied
+        # out by the inner code before cleanup deletes that record.
+        repo_python = str(Path(__file__).resolve().parents[1] / "python")
+        anchor_writer = (
+            "import os\n"
+            "def anchor(path, pid, birth):\n"
+            "    tmp = path + '.anchor.tmp'\n"
+            "    with open(tmp, 'w') as fh:\n"
+            "        fh.write(f'{pid} {birth}')\n"
+            "    os.replace(tmp, path)\n"
+        )
+        leaf_code = (
+            "import os, sys, time\n"
+            f"sys.path.insert(0, {repo_python!r})\n"
+            "import bzs.process_control as pc\n"
+            + anchor_writer +
+            f"anchor({str(leaf)!r}, os.getpid(), pc.birth_identity(os.getpid()))\n"
+            "time.sleep(60)\n"
+        )
+        inner = (
+            "import os, subprocess, sys, time\n"
+            f"sys.path.insert(0, {repo_python!r})\n"
+            "import bzs.process_control as pc\n"
+            + anchor_writer +
+            f"anchor({str(real)!r}, os.getpid(), pc.birth_identity(os.getpid()))\n"
+            f"subprocess.Popen([sys._base_executable, '-c', {leaf_code!r}])\n"
+            "stub_record = None\n"
+            "stub_end = time.monotonic() + 2\n"
+            "while stub_record is None and time.monotonic() < stub_end:\n"
+            "    try:\n"
+            "        stub_record = pc.read_record('worker')\n"
+            "    except Exception:\n"
+            "        stub_record = None\n"
+            "    if stub_record is None:\n"
+            "        time.sleep(0.02)\n"
+            "if stub_record is not None:\n"
+            f"    anchor({str(stub)!r}, stub_record['pid'], stub_record['birth'])\n"
+            "time.sleep(60)\n"
+        )
         cmd = [sys.executable, "-c", inner]
         # CL-25 signature-3 forensics: everything in `if forensics:` blocks is
         # recording only; the 5 s deadline, the loop structure and every
@@ -387,36 +624,46 @@ class Lifecycle(unittest.TestCase):
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline and not (real.exists() and leaf.exists()):
                 if forensics:
-                    for role, path in (("real", real), ("leaf", leaf)):
+                    for role, path in (("real", real), ("leaf", leaf), ("stub", stub)):
                         if role not in file_seen and path.exists():
                             file_seen[role] = round(time.monotonic(), 6)
                 time.sleep(0.05)
             if forensics:
-                for role, path in (("real", real), ("leaf", leaf)):
+                for role, path in (("real", real), ("leaf", leaf), ("stub", stub)):
                     if role not in file_seen and path.exists():
                         file_seen[role] = round(time.monotonic(), 6)
-            pids = []
-            for path in (real, leaf):
-                if path.exists():
-                    pids.append(int(path.read_text()))
-            for pid in pids:
-                while time.monotonic() < deadline:
-                    if pc.birth_identity(pid) is None:
-                        break
-                    time.sleep(0.1)
-                value = pc.birth_identity(pid)
+            # Ruling 3: an existing pid file without a valid anchor ERRORs;
+            # never-appearing files keep the existing skip handling.
+            anchors = collect_identity_anchors(
+                (("stub", stub), ("real", real), ("leaf", leaf)))
+            if forensics:
+                print(f"[lifecycle-forensics] signature3 anchors: "
+                      f"{sorted(anchors.items())} file_seen={sorted(file_seen)}",
+                      file=sys.stderr)
+            for pid, anchor in sorted(anchors.items()):
+                gone, last = await_original_identity_gone(
+                    lambda pid=pid: pc.birth_identity(pid), anchor, deadline)
                 if forensics:
-                    samples.append({"pid": pid, "t": round(time.monotonic(), 6),
+                    samples.append({"pid": pid, "anchor": anchor,
+                                    "t": round(time.monotonic(), 6),
                                     "budget_left_s": round(deadline - time.monotonic(), 6),
-                                    "birth": value})
-                self.assertIsNone(value)
+                                    "birth": (None if isinstance(last, OSError) else last),
+                                    "query_error": (str(last) if isinstance(last, OSError)
+                                                    else None)})
+                if not gone:
+                    if isinstance(last, OSError):
+                        self.fail(f"pid {pid}: original identity {anchor!r} not confirmed "
+                                  f"gone; identity query failed at deadline: {last}")
+                    self.fail(f"pid {pid}: original identity {anchor!r} still alive at "
+                              f"deadline (last sample {last!r})")
             self.assertFalse(pc.record_path("worker").exists())
         except AssertionError as failure:
             # Observation-only forensics (ruling 7): <=20 s ceiling after the
             # unchanged 5 s verdict, no rescue kills, no retries; then dump.
             if forensics:
-                self._forensics_capture_signature3(failure, spawn_exc, file_seen,
-                                                   samples, {"real": real, "leaf": leaf})
+                self._forensics_capture_signature3(
+                    failure, spawn_exc, file_seen, samples,
+                    {"stub": stub, "real": real, "leaf": leaf})
             raise
 
     def test_bad_readiness_and_oversize_are_cleaned(self):
