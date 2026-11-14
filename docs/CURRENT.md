@@ -1,6 +1,6 @@
 # bzs861 当前入口（唯一）
 
-更新：2026-11-15（S0 已裁决、第 2 轮复审完成；CL-30 RF1-3 已补修待第 3 轮复审；mwmbl 已获受限合同签名，激活未放行）
+更新：2026-11-15（落地批次已合入：#27→726c9d4、#29→b1db0ce、#26→2d7eba7；第 3 轮复审通过；下一步=激活批次）
 
 ## 已核验的集成基线
 
@@ -16,15 +16,15 @@
 
 ## 正在进行的批次
 
-- **PR #26（CL-30，work/cl30-20261114，head `eba3507`）**：doctor 白名单化 + create_auth 先 ACL 后写入；RF1（同 fd 绑定写入，路径替换不落秘密）、RF2（核验一律 SID 级 audit_path，账户名 icacls 回退已删）、RF3（`protected=False` 判失败）已补修并各配 RED→GREEN 回归。**待第 3 轮复审，通过前不合入。**
-- **PR #27（F6/F7，work/source-fixes-f6f7-20261114，head `d7ba5d5`）**：mwmbl 401 经 check 路径归类 auth_failed（含 probe 停源回归）、marginalia 503 尊重较长 Retry-After。RF6 验收通过；验证口径更正：4 个新测试中 3 个旧代码反证失败，probe 停源测试为既有行为的保护性回归。CI/D28 满足即可独立合入。
-- **PR #29（S0 证据集成，work/s0-results-20261114，head `69bc4e9`）**：S0 run e61529fa 结果 + 第 1 轮裁决归档 + 7 候选草案 + F2 归位与标准回放。内容已于第 2 轮验收（D-R2-2）。
-- **PR #28（本批文档）**：状态入口与来源记录更正（本文件）。合入顺序：#27 → #29 → #26（复审通过后）→ #28。
+- **已合入 #26（CL-30，merge `2d7eba7`，实现与复审 head `eba3507` 字节一致）**：RF1-3 经第 3 轮复审全部关闭（[codex-2026-11-15-cl30-round3.md](reviews/codex-2026-11-15-cl30-round3.md)），两项非阻塞测试健壮性建议（RF3-1/2）留待后续批次。
+- **已合入 #27（F6/F7，merge `726c9d4`）**：mwmbl 401 经 check 路径归类 auth_failed（含 probe 停源回归）、marginalia 503 尊重较长 Retry-After。RF6 验收通过；验证口径：4 个新测试中 3 个旧代码反证失败，probe 停源测试为既有行为的保护性回归。
+- **已合入 #29（S0 证据集成，merge `b1db0ce`）**：S0 run e61529fa 结果 + 第 1/2 轮裁决归档 + 7 候选草案 + F2 归位与标准回放（内容第 2 轮验收）。
+- **PR #28（本批文档，最后合入）**：状态入口与来源记录更正（本文件）、mwmbl D-R2-5 签名引用、交接更正、三轮复审归档。合并序列已完成 #27 → #29 → #26；各 head D28 全尝试核对零红（d7ba5d5、4640d9c→#29 冲突解并后 head、dcf1101→#26 同）。
 - marginalia 维持禁用（D-S0-2 前置未动：个人 key、真实成功 S0、独立签名）；走 mwmbl 的 S1 路径不要求先申请 marginalia key。
 
 ## 下一步与用户待办
 
-1. 第 3 轮复审 PR #26 新 head → 通过后按上述顺序合并四个 PR。
+1. ~~第 3 轮复审与四 PR 合并~~ **已完成**（本轮文档 PR 为最后一项）。
 2. 激活批次（D-R2-7）：mwmbl + wikipedia_en/zh 一次同步合同、enabled、**default=true** 与用途说明；跑准入与 links_only 回归；冻结最终清单。
 3. **用户复探**（D-R2-8）：新目录、只测三个启用源、先每源 1 次：`bzs probe --sources config/sources.json --only mwmbl wikipedia_en wikipedia_zh --per-source 1 --delay 4 --out <新目录>`；每源须真实非空 ok，manifest 哈希与最终清单一致。
 4. **用户完整运行 `tools/accept_s1.py`**（九条 PASS + exit 0；准备对应最终 HEAD 的 --ci-run-url；不用 --skip-live）。

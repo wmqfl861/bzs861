@@ -227,6 +227,35 @@ async def test_shared_service_reservations_and_stops_survive_completed_resume(tm
     assert resumed["budgets"]["shared-fixture"] == budget
 
 
+async def test_auth_failed_stops_the_source_budget_and_survives_resume(tmp_path, scripted):
+    # F6 service-stop path: an auth_failed row stops the source's remaining
+    # budget (remaining attempts skipped as service_stopped:auth_failed), the
+    # safe error label never leaks exception text, and a completed resume
+    # does not retry a rejected key.
+    manifest, golden, out = inputs(tmp_path, sources=1, quota=3)
+
+    async def rejected(source, query, limit):
+        _, response = result(query)
+        error = SourceError("auth_failed", "mwmbl rejected the API key (HTTP 401)", 401)
+        response.http_status = 401
+        error.result = response
+        raise error
+
+    scripted.handler = rejected
+    report = await run_probe(manifest, golden, out)
+    assert len(scripted.calls) == 1
+    row = report["rows"][0]
+    assert row["status"] == "auth_failed" and row["error"] == "source_error:auth_failed"
+    budget = copy.deepcopy(report["budgets"]["ddg"])
+    assert budget["used"] == 1 and budget["stopped"] and budget["stop_reason"] == "auth_failed"
+    skipped = [item for item in report["plan"] if item["state"] == "skipped"]
+    assert len(skipped) == 2
+    assert all(item.get("reason") == "service_stopped:auth_failed" for item in skipped)
+    resumed = await run_probe(manifest, golden, out, resume=True)
+    assert len(scripted.calls) == 1
+    assert resumed["budgets"]["ddg"] == budget
+
+
 async def test_probe_reports_bounded_retry_after_and_never_resumes_a_stopped_source(tmp_path, scripted, monkeypatch):
     manifest, golden, out = inputs(tmp_path, sources=2, quota=2, shared=True)
     now = [1000000]

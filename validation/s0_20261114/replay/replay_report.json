@@ -1,0 +1,983 @@
+{
+  "allow_parser_change": false,
+  "created_at": "2026-11-14T16:06:47.632692+00:00",
+  "current_parser": {
+    "code_sha256": "74d1a41ce03d444d1dce68508284e709cf920c1a1de0a0ccff213d696ea9c1f1",
+    "dependencies": {
+      "aiohttp": "3.14.5",
+      "cssselect": "1.6.0",
+      "idna": "3.20",
+      "lxml": "6.1.3",
+      "python": "3.12.10",
+      "trafilatura": "2.3.1",
+      "yarl": "1.25.1"
+    },
+    "files": {
+      "worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+      "worker/fetch.py": "cb36d234ce83156bc12782c962af0cf31329f85d5feffa778108f6ca7296c369",
+      "worker/sources/__init__.py": "9f8baa1176cf818f64bfcddb78ffbbb4b6066b607ab321510e6741575c439413",
+      "worker/sources/apis.py": "dba9f4b4b914cea5c0e0f37f8fefd73953d6438b744f8763a3c1f5a195ef45ea",
+      "worker/sources/base.py": "4dd4616c61c5c858cdaa16f6dfd5d5350cd96abc12d260b97eb8851a410301df",
+      "worker/sources/engines.py": "b0e03070deed6fcfadc6ac222528604176427dde5bdb4f2ddf1e77bdf6f9867b"
+    }
+  },
+  "identity_match": true,
+  "kind": "offline_probe_parser_replay",
+  "network_requests": 0,
+  "recorded_parser": {
+    "code_sha256": "74d1a41ce03d444d1dce68508284e709cf920c1a1de0a0ccff213d696ea9c1f1",
+    "dependencies": {
+      "aiohttp": "3.14.5",
+      "cssselect": "1.6.0",
+      "idna": "3.20",
+      "lxml": "6.1.3",
+      "python": "3.12.10",
+      "trafilatura": "2.3.1",
+      "yarl": "1.25.1"
+    },
+    "files": {
+      "worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+      "worker/fetch.py": "cb36d234ce83156bc12782c962af0cf31329f85d5feffa778108f6ca7296c369",
+      "worker/sources/__init__.py": "9f8baa1176cf818f64bfcddb78ffbbb4b6066b607ab321510e6741575c439413",
+      "worker/sources/apis.py": "dba9f4b4b914cea5c0e0f37f8fefd73953d6438b744f8763a3c1f5a195ef45ea",
+      "worker/sources/base.py": "4dd4616c61c5c858cdaa16f6dfd5d5350cd96abc12d260b97eb8851a410301df",
+      "worker/sources/engines.py": "b0e03070deed6fcfadc6ac222528604176427dde5bdb4f2ddf1e77bdf6f9867b"
+    }
+  },
+  "rows": [
+    {
+      "actual": {
+        "results": [],
+        "status": "rate_limited"
+      },
+      "expected": {
+        "results": [],
+        "status": "rate_limited"
+      },
+      "item_id": "p000001",
+      "query_id": "aca01",
+      "source": "marginalia",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+            "title": "Attention Is All You Need",
+            "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "",
+            "title": "Attention Is All You Need - Transformer Model Architecture - You…",
+            "url": "https://www.youtube.com/watch?v=PzpDqRFPm0g"
+          },
+          {
+            "rank": 3,
+            "snippet": "Readers occasionally request which static HTML generator is used by fabiensanglard.net, and if they can take the same stylesheet/ fonts to start their ow…",
+            "title": "All you may need is HTML",
+            "url": "http://fabiensanglard.net/html/index.html"
+          },
+          {
+            "rank": 4,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v2] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v2"
+          },
+          {
+            "rank": 5,
+            "snippet": "Attention is All You Need Abstract The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encode…",
+            "title": "Attention is All You Need",
+            "url": "http://research.google.com/pubs/pub46201.html"
+          },
+          {
+            "rank": 6,
+            "snippet": "All you need to know about OS X El Capitan The next version of Apple's Mac software is available for download. CNET explains where you can get it and how…",
+            "title": "All you need to know about OS X El Capitan - CNET",
+            "url": "http://www.cnet.com/how-to/el-capitan/"
+          },
+          {
+            "rank": 7,
+            "snippet": "Growth Organisers describe growth as a \"fitting theme for what has been a turbulent time for all of us\". The recommended activities include: exploring pl…",
+            "title": "All you need to know about British Science Week 2022 - BBC Newsr…",
+            "url": "https://www.bbc.com/newsround/60720210"
+          },
+          {
+            "rank": 8,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v4] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v4"
+          },
+          {
+            "rank": 9,
+            "snippet": "For each position t and offset Δ∈ such that t+Δ≤L, we form a pair (z_t,z_t+Δ). For a given t, this produces up to m pairs: (z_t,z_t+Δ_1),(z_t,z_t+Δ_2),….…",
+            "title": "Attention Is Not What You Need (2025) | Hacker News",
+            "url": "http://news.ycombinator.com/item?id=50237224"
+          },
+          {
+            "rank": 10,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v6] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v6"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+            "title": "Attention Is All You Need",
+            "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "",
+            "title": "Attention Is All You Need - Transformer Model Architecture - You…",
+            "url": "https://www.youtube.com/watch?v=PzpDqRFPm0g"
+          },
+          {
+            "rank": 3,
+            "snippet": "Readers occasionally request which static HTML generator is used by fabiensanglard.net, and if they can take the same stylesheet/ fonts to start their ow…",
+            "title": "All you may need is HTML",
+            "url": "http://fabiensanglard.net/html/index.html"
+          },
+          {
+            "rank": 4,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v2] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v2"
+          },
+          {
+            "rank": 5,
+            "snippet": "Attention is All You Need Abstract The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encode…",
+            "title": "Attention is All You Need",
+            "url": "http://research.google.com/pubs/pub46201.html"
+          },
+          {
+            "rank": 6,
+            "snippet": "All you need to know about OS X El Capitan The next version of Apple's Mac software is available for download. CNET explains where you can get it and how…",
+            "title": "All you need to know about OS X El Capitan - CNET",
+            "url": "http://www.cnet.com/how-to/el-capitan/"
+          },
+          {
+            "rank": 7,
+            "snippet": "Growth Organisers describe growth as a \"fitting theme for what has been a turbulent time for all of us\". The recommended activities include: exploring pl…",
+            "title": "All you need to know about British Science Week 2022 - BBC Newsr…",
+            "url": "https://www.bbc.com/newsround/60720210"
+          },
+          {
+            "rank": 8,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v4] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v4"
+          },
+          {
+            "rank": 9,
+            "snippet": "For each position t and offset Δ∈ such that t+Δ≤L, we form a pair (z_t,z_t+Δ). For a given t, this produces up to m pairs: (z_t,z_t+Δ_1),(z_t,z_t+Δ_2),….…",
+            "title": "Attention Is Not What You Need (2025) | Hacker News",
+            "url": "http://news.ycombinator.com/item?id=50237224"
+          },
+          {
+            "rank": 10,
+            "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+            "title": "[1706.03762v6] Attention Is All You Need",
+            "url": "http://arxiv.org/abs/1706.03762v6"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000004",
+      "query_id": "aca01",
+      "source": "mwmbl",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "The problem is that nginx uses it's own DNS resolver, which needs to be configured directly in the nginx config with \"resolver i.p.add.ress\" options. But …",
+            "title": "Embedded DNS and Nginx custom resolver · Issue #22652 · moby/mob…",
+            "url": "https://github.com/docker/docker/issues/22652"
+          },
+          {
+            "rank": 2,
+            "snippet": "Creating a Calculated Field in GraphQL Using a Custom Resolver and Dgraph Lambda Most of the time the data stored in a database is static. The data we pu…",
+            "title": "Creating a Calculated Field in GraphQL Using a Custom Resolver a…",
+            "url": "https://dgraph.io/blog/post/calculated-field-using-dgraph-lambda/"
+          },
+          {
+            "rank": 3,
+            "snippet": "When deploying any custom resolver Addon, the resolvedItems collection in the Resolve method is always empty (count = 0). I suspect that the custom resol…",
+            "title": "Newest 'custom-resolver' Questions - Tridion Stack Exchange",
+            "url": "http://tridion.stackexchange.com/questions/tagged/custom-resolver"
+          },
+          {
+            "rank": 4,
+            "snippet": "Overview You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operat…",
+            "title": "Define a Custom Resolver — Atlas App Services",
+            "url": "https://www.mongodb.com/docs/atlas/app-services/graphql/custom-resolvers/"
+          },
+          {
+            "rank": 5,
+            "snippet": "This is returning undefined as the object parameter of resolver function has all the properties of it's parent field that are also part of the query. Sin…",
+            "title": "GraphQL implementing custom resolver field - Neo4j Graph Platfor…",
+            "url": "https://community.neo4j.com/t/graphql-implementing-custom-resolver-field/15185"
+          },
+          {
+            "rank": 6,
+            "snippet": "A custom resolver you have written, which can be a business logic handler (written in managed code) or a custom COM-based resolver. A standard COM-based …",
+            "title": "How to: Specify a Merge Article Resolver (SQL Server Management …",
+            "url": "http://technet.microsoft.com/en-us/sqlserver/ms152561(v=sql.90)"
+          },
+          {
+            "rank": 7,
+            "snippet": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…",
+            "title": "Fix/1369 custom resolver by alexdutton · Pull Request #1385 · RD…",
+            "url": "https://github.com/RDFLib/rdflib/pull/1385"
+          },
+          {
+            "rank": 8,
+            "snippet": "Custom resolvers for PDF retrieval currently can be configured via the extensions.zotero.findPDFs.resolvers hidden pref (Advanced preferences → Config Ed…",
+            "title": "Custom PDF Resolvers | Zotero Documentation",
+            "url": "https://www.zotero.org/support/kb/custom_pdf_resolvers"
+          },
+          {
+            "rank": 9,
+            "snippet": "You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operations that …",
+            "title": "Define a Custom Resolver - Atlas App Services",
+            "url": "https://docs.mongodb.com/realm/graphql/custom-resolvers"
+          },
+          {
+            "rank": 10,
+            "snippet": "I mentioned in #12476 that I would like to detect the time it took for DNS resolution phase of the Dial process in Dialer.Dial . The solution posted there…",
+            "title": "net: allow custom Resolver method implementation(s) · Issue #125…",
+            "url": "https://github.com/golang/go/issues/12503"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "The problem is that nginx uses it's own DNS resolver, which needs to be configured directly in the nginx config with \"resolver i.p.add.ress\" options. But …",
+            "title": "Embedded DNS and Nginx custom resolver · Issue #22652 · moby/mob…",
+            "url": "https://github.com/docker/docker/issues/22652"
+          },
+          {
+            "rank": 2,
+            "snippet": "Creating a Calculated Field in GraphQL Using a Custom Resolver and Dgraph Lambda Most of the time the data stored in a database is static. The data we pu…",
+            "title": "Creating a Calculated Field in GraphQL Using a Custom Resolver a…",
+            "url": "https://dgraph.io/blog/post/calculated-field-using-dgraph-lambda/"
+          },
+          {
+            "rank": 3,
+            "snippet": "When deploying any custom resolver Addon, the resolvedItems collection in the Resolve method is always empty (count = 0). I suspect that the custom resol…",
+            "title": "Newest 'custom-resolver' Questions - Tridion Stack Exchange",
+            "url": "http://tridion.stackexchange.com/questions/tagged/custom-resolver"
+          },
+          {
+            "rank": 4,
+            "snippet": "Overview You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operat…",
+            "title": "Define a Custom Resolver — Atlas App Services",
+            "url": "https://www.mongodb.com/docs/atlas/app-services/graphql/custom-resolvers/"
+          },
+          {
+            "rank": 5,
+            "snippet": "This is returning undefined as the object parameter of resolver function has all the properties of it's parent field that are also part of the query. Sin…",
+            "title": "GraphQL implementing custom resolver field - Neo4j Graph Platfor…",
+            "url": "https://community.neo4j.com/t/graphql-implementing-custom-resolver-field/15185"
+          },
+          {
+            "rank": 6,
+            "snippet": "A custom resolver you have written, which can be a business logic handler (written in managed code) or a custom COM-based resolver. A standard COM-based …",
+            "title": "How to: Specify a Merge Article Resolver (SQL Server Management …",
+            "url": "http://technet.microsoft.com/en-us/sqlserver/ms152561(v=sql.90)"
+          },
+          {
+            "rank": 7,
+            "snippet": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…",
+            "title": "Fix/1369 custom resolver by alexdutton · Pull Request #1385 · RD…",
+            "url": "https://github.com/RDFLib/rdflib/pull/1385"
+          },
+          {
+            "rank": 8,
+            "snippet": "Custom resolvers for PDF retrieval currently can be configured via the extensions.zotero.findPDFs.resolvers hidden pref (Advanced preferences → Config Ed…",
+            "title": "Custom PDF Resolvers | Zotero Documentation",
+            "url": "https://www.zotero.org/support/kb/custom_pdf_resolvers"
+          },
+          {
+            "rank": 9,
+            "snippet": "You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operations that …",
+            "title": "Define a Custom Resolver - Atlas App Services",
+            "url": "https://docs.mongodb.com/realm/graphql/custom-resolvers"
+          },
+          {
+            "rank": 10,
+            "snippet": "I mentioned in #12476 that I would like to detect the time it took for DNS resolution phase of the Dial process in Dialer.Dial . The solution posted there…",
+            "title": "net: allow custom Resolver method implementation(s) · Issue #125…",
+            "url": "https://github.com/golang/go/issues/12503"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000005",
+      "query_id": "code01",
+      "source": "mwmbl",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "C++23: A New Way of Error Handling with std::expected C++23 extends the interface of std::optional and gets the new data type std::expected for error han…",
+            "title": "C++23: A New Way of Error Handling with std::expected – MC++ BLOG",
+            "url": "https://www.modernescpp.com/index.php/c23-a-new-way-of-error-handling-with-stdexpected/"
+          },
+          {
+            "rank": 2,
+            "snippet": "std::expected from C++23 not only serves as an error-handling mechanism but also introduces functional programming paradigms into the language. In this b…",
+            "title": "std::expected - Monadic Extensions - C++ Stories",
+            "url": "http://www.bfilipek.com/2024/expected-cpp23-monadic/"
+          },
+          {
+            "rank": 3,
+            "snippet": "What can you do? What should you return or output through /*RESULT*/ ? Here are a few options: Throw an exception, Terminate the application, Use std::op…",
+            "title": "Using std::expected from C++23 - C++ Stories",
+            "url": "http://www.bfilipek.com/2024/expected-cpp23/"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "C++23: A New Way of Error Handling with std::expected C++23 extends the interface of std::optional and gets the new data type std::expected for error han…",
+            "title": "C++23: A New Way of Error Handling with std::expected – MC++ BLOG",
+            "url": "https://www.modernescpp.com/index.php/c23-a-new-way-of-error-handling-with-stdexpected/"
+          },
+          {
+            "rank": 2,
+            "snippet": "std::expected from C++23 not only serves as an error-handling mechanism but also introduces functional programming paradigms into the language. In this b…",
+            "title": "std::expected - Monadic Extensions - C++ Stories",
+            "url": "http://www.bfilipek.com/2024/expected-cpp23-monadic/"
+          },
+          {
+            "rank": 3,
+            "snippet": "What can you do? What should you return or output through /*RESULT*/ ? Here are a few options: Throw an exception, Terminate the application, Use std::op…",
+            "title": "Using std::expected from C++23 - C++ Stories",
+            "url": "http://www.bfilipek.com/2024/expected-cpp23/"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000006",
+      "query_id": "sym01",
+      "source": "mwmbl",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+            "title": "Attention Is All You Need",
+            "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "datasets.[citation needed] The original version of the transformer architecture was proposed in the 2017 paper \"Attention Is All You Need\" by researchers",
+            "title": "Transformer (deep learning)",
+            "url": "https://en.wikipedia.org/wiki/Transformer_(deep_learning)"
+          },
+          {
+            "rank": 3,
+            "snippet": "Google, it was introduced in the paper \"Attention Is All You Need\", which was released in 2017. The transformer architecture solved many of the performance",
+            "title": "Generative pre-trained transformer",
+            "url": "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer"
+          },
+          {
+            "rank": 4,
+            "snippet": "Vaswani is a co-author of the 2017 paper \"Attention Is All You Need\", which introduced the Transformer neural network architecture. The Transformer model",
+            "title": "Ashish Vaswani",
+            "url": "https://en.wikipedia.org/wiki/Ashish_Vaswani"
+          },
+          {
+            "rank": 5,
+            "snippet": "weather prediction, and autonomous driving. Transformers were introduced in Attention Is All You Need (2017), and have found widespread use in natural",
+            "title": "Vision transformer",
+            "url": "https://en.wikipedia.org/wiki/Vision_transformer"
+          },
+          {
+            "rank": 6,
+            "snippet": "development were brought together in 2017 with the Transformer architecture, published in the Attention Is All You Need paper. Given three matrices: Q∈ℝm×dQ,K∈ℝn×dK",
+            "title": "Attention (machine learning)",
+            "url": "https://en.wikipedia.org/wiki/Attention_(machine_learning)"
+          },
+          {
+            "rank": 7,
+            "snippet": "RNN with cross-attention causally-masked Transformer blocks (\"decoder blocks\"). One of the papers cited as the originator for seq2seq is (Sutskever et",
+            "title": "Seq2seq",
+            "url": "https://en.wikipedia.org/wiki/Seq2seq"
+          },
+          {
+            "rank": 8,
+            "snippet": "Bidirectional encoder representations from transformers (BERT) is a language model introduced in October 2018 by researchers at Google. It learns to represent",
+            "title": "BERT (language model)",
+            "url": "https://en.wikipedia.org/wiki/BERT_(language_model)"
+          },
+          {
+            "rank": 9,
+            "snippet": "was one of the authors of the seminal paper \"Attention Is All You Need\", which introduced the transformer architecture. At Google, Shazeer and his colleague",
+            "title": "Noam Shazeer",
+            "url": "https://en.wikipedia.org/wiki/Noam_Shazeer"
+          },
+          {
+            "rank": 10,
+            "snippet": "needed] In 2017, as a 20 year-old intern at Google Brain, Gomez was one of eight authors of the research paper \"Attention Is All You Need\", which is credited",
+            "title": "Aidan Gomez",
+            "url": "https://en.wikipedia.org/wiki/Aidan_Gomez"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+            "title": "Attention Is All You Need",
+            "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "datasets.[citation needed] The original version of the transformer architecture was proposed in the 2017 paper \"Attention Is All You Need\" by researchers",
+            "title": "Transformer (deep learning)",
+            "url": "https://en.wikipedia.org/wiki/Transformer_(deep_learning)"
+          },
+          {
+            "rank": 3,
+            "snippet": "Google, it was introduced in the paper \"Attention Is All You Need\", which was released in 2017. The transformer architecture solved many of the performance",
+            "title": "Generative pre-trained transformer",
+            "url": "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer"
+          },
+          {
+            "rank": 4,
+            "snippet": "Vaswani is a co-author of the 2017 paper \"Attention Is All You Need\", which introduced the Transformer neural network architecture. The Transformer model",
+            "title": "Ashish Vaswani",
+            "url": "https://en.wikipedia.org/wiki/Ashish_Vaswani"
+          },
+          {
+            "rank": 5,
+            "snippet": "weather prediction, and autonomous driving. Transformers were introduced in Attention Is All You Need (2017), and have found widespread use in natural",
+            "title": "Vision transformer",
+            "url": "https://en.wikipedia.org/wiki/Vision_transformer"
+          },
+          {
+            "rank": 6,
+            "snippet": "development were brought together in 2017 with the Transformer architecture, published in the Attention Is All You Need paper. Given three matrices: Q∈ℝm×dQ,K∈ℝn×dK",
+            "title": "Attention (machine learning)",
+            "url": "https://en.wikipedia.org/wiki/Attention_(machine_learning)"
+          },
+          {
+            "rank": 7,
+            "snippet": "RNN with cross-attention causally-masked Transformer blocks (\"decoder blocks\"). One of the papers cited as the originator for seq2seq is (Sutskever et",
+            "title": "Seq2seq",
+            "url": "https://en.wikipedia.org/wiki/Seq2seq"
+          },
+          {
+            "rank": 8,
+            "snippet": "Bidirectional encoder representations from transformers (BERT) is a language model introduced in October 2018 by researchers at Google. It learns to represent",
+            "title": "BERT (language model)",
+            "url": "https://en.wikipedia.org/wiki/BERT_(language_model)"
+          },
+          {
+            "rank": 9,
+            "snippet": "was one of the authors of the seminal paper \"Attention Is All You Need\", which introduced the transformer architecture. At Google, Shazeer and his colleague",
+            "title": "Noam Shazeer",
+            "url": "https://en.wikipedia.org/wiki/Noam_Shazeer"
+          },
+          {
+            "rank": 10,
+            "snippet": "needed] In 2017, as a 20 year-old intern at Google Brain, Gomez was one of eight authors of the research paper \"Attention Is All You Need\", which is credited",
+            "title": "Aidan Gomez",
+            "url": "https://en.wikipedia.org/wiki/Aidan_Gomez"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000007",
+      "query_id": "aca01",
+      "source": "wikipedia_en",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "A total of 807 climbers summited Mount Everest in 2018. The year saw an unusually long weather window of 11 days straight of calm, which reduced crowding",
+            "title": "Mount Everest in 2018",
+            "url": "https://en.wikipedia.org/wiki/Mount_Everest_in_2018"
+          },
+          {
+            "rank": 2,
+            "snippet": "means Mount Everest is the highest mountain above sea level on Earth, but it is not the tallest mountain, either on Earth or off it. There is no set",
+            "title": "Tallest mountain",
+            "url": "https://en.wikipedia.org/wiki/Tallest_mountain"
+          },
+          {
+            "rank": 3,
+            "snippet": "Tibetan characters. Mount Everest (known in Nepali as Sagarmāthā, in Sherpa as Chamolangma, and in Tibetan as Jomolangma/Čhomolangma) is the highest mountain",
+            "title": "Mount Everest",
+            "url": "https://en.wikipedia.org/wiki/Mount_Everest"
+          },
+          {
+            "rank": 4,
+            "snippet": "10–11 May 1996, eight climbers were caught in a blizzard and died on Mount Everest while attempting to descend from the summit. Over that season, 12 people",
+            "title": "1996 Mount Everest disaster",
+            "url": "https://en.wikipedia.org/wiki/1996_Mount_Everest_disaster"
+          },
+          {
+            "rank": 5,
+            "snippet": "British Mount Everest expeditions from the early to mid-1920s. He and his climbing partner Andrew \"Sandy\" Irvine were last seen ascending near Everest's summit",
+            "title": "George Mallory",
+            "url": "https://en.wikipedia.org/wiki/George_Mallory"
+          },
+          {
+            "rank": 6,
+            "snippet": "on different maps, while even very thorough current measurements of Mount Everest range from 8,840 m (29,003 ft) to 8,849 m (29,032 ft). These discrepancies",
+            "title": "List of highest mountains on Earth",
+            "url": "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth"
+          },
+          {
+            "rank": 7,
+            "snippet": "in Bay Lake, Florida. The ride is themed around the Yeti protecting the Forbidden Mountain next to Mount Everest. It is the only roller coaster at Disney's",
+            "title": "Expedition Everest",
+            "url": "https://en.wikipedia.org/wiki/Expedition_Everest"
+          },
+          {
+            "rank": 8,
+            "snippet": "through the region's peaks and passes, particularly for Mount Everest expeditions. The term Sherpa is often used by foreigners to refer to almost any guide",
+            "title": "Sherpa people",
+            "url": "https://en.wikipedia.org/wiki/Sherpa_people"
+          },
+          {
+            "rank": 9,
+            "snippet": "today?\" and \"How many dollars are in a euro?\" Find basic facts, including \"How many people live in France?\" and \"How tall is Mount Everest?\". Siri usually",
+            "title": "Siri",
+            "url": "https://en.wikipedia.org/wiki/Siri"
+          },
+          {
+            "rank": 10,
+            "snippet": "confirmed to have reached the summit of Mount Everest. They were part of the ninth British expedition to Everest, which was led by John Hunt. From 1985",
+            "title": "Edmund Hillary",
+            "url": "https://en.wikipedia.org/wiki/Edmund_Hillary"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "A total of 807 climbers summited Mount Everest in 2018. The year saw an unusually long weather window of 11 days straight of calm, which reduced crowding",
+            "title": "Mount Everest in 2018",
+            "url": "https://en.wikipedia.org/wiki/Mount_Everest_in_2018"
+          },
+          {
+            "rank": 2,
+            "snippet": "means Mount Everest is the highest mountain above sea level on Earth, but it is not the tallest mountain, either on Earth or off it. There is no set",
+            "title": "Tallest mountain",
+            "url": "https://en.wikipedia.org/wiki/Tallest_mountain"
+          },
+          {
+            "rank": 3,
+            "snippet": "Tibetan characters. Mount Everest (known in Nepali as Sagarmāthā, in Sherpa as Chamolangma, and in Tibetan as Jomolangma/Čhomolangma) is the highest mountain",
+            "title": "Mount Everest",
+            "url": "https://en.wikipedia.org/wiki/Mount_Everest"
+          },
+          {
+            "rank": 4,
+            "snippet": "10–11 May 1996, eight climbers were caught in a blizzard and died on Mount Everest while attempting to descend from the summit. Over that season, 12 people",
+            "title": "1996 Mount Everest disaster",
+            "url": "https://en.wikipedia.org/wiki/1996_Mount_Everest_disaster"
+          },
+          {
+            "rank": 5,
+            "snippet": "British Mount Everest expeditions from the early to mid-1920s. He and his climbing partner Andrew \"Sandy\" Irvine were last seen ascending near Everest's summit",
+            "title": "George Mallory",
+            "url": "https://en.wikipedia.org/wiki/George_Mallory"
+          },
+          {
+            "rank": 6,
+            "snippet": "on different maps, while even very thorough current measurements of Mount Everest range from 8,840 m (29,003 ft) to 8,849 m (29,032 ft). These discrepancies",
+            "title": "List of highest mountains on Earth",
+            "url": "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth"
+          },
+          {
+            "rank": 7,
+            "snippet": "in Bay Lake, Florida. The ride is themed around the Yeti protecting the Forbidden Mountain next to Mount Everest. It is the only roller coaster at Disney's",
+            "title": "Expedition Everest",
+            "url": "https://en.wikipedia.org/wiki/Expedition_Everest"
+          },
+          {
+            "rank": 8,
+            "snippet": "through the region's peaks and passes, particularly for Mount Everest expeditions. The term Sherpa is often used by foreigners to refer to almost any guide",
+            "title": "Sherpa people",
+            "url": "https://en.wikipedia.org/wiki/Sherpa_people"
+          },
+          {
+            "rank": 9,
+            "snippet": "today?\" and \"How many dollars are in a euro?\" Find basic facts, including \"How many people live in France?\" and \"How tall is Mount Everest?\". Siri usually",
+            "title": "Siri",
+            "url": "https://en.wikipedia.org/wiki/Siri"
+          },
+          {
+            "rank": 10,
+            "snippet": "confirmed to have reached the summit of Mount Everest. They were part of the ninth British expedition to Everest, which was led by John Hunt. From 1985",
+            "title": "Edmund Hillary",
+            "url": "https://en.wikipedia.org/wiki/Edmund_Hillary"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000008",
+      "query_id": "gen01",
+      "source": "wikipedia_en",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "viewers after tower collapse\". 18 January 2020. \"「文化景觀」央廣鹿港分台鐵塔已斷4根 文資大會同意高度降到15公尺\". 聯合新聞網 (in Chinese (Taiwan)). 29 October 2022. Retrieved 25 October",
+            "title": "List of catastrophic collapses of broadcast masts and towers",
+            "url": "https://en.wikipedia.org/wiki/List_of_catastrophic_collapses_of_broadcast_masts_and_towers"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "viewers after tower collapse\". 18 January 2020. \"「文化景觀」央廣鹿港分台鐵塔已斷4根 文資大會同意高度降到15公尺\". 聯合新聞網 (in Chinese (Taiwan)). 29 October 2022. Retrieved 25 October",
+            "title": "List of catastrophic collapses of broadcast masts and towers",
+            "url": "https://en.wikipedia.org/wiki/List_of_catastrophic_collapses_of_broadcast_masts_and_towers"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000009",
+      "query_id": "gzh01",
+      "source": "wikipedia_en",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "《Attention Is All You Need》 是2017年由谷歌八位科学家联合发表的一篇里程碑式机器学习研究论文。该论文提出了一种基于注意力机制的新型深度学习架构——Transformer，其灵感源自2014年德米特里·巴達納烏（Dzmitry Bahdanau）等人提出的机制。这篇论文被",
+            "title": "Attention Is All You Need",
+            "url": "https://zh.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "现代版transformer于2017年由谷歌大脑的一个团队在论文《Attention Is All You Need》中提出。 其前身最初是为了改进机器翻译的现有架构而开发的， 但此后应用范围不断扩大。它们被用于大规模自然语言处理、计算机视觉（视觉transformer（英语：Vision",
+            "title": "Transformer架构",
+            "url": "https://zh.wikipedia.org/wiki/Transformer%E6%9E%B6%E6%9E%84"
+          },
+          {
+            "rank": 3,
+            "snippet": "（NLP）領域的重大貢獻而知名。他是開創性論文《Attention Is All You Need》的合著者之一，該論文介紹了Transformer模型，這是一種使用自注意力機制的新型架構，自此成為NLP領域許多最先進模型的基礎。Transformer架構是語言模型的核心，為ChatGPT等應用提供",
+            "title": "阿西什·瓦斯瓦尼",
+            "url": "https://zh.wikipedia.org/wiki/%E9%98%BF%E8%A5%BF%E4%BB%80%C2%B7%E7%93%A6%E6%96%AF%E7%93%A6%E5%B0%BC"
+          },
+          {
+            "rank": 4,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 [cs.CL]. Ramachandran, Prajit;",
+            "title": "注意力机制",
+            "url": "https://zh.wikipedia.org/wiki/%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"
+          },
+          {
+            "rank": 5,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Archived copy. [2023-04-29]",
+            "title": "GPT-1",
+            "url": "https://zh.wikipedia.org/wiki/GPT-1"
+          },
+          {
+            "rank": 6,
+            "snippet": "Yihe; Cordonnier, Jean-Baptiste; Loukas, Andreas. Attention is not all you need: pure attention loses rank doubly exponentially with depth. 2021. arXiv:2103",
+            "title": "残差神经网络",
+            "url": "https://zh.wikipedia.org/wiki/%E6%AE%8B%E5%B7%AE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"
+          },
+          {
+            "rank": 7,
+            "snippet": "Uszkoreit, Jakob; Parmar, Niki; Shazeer, Noam; Vaswani, Ashish. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Horev, Rani. BERT Explained:",
+            "title": "BERT",
+            "url": "https://zh.wikipedia.org/wiki/BERT"
+          },
+          {
+            "rank": 8,
+            "snippet": "Transformer模型開發與自然語言處理技術。他現居於加州帕羅奧圖。 沙澤爾於2000年加入Google。他早期的重要成就之一，是改進了Google搜尋引擎的拼寫校正功能。2017年，沙澤爾是開創性論文《Attention Is All You Need",
+            "title": "諾姆·沙澤爾",
+            "url": "https://zh.wikipedia.org/wiki/%E8%AB%BE%E5%A7%86%C2%B7%E6%B2%99%E6%BE%A4%E7%88%BE"
+          },
+          {
+            "rank": 9,
+            "snippet": "线性注意力（英語：Linear Attention）是人工神经网络中用于降低注意力机制计算开销的一类方法。对比Transformer等模型，线性注意力通过重新表征查询与键之间的相似性，将序列信息聚合为更低维的中间表示，从而避免直接构造两两交互的完整注意力矩阵。在特征维度固定的条件下，其注意力层计算的时间复杂度可随序列长度线性增长。",
+            "title": "线性注意力",
+            "url": "https://zh.wikipedia.org/wiki/%E7%BA%BF%E6%80%A7%E6%B3%A8%E6%84%8F%E5%8A%9B"
+          },
+          {
+            "rank": 10,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 . Devlin, Jacob; Chang, Ming-Wei;",
+            "title": "GPT (语言模型)",
+            "url": "https://zh.wikipedia.org/wiki/GPT_(%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B)"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "《Attention Is All You Need》 是2017年由谷歌八位科学家联合发表的一篇里程碑式机器学习研究论文。该论文提出了一种基于注意力机制的新型深度学习架构——Transformer，其灵感源自2014年德米特里·巴達納烏（Dzmitry Bahdanau）等人提出的机制。这篇论文被",
+            "title": "Attention Is All You Need",
+            "url": "https://zh.wikipedia.org/wiki/Attention_Is_All_You_Need"
+          },
+          {
+            "rank": 2,
+            "snippet": "现代版transformer于2017年由谷歌大脑的一个团队在论文《Attention Is All You Need》中提出。 其前身最初是为了改进机器翻译的现有架构而开发的， 但此后应用范围不断扩大。它们被用于大规模自然语言处理、计算机视觉（视觉transformer（英语：Vision",
+            "title": "Transformer架构",
+            "url": "https://zh.wikipedia.org/wiki/Transformer%E6%9E%B6%E6%9E%84"
+          },
+          {
+            "rank": 3,
+            "snippet": "（NLP）領域的重大貢獻而知名。他是開創性論文《Attention Is All You Need》的合著者之一，該論文介紹了Transformer模型，這是一種使用自注意力機制的新型架構，自此成為NLP領域許多最先進模型的基礎。Transformer架構是語言模型的核心，為ChatGPT等應用提供",
+            "title": "阿西什·瓦斯瓦尼",
+            "url": "https://zh.wikipedia.org/wiki/%E9%98%BF%E8%A5%BF%E4%BB%80%C2%B7%E7%93%A6%E6%96%AF%E7%93%A6%E5%B0%BC"
+          },
+          {
+            "rank": 4,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 [cs.CL]. Ramachandran, Prajit;",
+            "title": "注意力机制",
+            "url": "https://zh.wikipedia.org/wiki/%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"
+          },
+          {
+            "rank": 5,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Archived copy. [2023-04-29]",
+            "title": "GPT-1",
+            "url": "https://zh.wikipedia.org/wiki/GPT-1"
+          },
+          {
+            "rank": 6,
+            "snippet": "Yihe; Cordonnier, Jean-Baptiste; Loukas, Andreas. Attention is not all you need: pure attention loses rank doubly exponentially with depth. 2021. arXiv:2103",
+            "title": "残差神经网络",
+            "url": "https://zh.wikipedia.org/wiki/%E6%AE%8B%E5%B7%AE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"
+          },
+          {
+            "rank": 7,
+            "snippet": "Uszkoreit, Jakob; Parmar, Niki; Shazeer, Noam; Vaswani, Ashish. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Horev, Rani. BERT Explained:",
+            "title": "BERT",
+            "url": "https://zh.wikipedia.org/wiki/BERT"
+          },
+          {
+            "rank": 8,
+            "snippet": "Transformer模型開發與自然語言處理技術。他現居於加州帕羅奧圖。 沙澤爾於2000年加入Google。他早期的重要成就之一，是改進了Google搜尋引擎的拼寫校正功能。2017年，沙澤爾是開創性論文《Attention Is All You Need",
+            "title": "諾姆·沙澤爾",
+            "url": "https://zh.wikipedia.org/wiki/%E8%AB%BE%E5%A7%86%C2%B7%E6%B2%99%E6%BE%A4%E7%88%BE"
+          },
+          {
+            "rank": 9,
+            "snippet": "线性注意力（英語：Linear Attention）是人工神经网络中用于降低注意力机制计算开销的一类方法。对比Transformer等模型，线性注意力通过重新表征查询与键之间的相似性，将序列信息聚合为更低维的中间表示，从而避免直接构造两两交互的完整注意力矩阵。在特征维度固定的条件下，其注意力层计算的时间复杂度可随序列长度线性增长。",
+            "title": "线性注意力",
+            "url": "https://zh.wikipedia.org/wiki/%E7%BA%BF%E6%80%A7%E6%B3%A8%E6%84%8F%E5%8A%9B"
+          },
+          {
+            "rank": 10,
+            "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 . Devlin, Jacob; Chang, Ming-Wei;",
+            "title": "GPT (语言模型)",
+            "url": "https://zh.wikipedia.org/wiki/GPT_(%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B)"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000010",
+      "query_id": "aca01",
+      "source": "wikipedia_zh",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [],
+        "status": "empty"
+      },
+      "expected": {
+        "results": [],
+        "status": "empty"
+      },
+      "item_id": "p000011",
+      "query_id": "gen01",
+      "source": "wikipedia_zh",
+      "status": "matched"
+    },
+    {
+      "actual": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "高度超過500公尺、樓層超過100層的建築物，不僅是世界上第一座高度超過半公里（約0.3英里）的建築物，也是全世界第11高建築物。其興建及經營機構為台北金融大樓公司。 台北101的建設計畫從1990年代開始展開，初名「台北國際金融中心」（英語：Taipei World",
+            "title": "台北101",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101"
+          },
+          {
+            "rank": 2,
+            "snippet": "(magazine)）》雜誌將此行動形容為都市建築結構中高度最高的徒手攀岩紀錄之一。 台北101高508米（1,667英尺），曾於2004年至2009年間為全球最高建築。截至2026年，該建築為全球第十一高摩天大樓，亦為臺灣最高建築。2004年，法國攀爬者阿蘭·羅貝爾曾於大雨中歷時四小時攀登台北101",
+            "title": "赤手獨攀台北101：直播",
+            "url": "https://zh.wikipedia.org/wiki/%E8%B5%A4%E6%89%8B%E7%8D%A8%E6%94%80%E5%8F%B0%E5%8C%97101%EF%BC%9A%E7%9B%B4%E6%92%AD"
+          },
+          {
+            "rank": 3,
+            "snippet": "賈永婕（1974年7月21日—），本名賈永媫，臺灣女藝人，曾任新聞記者、節目主持人，業餘三鐵運動愛好者。2024年9月，由行政院核定出任台北101董事長。 賈永婕生長於一個軍人4口的小康之家，父親賈大駿是中華民國海軍上校，曾任駐大韩民国武官。 母親台灣人 ，繼祖父曾任圓山大飯店圓山聯誼會秘書，曾祖",
+            "title": "賈永婕",
+            "url": "https://zh.wikipedia.org/wiki/%E8%B3%88%E6%B0%B8%E5%A9%95"
+          },
+          {
+            "rank": 4,
+            "snippet": "台北天空塔（英語：The Sky Taipei）是一座興建中的雙品牌飯店、百貨公司摩天大樓，位於臺灣臺北市信義區松智路與松壽路口。興建基地為原中國信托總部大樓及新舞臺拆除後的創意貨櫃市集COMMUNE A7。樓高280公尺，為臺北市第二高樓，高度僅次於台北101。",
+            "title": "台北天空塔",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97%E5%A4%A9%E7%A9%BA%E5%A1%94"
+          },
+          {
+            "rank": 5,
+            "snippet": "台北101垂直馬拉松（Taipei 101 Run Up，原名：台北101國際登高賽）是一場每年固定以台北101大樓作為比賽場地的登高賽。自2005年台北國際金融大樓（台北101）安檢到91樓部分合格後，為了要提昇台北101的國際知名度，經台北101與台灣體育界各代表商議後，於2005年首度辦理，",
+            "title": "台北101垂直馬拉松",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101%E5%9E%82%E7%9B%B4%E9%A6%AC%E6%8B%89%E6%9D%BE"
+          },
+          {
+            "rank": 6,
+            "snippet": "臺北市高樓列表列出市內高度超過120公尺的大樓，其中包含已建成以及興建中的大樓共63棟。台北101為臺北市內最高建築物，同時也是全台灣最高建築。 包含同案中不同棟別。 摩天大樓 摩天大樓列表 台灣摩天大樓列表 新北市高樓列表 桃園市高樓列表 臺中市高樓列表 臺南市高樓列表 高雄市高樓列表 {{Cite",
+            "title": "臺北市高樓列表",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%B8%82%E9%AB%98%E6%A8%93%E5%88%97%E8%A1%A8"
+          },
+          {
+            "rank": 7,
+            "snippet": "台北跨年晚會施放台北101煙火。當台北101在2005年的第一秒鐘成功施放煙火後，不僅是全球首次在摩天大樓上施放煙火，還以508公尺的高度成為當時世界煙火施放高度最高者，甚至吸引國際媒體報導並登上其網頁頭版，另外台北101跨年煙火表演也間接成為整場臺北最High新年城跨年晚會的重頭戲。",
+            "title": "臺北最High新年城",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E6%9C%80High%E6%96%B0%E5%B9%B4%E5%9F%8E"
+          },
+          {
+            "rank": 8,
+            "snippet": "台北101曾於2004年至2010年被列為全球最高摩天大樓，現在仍是臺灣第一高樓、唯一高度超過500公尺、樓層超過100層的建築物。 以下列表是根據已封頂和已完工摩天大樓之結構體或建築頂部高度作為排序；結構體或建築頂部高度",
+            "title": "台灣摩天大樓列表",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E6%91%A9%E5%A4%A9%E5%A4%A7%E6%A8%93%E5%88%97%E8%A1%A8"
+          },
+          {
+            "rank": 9,
+            "snippet": "？]為全球第219名的高樓，臺北市第三高樓（僅次於臺北101和台北天空塔）以及臺灣第四高樓（僅次於臺北101及高雄85大樓和台北天空塔），商場部分由微風廣場經營，於2019年1月10日正式開幕。 在台北南港展覽館1館開始營運後，台北世貿二館停用；台北市政府為活化資產提出以設定地上權的方式招商，於20",
+            "title": "臺北南山廣場",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%8D%97%E5%B1%B1%E5%BB%A3%E5%A0%B4"
+          },
+          {
+            "rank": 10,
+            "snippet": "483英尺）公尺（126層）超越了台北101的448米（1,470英尺）公尺的當時最高混凝土樓層高度。 2007年7月21日，杜拜塔超越了509.2米（1,671英尺）的台北101成為地表上最高的大樓（141層）。在那前一天，世界高層建築與都市人居學會（CTBUH）的代表Antony Wood聲明杜拜塔已超越了台北101的混凝土高度",
+            "title": "哈利法塔",
+            "url": "https://zh.wikipedia.org/wiki/%E5%93%88%E5%88%A9%E6%B3%95%E5%A1%94"
+          }
+        ],
+        "status": "ok"
+      },
+      "expected": {
+        "results": [
+          {
+            "rank": 1,
+            "snippet": "高度超過500公尺、樓層超過100層的建築物，不僅是世界上第一座高度超過半公里（約0.3英里）的建築物，也是全世界第11高建築物。其興建及經營機構為台北金融大樓公司。 台北101的建設計畫從1990年代開始展開，初名「台北國際金融中心」（英語：Taipei World",
+            "title": "台北101",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101"
+          },
+          {
+            "rank": 2,
+            "snippet": "(magazine)）》雜誌將此行動形容為都市建築結構中高度最高的徒手攀岩紀錄之一。 台北101高508米（1,667英尺），曾於2004年至2009年間為全球最高建築。截至2026年，該建築為全球第十一高摩天大樓，亦為臺灣最高建築。2004年，法國攀爬者阿蘭·羅貝爾曾於大雨中歷時四小時攀登台北101",
+            "title": "赤手獨攀台北101：直播",
+            "url": "https://zh.wikipedia.org/wiki/%E8%B5%A4%E6%89%8B%E7%8D%A8%E6%94%80%E5%8F%B0%E5%8C%97101%EF%BC%9A%E7%9B%B4%E6%92%AD"
+          },
+          {
+            "rank": 3,
+            "snippet": "賈永婕（1974年7月21日—），本名賈永媫，臺灣女藝人，曾任新聞記者、節目主持人，業餘三鐵運動愛好者。2024年9月，由行政院核定出任台北101董事長。 賈永婕生長於一個軍人4口的小康之家，父親賈大駿是中華民國海軍上校，曾任駐大韩民国武官。 母親台灣人 ，繼祖父曾任圓山大飯店圓山聯誼會秘書，曾祖",
+            "title": "賈永婕",
+            "url": "https://zh.wikipedia.org/wiki/%E8%B3%88%E6%B0%B8%E5%A9%95"
+          },
+          {
+            "rank": 4,
+            "snippet": "台北天空塔（英語：The Sky Taipei）是一座興建中的雙品牌飯店、百貨公司摩天大樓，位於臺灣臺北市信義區松智路與松壽路口。興建基地為原中國信托總部大樓及新舞臺拆除後的創意貨櫃市集COMMUNE A7。樓高280公尺，為臺北市第二高樓，高度僅次於台北101。",
+            "title": "台北天空塔",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97%E5%A4%A9%E7%A9%BA%E5%A1%94"
+          },
+          {
+            "rank": 5,
+            "snippet": "台北101垂直馬拉松（Taipei 101 Run Up，原名：台北101國際登高賽）是一場每年固定以台北101大樓作為比賽場地的登高賽。自2005年台北國際金融大樓（台北101）安檢到91樓部分合格後，為了要提昇台北101的國際知名度，經台北101與台灣體育界各代表商議後，於2005年首度辦理，",
+            "title": "台北101垂直馬拉松",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101%E5%9E%82%E7%9B%B4%E9%A6%AC%E6%8B%89%E6%9D%BE"
+          },
+          {
+            "rank": 6,
+            "snippet": "臺北市高樓列表列出市內高度超過120公尺的大樓，其中包含已建成以及興建中的大樓共63棟。台北101為臺北市內最高建築物，同時也是全台灣最高建築。 包含同案中不同棟別。 摩天大樓 摩天大樓列表 台灣摩天大樓列表 新北市高樓列表 桃園市高樓列表 臺中市高樓列表 臺南市高樓列表 高雄市高樓列表 {{Cite",
+            "title": "臺北市高樓列表",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%B8%82%E9%AB%98%E6%A8%93%E5%88%97%E8%A1%A8"
+          },
+          {
+            "rank": 7,
+            "snippet": "台北跨年晚會施放台北101煙火。當台北101在2005年的第一秒鐘成功施放煙火後，不僅是全球首次在摩天大樓上施放煙火，還以508公尺的高度成為當時世界煙火施放高度最高者，甚至吸引國際媒體報導並登上其網頁頭版，另外台北101跨年煙火表演也間接成為整場臺北最High新年城跨年晚會的重頭戲。",
+            "title": "臺北最High新年城",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E6%9C%80High%E6%96%B0%E5%B9%B4%E5%9F%8E"
+          },
+          {
+            "rank": 8,
+            "snippet": "台北101曾於2004年至2010年被列為全球最高摩天大樓，現在仍是臺灣第一高樓、唯一高度超過500公尺、樓層超過100層的建築物。 以下列表是根據已封頂和已完工摩天大樓之結構體或建築頂部高度作為排序；結構體或建築頂部高度",
+            "title": "台灣摩天大樓列表",
+            "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E6%91%A9%E5%A4%A9%E5%A4%A7%E6%A8%93%E5%88%97%E8%A1%A8"
+          },
+          {
+            "rank": 9,
+            "snippet": "？]為全球第219名的高樓，臺北市第三高樓（僅次於臺北101和台北天空塔）以及臺灣第四高樓（僅次於臺北101及高雄85大樓和台北天空塔），商場部分由微風廣場經營，於2019年1月10日正式開幕。 在台北南港展覽館1館開始營運後，台北世貿二館停用；台北市政府為活化資產提出以設定地上權的方式招商，於20",
+            "title": "臺北南山廣場",
+            "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%8D%97%E5%B1%B1%E5%BB%A3%E5%A0%B4"
+          },
+          {
+            "rank": 10,
+            "snippet": "483英尺）公尺（126層）超越了台北101的448米（1,470英尺）公尺的當時最高混凝土樓層高度。 2007年7月21日，杜拜塔超越了509.2米（1,671英尺）的台北101成為地表上最高的大樓（141層）。在那前一天，世界高層建築與都市人居學會（CTBUH）的代表Antony Wood聲明杜拜塔已超越了台北101的混凝土高度",
+            "title": "哈利法塔",
+            "url": "https://zh.wikipedia.org/wiki/%E5%93%88%E5%88%A9%E6%B3%95%E5%A1%94"
+          }
+        ],
+        "status": "ok"
+      },
+      "item_id": "p000012",
+      "query_id": "gzh01",
+      "source": "wikipedia_zh",
+      "status": "matched"
+    }
+  ],
+  "run_id": "e61529fac4944363beb02f012ad7a02e",
+  "schema_version": 1,
+  "source_report_sha256": "90aa1aa26a8f4307bd7a68d1e659cdf29e34276afda032bbc9b9ddbaf2d25fab",
+  "status": "passed",
+  "summary": {
+    "matched": 10,
+    "mismatches": 0,
+    "replayed": 10,
+    "skipped": 0
+  }
+}
