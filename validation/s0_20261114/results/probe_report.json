@@ -1,0 +1,1307 @@
+{
+  "budgets": {
+    "marginalia": {
+      "cooldown_until_ms": 1794653894212,
+      "last_started_at_ms": 1794653292259,
+      "stop_reason": "rate_limited",
+      "stopped": true,
+      "used": 1
+    },
+    "mwmbl": {
+      "cooldown_until_ms": 0,
+      "last_started_at_ms": 1794653300285,
+      "stop_reason": null,
+      "stopped": false,
+      "used": 3
+    },
+    "wikimedia": {
+      "cooldown_until_ms": 0,
+      "last_started_at_ms": 1794653312327,
+      "stop_reason": null,
+      "stopped": false,
+      "used": 6
+    }
+  },
+  "created_at": "2026-11-14T10:48:12.222Z",
+  "environment": {
+    "bzs861": "0.1.10",
+    "golden_frozen": true,
+    "golden_version": 1,
+    "include_candidates": true,
+    "live_source_approval": false,
+    "proxy": false,
+    "proxy_remote_dns": false,
+    "quota_scope": "this_probe_run",
+    "quota_unit": "reserved_source_query_attempts",
+    "review_changed": false,
+    "test_fixture": false
+  },
+  "identity": {
+    "golden_manifest_sha256": "a9a471b885c5cb04b76d08b1c6a8b0db93334dea14d78f92aa1b7908093391c5",
+    "manifest_sha256": "ea53a36f8c3297986bd0dc360cfcd77fb7b92a808ef13dffdcac7c308ff63c4e",
+    "options_sha256": "1922f0cc14280b69c7d67edbc48af8bc57d8644a5046b579b52ce0f68d042221",
+    "parser": {
+      "code_sha256": "74d1a41ce03d444d1dce68508284e709cf920c1a1de0a0ccff213d696ea9c1f1",
+      "dependencies": {
+        "aiohttp": "3.14.5",
+        "cssselect": "1.6.0",
+        "idna": "3.20",
+        "lxml": "6.1.3",
+        "python": "3.12.10",
+        "trafilatura": "2.3.1",
+        "yarl": "1.25.1"
+      },
+      "files": {
+        "worker/extract.py": "b1ad1ea311a0138950b0cb8c2bf6fe5930e8daecc80147fb6527a13264c18bd5",
+        "worker/fetch.py": "cb36d234ce83156bc12782c962af0cf31329f85d5feffa778108f6ca7296c369",
+        "worker/sources/__init__.py": "9f8baa1176cf818f64bfcddb78ffbbb4b6066b607ab321510e6741575c439413",
+        "worker/sources/apis.py": "dba9f4b4b914cea5c0e0f37f8fefd73953d6438b744f8763a3c1f5a195ef45ea",
+        "worker/sources/base.py": "4dd4616c61c5c858cdaa16f6dfd5d5350cd96abc12d260b97eb8851a410301df",
+        "worker/sources/engines.py": "b0e03070deed6fcfadc6ac222528604176427dde5bdb4f2ddf1e77bdf6f9867b"
+      }
+    },
+    "queries_sha256": "52948aca968cb581e7828988f80a8043f419799938cc1fb6fa54d43a60d2b798"
+  },
+  "options": {
+    "accept_language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "allow_private": [],
+    "delay_s": 4.0,
+    "include_candidates": true,
+    "per_source": 3,
+    "proxy": false,
+    "proxy_remote_dns": false,
+    "source_ids": [
+      "marginalia",
+      "mwmbl",
+      "wikipedia_en",
+      "wikipedia_zh"
+    ],
+    "test_hosts": {},
+    "timeout_s": 12.0,
+    "user_agent": "bzs861/0.1.10 (+https://github.com/wmqfl861/bzs861)"
+  },
+  "plan": [
+    {
+      "category": "academic",
+      "item_id": "p000001",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "marginalia",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "code",
+      "item_id": "p000002",
+      "language": "en",
+      "query": "aiohttp custom resolver",
+      "query_id": "code01",
+      "reason": "service_stopped:rate_limited",
+      "source": "marginalia",
+      "split": "development",
+      "state": "skipped"
+    },
+    {
+      "category": "exact_symbol",
+      "item_id": "p000003",
+      "language": "en",
+      "query": "std::expected C++23",
+      "query_id": "sym01",
+      "reason": "service_stopped:rate_limited",
+      "source": "marginalia",
+      "split": "development",
+      "state": "skipped"
+    },
+    {
+      "category": "academic",
+      "item_id": "p000004",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "mwmbl",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "code",
+      "item_id": "p000005",
+      "language": "en",
+      "query": "aiohttp custom resolver",
+      "query_id": "code01",
+      "reason": null,
+      "source": "mwmbl",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "exact_symbol",
+      "item_id": "p000006",
+      "language": "en",
+      "query": "std::expected C++23",
+      "query_id": "sym01",
+      "reason": null,
+      "source": "mwmbl",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "academic",
+      "item_id": "p000007",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "wikipedia_en",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "general_en",
+      "item_id": "p000008",
+      "language": "en",
+      "query": "how tall is mount everest",
+      "query_id": "gen01",
+      "reason": null,
+      "source": "wikipedia_en",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "general_zh",
+      "item_id": "p000009",
+      "language": "zh",
+      "query": "台北101 高度",
+      "query_id": "gzh01",
+      "reason": null,
+      "source": "wikipedia_en",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "academic",
+      "item_id": "p000010",
+      "language": "en",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "reason": null,
+      "source": "wikipedia_zh",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "general_en",
+      "item_id": "p000011",
+      "language": "en",
+      "query": "how tall is mount everest",
+      "query_id": "gen01",
+      "reason": null,
+      "source": "wikipedia_zh",
+      "split": "development",
+      "state": "completed"
+    },
+    {
+      "category": "general_zh",
+      "item_id": "p000012",
+      "language": "zh",
+      "query": "台北101 高度",
+      "query_id": "gzh01",
+      "reason": null,
+      "source": "wikipedia_zh",
+      "split": "development",
+      "state": "completed"
+    }
+  ],
+  "rows": [
+    {
+      "attempt_id": "a000001",
+      "attempt_state": "completed",
+      "elapsed_ms": 1937,
+      "error": "source_error:rate_limited",
+      "finished_at": "2026-11-14T10:48:14.212Z",
+      "hits": 0,
+      "http_status": 429,
+      "item_id": "p000001",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 0,
+      "raw": "raw/a000001-28c081b5dcd06185308665ac17dc830fb73f10572475d039b4ad1c60583d144e.body.gz",
+      "response": {
+        "body_bytes": 18,
+        "body_sha256": "28c081b5dcd06185308665ac17dc830fb73f10572475d039b4ad1c60583d144e",
+        "content_bytes": 18,
+        "elapsed_ms": 1937,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://api2.marginalia-search.com/search?query=attention+is+all+you+need+transformer&count=10",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "text/plain;charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:14 GMT"
+        },
+        "http_status": 429,
+        "raw_path": "raw/a000001-28c081b5dcd06185308665ac17dc830fb73f10572475d039b4ad1c60583d144e.body.gz",
+        "redirects": [],
+        "status": "http_error",
+        "truncated": false,
+        "url": "https://api2.marginalia-search.com/search"
+      },
+      "results": [],
+      "retry_after_ms": 0,
+      "source": "marginalia",
+      "started_at": "2026-11-14T10:48:12.259Z",
+      "status": "rate_limited",
+      "top": []
+    },
+    {
+      "attempt_id": "a000004",
+      "attempt_state": "completed",
+      "elapsed_ms": 1875,
+      "finished_at": "2026-11-14T10:48:14.162Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000004",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 0,
+      "raw": "raw/a000004-9e4904e74a6c56c8ef0fafdbf7c6de64bbf3eabeefb44ef9998cfd3bde1505e5.body.gz",
+      "response": {
+        "body_bytes": 16560,
+        "body_sha256": "9e4904e74a6c56c8ef0fafdbf7c6de64bbf3eabeefb44ef9998cfd3bde1505e5",
+        "content_bytes": 16560,
+        "elapsed_ms": 1875,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://api.mwmbl.org/api/v2/search/?q=attention+is+all+you+need+transformer",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:13 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000004-9e4904e74a6c56c8ef0fafdbf7c6de64bbf3eabeefb44ef9998cfd3bde1505e5.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://api.mwmbl.org/api/v2/search/"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+          "title": "Attention Is All You Need",
+          "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "rank": 2,
+          "snippet": "",
+          "title": "Attention Is All You Need - Transformer Model Architecture - You…",
+          "url": "https://www.youtube.com/watch?v=PzpDqRFPm0g"
+        },
+        {
+          "rank": 3,
+          "snippet": "Readers occasionally request which static HTML generator is used by fabiensanglard.net, and if they can take the same stylesheet/ fonts to start their ow…",
+          "title": "All you may need is HTML",
+          "url": "http://fabiensanglard.net/html/index.html"
+        },
+        {
+          "rank": 4,
+          "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+          "title": "[1706.03762v2] Attention Is All You Need",
+          "url": "http://arxiv.org/abs/1706.03762v2"
+        },
+        {
+          "rank": 5,
+          "snippet": "Attention is All You Need Abstract The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encode…",
+          "title": "Attention is All You Need",
+          "url": "http://research.google.com/pubs/pub46201.html"
+        },
+        {
+          "rank": 6,
+          "snippet": "All you need to know about OS X El Capitan The next version of Apple's Mac software is available for download. CNET explains where you can get it and how…",
+          "title": "All you need to know about OS X El Capitan - CNET",
+          "url": "http://www.cnet.com/how-to/el-capitan/"
+        },
+        {
+          "rank": 7,
+          "snippet": "Growth Organisers describe growth as a \"fitting theme for what has been a turbulent time for all of us\". The recommended activities include: exploring pl…",
+          "title": "All you need to know about British Science Week 2022 - BBC Newsr…",
+          "url": "https://www.bbc.com/newsround/60720210"
+        },
+        {
+          "rank": 8,
+          "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+          "title": "[1706.03762v4] Attention Is All You Need",
+          "url": "http://arxiv.org/abs/1706.03762v4"
+        },
+        {
+          "rank": 9,
+          "snippet": "For each position t and offset Δ∈ such that t+Δ≤L, we form a pair (z_t,z_t+Δ). For a given t, this produces up to m pairs: (z_t,z_t+Δ_1),(z_t,z_t+Δ_2),….…",
+          "title": "Attention Is Not What You Need (2025) | Hacker News",
+          "url": "http://news.ycombinator.com/item?id=50237224"
+        },
+        {
+          "rank": 10,
+          "snippet": "Abstract:The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. T…",
+          "title": "[1706.03762v6] Attention Is All You Need",
+          "url": "http://arxiv.org/abs/1706.03762v6"
+        }
+      ],
+      "source": "mwmbl",
+      "started_at": "2026-11-14T10:48:12.272Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "Attention Is All You Need",
+          "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "title": "Attention Is All You Need - Transformer Model Architecture - You…",
+          "url": "https://www.youtube.com/watch?v=PzpDqRFPm0g"
+        },
+        {
+          "title": "All you may need is HTML",
+          "url": "http://fabiensanglard.net/html/index.html"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000005",
+      "attempt_state": "completed",
+      "elapsed_ms": 407,
+      "finished_at": "2026-11-14T10:48:16.710Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000005",
+      "query": "aiohttp custom resolver",
+      "query_id": "code01",
+      "queue_ms": 2109,
+      "raw": "raw/a000005-df2869b4c5974582c6658c3f5cc6b5204036f0eb0f09b009514f17d2983e68ba.body.gz",
+      "response": {
+        "body_bytes": 9288,
+        "body_sha256": "df2869b4c5974582c6658c3f5cc6b5204036f0eb0f09b009514f17d2983e68ba",
+        "content_bytes": 9288,
+        "elapsed_ms": 407,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://api.mwmbl.org/api/v2/search/?q=aiohttp+custom+resolver",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:16 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000005-df2869b4c5974582c6658c3f5cc6b5204036f0eb0f09b009514f17d2983e68ba.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://api.mwmbl.org/api/v2/search/"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "The problem is that nginx uses it's own DNS resolver, which needs to be configured directly in the nginx config with \"resolver i.p.add.ress\" options. But …",
+          "title": "Embedded DNS and Nginx custom resolver · Issue #22652 · moby/mob…",
+          "url": "https://github.com/docker/docker/issues/22652"
+        },
+        {
+          "rank": 2,
+          "snippet": "Creating a Calculated Field in GraphQL Using a Custom Resolver and Dgraph Lambda Most of the time the data stored in a database is static. The data we pu…",
+          "title": "Creating a Calculated Field in GraphQL Using a Custom Resolver a…",
+          "url": "https://dgraph.io/blog/post/calculated-field-using-dgraph-lambda/"
+        },
+        {
+          "rank": 3,
+          "snippet": "When deploying any custom resolver Addon, the resolvedItems collection in the Resolve method is always empty (count = 0). I suspect that the custom resol…",
+          "title": "Newest 'custom-resolver' Questions - Tridion Stack Exchange",
+          "url": "http://tridion.stackexchange.com/questions/tagged/custom-resolver"
+        },
+        {
+          "rank": 4,
+          "snippet": "Overview You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operat…",
+          "title": "Define a Custom Resolver — Atlas App Services",
+          "url": "https://www.mongodb.com/docs/atlas/app-services/graphql/custom-resolvers/"
+        },
+        {
+          "rank": 5,
+          "snippet": "This is returning undefined as the object parameter of resolver function has all the properties of it's parent field that are also part of the query. Sin…",
+          "title": "GraphQL implementing custom resolver field - Neo4j Graph Platfor…",
+          "url": "https://community.neo4j.com/t/graphql-implementing-custom-resolver-field/15185"
+        },
+        {
+          "rank": 6,
+          "snippet": "A custom resolver you have written, which can be a business logic handler (written in managed code) or a custom COM-based resolver. A standard COM-based …",
+          "title": "How to: Specify a Merge Article Resolver (SQL Server Management …",
+          "url": "http://technet.microsoft.com/en-us/sqlserver/ms152561(v=sql.90)"
+        },
+        {
+          "rank": 7,
+          "snippet": "Saved searches Use saved searches to filter your results more quickly You signed in with another tab or window. Reload to refresh your session.You signed…",
+          "title": "Fix/1369 custom resolver by alexdutton · Pull Request #1385 · RD…",
+          "url": "https://github.com/RDFLib/rdflib/pull/1385"
+        },
+        {
+          "rank": 8,
+          "snippet": "Custom resolvers for PDF retrieval currently can be configured via the extensions.zotero.findPDFs.resolvers hidden pref (Advanced preferences → Config Ed…",
+          "title": "Custom PDF Resolvers | Zotero Documentation",
+          "url": "https://www.zotero.org/support/kb/custom_pdf_resolvers"
+        },
+        {
+          "rank": 9,
+          "snippet": "You can define custom resolvers that extend the GraphQL API for your app's use cases. Custom resolvers allow you to define new root-level operations that …",
+          "title": "Define a Custom Resolver - Atlas App Services",
+          "url": "https://docs.mongodb.com/realm/graphql/custom-resolvers"
+        },
+        {
+          "rank": 10,
+          "snippet": "I mentioned in #12476 that I would like to detect the time it took for DNS resolution phase of the Dial process in Dialer.Dial . The solution posted there…",
+          "title": "net: allow custom Resolver method implementation(s) · Issue #125…",
+          "url": "https://github.com/golang/go/issues/12503"
+        }
+      ],
+      "source": "mwmbl",
+      "started_at": "2026-11-14T10:48:16.284Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "Embedded DNS and Nginx custom resolver · Issue #22652 · moby/mob…",
+          "url": "https://github.com/docker/docker/issues/22652"
+        },
+        {
+          "title": "Creating a Calculated Field in GraphQL Using a Custom Resolver a…",
+          "url": "https://dgraph.io/blog/post/calculated-field-using-dgraph-lambda/"
+        },
+        {
+          "title": "Newest 'custom-resolver' Questions - Tridion Stack Exchange",
+          "url": "http://tridion.stackexchange.com/questions/tagged/custom-resolver"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000006",
+      "attempt_state": "completed",
+      "elapsed_ms": 359,
+      "finished_at": "2026-11-14T10:48:20.660Z",
+      "hits": 3,
+      "http_status": 200,
+      "item_id": "p000006",
+      "query": "std::expected C++23",
+      "query_id": "sym01",
+      "queue_ms": 3577,
+      "raw": "raw/a000006-ccf6056141ae003dc65bc1a2c0ad4eccc17b2418f9767b96d21f70a603f98439.body.gz",
+      "response": {
+        "body_bytes": 1475,
+        "body_sha256": "ccf6056141ae003dc65bc1a2c0ad4eccc17b2418f9767b96d21f70a603f98439",
+        "content_bytes": 1475,
+        "elapsed_ms": 359,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://api.mwmbl.org/api/v2/search/?q=std::expected+C%2B%2B23",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:20 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000006-ccf6056141ae003dc65bc1a2c0ad4eccc17b2418f9767b96d21f70a603f98439.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://api.mwmbl.org/api/v2/search/"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "C++23: A New Way of Error Handling with std::expected C++23 extends the interface of std::optional and gets the new data type std::expected for error han…",
+          "title": "C++23: A New Way of Error Handling with std::expected – MC++ BLOG",
+          "url": "https://www.modernescpp.com/index.php/c23-a-new-way-of-error-handling-with-stdexpected/"
+        },
+        {
+          "rank": 2,
+          "snippet": "std::expected from C++23 not only serves as an error-handling mechanism but also introduces functional programming paradigms into the language. In this b…",
+          "title": "std::expected - Monadic Extensions - C++ Stories",
+          "url": "http://www.bfilipek.com/2024/expected-cpp23-monadic/"
+        },
+        {
+          "rank": 3,
+          "snippet": "What can you do? What should you return or output through /*RESULT*/ ? Here are a few options: Throw an exception, Terminate the application, Use std::op…",
+          "title": "Using std::expected from C++23 - C++ Stories",
+          "url": "http://www.bfilipek.com/2024/expected-cpp23/"
+        }
+      ],
+      "source": "mwmbl",
+      "started_at": "2026-11-14T10:48:20.285Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "C++23: A New Way of Error Handling with std::expected – MC++ BLOG",
+          "url": "https://www.modernescpp.com/index.php/c23-a-new-way-of-error-handling-with-stdexpected/"
+        },
+        {
+          "title": "std::expected - Monadic Extensions - C++ Stories",
+          "url": "http://www.bfilipek.com/2024/expected-cpp23-monadic/"
+        },
+        {
+          "title": "Using std::expected from C++23 - C++ Stories",
+          "url": "http://www.bfilipek.com/2024/expected-cpp23/"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000007",
+      "attempt_state": "completed",
+      "elapsed_ms": 1687,
+      "finished_at": "2026-11-14T10:48:13.995Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000007",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 0,
+      "raw": "raw/a000007-0b0c16e4d00a18cba26f0db77c29ab41f62c1511f05dddad55a47a4152b71224.body.gz",
+      "response": {
+        "body_bytes": 4451,
+        "body_sha256": "0b0c16e4d00a18cba26f0db77c29ab41f62c1511f05dddad55a47a4152b71224",
+        "content_bytes": 4451,
+        "elapsed_ms": 1687,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=attention+is+all+you+need+transformer&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:13 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000007-0b0c16e4d00a18cba26f0db77c29ab41f62c1511f05dddad55a47a4152b71224.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://en.wikipedia.org/w/api.php"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "\"Attention Is All You Need\" is a 2017 research paper on machine learning authored by eight scientists and engineers working at Google. The paper introduced",
+          "title": "Attention Is All You Need",
+          "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "rank": 2,
+          "snippet": "datasets.[citation needed] The original version of the transformer architecture was proposed in the 2017 paper \"Attention Is All You Need\" by researchers",
+          "title": "Transformer (deep learning)",
+          "url": "https://en.wikipedia.org/wiki/Transformer_(deep_learning)"
+        },
+        {
+          "rank": 3,
+          "snippet": "Google, it was introduced in the paper \"Attention Is All You Need\", which was released in 2017. The transformer architecture solved many of the performance",
+          "title": "Generative pre-trained transformer",
+          "url": "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer"
+        },
+        {
+          "rank": 4,
+          "snippet": "Vaswani is a co-author of the 2017 paper \"Attention Is All You Need\", which introduced the Transformer neural network architecture. The Transformer model",
+          "title": "Ashish Vaswani",
+          "url": "https://en.wikipedia.org/wiki/Ashish_Vaswani"
+        },
+        {
+          "rank": 5,
+          "snippet": "weather prediction, and autonomous driving. Transformers were introduced in Attention Is All You Need (2017), and have found widespread use in natural",
+          "title": "Vision transformer",
+          "url": "https://en.wikipedia.org/wiki/Vision_transformer"
+        },
+        {
+          "rank": 6,
+          "snippet": "development were brought together in 2017 with the Transformer architecture, published in the Attention Is All You Need paper. Given three matrices: Q∈ℝm×dQ,K∈ℝn×dK",
+          "title": "Attention (machine learning)",
+          "url": "https://en.wikipedia.org/wiki/Attention_(machine_learning)"
+        },
+        {
+          "rank": 7,
+          "snippet": "RNN with cross-attention causally-masked Transformer blocks (\"decoder blocks\"). One of the papers cited as the originator for seq2seq is (Sutskever et",
+          "title": "Seq2seq",
+          "url": "https://en.wikipedia.org/wiki/Seq2seq"
+        },
+        {
+          "rank": 8,
+          "snippet": "Bidirectional encoder representations from transformers (BERT) is a language model introduced in October 2018 by researchers at Google. It learns to represent",
+          "title": "BERT (language model)",
+          "url": "https://en.wikipedia.org/wiki/BERT_(language_model)"
+        },
+        {
+          "rank": 9,
+          "snippet": "was one of the authors of the seminal paper \"Attention Is All You Need\", which introduced the transformer architecture. At Google, Shazeer and his colleague",
+          "title": "Noam Shazeer",
+          "url": "https://en.wikipedia.org/wiki/Noam_Shazeer"
+        },
+        {
+          "rank": 10,
+          "snippet": "needed] In 2017, as a 20 year-old intern at Google Brain, Gomez was one of eight authors of the research paper \"Attention Is All You Need\", which is credited",
+          "title": "Aidan Gomez",
+          "url": "https://en.wikipedia.org/wiki/Aidan_Gomez"
+        }
+      ],
+      "source": "wikipedia_en",
+      "started_at": "2026-11-14T10:48:12.286Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "Attention Is All You Need",
+          "url": "https://en.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "title": "Transformer (deep learning)",
+          "url": "https://en.wikipedia.org/wiki/Transformer_(deep_learning)"
+        },
+        {
+          "title": "Generative pre-trained transformer",
+          "url": "https://en.wikipedia.org/wiki/Generative_pre-trained_transformer"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000008",
+      "attempt_state": "completed",
+      "elapsed_ms": 468,
+      "finished_at": "2026-11-14T10:48:20.776Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000008",
+      "query": "how tall is mount everest",
+      "query_id": "gen01",
+      "queue_ms": 6280,
+      "raw": "raw/a000008-ca63aa21e4e2c74df4c31221ef556fccdfb6d373466f547f72a4a9b52eb28ebb.body.gz",
+      "response": {
+        "body_bytes": 3590,
+        "body_sha256": "ca63aa21e4e2c74df4c31221ef556fccdfb6d373466f547f72a4a9b52eb28ebb",
+        "content_bytes": 3590,
+        "elapsed_ms": 468,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=how+tall+is+mount+everest&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:20 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000008-ca63aa21e4e2c74df4c31221ef556fccdfb6d373466f547f72a4a9b52eb28ebb.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://en.wikipedia.org/w/api.php"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "A total of 807 climbers summited Mount Everest in 2018. The year saw an unusually long weather window of 11 days straight of calm, which reduced crowding",
+          "title": "Mount Everest in 2018",
+          "url": "https://en.wikipedia.org/wiki/Mount_Everest_in_2018"
+        },
+        {
+          "rank": 2,
+          "snippet": "means Mount Everest is the highest mountain above sea level on Earth, but it is not the tallest mountain, either on Earth or off it. There is no set",
+          "title": "Tallest mountain",
+          "url": "https://en.wikipedia.org/wiki/Tallest_mountain"
+        },
+        {
+          "rank": 3,
+          "snippet": "Tibetan characters. Mount Everest (known in Nepali as Sagarmāthā, in Sherpa as Chamolangma, and in Tibetan as Jomolangma/Čhomolangma) is the highest mountain",
+          "title": "Mount Everest",
+          "url": "https://en.wikipedia.org/wiki/Mount_Everest"
+        },
+        {
+          "rank": 4,
+          "snippet": "10–11 May 1996, eight climbers were caught in a blizzard and died on Mount Everest while attempting to descend from the summit. Over that season, 12 people",
+          "title": "1996 Mount Everest disaster",
+          "url": "https://en.wikipedia.org/wiki/1996_Mount_Everest_disaster"
+        },
+        {
+          "rank": 5,
+          "snippet": "British Mount Everest expeditions from the early to mid-1920s. He and his climbing partner Andrew \"Sandy\" Irvine were last seen ascending near Everest's summit",
+          "title": "George Mallory",
+          "url": "https://en.wikipedia.org/wiki/George_Mallory"
+        },
+        {
+          "rank": 6,
+          "snippet": "on different maps, while even very thorough current measurements of Mount Everest range from 8,840 m (29,003 ft) to 8,849 m (29,032 ft). These discrepancies",
+          "title": "List of highest mountains on Earth",
+          "url": "https://en.wikipedia.org/wiki/List_of_highest_mountains_on_Earth"
+        },
+        {
+          "rank": 7,
+          "snippet": "in Bay Lake, Florida. The ride is themed around the Yeti protecting the Forbidden Mountain next to Mount Everest. It is the only roller coaster at Disney's",
+          "title": "Expedition Everest",
+          "url": "https://en.wikipedia.org/wiki/Expedition_Everest"
+        },
+        {
+          "rank": 8,
+          "snippet": "through the region's peaks and passes, particularly for Mount Everest expeditions. The term Sherpa is often used by foreigners to refer to almost any guide",
+          "title": "Sherpa people",
+          "url": "https://en.wikipedia.org/wiki/Sherpa_people"
+        },
+        {
+          "rank": 9,
+          "snippet": "today?\" and \"How many dollars are in a euro?\" Find basic facts, including \"How many people live in France?\" and \"How tall is Mount Everest?\". Siri usually",
+          "title": "Siri",
+          "url": "https://en.wikipedia.org/wiki/Siri"
+        },
+        {
+          "rank": 10,
+          "snippet": "confirmed to have reached the summit of Mount Everest. They were part of the ninth British expedition to Everest, which was led by John Hunt. From 1985",
+          "title": "Edmund Hillary",
+          "url": "https://en.wikipedia.org/wiki/Edmund_Hillary"
+        }
+      ],
+      "source": "wikipedia_en",
+      "started_at": "2026-11-14T10:48:20.296Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "Mount Everest in 2018",
+          "url": "https://en.wikipedia.org/wiki/Mount_Everest_in_2018"
+        },
+        {
+          "title": "Tallest mountain",
+          "url": "https://en.wikipedia.org/wiki/Tallest_mountain"
+        },
+        {
+          "title": "Mount Everest",
+          "url": "https://en.wikipedia.org/wiki/Mount_Everest"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000009",
+      "attempt_state": "completed",
+      "elapsed_ms": 375,
+      "finished_at": "2026-11-14T10:48:28.698Z",
+      "hits": 1,
+      "http_status": 200,
+      "item_id": "p000009",
+      "query": "台北101 高度",
+      "query_id": "gzh01",
+      "queue_ms": 7516,
+      "raw": "raw/a000009-3d1190503200e8406121997eaa719feef5f1c4a79eae72dfa49da0944cb7fc96.body.gz",
+      "response": {
+        "body_bytes": 450,
+        "body_sha256": "3d1190503200e8406121997eaa719feef5f1c4a79eae72dfa49da0944cb7fc96",
+        "content_bytes": 450,
+        "elapsed_ms": 375,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%E5%8F%B0%E5%8C%97101+%E9%AB%98%E5%BA%A6&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:28 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000009-3d1190503200e8406121997eaa719feef5f1c4a79eae72dfa49da0944cb7fc96.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://en.wikipedia.org/w/api.php"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "viewers after tower collapse\". 18 January 2020. \"「文化景觀」央廣鹿港分台鐵塔已斷4根 文資大會同意高度降到15公尺\". 聯合新聞網 (in Chinese (Taiwan)). 29 October 2022. Retrieved 25 October",
+          "title": "List of catastrophic collapses of broadcast masts and towers",
+          "url": "https://en.wikipedia.org/wiki/List_of_catastrophic_collapses_of_broadcast_masts_and_towers"
+        }
+      ],
+      "source": "wikipedia_en",
+      "started_at": "2026-11-14T10:48:28.314Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "List of catastrophic collapses of broadcast masts and towers",
+          "url": "https://en.wikipedia.org/wiki/List_of_catastrophic_collapses_of_broadcast_masts_and_towers"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000010",
+      "attempt_state": "completed",
+      "elapsed_ms": 1671,
+      "finished_at": "2026-11-14T10:48:17.980Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000010",
+      "query": "attention is all you need transformer",
+      "query_id": "aca01",
+      "queue_ms": 4000,
+      "raw": "raw/a000010-9eed5f749ee94a47087d5ee2f49251a9c9ad57cc63108a93c76609d7dc45b309.body.gz",
+      "response": {
+        "body_bytes": 5155,
+        "body_sha256": "9eed5f749ee94a47087d5ee2f49251a9c9ad57cc63108a93c76609d7dc45b309",
+        "content_bytes": 5155,
+        "elapsed_ms": 1671,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://zh.wikipedia.org/w/api.php?action=query&list=search&srsearch=attention+is+all+you+need+transformer&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:17 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000010-9eed5f749ee94a47087d5ee2f49251a9c9ad57cc63108a93c76609d7dc45b309.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://zh.wikipedia.org/w/api.php"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "《Attention Is All You Need》 是2017年由谷歌八位科学家联合发表的一篇里程碑式机器学习研究论文。该论文提出了一种基于注意力机制的新型深度学习架构——Transformer，其灵感源自2014年德米特里·巴達納烏（Dzmitry Bahdanau）等人提出的机制。这篇论文被",
+          "title": "Attention Is All You Need",
+          "url": "https://zh.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "rank": 2,
+          "snippet": "现代版transformer于2017年由谷歌大脑的一个团队在论文《Attention Is All You Need》中提出。 其前身最初是为了改进机器翻译的现有架构而开发的， 但此后应用范围不断扩大。它们被用于大规模自然语言处理、计算机视觉（视觉transformer（英语：Vision",
+          "title": "Transformer架构",
+          "url": "https://zh.wikipedia.org/wiki/Transformer%E6%9E%B6%E6%9E%84"
+        },
+        {
+          "rank": 3,
+          "snippet": "（NLP）領域的重大貢獻而知名。他是開創性論文《Attention Is All You Need》的合著者之一，該論文介紹了Transformer模型，這是一種使用自注意力機制的新型架構，自此成為NLP領域許多最先進模型的基礎。Transformer架構是語言模型的核心，為ChatGPT等應用提供",
+          "title": "阿西什·瓦斯瓦尼",
+          "url": "https://zh.wikipedia.org/wiki/%E9%98%BF%E8%A5%BF%E4%BB%80%C2%B7%E7%93%A6%E6%96%AF%E7%93%A6%E5%B0%BC"
+        },
+        {
+          "rank": 4,
+          "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 [cs.CL]. Ramachandran, Prajit;",
+          "title": "注意力机制",
+          "url": "https://zh.wikipedia.org/wiki/%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"
+        },
+        {
+          "rank": 5,
+          "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Archived copy. [2023-04-29]",
+          "title": "GPT-1",
+          "url": "https://zh.wikipedia.org/wiki/GPT-1"
+        },
+        {
+          "rank": 6,
+          "snippet": "Yihe; Cordonnier, Jean-Baptiste; Loukas, Andreas. Attention is not all you need: pure attention loses rank doubly exponentially with depth. 2021. arXiv:2103",
+          "title": "残差神经网络",
+          "url": "https://zh.wikipedia.org/wiki/%E6%AE%8B%E5%B7%AE%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C"
+        },
+        {
+          "rank": 7,
+          "snippet": "Uszkoreit, Jakob; Parmar, Niki; Shazeer, Noam; Vaswani, Ashish. Attention Is All You Need. 2017-06-12. arXiv:1706.03762 [cs.CL]. Horev, Rani. BERT Explained:",
+          "title": "BERT",
+          "url": "https://zh.wikipedia.org/wiki/BERT"
+        },
+        {
+          "rank": 8,
+          "snippet": "Transformer模型開發與自然語言處理技術。他現居於加州帕羅奧圖。 沙澤爾於2000年加入Google。他早期的重要成就之一，是改進了Google搜尋引擎的拼寫校正功能。2017年，沙澤爾是開創性論文《Attention Is All You Need",
+          "title": "諾姆·沙澤爾",
+          "url": "https://zh.wikipedia.org/wiki/%E8%AB%BE%E5%A7%86%C2%B7%E6%B2%99%E6%BE%A4%E7%88%BE"
+        },
+        {
+          "rank": 9,
+          "snippet": "线性注意力（英語：Linear Attention）是人工神经网络中用于降低注意力机制计算开销的一类方法。对比Transformer等模型，线性注意力通过重新表征查询与键之间的相似性，将序列信息聚合为更低维的中间表示，从而避免直接构造两两交互的完整注意力矩阵。在特征维度固定的条件下，其注意力层计算的时间复杂度可随序列长度线性增长。",
+          "title": "线性注意力",
+          "url": "https://zh.wikipedia.org/wiki/%E7%BA%BF%E6%80%A7%E6%B3%A8%E6%84%8F%E5%8A%9B"
+        },
+        {
+          "rank": 10,
+          "snippet": "Jones, Llion; Gomez, Aidan N.; Kaiser, Lukasz; Polosukhin, Illia. Attention Is All You Need. 2017-12-05. arXiv:1706.03762 . Devlin, Jacob; Chang, Ming-Wei;",
+          "title": "GPT (语言模型)",
+          "url": "https://zh.wikipedia.org/wiki/GPT_(%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B)"
+        }
+      ],
+      "source": "wikipedia_zh",
+      "started_at": "2026-11-14T10:48:16.294Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "Attention Is All You Need",
+          "url": "https://zh.wikipedia.org/wiki/Attention_Is_All_You_Need"
+        },
+        {
+          "title": "Transformer架构",
+          "url": "https://zh.wikipedia.org/wiki/Transformer%E6%9E%B6%E6%9E%84"
+        },
+        {
+          "title": "阿西什·瓦斯瓦尼",
+          "url": "https://zh.wikipedia.org/wiki/%E9%98%BF%E8%A5%BF%E4%BB%80%C2%B7%E7%93%A6%E6%96%AF%E7%93%A6%E5%B0%BC"
+        }
+      ]
+    },
+    {
+      "attempt_id": "a000011",
+      "attempt_state": "completed",
+      "elapsed_ms": 375,
+      "finished_at": "2026-11-14T10:48:24.694Z",
+      "hits": 0,
+      "http_status": 200,
+      "item_id": "p000011",
+      "query": "how tall is mount everest",
+      "query_id": "gen01",
+      "queue_ms": 6313,
+      "raw": "raw/a000011-231af22ee11477759d715e028dd26522a355f0a60d37103a95b3dd24e4f8004b.body.gz",
+      "response": {
+        "body_bytes": 178,
+        "body_sha256": "231af22ee11477759d715e028dd26522a355f0a60d37103a95b3dd24e4f8004b",
+        "content_bytes": 178,
+        "elapsed_ms": 375,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://zh.wikipedia.org/w/api.php?action=query&list=search&srsearch=how+tall+is+mount+everest&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:24 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000011-231af22ee11477759d715e028dd26522a355f0a60d37103a95b3dd24e4f8004b.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://zh.wikipedia.org/w/api.php"
+      },
+      "results": [],
+      "source": "wikipedia_zh",
+      "started_at": "2026-11-14T10:48:24.302Z",
+      "status": "empty",
+      "top": []
+    },
+    {
+      "attempt_id": "a000012",
+      "attempt_state": "completed",
+      "elapsed_ms": 375,
+      "finished_at": "2026-11-14T10:48:32.722Z",
+      "hits": 10,
+      "http_status": 200,
+      "item_id": "p000012",
+      "query": "台北101 高度",
+      "query_id": "gzh01",
+      "queue_ms": 7625,
+      "raw": "raw/a000012-d99187c79324f96802e864dcf9d4c811b6a09fabadfdc33e1091bd9635f13bd3.body.gz",
+      "response": {
+        "body_bytes": 6758,
+        "body_sha256": "d99187c79324f96802e864dcf9d4c811b6a09fabadfdc33e1091bd9635f13bd3",
+        "content_bytes": 6758,
+        "elapsed_ms": 375,
+        "encoding": "gzip",
+        "external_requests": 1,
+        "final_url": "https://zh.wikipedia.org/w/api.php?action=query&list=search&srsearch=%E5%8F%B0%E5%8C%97101+%E9%AB%98%E5%BA%A6&srlimit=10&format=json&utf8=1&srprop=snippet",
+        "headers": {
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sat, 14 Nov 2026 10:48:32 GMT"
+        },
+        "http_status": 200,
+        "raw_path": "raw/a000012-d99187c79324f96802e864dcf9d4c811b6a09fabadfdc33e1091bd9635f13bd3.body.gz",
+        "redirects": [],
+        "status": "ok",
+        "truncated": false,
+        "url": "https://zh.wikipedia.org/w/api.php"
+      },
+      "results": [
+        {
+          "rank": 1,
+          "snippet": "高度超過500公尺、樓層超過100層的建築物，不僅是世界上第一座高度超過半公里（約0.3英里）的建築物，也是全世界第11高建築物。其興建及經營機構為台北金融大樓公司。 台北101的建設計畫從1990年代開始展開，初名「台北國際金融中心」（英語：Taipei World",
+          "title": "台北101",
+          "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101"
+        },
+        {
+          "rank": 2,
+          "snippet": "(magazine)）》雜誌將此行動形容為都市建築結構中高度最高的徒手攀岩紀錄之一。 台北101高508米（1,667英尺），曾於2004年至2009年間為全球最高建築。截至2026年，該建築為全球第十一高摩天大樓，亦為臺灣最高建築。2004年，法國攀爬者阿蘭·羅貝爾曾於大雨中歷時四小時攀登台北101",
+          "title": "赤手獨攀台北101：直播",
+          "url": "https://zh.wikipedia.org/wiki/%E8%B5%A4%E6%89%8B%E7%8D%A8%E6%94%80%E5%8F%B0%E5%8C%97101%EF%BC%9A%E7%9B%B4%E6%92%AD"
+        },
+        {
+          "rank": 3,
+          "snippet": "賈永婕（1974年7月21日—），本名賈永媫，臺灣女藝人，曾任新聞記者、節目主持人，業餘三鐵運動愛好者。2024年9月，由行政院核定出任台北101董事長。 賈永婕生長於一個軍人4口的小康之家，父親賈大駿是中華民國海軍上校，曾任駐大韩民国武官。 母親台灣人 ，繼祖父曾任圓山大飯店圓山聯誼會秘書，曾祖",
+          "title": "賈永婕",
+          "url": "https://zh.wikipedia.org/wiki/%E8%B3%88%E6%B0%B8%E5%A9%95"
+        },
+        {
+          "rank": 4,
+          "snippet": "台北天空塔（英語：The Sky Taipei）是一座興建中的雙品牌飯店、百貨公司摩天大樓，位於臺灣臺北市信義區松智路與松壽路口。興建基地為原中國信托總部大樓及新舞臺拆除後的創意貨櫃市集COMMUNE A7。樓高280公尺，為臺北市第二高樓，高度僅次於台北101。",
+          "title": "台北天空塔",
+          "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97%E5%A4%A9%E7%A9%BA%E5%A1%94"
+        },
+        {
+          "rank": 5,
+          "snippet": "台北101垂直馬拉松（Taipei 101 Run Up，原名：台北101國際登高賽）是一場每年固定以台北101大樓作為比賽場地的登高賽。自2005年台北國際金融大樓（台北101）安檢到91樓部分合格後，為了要提昇台北101的國際知名度，經台北101與台灣體育界各代表商議後，於2005年首度辦理，",
+          "title": "台北101垂直馬拉松",
+          "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101%E5%9E%82%E7%9B%B4%E9%A6%AC%E6%8B%89%E6%9D%BE"
+        },
+        {
+          "rank": 6,
+          "snippet": "臺北市高樓列表列出市內高度超過120公尺的大樓，其中包含已建成以及興建中的大樓共63棟。台北101為臺北市內最高建築物，同時也是全台灣最高建築。 包含同案中不同棟別。 摩天大樓 摩天大樓列表 台灣摩天大樓列表 新北市高樓列表 桃園市高樓列表 臺中市高樓列表 臺南市高樓列表 高雄市高樓列表 {{Cite",
+          "title": "臺北市高樓列表",
+          "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%B8%82%E9%AB%98%E6%A8%93%E5%88%97%E8%A1%A8"
+        },
+        {
+          "rank": 7,
+          "snippet": "台北跨年晚會施放台北101煙火。當台北101在2005年的第一秒鐘成功施放煙火後，不僅是全球首次在摩天大樓上施放煙火，還以508公尺的高度成為當時世界煙火施放高度最高者，甚至吸引國際媒體報導並登上其網頁頭版，另外台北101跨年煙火表演也間接成為整場臺北最High新年城跨年晚會的重頭戲。",
+          "title": "臺北最High新年城",
+          "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E6%9C%80High%E6%96%B0%E5%B9%B4%E5%9F%8E"
+        },
+        {
+          "rank": 8,
+          "snippet": "台北101曾於2004年至2010年被列為全球最高摩天大樓，現在仍是臺灣第一高樓、唯一高度超過500公尺、樓層超過100層的建築物。 以下列表是根據已封頂和已完工摩天大樓之結構體或建築頂部高度作為排序；結構體或建築頂部高度",
+          "title": "台灣摩天大樓列表",
+          "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E7%81%A3%E6%91%A9%E5%A4%A9%E5%A4%A7%E6%A8%93%E5%88%97%E8%A1%A8"
+        },
+        {
+          "rank": 9,
+          "snippet": "？]為全球第219名的高樓，臺北市第三高樓（僅次於臺北101和台北天空塔）以及臺灣第四高樓（僅次於臺北101及高雄85大樓和台北天空塔），商場部分由微風廣場經營，於2019年1月10日正式開幕。 在台北南港展覽館1館開始營運後，台北世貿二館停用；台北市政府為活化資產提出以設定地上權的方式招商，於20",
+          "title": "臺北南山廣場",
+          "url": "https://zh.wikipedia.org/wiki/%E8%87%BA%E5%8C%97%E5%8D%97%E5%B1%B1%E5%BB%A3%E5%A0%B4"
+        },
+        {
+          "rank": 10,
+          "snippet": "483英尺）公尺（126層）超越了台北101的448米（1,470英尺）公尺的當時最高混凝土樓層高度。 2007年7月21日，杜拜塔超越了509.2米（1,671英尺）的台北101成為地表上最高的大樓（141層）。在那前一天，世界高層建築與都市人居學會（CTBUH）的代表Antony Wood聲明杜拜塔已超越了台北101的混凝土高度",
+          "title": "哈利法塔",
+          "url": "https://zh.wikipedia.org/wiki/%E5%93%88%E5%88%A9%E6%B3%95%E5%A1%94"
+        }
+      ],
+      "source": "wikipedia_zh",
+      "started_at": "2026-11-14T10:48:32.327Z",
+      "status": "ok",
+      "top": [
+        {
+          "title": "台北101",
+          "url": "https://zh.wikipedia.org/wiki/%E5%8F%B0%E5%8C%97101"
+        },
+        {
+          "title": "赤手獨攀台北101：直播",
+          "url": "https://zh.wikipedia.org/wiki/%E8%B5%A4%E6%89%8B%E7%8D%A8%E6%94%80%E5%8F%B0%E5%8C%97101%EF%BC%9A%E7%9B%B4%E6%92%AD"
+        },
+        {
+          "title": "賈永婕",
+          "url": "https://zh.wikipedia.org/wiki/%E8%B3%88%E6%B0%B8%E5%A9%95"
+        }
+      ]
+    }
+  ],
+  "run_id": "e61529fac4944363beb02f012ad7a02e",
+  "schema_version": 2,
+  "sources": {
+    "marginalia": {
+      "adapter_id": "marginalia_api",
+      "budget_key": "marginalia",
+      "capability": "web",
+      "enabled": false,
+      "id": "marginalia",
+      "index_family": "marginalia",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 2000,
+        "quota_window_seconds": 86400,
+        "request_quota": 500,
+        "shared_budget_key": "marginalia"
+      },
+      "params": {
+        "adapter": "marginalia_api",
+        "base_url": "https://api2.marginalia-search.com/search"
+      },
+      "provider": "marginalia",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": "https://about.marginalia-search.com/article/api"
+      }
+    },
+    "mwmbl": {
+      "adapter_id": "mwmbl_api",
+      "budget_key": "mwmbl",
+      "capability": "web",
+      "enabled": false,
+      "id": "mwmbl",
+      "index_family": "mwmbl",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 1000,
+        "quota_window_seconds": 86400,
+        "request_quota": 30,
+        "shared_budget_key": "mwmbl"
+      },
+      "params": {
+        "adapter": "mwmbl_api",
+        "base_url": "https://api.mwmbl.org/api/v2/search/"
+      },
+      "provider": "mwmbl",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": null
+      }
+    },
+    "wikipedia_en": {
+      "adapter_id": "wikipedia_api",
+      "budget_key": "wikimedia",
+      "capability": "encyclopedia",
+      "enabled": false,
+      "id": "wikipedia_en",
+      "index_family": "wikipedia_en",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 500,
+        "quota_window_seconds": 86400,
+        "request_quota": 2000,
+        "shared_budget_key": "wikimedia"
+      },
+      "params": {
+        "adapter": "wikipedia_api",
+        "base_url": "https://en.wikipedia.org/w/api.php",
+        "lang": "en"
+      },
+      "provider": "wikimedia",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": null
+      }
+    },
+    "wikipedia_zh": {
+      "adapter_id": "wikipedia_api",
+      "budget_key": "wikimedia",
+      "capability": "encyclopedia",
+      "enabled": false,
+      "id": "wikipedia_zh",
+      "index_family": "wikipedia_zh",
+      "kind": "api",
+      "limits": {
+        "max_concurrency": 1,
+        "min_interval_ms": 500,
+        "quota_window_seconds": 86400,
+        "request_quota": 2000,
+        "shared_budget_key": "wikimedia"
+      },
+      "params": {
+        "adapter": "wikipedia_api",
+        "base_url": "https://zh.wikipedia.org/w/api.php",
+        "lang": "zh"
+      },
+      "provider": "wikimedia",
+      "review": {
+        "approved_by": null,
+        "automated_access": "unverified",
+        "cache_policy": "unverified",
+        "checked_at": null,
+        "expires_at": null,
+        "payment_scheme": "unverified",
+        "redistribution_policy": "unverified",
+        "status": "candidate",
+        "terms_url": null
+      }
+    }
+  },
+  "status": "completed",
+  "summary": {
+    "marginalia": {
+      "answered_rate": 0.0,
+      "avg_hits_when_ok": 0.0,
+      "avg_ms": 1937,
+      "completed": 1,
+      "not_started_reasons": {
+        "service_stopped:rate_limited": 2
+      },
+      "ok_rate": 0.0,
+      "plan_states": {
+        "completed": 1,
+        "skipped": 2
+      },
+      "planned": 3,
+      "reason": null,
+      "requests": 1,
+      "statuses": {
+        "rate_limited": 1
+      },
+      "uncertain_reasons": {},
+      "verdict": "blocked"
+    },
+    "mwmbl": {
+      "answered_rate": 1.0,
+      "avg_hits_when_ok": 7.7,
+      "avg_ms": 880,
+      "completed": 3,
+      "not_started_reasons": {},
+      "ok_rate": 1.0,
+      "plan_states": {
+        "completed": 3
+      },
+      "planned": 3,
+      "reason": null,
+      "requests": 3,
+      "statuses": {
+        "ok": 3
+      },
+      "uncertain_reasons": {},
+      "verdict": "reachable"
+    },
+    "wikipedia_en": {
+      "answered_rate": 1.0,
+      "avg_hits_when_ok": 7.0,
+      "avg_ms": 843,
+      "completed": 3,
+      "not_started_reasons": {},
+      "ok_rate": 1.0,
+      "plan_states": {
+        "completed": 3
+      },
+      "planned": 3,
+      "reason": null,
+      "requests": 3,
+      "statuses": {
+        "ok": 3
+      },
+      "uncertain_reasons": {},
+      "verdict": "reachable"
+    },
+    "wikipedia_zh": {
+      "answered_rate": 1.0,
+      "avg_hits_when_ok": 10.0,
+      "avg_ms": 807,
+      "completed": 3,
+      "not_started_reasons": {},
+      "ok_rate": 0.67,
+      "plan_states": {
+        "completed": 3
+      },
+      "planned": 3,
+      "reason": null,
+      "requests": 3,
+      "statuses": {
+        "empty": 1,
+        "ok": 2
+      },
+      "uncertain_reasons": {},
+      "verdict": "reachable"
+    }
+  },
+  "updated_at": "2026-11-14T10:48:32.736Z"
+}
