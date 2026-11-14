@@ -5,7 +5,7 @@
 ## 已核验的集成基线
 
 - `main` 头：`358ae38`（Merge PR #23：CL-18 URL 身份格；此前依次为 #22 CL-11 全项 `cd35820`、#21 进程安全 `748c82a`、#20 CL-10 `c4d219f`、#19 misc5 `3dc8722`、#18 CL-17 `5389c0c`、#17 CL-08 `663fd91`、#16 CL-22 `7b3bd2c`）。
-- 全部以精确已验证 head merge-commit 合入；首轮失败按 D20 全记录（见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)第 1 表：PR #22 linux×2、PR #23 linux×1——后者为改动行格式门禁的首次真实拦截）。
+- 全部以精确已验证 head merge-commit 合入。首轮失败记录：PR #22 linux×2、PR #23 linux×1 见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)第 1 表；另有三次 windows-python 失败（PR #16/#19/#22 期间）当时漏记，已由 [记录更正](reviews/response-claude-2026-11-14-pre-s0.md) 补录（根因为 test_probe 时序假设，测试已修复）。自该批起按 D28 在合并前用 `filter=all` 核对全部尝试。
 - 原 2026-11-12 审核发现清单（CL-01–CL-22 + 复审新发现 CL-23–CL-26）中，列为阶段 1–5 的全部修复项均已合入 main。
 
 ## 正在进行的批次
