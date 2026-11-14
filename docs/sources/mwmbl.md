@@ -69,13 +69,49 @@ mwmbl 上游仓库提交 `cce49fa`（2026-11-13；`mwmbl/tinysearchengine/search
 
 ## 缓存与再分发
 
-developer 页面未见明确的缓存/再分发条款：`cache_policy`、
-`redistribution_policy` 在配置中维持 `unverified`，**不构成允许结论**；S0
-抓取样本回来后复核，再进入启用决定。
+**2026-11-15 补证（D-S0-3 要求的缓存许可依据，在线复核官方页面）：**
+
+- **mwmbl.org/terms（2026-11-15 复核）**：数据集以 **CC BY-NC-SA 4.0** 提供。
+  原文："Data submitted via the Crawling API is made available under the
+  CC BY-NC-SA 4.0 license, **consistent with the rest of the Mwmbl
+  dataset**."；爬取器收集的数据"considered part of the curated dataset and is
+  likewise made available under the CC BY-NC-SA 4.0"（除非受法律或第三方
+  权利限制）。软件本身为 AGPL-3.0（代码许可，与数据许可分开）。
+- **developer.mwmbl.org（2026-11-15 复核）**：未提及 API 响应缓存的专门
+  条款；配额事实与上文一致（匿名 1,000/月、1 req/s 按 IP；免费 key
+  2,000/月硬上限、5 req/s；按量 $5/1,000 需主动开启且有消费上限；超额
+  429），并新增事实：**配额每月 1 日重置**（"Quotas reset on the first of
+  each month"）。
+- **mwmbl.org 首页**：仅软件 AGPL-3.0 声明与版权行，未涉数据再分发。
+
+**口径推断（待审核方核定，非本记录自批）**：搜索响应内容派生自 CC
+BY-NC-SA 4.0 数据集；本项目自用（非商业）+ **个人本地缓存** 在 NC 许可
+范围内；对外输出按 `links_only`（title=URL、snippet 为空）不再分发数据集
+内容，URL 本身不构成版权表达。若未来输出摘要/标题，须落实 CC BY-NC-SA
+的署名、非商业与相同方式共享义务并重新审核。terms 页主文面向爬取贡献
+API，数据集许可条款为全库一致性表述；**不存在专门针对搜索 API 缓存的
+许可句**——依据来自数据集许可，不是来自明示的 API 缓存许可。
+
+`cache_policy`、`redistribution_policy` 的最终落库值由审核方在复审时
+按上述证据签署；本记录不构成启用许可。
+
+**D-R2-5 签署（2026-11-15）**：复审方已按上述入库证据签署受限合同——
+个人非商业本地搜索缓存（`cache_policy=allowed_with_limits`，保留来源与
+原链接，不含正文/图片采集、公开原始响应/摘要库/批量导出）+ 对外
+`redistribution_policy=links_only`；匿名 30/天、1000 ms 间隔、并发 1；
+`terms_url=https://mwmbl.org/terms`（接入/配额记录另见
+developer.mwmbl.org，许可链接 creativecommons.org/licenses/by-nc-sa/4.0）；
+`checked_at=2026-11-15T00:57:34+08:00`、`expires_at=2026-12-13T00:00:00+08:00`；
+`approved_by="Codex:codex-2026-11-15-post-s0-review:D-R2-5"`。完整合同
+JSON 与用途边界见裁决文件 D-R2-5 原文。30/天的月度保守估算（930/月）
+只在**所有相关消耗合并计算**时成立（probe、各输出目录、searchd、签收
+及其他自有客户端统筹；上游按 IP 计、每月 1 日重置、时区未记录）。
+签名在 CL-30 闭环（RF1-3 复审通过合入）前不构成激活许可。
 
 ## 结论
 
-候选（candidate），未启用。离线解析/状态测试通过（含 CL-27 的上游 schema
-重写夹具与 401/X-API-Key 回归）；条款额度事实如上。启用前提：
-用户 S0 实测通过 + 缓存/再分发条款复核 + approved_by 由用户
-（或其委托审核）签署。
+候选（candidate），未启用。S0 裁决（D-S0-3，2026-11-14）：三次真实成功
+响应解析通过，但 hold——待 F6 修复（401 经 search 路径归类 auth_failed，
+已在本批交付）与本节数据集许可依据审核签署后方可考虑 `enabled:true`；
+匿名额度维持 D23 口径（30/天）。启用前提：审核方对上述缓存/再分发口径
+签署 + approved_by 填写 + 前置修复合入。
