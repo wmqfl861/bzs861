@@ -11,7 +11,9 @@
 ## 正在进行的批次
 
 - S0 前修复批次（第四轮复审 CL-27/CL-29/CL-31/CL-28，按 D22）：mwmbl v2 适配器按上游 schema（SearXNG 对象 + X-API-Key + 401）更正、配额按 D23 统一 30/天；test_probe 时序测试冻结时钟修复并补记三次漏记的 windows-python 首轮失败；TLS 测试证书补 RFC 5280 扩展；`bzs call` 管理员操作自动选 admin 令牌。本批完成后 main 即为 S0 就绪态。
-- CL-30 批次（PR #26，work/cl30-20261114）：doctor 白名单化 + create_auth 先 ACL 后写入。第 2 轮复审（RF1-RF3，docs/reviews/codex-2026-11-15-post-s0-review.md）后补修：秘密经同一独占 fd 写入（路径替换不落秘密）、核验一律走 SID 级 audit_path（废弃账户名 icacls 回退）、`protected=False` 判失败；新 head 待第 3 轮复审，通过前不合入。
+- F6/F7 修复（PR #27，work/source-fixes-f6f7-20261114）：mwmbl 401 经真实 search 路径归类 auth_failed（check 路径 + probe 停源回归）、marginalia 503 冷却取 max(10 分钟, Retry-After）。第 2 轮复审 RF6 验收通过。旧代码反证口径：4 个新测试中 3 个在旧实现上失败，probe 停源测试验证的是既有保护行为（非反证）。
+- S0 结果与裁决归档（本 PR，work/s0-results-20261114 → main）：用户 S0 run e61529fa 的结果目录、Codex S0 裁决（1310cc0 原样入库）、7 份 API 候选草案、F2 证据归位与标准回放（817ecef，passed 10/10、身份一致、零网络）。归档合入不使任何草案成为获批合同（D-S0-6..13、D-R2-6）。
+- CL-30 批次（PR #26，work/cl30-20261114）：doctor 白名单化 + create_auth 先 ACL 后写入；RF1-RF3 补修（同一独占 fd 写入、SID 级核验、protected=False 判失败）已过第 3 轮复审（docs/reviews/codex-2026-11-15-cl30-round3.md），无新增阻塞。
 
 ## 下一步与用户待办
 

@@ -92,3 +92,41 @@ async def test_mwmbl_key_travels_in_the_x_api_key_header(monkeypatch):
     await adapter.search("fixture query", 5, None, 5)
     assert fetcher.calls[1]["headers"]["X-API-Key"] == "fixture-free-key"
     assert "Authorization" not in fetcher.calls[1]["headers"]
+
+
+class _StatusFetcher(RecordingFetcher):
+    """RecordingFetcher always answers 200; this one lets a test choose the
+    HTTP status so the 4xx FetchResult is built the way fetch.py builds it
+    (status="http_error")."""
+
+    def __init__(self, body, status):
+        super().__init__(body)
+        self.http_status = status
+
+    async def fetch(self, url, params=None, timeout_s=None, accept=None, headers=None, **kw):
+        self.calls.append({"url": url, "params": params, "accept": accept, "headers": headers})
+        return res(self.body, status=self.http_status)
+
+
+async def test_mwmbl_401_is_auth_failed_through_the_real_search_path(monkeypatch):
+    # F6: fetch marks every >=400 response status="http_error", and the old
+    # auth_failed branch lived in parse(), which Adapter.search never reaches
+    # once check() raises - so a real 401 surfaced as http_error. The
+    # classification must hold on the check path, end to end.
+    monkeypatch.setenv("BZS_MWMBL_KEY", "fixture-bad-key")
+    fetcher = _StatusFetcher('{"error":"invalid api key"}', 401)
+    adapter = Mwmbl({"id": "mwmbl", "params": {}}, fetcher)
+    with pytest.raises(SourceError) as exc:
+        await adapter.search("fixture query", 5, None, 5)
+    assert exc.value.status == "auth_failed"
+    assert exc.value.http_status == 401
+    # search() attaches the raw result so probe evidence survives the failure.
+    assert exc.value.result is not None and exc.value.result.http_status == 401
+
+
+def test_mwmbl_401_via_check_plus_parse_is_auth_failed():
+    # Same real fetch construction through the run() helper (check + parse),
+    # which the pre-F6 code turned into http_error.
+    with pytest.raises(SourceError) as exc:
+        run(Mwmbl, '{"error":"invalid api key"}', status=401)
+    assert exc.value.status == "auth_failed" and exc.value.http_status == 401
