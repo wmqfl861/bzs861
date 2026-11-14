@@ -10,19 +10,36 @@ import re
 import secrets
 
 def write_exclusive(path: Path, value: str) -> None:
+    """Create ``path`` exclusively, protect it, and only then write the secret.
+
+    CL-30: the previous order wrote the secret first and applied the ACL
+    afterwards, so a protection failure left an unprotected secret on disk.
+    Now the file is created empty and exclusive (refusing to overwrite), the
+    restrictive ACL is applied and verified, and the secret is written only
+    after that succeeds. On any failure the still-empty file is removed
+    best-effort and the error is raised: no secret is ever written without a
+    confirmed restrictive ACL. On POSIX the 0o600 creation mode already
+    restricts readers to the owner.
+    """
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+    os.close(fd)
+    try:
+        if os.name == 'nt':
+            protect_windows(path)
+            verify_windows(path)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+    with open(path, 'w', encoding='utf-8') as stream:
         stream.write(value)
-    if os.name == 'nt':
-        protect_windows(path)
 
 def protect_windows(path: Path) -> None:
     """CL-08: on Windows the 0o600 mode above is ignored; set a protected DACL.
 
     Prefers the ctypes implementation from the bzs package (identical to
     `bzs init`); when the script runs outside an installed bzs, fall back to
-    icacls by account name. Any failure is fatal and loud: the file stays on
-    disk and the operator is told the ACL could not be protected.
+    icacls by account name. Any failure is fatal and loud: the operator is
+    told the ACL could not be protected.
     """
     import subprocess
     try:
@@ -38,6 +55,32 @@ def protect_windows(path: Path) -> None:
                             capture_output=True, text=True)
     if result.returncode != 0:
         raise SystemExit(f'E_LOCAL_SECURITY: icacls could not protect {path}: {result.stderr.strip()}')
+
+def verify_windows(path: Path) -> None:
+    """CL-30: confirm the restrictive ACL before any secret is written.
+
+    With the bzs package available this re-reads the real DACL through
+    ``winsecurity.audit_path`` and requires a protected, problem-free result.
+    In the icacls fallback branch the same intent is checked against the
+    icacls output: both grants present and no inherited ACEs. A file whose
+    protection cannot be confirmed never receives the secret.
+    """
+    import subprocess
+    try:
+        from bzs import winsecurity
+    except ImportError:
+        winsecurity = None
+    if winsecurity is not None:
+        protected, problems = winsecurity.audit_path(path)
+        if protected is None or problems:
+            raise SystemExit(f'E_LOCAL_SECURITY: could not confirm a restrictive ACL on {path}: '
+                             f'{"; ".join(problems) or "DACL unreadable"}')
+        return
+    result = subprocess.run(['icacls', str(path)], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f'E_LOCAL_SECURITY: icacls could not re-read the ACL on {path}: {result.stderr.strip()}')
+    if '(I)' in result.stdout:
+        raise SystemExit(f'E_LOCAL_SECURITY: inherited ACEs remain on {path}:\n{result.stdout.strip()}')
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)
