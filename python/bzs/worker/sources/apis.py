@@ -220,10 +220,12 @@ class Marginalia(JsonApi):
 class Mwmbl(JsonApi):
     """Mwmbl public v2 search API (https://api.mwmbl.org/api/v2/search/?q=).
 
-    The documented response is a top-level JSON array of result objects
-    (title, url, extract) - not the object shape the other JSON APIs use, so
-    this adapter parses it strictly itself. Terms and quota facts are recorded
-    in docs/sources/mwmbl.md; anonymous access is the S0 path (D15) and an
+    The v2 endpoint answers in a SearXNG-compatible object (SearchResponse:
+    query/results/...; each result has url, title and content as plain
+    strings) and authenticates with an X-API-Key header, rejecting invalid
+    keys with HTTP 401 - facts verified against the upstream repository at
+    commit cce49fa (mwmbl/tinysearchengine/search.py, mwmbl/format.py);
+    see docs/sources/mwmbl.md. Anonymous access is the S0 path (D15); an
     optional free API key only raises the monthly quota, never a paid tier.
     """
     default_base = "https://api.mwmbl.org/api/v2/search/"
@@ -232,31 +234,42 @@ class Mwmbl(JsonApi):
         headers = {"User-Agent": API_USER_AGENT}
         key = os.environ.get(self.params.get("key_env", "BZS_MWMBL_KEY"), "")
         if key:
-            headers["Authorization"] = f"Bearer {key}"
+            headers["X-API-Key"] = key
         # Only the q parameter is documented for v2; the result count is capped
         # locally by Adapter.search instead of an undocumented limit parameter.
         return await self.fetcher.fetch(self.base_url, params={"q": query},
                                         timeout_s=timeout_s, accept="application/json", headers=headers)
 
     def parse(self, res, query, limit):
-        # Strict array parsing with the same guards as JsonApi.json (duplicate
+        if res.http_status == 401:
+            # Upstream rejects invalid API keys with 401 (search.py:343 at
+            # cce49fa). A bad key is not a transient error: stop spending
+            # this source's remaining budget via the error cooldown.
+            raise SourceError("auth_failed", "mwmbl rejected the API key (HTTP 401)", 401)
+        # Strict object parsing with the same guards as JsonApi.json (duplicate
         # keys and non-finite values are rejected), applied to the documented
-        # top-level array instead of an object.
+        # SearXNG-shaped response instead of a generic object.
         try:
             data = json.loads(self.text(res), object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
         except (ValueError, RecursionError) as exc:
             raise SourceError("parse_error", f"invalid JSON: {exc}", res.http_status) from exc
-        if not isinstance(data, list):
-            raise SourceError("parse_error", "Mwmbl response must be an array", res.http_status)
-        if len(data) > 1000:
-            raise SourceError("parse_error", "Mwmbl response array is too long", res.http_status)
+        if not isinstance(data, dict):
+            raise SourceError("parse_error", "Mwmbl v2 response must be an object", res.http_status)
+        results = data.get("results")
+        if not isinstance(results, list):
+            raise SourceError("parse_error", "Mwmbl v2 response requires a results array", res.http_status)
+        if len(results) > 1000:
+            raise SourceError("parse_error", "Mwmbl v2 results array is too long", res.http_status)
         hits = []
-        for item in data:
+        for item in results:
             if not isinstance(item, dict):
-                raise SourceError("parse_error", "Mwmbl results must be objects", res.http_status)
+                raise SourceError("parse_error", "Mwmbl v2 results must be objects", res.http_status)
             url = self.text_field(item, "url", res, required=True)
             if not url.startswith(("http://", "https://")):
                 continue
+            content = item.get("content")
+            if content is not None and not isinstance(content, str):
+                raise SourceError("parse_error", "Mwmbl v2 result content must be a string", res.http_status)
             hits.append(Hit(url, clean_text(self.text_field(item, "title", res, required=True)),
-                            clean_text(self.text_field(item, "extract", res), 400), len(hits) + 1))
+                            clean_text(content, 400), len(hits) + 1))
         return hits

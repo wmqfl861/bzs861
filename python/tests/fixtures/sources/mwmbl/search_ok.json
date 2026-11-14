@@ -1,6 +1,37 @@
-[
-  {"title": "Mwmbl - the free, open, non-profit search engine", "url": "https://mwmbl.org/", "extract": "Mwmbl is a community-driven, non-profit search engine whose index anyone can crawl and improve."},
-  {"title": "Mwmbl API   <b>documentation</b>", "url": "https://developer.mwmbl.org/", "extract": "Search endpoint: GET /api/v2/search/?q=   with   extra   spacing."},
-  {"title": "App deeplink row", "url": "app://deeplink/x", "extract": "Non-web scheme rows are dropped."},
-  {"title": "Crawl and contribute", "url": "http://mwmbl.org/contribute", "extract": "Crawl pages and submit results to the index."}
-]
+{
+  "query": "fixture",
+  "number_of_results": 3,
+  "results": [
+    {
+      "url": "https://mwmbl.org/",
+      "title": "Mwmbl - the free, open, non-profit search engine",
+      "content": "Mwmbl is a community-driven, non-profit search engine whose index anyone can crawl and improve.",
+      "engine": "mwmbl",
+      "score": 1.5
+    },
+    {
+      "url": "https://developer.mwmbl.org/",
+      "title": "Mwmbl API   <b>documentation</b>",
+      "content": "Search endpoint: GET /api/v2/search/?q=   with   extra   spacing.",
+      "engine": "mwmbl",
+      "score": 1.2
+    },
+    {
+      "url": "app://deeplink/x",
+      "title": "App deeplink row",
+      "content": "Non-web scheme rows are dropped.",
+      "engine": "mwmbl",
+      "score": 0.8
+    },
+    {
+      "url": "http://mwmbl.org/contribute",
+      "title": "Crawl and contribute",
+      "content": "Crawl pages and submit results to the index.",
+      "engine": "mwmbl",
+      "score": 0.7
+    }
+  ],
+  "images": [],
+  "monthly_usage": 3,
+  "monthly_limit": 1000
+}
