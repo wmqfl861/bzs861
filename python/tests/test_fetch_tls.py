@@ -65,14 +65,28 @@ def _identity(common_name: str) -> x509.Name:
 
 
 def _certificate(subject: x509.Name, issuer: x509.Name, public_key, signing_key,
-                 *, ca: bool, san: str | None = None) -> x509.Certificate:
+                 *, ca: bool, san: str | None = None,
+                 sign_key=None, sign_public_key=None) -> x509.Certificate:
+    # RFC 5280 extensions (CL-31): Python 3.13 enables VERIFY_X509_STRICT by
+    # default, which rejects certificates without SubjectKeyIdentifier and
+    # AuthorityKeyIdentifier. The CA additionally declares its KeyUsage.
     now = datetime.datetime.now(datetime.timezone.utc)
+    ski = x509.SubjectKeyIdentifier.from_public_key(public_key)
     builder = (x509.CertificateBuilder().subject_name(subject).issuer_name(issuer)
                .public_key(public_key).serial_number(x509.random_serial_number())
                .not_valid_before(now - datetime.timedelta(days=1))
-               .not_valid_after(now + datetime.timedelta(days=2)))
+               .not_valid_after(now + datetime.timedelta(days=2))
+               .add_extension(ski, critical=False))
+    issuer_key = sign_key if sign_key is not None else signing_key
+    issuer_pub = sign_public_key if sign_public_key is not None else public_key
+    builder = builder.add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_pub),
+                                    critical=False)
     if ca:
-        builder = builder.add_extension(x509.BasicConstraints(ca=True, path_length=1), critical=True)
+        builder = (builder.add_extension(x509.BasicConstraints(ca=True, path_length=1), critical=True)
+                   .add_extension(x509.KeyUsage(digital_signature=True, content_commitment=False,
+                                                key_encipherment=False, data_encipherment=False,
+                                                key_agreement=False, key_cert_sign=True, crl_sign=True,
+                                                encipher_only=False, decipher_only=False), critical=True))
     if san is not None:
         builder = builder.add_extension(x509.SubjectAlternativeName([x509.DNSName(san)]), critical=False)
     return builder.sign(signing_key, hashes.SHA256())
@@ -88,7 +102,7 @@ def pki(tmp_path_factory):
                                ca_key.public_key(), ca_key, ca=True)
         leaf_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         leaf_cert = _certificate(_identity(CERT_HOST), ca_cert.subject, leaf_key.public_key(), ca_key,
-                                 ca=False, san=CERT_HOST)
+                                 ca=False, san=CERT_HOST, sign_public_key=ca_key.public_key())
         base = tmp_path_factory.mktemp(name)
         (base / "ca.pem").write_bytes(ca_cert.public_bytes(serialization.Encoding.PEM))
         (base / "server.pem").write_bytes(
