@@ -1,6 +1,6 @@
 # bzs861 当前入口（唯一）
 
-更新：2026-11-14（S0 前修复批次完成，待用户运行 S0）
+更新：2026-11-15（S0 已由 Codex 裁决；CL-30/F6/F7/F2 落地批次待复审合入）
 
 ## 已核验的集成基线
 
@@ -8,19 +8,27 @@
 - 全部以精确已验证 head merge-commit 合入。首轮失败记录：PR #22 linux×2、PR #23 linux×1 见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)第 1 表；另有三次 windows-python 失败（PR #16/#19/#22 期间）当时漏记，已由 [记录更正](reviews/response-claude-2026-11-14-pre-s0.md) 补录（根因为 test_probe 时序假设，测试已修复）。自该批起按 D28 在合并前用 `filter=all` 核对全部尝试。
 - 原 2026-11-12 审核发现清单（CL-01–CL-22 + 复审新发现 CL-23–CL-26）中，列为阶段 1–5 的全部修复项均已合入 main。
 
-## 正在进行的批次
+## S0 裁决结论（2026-11-14，[Codex 裁决](reviews/codex-2026-11-14-s0-review.md)，11 发现 + D-S0-1..16）
 
-- S0 前修复批次（第四轮复审 CL-27/CL-29/CL-31/CL-28，按 D22）：mwmbl v2 适配器按上游 schema（SearXNG 对象 + X-API-Key + 401）更正、配额按 D23 统一 30/天；test_probe 时序测试冻结时钟修复并补记三次漏记的 windows-python 首轮失败；TLS 测试证书补 RFC 5280 扩展；`bzs call` 管理员操作自动选 admin 令牌。本批完成后 main 即为 S0 就绪态。
+- **来源启用裁决**：marginalia hold（需个人 key 成功 S0 + F7 修复）；mwmbl hold（需 F6 修复 + 缓存许可依据，均已在本批交付，待复审签署）；wikipedia_en / wikipedia_zh **enable（限 links_only）**，前置 CL-30 + F2 + 合同落库（D-S0-4/5 已给专属签名与配额：en/zh 共享 wikimedia 预算 2,000/天）。
+- **实测核验**：10 份原始响应体（9×200 + 1×429）在内存按报告解析器身份回放 10/10 一致；mwmbl 平均 7.7 为 40/21/3 截断后的平均数；zh 的 1 次 empty 为上游合法空集（totalhits=0）。
+- **闸门**：CL-30 放行；S1 签收仍受阻（需最终清单下用户小规模复探，F9 哈希绑定）；7 个 API 草案全部维持候选，接入顺序 arxiv→hackernews→github→stackoverflow→crossref→openalex→gdelt，全部排在 S1 后；D26 测量/重构冻结继续。
+
+## 正在进行的批次（S0 裁决落地，待 Codex 复审后合入）
+
+- **CL-30**（D-S0-14，分支 work/cl30-20261114）：doctor 白名单化（只允许当前用户/SYSTEM/BUILTIN\Administrators 读秘密，其余任意 SID 可读即报错）；create_auth 改为独占建空文件→保护→确认 ACL→才写秘密，失败不留 token 字节。
+- **F6/F7**（D-S0-3/2 前置，分支 work/source-fixes-f6f7-20261114）：mwmbl 401 经真实 search 路径归类 auth_failed（check 路径，三层回归）；marginalia 503 冷却取 max(10 分钟, Retry-After) 且不再写死共享 key 诊断。
+- **F2**（分支 work/s0-results-20261114 提交 817ecef）：10 份响应体归位 results/raw/（字节未变），标准离线回放 passed 10/10。
+- **mwmbl 缓存条款补证**（本批 docs）：mwmbl.org/terms 明示数据集 CC BY-NC-SA 4.0；个人本地缓存 + links_only 口径待复审签署。
 
 ## 下一步与用户待办
 
-- **下一步 = 用户运行 S0**：按 [S0_COMMAND.md](S0_COMMAND.md) 在自己机器上运行 D1 四来源探测（marginalia 可按 D15 先用共享 `public` key；**probe 退出 0 ≠ 来源获批**），把打印的结果目录交回审核方。S0 结果审完之前不启用任何来源、不开 CL-30 以外的新任务。
-- 同时可发：给 marginalia 的免费非商业 key 申请邮件。
-- S0 后顺序（D24）：审核 S0 结果给出启用决定 → CL-30 小批次（doctor 白名单、create_auth 先 ACL 后写入）→ 按结论启用来源 → 用户在自己机器上完整运行 `tools/accept_s1.py`（九条蓝图标准逐条 PASS 才 exit 0；检测到共享 key 直接 FAIL）。
+- Codex 复审本批（CL-30/F6/F7/缓存依据）→ 通过后按精确 SHA 合入 → 若 mwmbl 获签署则激活 mwmbl + wikipedia_en/zh（links_only）→ 冻结最终清单 → **用户小规模复探（新目录，每源至少 1 次真实非空 ok）** → 用户完整运行 `tools/accept_s1.py`。
+- 用户可发：marginalia 免费 key 申请邮件（可选，仅当要启用 marginalia）。
 
 ## 待决事项
 
-无。D1–D21 按复审推荐执行完毕；本阶段新增技术决策均经用户指定的 Codex（gpt-6-astra/max）裁定，裁定与执行记录见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)。
+无。D1–D28 执行完毕；S0 裁决与后续技术决策均经用户指定的 Codex（gpt-6-astra/max）裁定。转私有仓库 + SearXNG 引擎移植的时序（用户已同意方向）建议放在 S1 签收之后执行，盘点见 work/searxng-port-prep-20261114 分支。
 
 ## 长期规则
 
