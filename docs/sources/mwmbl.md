@@ -95,6 +95,19 @@ API，数据集许可条款为全库一致性表述；**不存在专门针对搜
 `cache_policy`、`redistribution_policy` 的最终落库值由审核方在复审时
 按上述证据签署；本记录不构成启用许可。
 
+**D-R2-5 签署（2026-11-15）**：复审方已按上述入库证据签署受限合同——
+个人非商业本地搜索缓存（`cache_policy=allowed_with_limits`，保留来源与
+原链接，不含正文/图片采集、公开原始响应/摘要库/批量导出）+ 对外
+`redistribution_policy=links_only`；匿名 30/天、1000 ms 间隔、并发 1；
+`terms_url=https://mwmbl.org/terms`（接入/配额记录另见
+developer.mwmbl.org，许可链接 creativecommons.org/licenses/by-nc-sa/4.0）；
+`checked_at=2026-11-15T00:57:34+08:00`、`expires_at=2026-12-13T00:00:00+08:00`；
+`approved_by="Codex:codex-2026-11-15-post-s0-review:D-R2-5"`。完整合同
+JSON 与用途边界见裁决文件 D-R2-5 原文。30/天的月度保守估算（930/月）
+只在**所有相关消耗合并计算**时成立（probe、各输出目录、searchd、签收
+及其他自有客户端统筹；上游按 IP 计、每月 1 日重置、时区未记录）。
+签名在 CL-30 闭环（RF1-3 复审通过合入）前不构成激活许可。
+
 ## 结论
 
 候选（candidate），未启用。S0 裁决（D-S0-3，2026-11-14）：三次真实成功

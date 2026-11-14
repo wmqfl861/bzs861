@@ -3,6 +3,17 @@
 对应 [Codex S0 裁决](codex-2026-11-14-s0-review.md)"给执行方的指令"第 1–4 步。
 本文件按指令顺序逐条陈述执行结果与证据位置，供复审。
 
+**2026-11-15 更正（按第 2 轮复审 RF4）**：①下文 CL-30 第 2 项所述"确认
+ACL、拒绝覆盖"的完整性被 RF1–RF3 反证——当时版本在验证后按路径重开、
+icacls 回退核验非 SID 级、`protected=False` 被放行；三项已在 PR #26 新
+head `eba3507` 补修（同 fd 绑定写入、核验一律 SID 级、False 判失败），
+**第 2 轮复审时点 CL-30 未验收完成，本文件原表述"已交付"应读作"已提交
+待复审"**。②指令 4 第 3 项"新测试全部经 RED"不准确：4 个新测试中 3 个
+（Mwmbl 401×2、Marginalia 503×1）在旧实现上失败；
+test_auth_failed_stops_the_source_budget_and_survives_resume 注入既成
+SourceError、验证的是既有 probe 停止/恢复行为，属保护性回归而非反证。
+③基线口径：本批三个 PR 的共同基线为 main=`1897398`。
+
 ## 指令 1：归档裁决和纠正状态入口
 
 - 裁决文件已原样入库：work/s0-results-20261114 提交 `1310cc0`
