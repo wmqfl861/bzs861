@@ -236,11 +236,18 @@ def cmd_mcp_token(args) -> int:
     return 0
 
 
+# Operations the core gates behind an administrator token (service.cpp);
+# `bzs call` picks admin_token() for these so a split-token home (CL-08)
+# does not get E_FORBIDDEN, while everything else keeps the owner token.
+_ADMIN_ONLY_OPERATIONS = frozenset({"backup.create", "principal.revoke"})
+
+
 def cmd_call(args) -> int:
     cfg = config.load()
     params = json.loads(args.params) if args.params else {}
+    token = config.admin_token() if args.operation in _ADMIN_ONLY_OPERATIONS else None
     try:
-        print(json.dumps(_client(cfg).call_sync(args.operation, params), ensure_ascii=False, indent=2))
+        print(json.dumps(_client(cfg, token).call_sync(args.operation, params), ensure_ascii=False, indent=2))
         return 0
     except CoreError as exc:
         print(str(exc), file=sys.stderr)
