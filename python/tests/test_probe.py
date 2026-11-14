@@ -176,10 +176,25 @@ async def test_resume_continues_only_unreserved_work_with_the_same_quota(tmp_pat
     task = asyncio.create_task(run_probe(manifest, golden, out, delay_s=0.2))
     try:
         await asyncio.wait_for(completed.wait(), 2)
+        # CL-29: the probe paces by time-since-last-start, and the scripted
+        # offline adapter yields no network I/O. If the three checkpoint
+        # writes after the first query take longer than the 200 ms gap on a
+        # slow filesystem (Windows runners do this ~9% of the time), the
+        # second query starts without ever awaiting, and this cancel lands
+        # after it — flaking the assertion below with completed, completed,
+        # skipped. Freeze the clock across the interrupt so the gap is always
+        # still owed when control returns to the probe loop; the cancel then
+        # provably hits the waiting period on every machine. Restored before
+        # the resume run (monkeypatch.undo() would also undo the scripted
+        # fixture, so restore the single attribute explicitly).
+        real_now_ms = probe_module._now_ms
+        frozen = [real_now_ms()]
+        monkeypatch.setattr(probe_module, "_now_ms", lambda: frozen[0])
     finally:
         task.cancel()
         with pytest.raises(asyncio.CancelledError):
             await task
+        monkeypatch.setattr(probe_module, "_now_ms", real_now_ms)
     interrupted = read_report(out)
     assert [item["state"] for item in interrupted["plan"]] == ["completed", "pending", "pending"]
     assert interrupted["budgets"]["ddg"]["used"] == 1
