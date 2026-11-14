@@ -20,11 +20,20 @@ import subprocess
 from pathlib import Path
 
 SYSTEM_SID = "S-1-5-18"
-# Accounts that must never be granted read access to a secret (CL-08).
-BROAD_READ_SIDS = {
+ADMINISTRATORS_SID = "S-1-5-32-544"
+# Display names for diagnostics only (CL-30). The audit itself is allowlist
+# based: any allow-ACE that grants read to a principal outside
+# _allowed_read_sids() is flagged, so an unknown SID can never slip through by
+# merely being absent from this name map.
+WELL_KNOWN_SID_NAMES = {
     "S-1-1-0": "Everyone",
-    "S-1-5-32-545": "BUILTIN\\Users",
+    "S-1-5-4": "INTERACTIVE",
     "S-1-5-11": "Authenticated Users",
+    "S-1-5-18": "NT AUTHORITY\\SYSTEM",
+    "S-1-5-32-544": "BUILTIN\\Administrators",
+    "S-1-5-32-545": "BUILTIN\\Users",
+    "S-1-5-32-546": "BUILTIN\\Guests",
+    "S-1-15-2-1": "ALL APPLICATION PACKAGES",
 }
 
 _ACCESS_ALLOWED_ACE_TYPE = 0x0
@@ -296,20 +305,43 @@ def _grants_read(mask: int) -> bool:
     return bool(mask & (_GENERIC_READ | _FILE_READ_BITS | _GENERIC_ALL))
 
 
+def _allowed_read_sids() -> set[str]:
+    """Only these principals may keep read access to a secret (CL-30).
+
+    The current process user, LOCAL_SYSTEM and BUILTIN\\Administrators. A
+    failure to determine the current user is fatal: without it the allowlist
+    cannot be evaluated, so callers must treat the whole audit as failed
+    (fail closed) instead of guessing.
+    """
+    return {SYSTEM_SID, ADMINISTRATORS_SID, _current_user()["sid_string"]}
+
+
 def audit_path(path: Path) -> tuple[bool | None, list[str]]:
     """Doctor helper: (inheritance broken?, problems).
 
     ``protected`` is None when the DACL could not be read; unreadable is a
     problem in itself, never a pass.
+
+    CL-30: the check is allowlist based. Any access-allowed ACE that grants
+    read to a principal other than the current user, SYSTEM or
+    BUILTIN\\Administrators is a problem, whatever the SID is; deny ACEs and
+    allow-ACEs without read bits restrict rather than widen, so they are not
+    flagged.
     """
     path = Path(path)
     try:
         protected, entries = read_dacl(path)
     except WindowsSecurityError as exc:
         return None, [f"cannot read DACL: {exc}"]
+    try:
+        allowed = _allowed_read_sids()
+    except WindowsSecurityError as exc:
+        return None, [f"cannot determine the current user SID: {exc}"]
     problems = []
     for sid, mask, ace_type, _flags in entries:
-        name = BROAD_READ_SIDS.get(sid)
-        if name and ace_type == _ACCESS_ALLOWED_ACE_TYPE and _grants_read(mask):
+        if ace_type != _ACCESS_ALLOWED_ACE_TYPE or not _grants_read(mask):
+            continue
+        if sid not in allowed:
+            name = WELL_KNOWN_SID_NAMES.get(sid, "unrecognized principal")
             problems.append(f"{name} ({sid}) can read this secret")
     return protected, problems
