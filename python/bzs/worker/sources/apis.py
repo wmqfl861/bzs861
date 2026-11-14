@@ -204,7 +204,13 @@ class Marginalia(JsonApi):
 
     def check(self, res):
         if res.http_status == 503:
-            raise SourceError("rate_limited", "shared public key is rate limited", 503, 600000)
+            # F7: upstream answers overload with 503; honor a longer
+            # Retry-After instead of forcing the 10-minute local default. The
+            # SourceError constructor clamps to SOURCE_RETRY_AFTER_LIMIT_MS.
+            # The reason is not hardcoded to the shared key: a personal key
+            # can hit the same status.
+            raise SourceError("rate_limited", "upstream rate limited or unavailable (HTTP 503)", 503,
+                              max(600000, retry_after_ms(res.headers)))
         super().check(res)
 
     def parse(self, res, query, limit):
@@ -229,6 +235,15 @@ class Mwmbl(JsonApi):
     optional free API key only raises the monthly quota, never a paid tier.
     """
     default_base = "https://api.mwmbl.org/api/v2/search/"
+
+    def check(self, res):
+        if res.http_status == 401:
+            # F6: fetch marks every 4xx as status="http_error", so the base
+            # check() would raise http_error before parse() could classify the
+            # key rejection. auth_failed must come from the real search path:
+            # a bad key is not transient and stops this source's budget.
+            raise SourceError("auth_failed", "mwmbl rejected the API key (HTTP 401)", 401)
+        super().check(res)
 
     async def request(self, query, limit, language, timeout_s):
         headers = {"User-Agent": API_USER_AGENT}
