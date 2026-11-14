@@ -389,6 +389,21 @@ def test_json_apis():
         run(Marginalia, "busy", status=503, ctype="text/plain")
     assert e.value.status == "rate_limited"
 
+
+def test_marginalia_503_honors_a_longer_upstream_retry_after():
+    # F7: the 503 branch used to force the 10-minute local cooldown and ignore
+    # a longer upstream Retry-After. The cooldown is now the larger of the
+    # local default and the header (clamped by SourceError to 24h).
+    with pytest.raises(SourceError) as exc:
+        run(Marginalia, "busy", status=503, ctype="text/plain", headers={"retry-after": "3600"})
+    assert exc.value.status == "rate_limited" and exc.value.retry_after_ms == 3_600_000
+    with pytest.raises(SourceError) as exc:
+        run(Marginalia, "busy", status=503, ctype="text/plain", headers={"retry-after": "60"})
+    assert exc.value.retry_after_ms == 600_000
+    with pytest.raises(SourceError) as exc:
+        run(Marginalia, "busy", status=503, ctype="text/plain")
+    assert exc.value.retry_after_ms == 600_000
+
 @pytest.mark.parametrize("adapter,body", [
     (Wikipedia, {}), (Wikipedia, {"query": {}}),
     (Wikipedia, {"query": {"search": {}}}),
