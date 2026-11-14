@@ -30,3 +30,12 @@ Python worker/MCP 的新增平台覆盖按实际工作流和报告单独记录�
 优雅退出、Python 进程清理、worker/MCP 全链路、受控网络边界、升级/恢复演练和安装包仍需按对应切片完成。SQLite 的持久设置不能代替断电测试；备份在所有平台都保持隔离，不能绕过撤销连续性检查。
 
 正式打包前执行干净安装、旧数据迁移、离线/网络适用套件、平台权限和退出回归，再签 S9 RELEASE-01。
+
+## 备份与管理操作的令牌选择（CL-28）
+
+CL-08 之后，新初始化的 home 有两个令牌：`api.token`（owner，非管理员，`bzs call` 与
+MCP 的默认选择）和 `admin.token`（仅 CLI 管理命令）。核心要求 `backup.create` 与
+`principal.revoke` 必须由管理员令牌发起（`src/service.cpp`）。`bzs call` 会在这两个
+操作上自动改用 `admin.token`，其余操作仍用 owner 令牌；`SEARCH_API_TOKEN` 环境变量
+对两种路径都优先。直接用 `SEARCH_API_TOKEN=<admin.token 内容>` 调用也可以。旧的单
+令牌 home 不受影响（无 `admin.token` 时，`api.token` 里的那枚就是管理员令牌）。

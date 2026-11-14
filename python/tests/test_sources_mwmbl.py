@@ -92,18 +92,18 @@ def test_source_review_records_exist_and_are_bounded():
         assert "NOT-ENABLED" in text, name
 
 
-def test_mwmbl_parses_documented_v2_array():
+def test_mwmbl_parses_the_searxng_shaped_v2_response():
     hits = run(Mwmbl, fixture("search_ok.json"))
     assert [(h.url, h.title, h.rank) for h in hits] == [
         ("https://mwmbl.org/", "Mwmbl - the free, open, non-profit search engine", 1),
         ("https://developer.mwmbl.org/", "Mwmbl API documentation", 2),
         ("http://mwmbl.org/contribute", "Crawl and contribute", 3),
     ]
-    # Markup and whitespace collapse in the extract; non-web schemes drop out.
+    # Markup and whitespace collapse in content; non-web schemes drop out.
     assert hits[1].snippet == "Search endpoint: GET /api/v2/search/?q= with extra spacing."
 
 
-def test_mwmbl_empty_array_is_an_empty_search():
+def test_mwmbl_empty_results_is_an_empty_search():
     assert run(Mwmbl, fixture("search_empty.json")) == []
 
 
@@ -164,10 +164,10 @@ async def test_mwmbl_request_shape_anonymous_then_keyed(monkeypatch):
     assert call["accept"] == "application/json"
     assert call["headers"]["User-Agent"] == API_USER_AGENT
     # No env key: the anonymous S0 path (D15) must not carry credentials.
-    assert "Authorization" not in call["headers"]
+    assert "Authorization" not in call["headers"] and "X-API-Key" not in call["headers"]
     monkeypatch.setenv("BZS_MWMBL_KEY", "fixture-free-key")
     hits, _ = await adapter.search("fixture query", 5, None, 5)
-    assert len(hits) == 3 and fetcher.calls[1]["headers"]["Authorization"] == "Bearer fixture-free-key"
+    assert len(hits) == 3 and fetcher.calls[1]["headers"]["X-API-Key"] == "fixture-free-key"
 
 
 async def test_mwmbl_rate_limit_fences_only_its_own_budget(monkeypatch):

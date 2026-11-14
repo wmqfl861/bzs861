@@ -21,27 +21,44 @@ developer.mwmbl.org 页面）。启用决定（D1）与 S0 探测由用户执行
 > 5 请求/秒。超出配额返回 HTTP 429。按量付费需要主动开启，不开启即为硬上限
 > （符合本项目"不设付费回退"的约束）。来源：developer.mwmbl.org（2026-11-12 复核）。
 
-**与当前配置的差异（两个事实同时记录）：** config/sources.json 中 mwmbl 的
-`daily_cap=500/天`（`contract.limits.request_quota=500`、
-`quota_window_seconds=86400`），与上述**按月**配额口径不一致（匿名 1,000/月
-约合日均 33 次）。CL-06 离线批次不改配置；启用前需在用户的 S0/启用决定中统一
-配额口径（可能需要下调 daily_cap 或按月记账）。
+**配额口径（D23 已统一）：** config/sources.json 中 mwmbl 的
+`daily_cap=30/天`（`contract.limits.request_quota=30`、`quota_window_seconds=86400`、
+`min_interval_ms=1000` 保持）。30/天 × 31 天 = 930 ≤ 匿名 1,000/月，保证最长月份
+也不超匿名月配额；用户申请免费 key（2,000/月）后改为 60/天。不在 mwmbl 账户上
+设置消费上限——上游代码里消费上限为 0 时，月上限就是免费额度本身（硬上限，
+不设付费回退）。来源：第四轮复审第 5 节 D23（docs/reviews/claude-2026-11-14-
+phase2to5-review.md）。
 
 ## 访问与鉴权
 
-- S0 阶段按 D15 使用**匿名额度**（不设 `BZS_MWMBL_KEY` 时适配器不带
-  Authorization 头）；之后可申请免费 key 提高月配额（D1：先匿名、后免费 key，
+- S0 阶段按 D15 使用**匿名额度**（不设 `BZS_MWMBL_KEY` 时适配器不带任何
+  鉴权头）；之后可申请免费 key 提高月配额（D1：先匿名、后免费 key，
   不开启按量付费）。
-- 适配器支持可选环境变量 `BZS_MWMBL_KEY`，存在时以 `Authorization: Bearer`
-  头发送。该头部形式与确切响应形状均需 S0 实测确认。
+- 适配器支持可选环境变量 `BZS_MWMBL_KEY`，存在时以 **`X-API-Key` 头**发送
+  （CL-27 更正：`Authorization: Bearer` 是错误形式，mwmbl 不读该头）。无效
+  key 返回 **HTTP 401**，适配器判独立的 `auth_failed` 状态并停止该来源的
+  剩余预算（经既有错误冷却栅栏）。
 
 ## 响应形状与离线夹具
 
-developer.mwmbl.org 文档化的响应为**顶层 JSON 数组**，成员为
-`{title, url, extract}` 对象。离线夹具（python/tests/fixtures/sources/mwmbl/）
-按该文档手工录制，本批未做真实抓取；S0 必须确认实际形状，若不一致需同步更新
-夹具与 `Mwmbl.parse`。形状异常（非数组、成员非对象、缺 title/url、重复 JSON
-键、非有限数值）一律判 `parse_error`，绝不当作"无结果"。
+**CL-27 更正（2026-11-14）：** 实际 v2 响应是 **SearXNG 兼容的对象**
+（`SearchResponse`：`query`/`results`/`images`/`monthly_usage`/`monthly_limit`），
+`results` 成员为 `{url, title, content, engine, score, ...}`，其中 `title` 与
+`content` 是**纯字符串**；鉴权头为 `X-API-Key`，无效 key 返回 401。事实来源：
+mwmbl 上游仓库提交 `cce49fa`（2026-11-13；`mwmbl/tinysearchengine/search.py`
+的 `_register_search_v2`/`SearchResponse`/`SearchHit`、`mwmbl/format.py` 的
+`format_result_v2`）。此前的"顶层数组 + extract + Bearer"是按文档页臆测的错误
+格式，已全部更正。
+
+离线夹具（python/tests/fixtures/sources/mwmbl/）已按上游 schema 重写
+（`search_ok.json` 为 SearchResponse 形状、结果带 `engine` 字段），本批仍未
+做真实抓取；S0 必须确认实际形状，若不一致需同步更新夹具与 `Mwmbl.parse`。
+形状异常（顶层非对象、`results` 非数组、成员非对象、缺 title/url、
+`content` 非字符串、重复 JSON 键、非有限数值）一律判 `parse_error`，
+绝不当作"无结果"。
+
+**注意 `engine` 字段可能为 `wikipedia`**：mwmbl 会混入维基百科来源的结果。
+跨来源去重（dedup_key 融合）会处理这部分重叠，无需在适配器内过滤。
 
 ## 429 与每源状态
 
@@ -58,6 +75,7 @@ developer 页面未见明确的缓存/再分发条款：`cache_policy`、
 
 ## 结论
 
-候选（candidate），未启用。离线解析/状态测试通过；条款额度事实如上。启用前提：
-用户 S0 实测通过 + 配额口径统一 + 缓存/再分发条款复核 + approved_by 由用户
+候选（candidate），未启用。离线解析/状态测试通过（含 CL-27 的上游 schema
+重写夹具与 401/X-API-Key 回归）；条款额度事实如上。启用前提：
+用户 S0 实测通过 + 缓存/再分发条款复核 + approved_by 由用户
 （或其委托审核）签署。

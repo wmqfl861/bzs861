@@ -1,24 +1,22 @@
 # bzs861 当前入口（唯一）
 
-更新：2026-11-14（阶段 4/5 集成完毕：PR #16–#23 全部合入）
+更新：2026-11-14（S0 前修复批次完成，待用户运行 S0）
 
 ## 已核验的集成基线
 
 - `main` 头：`358ae38`（Merge PR #23：CL-18 URL 身份格；此前依次为 #22 CL-11 全项 `cd35820`、#21 进程安全 `748c82a`、#20 CL-10 `c4d219f`、#19 misc5 `3dc8722`、#18 CL-17 `5389c0c`、#17 CL-08 `663fd91`、#16 CL-22 `7b3bd2c`）。
-- 全部以精确已验证 head merge-commit 合入；首轮失败按 D20 全记录（见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)第 1 表：PR #22 linux×2、PR #23 linux×1——后者为改动行格式门禁的首次真实拦截）。
+- 全部以精确已验证 head merge-commit 合入。首轮失败记录：PR #22 linux×2、PR #23 linux×1 见 [阶段 4/5 交接](reviews/response-claude-2026-11-12-phase4_5.md)第 1 表；另有三次 windows-python 失败（PR #16/#19/#22 期间）当时漏记，已由 [记录更正](reviews/response-claude-2026-11-14-pre-s0.md) 补录（根因为 test_probe 时序假设，测试已修复）。自该批起按 D28 在合并前用 `filter=all` 核对全部尝试。
 - 原 2026-11-12 审核发现清单（CL-01–CL-22 + 复审新发现 CL-23–CL-26）中，列为阶段 1–5 的全部修复项均已合入 main。
 
 ## 正在进行的批次
 
-- 无。上一批（阶段 4/5 集成，2026-11-14）已全部合入并清理分支（远端仅 main + 6 个 review/* 只读 + 5 个 archive/ 标签）。
+- S0 前修复批次（第四轮复审 CL-27/CL-29/CL-31/CL-28，按 D22）：mwmbl v2 适配器按上游 schema（SearXNG 对象 + X-API-Key + 401）更正、配额按 D23 统一 30/天；test_probe 时序测试冻结时钟修复并补记三次漏记的 windows-python 首轮失败；TLS 测试证书补 RFC 5280 扩展；`bzs call` 管理员操作自动选 admin 令牌。本批完成后 main 即为 S0 就绪态。
 
 ## 下一步与用户待办
 
-- **用户侧 S1 闭环（任务结束的最后条件，只有用户能做）**：
-  1. 在自己机器上按 [S0_COMMAND.md](S0_COMMAND.md) 运行 D1 四来源探测（marginalia 可按 D15 先用共享 `public` key；**probe 退出 0 ≠ 来源获批**）。
-  2. 给 marginalia 发邮件申请免费非商业 key；收到后替换 `'public'` 重跑一次。
-  3. 来源审核、显式启用后，在用户机器上完整运行 `tools/accept_s1.py`（九条蓝图标准逐条 PASS 才 exit 0；检测到共享 key 会直接 FAIL）。
-- 之后（可选，按原审核第 8 节）：CL-13/CL-15 测量类、CL-19 其余、CL-16——均为"先测量再决定"，不阻塞 S1 签收后的收尾。
+- **下一步 = 用户运行 S0**：按 [S0_COMMAND.md](S0_COMMAND.md) 在自己机器上运行 D1 四来源探测（marginalia 可按 D15 先用共享 `public` key；**probe 退出 0 ≠ 来源获批**），把打印的结果目录交回审核方。S0 结果审完之前不启用任何来源、不开 CL-30 以外的新任务。
+- 同时可发：给 marginalia 的免费非商业 key 申请邮件。
+- S0 后顺序（D24）：审核 S0 结果给出启用决定 → CL-30 小批次（doctor 白名单、create_auth 先 ACL 后写入）→ 按结论启用来源 → 用户在自己机器上完整运行 `tools/accept_s1.py`（九条蓝图标准逐条 PASS 才 exit 0；检测到共享 key 直接 FAIL）。
 
 ## 待决事项
 

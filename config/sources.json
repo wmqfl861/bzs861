@@ -619,7 +619,7 @@
       "status": "candidate",
       "notes": "Unreviewed candidate endpoint; availability, access terms, cache and redistribution policies require review before enablement.",
       "min_interval_ms": 1000,
-      "daily_cap": 500,
+      "daily_cap": 30,
       "params": {
         "base_url": "https://api.mwmbl.org/api/v2/search/",
         "adapter": "mwmbl_api"
@@ -648,7 +648,7 @@
           "max_concurrency": 1,
           "min_interval_ms": 1000,
           "shared_budget_key": "mwmbl",
-          "request_quota": 500,
+          "request_quota": 30,
           "quota_window_seconds": 86400
         }
       }
