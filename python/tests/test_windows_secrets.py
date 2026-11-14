@@ -342,6 +342,101 @@ def test_create_auth_never_writes_secret_when_acl_cannot_be_verified(tmp_path):
 
 
 @needs_windows
+def test_create_auth_rejects_an_unprotected_dacl(tmp_path):
+    # RF3: protected=False (inheritance not broken) is a verification failure,
+    # not a pass; the secret must not be written.
+    output = tmp_path / "auth.json"
+    fake = _fake_winsecurity_package(tmp_path / "fakepkg",
+                                     "class WindowsSecurityError(RuntimeError):\n    pass\n\n\n"
+                                     "def protect_path(path):\n    return None\n\n\n"
+                                     "def audit_path(path):\n    return False, []\n")
+    env = dict(os.environ, PYTHONPATH=fake)
+    result = subprocess.run([sys.executable, str(config.REPO_ROOT / "tools" / "create_auth.py"),
+                             "--output", str(output), "--subject", "ci"],
+                            capture_output=True, text=True, env=env)
+    assert result.returncode != 0
+    assert "could not confirm a restrictive ACL" in result.stderr
+    assert "not protected" in result.stderr
+    token = output.with_suffix(".token")
+    assert not token.exists() or token.read_bytes() == b""
+
+
+@needs_windows
+def test_create_auth_writes_through_the_verified_file_object_not_the_path(tmp_path):
+    # RF1: if the directory entry is swapped (deleted + hardlinked to a
+    # preexisting file) between ACL verification and the write, the secret
+    # must go through the originally created descriptor - the replacement
+    # target is neither overwritten nor receives the token.
+    output = tmp_path / "auth.json"
+    victim = tmp_path / "victim.token"
+    victim.write_bytes(b"VICTIM-CONTENT-NOT-A-SECRET\n")
+    fake = _fake_winsecurity_package(tmp_path / "fakepkg",
+                                     "import os\n\n\n"
+                                     "class WindowsSecurityError(RuntimeError):\n    pass\n\n\n"
+                                     "def protect_path(path):\n    return None\n\n\n"
+                                     "def audit_path(path):\n"
+                                     "    swap = os.environ.get('FAKE_SWAP_TARGET')\n"
+                                     "    if swap and str(path).endswith('.token'):\n"
+                                     "        os.unlink(path)\n"
+                                     "        os.link(swap, path)\n"
+                                     "    return True, []\n")
+    env = dict(os.environ, PYTHONPATH=fake, FAKE_SWAP_TARGET=str(victim))
+    result = subprocess.run([sys.executable, str(config.REPO_ROOT / "tools" / "create_auth.py"),
+                             "--output", str(output), "--subject", "ci"],
+                            capture_output=True, text=True, env=env)
+    # The write itself succeeds (it goes to the unlinked original inode);
+    # what must hold is that the victim never saw a single secret byte.
+    assert victim.read_bytes() == b"VICTIM-CONTENT-NOT-A-SECRET\n"
+    assert len(result.stdout) >= 0  # exit status is not the point of this test
+    token_text = (output.with_suffix(".token").read_text(encoding="utf-8")
+                  if output.with_suffix(".token").exists() else "")
+    assert token_text in ("", "VICTIM-CONTENT-NOT-A-SECRET\n")
+
+
+@needs_windows
+def test_protection_that_leaves_extra_read_grants_fails_closed(tmp_path, monkeypatch):
+    # RF2: a protection step that leaves an explicit INTERACTIVE read ACE
+    # (what the removed icacls-by-account-name fallback could do) is caught
+    # by SID-level verification; the secret is never written.
+    import importlib.util
+    from bzs import winsecurity
+    spec = importlib.util.spec_from_file_location("create_auth_under_test",
+                                                  config.REPO_ROOT / "tools" / "create_auth.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    def sloppy_protector(path, **kwargs):
+        user = winsecurity._current_user()["sid_string"]
+        subprocess.run(["icacls", str(path), "/inheritance:r",
+                        "/grant", f"*{user}:(F)", "/grant", "*S-1-5-18:(F)",
+                        "/grant", "*S-1-5-4:(R)"], capture_output=True, text=True)
+
+    monkeypatch.setattr(winsecurity, "_protect_ctypes", sloppy_protector)
+    monkeypatch.setattr(winsecurity, "_protect_icacls", sloppy_protector)
+    monkeypatch.setattr(mod, "_load_winsecurity", lambda: winsecurity)
+    with pytest.raises(SystemExit, match="S-1-5-4"):
+        mod.write_exclusive(tmp_path / "t.token", "sentinel-secret-value\n")
+    leftover = tmp_path / "t.token"
+    assert not leftover.exists() or leftover.read_bytes() == b""
+
+
+@needs_windows
+def test_create_auth_without_installed_bzs_uses_the_repository_module(tmp_path):
+    # No importable bzs package: the script loads python/bzs/winsecurity.py
+    # from the repository tree and still protects + verifies at SID level.
+    output = tmp_path / "auth.json"
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    result = subprocess.run([sys.executable, str(config.REPO_ROOT / "tools" / "create_auth.py"),
+                             "--output", str(output), "--subject", "ci"],
+                            capture_output=True, text=True, env=env)
+    assert result.returncode == 0, result.stderr
+    from bzs import winsecurity
+    for p in (output, output.with_suffix(".token")):
+        protected, problems = winsecurity.audit_path(p)
+        assert protected is True and problems == []
+
+
+@needs_windows
 def test_dacl_api_failure_keeps_files_and_reports_honestly(tmp_path, monkeypatch):
     monkeypatch.setenv("BZS_HOME", str(tmp_path))
     from bzs import winsecurity

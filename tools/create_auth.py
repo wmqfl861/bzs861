@@ -9,6 +9,30 @@ from pathlib import Path
 import re
 import secrets
 
+def _load_winsecurity():
+    """Return the repository's winsecurity module (CL-30 / RF2).
+
+    Every run must protect and verify through the same SID/DACL
+    implementation; the old icacls-by-account-name fallback could not prove a
+    whitelist DACL. Prefers an importable bzs package; otherwise loads
+    python/bzs/winsecurity.py directly from the repository tree (the module
+    has no intra-package imports). Returns None when neither works; callers
+    fail closed instead of writing an unverified secret.
+    """
+    try:
+        from bzs import winsecurity
+        return winsecurity
+    except ImportError:
+        pass
+    import importlib.util
+    candidate = Path(__file__).resolve().parents[1] / 'python' / 'bzs' / 'winsecurity.py'
+    if not candidate.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location('bzs._winsecurity_standalone', candidate)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
 def write_exclusive(path: Path, value: str) -> None:
     """Create ``path`` exclusively, protect it, and only then write the secret.
 
@@ -17,70 +41,57 @@ def write_exclusive(path: Path, value: str) -> None:
     Now the file is created empty and exclusive (refusing to overwrite), the
     restrictive ACL is applied and verified, and the secret is written only
     after that succeeds. On any failure the still-empty file is removed
-    best-effort and the error is raised: no secret is ever written without a
+    best-effort and the error is raised; no secret is ever written without a
     confirmed restrictive ACL. On POSIX the 0o600 creation mode already
     restricts readers to the owner.
+
+    RF1: the secret is written through the same descriptor that was created
+    exclusively and verified - never by reopening the path - so a directory
+    entry swapped between verification and the write can neither receive the
+    secret nor be overwritten.
     """
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    os.close(fd)
     try:
         if os.name == 'nt':
             protect_windows(path)
             verify_windows(path)
     except BaseException:
+        os.close(fd)
         path.unlink(missing_ok=True)
         raise
-    with open(path, 'w', encoding='utf-8') as stream:
+    with os.fdopen(fd, 'w', encoding='utf-8') as stream:
         stream.write(value)
 
 def protect_windows(path: Path) -> None:
     """CL-08: on Windows the 0o600 mode above is ignored; set a protected DACL.
 
-    Prefers the ctypes implementation from the bzs package (identical to
-    `bzs init`); when the script runs outside an installed bzs, fall back to
-    icacls by account name. Any failure is fatal and loud: the operator is
-    told the ACL could not be protected.
+    Uses the repository's winsecurity implementation (ctypes, icacls only as
+    its internal fallback writer). Any failure is fatal and loud: the operator
+    is told the ACL could not be protected.
     """
-    import subprocess
-    try:
-        from bzs import winsecurity
-    except ImportError:
-        winsecurity = None
-    if winsecurity is not None:
-        winsecurity.protect_path(path)
-        return
-    import getpass
-    grants = [f'{getpass.getuser()}:F', '*S-1-5-18:F']
-    result = subprocess.run(['icacls', str(path), '/inheritance:r', '/grant:r', *grants],
-                            capture_output=True, text=True)
-    if result.returncode != 0:
-        raise SystemExit(f'E_LOCAL_SECURITY: icacls could not protect {path}: {result.stderr.strip()}')
+    module = _load_winsecurity()
+    if module is None:
+        raise SystemExit(f'E_LOCAL_SECURITY: cannot load the ACL implementation to protect {path}; '
+                         'refusing to write the secret (fail closed)')
+    module.protect_path(path)
 
 def verify_windows(path: Path) -> None:
     """CL-30: confirm the restrictive ACL before any secret is written.
 
-    With the bzs package available this re-reads the real DACL through
-    ``winsecurity.audit_path`` and requires a protected, problem-free result.
-    In the icacls fallback branch the same intent is checked against the
-    icacls output: both grants present and no inherited ACEs. A file whose
-    protection cannot be confirmed never receives the secret.
+    Re-reads the real DACL through ``winsecurity.audit_path`` (SID-level,
+    both for the ctypes protection route and its icacls fallback writer) and
+    requires ``protected is True`` with zero problems (RF3: an un-protected
+    DACL is a failure, not a pass). A file whose protection cannot be
+    confirmed never receives the secret.
     """
-    import subprocess
-    try:
-        from bzs import winsecurity
-    except ImportError:
-        winsecurity = None
-    if winsecurity is not None:
-        protected, problems = winsecurity.audit_path(path)
-        if protected is None or problems:
-            raise SystemExit(f'E_LOCAL_SECURITY: could not confirm a restrictive ACL on {path}: '
-                             f'{"; ".join(problems) or "DACL unreadable"}')
-        return
-    result = subprocess.run(['icacls', str(path)], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise SystemExit(f'E_LOCAL_SECURITY: icacls could not re-read the ACL on {path}: {result.stderr.strip()}')
-    if '(I)' in result.stdout:
-        raise SystemExit(f'E_LOCAL_SECURITY: inherited ACEs remain on {path}:\n{result.stdout.strip()}')
+    module = _load_winsecurity()
+    if module is None:
+        raise SystemExit(f'E_LOCAL_SECURITY: cannot load the ACL implementation to verify {path}; '
+                         'refusing to write the secret (fail closed)')
+    protected, problems = module.audit_path(path)
+    if protected is not True or problems:
+        raise SystemExit(f'E_LOCAL_SECURITY: could not confirm a restrictive ACL on {path}: '
+                         f'{"; ".join(problems) or "DACL is not protected"}')
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__)

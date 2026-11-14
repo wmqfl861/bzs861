@@ -11,6 +11,7 @@
 ## 正在进行的批次
 
 - S0 前修复批次（第四轮复审 CL-27/CL-29/CL-31/CL-28，按 D22）：mwmbl v2 适配器按上游 schema（SearXNG 对象 + X-API-Key + 401）更正、配额按 D23 统一 30/天；test_probe 时序测试冻结时钟修复并补记三次漏记的 windows-python 首轮失败；TLS 测试证书补 RFC 5280 扩展；`bzs call` 管理员操作自动选 admin 令牌。本批完成后 main 即为 S0 就绪态。
+- CL-30 批次（PR #26，work/cl30-20261114）：doctor 白名单化 + create_auth 先 ACL 后写入。第 2 轮复审（RF1-RF3，docs/reviews/codex-2026-11-15-post-s0-review.md）后补修：秘密经同一独占 fd 写入（路径替换不落秘密）、核验一律走 SID 级 audit_path（废弃账户名 icacls 回退）、`protected=False` 判失败；新 head 待第 3 轮复审，通过前不合入。
 
 ## 下一步与用户待办
 
